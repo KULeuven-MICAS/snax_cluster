@@ -3,6 +3,9 @@ Bender.lock
 .vscode/
 __pycache__
 
+// File List Synthesis Fiels
+snps_flist.tcl
+
 // Modelsim Fiels
 *.wlf
 modelsim.ini
