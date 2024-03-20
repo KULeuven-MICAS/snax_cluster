@@ -23,7 +23,7 @@ rm -rf target/$PROJECT/generated/*
 
 # bender checkout and bender flist
 mkdir -p target/$PROJECT/generated
-#bender checkout && bender script synopsys -t synthesis -t $PROJECT > snps_flist.tcl
+bender checkout && bender script synopsys -t synthesis -t $PROJECT > snps_flist.tcl
 python3 util/clustergen.py -c target/$PROJECT/cfg/$CFG.hjson -o target/$PROJECT/generated --wrapper --mem
 
 #check the generation
