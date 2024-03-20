@@ -49,6 +49,13 @@ def main():
     parser.add_argument("--wrapper",
                         action="store_true",
                         help="Generate Snitch cluster wrapper")
+    parser.add_argument("--wrapper_name",
+                        type=str,
+                        default="snitch_cluster",
+                        help="Name of the cluster wrapper")
+    parser.add_argument("--mem",
+                        action="store_true",
+                        help="Generate the config.txt for memory compiler")
     parser.add_argument("--linker",
                         action="store_true",
                         help="Generate linker script")
@@ -89,6 +96,10 @@ def main():
         complete_filename = obj["cluster"]["name"] + "_wrapper.sv"
         with open(outdir / complete_filename, "w") as f:
             f.write(cluster_tb.render_wrapper())
+
+    if args.mem:
+        with open(outdir / "config.txt", "w") as f:
+            f.write(cluster_tb.render_mem())
 
     if args.linker:
         with open(outdir / "link.ld", "w") as f:

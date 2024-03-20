@@ -18,12 +18,13 @@ CFG=default
 
 # remove the flist and generated
 rm -rf snps_flist.tcl
+rm -rf .bender
 rm -rf target/$PROJECT/generated/*
 
 # bender checkout and bender flist
 mkdir -p target/$PROJECT/generated
-bender checkout && bender script synopsys -t synthesis -t $PROJECT > snps_flist.tcl
-python3 util/clustergen.py -c target/$PROJECT/cfg/$CFG.hjson -o target/$PROJECT/generated --wrapper
+#bender checkout && bender script synopsys -t synthesis -t $PROJECT > snps_flist.tcl
+python3 util/clustergen.py -c target/$PROJECT/cfg/$CFG.hjson -o target/$PROJECT/generated --wrapper --mem
 
 #check the generation
 echo " "
@@ -39,5 +40,5 @@ echo " "
 
 #transfer
 
-ssh $USER@cygni-gw "mkdir -p $TARGET_ROOT/$PROJECT" && scp -r .bender/ hw/ target/ snps_flist.tcl $USER@cygni-gw:$TARGET_ROOT/$PROJECT && clear && echo " " && echo "Files Benderized, Generated and Transfered -- Check the Synthesis Server" && echo " " 
+ssh $USER@cygni-gw "mkdir -p $TARGET_ROOT/$PROJECT" && scp -r .bender/ hw/ target/$PROJECT/generated/ snps_flist.tcl $USER@cygni-gw:$TARGET_ROOT/$PROJECT && clear && echo " " && echo "Files Benderized, Generated and Transfered -- Check the Synthesis Server" && echo " " 
 

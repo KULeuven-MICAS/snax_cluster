@@ -145,7 +145,9 @@ class SnitchCluster(Generator):
     """
     files = {
         'cfg': "src/snitch_cfg.sv.tpl",
-        'wrapper': "src/snitch_cluster_wrapper.sv.tpl"
+        'wrapper': "src/snitch_cluster_wrapper.sv.tpl",
+        'mem': "src/config.txt.tpl"
+
     }
 
     def __init__(self, cfg, pma_cfg):
@@ -178,6 +180,14 @@ class SnitchCluster(Generator):
         return cfg_template.render_unicode(cfg=self.cfg,
                                            to_sv_hex=to_sv_hex,
                                            disclaimer=self.DISCLAIMER)
+
+    def render_mem(self):
+        """Render the cluster memory compiler input"""
+        cfg_template = self.templates.get_template(self.files['mem'])
+        return cfg_template.render_unicode(cfg=self.cfg,
+                                           to_sv_hex=to_sv_hex,
+                                           disclaimer=self.DISCLAIMER)
+
 
     def add_mem(self,
                 words,
@@ -251,7 +261,10 @@ class SnitchCluster(Generator):
             # tag width
             self.tag_width = self.cfg['addr_width'] - clog2(
                     hive['icache']['cacheline'] // 8) - clog2(hive['icache']['depth']) + 3
-
+            
+            self.cfg['tag_width'] = self.cfg['addr_width'] - clog2(
+                    hive['icache']['cacheline'] // 8) - clog2(hive['icache']['depth']) + 3
+            
     def parse_pma_cfg(self, pma_cfg):
         self.cfg['pmas'] = dict()
         # print(pma_cfg.regions)
@@ -380,6 +393,9 @@ class SnitchClusterTB(Generator):
 
     def render_wrapper(self):
         return self.cluster.render_wrapper()
+
+    def render_mem(self):
+        return self.cluster.render_mem()
 
     def render_linker_script(self):
         """Generate a linker script for the cluster testbench"""
