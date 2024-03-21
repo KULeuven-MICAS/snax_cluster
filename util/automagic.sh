@@ -14,7 +14,7 @@
 
 TARGET_ROOT=$HOME
 PROJECT=snitch_cluster
-CFG=default
+CFG=snax-gemm
 
 # remove the flist and generated
 rm -rf snps_flist.tcl
