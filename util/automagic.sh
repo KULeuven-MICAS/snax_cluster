@@ -40,5 +40,5 @@ echo " "
 
 #transfer
 
-ssh $USER@cygni-gw "mkdir -p $TARGET_ROOT/$PROJECT" && scp -r .bender/ hw/ target/$PROJECT/generated/ snps_flist.tcl $USER@cygni-gw:$TARGET_ROOT/$PROJECT && clear && echo " " && echo "Files Benderized, Generated and Transfered -- Check the Synthesis Server" && echo " " 
+ssh $USER@cygni-gw "mkdir -p $TARGET_ROOT/$PROJECT" && scp -r .bender/ hw/ target/ snps_flist.tcl $USER@cygni-gw:$TARGET_ROOT/$PROJECT && clear && echo " " && echo "Files Benderized, Generated and Transfered -- Check the Synthesis Server" && echo " " 
 

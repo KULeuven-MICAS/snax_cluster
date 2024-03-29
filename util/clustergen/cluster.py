@@ -146,8 +146,8 @@ class SnitchCluster(Generator):
     files = {
         'cfg': "src/snitch_cfg.sv.tpl",
         'wrapper': "src/snitch_cluster_wrapper.sv.tpl",
-        'mem': "src/config.txt.tpl"
-
+        'mem_spec': "src/config_spec.txt.tpl",
+        'mem_impl': "src/config_impl.txt.tpl"
     }
 
     def __init__(self, cfg, pma_cfg):
@@ -180,14 +180,18 @@ class SnitchCluster(Generator):
         return cfg_template.render_unicode(cfg=self.cfg,
                                            to_sv_hex=to_sv_hex,
                                            disclaimer=self.DISCLAIMER)
-
-    def render_mem(self):
+    def render_mem_impl(self):
         """Render the cluster memory compiler input"""
-        cfg_template = self.templates.get_template(self.files['mem'])
+        cfg_template = self.templates.get_template(self.files['mem_impl'])
         return cfg_template.render_unicode(cfg=self.cfg,
                                            to_sv_hex=to_sv_hex,
                                            disclaimer=self.DISCLAIMER)
-
+    def render_mem_spec(self):
+        """Render the cluster memory compiler input"""
+        cfg_template = self.templates.get_template(self.files['mem_spec'])
+        return cfg_template.render_unicode(cfg=self.cfg,
+                                           to_sv_hex=to_sv_hex,
+                                           disclaimer=self.DISCLAIMER)
 
     def add_mem(self,
                 words,
@@ -394,9 +398,12 @@ class SnitchClusterTB(Generator):
     def render_wrapper(self):
         return self.cluster.render_wrapper()
 
-    def render_mem(self):
-        return self.cluster.render_mem()
-
+    def render_mem_impl(self):
+        return self.cluster.render_mem_impl()
+    
+    def render_mem_spec(self):
+        return self.cluster.render_mem_spec()
+    
     def render_linker_script(self):
         """Generate a linker script for the cluster testbench"""
         cfg_template = self.templates.get_template("test/link.ld.tpl")
