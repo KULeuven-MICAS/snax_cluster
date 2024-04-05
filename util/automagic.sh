@@ -17,13 +17,23 @@ PROJECT=snitch_cluster
 CFG=snax-gemm
 
 # remove the flist and generated
-rm -rf snps_flist.tcl
+rm -rf syn_flist.tcl
 rm -rf .bender
 rm -rf target/$PROJECT/generated/*
 
 # bender checkout and bender flist
 mkdir -p target/$PROJECT/generated
-bender checkout && bender script synopsys -t synthesis -t $PROJECT > snps_flist.tcl
+bender checkoute
+
+SIMD=`bender path snax-streamer-simd-dev`
+GEMM=`bender path snax-streamer-gemm-dev`
+RESH=`bender path snax-data-reshuffler-dev`
+cd $SIMD && make `pwd`/rtl/streamer-simd/streamer_simd_wrapper.sv
+cd $GEMM && make `pwd`/rtl/streamer-gemm/streamer_gemm_wrapper.sv
+cd $RESH && make `pwd`/tests/tb/tb_stream_dev_reshuffler.sv
+
+bender script synopsys -t synthesis -t $PROJECT -t $CFG > syn_flist.tcl
+
 python3 util/clustergen.py -c target/$PROJECT/cfg/$CFG.hjson -o target/$PROJECT/generated --wrapper --mem
 
 #check the generation
@@ -40,5 +50,5 @@ echo " "
 
 #transfer
 
-ssh $USER@cygni-gw "mkdir -p $TARGET_ROOT/$PROJECT" && scp -r .bender/ hw/ target/ snps_flist.tcl $USER@cygni-gw:$TARGET_ROOT/$PROJECT && clear && echo " " && echo "Files Benderized, Generated and Transfered -- Check the Synthesis Server" && echo " " 
+ssh $USER@cygni-gw "mkdir -p $TARGET_ROOT/$PROJECT" && scp -r $USER@cygni-gw:$TARGET_ROOT/$PROJECT && clear && echo " " && echo "Files Benderized, Generated and Transfered -- Check the Synthesis Server" && echo " " 
 
