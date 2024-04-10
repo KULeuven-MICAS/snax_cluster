@@ -13,7 +13,7 @@
 #[[TODO]] - turn it a makefile
 
 # remove the flist and generated
-rm -rf syn_flist.tcl
+rm -rf syn_flist.tcl vsim_flist.tcl
 rm -rf .bender
 rm -rf target/$PROJECT/generated/*
 
@@ -30,8 +30,9 @@ bender checkout
 GEMM=`bender path snax-streamer-gemm-dev`
 cd $GEMM && make `pwd`/rtl/streamer-gemm/streamer_gemm_wrapper.sv
 
+cd /repo
 bender script synopsys -t synthesis -t $PROJECT -t $CFG > syn_flist.tcl
-bender script vsim -t snitch_cluster -t snax_gemm -t test -t netlist -t simulation -t  >vsim_flist.tcl
+bender script vsim -t snitch_cluster -t snax_gemm -t test -t gate -t simulation  >vsim_flist.tcl
 
 python3 util/clustergen.py -c target/$PROJECT/cfg/$CFG.hjson -o target/$PROJECT/generated --wrapper --mem
 
@@ -42,9 +43,6 @@ echo " "
 ls -la snps_flist.tcl
 ls -la target/$PROJECT/generated/*
 echo "---"
-echo " "
-
-echo "--- Enter with your password my Lord: ---"
 echo " "
 
 

@@ -1,0 +1,1 @@
+podman run -it -v `pwd`:/repo -w /repo ghcr.io/kuleuven-micas/snax:latest
