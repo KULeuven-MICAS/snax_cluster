@@ -23,38 +23,13 @@ int main() {
     local_b = (int8_t*)(snrt_l1_next() + delta_local_b);
     local_c = (int32_t*)(snrt_l1_next() + delta_local_c);
 
-    int m = M * 8;
-    int k = K * 8;
-    int n = N * 8;
-
-    uint32_t start_cycle = snrt_mcycle();
-
-    if (snrt_is_compute_core()) {
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                C_golden[i * k + j] = 0;
-                for (int s = 0; s < k; s++) {
-                    C_golden[i * k + j] =
-                        C_golden[i * k + j] +
-                        (uint32_t)A[i * k + s] * (uint32_t)B[s + j * k];
-                    // snrt_cluster_hw_barrier();
-                }
-            }
-        }
-
-        // Read the mcycle CSR
-        uint32_t end_cycle = snrt_mcycle();
-        printf("cycle number for CPU to do matrix multiply: %d \n",
-               end_cycle - start_cycle);
-    };
-
-    // // Transfer data from L3 to L1
-    // // Using DMA only
-    // if (snrt_is_dm_core()) {
-    //     load_input_data(Batch, M, K, N, local_a, local_b, A, B,
-    //                     strideInnermostA, strideInnermostB, ldA, ldB, strideA,
-    //                     strideB);
-    // }
+    // Transfer data from L3 to L1
+    // Using DMA only
+    if (snrt_is_dm_core()) {
+        load_input_data(Batch, M, K, N, local_a, local_b, A, B,
+                        DMA_strideInnermostA, DMA_strideInnermostB, DMA_ldA, DMA_ldB, strideA,
+                        strideB);
+    }
 
     // Wait for DMA to finish
     snrt_cluster_hw_barrier();
@@ -63,9 +38,9 @@ int main() {
         // uint32_t gemm_start = snrt_mcycle();
 
         // Set Streamer configuration CSR
-        set_streamer_csr(K, N, M, strideInnermostA, ldA, spatialA,
-                         strideInnermostB, ldB, spatialB, strideInnermostC, ldC,
-                         spatialC, delta_local_a, delta_local_b, delta_local_c);
+        set_streamer_csr(K, N, M, strideInnermostA, ldA, spatialA, strideInnermostB, ldB, spatialB,
+                         strideInnermostC, ldC, spatialC, delta_local_a, delta_local_b,
+                         delta_local_c);
         // Set CSR to start Streamer
         set_streamer_start();
 
@@ -81,14 +56,16 @@ int main() {
         // Poll until Streamer and GEMM accelerator finish
         wait_streamer_gemm();
 
-        printf("SNAX Streamer GEMM accelerator finished\n");
+        uint32_t gemm_streamer_perf_counter = read_gemm_streamer_perf_counter();
+        printf("GEMM Streamer cycles: %d \n", gemm_streamer_perf_counter);
 
-        uint32_t gemm_cycle = read_gemm_perf_counter();
-        printf("SNAX Streamer GEMM accelerator cycles: %d\n", gemm_cycle);
+        uint32_t gemm_perf_counter = read_gemm_perf_counter();
+        printf("GEMM cycles: %d \n", gemm_perf_counter);
 
         // Compare SNAX GEMM result with golden model
         // err += check_result(local_c, C_golden, Batch, M, N, strideInnermostC,
         //                     ldC, strideC);
+        // printf("GEMM on A and B finished. error: %d\n", err);
     };
 
     return err;

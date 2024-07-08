@@ -1,0 +1,29 @@
+{
+  Batch: 1
+  K: 9
+  N: 10
+  M: 2
+  DMA_strideInnermostA: 64
+  DMA_strideInnermostB: 64
+  DMA_ldA: 576
+  DMA_ldB: 576
+  spatialA: 72
+  spatialB: 72
+  spatialC: 32
+  strideInnermostA: 8
+  strideInnermostB: 8
+  strideInnermostC: 256
+  strideHalfC: 0
+  ldA: 576
+  ldB: 576
+  ldC: 2560
+  strideA: 0
+  strideB: 0
+  strideC: 0
+  tileSize: 8
+  meshRow: 8
+  meshCol: 8
+  delta_local_a: 0
+  delta_local_b: 1152
+  delta_local_c: 6912
+}
