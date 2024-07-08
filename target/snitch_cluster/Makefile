@@ -161,6 +161,19 @@ $(eval $(call generate_snax_gen,snax_streamer_gemm))
  
 endif
 
+ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm-simd.hjson)
+ 
+$(eval $(call generate_snax_gen,snax_streamer_gemm_simd))
+ 
+    include ../../hw/chisel_acc/Makefile
+ 
+    VSIM_BENDER += -t snax_streamer_gemm_simd
+    VLT_BENDER  += -t snax_streamer_gemm_simd
+    VCS_BENDER  += -t snax_streamer_gemm_simd
+ 
+endif
+
+
 ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemmX.hjson)
 
 	CLUSTER_NAME = snax_streamer_gemmX_cluster
@@ -174,6 +187,37 @@ $(eval $(call generate_snax_gen,snax_streamer_gemmX))
     VLT_BENDER  += -t snax_streamer_gemmX
     VCS_BENDER  += -t snax_streamer_gemmX
  
+endif
+
+ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm-add-c.hjson)
+	CLUSTER_NAME = snax_streamer_gemm_add_c_cluster
+ 
+$(eval $(call generate_snax_gen,snax_streamer_gemm_add_c))
+
+    # SNAX_POOLINGSIMD_ROOT ?= $(ROOT)/hw/chisel_acc
+    # include $(SNAX_POOLINGSIMD_ROOT)/Makefile
+ 
+    VSIM_BENDER += -t snax_streamer_gemm_add_c
+    VLT_BENDER  += -t snax_streamer_gemm_add_c
+    VCS_BENDER  += -t snax_streamer_gemm_add_c
+ 
+endif
+
+ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemmX-data-reshuffler.hjson)
+
+ 	CLUSTER_NAME = snax_KUL_cluster
+ 
+$(eval $(call generate_snax_gen,snax_streamer_gemmX))
+
+	SNAX_GEMMX_ROOT ?= $(ROOT)/hw/chisel_acc
+    include $(SNAX_GEMMX_ROOT)/Makefile
+
+$(eval $(call generate_snax_gen,snax_data_reshuffler))
+
+	VSIM_BENDER += -t snax_KUL_cluster
+	VLT_BENDER  += -t snax_KUL_cluster
+	VCS_BENDER  += -t snax_KUL_cluster
+
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-wide-gemm-data-reshuffler.hjson)
@@ -250,6 +294,14 @@ CFG         = cfg/lru.hjson
 #####################
 # Simulator options #
 #####################
+
+# VSIM_BENDER += -t snitch_cluster
+# VLT_BENDER  += -t snitch_cluster
+# VCS_BENDER  += -t snitch_cluster
+
+# VSIM_NETLIST_BENDER += -t snitch_cluster_netlist
+# VLT_BENDER  += -t snitch_cluster_netlist
+# VCS_BENDER  += -t snitch_cluster_netlist
 
 QUESTA_64BIT = -64
 VLOG_64BIT   = -64
@@ -417,6 +469,9 @@ $(GENERATED_DIR)/memories.json: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
 $(GENERATED_DIR)/bootdata.cc: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
 	$(CLUSTER_GEN) -c $< -o $(GENERATED_DIR) --bootdata
 
+# $(GENERATED_DIR)/bootdata.cc
+# 	$(CLUSTER_GEN) -c $< -o $(GENERATED_DIR) --bootdata
+
 #############
 # Verilator #
 #############
@@ -466,6 +521,16 @@ ${VSIM_BUILDDIR}/compile.vsim.tcl:
 
 # Build compilation script and compile all sources for Questasim simulation
 bin/snitch_cluster.vsim: ${VSIM_BUILDDIR}/compile.vsim.tcl $(VSIM_SOURCES) ${TB_SRCS} ${TB_CC_SOURCES} ${TB_ASM_SOURCES} work/lib/libfesvr.a
+	$(call QUESTASIM,tb_bin)
+
+# netlist simulation
+${VSIM_BUILDDIR}/compile_netlist.vsim.tcl:
+	$(VLIB) $(dir $@)
+	${BENDER} script vsim ${VSIM_NETLIST_BENDER} --vlog-arg="${VLOG_FLAGS} -work $(dir $@) " > $@
+	echo '${VLOG} -work $(dir $@) ${TB_CC_SOURCES} ${TB_ASM_SOURCES} -vv -ccflags "$(TB_CC_FLAGS)"' >> $@
+	echo 'return 0' >> $@
+
+bin/snitch_cluster_netlist.vsim: ${VSIM_BUILDDIR}/compile_netlist.vsim.tcl
 	$(call QUESTASIM,tb_bin)
 
 #######

@@ -211,6 +211,8 @@ sources:
       - hw/snitch_icache/src/snitch_icache_l0.sv
       - hw/snitch_icache/src/snitch_icache_refill.sv
       - hw/snitch_icache/src/snitch_icache_lfsr.sv
+      # - hw/gf22nm_mem/icache/model/verilog/IN22FDX_R1PL_NFLG_W00128B128M02C256.v
+      # - hw/gf22nm_mem/icache_tag/model/verilog/IN22FDX_R1PL_NFLG_W00128B039M02C256.v
       - hw/snitch_icache/src/snitch_icache_lookup.sv
       # Level 2
       - hw/snitch_icache/src/snitch_icache_handler.sv
@@ -273,6 +275,7 @@ sources:
       # Level 3
       - hw/snitch_cluster/src/snitch_hive.sv
       # Level 4
+      # - hw/gf22nm_mem/tcdm/model/verilog/IN22FDX_R1PL_NFLG_W00512B064M02C256.v
       - hw/snitch_cluster/src/snitch_cluster.sv
 
   #---------------------------
@@ -329,7 +332,20 @@ sources:
       # Level 2
       - target/snitch_cluster/generated/snax_streamer_simd/snax_streamer_simd_wrapper.sv
 
-  - target: any(snax_data_reshuffler, snax_wide_gemm_data_reshuffler)
+  - target: snax_streamer_gemm_add_c
+    files:
+      # Level 0
+      - hw/chisel_acc/generated/gemm/BlockGemm.sv
+      - hw/chisel_acc/src/snax_streamer_gemm_shell_wrapper.sv
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c/snax_streamer_gemm_add_c_csrman_CsrManager.sv
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c/snax_streamer_gemm_add_c_streamer_StreamerTop.sv
+      # Level 1
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c/snax_streamer_gemm_add_c_csrman_wrapper.sv
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c/snax_streamer_gemm_add_c_streamer_wrapper.sv
+      # Level 2
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c/snax_streamer_gemm_add_c_wrapper.sv
+
+  - target: any(snax_data_reshuffler, snax_wide_gemm_data_reshuffler, snax_KUL_cluster)
     files:
       # Level 0
       - hw/chisel_acc/generated/reshuffle/Reshuffler.sv
@@ -342,7 +358,7 @@ sources:
       - hw/chisel_acc/src/snax_data_reshuffler_shell_wrapper.sv
       - target/snitch_cluster/generated/snax_data_reshuffler/snax_data_reshuffler_wrapper.sv
 
-  - target: snax_streamer_gemmX
+  - target: any(snax_streamer_gemmX, snax_KUL_cluster)
     files:
       # Level 0
       - hw/chisel_acc/generated/gemmx/BlockGemmRescaleSIMD.sv
@@ -400,6 +416,12 @@ sources:
   - target: snax_streamer_gemmX
     files:
       - target/snitch_cluster/generated/snax_streamer_gemmX_cluster_wrapper.sv
+  - target: snax_KUL_cluster
+    files:
+      - target/snitch_cluster/generated/snax_KUL_cluster_wrapper.sv
+  - target: snax_streamer_gemm_add_c
+    files:
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c_cluster_wrapper.sv
 
   #---------------------------
   # Test harness declaration
