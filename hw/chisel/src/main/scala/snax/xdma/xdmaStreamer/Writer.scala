@@ -4,9 +4,9 @@ import chisel3._
 import chisel3.util._
 
 import snax.utils._
-import snax.xdma.commonCells._
 
-import snax.xdma.designParams._
+import snax.xdma.CommonCells._
+import snax.xdma.DesignParams._
 
 class Writer(param: ReaderWriterParam) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
@@ -46,7 +46,7 @@ class Writer(param: ReaderWriterParam) extends Module with RequireAsyncReset {
   )
 
   val dataBuffer = Module(
-    new snax.xdma.commonCells.complexQueue_Concat(
+    new ComplexQueueConcat(
       inputWidth = param.tcdm_param.dataWidth * param.tcdm_param.numChannel,
       outputWidth = param.tcdm_param.dataWidth,
       depth = param.bufferDepth

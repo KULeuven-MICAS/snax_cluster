@@ -4,7 +4,8 @@ import chisel3._
 import chisel3.util._
 
 import snax.utils._
-import snax.xdma.designParams._
+import snax.xdma.CommonCells._
+import snax.xdma.DesignParams._
 
 // The reader takes the address from the AGU, offer to requestor, and responser collect the data from TCDM and pushed to FIFO packer to recombine into 512 bit data
 
@@ -24,9 +25,7 @@ class Reader(param: ReaderWriterParam) extends Module with RequireAsyncReset {
       param.tcdm_param.numChannel,
       Flipped(Valid(new TcdmRsp(tcdmDataWidth = param.tcdm_param.dataWidth)))
     )
-    val data = Decoupled(
-      UInt((param.tcdm_param.dataWidth * param.tcdm_param.numChannel).W)
-    )
+    val data = Decoupled(UInt((param.tcdm_param.dataWidth * param.tcdm_param.numChannel).W))
     // The signal trigger the start of Address Generator. The non-empty of address generator will cause data requestor to read the data
     val start = Input(Bool())
     // The module is busy if addressgen is busy or fifo in addressgen is not empty
@@ -59,7 +58,7 @@ class Reader(param: ReaderWriterParam) extends Module with RequireAsyncReset {
 
   // Output FIFOs to combine the data from the output of responsers
   val dataBuffer = Module(
-    new snax.xdma.commonCells.complexQueue_Concat(
+    new ComplexQueueConcat(
       inputWidth = param.tcdm_param.dataWidth,
       outputWidth = param.tcdm_param.dataWidth * param.tcdm_param.numChannel,
       depth = param.bufferDepth
@@ -81,6 +80,6 @@ class Reader(param: ReaderWriterParam) extends Module with RequireAsyncReset {
   io.bufferEmpty := dataBuffer.io.allEmpty
 }
 
-object ReaderPrinter extends App {
+object ReaderEmitter extends App {
   println(getVerilogString(new Reader(new ReaderWriterParam)))
 }

@@ -1,4 +1,4 @@
-package snax.xdma.commonCells
+package snax.xdma.CommonCells
 
 import chisel3._
 import chisel3.util._
@@ -16,7 +16,7 @@ import chisel3.util._
   *   will be the second option No matter which case, the big width one should
   *   equal to integer times of the small width one
   */
-class complexQueue_Concat(inputWidth: Int, outputWidth: Int, depth: Int)
+class ComplexQueueConcat(inputWidth: Int, outputWidth: Int, depth: Int)
     extends Module
     with RequireAsyncReset {
   val bigWidth = Seq(inputWidth, outputWidth).max
@@ -102,7 +102,7 @@ class complexQueue_Concat(inputWidth: Int, outputWidth: Int, depth: Int)
   *   will be the second option No matter which case, the big width one should
   *   equal to integer times of the small width one
   */
-class complexQueue_NtoOne[T <: Data](dataType: T, N: Int, depth: Int)
+class ComplexQueueNtoOne[T <: Data](dataType: T, N: Int, depth: Int)
     extends Module
     with RequireAsyncReset {
   require(
@@ -148,7 +148,7 @@ class complexQueue_NtoOne[T <: Data](dataType: T, N: Int, depth: Int)
   *   equal to integer times of the small width one
   */
 
-class complexQueue_OnetoN[T <: Data](dataType: T, N: Int, depth: Int)
+class ComplexQueueOnetoN[T <: Data](dataType: T, N: Int, depth: Int)
     extends Module
     with RequireAsyncReset {
   require(

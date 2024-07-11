@@ -1,4 +1,4 @@
-package snax.xdma.designParams
+package snax.xdma.DesignParams
 
 import chisel3.util.log2Up
 
@@ -7,19 +7,19 @@ import chisel3.util.log2Up
  *  Design Params is placed all together with companion object to avoid multiple definition of one config & config conflict
  */
 
-// tcdm Params
+// TCDM Params
 
-class tcdmParam(
+class TCDMParam(
     val addrWidth: Int = 17, // 128kB tcdm size
     val dataWidth: Int = 64, // Connect to narrow xbar
     val numChannel: Int = 8, // With eight channels
     val tcdmSize: Int = 128 // The size of tcdm
 )
 
-object tcdmParam {
+object TCDMParam {
   def apply(addrWidth: Int, dataWidth: Int, numChannel: Int, tcdmSize: Int) =
-    new tcdmParam(addrWidth, dataWidth, numChannel, tcdmSize)
-  def apply() = new tcdmParam(
+    new TCDMParam(addrWidth, dataWidth, numChannel, tcdmSize)
+  def apply() = new TCDMParam(
     addrWidth = 17,
     dataWidth = 64,
     numChannel = 8,
@@ -73,7 +73,7 @@ class ReaderWriterParam(
     outputBufferDepth = addressBufferDepth
   )
 
-  val tcdm_param = tcdmParam(
+  val tcdm_param = TCDMParam(
     addrWidth = tcdmAddressWidth,
     dataWidth = tcdmDataWidth,
     numChannel = numChannel,
@@ -89,7 +89,7 @@ class ReaderWriterParam(
 // class DMADataPathParam(
 //     val rwParam: ReaderWriterParam,
 //     // val writerparam: ReaderWriterParam,
-//     val extParam: Seq[HasDMAExtension] = Seq[HasDMAExtension](),
+//     val extParam: Seq[HasDMAExtension] = Seq[HasDMAExtension]()
 //     // val writerext: Seq[DMAExtension] = Seq[DMAExtension]()
 // )
 

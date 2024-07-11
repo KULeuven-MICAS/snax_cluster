@@ -3,9 +3,10 @@ package snax.xdma.xdmaStreamer
 import chisel3._
 import chisel3.util._
 
-import snax.xdma.designParams._
+import snax.xdma.CommonCells._
+import snax.xdma.DesignParams._
 
-class basicCounter(width: Int, hasCeil: Boolean = true)
+class BasicCounter(width: Int, hasCeil: Boolean = true)
     extends Module
     with RequireAsyncReset {
   val io = IO(new Bundle {
@@ -77,13 +78,13 @@ class AddressGenUnit(param: AddressGenUnitParam)
   })
 
   // Create a counter to count from 0 to product(bounds)
-  val counter = Module(new basicCounter(32))
+  val counter = Module(new BasicCounter(32))
   // When start signal is high, the counter is rest to zero.
   counter.io.reset := io.start
 
   // Create the outputBuffer to store the generated address: one input + spatialUnrollingFactor outputs
   val outputBuffer = Module(
-    new snax.xdma.commonCells.complexQueue_Concat(
+    new ComplexQueueConcat(
       inputWidth = io.addr.head.bits.getWidth * param.spatialUnrollingFactor,
       outputWidth = io.addr.head.bits.getWidth,
       depth = param.outputBufferDepth

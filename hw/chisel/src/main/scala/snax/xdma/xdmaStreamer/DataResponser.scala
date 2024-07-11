@@ -62,7 +62,7 @@ class DataResponsers(tcdmDataWidth: Int = 64, numChannel: Int = 8)
   }
 }
 
-object dataResponsersPrinter extends App {
+object DataResponserEmitter extends App {
   println(
     getVerilogString(new DataResponsers(tcdmDataWidth = 64, numChannel = 8))
   )
