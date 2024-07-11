@@ -5,13 +5,15 @@ import chisel3.util._
 
 import snax.utils._
 
-/** DataResponser's IO definition:
-  * io.in: From TCDM, see Xiaoling's definition to compatible with her wrapper
-  * io.out.data: Decoupled(UInt), to store the data to FIFO at the outside
-  * io.out.ResponsorReady: Bool(), to determine whether the Requestor can intake more data (dpending on whether the output FIFO is full)
+/** DataResponser's IO definition: io.in: From TCDM, see Xiaoling's definition
+  * to compatible with her wrapper io.out.data: Decoupled(UInt), to store the
+  * data to FIFO at the outside io.out.ResponsorReady: Bool(), to determine
+  * whether the Requestor can intake more data (dpending on whether the output
+  * FIFO is full)
   */
 
-class DataResponserIO(tcdmDataWidth: Int = 64, numChannel: Int = 8) extends Bundle {
+class DataResponserIO(tcdmDataWidth: Int = 64, numChannel: Int = 8)
+    extends Bundle {
   val tcdm_rsp = Flipped(Valid(new TcdmRsp(tcdmDataWidth = tcdmDataWidth)))
   val out = new Bundle {
     val data = Decoupled(UInt(tcdmDataWidth.W))
@@ -26,23 +28,30 @@ class DataResponser(tcdmDataWidth: Int) extends Module with RequireAsyncReset {
   io.out.ResponsorReady := io.out.data.ready // If io.out.data.ready is high, the new request can be issued
 }
 
-/** DataResponsers' IO definition:
-  * io.in: From TCDM, see Xiaoling's definition to compatible with her wrapper
-  * io.out.data: Vec(Decoupled(UInt)), to store the data to FIFO at the outside
-  * io.out.ResponsorReady: Vec(Bool()), to determine whether the Requestor can intake more data (dpending on whether the output FIFO is full)
+/** DataResponsers' IO definition: io.in: From TCDM, see Xiaoling's definition
+  * to compatible with her wrapper io.out.data: Vec(Decoupled(UInt)), to store
+  * the data to FIFO at the outside io.out.ResponsorReady: Vec(Bool()), to
+  * determine whether the Requestor can intake more data (dpending on whether
+  * the output FIFO is full)
   */
 // In this module is the multiple instantiation of DataRequestor. No Buffer is required from the data requestor's side, as it will be done at the outside.
 
-class DataResponsersIO(tcdmDataWidth: Int = 64, numChannel: Int = 8) extends Bundle {
-  val tcdm_rsp = Vec(numChannel, Flipped(Valid(new TcdmRsp(tcdmDataWidth = tcdmDataWidth))))
+class DataResponsersIO(tcdmDataWidth: Int = 64, numChannel: Int = 8)
+    extends Bundle {
+  val tcdm_rsp =
+    Vec(numChannel, Flipped(Valid(new TcdmRsp(tcdmDataWidth = tcdmDataWidth))))
   val out = new Bundle {
     val data = Vec(numChannel, Decoupled(UInt(tcdmDataWidth.W)))
     val ResponsorReady = Vec(numChannel, Output(Bool()))
   }
 }
 
-class DataResponsers(tcdmDataWidth: Int = 64, numChannel: Int = 8) extends Module with RequireAsyncReset {
-  val io = IO(new DataResponsersIO(tcdmDataWidth = tcdmDataWidth, numChannel = numChannel))
+class DataResponsers(tcdmDataWidth: Int = 64, numChannel: Int = 8)
+    extends Module
+    with RequireAsyncReset {
+  val io = IO(
+    new DataResponsersIO(tcdmDataWidth = tcdmDataWidth, numChannel = numChannel)
+  )
   // Instantiation and connection
   val DataResponser = for (i <- 0 until numChannel) yield {
     val module = Module(new DataResponser(tcdmDataWidth = tcdmDataWidth))
@@ -54,5 +63,7 @@ class DataResponsers(tcdmDataWidth: Int = 64, numChannel: Int = 8) extends Modul
 }
 
 object dataResponsersPrinter extends App {
-  println(getVerilogString(new DataResponsers(tcdmDataWidth = 64, numChannel = 8)))
+  println(
+    getVerilogString(new DataResponsers(tcdmDataWidth = 64, numChannel = 8))
+  )
 }

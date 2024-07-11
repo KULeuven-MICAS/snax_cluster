@@ -24,7 +24,9 @@ class Reader(param: ReaderWriterParam) extends Module with RequireAsyncReset {
       param.tcdm_param.numChannel,
       Flipped(Valid(new TcdmRsp(tcdmDataWidth = param.tcdm_param.dataWidth)))
     )
-    val data = Decoupled(UInt((param.tcdm_param.dataWidth * param.tcdm_param.numChannel).W))
+    val data = Decoupled(
+      UInt((param.tcdm_param.dataWidth * param.tcdm_param.numChannel).W)
+    )
     // The signal trigger the start of Address Generator. The non-empty of address generator will cause data requestor to read the data
     val start = Input(Bool())
     // The module is busy if addressgen is busy or fifo in addressgen is not empty

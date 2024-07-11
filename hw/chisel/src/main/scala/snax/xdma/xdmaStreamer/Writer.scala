@@ -13,9 +13,18 @@ class Writer(param: ReaderWriterParam) extends Module with RequireAsyncReset {
     val cfg = Input(new AddressGenUnitCfgIO(param.agu_param))
     val tcdm_req = Vec(
       param.tcdm_param.numChannel,
-      Decoupled(new TcdmReq(addrWidth = param.tcdm_param.addrWidth, tcdmDataWidth = param.tcdm_param.dataWidth))
+      Decoupled(
+        new TcdmReq(
+          addrWidth = param.tcdm_param.addrWidth,
+          tcdmDataWidth = param.tcdm_param.dataWidth
+        )
+      )
     )
-    val data = Flipped(Decoupled(UInt((param.tcdm_param.dataWidth * param.tcdm_param.numChannel).W)))
+    val data = Flipped(
+      Decoupled(
+        UInt((param.tcdm_param.dataWidth * param.tcdm_param.numChannel).W)
+      )
+    )
     // The signal trigger the start of Address Generator. The non-empty of address generator will cause data requestor to read the data
     val start = Input(Bool())
     // The module is busy if addressgen is busy or fifo in addressgen is not empty
@@ -62,5 +71,8 @@ object WriterPrinter extends App {
 }
 
 object WriterEmitter extends App {
-  emitVerilog(new Writer(new ReaderWriterParam), Array("--target-dir", "generated"))
+  emitVerilog(
+    new Writer(new ReaderWriterParam),
+    Array("--target-dir", "generated")
+  )
 }

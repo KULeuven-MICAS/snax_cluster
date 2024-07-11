@@ -5,7 +5,9 @@ import chisel3.util._
 
 import snax.xdma.designParams._
 
-class basicCounter(width: Int, hasCeil: Boolean = true) extends Module with RequireAsyncReset {
+class basicCounter(width: Int, hasCeil: Boolean = true)
+    extends Module
+    with RequireAsyncReset {
   val io = IO(new Bundle {
     val tick = Input(Bool())
     val reset = Input(Bool())
@@ -19,7 +21,11 @@ class basicCounter(width: Int, hasCeil: Boolean = true) extends Module with Requ
   val value = RegNext(nextValue, 0.U)
   nextValue := {
     if (hasCeil) {
-      Mux(io.reset, 0.U, Mux(io.tick, Mux(value < io.ceil - 1.U, value + 1.U, 0.U), value))
+      Mux(
+        io.reset,
+        0.U,
+        Mux(io.tick, Mux(value < io.ceil - 1.U, value + 1.U, 0.U), value)
+      )
     } else {
       Mux(io.reset, 0.U, Mux(io.tick, value + 1.U, value))
     }
@@ -33,16 +39,19 @@ class basicCounter(width: Int, hasCeil: Boolean = true) extends Module with Requ
 }
 
 /** AGU is the module to automatically generate the address for all ports.
-  * @input cfg
-  *  The description of the Address Generation Task. It is normally configured by CSR manager
-  * @input start
-  * The signal to start a address generation task
-  * @output busy
-  * The signal to indicate whether all address generation is finished. Only when busy == 0 the next address generation task can be launched
-  * @output addresses
-  * The Vec[Decoupled[UInt]] signal to give tcdm_requestors the address
+  * @input
+  *   cfg The description of the Address Generation Task. It is normally
+  *   configured by CSR manager
+  * @input
+  *   start The signal to start a address generation task
+  * @output
+  *   busy The signal to indicate whether all address generation is finished.
+  *   Only when busy == 0 the next address generation task can be launched
+  * @output
+  *   addresses The Vec[Decoupled[UInt]] signal to give tcdm_requestors the
+  *   address
   * @param AddressGenUnitParam
-  *  The parameter used for generation of the module
+  *   The parameter used for generation of the module
   */
 
 class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
@@ -51,7 +60,9 @@ class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
   val Bounds = Vec(param.dimension, UInt(16.W))
 }
 
-class AddressGenUnit(param: AddressGenUnitParam) extends Module with RequireAsyncReset {
+class AddressGenUnit(param: AddressGenUnitParam)
+    extends Module
+    with RequireAsyncReset {
   val io = IO(new Bundle {
     val cfg = Input(new AddressGenUnitCfgIO(param))
     // Intake the new cfg file and reset all the counters
@@ -61,7 +72,8 @@ class AddressGenUnit(param: AddressGenUnitParam) extends Module with RequireAsyn
     // If all signal in address buffer is consumed, bufferEmpty becomes high (Dont know if it is useful)
     val bufferEmpty = Output(Bool())
     // The calculated address. This equals to # of output channels (64-bit narrow TCDM)
-    val addr = Vec(param.spatialUnrollingFactor, Decoupled(UInt(param.addressWidth.W)))
+    val addr =
+      Vec(param.spatialUnrollingFactor, Decoupled(UInt(param.addressWidth.W)))
   })
 
   // Create a counter to count from 0 to product(bounds)
@@ -96,7 +108,9 @@ class AddressGenUnit(param: AddressGenUnitParam) extends Module with RequireAsyn
 
   // Connect the ceil from config to inside
   // The innermost part needs spatial unrolling, but other pats does not needed
-  counter.io.ceil := io.cfg.Bounds.reduceTree(_ * _) / param.spatialUnrollingFactor.U
+  counter.io.ceil := io.cfg.Bounds.reduceTree(
+    _ * _
+  ) / param.spatialUnrollingFactor.U
 
   // The counter's tick is the enable signal
   counter.io.tick := currentState === sBUSY && outputBuffer.io.in.head.fire // FIFO still have the space to take the new address
