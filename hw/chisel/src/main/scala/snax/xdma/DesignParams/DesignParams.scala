@@ -88,9 +88,7 @@ class ReaderWriterParam(
 // DMA Params
 class DMADataPathParam(
     val rwParam: ReaderWriterParam,
-    // val writerparam: ReaderWriterParam,
     val extParam: Seq[HasDMAExtension] = Seq[HasDMAExtension]()
-    // val writerext: Seq[DMAExtension] = Seq[DMAExtension]()
 )
 
 class DMAExtensionParam(

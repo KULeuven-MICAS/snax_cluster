@@ -6,10 +6,10 @@ import chisel3.reflect.DataMirror
 import chisel3.internal.throwException
 import chisel3.internal.throwException
 
-/** The definition of <|> connector for decoupled signal It automatically
-  * determine the signal direction, connect leftward Decoupled signal and
-  * rightward Decoupled signal \ and insert one level of pipeline in between to
-  * avoid long combinatorial datapath
+/** The definition of -|> / -||> / -|||> connector for decoupled signal it
+  * connects leftward Decoupled signal (Decoupled port) and rightward Decoupled
+  * signal (Flipped port); and insert one level of pipeline in between to avoid
+  * long combinatorial datapath
   */
 object DecoupledCut {
   implicit class BufferedDecoupledConnectionOp[T <: Data](

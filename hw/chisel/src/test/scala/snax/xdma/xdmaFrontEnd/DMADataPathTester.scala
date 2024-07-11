@@ -46,7 +46,6 @@ class DMADataPathTester extends AnyFreeSpec with ChiselScalatestTester {
       // We first test only to read 8 rows of data
       // Each row we have 256B
       for (i <- 0 until (8 * 256) / 8) {
-        // tcdm_mem(8*i) = Math.abs(Random.nextLong())
         tcdm_mem(8 * i) = i * 1L
       }
       // Queues to temporarily store the address at request side, which will be consumed by responser
@@ -229,11 +228,8 @@ class DMADataPathTester extends AnyFreeSpec with ChiselScalatestTester {
                   dut.clock.step(random_delay)
                   dut.io.tcdm_writer.req(i).ready.poke(true)
                 } else dut.io.tcdm_writer.req(i).ready.poke(true)
-                //   dut.io.tcdm_writer.req(i).ready.poke(true)
+
                 val writer_expected_data = (writer_req_addr - 2048) / 8
-                //   println(
-                //     f"[Writer Req] Writes to TCDM with Addr: $writer_req_addr%d and Data = 0x${writer_req_data}%016x"
-                //   )
                 println(
                   f"[Writer Req] Writes to TCDM with Addr: $writer_req_addr and Data = ${writer_req_data} (Expected Data = $writer_expected_data)"
                 )
@@ -268,16 +264,6 @@ class DMADataPathTester extends AnyFreeSpec with ChiselScalatestTester {
       }
 
       concurrent_threads.joinAndStep()
-      // Verify the system
-
-      // // Determine the midpoint of the tcdm
-      // val midPoint = tcdm_mem.size / 2
-      // // Split the tcdm into two halves
-      // val firstHalf = collection.mutable.Map() ++ tcdm_mem.take(midPoint)
-      // val secondHalf = collection.mutable.Map() ++ tcdm_mem.drop(midPoint)
-      // // Compare the two halves
-      // val areEqual = firstHalf == secondHalf
-      // println(s"Are the two halves equal? $areEqual")
   }
 }
 

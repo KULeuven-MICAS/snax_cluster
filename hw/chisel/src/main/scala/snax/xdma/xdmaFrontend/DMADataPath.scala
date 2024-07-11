@@ -208,7 +208,6 @@ class DMADataPath(readerparam: DMADataPathParam, writerparam: DMADataPathParam)
     i_reader_extentionList.foreach { i => i.io.start_i := io.reader_start_i }
 
     // Connect Data
-    // The new <|> operator to implement a Decoupled Signal Cut in between the connection <> had been implemented, but haven't go through the detailed test. Shall we provide this function to the user?
     i_reader.io.data <> i_reader_extentionList.head.io.data_i
     i_reader_extentionList.last.io.data_o <> reader_data_after_extension
     if (i_reader_extentionList.length > 1)
@@ -307,7 +306,7 @@ class DMADataPath(readerparam: DMADataPathParam, writerparam: DMADataPathParam)
   writerMux.io.sel := io.writer_cfg_i.loopBack
   reader_data_after_extension <> readerDemux.io.in
   writerMux.io.out <> writer_data_before_extension
-  // Why there is a problem?
+
   readerDemux.io.out(1) <> writerMux.io.in(1)
   readerDemux.io.out(0) <> io.remoteDMADataPath.toRemote
   writerMux.io.in(0) <> io.remoteDMADataPath.fromRemote
@@ -315,7 +314,7 @@ class DMADataPath(readerparam: DMADataPathParam, writerparam: DMADataPathParam)
 
 // Below is the class to determine if chisel generate Verilog correctly
 
-object DMADataPath_SystemVerilogEmitter extends App {
+object DMADataPathEmitter extends App {
   println(
     getVerilogString(
       new DMADataPath(
@@ -326,31 +325,6 @@ object DMADataPath_SystemVerilogEmitter extends App {
         writerparam = new DMADataPathParam(
           rwParam = new ReaderWriterParam,
           extParam = Seq()
-        )
-      )
-    )
-  )
-}
-
-class Serializer_Deserializer_Tester(param: DMADataPathParam) extends Module {
-  val io = IO(new Bundle {
-    val in = Input(new DMADataPathCfgIO(param))
-    val out_serialized = Output(UInt(512.W))
-    val out = Output(new DMADataPathCfgIO(param))
-  })
-
-  io.out_serialized := io.in.serialize()
-  val out = Wire(new DMADataPathCfgIO(param))
-  out.deserialize(io.out_serialized)
-  io.out := out
-}
-
-object Serializer_Deserializer_Tester_SystemVerilogEmitter extends App {
-  println(
-    getVerilogString(
-      new Serializer_Deserializer_Tester(
-        new DMADataPathParam(
-          rwParam = new ReaderWriterParam
         )
       )
     )
