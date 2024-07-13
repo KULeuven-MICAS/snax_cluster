@@ -65,6 +65,8 @@ int main() {
                 // Using DMA only
                 cur_A = A + m * K2 * M * K * meshRow * tileSize + k * M * K * meshRow * tileSize;
                 cur_B = B + n * K2 * N * K * tileSize * meshCol + k * N * K * tileSize * meshCol;
+                // attention! Continius data movement!
+                // the strides must be set correctly!
                 if (snrt_is_dm_core()) {
                     snrt_dma_start_1d(
                         local_a, cur_A,
@@ -81,6 +83,8 @@ int main() {
                     if (snrt_is_dm_core()) {
                         // load_C(Batch, M, N, local_c, C, strideInnermostC,
                         // ldC, strideC);
+                        // attention! Continius data movement!
+                        // the strides must be set correctly!
                         snrt_dma_start_1d(
                             local_d, cur_C,
                             M * N * meshRow * meshCol * sizeof(int32_t));
