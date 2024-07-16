@@ -249,7 +249,6 @@ def main():
                     file_name=file_name,
                 )
 
-            
             rtl_target_path = args.gen_path + acc_cfgs[i]["snax_acc_name"] + "/"
 
             # This is for RTL wrapper and chisel generation
