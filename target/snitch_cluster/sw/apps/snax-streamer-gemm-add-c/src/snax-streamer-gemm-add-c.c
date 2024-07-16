@@ -16,24 +16,6 @@ void load_C(uint8_t Batch, uint8_t M, uint8_t N, int32_t* local_c, int32_t* C,
     int32_t* addr_C;
     int32_t* addr_c;
 
-    // for (int b = 0; b < Batch; b++) {
-    //     for (int m = 0; m < M; m++) {
-    //         for (int n = 0; n < N; n++) {
-    //             // generate the start address of sub-matrix of A in TCDM
-    //             // according to the strides definition
-    //             addr_c =
-    //                 local_c + (b * strideC + m * ldC + n * strideInnermostC)
-    //                 /
-    //                               sizeof(int32_t);
-    //             // element index of A
-    //             addr_C =
-    //                 C + (b * M * meshRow * meshCol * N +
-    //                      m * meshRow * meshCol * N + n * meshRow * meshCol);
-    //             snrt_dma_start_1d(addr_c, addr_C,
-    //                               meshRow * meshCol * sizeof(int32_t));
-    //         }
-    //     }
-    // }
     snrt_dma_start_1d(local_c, C, M * N * meshRow * meshCol * sizeof(int32_t));
 }
 
@@ -57,14 +39,15 @@ int main() {
     cur_B = B;
     cur_C = C;
 
-
     for (int m = 0; m < M2; m++) {
         for (int n = 0; n < N2; n++) {
             for (int k = 0; k < K2; k++) {
                 // Transfer data from L3 to L1
                 // Using DMA only
-                cur_A = A + m * K2 * M * K * meshRow * tileSize + k * M * K * meshRow * tileSize;
-                cur_B = B + n * K2 * N * K * tileSize * meshCol + k * N * K * tileSize * meshCol;
+                cur_A = A + m * K2 * M * K * meshRow * tileSize +
+                        k * M * K * meshRow * tileSize;
+                cur_B = B + n * K2 * N * K * tileSize * meshCol +
+                        k * N * K * tileSize * meshCol;
                 // attention! Continius data movement!
                 // the strides must be set correctly!
                 if (snrt_is_dm_core()) {
@@ -81,8 +64,6 @@ int main() {
 
                 if (k == 0) {
                     if (snrt_is_dm_core()) {
-                        // load_C(Batch, M, N, local_c, C, strideInnermostC,
-                        // ldC, strideC);
                         // attention! Continius data movement!
                         // the strides must be set correctly!
                         snrt_dma_start_1d(
@@ -93,7 +74,7 @@ int main() {
                     // Wait for DMA to finish
                     snrt_cluster_hw_barrier();
                 }
-                
+
                 snrt_cluster_hw_barrier();
 
                 if (snrt_global_core_idx() == 0) {
@@ -117,17 +98,6 @@ int main() {
 
                     // Poll until Streamer and GEMM accelerator finish
                     wait_streamer_gemm();
-
-                    if (snrt_global_core_idx() == 0) {
-                        for (int i = 0; i < M * N * meshRow * meshCol; i++) {
-                            if (local_d[i] != D_golden[i + m * N2 * M * N * meshRow * meshCol + n * M * N * meshRow * meshCol]) {
-                                printf("Error: local_d[%d] = %d, D_golden[%d] = %d\n", i,
-                                    local_d[i], i, D_golden[i]);
-                                err++;
-                            }
-                        }
-                        printf("GEMM on A * B + C finished. error: %d\n", err);
-                    }
                 };
             }
 
@@ -135,9 +105,9 @@ int main() {
 
             if (snrt_global_core_idx() == 0) {
                 for (int i = 0; i < M * N * meshRow * meshCol; i++) {
-                    if (local_d[i] != D_golden[i + m * N2 * M * N * meshRow * meshCol + n * M * N * meshRow * meshCol]) {
-                        // printf("Error: local_d[%d] = %d, D_golden[%d] = %d\n", i,
-                        //     local_d[i], i, D_golden[i]);
+                    if (local_d[i] !=
+                        D_golden[i + m * N2 * M * N * meshRow * meshCol +
+                                 n * M * N * meshRow * meshCol]) {
                         err++;
                     }
                 }

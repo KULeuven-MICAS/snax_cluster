@@ -180,7 +180,7 @@ jobs:
           ./run.py --simulator verilator \
           sw/runtime.yaml \
           sw/snax-streamer-gemm-add-c-run.yaml -j
-          
+
   snax-streamer-gemm-conv-cluster-vlt-generic:
     name: Simulate SW on SNAX GEMM for Conv2d w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04

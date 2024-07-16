@@ -12,123 +12,15 @@ import pathlib
 import hjson
 import sys
 import os
+
 # Add data utility path
-sys.path.append(
-    os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/")
-)
-from data_utils import (format_scalar_definition, format_vector_definition)  # noqa E402
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
+from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
+
+# Add golden model path
+from snax_utils import tiled_block_gemm_golden_model  # noqa E402
 
 np.random.seed(42)
-
-
-# Golden model in python
-def block_gemm_golden_model(m, k, n, row, size, col, a, b,
-                            subtraction_a, subtraction_b, c):
-    d = np.zeros(m * row * n * col, dtype=(np.int32))
-    for mm in range(m):
-        for nn in range(n):
-            for kk in range(k):
-                for rr in range(row):
-                    for cc in range(col):
-                        for ss in range(size):
-                            c_index = (
-                                mm * n * row * col
-                                + nn * row * col
-                                + rr * col
-                                + cc
-                            )
-                            a_index = (
-                                mm * k * row * size
-                                + kk * row * size
-                                + rr * size
-                                + ss
-                            )
-                            b_index = (
-                                nn * k * size * col
-                                + kk * size * col
-                                + cc * size
-                                + ss
-                            )
-                            d[c_index] = d[c_index] + \
-                                (a[a_index] - subtraction_a) * \
-                                (b[b_index] - subtraction_b)
-    d = np.add(c, d)
-    return d
-
-
-def tiled_block_gemm_golden_model(m2, k2, n2, m, k, n, row, size, col, a, b, subtraction_a, subtraction_b, c):
-    # Create an empty array for the result with the appropriate size
-    result = np.zeros((m2 * m * row * n2 * n * col), dtype=np.int32)
-
-    # Loop over the tiles
-    for mm2 in range(m2):
-        for nn2 in range(n2):
-            for kk2 in range(k2):
-                # Create submatrices for this tile
-                sub_a = a[(mm2 * k2 + kk2) * m * k * row * size : (mm2 * k2 + kk2 + 1) * m * k * row * size]
-                sub_b = b[(nn2 * k2 + kk2) * n * k * size * col : (nn2 * k2 + kk2 + 1) * n * k * size * col]
-                sub_c = c[(mm2 * n2 + nn2) * m * row * n * col : (mm2 * n2 + nn2 + 1) * m * row * n * col]
-                
-                # Perform block GEMM on the submatrices
-                sub_d = block_gemm_golden_model(m, k, n, row, size, col, sub_a, sub_b, subtraction_a, subtraction_b, sub_c)
-                
-                # Store the result in the appropriate part of the result matrix
-                # for mm in range(m):
-                #     for nn in range(n):
-                #         for rr in range(row):
-                #             for cc in range(col):
-                #                 result_index = (
-                #                     (mm2 * m + mm) * row * n2 * n * col
-                #                     + (nn2 * n + nn) * row * col
-                #                     + rr * col
-                #                     + cc
-                #                 )
-                #                 sub_d_index = (
-                #                     mm * n * row * col
-                #                     + nn * row * col
-                #                     + rr * col
-                #                     + cc
-                #                 )
-                # result_index = (mm2 * n2 + nn2) * m * row * n * col : (mm2 * n2 + nn2 + 1) * m * row * n * col
-                result[(mm2 * n2 + nn2) * m * row * n * col : (mm2 * n2 + nn2 + 1) * m * row * n * col] += sub_d
-
-    return result
-
-
-# Golden model for postprocessing in python
-def postprocessing_simd_golden_model(
-        data_in,
-        input_zp_i,
-        output_zp_i,
-        shift_i,
-        max_int_i,
-        min_int_i,
-        double_round_i,
-        multiplier_i):
-
-    # Step 1: Subtract input zero point
-    var = data_in - input_zp_i
-
-    # Step 2: Multiply with the multiplier avoiding overflow
-    var = np.int64(var) * np.int64(multiplier_i)
-
-    # Step 3: Right shift
-    var = np.int32(var >> (shift_i - 1))
-
-    # Step 4: Apply double rounding if necessary
-    if double_round_i:
-        var = np.where(var >= 0, var + 1, var - 1)
-
-    # Step 5: Final right shift
-    var = var >> 1
-
-    # Step 6: Add output zero point
-    var = var + output_zp_i
-
-    # Step 7: Clip the values to be within min and max integer range
-    var = np.clip(var, min_int_i, max_int_i)
-
-    return var
 
 
 # Add stdint.h header
@@ -172,9 +64,7 @@ def emit_gemm_data(**kwargs):
         )
     ]
     data_str += [
-        format_scalar_definition(
-            "int32_t", "strideHalfC", kwargs["strideHalfC"]
-        )
+        format_scalar_definition("int32_t", "strideHalfC", kwargs["strideHalfC"])
     ]
 
     data_str += [format_scalar_definition("int32_t", "ldA", kwargs["ldA"])]
@@ -185,35 +75,21 @@ def emit_gemm_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "spatialB", kwargs["spatialB"])]
     data_str += [format_scalar_definition("int32_t", "spatialC", kwargs["spatialC"])]
 
-    data_str += [
-        format_scalar_definition("int32_t", "strideA", kwargs["strideA"])
-    ]
-    data_str += [
-        format_scalar_definition("int32_t", "strideB", kwargs["strideB"])
-    ]
-    data_str += [
-        format_scalar_definition("int32_t", "strideC", kwargs["strideC"])
-    ]
+    data_str += [format_scalar_definition("int32_t", "strideA", kwargs["strideA"])]
+    data_str += [format_scalar_definition("int32_t", "strideB", kwargs["strideB"])]
+    data_str += [format_scalar_definition("int32_t", "strideC", kwargs["strideC"])]
 
     data_str += [
-        format_scalar_definition(
-            "int32_t", "delta_local_a", kwargs["delta_local_a"]
-        )
+        format_scalar_definition("int32_t", "delta_local_a", kwargs["delta_local_a"])
     ]
     data_str += [
-        format_scalar_definition(
-            "int32_t", "delta_local_b", kwargs["delta_local_b"]
-        )
+        format_scalar_definition("int32_t", "delta_local_b", kwargs["delta_local_b"])
     ]
     data_str += [
-        format_scalar_definition(
-            "int32_t", "delta_local_c", kwargs["delta_local_c"]
-        )
+        format_scalar_definition("int32_t", "delta_local_c", kwargs["delta_local_c"])
     ]
     data_str += [
-        format_scalar_definition(
-            "int32_t", "delta_local_d", kwargs["delta_local_d"]
-        )
+        format_scalar_definition("int32_t", "delta_local_d", kwargs["delta_local_d"])
     ]
 
     # Generating random 8 integer a and b for subtraction
@@ -221,26 +97,33 @@ def emit_gemm_data(**kwargs):
     subtraction_b = np.random.randint(MIN, MAX)
 
     # Writing the subtraction value to data.h
-    data_str += [
-        format_scalar_definition(
-            "int8_t", "subtraction_a", subtraction_a
-        )
-    ]
-    data_str += [
-        format_scalar_definition(
-            "int8_t", "subtraction_b", subtraction_b
-        )
-    ]
+    data_str += [format_scalar_definition("int8_t", "subtraction_a", subtraction_a)]
+    data_str += [format_scalar_definition("int8_t", "subtraction_b", subtraction_b)]
 
     # Generate random input matrices
     length_a = (
-        kwargs['M2'] * kwargs['K2'] * kwargs["M"] * kwargs["K"] * kwargs["meshRow"] * kwargs["tileSize"]
+        kwargs["M2"]
+        * kwargs["K2"]
+        * kwargs["M"]
+        * kwargs["K"]
+        * kwargs["meshRow"]
+        * kwargs["tileSize"]
     )
     length_b = (
-        kwargs['N2'] * kwargs['K2'] * kwargs["N"] * kwargs["K"] * kwargs["meshCol"] * kwargs["tileSize"]
+        kwargs["N2"]
+        * kwargs["K2"]
+        * kwargs["N"]
+        * kwargs["K"]
+        * kwargs["meshCol"]
+        * kwargs["tileSize"]
     )
     length_c = (
-        kwargs['M2'] * kwargs['N2'] * kwargs["M"] * kwargs["N"] * kwargs["meshRow"] * kwargs["meshCol"]
+        kwargs["M2"]
+        * kwargs["N2"]
+        * kwargs["M"]
+        * kwargs["N"]
+        * kwargs["meshRow"]
+        * kwargs["meshCol"]
     )
 
     a = np.random.randint(MIN, MAX, length_a)
@@ -251,9 +134,9 @@ def emit_gemm_data(**kwargs):
 
     # Generating golden data
     d_golden = tiled_block_gemm_golden_model(
-        kwargs['M2'],
-        kwargs['K2'],
-        kwargs['N2'],
+        kwargs["M2"],
+        kwargs["K2"],
+        kwargs["N2"],
         kwargs["M"],
         kwargs["K"],
         kwargs["N"],
@@ -264,58 +147,9 @@ def emit_gemm_data(**kwargs):
         b,
         subtraction_a,
         subtraction_b,
-        c
+        c,
     )
 
-    # -----------------------------------------------------------
-    # Postprocessing
-    # -----------------------------------------------------------
-
-    # Generating random constant values
-    input_zp_i = np.random.randint(MIN, MAX)
-    output_zp_i = np.random.randint(MIN, MAX)
-    shift_i = np.random.randint(0, 63)  # values between 0-63
-    max_int_i = MAX
-    min_int_i = MIN
-    double_round_i = np.random.randint(0, 1)
-    multiplier_i = np.random.randint(-2**31, 2**31 - 1)
-
-    # Writing the constant values to data.h
-    data_str += [
-        format_scalar_definition(
-            "int8_t", "input_zp_i", input_zp_i
-        ),
-        format_scalar_definition(
-            "int8_t", "output_zp_i", output_zp_i
-        ),
-        format_scalar_definition(
-            "int8_t", "shift_i", shift_i
-        ),
-        format_scalar_definition(
-            "int8_t", "max_int_i", max_int_i
-        ),
-        format_scalar_definition(
-            "int8_t", "min_int_i", min_int_i
-        ),
-        format_scalar_definition(
-            "int8_t", "double_round_i", double_round_i
-        ),
-        format_scalar_definition(
-            "int32_t", "multiplier_i", multiplier_i
-        )
-    ]
-
-    # d_golden = postprocessing_simd_golden_model(
-    #     d_golden,
-    #     input_zp_i,
-    #     output_zp_i,
-    #     shift_i,
-    #     max_int_i,
-    #     min_int_i,
-    #     double_round_i,
-    #     multiplier_i,
-    # )
-    
     d_init = np.zeros(d_golden.shape, np.int32)
 
     # Writing testing data and golden data into data.h
