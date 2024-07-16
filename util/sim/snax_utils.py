@@ -183,6 +183,27 @@ def block_gemm_golden_model(
     return d
 
 
+# This function Performs a tiled block General Matrix Multiply (GEMM) operation.
+#
+# This function breaks down large matrix multiplication into smaller submatrices
+# (tiles) and performs GEMM on these submatrices. The results are then accumulated
+# into a final result matrix.
+#
+# Parameters:
+# m2, k2, n2: int
+#     The number of tiles in each dimension.
+# m, k, n: int
+#     The dimensions of the submatrices for block matrix multiplication.
+# row, size, col: int
+#     Size parameters for the submatrices in the hardware gemm accelerator.
+# a, b, c: numpy.ndarray
+#     The input matrices.
+# subtraction_a, subtraction_b: bool
+#     Flags indicating whether to perform subtraction in the GEMM computation.
+#
+# Returns:
+# numpy.ndarray
+#     The result of the tiled GEMM operation as a flattened array.
 def tiled_block_gemm_golden_model(
     m2, k2, n2, m, k, n, row, size, col, a, b, subtraction_a, subtraction_b, c
 ):
@@ -242,6 +263,7 @@ def tiled_block_gemm_golden_model(
                     subtraction_b,
                     sub_c,
                 )
+                # Accumulate the result into the final result matrix at the correct position
                 result[
                     (mm2 * n2 + nn2)
                     * m

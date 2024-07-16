@@ -74,32 +74,31 @@ void set_streamer_start() { write_csr(987, 1); }
 void set_block_gemm_csr(int tempLoop0, int tempLoop1, int tempLoop2,
                         int subtractions) {
     // set loop bounds, from innermost to outermost, aka from K to N to M
-    write_csr(983 + 6, tempLoop0);
-    write_csr(984 + 6, tempLoop1);
-    write_csr(985 + 6, tempLoop2);
+    write_csr(989, tempLoop0);
+    write_csr(990, tempLoop1);
+    write_csr(991, tempLoop2);
 
     // set subtraction a and b
-    write_csr(986 + 6, subtractions);
+    write_csr(992, subtractions);
 }
 
 // Set CSR to start GEMM
-void set_block_gemm_start() { write_csr(987 + 6, 1); }
+void set_block_gemm_start() { write_csr(993, 1); }
 
 // Poll until Streamer and GEMM accelerator finish
 void wait_streamer_gemm() {
-    write_csr(987 + 6, 0);
-    write_csr(987 + 6, 0);
-    write_csr(981 + 6, 0);
+    write_csr(993, 0);
+    write_csr(987, 0);
 }
 
 // Read performance counter of the Streamer, a read-only CSR
 uint32_t read_gemm_streamer_perf_counter() {
-    uint32_t perf_counter = read_csr(982 + 6);
+    uint32_t perf_counter = read_csr(988);
     return perf_counter;
 }
 
 // Read performance counter of GEMM, a read-only CSR
 uint32_t read_gemm_perf_counter() {
-    uint32_t perf_counter = read_csr(989 + 6);
+    uint32_t perf_counter = read_csr(995);
     return perf_counter;
 }
