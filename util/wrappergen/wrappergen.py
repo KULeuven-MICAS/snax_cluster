@@ -56,7 +56,8 @@ def gen_file(cfg, tpl, target_path: str, file_name: str) -> None:
 def gen_chisel_file(chisel_path, chisel_param, gen_path):
     cmd = f" cd {chisel_path} && \
         mill Snax.runMain {chisel_param} {gen_path}"
-    os.system(cmd)
+    if os.system(cmd) != 0:
+        raise ChildProcessError('Chisel generation error. ')
 
     return
 
@@ -300,6 +301,41 @@ def main():
         print("Generation of accelerator specific wrapeprs done!")
     else:
         print("Skipping accelerator generation!")
+
+    # Generate xdma for the whole cluster
+    snax_xdma_cfg = None
+    for i in range(num_cores):
+        if "snax_xdma_cfg" in cfg_cores[i]:
+            snax_xdma_cfg = cfg_cores[i]["snax_xdma_cfg"]
+    if (snax_xdma_cfg is not None):
+        tpl_rtl_wrapper_file = args.tpl_path + "snax_xdma_wrapper.sv.tpl"
+        
+        tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
+
+        gen_file(
+            cfg=cfg["cluster"],
+            tpl=tpl_rtl_wrapper,
+            target_path=args.gen_path,
+            file_name=cfg["cluster"]["name"] + "_xdma_wrapper.sv",
+        )
+
+        print(args.gen_path)
+        gen_chisel_file(
+            chisel_path=args.chisel_path, 
+            chisel_param="snax.xdma.xdmaTop.xdmaTopGen", 
+            gen_path= " --tcdmDataWidth " + str(cfg["cluster"]["data_width"]) + 
+                      " --axiDataWidth " + str(cfg["cluster"]["dma_data_width"]) + 
+                      " --addressWidth " + str(cfg["cluster"]["addr_width"]) + 
+                      " --tcdmSize " + str(cfg["cluster"]["tcdm"]["size"]) + 
+                      " --readerDimension " + str(snax_xdma_cfg["reader_agu_dimension"]) + 
+                      " --writerDimension " + str(snax_xdma_cfg["writer_agu_dimension"]) + 
+                      " --readerBufferDepth " + str(snax_xdma_cfg["reader_buffer"]) + 
+                      " --writerBufferDepth " + str(snax_xdma_cfg["writer_buffer"]) + 
+                      (" --HasMemset " if snax_xdma_cfg["has_memset"] else "") + 
+                      (" --HasMaxPool " if snax_xdma_cfg["has_maxpool"] else "") + 
+                      (" --HasTransposer " if snax_xdma_cfg["has_transposer"] else "") + 
+                      " --target-dir " + args.gen_path
+        )
 
     # Generation of testharness
     test_target_path = args.test_path

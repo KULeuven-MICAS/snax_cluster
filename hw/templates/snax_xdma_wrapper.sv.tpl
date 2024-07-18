@@ -5,7 +5,7 @@
 <%
   num_tcdm_ports = 0
 
-  num_tcdm_ports = cfg["cluster"]["dma_data_width"] / cfg["tcdm_data_width"] * 2
+  num_tcdm_ports = round(cfg["dma_data_width"] / cfg["data_width"] * 2)
   ## Half of them are used for the reader, and half of them are used for writer
 
 %>
@@ -17,9 +17,9 @@ module ${cfg["name"]}_xdma_wrapper #(
   parameter type         tcdm_req_t    = logic,
   parameter type         tcdm_rsp_t    = logic,
   // Parameters related to TCDM
-  parameter int unsigned TCDMDataWidth = ${cfg["tcdm_data_width"]},
+  parameter int unsigned TCDMDataWidth = ${cfg["data_width"]},
   parameter int unsigned TCDMNumPorts  = ${num_tcdm_ports},
-  parameter int unsigned TCDMAddrWidth = ${cfg["tcdm_addr_width"]}
+  parameter int unsigned TCDMAddrWidth = ${cfg["addr_width"]}
 )(
   //-----------------------------
   // Clocks and reset
@@ -97,11 +97,10 @@ module ${cfg["name"]}_xdma_wrapper #(
       tcdm_rsp_data   [i] = tcdm_rsp_i[i].p.data ;
     end
   end
-  
 
   // Streamer module that is generated
   // with template mechanics
-  ${cfg["name"]}_xdmaTop i_${cfg["name"]}_xdma_top (	
+  ${cfg["name"]}_xdmaTop i_${cfg["name"]}_xdma_top (
     //-----------------------------
     // Clocks and reset
     //-----------------------------
@@ -112,32 +111,32 @@ module ${cfg["name"]}_xdma_wrapper #(
     // TCDM Ports
     //-----------------------------
     // Reader's Request
-% for idx in range(0, num_tcdm_ports / 2):
     // Ready signal is very strange... ETH defines ready at rsp side, but we think it should at request-side (imagine system with outstanding request support)
+
+% for idx in range(0, num_tcdm_ports >> 1):
     .io_tcdm_reader_req_${idx}_ready      ( tcdm_rsp_q_ready[${idx}] ),
     .io_tcdm_reader_req_${idx}_valid      ( tcdm_req_p_valid[${idx}] ),
     .io_tcdm_reader_req_${idx}_bits_addr  ( tcdm_req_addr   [${idx}] ),
-    .io_tcdm_reader_req_${idx}_bits_write ( tcdm_req_write  [${idx}] ), 
-    .io_tcdm_reader_req_${idx}_bits_data  ( tcdm_req_data   [${idx}] ), 
+    .io_tcdm_reader_req_${idx}_bits_write ( tcdm_req_write  [${idx}] ),
+    .io_tcdm_reader_req_${idx}_bits_data  ( tcdm_req_data   [${idx}] ),
 % endfor
     // Writer's Request
-% for idx in range(0, num_tcdm_ports / 2):
-    // Ready signal is very strange... ETH defines ready at rsp side, but we think it should at request-side (imagine system with outstanding request support)
-    .io_tcdm_writer_req_${idx}_ready      ( tcdm_rsp_q_ready[${idx + num_tcdm_ports / 2}] ),
-    .io_tcdm_writer_req_${idx}_valid      ( tcdm_req_p_valid[${idx + num_tcdm_ports / 2}] ),
-    .io_tcdm_writer_req_${idx}_bits_addr  ( tcdm_req_addr   [${idx + num_tcdm_ports / 2}] ),
-    .io_tcdm_writer_req_${idx}_bits_write ( tcdm_req_write  [${idx + num_tcdm_ports / 2}] ), 
-    .io_tcdm_writer_req_${idx}_bits_data  ( tcdm_req_data   [${idx + num_tcdm_ports / 2}] ), 
+% for idx in range(0, num_tcdm_ports >> 1):
+    .io_tcdm_writer_req_${idx}_ready      ( tcdm_rsp_q_ready[${idx + (num_tcdm_ports >> 1)}] ),
+    .io_tcdm_writer_req_${idx}_valid      ( tcdm_req_p_valid[${idx + (num_tcdm_ports >> 1)}] ),
+    .io_tcdm_writer_req_${idx}_bits_addr  ( tcdm_req_addr   [${idx + (num_tcdm_ports >> 1)}] ),
+    .io_tcdm_writer_req_${idx}_bits_write ( tcdm_req_write  [${idx + (num_tcdm_ports >> 1)}] ),
+    .io_tcdm_writer_req_${idx}_bits_data  ( tcdm_req_data   [${idx + (num_tcdm_ports >> 1)}] ),
 % endfor
     // Reader's Respose
-% for idx in range(num_tcdm_ports / 2):
+% for idx in range(num_tcdm_ports >> 1):
     .io_tcdm_reader_rsp_${idx}_valid    ( tcdm_rsp_p_valid[${idx}] ),
     .io_tcdm_reader_rsp_${idx}_bits_data( tcdm_rsp_data   [${idx}] ),
 % endfor
     // Writer's Respose
-% for idx in range(num_tcdm_ports / 2):
-    .io_tcdm_writer_rsp_${idx}_valid    ( tcdm_rsp_p_valid[${idx}] ),
-    .io_tcdm_writer_rsp_${idx}_bits_data( tcdm_rsp_data   [${idx}] ),
+% for idx in range(num_tcdm_ports >> 1):
+    .io_tcdm_writer_rsp_${idx}_valid    ( tcdm_rsp_p_valid[${idx + (num_tcdm_ports >> 1)}] ),
+    .io_tcdm_writer_rsp_${idx}_bits_data( tcdm_rsp_data   [${idx + (num_tcdm_ports >> 1)}] ),
 % endfor
     //-----------------------------
     // CSR control ports
@@ -150,7 +149,7 @@ module ${cfg["name"]}_xdma_wrapper #(
     .io_csrIO_req_ready                 ( csr_req_ready_o      ),
 
     // Response
-    .io_csrIO_rsp_bits_data             ( csr_rsp_bits_data_o  ),	
+    .io_csrIO_rsp_bits_data             ( csr_rsp_bits_data_o  ),
     .io_csrIO_rsp_valid                 ( csr_rsp_valid_o      ),
     .io_csrIO_rsp_ready                 ( csr_rsp_ready_i      )
   );
