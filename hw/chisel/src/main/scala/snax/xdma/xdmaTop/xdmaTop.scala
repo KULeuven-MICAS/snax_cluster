@@ -143,9 +143,10 @@ object xdmaTopGen extends App {
     var i = 0
     while (i < args.length) {
       if (args(i)(0) == '-' && args(i)(1) == '-') {
-        if (args(i + 1)(0) != '-' && args(i + 1)(1) != '-')
-          parsed_args(args(i).substring(2)) = args(i + 1)
-        else parsed_args(args(i).substring(2)) = "NoArg"
+        if (i == args.length - 1 || (args(i + 1)(0) == '-' && args(i + 1)(1) == '-')) { 
+          // Last argument or next argument is also a flag
+          parsed_args(args(i).substring(2)) = "NoArg"
+        } else parsed_args(args(i).substring(2)) = args(i + 1)
       }
       i += 1
     }
