@@ -61,8 +61,10 @@ class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
   val Bounds = Vec(param.dimension, UInt(16.W))
 }
 
-class AddressGenUnit(param: AddressGenUnitParam)
-    extends Module
+class AddressGenUnit(
+    param: AddressGenUnitParam,
+    module_name_prefix: String = "unnamed_cluster"
+) extends Module
     with RequireAsyncReset {
   val io = IO(new Bundle {
     val cfg = Input(new AddressGenUnitCfgIO(param))
@@ -77,8 +79,12 @@ class AddressGenUnit(param: AddressGenUnitParam)
       Vec(param.spatialUnrollingFactor, Decoupled(UInt(param.addressWidth.W)))
   })
 
+  override val desiredName = s"${module_name_prefix}_AddressGenUnit"
+
   // Create a counter to count from 0 to product(bounds)
-  val counter = Module(new BasicCounter(32))
+  val counter = Module(new BasicCounter(32) {
+    override val desiredName = s"${module_name_prefix}_AddressGenUnit_Counter"
+  })
   // When start signal is high, the counter is rest to zero.
   counter.io.reset := io.start
 
@@ -88,7 +94,9 @@ class AddressGenUnit(param: AddressGenUnitParam)
       inputWidth = io.addr.head.bits.getWidth * param.spatialUnrollingFactor,
       outputWidth = io.addr.head.bits.getWidth,
       depth = param.outputBufferDepth
-    )
+    ) {
+      override val desiredName = s"${module_name_prefix}_AddressBufferFIFO"
+    }
   )
 
   // The FSM to record if the AddressGenUnit is busy

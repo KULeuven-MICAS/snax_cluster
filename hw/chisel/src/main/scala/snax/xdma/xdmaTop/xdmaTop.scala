@@ -77,9 +77,11 @@ class xdmaTop(
     readerparam: DMADataPathParam,
     writerparam: DMADataPathParam,
     axiWidth: Int = 512,
-    csrAddrWidth: Int = 32
+    csrAddrWidth: Int = 32, 
+    clusterName: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
+  override val desiredName = s"${clusterName}_xdma"
   val io = IO(
     new xdmaTopIO(
       readerparam = readerparam,
@@ -91,6 +93,7 @@ class xdmaTop(
 
   val i_dmactrl = Module(
     new DMACtrl(
+      clusterName = clusterName,
       readerparam = readerparam,
       writerparam = writerparam,
       axiWidth = axiWidth,
@@ -100,6 +103,7 @@ class xdmaTop(
 
   val i_dmadatapath = Module(
     new DMADataPath(
+      clusterName = clusterName,
       readerparam = readerparam,
       writerparam = writerparam
     )
@@ -136,6 +140,18 @@ class xdmaTop(
   i_dmactrl.io.localDMADataPath.writer_busy_i := i_dmadatapath.io.writer_busy_o
 
 }
+
+object xdmaTopEmitter extends App {
+  emitVerilog(
+    new xdmaTop(
+      clusterName = "test_cluster", 
+      readerparam = new DMADataPathParam(new ReaderWriterParam, Seq()),
+      writerparam = new DMADataPathParam(new ReaderWriterParam, Seq(HasMaxPool, HasMemset, HasTransposer))
+    ),
+    args = Array("--target-dir", "generated")
+  )
+}
+
 
 object xdmaTopGen extends App {
   def ArgParser(args: Array[String]): collection.mutable.Map[String, String] = {
@@ -205,6 +221,7 @@ object xdmaTopGen extends App {
 
   emitVerilog(
     new xdmaTop(
+      clusterName = parsed_args.getOrElse("clusterName", ""), 
       readerparam = new DMADataPathParam(readerparam, Seq()),
       writerparam = new DMADataPathParam(writerparam, extensionparam)
     ),
