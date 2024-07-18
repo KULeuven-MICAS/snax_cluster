@@ -7,10 +7,9 @@ import snax.csr_manager._
 import snax.utils._
 
 import snax.xdma.xdmaFrontend._
-import snax.xdma.xdmaExtension.HasMemset
-import snax.xdma.xdmaExtension.HasTransposer
-import snax.xdma.xdmaExtension.HasMaxPool
+import snax.xdma.xdmaExtension._
 import snax.xdma.DesignParams._
+import os.write
 
 class xdmaTopIO(
     readerparam: DMADataPathParam,
@@ -138,15 +137,76 @@ class xdmaTop(
 
 }
 
-object xdmaTopTester extends App {
+object xdmaTopGen extends App {
+  def ArgParser(args: Array[String]): collection.mutable.Map[String, String] = {
+    val parsed_args = collection.mutable.Map[String, String]()
+    var i = 0
+    while (i < args.length) {
+      if (args(i)(0) == '-' && args(i)(1) == '-') {
+        if (args(i + 1)(0) != '-' && args(i + 1)(1) != '-')
+          parsed_args(args(i).substring(2)) = args(i + 1)
+        else parsed_args(args(i).substring(2)) = "NoArg"
+      }
+      i += 1
+    }
+    if (parsed_args.size == 0) {
+      println("No arguments provided. Please provide arguments")
+      sys.exit(1)
+    }
+    parsed_args
+  }
+
+  val parsed_args = ArgParser(args)
+
+  /*
+  Needed Parameters:
+    tcdmDataWidth: Int
+    axiDataWidth: Int
+    addressWidth: Int
+    tcdmSize: Int
+
+    readerDimension: Int
+    writerDimension: Int
+    readerBufferDepth: Int
+    writerBufferDepth: Int
+    HasMemset
+    HasMaxPool
+    HasTranspopser
+   */
+
+  val readerparam = new ReaderWriterParam(
+    dimension = parsed_args("readerDimension").toInt,
+    tcdmDataWidth = parsed_args("tcdmDataWidth").toInt,
+    tcdmSize = parsed_args("tcdmSize").toInt,
+    tcdmAddressWidth = parsed_args("addressWidth").toInt,
+    numChannel =
+      parsed_args("axiDataWidth").toInt / parsed_args("tcdmDataWidth").toInt,
+    addressBufferDepth = parsed_args("readerBufferDepth").toInt
+  )
+
+  val writerparam = new ReaderWriterParam(
+    dimension = parsed_args("writerDimension").toInt,
+    tcdmDataWidth = parsed_args("tcdmDataWidth").toInt,
+    tcdmSize = parsed_args("tcdmSize").toInt,
+    tcdmAddressWidth = parsed_args("addressWidth").toInt,
+    numChannel =
+      parsed_args("axiDataWidth").toInt / parsed_args("tcdmDataWidth").toInt,
+    addressBufferDepth = parsed_args("writerBufferDepth").toInt
+  )
+
+  var extensionparam = Seq[HasDMAExtension]()
+  if (parsed_args.contains("HasMemset"))
+    extensionparam = extensionparam :+ HasMemset
+  if (parsed_args.contains("HasMaxPool"))
+    extensionparam = extensionparam :+ HasMaxPool
+  if (parsed_args.contains("HasTransposer"))
+    extensionparam = extensionparam :+ HasTransposer
+
   emitVerilog(
     new xdmaTop(
-      readerparam = new DMADataPathParam(new ReaderWriterParam, Seq()),
-      writerparam = new DMADataPathParam(
-        new ReaderWriterParam,
-        Seq(HasMemset, HasTransposer, HasMaxPool)
-      )
+      readerparam = new DMADataPathParam(readerparam, Seq()),
+      writerparam = new DMADataPathParam(writerparam, extensionparam)
     ),
-    args = Array("--target-dir", "generated")
+    args = Array("--target-dir", parsed_args.getOrElse("target-dir", "generated"))
   )
 }
