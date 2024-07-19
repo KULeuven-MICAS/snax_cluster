@@ -180,14 +180,14 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemmX-xdma.hjson)
 
 	CLUSTER_NAME = snax_streamer_gemmX_xdma_cluster
 
-$(eval $(call generate_snax_gen,snax_streamer_gemmX))
+$(eval $(call generate_snax_gen,snax_streamer_gemmX_xdma))
 
 	SNAX_GEMMX_ROOT ?= $(ROOT)/hw/chisel_acc
     include $(SNAX_GEMMX_ROOT)/Makefile
  
-    VSIM_BENDER += -t snax_streamer_gemmX
-    VLT_BENDER  += -t snax_streamer_gemmX
-    VCS_BENDER  += -t snax_streamer_gemmX
+    VSIM_BENDER += -t snax_streamer_gemmX_xdma
+    VLT_BENDER  += -t snax_streamer_gemmX_xdma
+    VCS_BENDER  += -t snax_streamer_gemmX_xdma
  
 endif
 

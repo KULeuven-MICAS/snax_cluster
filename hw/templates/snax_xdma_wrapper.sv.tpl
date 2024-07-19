@@ -19,13 +19,17 @@ module ${cfg["name"]}_xdma_wrapper #(
   // Parameters related to TCDM
   parameter int unsigned TCDMDataWidth = ${cfg["data_width"]},
   parameter int unsigned TCDMNumPorts  = ${num_tcdm_ports},
-  parameter int unsigned TCDMAddrWidth = ${cfg["addr_width"]}
+  parameter int unsigned PhysicalAddrWidth = ${cfg["addr_width"]}
 )(
   //-----------------------------
   // Clocks and reset
   //-----------------------------
   input  logic clk_i,
   input  logic rst_ni,
+  //-----------------------------
+  // Cluster base address
+  //-----------------------------
+  input  logic [PhysicalAddrWidth-1:0]  cluster_base_addr_i,
   //-----------------------------
   // TCDM ports
   //-----------------------------
@@ -52,7 +56,7 @@ module ${cfg["name"]}_xdma_wrapper #(
 
   // TCDM signals
   // Request
-  logic [TCDMNumPorts-1:0][  TCDMAddrWidth-1:0] tcdm_req_addr;
+  logic [TCDMNumPorts-1:0][PhysicalAddrWidth-1:0] tcdm_req_addr;
   logic [TCDMNumPorts-1:0]                      tcdm_req_write;
   //Note that tcdm_req_amo_i is 4 bits based on reqrsp definition
   logic [TCDMNumPorts-1:0][                3:0] tcdm_req_amo;
@@ -100,13 +104,17 @@ module ${cfg["name"]}_xdma_wrapper #(
 
   // Streamer module that is generated
   // with template mechanics
-  ${cfg["name"]}_xdmaTop i_${cfg["name"]}_xdma_top (
+  ${cfg["name"]}_xdma i_${cfg["name"]}_xdma (
     //-----------------------------
     // Clocks and reset
     //-----------------------------
     .clock ( clk_i   ),
     .reset ( ~rst_ni ),
 
+    //-----------------------------
+    // Cluster base address
+    //-----------------------------
+    .io_clusterBaseAddress(cluster_base_addr_i),
     //-----------------------------
     // TCDM Ports
     //-----------------------------
@@ -115,7 +123,7 @@ module ${cfg["name"]}_xdma_wrapper #(
 
 % for idx in range(0, num_tcdm_ports >> 1):
     .io_tcdm_reader_req_${idx}_ready      ( tcdm_rsp_q_ready[${idx}] ),
-    .io_tcdm_reader_req_${idx}_valid      ( tcdm_req_p_valid[${idx}] ),
+    .io_tcdm_reader_req_${idx}_valid      ( tcdm_req_q_valid[${idx}] ),
     .io_tcdm_reader_req_${idx}_bits_addr  ( tcdm_req_addr   [${idx}] ),
     .io_tcdm_reader_req_${idx}_bits_write ( tcdm_req_write  [${idx}] ),
     .io_tcdm_reader_req_${idx}_bits_data  ( tcdm_req_data   [${idx}] ),
@@ -123,7 +131,7 @@ module ${cfg["name"]}_xdma_wrapper #(
     // Writer's Request
 % for idx in range(0, num_tcdm_ports >> 1):
     .io_tcdm_writer_req_${idx}_ready      ( tcdm_rsp_q_ready[${idx + (num_tcdm_ports >> 1)}] ),
-    .io_tcdm_writer_req_${idx}_valid      ( tcdm_req_p_valid[${idx + (num_tcdm_ports >> 1)}] ),
+    .io_tcdm_writer_req_${idx}_valid      ( tcdm_req_q_valid[${idx + (num_tcdm_ports >> 1)}] ),
     .io_tcdm_writer_req_${idx}_bits_addr  ( tcdm_req_addr   [${idx + (num_tcdm_ports >> 1)}] ),
     .io_tcdm_writer_req_${idx}_bits_write ( tcdm_req_write  [${idx + (num_tcdm_ports >> 1)}] ),
     .io_tcdm_writer_req_${idx}_bits_data  ( tcdm_req_data   [${idx + (num_tcdm_ports >> 1)}] ),
@@ -133,11 +141,7 @@ module ${cfg["name"]}_xdma_wrapper #(
     .io_tcdm_reader_rsp_${idx}_valid    ( tcdm_rsp_p_valid[${idx}] ),
     .io_tcdm_reader_rsp_${idx}_bits_data( tcdm_rsp_data   [${idx}] ),
 % endfor
-    // Writer's Respose
-% for idx in range(num_tcdm_ports >> 1):
-    .io_tcdm_writer_rsp_${idx}_valid    ( tcdm_rsp_p_valid[${idx + (num_tcdm_ports >> 1)}] ),
-    .io_tcdm_writer_rsp_${idx}_bits_data( tcdm_rsp_data   [${idx + (num_tcdm_ports >> 1)}] ),
-% endfor
+    // Writer has no Respose
     //-----------------------------
     // CSR control ports
     //-----------------------------
@@ -151,7 +155,27 @@ module ${cfg["name"]}_xdma_wrapper #(
     // Response
     .io_csrIO_rsp_bits_data             ( csr_rsp_bits_data_o  ),
     .io_csrIO_rsp_valid                 ( csr_rsp_valid_o      ),
-    .io_csrIO_rsp_ready                 ( csr_rsp_ready_i      )
+    .io_csrIO_rsp_ready                 ( csr_rsp_ready_i      ), 
+    //-----------------------------
+    // Tie-off unused AXI port
+    //-----------------------------
+    // Remote data
+    .io_remoteDMADataPath_fromRemote_valid ('0),
+    .io_remoteDMADataPath_fromRemote_ready (  ),
+    .io_remoteDMADataPath_fromRemote_bits  (  ),
+
+    .io_remoteDMADataPath_toRemote_ready ('0),
+    .io_remoteDMADataPath_toRemote_valid (  ),
+    .io_remoteDMADataPath_toRemote_bits  (  ),
+
+    // Remote cfg
+    .io_remoteDMADataPathCfg_fromRemote_valid ('0),
+    .io_remoteDMADataPathCfg_fromRemote_ready (  ),
+    .io_remoteDMADataPathCfg_fromRemote_bits  (  ),
+
+    .io_remoteDMADataPathCfg_toRemote_ready ('0),
+    .io_remoteDMADataPathCfg_toRemote_valid (  ),
+    .io_remoteDMADataPathCfg_toRemote_bits  (  )
   );
 
 endmodule
