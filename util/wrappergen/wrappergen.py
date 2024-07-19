@@ -315,7 +315,7 @@ def main():
         gen_file(
             cfg=cfg["cluster"],
             tpl=tpl_rtl_wrapper,
-            target_path=args.gen_path,
+            target_path=args.gen_path + cfg["cluster"]["name"] + "_xdma/",
             file_name=cfg["cluster"]["name"] + "_xdma_wrapper.sv",
         )
 
@@ -323,18 +323,20 @@ def main():
         gen_chisel_file(
             chisel_path=args.chisel_path, 
             chisel_param="snax.xdma.xdmaTop.xdmaTopGen", 
-            gen_path= " --tcdmDataWidth " + str(cfg["cluster"]["data_width"]) + 
-                      " --axiDataWidth " + str(cfg["cluster"]["dma_data_width"]) + 
-                      " --addressWidth " + str(cfg["cluster"]["addr_width"]) + 
-                      " --tcdmSize " + str(cfg["cluster"]["tcdm"]["size"]) + 
-                      " --readerDimension " + str(snax_xdma_cfg["reader_agu_dimension"]) + 
-                      " --writerDimension " + str(snax_xdma_cfg["writer_agu_dimension"]) + 
-                      " --readerBufferDepth " + str(snax_xdma_cfg["reader_buffer"]) + 
-                      " --writerBufferDepth " + str(snax_xdma_cfg["writer_buffer"]) + 
-                      (" --HasMemset " if snax_xdma_cfg["has_memset"] else "") + 
-                      (" --HasMaxPool " if snax_xdma_cfg["has_maxpool"] else "") + 
-                      (" --HasTransposer " if snax_xdma_cfg["has_transposer"] else "") + 
-                      " --target-dir " + args.gen_path
+            gen_path= 
+                " --clusterName " + str(cfg["cluster"]["name"]) + 
+                " --tcdmDataWidth " + str(cfg["cluster"]["data_width"]) + 
+                " --axiDataWidth " + str(cfg["cluster"]["dma_data_width"]) + 
+                " --addressWidth " + str(cfg["cluster"]["addr_width"]) + 
+                " --tcdmSize " + str(cfg["cluster"]["tcdm"]["size"]) + 
+                " --readerDimension " + str(snax_xdma_cfg["reader_agu_dimension"]) + 
+                " --writerDimension " + str(snax_xdma_cfg["writer_agu_dimension"]) + 
+                " --readerBufferDepth " + str(snax_xdma_cfg["reader_buffer"]) + 
+                " --writerBufferDepth " + str(snax_xdma_cfg["writer_buffer"]) + 
+                (" --HasMemset " if snax_xdma_cfg["has_memset"] else "") + 
+                (" --HasMaxPool " if snax_xdma_cfg["has_maxpool"] else "") + 
+                (" --HasTransposer " if snax_xdma_cfg["has_transposer"] else "") + 
+                " --target-dir " + args.gen_path + cfg["cluster"]["name"] + "_xdma/"
         )
 
     # Generation of testharness
