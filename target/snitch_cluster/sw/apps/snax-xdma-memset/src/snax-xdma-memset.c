@@ -26,23 +26,31 @@ int main() {
 
     // Transfer data from L3 to L1
     // Using xdma core only
-    if (snrt_cluster_core_idx() == snrt_cluster_compute_core_num()) {
+    if (snrt_cluster_core_idx() == snrt_cluster_compute_core_num() - 1) {
         // The xdma core is the last compute core in the cluster
         if (xdma_memcpy_1d(tcdm_0, tcdm_0, 0x4000 * sizeof(uint8_t)) != 0) {
             printf("Error in xdma agu configuration\n");
+        } else {
+            printf("The xdma agu is configured\n");
         }
 
         uint32_t ext_param[1] = {0xFFFFFFFF};
         if (xdma_enable_dst_ext(0, ext_param) != 0) {
             printf("Error in enableing xdma extension 0\n");
+        } else {
+            printf("The xdma extension 0 is enabled\n");
         }
-
+        
         if (xdma_disable_dst_ext(1) != 0) {
             printf("Error in disabling xdma extension 1\n");
+        } else {
+            printf("The xdma extension 1 is disabled\n");
         }
 
         if (xdma_disable_dst_ext(2) != 0) {
             printf("Error in disabling xdma extension 2\n");
+        } else {
+            printf("The xdma extension 2 is disabled\n");
         }
 
         xdma_start();

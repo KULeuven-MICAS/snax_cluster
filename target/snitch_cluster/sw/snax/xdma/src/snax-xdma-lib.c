@@ -9,6 +9,13 @@
 #include "snrt.h"
 #include "stdint.h"
 
+#define XDMA_DEBUG
+#ifdef XDMA_DEBUG
+#define XDMA_DEBUG_PRINT(...) printf(__VA_ARGS__)
+#else
+#define XDMA_DEBUG_PRINT(...)
+#endif
+
 // Soft switch for CSR to make it support dynamic addressing
 // The function can address 32 CSR registers starting from 960
 
@@ -86,7 +93,7 @@ uint32_t read_csr_soft_switch(uint32_t csr_address) {
     return 0;
 }
 
-uint32_t write_csr_soft_switch(uint32_t csr_address, uint32_t value) {
+void write_csr_soft_switch(uint32_t csr_address, uint32_t value) {
     switch (csr_address) {
         case 960:
             write_csr(960, value);
@@ -196,23 +203,29 @@ int xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
                           (uint32_t)((uint64_t)src << 32));
     // Rule check
     // unit size only support 8 bytes or n * 64 bytes
-    if (unit_size_src % 64 != 0 || unit_size_src != 8) {
+    XDMA_DEBUG_PRINT("unit size src: %d\n", unit_size_src);
+    XDMA_DEBUG_PRINT("unit size dst: %d\n", unit_size_dst);
+    
+    if ((unit_size_src % 64 != 0) && (unit_size_src != 8)) {
+        XDMA_DEBUG_PRINT("unit size src error\n");
         return -1;
     }
-    if (unit_size_dst % 64 != 0 || unit_size_dst != 8) {
-        return -1;
+    if ((unit_size_dst % 64 != 0) && (unit_size_dst != 8)) {
+        XDMA_DEBUG_PRINT("unit size dst error\n");
+        return -2;
     }
     // Src size and dst size should be equal
     uint32_t src_size = unit_size_src;
-    for (uint32_t i = 0; i < dim_src; i++) {
+    for (uint32_t i = 0; i < dim_src - 1; i++) {
         src_size *= bound_src[i];
     }
     uint32_t dst_size = unit_size_dst;
-    for (uint32_t i = 0; i < dim_dst; i++) {
+    for (uint32_t i = 0; i < dim_dst - 1; i++) {
         dst_size *= bound_dst[i];
     }
     if (src_size != dst_size) {
-        return -1;
+        XDMA_DEBUG_PRINT("src size and dst size not equal\n");
+        return -3;
     }
 
     // Dimension 1 at src
@@ -225,7 +238,8 @@ int xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
     // Dimension 2 to n at src
     for (uint32_t j = 0; j < dim_src - 1; j++) {
         if (i + j >= XDMA_SRC_DIM) {
-            return -2;
+            XDMA_DEBUG_PRINT("Source dimension is too high for xdma\n");
+            return -4;
         }
         write_csr_soft_switch(XDMA_SRC_BOUND_PTR + i + j, bound_src[j]);
         write_csr_soft_switch(XDMA_SRC_STRIDE_PTR + i + j, stride_src[j]);
@@ -241,7 +255,8 @@ int xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
     // Dimension 2 to n at dst
     for (uint32_t j = 0; j < dim_dst - 1; j++) {
         if (i + j >= XDMA_DST_DIM) {
-            return -2;
+            XDMA_DEBUG_PRINT("Destination dimension is too high for xdma\n");
+            return -5;
         }
         write_csr_soft_switch(XDMA_DST_BOUND_PTR + i + j, bound_dst[j]);
         write_csr_soft_switch(XDMA_DST_STRIDE_PTR + i + j, stride_dst[j]);
