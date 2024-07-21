@@ -36,7 +36,7 @@ int main() {
 
         uint32_t ext_param[1] = {0xFFFFFFFF};
         if (xdma_enable_dst_ext(0, ext_param) != 0) {
-            printf("Error in enableing xdma extension 0\n");
+            printf("Error in enabling xdma extension 0\n");
         } else {
             printf("The xdma extension 0 is enabled\n");
         }

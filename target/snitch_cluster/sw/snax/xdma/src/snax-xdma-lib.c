@@ -20,6 +20,7 @@
 // The function can address 32 CSR registers starting from 960
 
 uint32_t read_csr_soft_switch(uint32_t csr_address) {
+    XDMA_DEBUG_PRINT("Data from CSR location %d will be provided\n", csr_address);
     uint32_t value;
     switch (csr_address) {
         case 960:
@@ -94,6 +95,7 @@ uint32_t read_csr_soft_switch(uint32_t csr_address) {
 }
 
 void write_csr_soft_switch(uint32_t csr_address, uint32_t value) {
+    XDMA_DEBUG_PRINT("%x is written at CSR location %d\n", value, csr_address);
     switch (csr_address) {
         case 960:
             write_csr(960, value);
@@ -200,7 +202,11 @@ int xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
                    uint32_t* bound_src, uint32_t* bound_dst) {
     write_csr_soft_switch(XDMA_SRC_ADDR_PTR_LSB, (uint32_t)(uint64_t)src);
     write_csr_soft_switch(XDMA_SRC_ADDR_PTR_MSB,
-                          (uint32_t)((uint64_t)src << 32));
+                          (uint32_t)((uint64_t)src >> 32));
+
+    write_csr_soft_switch(XDMA_DST_ADDR_PTR_LSB, (uint32_t)(uint64_t)dst);
+    write_csr_soft_switch(XDMA_DST_ADDR_PTR_MSB,
+                          (uint32_t)((uint64_t)dst >> 32));
     // Rule check
     // unit size only support 8 bytes or n * 64 bytes
     XDMA_DEBUG_PRINT("unit size src: %d\n", unit_size_src);
