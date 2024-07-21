@@ -20,7 +20,8 @@
 // The function can address 32 CSR registers starting from 960
 
 uint32_t read_csr_soft_switch(uint32_t csr_address) {
-    XDMA_DEBUG_PRINT("Data from CSR location %d will be provided\n", csr_address);
+    XDMA_DEBUG_PRINT("Data from CSR location %d will be provided\n",
+                     csr_address);
     uint32_t value;
     switch (csr_address) {
         case 960:
@@ -211,7 +212,7 @@ int xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
     // unit size only support 8 bytes or n * 64 bytes
     XDMA_DEBUG_PRINT("unit size src: %d\n", unit_size_src);
     XDMA_DEBUG_PRINT("unit size dst: %d\n", unit_size_dst);
-    
+
     if ((unit_size_src % 64 != 0) && (unit_size_src != 8)) {
         XDMA_DEBUG_PRINT("unit size src error\n");
         return -1;
@@ -270,13 +271,13 @@ int xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
     return 0;
 }
 
-int xdma_memcpy_1d(uint8_t* src, uint8_t* dst, uint32_t size) {
+int32_t xdma_memcpy_1d(uint8_t* src, uint8_t* dst, uint32_t size) {
     return xdma_memcpy_nd(src, dst, size, size, 1, 1, (uint32_t*)NULL,
                           (uint32_t*)NULL, (uint32_t*)NULL, (uint32_t*)NULL);
 }
 
 // xdma extension interface
-int xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value) {
+int32_t xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value) {
     if (ext >= XDMA_SRC_EXT_NUM) {
         return -1;
     }
@@ -292,7 +293,7 @@ int xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value) {
     }
     return 0;
 }
-int xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value) {
+int32_t xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value) {
     if (ext >= XDMA_DST_EXT_NUM) {
         return -1;
     }
@@ -309,7 +310,7 @@ int xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value) {
     return 0;
 }
 
-int xdma_disable_src_ext(uint8_t ext) {
+int32_t xdma_disable_src_ext(uint8_t ext) {
     if (ext >= XDMA_SRC_EXT_NUM) {
         return -1;
     }
@@ -322,7 +323,7 @@ int xdma_disable_src_ext(uint8_t ext) {
     return 0;
 }
 
-int xdma_disable_dst_ext(uint8_t ext) {
+int32_t xdma_disable_dst_ext(uint8_t ext) {
     if (ext >= XDMA_DST_EXT_NUM) {
         return -1;
     }
@@ -336,16 +337,22 @@ int xdma_disable_dst_ext(uint8_t ext) {
 }
 
 // Start xdma
-void xdma_start() { write_csr_soft_switch(XDMA_START_PTR, 1); }
-
-// Check if xdma is finished
-bool xdma_is_finished() {
-    return read_csr_soft_switch(XDMA_FINISH_TASK_PTR) ==
-           read_csr_soft_switch(XDMA_COMMIT_TASK_PTR);
+uint32_t xdma_start() {
+    int ret = read_csr_soft_switch(XDMA_COMMIT_TASK_PTR);
+    write_csr_soft_switch(XDMA_START_PTR, 1);
+    while (read_csr_soft_switch(XDMA_COMMIT_TASK_PTR) == ret) {
+        // Wait for xdma to start
+    }
+    return read_csr_soft_switch(XDMA_COMMIT_TASK_PTR);
 }
 
-void xdma_wait() {
-    while (!xdma_is_finished()) {
+// Check if xdma is finished
+bool xdma_is_finished(uint32_t task_id) {
+    return read_csr_soft_switch(XDMA_FINISH_TASK_PTR) >= task_id;
+}
+
+void xdma_wait(uint32_t task_id) {
+    while (!xdma_is_finished(task_id)) {
         // Wait for xdma to finish
     }
 }

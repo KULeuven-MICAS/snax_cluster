@@ -53,9 +53,9 @@ int main() {
             printf("The xdma extension 2 is disabled\n");
         }
 
-        xdma_start();
-        printf("The xdma is started, setting memory region to 0xFF\n");
-        xdma_wait();
+        int task_id = xdma_start();
+        printf("The xdma is started, setting memory region to 0xFF. The task id is  %d\n", task_id);
+        xdma_wait(task_id);
 
         printf("The xdma is finished\n");
         // Check the data
