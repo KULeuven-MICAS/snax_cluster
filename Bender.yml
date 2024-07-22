@@ -208,6 +208,8 @@ sources:
       # Level 0
       - hw/snitch_icache/src/snitch_icache_pkg.sv
       # Level 1
+      - hw/snitch_icache/src/snitch_icache_data.sv
+      - hw/snitch_icache/src/snitch_icache_tag.sv
       - hw/snitch_icache/src/snitch_icache_l0.sv
       - hw/snitch_icache/src/snitch_icache_refill.sv
       - hw/snitch_icache/src/snitch_icache_lfsr.sv
