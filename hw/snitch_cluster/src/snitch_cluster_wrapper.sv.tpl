@@ -880,7 +880,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     //-----------------------------
     // Cluster Base Address
     //-----------------------------
-    .cluster_base_addr_i( ClusterBaseAddr ),
+    .cluster_base_addr_i( cluster_base_addr_i ),
     //-----------------------------
     // CSR  format control ports
     //-----------------------------

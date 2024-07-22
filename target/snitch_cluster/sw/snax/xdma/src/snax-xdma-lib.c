@@ -251,6 +251,11 @@ int xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
         write_csr_soft_switch(XDMA_SRC_BOUND_PTR + i + j, bound_src[j]);
         write_csr_soft_switch(XDMA_SRC_STRIDE_PTR + i + j, stride_src[j]);
     }
+    // Dimension n to MAX at src
+    for (uint32_t j = dim_src - 1; (i + j) < XDMA_SRC_DIM; j++) {
+        write_csr_soft_switch(XDMA_SRC_BOUND_PTR + i + j, 1);
+        write_csr_soft_switch(XDMA_SRC_STRIDE_PTR + i + j, 0);
+    }
 
     // Dimension 1 at dst
     i = 0;
@@ -267,6 +272,11 @@ int xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
         }
         write_csr_soft_switch(XDMA_DST_BOUND_PTR + i + j, bound_dst[j]);
         write_csr_soft_switch(XDMA_DST_STRIDE_PTR + i + j, stride_dst[j]);
+    }
+    // Dimension n to MAX at dst
+    for (uint32_t j = dim_dst - 1;  (i + j) < XDMA_DST_DIM; j++) {
+        write_csr_soft_switch(XDMA_DST_BOUND_PTR + i + j, 1);
+        write_csr_soft_switch(XDMA_DST_STRIDE_PTR + i + j, 0);
     }
     return 0;
 }
@@ -286,7 +296,9 @@ int32_t xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value) {
     for (uint8_t i = 0; i < ext; i++) {
         csr_offset += custom_csr_list[i] + 1;
     }
-    write_csr_soft_switch(csr_offset, 1);
+
+    // Not bypass the xdma extension -> set the first CSR to 0
+    write_csr_soft_switch(csr_offset, 0);
     csr_offset++;
     for (uint8_t i = 0; i < custom_csr_list[ext]; i++) {
         write_csr_soft_switch(csr_offset + i, csr_value[i]);
@@ -302,7 +314,9 @@ int32_t xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value) {
     for (uint8_t i = 0; i < ext; i++) {
         csr_offset += custom_csr_list[i] + 1;
     }
-    write_csr_soft_switch(csr_offset, 1);
+
+    // Not bypass the xdma extension -> set the first CSR to 0
+    write_csr_soft_switch(csr_offset, 0);
     csr_offset++;
     for (uint8_t i = 0; i < custom_csr_list[ext]; i++) {
         write_csr_soft_switch(csr_offset + i, csr_value[i]);
@@ -319,7 +333,9 @@ int32_t xdma_disable_src_ext(uint8_t ext) {
     for (uint8_t i = 0; i < ext; i++) {
         csr_offset += custom_csr_list[i] + 1;
     }
-    write_csr_soft_switch(csr_offset, 0);
+
+    // Bypass the xdma extension -> set the first CSR to 1
+    write_csr_soft_switch(csr_offset, 1);
     return 0;
 }
 
@@ -332,7 +348,9 @@ int32_t xdma_disable_dst_ext(uint8_t ext) {
     for (uint8_t i = 0; i < ext; i++) {
         csr_offset += custom_csr_list[i] + 1;
     }
-    write_csr_soft_switch(csr_offset, 0);
+
+    // Bypass the xdma extension -> set the first CSR to 1
+    write_csr_soft_switch(csr_offset, 1);
     return 0;
 }
 
