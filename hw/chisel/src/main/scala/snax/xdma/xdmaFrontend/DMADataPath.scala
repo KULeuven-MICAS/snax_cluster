@@ -94,7 +94,7 @@ class DMADataPathCfgInternalIO(param: DMADataPathParam)
 
 class DMADataPath(
     readerparam: DMADataPathParam,
-    writerparam: DMADataPathParam, 
+    writerparam: DMADataPathParam,
     clusterName: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
@@ -169,8 +169,12 @@ class DMADataPath(
     }
   })
 
-  val i_reader = Module(new Reader(readerparam.rwParam, clusterName = clusterName))
-  val i_writer = Module(new Writer(writerparam.rwParam, clusterName = clusterName))
+  val i_reader = Module(
+    new Reader(readerparam.rwParam, clusterName = clusterName)
+  )
+  val i_writer = Module(
+    new Writer(writerparam.rwParam, clusterName = clusterName)
+  )
 
   // Connect TCDM memory to reader and writer
   i_reader.io.tcdm_req <> io.tcdm_reader.req

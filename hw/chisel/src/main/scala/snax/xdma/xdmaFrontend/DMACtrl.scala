@@ -68,14 +68,16 @@ class SrcConfigRouter(
   })
 
   val i_from_arbiter = Module(new Arbiter(dataType, 2) {
-    override val desiredName = s"${clusterName}_xdma_ctrl_SrcConfigRouter_Arbiter"
+    override val desiredName =
+      s"${clusterName}_xdma_ctrl_SrcConfigRouter_Arbiter"
   })
   i_from_arbiter.io.in(0) <> io.from.local
   i_from_arbiter.io.in(1) <> io.from.remote
 
   val i_to_demux = Module(
     new DemuxDecoupled(dataType = dataType, numOutput = 3) {
-      override val desiredName = s"${clusterName}_xdma_ctrl_SrcConfigRouter_Demux"
+      override val desiredName =
+        s"${clusterName}_xdma_ctrl_SrcConfigRouter_Demux"
     }
   )
   i_from_arbiter.io.out -|> i_to_demux.io.in
@@ -131,7 +133,8 @@ class DstConfigRouter(
   })
   val i_to_demux = Module(
     new DemuxDecoupled(dataType = dataType, numOutput = 2) {
-      override val desiredName = s"${clusterName}_xdma_ctrl_dstConfigRouter_Demux"
+      override val desiredName =
+        s"${clusterName}_xdma_ctrl_dstConfigRouter_Demux"
     }
   )
   io.from.local <> i_to_demux.io.in

@@ -77,7 +77,7 @@ class xdmaTop(
     readerparam: DMADataPathParam,
     writerparam: DMADataPathParam,
     axiWidth: Int = 512,
-    csrAddrWidth: Int = 32, 
+    csrAddrWidth: Int = 32,
     clusterName: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
@@ -144,14 +144,16 @@ class xdmaTop(
 object xdmaTopEmitter extends App {
   emitVerilog(
     new xdmaTop(
-      clusterName = "test_cluster", 
+      clusterName = "test_cluster",
       readerparam = new DMADataPathParam(new ReaderWriterParam, Seq()),
-      writerparam = new DMADataPathParam(new ReaderWriterParam, Seq(HasMaxPool, HasMemset, HasTransposer))
+      writerparam = new DMADataPathParam(
+        new ReaderWriterParam,
+        Seq(HasMaxPool, HasMemset, HasTransposer)
+      )
     ),
     args = Array("--target-dir", "generated")
   )
 }
-
 
 object xdmaTopGen extends App {
   def ArgParser(args: Array[String]): collection.mutable.Map[String, String] = {
@@ -159,7 +161,11 @@ object xdmaTopGen extends App {
     var i = 0
     while (i < args.length) {
       if (args(i)(0) == '-' && args(i)(1) == '-') {
-        if (i == args.length - 1 || (args(i + 1)(0) == '-' && args(i + 1)(1) == '-')) { 
+        if (
+          i == args.length - 1 || (args(i + 1)(0) == '-' && args(i + 1)(
+            1
+          ) == '-')
+        ) {
           // Last argument or next argument is also a flag
           parsed_args(args(i).substring(2)) = "NoArg"
         } else parsed_args(args(i).substring(2)) = args(i + 1)
@@ -221,10 +227,11 @@ object xdmaTopGen extends App {
 
   emitVerilog(
     new xdmaTop(
-      clusterName = parsed_args.getOrElse("clusterName", ""), 
+      clusterName = parsed_args.getOrElse("clusterName", ""),
       readerparam = new DMADataPathParam(readerparam, Seq()),
       writerparam = new DMADataPathParam(writerparam, extensionparam)
     ),
-    args = Array("--target-dir", parsed_args.getOrElse("target-dir", "generated"))
+    args =
+      Array("--target-dir", parsed_args.getOrElse("target-dir", "generated"))
   )
 }

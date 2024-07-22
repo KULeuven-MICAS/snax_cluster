@@ -8,7 +8,9 @@ import snax.utils._
 import snax.xdma.CommonCells._
 import snax.xdma.DesignParams._
 
-class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster") extends Module with RequireAsyncReset {
+class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
+    extends Module
+    with RequireAsyncReset {
 
   override val desiredName = s"${clusterName}_xdma_Writer"
 
@@ -36,7 +38,12 @@ class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster") 
     val bufferEmpty = Output(Bool())
   })
 
-  val addressgen = Module(new AddressGenUnit(param.agu_param, module_name_prefix = s"${clusterName}_xdma_Writer"))
+  val addressgen = Module(
+    new AddressGenUnit(
+      param.agu_param,
+      module_name_prefix = s"${clusterName}_xdma_Writer"
+    )
+  )
   // Write Requestors
   // Requestors to send address and data to TCDM
   val requestors = Module(
@@ -44,7 +51,7 @@ class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster") 
       tcdmDataWidth = param.tcdm_param.dataWidth,
       tcdmAddressWidth = param.tcdm_param.addrWidth,
       numChannel = param.tcdm_param.numChannel,
-      isReader = false, 
+      isReader = false,
       module_name_prefix = s"${clusterName}_xdma_Writer"
     )
   )

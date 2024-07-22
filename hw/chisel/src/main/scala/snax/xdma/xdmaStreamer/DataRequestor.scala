@@ -94,7 +94,7 @@ class DataRequestors(
     tcdmDataWidth: Int,
     tcdmAddressWidth: Int,
     isReader: Boolean,
-    numChannel: Int, 
+    numChannel: Int,
     module_name_prefix: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {

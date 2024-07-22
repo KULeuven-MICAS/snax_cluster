@@ -12,7 +12,7 @@ object HasTransposer extends HasDMAExtension {
   )
 
   def instantiate(clusterName: String): Transposer = Module(new Transposer {
-      override def desiredName = clusterName + namePostfix
+    override def desiredName = clusterName + namePostfix
   })
 }
 

@@ -43,7 +43,12 @@ class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
   })
 
   // Address Generator
-  val addressgen = Module(new AddressGenUnit(param.agu_param, module_name_prefix = s"${clusterName}_xdma_Reader"))
+  val addressgen = Module(
+    new AddressGenUnit(
+      param.agu_param,
+      module_name_prefix = s"${clusterName}_xdma_Reader"
+    )
+  )
 
   // Requestors to send address to TCDM
   val requestors = Module(
@@ -51,7 +56,7 @@ class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
       tcdmDataWidth = param.tcdm_param.dataWidth,
       tcdmAddressWidth = param.tcdm_param.addrWidth,
       numChannel = param.tcdm_param.numChannel,
-      isReader = true, 
+      isReader = true,
       module_name_prefix = s"${clusterName}_xdma_Reader"
     )
   )
@@ -60,7 +65,7 @@ class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
   val responsers = Module(
     new DataResponsers(
       tcdmDataWidth = param.tcdm_param.dataWidth,
-      numChannel = param.tcdm_param.numChannel, 
+      numChannel = param.tcdm_param.numChannel,
       module_name_prefix = s"${clusterName}_xdma_Reader"
     )
   )

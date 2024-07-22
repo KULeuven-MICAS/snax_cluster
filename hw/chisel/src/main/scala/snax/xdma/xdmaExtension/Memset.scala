@@ -11,7 +11,7 @@ object HasMemset extends HasDMAExtension {
     dataWidth = 512
   )
   def instantiate(clusterName: String): Memset = Module(new Memset {
-      override def desiredName = clusterName + namePostfix
+    override def desiredName = clusterName + namePostfix
   })
 }
 
