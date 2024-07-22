@@ -304,7 +304,7 @@ jobs:
           sw/runtime.yaml \
           sw/snax-streamer-gemm-conv-simd-run.yaml -j
 
-  snax-xdma-unittest:
+  snax-xdma-unit-test:
     name: Run several unit tests for xdma
     runs-on: ubuntu-22.04
     container:
@@ -329,6 +329,32 @@ jobs:
         working-directory: hw/chisel
         run: |-
           sbt "testOnly snax.xdma.xdmaTop.*"
+
+  snax-xdma-system-test:
+    name: Simulate SW on xdma to perform the fast memset operation (Generic LLVM)
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/snax:main
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+      - name: Build Hardware
+        run: |
+          make CFG_OVERRIDE=cfg/snax-streamer-gemmX-xdma.hjson \
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw \
+          CFG_OVERRIDE=cfg/snax-streamer-gemmX-xdma.hjson \
+          SELECT_RUNTIME=rtl-generic \
+          SELECT_TOOLCHAIN=llvm-generic
+      - name: Run Tests
+        working-directory: target/snitch_cluster
+        run: |-
+          ./run.py --simulator verilator \
+          sw/runtime.yaml \
+          sw/snax-streamer-gemm-conv-simd-run.yaml -j
 
   ############################################
   # Build SW on Snitch Cluster w/ Banshee #

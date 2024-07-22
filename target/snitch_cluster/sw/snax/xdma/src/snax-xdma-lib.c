@@ -197,10 +197,11 @@ void write_csr_soft_switch(uint32_t csr_address, uint32_t value) {
     }
 }
 
-int xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
-                   uint32_t unit_size_dst, uint32_t dim_src, uint32_t dim_dst,
-                   uint32_t* stride_src, uint32_t* stride_dst,
-                   uint32_t* bound_src, uint32_t* bound_dst) {
+int32_t xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
+                       uint32_t unit_size_dst, uint32_t dim_src,
+                       uint32_t dim_dst, uint32_t* stride_src,
+                       uint32_t* stride_dst, uint32_t* bound_src,
+                       uint32_t* bound_dst) {
     write_csr_soft_switch(XDMA_SRC_ADDR_PTR_LSB, (uint32_t)(uint64_t)src);
     write_csr_soft_switch(XDMA_SRC_ADDR_PTR_MSB,
                           (uint32_t)((uint64_t)src >> 32));
@@ -274,7 +275,7 @@ int xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
         write_csr_soft_switch(XDMA_DST_STRIDE_PTR + i + j, stride_dst[j]);
     }
     // Dimension n to MAX at dst
-    for (uint32_t j = dim_dst - 1;  (i + j) < XDMA_DST_DIM; j++) {
+    for (uint32_t j = dim_dst - 1; (i + j) < XDMA_DST_DIM; j++) {
         write_csr_soft_switch(XDMA_DST_BOUND_PTR + i + j, 1);
         write_csr_soft_switch(XDMA_DST_STRIDE_PTR + i + j, 0);
     }

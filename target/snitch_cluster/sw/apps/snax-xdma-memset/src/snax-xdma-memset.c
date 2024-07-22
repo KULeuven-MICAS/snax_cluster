@@ -24,7 +24,6 @@ int main() {
     uint8_t *tcdm_96 = tcdm_baseaddress + 0x18000 * sizeof(uint8_t);
     uint8_t *tcdm_112 = tcdm_baseaddress + 0x1c000 * sizeof(uint8_t);
 
-    // Transfer data from L3 to L1
     // Using xdma core only
     if (snrt_cluster_core_idx() == snrt_cluster_compute_core_num() - 1) {
         // The xdma core is the last compute core in the cluster
@@ -54,7 +53,7 @@ int main() {
         }
 
         int task_id = xdma_start();
-        printf("The xdma is started, setting memory region to 0xFF. The task id is  %d\n", task_id);
+        printf("The xdma is started, setting memory region to 0xFF. The task id is %d\n", task_id);
         xdma_wait(task_id);
 
         printf("The xdma is finished\n");
@@ -66,8 +65,55 @@ int main() {
                 break;
             }
         }
+        printf("The memset of 0KB - 16KB is correct\n");
+
+        // Setting the 4K-12K region back to 0    
+        if (xdma_memcpy_1d(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t), 0x2000 * sizeof(uint8_t)) != 0) {
+            printf("Error in xdma agu configuration\n");
+        } else {
+            printf("The xdma agu is configured\n");
+        }
+
+        ext_param[0] = 0;
+        if (xdma_enable_dst_ext(0, ext_param) != 0) {
+            printf("Error in enabling xdma extension 0\n");
+        } else {
+            printf("The xdma extension 0 is enabled\n");
+        }
+
+        task_id = xdma_start();
+        printf("The xdma is started, setting memory region to 0x00. The task id is %d\n", task_id);
+        xdma_wait(task_id);
+
+        printf("The xdma is finished\n");
+        // Check the data
+        for (int i = 0; i < 0x1000; i++) {
+            if (tcdm_0[i] != 0xFF) {
+                printf("Error in memset (region 0)\n");
+                err = 1;
+                break;
+            }
+        }
+        for (int i = 0x1000; i < 0x3000; i++) {
+            if (tcdm_0[i] != 0x00) {
+                printf("Error in memset (region 1)\n");
+                err = 1;
+                break;
+            }
+        }
+        for (int i = 0x3000; i < 0x4000; i++) {
+            if (tcdm_0[i] != 0xFF) {
+                printf("Error in memset (region 2)\n");
+                err = 1;
+                break;
+            }
+        }
+        printf("The memset of 4KB - 12KB is correct\n");
+
+
     } else {
-        snrt_wfi();
+        printf("Core %d is not xdma core, so returning 0. \n", snrt_cluster_core_idx());
+        return 0;
     }
 
     return err;

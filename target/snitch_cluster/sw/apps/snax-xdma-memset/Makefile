@@ -4,7 +4,7 @@
 #
 # Yunhao Deng <yunhao.deng@kuleuven.be>
 
-APP     = snax-xdma
+APP     = snax-xdma-memset
 SRCS    = src/snax-xdma-memset.c
 INCDIRS += ../../snax/xdma/include
 INCDIRS += data
