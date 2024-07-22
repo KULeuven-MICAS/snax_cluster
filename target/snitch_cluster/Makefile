@@ -194,10 +194,16 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemmX-xdma.hjson)
 
 	CLUSTER_NAME = snax_streamer_gemmX_xdma_cluster
 
-$(eval $(call generate_snax_gen,snax_streamer_gemmX_xdma))
+$(eval $(call generate_snax_gen,snax_streamer_gemmX))
 
 	SNAX_GEMMX_ROOT ?= $(ROOT)/hw/chisel_acc
     include $(SNAX_GEMMX_ROOT)/Makefile
+
+# This is a temporary solution. Since the xdma is now generated within wrapperergen, we need to tell Makefile about this by adding these two files to the SNAX_GEN list
+
+	SNAX_GEN += \
+	$(GENERATED_DIR)/$(CLUSTER_NAME)_xdma/$(CLUSTER_NAME)_xdma.sv \
+	$(GENERATED_DIR)/$(CLUSTER_NAME)_xdma/$(CLUSTER_NAME)_xdma_wrapper.sv
  
     VSIM_BENDER += -t snax_streamer_gemmX_xdma
     VLT_BENDER  += -t snax_streamer_gemmX_xdma
