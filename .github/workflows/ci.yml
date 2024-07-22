@@ -345,7 +345,7 @@ jobs:
           sbt "testOnly snax.xdma.xdmaTop.*"
 
   snax-xdma-system-test:
-    name: Simulate SW on xdma to perform the fast memset operation (Generic LLVM)
+    name: Simulate SW on xdma (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/kuleuven-micas/snax:main
