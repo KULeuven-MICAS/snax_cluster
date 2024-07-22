@@ -208,6 +208,8 @@ sources:
       # Level 0
       - hw/snitch_icache/src/snitch_icache_pkg.sv
       # Level 1
+      - hw/snitch_icache/src/snitch_icache_data.sv
+      - hw/snitch_icache/src/snitch_icache_tag.sv
       - hw/snitch_icache/src/snitch_icache_l0.sv
       - hw/snitch_icache/src/snitch_icache_refill.sv
       - hw/snitch_icache/src/snitch_icache_lfsr.sv
@@ -256,6 +258,7 @@ sources:
   # snitch_cluster
   - files:
       # Level 0
+      - hw/snitch_cluster/src/snitch_data_mem.sv
       - hw/snitch_cluster/src/snitch_amo_shim.sv
       - hw/snitch_cluster/src/snitch_cluster_peripheral/snitch_cluster_peripheral_reg_pkg.sv
       - hw/snitch_cluster/src/snitch_cluster_peripheral/snitch_cluster_peripheral_reg_top.sv
@@ -317,6 +320,19 @@ sources:
       - target/snitch_cluster/generated/snax_streamer_gemm/snax_streamer_gemm_streamer_wrapper.sv
       # Level 2
       - target/snitch_cluster/generated/snax_streamer_gemm/snax_streamer_gemm_wrapper.sv
+
+  - target: snax_streamer_gemm_add_c
+    files:
+      # Level 0
+      - hw/chisel_acc/generated/gemm/BlockGemm.sv
+      - hw/chisel_acc/src/snax_streamer_gemm_add_c_shell_wrapper.sv
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c/snax_streamer_gemm_add_c_csrman_CsrManager.sv
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c/snax_streamer_gemm_add_c_streamer_StreamerTop.sv
+      # Level 1
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c/snax_streamer_gemm_add_c_csrman_wrapper.sv
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c/snax_streamer_gemm_add_c_streamer_wrapper.sv
+      # Level 2
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c/snax_streamer_gemm_add_c_wrapper.sv
 
   - target: snax_streamer_simd
     files:
@@ -423,6 +439,9 @@ sources:
   - target: snax_streamer_gemmX_xdma
     files:
       - target/snitch_cluster/generated/snax_streamer_gemmX_xdma_cluster_wrapper.sv
+  - target: snax_streamer_gemm_add_c
+    files:
+      - target/snitch_cluster/generated/snax_streamer_gemm_add_c_cluster_wrapper.sv
 
   #---------------------------
   # Test harness declaration
