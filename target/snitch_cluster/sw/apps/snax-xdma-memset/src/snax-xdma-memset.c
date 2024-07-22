@@ -38,7 +38,7 @@ int main() {
         } else {
             printf("The xdma extension 0 is enabled\n");
         }
-        
+
         if (xdma_disable_dst_ext(1) != 0) {
             printf("Error in disabling xdma extension 1\n");
         } else {
@@ -52,7 +52,10 @@ int main() {
         }
 
         int task_id = xdma_start();
-        printf("The xdma is started, setting memory region to 0xFF. The task id is %d\n", task_id);
+        printf(
+            "The xdma is started, setting memory region to 0xFF. The task id "
+            "is %d\n",
+            task_id);
         xdma_wait(task_id);
 
         printf("The xdma is finished\n");
@@ -66,8 +69,9 @@ int main() {
         }
         printf("The memset of 0KB - 16KB is correct\n");
 
-        // Setting the 4K-12K region back to 0    
-        if (xdma_memcpy_1d(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t), 0x2000 * sizeof(uint8_t)) != 0) {
+        // Setting the 4K-12K region back to 0
+        if (xdma_memcpy_1d(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t),
+                           0x2000 * sizeof(uint8_t)) != 0) {
             printf("Error in xdma agu configuration\n");
         } else {
             printf("The xdma agu is configured\n");
@@ -81,7 +85,10 @@ int main() {
         }
 
         task_id = xdma_start();
-        printf("The xdma is started, setting memory region to 0x00. The task id is %d\n", task_id);
+        printf(
+            "The xdma is started, setting memory region to 0x00. The task id "
+            "is %d\n",
+            task_id);
         xdma_wait(task_id);
 
         printf("The xdma is finished\n");
@@ -109,9 +116,9 @@ int main() {
         }
         printf("The memset of 4KB - 12KB is correct\n");
 
-
     } else {
-        printf("Core %d is not xdma core, so returning 0. \n", snrt_cluster_core_idx());
+        printf("Core %d is not xdma core, so returning 0. \n",
+               snrt_cluster_core_idx());
         return 0;
     }
 
