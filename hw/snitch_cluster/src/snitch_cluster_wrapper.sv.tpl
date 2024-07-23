@@ -409,7 +409,7 @@ for i in range(len(cfg['cores'])):
     curr_snax_acc = "i_snax_core_" + str(i) + "_" + xdma_instance_name
 
     # Set tcdm offset ports
-    snax_narrow_tcdm_ports = round(cfg['dma_data_width'] / cfg['data_width']) << 1
+    snax_narrow_tcdm_ports = round(cfg['dma_data_width'] / cfg['data_width']) * 2
     snax_wide_tcdm_ports = 0
     snax_tcdm_ports = snax_narrow_tcdm_ports + snax_wide_tcdm_ports
     tcdm_offset_stop += snax_tcdm_ports
@@ -422,7 +422,6 @@ for i in range(len(cfg['cores'])):
           'snax_tcdm_offset_stop': tcdm_offset_stop
         }
     tcdm_offset_start += snax_tcdm_ports
-    prefix_snax_count += 1
     total_snax_narrow_ports += snax_narrow_tcdm_ports
     total_snax_wide_ports += snax_wide_tcdm_ports
 
