@@ -862,11 +862,8 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     % endif
   
   % elif snax_core_acc[idx_key]['snax_xdma_flag']:
-    
-
     % for jdx, jdx_key in enumerate(snax_core_acc[idx_key]['snax_acc_dict']):
-
-  // Accelerators controlled with custom instruction format ports
+  // Instantiation of xdma wrapper
   ${cfg['name']}_xdma_wrapper # (
     .tcdm_req_t       ( ${cfg['pkg_name']}::tcdm_req_t ),
     .tcdm_rsp_t       ( ${cfg['pkg_name']}::tcdm_rsp_t )
