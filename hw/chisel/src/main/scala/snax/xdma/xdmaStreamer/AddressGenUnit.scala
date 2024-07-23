@@ -36,7 +36,6 @@ class BasicCounter(width: Int, hasCeil: Boolean = true)
   io.lastVal := {
     if (hasCeil) (value === io.ceil - 1.U) else (value.andR)
   }
-  // io.overFlow := (value === 0.U) && (valuePrevious === io.ceil - 1.U)
 }
 
 /** AGU is the module to automatically generate the address for all ports.
@@ -159,5 +158,4 @@ class AddressGenUnit(
 
   // Connect io.bufferEmpty signal: If all output is 0, then all addresses are empty, which means io.bufferEmpty should be high
   io.bufferEmpty := ~(outputBuffer.io.out.map(i => i.valid).reduce(_ | _))
-
 }
