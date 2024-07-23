@@ -220,8 +220,7 @@ object xdmaTopGen extends App {
   ) + "/include/snax-xdma-csr-addr.h"
 
   val macro_template =
-    s"""
-// Copyright 2024 KU Leuven.
+    s"""// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //

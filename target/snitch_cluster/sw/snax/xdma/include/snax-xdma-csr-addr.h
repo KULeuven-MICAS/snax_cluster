@@ -1,4 +1,3 @@
-
 // Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -17,7 +16,7 @@
 #define XDMA_SRC_EXT_NUM 0
 #define XDMA_SRC_EXT_CSR_NUM 0
 #define XDMA_SRC_EXT_CUSTOM_CSR_NUM \
-    {  }
+    {}
 #define XDMA_DST_ADDR_PTR_LSB XDMA_SRC_EXT_CSR_PTR + XDMA_SRC_EXT_CSR_NUM
 #define XDMA_DST_ADDR_PTR_MSB XDMA_DST_ADDR_PTR_LSB + 1
 #define XDMA_DST_DIM 3
