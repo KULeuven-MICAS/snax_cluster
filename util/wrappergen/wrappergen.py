@@ -342,7 +342,7 @@ def main():
             (" --HasMaxPool " if snax_xdma_cfg["has_maxpool"] else "") +
             (" --HasTransposer " if snax_xdma_cfg["has_transposer"] else "") +
             " --hw-target-dir " + args.gen_path +
-            cfg["cluster"]["name"] + "_xdma/" + 
+            cfg["cluster"]["name"] + "_xdma/" +
             " --sw-target-dir " + args.gen_path + "../sw/snax/xdma"
         )
 
