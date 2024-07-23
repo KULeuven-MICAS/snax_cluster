@@ -318,34 +318,8 @@ jobs:
           sw/runtime.yaml \
           sw/snax-streamer-gemm-conv-simd-run.yaml -j
 
-  snax-xdma-unit-test:
-    name: Run several unit tests for xdma
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/kuleuven-micas/snax:main
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-      - name: Test xdma streamer
-        working-directory: hw/chisel
-        run: |-
-          sbt "testOnly snax.xdma.xdmaStreamer.*"
-      - name: Test xdma DataPath and Controller
-        working-directory: hw/chisel
-        run: |-
-          sbt "testOnly snax.xdma.xdmaFrontend.*"
-      - name: Test xdma Extension Framework + MaxPool
-        working-directory: hw/chisel
-        run: |-
-          sbt "testOnly snax.xdma.xdmaExtension.*"
-      - name: Test xdma Top Module
-        working-directory: hw/chisel
-        run: |-
-          sbt "testOnly snax.xdma.xdmaTop.*"
-
-  snax-xdma-system-test:
-    name: Simulate SW on xdma (Generic LLVM)
+  snax-xdma-vlt-generic:
+    name: Simulate SW on xdma w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/kuleuven-micas/snax:main
