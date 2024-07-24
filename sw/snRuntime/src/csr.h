@@ -10,8 +10,8 @@
 // pseudo register-mapping mechanism. To avoid the loss of performance, the
 // function is defined in header, so that it can be compiled together with the
 // main program, and optimized by the compiler. If @csr_address is provided in
-// an immediate number, (macros, constant etc.) no clock cycles will be wasted
-// on the switch-case.
+// an immediate number, (macros, constant etc.) the compiler won't add it in a
+// separate function creating loss in switching cycles.
 
 #ifndef CSR_H
 #define CSR_H
