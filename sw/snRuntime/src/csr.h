@@ -4,14 +4,14 @@
 //
 // Yunhao Deng <yunhao.deng@kuleuven.be>
 
-// This provides the function to read and write CSR in software
-// As CSR instruction in RISC-V is immediate-number addressed, this workaround
-// function deploys a switch-case to map the CSR address to implement pseudo
-// register-mapping mechanism. To avoid the loss of performance, the function
-// header is defined in header, so that it can be compiled together with the
-// main program, and being optimized by the compiler. If @csr_address is
-// provided in a immediate number, (macros, constant etc.) no clock cycles will
-// be wasted on the switch-case.
+// This file provides the function to read and write CSR with CSR address in
+// register As CSR instruction in RISC-V is immediate-number addressed, this
+// workaround function deploys a switch-case to map the CSR address to implement
+// pseudo register-mapping mechanism. To avoid the loss of performance, the
+// function is defined in header, so that it can be compiled together with the
+// main program, and optimized by the compiler. If @csr_address is provided in
+// an immediate number, (macros, constant etc.) no clock cycles will be wasted
+// on the switch-case.
 
 #ifndef CSR_H
 #define CSR_H
