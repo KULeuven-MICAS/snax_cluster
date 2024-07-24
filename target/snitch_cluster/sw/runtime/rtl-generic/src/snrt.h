@@ -34,6 +34,6 @@
 #include "riscv.h"
 #include "snitch_cluster_global_interrupts.h"
 // #include "ssr.h"
+#include "csr.h"
 #include "sync.h"
 #include "team.h"
-#include "csr.h"
