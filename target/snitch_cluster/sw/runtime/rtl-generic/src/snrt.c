@@ -17,4 +17,3 @@
 #include "snitch_cluster_start.c"
 #include "sync.c"
 #include "team.c"
-#include "csr.c"
