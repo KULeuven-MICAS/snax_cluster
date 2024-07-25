@@ -331,6 +331,9 @@ $(TARGET_C_HDRS_DIR)/snitch_cluster_peripheral.h: $(ROOT)/hw/snitch_cluster/src/
 $(GENERATED_DIR):
 	mkdir -p $(GENERATED_DIR)
 
+$(GENERATED_DIR)/$(CLUSTER_NAME)_wrapper.sv: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
+	$(CLUSTER_GEN) -c $< -o $(GENERATED_DIR) --wrapper --wrapper_name="$(CLUSTER_NAME)" --mem
+
 $(GENERATED_DIR)/link.ld: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
 	$(CLUSTER_GEN) -c $< -o $(GENERATED_DIR) --linker
 
