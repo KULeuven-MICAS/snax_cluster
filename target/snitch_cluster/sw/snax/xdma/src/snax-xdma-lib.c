@@ -21,13 +21,11 @@ int32_t xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
                        uint32_t dim_dst, uint32_t* stride_src,
                        uint32_t* stride_dst, uint32_t* bound_src,
                        uint32_t* bound_dst) {
-    write_csr_soft_switch(XDMA_SRC_ADDR_PTR_LSB, (uint32_t)(uint64_t)src);
-    write_csr_soft_switch(XDMA_SRC_ADDR_PTR_MSB,
-                          (uint32_t)((uint64_t)src >> 32));
+    csrw_ss(XDMA_SRC_ADDR_PTR_LSB, (uint32_t)(uint64_t)src);
+    csrw_ss(XDMA_SRC_ADDR_PTR_MSB, (uint32_t)((uint64_t)src >> 32));
 
-    write_csr_soft_switch(XDMA_DST_ADDR_PTR_LSB, (uint32_t)(uint64_t)dst);
-    write_csr_soft_switch(XDMA_DST_ADDR_PTR_MSB,
-                          (uint32_t)((uint64_t)dst >> 32));
+    csrw_ss(XDMA_DST_ADDR_PTR_LSB, (uint32_t)(uint64_t)dst);
+    csrw_ss(XDMA_DST_ADDR_PTR_MSB, (uint32_t)((uint64_t)dst >> 32));
     // Rule check
     // unit size only support 8 bytes or n * 64 bytes
     XDMA_DEBUG_PRINT("unit size src: %d\n", unit_size_src);
@@ -58,8 +56,8 @@ int32_t xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
     // Dimension 1 at src
     uint32_t i = 0;
     if (unit_size_src % 64 == 0) {
-        write_csr_soft_switch(XDMA_SRC_STRIDE_PTR + i, 8);
-        write_csr_soft_switch(XDMA_SRC_BOUND_PTR + i, unit_size_src >> 3);
+        csrw_ss(XDMA_SRC_STRIDE_PTR + i, 8);
+        csrw_ss(XDMA_SRC_BOUND_PTR + i, unit_size_src >> 3);
         i++;
     }
     // Dimension 2 to n at src
@@ -68,20 +66,20 @@ int32_t xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
             XDMA_DEBUG_PRINT("Source dimension is too high for xdma\n");
             return -4;
         }
-        write_csr_soft_switch(XDMA_SRC_BOUND_PTR + i + j, bound_src[j]);
-        write_csr_soft_switch(XDMA_SRC_STRIDE_PTR + i + j, stride_src[j]);
+        csrw_ss(XDMA_SRC_BOUND_PTR + i + j, bound_src[j]);
+        csrw_ss(XDMA_SRC_STRIDE_PTR + i + j, stride_src[j]);
     }
     // Dimension n to MAX at src
     for (uint32_t j = dim_src - 1; (i + j) < XDMA_SRC_DIM; j++) {
-        write_csr_soft_switch(XDMA_SRC_BOUND_PTR + i + j, 1);
-        write_csr_soft_switch(XDMA_SRC_STRIDE_PTR + i + j, 0);
+        csrw_ss(XDMA_SRC_BOUND_PTR + i + j, 1);
+        csrw_ss(XDMA_SRC_STRIDE_PTR + i + j, 0);
     }
 
     // Dimension 1 at dst
     i = 0;
     if (unit_size_dst % 64 == 0) {
-        write_csr_soft_switch(XDMA_DST_STRIDE_PTR + i, 8);
-        write_csr_soft_switch(XDMA_DST_BOUND_PTR + i, unit_size_dst >> 3);
+        csrw_ss(XDMA_DST_STRIDE_PTR + i, 8);
+        csrw_ss(XDMA_DST_BOUND_PTR + i, unit_size_dst >> 3);
         i++;
     }
     // Dimension 2 to n at dst
@@ -90,13 +88,13 @@ int32_t xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t unit_size_src,
             XDMA_DEBUG_PRINT("Destination dimension is too high for xdma\n");
             return -5;
         }
-        write_csr_soft_switch(XDMA_DST_BOUND_PTR + i + j, bound_dst[j]);
-        write_csr_soft_switch(XDMA_DST_STRIDE_PTR + i + j, stride_dst[j]);
+        csrw_ss(XDMA_DST_BOUND_PTR + i + j, bound_dst[j]);
+        csrw_ss(XDMA_DST_STRIDE_PTR + i + j, stride_dst[j]);
     }
     // Dimension n to MAX at dst
     for (uint32_t j = dim_dst - 1; (i + j) < XDMA_DST_DIM; j++) {
-        write_csr_soft_switch(XDMA_DST_BOUND_PTR + i + j, 1);
-        write_csr_soft_switch(XDMA_DST_STRIDE_PTR + i + j, 0);
+        csrw_ss(XDMA_DST_BOUND_PTR + i + j, 1);
+        csrw_ss(XDMA_DST_STRIDE_PTR + i + j, 0);
     }
     return 0;
 }
@@ -118,10 +116,10 @@ int32_t xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value) {
     }
 
     // Not bypass the xdma extension -> set the first CSR to 0
-    write_csr_soft_switch(csr_offset, 0);
+    csrw_ss(csr_offset, 0);
     csr_offset++;
     for (uint8_t i = 0; i < custom_csr_list[ext]; i++) {
-        write_csr_soft_switch(csr_offset + i, csr_value[i]);
+        csrw_ss(csr_offset + i, csr_value[i]);
     }
     return 0;
 }
@@ -136,10 +134,10 @@ int32_t xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value) {
     }
 
     // Not bypass the xdma extension -> set the first CSR to 0
-    write_csr_soft_switch(csr_offset, 0);
+    csrw_ss(csr_offset, 0);
     csr_offset++;
     for (uint8_t i = 0; i < custom_csr_list[ext]; i++) {
-        write_csr_soft_switch(csr_offset + i, csr_value[i]);
+        csrw_ss(csr_offset + i, csr_value[i]);
     }
     return 0;
 }
@@ -155,7 +153,7 @@ int32_t xdma_disable_src_ext(uint8_t ext) {
     }
 
     // Bypass the xdma extension -> set the first CSR to 1
-    write_csr_soft_switch(csr_offset, 1);
+    csrw_ss(csr_offset, 1);
     return 0;
 }
 
@@ -170,23 +168,23 @@ int32_t xdma_disable_dst_ext(uint8_t ext) {
     }
 
     // Bypass the xdma extension -> set the first CSR to 1
-    write_csr_soft_switch(csr_offset, 1);
+    csrw_ss(csr_offset, 1);
     return 0;
 }
 
 // Start xdma
 uint32_t xdma_start() {
-    int ret = read_csr_soft_switch(XDMA_COMMIT_TASK_PTR);
-    write_csr_soft_switch(XDMA_START_PTR, 1);
-    while (read_csr_soft_switch(XDMA_COMMIT_TASK_PTR) == ret) {
+    int ret = csrr_ss(XDMA_COMMIT_TASK_PTR);
+    csrw_ss(XDMA_START_PTR, 1);
+    while (csrr_ss(XDMA_COMMIT_TASK_PTR) == ret) {
         // Wait for xdma to start
     }
-    return read_csr_soft_switch(XDMA_COMMIT_TASK_PTR);
+    return csrr_ss(XDMA_COMMIT_TASK_PTR);
 }
 
 // Check if xdma is finished
 bool xdma_is_finished(uint32_t task_id) {
-    return read_csr_soft_switch(XDMA_FINISH_TASK_PTR) >= task_id;
+    return csrr_ss(XDMA_FINISH_TASK_PTR) >= task_id;
 }
 
 void xdma_wait(uint32_t task_id) {

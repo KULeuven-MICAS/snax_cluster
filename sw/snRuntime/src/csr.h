@@ -19,7 +19,7 @@
 // Uncomment the above line to enable 64 CSRs addressability, with the down side
 // of larger binary size.
 
-static uint32_t read_csr_soft_switch(uint32_t csr_address) {
+static uint32_t csrr_ss(uint32_t csr_address) {
     uint32_t value;
     switch (csr_address) {
         case 960:
@@ -156,7 +156,7 @@ static uint32_t read_csr_soft_switch(uint32_t csr_address) {
     return 0;
 }
 
-static void write_csr_soft_switch(uint32_t csr_address, uint32_t value) {
+static void csrw_ss(uint32_t csr_address, uint32_t value) {
     switch (csr_address) {
         case 960:
             write_csr(960, value);
