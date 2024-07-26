@@ -76,6 +76,7 @@ class AddressGenUnit(
     // The calculated address. This equals to # of output channels (64-bit narrow TCDM)
     val addr =
       Vec(param.channels, Decoupled(UInt(param.addressWidth.W)))
+    val enabled_channels = Vec(param.channels, Output(Bool()))
   })
 
   override val desiredName = s"${module_name_prefix}_AddressGenUnit"
@@ -115,8 +116,10 @@ class AddressGenUnit(
   io.busy := currentState === sBUSY
 
   // Connect the ceil from config to inside
-  // The innermost one is the spatial bound, so it should not be multiplied with other bounds
-  // part needs spatial unrolling, but other pats does not needed
+  // The innermost one is the spatial bound, so it should not be multiplied with other bounds. It should be used to generate enabled_channels signal
+  io.enabled_channels.zipWithIndex.foreach { case (a, b) =>
+    a := io.cfg.Bounds.head > b.U
+  }
   counter.io.ceil := VecInit(io.cfg.Bounds.tail).reduceTree(_ * _)
 
   // The counter's tick is the enable signal
