@@ -120,6 +120,7 @@ class AddressGenUnit(
   io.enabled_channels.zipWithIndex.foreach { case (a, b) =>
     a := io.cfg.Bounds.head > b.U
   }
+  assert(io.cfg.Bounds.head <= param.channels.U, "[AddressGenUnit] The innermost bound is spatial bound, so it should be less than or equal to the number of channels")
   counter.io.ceil := VecInit(io.cfg.Bounds.tail).reduceTree(_ * _)
 
   // The counter's tick is the enable signal
