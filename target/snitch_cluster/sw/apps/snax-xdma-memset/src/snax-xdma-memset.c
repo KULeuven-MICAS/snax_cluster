@@ -139,7 +139,7 @@ int main() {
         printf("The memset of 4KB - 12KB is correct\n");
 
         // Test 3: Setting the 4-12KB region to 0x0000000000000001 (uint64_t 1)
-        // This test is to validate the byte mask by sheilding all other bits,
+        // This test is to validate the byte mask by shielding all other bits,
         // so only LSB 8 bits are set.
         printf(
             "Test 3: Setting the 4-12KB region to 0x0000000000000001 (uint64_t "
