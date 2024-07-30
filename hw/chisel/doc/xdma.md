@@ -1,8 +1,8 @@
-# Snax-Cluster eXtendable Distributed Memory Access (XDMA)
+# Snax Cluster eXtendable Distributed Memory Access (XDMA)
 
-This folder contains all the source code of the eXtendable Distributed Memory Access, which will be used widely inside snax clusters for intra-cluster / inter-cluster *Computation on Copy (CoC)*. The introduction of XDMA include these aspects:  
+This documentation introduces eXtendable Distributed Memory Access (XDMA), which will be used widely inside snax clusters for intra-cluster / inter-cluster *Computation on Copy (CoC)*. The introduction of XDMA include these aspects:  
 
-- [Snax-Cluster eXtendable Distributed Memory Access (XDMA)](#snax-cluster-extendable-distributed-memory-access-xdma)
+- [Snax Cluster eXtendable Distributed Memory Access (XDMA)](#snax-cluster-extendable-distributed-memory-access-xdma)
   - [Introduction and XDMA hardware block diagram](#introduction-and-xdma-hardware-block-diagram)
     - [Data Fetching Unit (Streamer)](#data-fetching-unit-streamer)
     - [Datapath Extension](#datapath-extension)
