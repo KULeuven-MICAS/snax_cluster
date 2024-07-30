@@ -14,7 +14,7 @@ This folder contains all the source code of the eXtendable Distributed Memory Ac
 
 The XDMA will be deployed inside every cluster, with the architecture as below: 
 
-![XDMA Hardware Diagram](figures/xdma_datapath.png)
+![XDMA Hardware Diagram](xdma_figures/xdma_datapath.png)
 
 ### Data Fetching Unit (Streamer)
 
@@ -45,4 +45,4 @@ In case the source address and destination address come from the same memory reg
 
 In case the source address and destination address come from the different memory region, the XDMA use another half from remote to accomplish the data copy. There are three steps: First, the controller discover the source data is not coming from the local memory region, so the configutation is flattened into one dimensional frame. Second, the configuration frame is forwarded to the remote XDMA to request the data. Third, the data is forwarded from the remote back to local. 
 
-![XDMA Call Chain](figures/xdma_callchain.png)
+![XDMA Call Chain](xdma_figures/xdma_callchain.png)
