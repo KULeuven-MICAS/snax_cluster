@@ -92,7 +92,7 @@ Note: The AXI protocol adaptor is still under development and the architecture m
 
 Consider the following configuration:
 
-```json
+```hjson
 // Key configuration items only:
 
   // CFG items inside cluster
