@@ -204,7 +204,7 @@ object xdmaTopGen extends App {
   // The target is that: 1) the sequence of the extension can be specified by the user 2) users can add their own extensions in the minimal effort (Does not need to modify the generation code)
   // The mechanism is that a small and temporary scala binary is compiled during the execution, to retrieve the instantiation object from the name
   // E.g. "HasMaxPool" -> HasMaxPool object
-  // Thus, the generation function does not need to be modified by the extension developers. 
+  // Thus, the generation function does not need to be modified by the extension developers.
   // Extension developers only need to 1) Add the Extension source code 2) Add Has...: #priority in hjson configuration file
 
   val toolbox = currentMirror.mkToolBox()
