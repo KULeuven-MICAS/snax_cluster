@@ -103,21 +103,21 @@ Consider the following configuration:
   },
   // CFG items inside XDMA core template
   xdma_core_template: {
-    snax_xdma_cfg: {
-      reader_buffer: 8, 
-      writer_buffer: 8, 
-      reader_agu_dimension: 3, 
-      writer_agu_dimension: 3, 
-      has_transposer: true, 
-      has_maxpool: true, 
-      has_memset: true
-    }
+     snax_xdma_cfg: {
+         reader_buffer: 8, 
+         writer_buffer: 8, 
+         reader_agu_dimension: 3, 
+         writer_agu_dimension: 3, 
+         HasTransposer: 3, 
+         HasMemset: 1, 
+         HasMaxPool: 2
+     }
   }
 ```
 
 This configuration specifies eight channels for both reader and writer TCDM ports, employing three-dimensional address generation. The innermost dimension is used explicitly by the eight parallel channels, and its value can be reduced to disable some channels. The other two dimensions are managed by the Address Generation Unit (AGU).
 
-The enabled extensions — **has_transposer**, **has_maxpool**, and **has_memset** — add bypass signals and custom CSRs to the configuration list.
+The enabled extensions — **HasTransposer**, **HasMemset**, and **HasMaxPool** — add bypass signals and custom CSRs to the configuration list. The positive number at the back means it will be enabled, and the size of the number indicate its sequence - the one with smaller value will in the front of one with larger value. 
 
 The following table outlines the CSR addresses and their settings:
 
@@ -156,7 +156,7 @@ Offsets may vary based on the configuration, but the Chisel code will automatica
 
 ### Native Datapath Extension
 
-Designing a Datapath Extension involves three steps:
+Designing a Datapath Extension involves four steps:
 
 1. Define the instantiation object by extending **HasDMAExtension**: 
 
