@@ -1,3 +1,8 @@
+// Copyright 2024 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+// Yunhao Deng <yunhao.deng@kuleuven.be>
+
 module VerilogMemset #(
     parameter int UserCsrNum = 1,
     parameter int DataWidth = 512
@@ -21,8 +26,8 @@ module VerilogMemset #(
     assign memset_data = ext_csr_i_0[7:0];
 
     genvar i;
-    generate gen_memset_vec:
-        for(i = 0; i < DataWidth/8; i = i + 1) begin
+    generate
+        for(i = 0; i < DataWidth/8; i = i + 1) begin: g_memset
             assign ext_data_o_bits[i*8 +: 8] = memset_data;
         end
     endgenerate
