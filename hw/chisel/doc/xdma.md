@@ -24,7 +24,7 @@ XDMA is implemented in every cluster with the following architecture:
 
 ![XDMA Hardware Diagram](xdma_figures/xdma_datapath.png)
 
-At the top of the diagram is the interface to the TCDM. IO operations towards memory occur here. The Address Generation Unit generates addresses consumed by each channel. The accessed data is forwarded to XDMA datapath extension chains, undergoing several programmable processes. The data is either looped back to the writer side of the same XDMA if the destination is in the same region as the source, or sent to the writer side of a remote XDMA if in a different region. The writer's side mirrors the reader's side but inverts the data flow direction.
+At the top of the diagram is the interface to the TCDM. IO operations towards local memory occur here. The interface consists of multiple channels accessing data in parallel. The Address Generation Unit generates addresses consumed by each channel. The accessed data is forwarded to XDMA datapath extension chains, undergoing several programmable processes. The data is either looped back to the writer side of the same XDMA if the destination is in the same region as the source, or sent to the writer side of a remote XDMA if in a different region. The writer's side mirrors the reader's side but inverts the data flow direction.
 
 ## Source Code Hierarchy
 
@@ -65,7 +65,7 @@ The TCDM interconnect at the top of the figure provides full-region data access 
 - **TCDMDataWidth=64** and **AXIDataWidth=512**: Typical for Snax clusters. XDMA will instantiate eight channels for both reading and writing at the TCDM side, concatenating them into a single 512-bit channel at the AXI side.
 - **TCDMDataWidth=64** and **AXIDataWidth=64**: Typical for global scratchpad memory/SRAM. XDMA will instantiate only one channel on each side, adopting a simpler architecture used by most other DMAs.
 
-Each TCDM channel has its own address and data caches, enabling independent data fetching with minimal interference from other channels. Channels can be selectively disabled to save energy and simplify memory initialization (e.g., turning off all reader channels and enabling writer channels to write zeros to memory). The byte mask is also implemented for byte-level granularity in writing.
+Each TCDM channel has its own address and data caches, enabling independent data fetching with minimal interference from other channels. Channels can be selectively disabled if the required bandwidth is less than the bandwidth of all channels combined (e.g., turning off all reader channels and enabling writer channels to write zeros to memory). Additionally, a byte mask is also implemented for byte-level granularity in writing the data back to memory.
 
 Data from the streamer is concatenated into a wide bus and forwarded to the datapath extension.
 
@@ -78,7 +78,7 @@ Designing a custom datapath extension is straightforward thanks to Chisel's flex
 ### Distributed Datapath for Cluster-to-Cluster or Host-to-Cluster Memory Access
 
 XDMA can perform data copying within the same memory region or across different regions. If the source and destination addresses are from the same region, data is looped back directly without utilizing the AXI, conserving energy. If addresses span different regions, the data is handled in three steps:
-1. The controller recognizes that the source data is from a non-local region and flattens the configuration into a one-dimensional frame.
+1. The controller recognizes that the source data is from a non-local region and flattens the configuration into a one-dimensional frame with a width equal to the bitwidth of the AXI bus.
 2. The configuration frame is sent to the remote XDMA to request the data.
 3. The data is relayed back from the remote to the local site.
 
