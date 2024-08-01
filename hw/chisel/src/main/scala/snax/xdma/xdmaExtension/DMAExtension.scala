@@ -6,7 +6,6 @@ import chisel3.util._
 import snax.utils._
 import snax.xdma.CommonCells._
 import snax.xdma.DesignParams._
-import scala.io.Codec
 
 /** The parent (abstract) Class for the DMA Extension Generation Params This
   * class template is used to isolate the definition of class (when user provide
@@ -99,36 +98,36 @@ abstract class DMAExtension(implicit extensionParam: DMAExtensionParam)
   outputMux.io.in(1) <> bypass_data
 }
 
-/** The parent Class for the integration of DMA Extension written in SystemVerilog
- * Before the integration of the custom extension, please make sure the following: 
- * 1) The SystemVerilog module's top module's IO is strict, shown as the following example: 
-
-module VerilogMemset #(
-    userCsrNum = 1,
-    dataWidth = 512
-) (
-    input logic clk, 
-    input logic rst_n, 
-    output logic ext_data_i_ready, 
-    input logic ext_data_i_valid,
-    input logic [dataWidth-1:0] ext_data_i_bits,
-    input logic ext_data_o_ready, 
-    output logic ext_data_o_valid,
-    output logic [dataWidth-1:0] ext_data_o_bits,
-    input logic [31:0]ext_csr_i_0, 
-    input logic ext_start_i, 
-    output logic ext_busy_o
-);
-  Several reminders for developers: 
-  1. Two parameters is provided by XDMA generator: userCsrNum and dataWidth, which is user-definable in HasDMAExtension class. 
-  2. rst_n is the active low asynchronous reset signal. 
-  3. The input and output has the handshake. When both are high, the data is regarded as successfully transferred. 
-  4. csr_i is the CSR signal, and it is an unrolled two-dimensional signal. If userCsrNum is 2, then there is two csrs: ext_csr_i_0 and ext_csr_i_1.
-
-
- * 2) After the writing of the SystemVerilog module, give Chisel generator the method to integrate the SystemVerilog module. This is done by the declaration of HasDMAExtension object. (Take a llok at example in VerilogMemset.scala)
- * 3) The instantiate method should be provided, with a new SystemVerilogDMAExtension class.This class need two parameters: topmodule and filelist. The topmodule is the name of the SystemVerilog module (very similar to defining the top module in the backend flow), and the filelist is the list of SystemVerilog files that are needed to be integrated.
- * 4) The location of SystemVerilog file doesn't matter. Because Chisel will include all the code you write inside the body of XDMA. However, it is recommended to put it in the src/main/systemverilog folder for the management purpose.
+/** The parent Class for the integration of DMA Extension written in
+  * SystemVerilog Before the integration of the custom extension, please make
+  * sure the following: 1) The SystemVerilog module's top module's IO is strict,
+  * shown as the following example:
+  *
+  * module VerilogMemset #( userCsrNum = 1, dataWidth = 512 ) ( input logic clk,
+  * input logic rst_n, output logic ext_data_i_ready, input logic
+  * ext_data_i_valid, input logic [dataWidth-1:0] ext_data_i_bits, input logic
+  * ext_data_o_ready, output logic ext_data_o_valid, output logic
+  * [dataWidth-1:0] ext_data_o_bits, input logic [31:0]ext_csr_i_0, input logic
+  * ext_start_i, output logic ext_busy_o ); Several reminders for developers:
+  * \1. Two parameters is provided by XDMA generator: userCsrNum and dataWidth,
+  * which is user-definable in HasDMAExtension class. 2. rst_n is the active low
+  * asynchronous reset signal. 3. The input and output has the handshake. When
+  * both are high, the data is regarded as successfully transferred. 4. csr_i is
+  * the CSR signal, and it is an unrolled two-dimensional signal. If userCsrNum
+  * is 2, then there is two csrs: ext_csr_i_0 and ext_csr_i_1.
+  *
+  * 2) After the writing of the SystemVerilog module, give Chisel generator the
+  * method to integrate the SystemVerilog module. This is done by the
+  * declaration of HasDMAExtension object. (Take a llok at example in
+  * VerilogMemset.scala) 3) The instantiate method should be provided, with a
+  * new SystemVerilogDMAExtension class.This class need two parameters:
+  * topmodule and filelist. The topmodule is the name of the SystemVerilog
+  * module (very similar to defining the top module in the backend flow), and
+  * the filelist is the list of SystemVerilog files that are needed to be
+  * integrated. 4) The location of SystemVerilog file doesn't matter. Because
+  * Chisel will include all the code you write inside the body of XDMA. However,
+  * it is recommended to put it in the src/main/systemverilog folder for the
+  * management purpose.
   */
 
 class SystemVerilogDMAExtension(topmodule: String, filelist: Seq[String])(
