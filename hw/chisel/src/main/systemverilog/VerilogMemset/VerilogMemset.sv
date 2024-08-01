@@ -1,15 +1,15 @@
 module VerilogMemset #(
-    parameter int userCsrNum = 1,
-    parameter int dataWidth = 512
+    parameter int UserCsrNum = 1,
+    parameter int DataWidth = 512
 ) (
     input logic clk,
     input logic rst_n,
     output logic ext_data_i_ready,
     input logic ext_data_i_valid,
-    input logic [dataWidth-1:0] ext_data_i_bits,
+    input logic [DataWidth-1:0] ext_data_i_bits,
     input logic ext_data_o_ready,
     output logic ext_data_o_valid,
-    output logic [dataWidth-1:0] ext_data_o_bits,
+    output logic [DataWidth-1:0] ext_data_o_bits,
     input logic [31:0]ext_csr_i_0,
     input logic ext_start_i,
     output logic ext_busy_o
@@ -21,12 +21,10 @@ module VerilogMemset #(
     assign memset_data = ext_csr_i_0[7:0];
 
     genvar i;
-    generate
-    begin:genmemset_vector
-        for(i = 0; i < dataWidth/8; i = i + 1) begin
+    generate gen_memset_vec:
+        for(i = 0; i < DataWidth/8; i = i + 1) begin
             assign ext_data_o_bits[i*8 +: 8] = memset_data;
         end
-    end
     endgenerate
     assign ext_busy_o = 0;
 endmodule

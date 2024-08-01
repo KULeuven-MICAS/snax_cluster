@@ -137,8 +137,8 @@ class SystemVerilogDMAExtension(topmodule: String, filelist: Seq[String])(
   val sv_module = Module(
     new BlackBox(
       Map(
-        "userCsrNum" -> extensionParam.userCsrNum,
-        "dataWidth" -> extensionParam.dataWidth
+        "UserCsrNum" -> extensionParam.userCsrNum,
+        "DataWidth" -> extensionParam.dataWidth
       )
     ) with HasBlackBoxInline {
       val io = IO(new Bundle {
