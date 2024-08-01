@@ -944,18 +944,3 @@ class xDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
       concurrent_threads.joinAndStep()
   }
 }
-
-object xdmaTopEmitter extends App {
-  emitVerilog(
-    new xdmaTop(
-      readerparam = new DMADataPathParam(
-        rwParam = new ReaderWriterParam
-      ),
-      writerparam = new DMADataPathParam(
-        rwParam = new ReaderWriterParam,
-        extParam = Seq(HasVerilogMemset, HasMaxPool, HasTransposer)
-      )
-    ),
-    Array("--target-dir", "generated")
-  )
-}
