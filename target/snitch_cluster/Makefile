@@ -65,9 +65,6 @@ STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamP
 # SNAX Generations #
 ####################
 
-# Make sure to have testharness as part of this first
-SNAX_GEN += $(SNAX_TEST_PATH)testharness.sv
-
 define generate_snax_gen
 SNAX_GEN += \
 	$(GENERATED_DIR)/$(1)/$(1)_csrman_CsrManager.sv \
@@ -270,6 +267,8 @@ ifeq (${CFG_OVERRIDE}, cfg/default.hjson)
 
 endif
 
+SNAX_GEN += $(SNAX_TEST_PATH)testharness.sv
+
 VSIM_BENDER += -t QUESTA_SIM
 
 # Verilated and compiled snitch cluster
@@ -463,7 +462,7 @@ $(GENERATED_DIR)/bootdata.cc: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
 clean-vlt: clean-work
 	rm -rf bin $(VLT_BUILDDIR) $(SNAX_TEST_PATH)testharness.sv $(CSRMAN_PARAM_SCALA_PATH) $(STREAM_PARAM_SCALA_PATH)
 
-$(VLT_AR): ${OTHER_SNAX_GEN} ${VLT_SOURCES} ${TB_SRCS} 
+$(VLT_AR): ${CHISEL_GENERATED_FILES} ${OTHER_SNAX_GEN} ${VLT_SOURCES} ${TB_SRCS}
 	+$(call VERILATE,testharness)
 verilate: $(VLT_AR)
 
