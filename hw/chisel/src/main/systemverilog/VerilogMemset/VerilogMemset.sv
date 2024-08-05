@@ -7,16 +7,16 @@ module VerilogMemset #(
     parameter int UserCsrNum = 1,
     parameter int DataWidth = 512
 ) (
-    input logic clk,
-    input logic rst_n,
+    input  logic clk_i,
+    input  logic rst_ni,
     output logic ext_data_i_ready,
-    input logic ext_data_i_valid,
-    input logic [DataWidth-1:0] ext_data_i_bits,
-    input logic ext_data_o_ready,
+    input  logic ext_data_i_valid,
+    input  logic [DataWidth-1:0] ext_data_i_bits,
+    input  logic ext_data_o_ready,
     output logic ext_data_o_valid,
     output logic [DataWidth-1:0] ext_data_o_bits,
-    input logic [31:0]ext_csr_i_0,
-    input logic ext_start_i,
+    input  logic [31:0]ext_csr_i_0,
+    input  logic ext_start_i,
     output logic ext_busy_o
 );
 

@@ -146,16 +146,16 @@ class xdmaTop(
 }
 
 object xdmaTopEmitter extends App {
-  emitVerilog(
+  _root_.circt.stage.ChiselStage.emitSystemVerilogFile(
     new xdmaTop(
       clusterName = "test_cluster",
       readerparam = new DMADataPathParam(new ReaderWriterParam, Seq()),
       writerparam = new DMADataPathParam(
         new ReaderWriterParam,
-        Seq(HasMaxPool, HasMemset, HasTransposer)
+        Seq(HasMaxPool, HasVerilogMemset, HasTransposer)
       )
     ),
-    args = Array("--target-dir", "generated")
+    args = Array("--split-verilog", "--target-dir", "generated/xdma")
   )
 }
 
