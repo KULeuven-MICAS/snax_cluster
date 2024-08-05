@@ -102,6 +102,15 @@ RUN git clone https://github.com/kuleuven-micas/snax_cluster.git && \
     cd snax-mlir && pip3 install --no-cache-dir -r requirements.txt && \
     cd .. && \
     rm -rf snax-mlir
+# Install LLVM 17 + MLIR + clang-format
+
+COPY --from=ghcr.io/opencompl/quidditch/toolchain:runtime-github-actions /opt/quidditch-toolchain /opt/quidditch-toolchain
+ENV PATH="/opt/quidditch-toolchain/bin:${PATH}"
+
+RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+RUN add-apt-repository -y "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" && apt-get update
+RUN apt-get -y install mlir-17-tools
+RUN apt-get -y install clang-format-17
 
 
 # Install Oh-My-Zsh and Autocomplete Plugin
