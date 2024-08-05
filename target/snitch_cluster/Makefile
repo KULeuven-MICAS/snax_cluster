@@ -65,6 +65,9 @@ STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamP
 # SNAX Generations #
 ####################
 
+# Make sure to have testharness as part of this first
+SNAX_GEN += $(SNAX_TEST_PATH)testharness.sv
+
 define generate_snax_gen
 SNAX_GEN += \
 	$(GENERATED_DIR)/$(1)/$(1)_csrman_CsrManager.sv \
@@ -266,8 +269,6 @@ ifeq (${CFG_OVERRIDE}, cfg/default.hjson)
 	VCS_BENDER  += -t snitch_cluster
 
 endif
-
-SNAX_GEN += $(SNAX_TEST_PATH)testharness.sv
 
 VSIM_BENDER += -t QUESTA_SIM
 
