@@ -110,6 +110,18 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 
 endif
 
+ifeq (${CFG_OVERRIDE}, cfg/snax-hypercorex.hjson)
+
+	CLUSTER_NAME = snax_hypercorex_cluster
+
+$(eval $(call generate_snax_gen,snax_hypercorex))
+
+	VSIM_BENDER += -t hypercorex
+	VLT_BENDER  += -t hypercorex
+	VCS_BENDER  += -t hypercorex
+
+endif
+
 ifeq (${CFG_OVERRIDE}, cfg/snax-data-reshuffler.hjson)
 
 	SNAX_CHISEL_ACC_GEN = true
