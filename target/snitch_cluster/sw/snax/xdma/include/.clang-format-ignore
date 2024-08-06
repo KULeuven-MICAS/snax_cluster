@@ -1,0 +1,2 @@
+# ignore automatic-generated code from clang-format checks
+./snax-xdma-csr-addr.h
