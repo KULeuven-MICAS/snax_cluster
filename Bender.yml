@@ -421,25 +421,28 @@ sources:
   - target: snax_gemm_cluster
     files:
       - target/snitch_cluster/generated/snax_gemm_cluster_wrapper.sv
-  - target: any(snax_streamer_gemm, snax_wide_gemm_data_reshuffler)
+  - target: snax_streamer_gemm_conv_cluster
+    files:
+      - target/snitch_cluster/generated/snax_streamer_gemm_conv_cluster.sv
+  - target:
+    files:
+      - target/snitch_cluster/generated/snax_wide_gemm_data_reshuffler_cluster.sv
+  - target: snax_streamer_gemm_cluster
     files:
       - target/snitch_cluster/generated/snax_streamer_gemm_cluster_wrapper.sv
-  - target: snax_streamer_simd
+  - target: snax_streamer_simd_cluster
     files:
       - target/snitch_cluster/generated/snax_streamer_simd_cluster_wrapper.sv
-  - target: snax_data_reshuffler
+  - target: snax_data_reshuffler_cluster
     files:
       - target/snitch_cluster/generated/snax_data_reshuffler_cluster_wrapper.sv
-  - target: snax_data_reshuffler
-    files:
-      - target/snitch_cluster/generated/snax_data_reshuffler_cluster_wrapper.sv
-  - target: snax_streamer_gemmX
+  - target: snax_streamer_gemmX_cluster
     files:
       - target/snitch_cluster/generated/snax_streamer_gemmX_cluster_wrapper.sv
-  - target: snax_streamer_gemmX_xdma
+  - target: snax_streamer_gemmX_xdma_cluster
     files:
       - target/snitch_cluster/generated/snax_streamer_gemmX_xdma_cluster_wrapper.sv
-  - target: snax_streamer_gemm_add_c
+  - target: snax_streamer_gemm_add_c_cluster
     files:
       - target/snitch_cluster/generated/snax_streamer_gemm_add_c_cluster_wrapper.sv
 
