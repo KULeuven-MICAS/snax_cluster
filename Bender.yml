@@ -424,7 +424,7 @@ sources:
   - target: snax_streamer_gemm_conv_cluster
     files:
       - target/snitch_cluster/generated/snax_streamer_gemm_conv_cluster.sv
-  - target:
+  - target: snax_wide_gemm_data_reshuffler_cluster
     files:
       - target/snitch_cluster/generated/snax_wide_gemm_data_reshuffler_cluster.sv
   - target: snax_streamer_gemm_cluster
