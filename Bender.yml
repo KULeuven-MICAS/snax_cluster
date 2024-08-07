@@ -413,6 +413,9 @@ sources:
   - target: snax_mac_cluster
     files:
       - target/snitch_cluster/generated/snax_mac_cluster_wrapper.sv
+  - target: snax_mac_mult_cluster
+    files:
+      - target/snitch_cluster/generated/snax_mac_mult_cluster_wrapper.sv
   - target: snax_alu_cluster
     files:
       - target/snitch_cluster/generated/snax_alu_cluster_wrapper.sv
