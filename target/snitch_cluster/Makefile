@@ -77,9 +77,9 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-gemm.hjson)
 	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
 	include $(SNAX_GEMM_ROOT)/Makefile	
 
-	VSIM_BENDER += -t snax-gemm
-	VLT_BENDER  += -t snax-gemm
-	VCS_BENDER  += -t snax-gemm
+	VSIM_BENDER += -t snax-gemm -t snax-gemm_cluster
+	VLT_BENDER  += -t snax-gemm -t snax-gemm_cluster
+	VCS_BENDER  += -t snax-gemm -t snax-gemm_cluster
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
@@ -113,9 +113,9 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 
 	CLUSTER_NAME = snax_alu_cluster
 
-	VSIM_BENDER += -t snax_alu
-	VLT_BENDER  += -t snax_alu
-	VCS_BENDER  += -t snax_alu
+	VSIM_BENDER += -t snax_alu -t snax_alu_cluster
+	VLT_BENDER  += -t snax_alu -t snax_alu_cluster
+	VCS_BENDER  += -t snax_alu -t snax_alu_cluster
 
 endif
 
@@ -211,21 +211,21 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-mac.hjson)
 
 	BYPASS_ACCGEN = true
 	
-	VSIM_BENDER += -t snax_mac
-	VLT_BENDER  += -t snax_mac
-	VCS_BENDER  += -t snax_mac
+	VSIM_BENDER += -t snax_mac -t snax_mac_cluster
+	VLT_BENDER  += -t snax_mac -t snax_mac_cluster
+	VCS_BENDER  += -t snax_mac -t snax_mac_cluster
 
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-mac-mult.hjson)
 
-	CLUSTER_NAME  = snax_mac_cluster
+	CLUSTER_NAME  = snax_mac_mult_cluster
 
 	BYPASS_ACCGEN = true
 	
-	VSIM_BENDER += -t snax_mac
-	VLT_BENDER  += -t snax_mac
-	VCS_BENDER  += -t snax_mac
+	VSIM_BENDER += -t snax_mac -t snax_mac_mult_cluster
+	VLT_BENDER  += -t snax_mac -t snax_mac_mult_cluster
+	VCS_BENDER  += -t snax_mac -t snax_mac_mult_cluster
 
 endif
 
