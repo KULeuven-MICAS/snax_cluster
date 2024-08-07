@@ -270,7 +270,7 @@ rtl-cluster-gen:
 	@echo "Generating ${CLUSTER_NAME} module"
 	@echo "-------------------------------------------------------------"
 
-	$(CLUSTER_GEN) -c ${CFG_OVERRIDE} -o $(GENERATED_DIR) --wrapper --wrapper_name="$(CLUSTER_NAME)"
+	$(CLUSTER_GEN) -c ${CFG_OVERRIDE} -o $(GENERATED_DIR) --wrapper
 
 rtl-gen: rtl-snax-gen rtl-cluster-gen
 
