@@ -258,6 +258,8 @@ rtl-snax-gen:
 		--bypass_accgen="${BYPASS_ACCGEN}" \
 		--gen_path="${GENERATED_DIR}/"
 
+
+rtl-cluster-gen:
 	@echo "-------------------------------------------------------------"
 	@echo "Generating ${CLUSTER_NAME} module"
 	@echo "-------------------------------------------------------------"
@@ -266,6 +268,7 @@ rtl-snax-gen:
 
 rtl-gen: 
 	$(MAKE) rtl-snax-gen
+	$(MAKE) rtl-cluster-gen
 ifeq ($(SNAX_CHISEL_ACC_GEN), true)
 	$(MAKE) rtl-chisel-acc-gen
 endif
