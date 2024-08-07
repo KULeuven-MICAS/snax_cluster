@@ -258,11 +258,11 @@ rtl-snax-gen:
 		--bypass_accgen="${BYPASS_ACCGEN}" \
 		--gen_path="${GENERATED_DIR}/"
 
-	# TODO: Modify this later as we will combine
-	# the chisel generations inside the wrappers
-	ifeq ($(SNAX_CHISEL_ACC_GEN), true)
-		$(MAKE) rtl-chisel-acc-gen
-	endif
+# TODO: Modify this later as we will combine
+# the chisel generations inside the wrappers
+ifeq ($(SNAX_CHISEL_ACC_GEN), true)
+	$(MAKE) rtl-chisel-acc-gen
+endif
 
 
 rtl-cluster-gen:
