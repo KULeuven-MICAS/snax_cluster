@@ -245,6 +245,8 @@ endif
 
 rtl-snax-gen:
 
+	mkdir -p $(GENERATED_DIR)
+
 	@echo "-------------------------------------------------------------"
 	@echo "Generating streamers, CSR managers, wrappers, and testharness"
 	@echo "-------------------------------------------------------------"
@@ -260,8 +262,7 @@ rtl-snax-gen:
 	@echo "Generating ${CLUSTER_NAME} module"
 	@echo "-------------------------------------------------------------"
 
-	mkdir -p $(GENERATED_DIR) && \
-	$(CLUSTER_GEN) -c ${CFG} -o $(GENERATED_DIR) --wrapper --wrapper_name="$(CLUSTER_NAME)"
+	$(CLUSTER_GEN) -c ${CFG_OVERRIDE} -o $(GENERATED_DIR) --wrapper --wrapper_name="$(CLUSTER_NAME)"
 
 rtl-gen: 
 	$(MAKE) rtl-snax-gen
