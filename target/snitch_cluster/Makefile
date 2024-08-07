@@ -258,6 +258,12 @@ rtl-snax-gen:
 		--bypass_accgen="${BYPASS_ACCGEN}" \
 		--gen_path="${GENERATED_DIR}/"
 
+	# TODO: Modify this later as we will combine
+	# the chisel generations inside the wrappers
+	ifeq ($(SNAX_CHISEL_ACC_GEN), true)
+		$(MAKE) rtl-chisel-acc-gen
+	endif
+
 
 rtl-cluster-gen:
 	@echo "-------------------------------------------------------------"
@@ -266,12 +272,7 @@ rtl-cluster-gen:
 
 	$(CLUSTER_GEN) -c ${CFG_OVERRIDE} -o $(GENERATED_DIR) --wrapper --wrapper_name="$(CLUSTER_NAME)"
 
-rtl-gen: 
-	$(MAKE) rtl-snax-gen
-	$(MAKE) rtl-cluster-gen
-ifeq ($(SNAX_CHISEL_ACC_GEN), true)
-	$(MAKE) rtl-chisel-acc-gen
-endif
+rtl-gen: rtl-snax-gen rtl-cluster-gen
 
 VSIM_BENDER += -t QUESTA_SIM
 
