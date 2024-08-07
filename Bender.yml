@@ -410,15 +410,15 @@ sources:
   - target: snitch_cluster
     files:
       - target/snitch_cluster/generated/snitch_cluster_wrapper.sv
-  - target: snax_mac
+  - target: snax_mac_cluster
     files:
       - target/snitch_cluster/generated/snax_mac_cluster_wrapper.sv
-  - target: snax_alu
+  - target: snax_alu_cluster
     files:
       - target/snitch_cluster/generated/snax_alu_cluster_wrapper.sv
   # Note: this is about to be obsolete
   # but it uses the old snax-gemm still
-  - target: snax-gemm
+  - target: snax_gemm_cluster
     files:
       - target/snitch_cluster/generated/snax_gemm_cluster_wrapper.sv
   - target: any(snax_streamer_gemm, snax_wide_gemm_data_reshuffler)
