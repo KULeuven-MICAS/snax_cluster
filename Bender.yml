@@ -431,7 +431,7 @@ sources:
   - target: snax_alu_cluster
     files:
       - target/snitch_cluster/generated/snax_alu_cluster_wrapper.sv
-  - target: hypercorex
+  - target: snax_hypercorex_cluster
     files:
       - target/snitch_cluster/generated/snax_hypercorex_cluster_wrapper.sv
   # Note: this is about to be obsolete
