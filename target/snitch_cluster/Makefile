@@ -112,9 +112,9 @@ endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-hypercorex.hjson)
 
-	VSIM_BENDER += -t hypercorex -t hypercorex_cluster
-	VLT_BENDER  += -t hypercorex -t hypercorex_cluster
-	VCS_BENDER  += -t hypercorex -t hypercorex_cluster
+	VSIM_BENDER += -t hypercorex -t snax_hypercorex_cluster
+	VLT_BENDER  += -t hypercorex -t snax_hypercorex_cluster
+	VCS_BENDER  += -t hypercorex -t snax_hypercorex_cluster
 
 endif
 
