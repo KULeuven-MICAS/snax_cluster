@@ -56,26 +56,29 @@ module snitch_icache_data #(
       // The cache memory is wide hence we break it into two
       //----------------------------------------------------
       syn_memory i_cache_mem_0(
-                  .CLK    ( clk_i                                                  ),
-                  .CEB    ( ~ram_enable_i[i]                                       ),
-                  .WEB    ( ~ram_write_i                                           ),
-                  .A      ( ram_addr_i                                             ),
-                  .D      ( ram_wdata_i[i][(CFG.LINE_WIDTH)-1:(CFG.LINE_WIDTH)/2]  ),
-                  .BWEB   ( '0                                                     ),
-                  .RTSEL  ( 2'b01                                                  ),
-                  .WTSEL  ( 2'b01                                                  ),
-                  .Q      ( ram_rdata_o[i][(CFG.LINE_WIDTH)-1:(CFG.LINE_WIDTH)/2]) );
+                  .CLK    ( clk_i                                                 ),
+                  .CEB    ( ~ram_enable_i[i]                                      ),
+                  .WEB    ( ~ram_write_i                                          ),
+                  .A      ( ram_addr_i                                            ),
+                  .D      ( ram_wdata_i[i][(CFG.LINE_WIDTH)-1:(CFG.LINE_WIDTH)/2] ),
+                  .BWEB   ( '0                                                    ),
+                  .RTSEL  ( 2'b01                                                 ),
+                  .WTSEL  ( 2'b01                                                 ),
+                  .Q      ( ram_rdata_o[i][(CFG.LINE_WIDTH)-1:(CFG.LINE_WIDTH)/2] )
+      );
 
       syn_memory i_cache_mem_1(
-                  .CLK    ( clk_i                                   ),
-                  .CEB    ( ~ram_enable_i[i]                        ),
-                  .WEB    ( ~ram_write_i                            ),
-                  .A      ( ram_addr_i                              ),
-                  .D      ( ram_wdata_i[i][(CFG.LINE_WIDTH)/2-1:0]  ),
-                  .BWEB   ( '0                                      ),
-                  .RTSEL  ( 2'b01                                   ),
-                  .WTSEL  ( 2'b01                                   ),
-                  .Q      ( ram_rdata_o[i][(CFG.LINE_WIDTH)/2-1:0]) );
+                  .CLK    ( clk_i                                  ),
+                  .CEB    ( ~ram_enable_i[i]                       ),
+                  .WEB    ( ~ram_write_i                           ),
+                  .A      ( ram_addr_i                             ),
+                  .D      ( ram_wdata_i[i][(CFG.LINE_WIDTH)/2-1:0] ),
+                  .BWEB   ( '0                                     ),
+                  .RTSEL  ( 2'b01                                  ),
+                  .WTSEL  ( 2'b01                                  ),
+                  .Q      ( ram_rdata_o[i][(CFG.LINE_WIDTH)/2-1:0] ) 
+      );
+
 `endif
 
   end
