@@ -34,7 +34,7 @@ module snitch_data_mem #(
 
   for (genvar i = 0; i < NumTotalBanks; i++) begin: gen_banks
 
-`ifndef TAPEOUT_SYNTHESIS
+`ifndef TARGET_TAPEOUT
 
     tc_sram_impl #(
       .NumWords   ( TCDMDepth         ),

@@ -27,7 +27,7 @@ module snitch_icache_tag #(
 
   for (genvar i = 0; i < CFG.SET_COUNT; i++) begin: g_cache_tag_sets
 
-`ifndef TAPEOUT_SYNTHESIS
+`ifndef TARGET_TAPEOUT
 
       tc_sram_impl #(
         .NumWords   ( CFG.LINE_COUNT  ),
