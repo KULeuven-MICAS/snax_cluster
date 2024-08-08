@@ -17,10 +17,25 @@ module testharness import ${cfg["cluster"]["name"]}_pkg::*; (
   narrow_in_resp_t  narrow_in_resp;
   narrow_out_req_t  narrow_out_req;
   narrow_out_resp_t narrow_out_resp;
+% if 'use_ax_bw_converter' in cfg['cluster']:
+  % if cfg['cluster']['use_ax_bw_converter']:
+  lowbw_wide_out_req_t  wide_out_req;
+  lowbw_wide_out_resp_t wide_out_resp;
+  lowbw_wide_in_req_t   wide_in_req;
+  lowbw_wide_in_resp_t  wide_in_resp;
+  % else:
   wide_out_req_t    wide_out_req;
   wide_out_resp_t   wide_out_resp;
   wide_in_req_t     wide_in_req;
   wide_in_resp_t    wide_in_resp;
+  % endif
+% else:
+  wide_out_req_t    wide_out_req;
+  wide_out_resp_t   wide_out_resp;
+  wide_in_req_t     wide_in_req;
+  wide_in_resp_t    wide_in_resp;
+% endif
+ 
 
   logic [${cfg["cluster"]["name"]}_pkg::NrCores-1:0] msip;
 
@@ -66,11 +81,29 @@ module testharness import ${cfg["cluster"]["name"]}_pkg::*; (
   // Wide port into simulation memory.
   tb_memory_axi #(
     .AxiAddrWidth ( AddrWidth       ),
+% if 'use_ax_bw_converter' in cfg['cluster']:
+  % if cfg['cluster']['use_ax_bw_converter']:
+    .AxiDataWidth ( LowBWWideDataWidth ),
+  % else:
     .AxiDataWidth ( WideDataWidth   ),
+  % endif
+% else:
+    .AxiDataWidth ( WideDataWidth   ),
+% endif
     .AxiIdWidth   ( WideIdWidthOut  ),
     .AxiUserWidth ( WideUserWidth   ),
+% if 'use_ax_bw_converter' in cfg['cluster']:
+  % if cfg['cluster']['use_ax_bw_converter']:
+    .req_t        ( lowbw_wide_out_req_t  ),
+    .rsp_t        ( lowbw_wide_out_resp_t )
+  % else:
     .req_t        ( wide_out_req_t  ),
     .rsp_t        ( wide_out_resp_t )
+  % endif
+% else:
+    .req_t        ( wide_out_req_t  ),
+    .rsp_t        ( wide_out_resp_t )
+% endif
   ) i_dma (
     .clk_i        ( clk_i           ),
     .rst_ni       ( rst_ni          ),
