@@ -130,7 +130,7 @@
     snax_hypercorex_streamer_template :{
 
         temporal_addrgen_unit_params: {
-            loop_dim: [3],
+            loop_dim: [3,3,3,3,3,3,3],
             share_temp_addr_gen_loop_bounds: false,
         }
 
