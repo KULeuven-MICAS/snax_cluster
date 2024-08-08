@@ -55,7 +55,7 @@ module snitch_icache_data #(
       // This is just a place holder for the synthesis tool
       // The cache memory is wide hence we break it into two
       //----------------------------------------------------
-      syn_memory i_cache_mem_0(
+      syn_cache_data_mem i_cache_mem_0(
                   .CLK    ( clk_i                                                 ),
                   .CEB    ( ~ram_enable_i[i]                                      ),
                   .WEB    ( ~ram_write_i                                          ),
@@ -67,7 +67,7 @@ module snitch_icache_data #(
                   .Q      ( ram_rdata_o[i][(CFG.LINE_WIDTH)-1:(CFG.LINE_WIDTH)/2] )
       );
 
-      syn_memory i_cache_mem_1(
+      syn_cache_data_mem i_cache_mem_1(
                   .CLK    ( clk_i                                  ),
                   .CEB    ( ~ram_enable_i[i]                       ),
                   .WEB    ( ~ram_write_i                           ),

@@ -54,7 +54,7 @@ module snitch_icache_tag #(
     //----------------------------------------------------
     // This is just a place holder for the synthesis tool
     //----------------------------------------------------
-    syn_memory i_tag_mem(
+    syn_cache_tag_mem i_tag_mem(
                 .CLK   ( clk_i            ),
                 .CEB   ( ~ram_enable_i[i] ),
                 .WEB   ( ~ram_write_i     ),
