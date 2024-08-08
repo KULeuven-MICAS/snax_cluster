@@ -342,6 +342,12 @@ def main():
                         chisel_param="snax_acc.gemmx.BlockGemmRescaleSIMD",
                         gen_path=rtl_target_path,
                     )
+        elif (acc_cfgs[i]["snax_acc_name"] == "snax_streamer_gemm_add_c"):
+            gen_chisel_file(
+                        chisel_path=chisel_acc_path,
+                        chisel_param="snax_acc.gemm.BlockGemm",
+                        gen_path=rtl_target_path,
+                    )
         elif (acc_cfgs[i]["snax_acc_name"] == "snax_data_reshuffler"):
             gen_chisel_file(
                         chisel_path=chisel_acc_path,
