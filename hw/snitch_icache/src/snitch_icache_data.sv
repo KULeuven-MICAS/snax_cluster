@@ -76,10 +76,11 @@ module snitch_icache_data #(
                   .BWEB   ( '0                                     ),
                   .RTSEL  ( 2'b01                                  ),
                   .WTSEL  ( 2'b01                                  ),
-                  .Q      ( ram_rdata_o[i][(CFG.LINE_WIDTH)/2-1:0] ) 
+                  .Q      ( ram_rdata_o[i][(CFG.LINE_WIDTH)/2-1:0] )
       );
 
 `endif
 
   end
+
 endmodule
