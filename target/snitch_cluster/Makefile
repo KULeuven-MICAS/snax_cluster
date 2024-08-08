@@ -45,7 +45,7 @@ include $(ROOT)/target/common/common.mk
 REGGEN          ?= $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 CLUSTER_GEN     ?= $(ROOT)/util/clustergen.py
 CLUSTER_GEN_SRC ?= $(wildcard $(ROOT)/util/clustergen/*.py)
-WRAPPER_GEN     ?= $(ROOT)/util/wrappergen/wrappergen.py
+WRAPPER_GEN     ?= $(ROOT)/util/snaxgen/snaxgen.py
 
 #########################
 # Files and directories #
