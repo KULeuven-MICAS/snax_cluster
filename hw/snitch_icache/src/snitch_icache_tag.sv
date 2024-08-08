@@ -21,7 +21,7 @@ module snitch_icache_tag #(
   input  logic [  CFG.SET_COUNT-1:0]                    ram_enable_i,
   input  logic                                          ram_write_i,
   input  logic [CFG.COUNT_ALIGN-1:0]                    ram_addr_i,
-  input  logic [  CFG.SET_COUNT-1:0][CFG.TAG_WIDTH+1:0] ram_wtag_i,
+  input  logic                      [CFG.TAG_WIDTH+1:0] ram_wtag_i,
   output logic [  CFG.SET_COUNT-1:0][CFG.TAG_WIDTH+1:0] ram_rtag_o
 );
 
@@ -44,7 +44,7 @@ module snitch_icache_tag #(
         .req_i      ( ram_enable_i[i] ),
         .we_i       ( ram_write_i     ),
         .addr_i     ( ram_addr_i      ),
-        .wdata_i    ( ram_wtag_i[i]   ),
+        .wdata_i    ( ram_wtag_i      ),
         .be_i       ( '1              ),
         .rdata_o    ( ram_rtag_o[i]   )
       );
@@ -59,7 +59,7 @@ module snitch_icache_tag #(
                 .CEB   ( ~ram_enable_i[i] ),
                 .WEB   ( ~ram_write_i     ),
                 .A     ( ram_addr_i       ),
-                .D     ( ram_wtag_i[i]    ),
+                .D     ( ram_wtag_i       ),
                 .BWEB  ( '0               ),
                 .RTSEL ( 2'b01            ),
                 .WTSEL ( 2'b01            ),

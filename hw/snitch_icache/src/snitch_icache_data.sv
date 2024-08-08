@@ -21,7 +21,7 @@ module snitch_icache_data #(
   input  logic [  CFG.SET_COUNT-1:0]                     ram_enable_i,
   input  logic                                           ram_write_i,
   input  logic [CFG.COUNT_ALIGN-1:0]                     ram_addr_i,
-  input  logic [  CFG.SET_COUNT-1:0][CFG.LINE_WIDTH-1:0] ram_wdata_i,
+  input  logic                      [CFG.LINE_WIDTH-1:0] ram_wdata_i,
   output logic [  CFG.SET_COUNT-1:0][CFG.LINE_WIDTH-1:0] ram_rdata_o
 );
 
@@ -44,7 +44,7 @@ module snitch_icache_data #(
         .req_i      ( ram_enable_i[i] ),
         .we_i       ( ram_write_i     ),
         .addr_i     ( ram_addr_i      ),
-        .wdata_i    ( ram_wdata_i[i]  ),
+        .wdata_i    ( ram_wdata_i     ),
         .be_i       ( '1              ),
         .rdata_o    ( ram_rdata_o[i]  )
       );
@@ -60,7 +60,7 @@ module snitch_icache_data #(
                   .CEB    ( ~ram_enable_i[i]                                      ),
                   .WEB    ( ~ram_write_i                                          ),
                   .A      ( ram_addr_i                                            ),
-                  .D      ( ram_wdata_i[i][(CFG.LINE_WIDTH)-1:(CFG.LINE_WIDTH)/2] ),
+                  .D      ( ram_wdata_i   [(CFG.LINE_WIDTH)-1:(CFG.LINE_WIDTH)/2] ),
                   .BWEB   ( '0                                                    ),
                   .RTSEL  ( 2'b01                                                 ),
                   .WTSEL  ( 2'b01                                                 ),
@@ -72,7 +72,7 @@ module snitch_icache_data #(
                   .CEB    ( ~ram_enable_i[i]                       ),
                   .WEB    ( ~ram_write_i                           ),
                   .A      ( ram_addr_i                             ),
-                  .D      ( ram_wdata_i[i][(CFG.LINE_WIDTH)/2-1:0] ),
+                  .D      ( ram_wdata_i   [(CFG.LINE_WIDTH)/2-1:0] ),
                   .BWEB   ( '0                                     ),
                   .RTSEL  ( 2'b01                                  ),
                   .WTSEL  ( 2'b01                                  ),
