@@ -25,49 +25,49 @@ module snitch_icache_tag #(
   output logic [  CFG.SET_COUNT-1:0][CFG.TAG_WIDTH+1:0] ram_rtag_o
 );
 
-for (genvar i = 0; i < CFG.SET_COUNT; i++) begin: g_cache_tag_sets
+  for (genvar i = 0; i < CFG.SET_COUNT; i++) begin: g_cache_tag_sets
 
 `ifndef TAPEOUT_SYNTHESIS
 
-    tc_sram_impl #(
-      .NumWords   ( CFG.LINE_COUNT  ),
-      .DataWidth  ( CFG.TAG_WIDTH+2 ),
-      .ByteWidth  ( 8               ),
-      .NumPorts   ( 1               ),
-      .Latency    ( 1               ),
-      .impl_in_t  ( sram_cfg_tag_t  )
-    ) i_tag (
-      .clk_i      ( clk_i           ),
-      .rst_ni     ( rst_ni          ),
-      .impl_i     ( sram_cfg_tag_i  ),
-      .impl_o     ( /*Unused*/      ),
-      .req_i      ( ram_enable_i[i] ),
-      .we_i       ( ram_write_i     ),
-      .addr_i     ( ram_addr_i      ),
-      .wdata_i    ( ram_wtag_i[i]   ),
-      .be_i       ( '1              ),
-      .rdata_o    ( ram_rtag_o[i]   )
-    );
+      tc_sram_impl #(
+        .NumWords   ( CFG.LINE_COUNT  ),
+        .DataWidth  ( CFG.TAG_WIDTH+2 ),
+        .ByteWidth  ( 8               ),
+        .NumPorts   ( 1               ),
+        .Latency    ( 1               ),
+        .impl_in_t  ( sram_cfg_tag_t  )
+      ) i_tag (
+        .clk_i      ( clk_i           ),
+        .rst_ni     ( rst_ni          ),
+        .impl_i     ( sram_cfg_tag_i  ),
+        .impl_o     ( /*Unused*/      ),
+        .req_i      ( ram_enable_i[i] ),
+        .we_i       ( ram_write_i     ),
+        .addr_i     ( ram_addr_i      ),
+        .wdata_i    ( ram_wtag_i[i]   ),
+        .be_i       ( '1              ),
+        .rdata_o    ( ram_rtag_o[i]   )
+      );
 
 `else
 
-  //----------------------------------------------------
-  // This is just a place holder for the synthesis tool
-  //----------------------------------------------------
-  syn_memory i_tag_mem(
-              .CLK   ( clk_i            ),
-              .CEB   ( ~ram_enable_i[i] ),
-              .WEB   ( ~ram_write_i     ),
-              .A     ( ram_addr_i       ),
-              .D     ( ram_wtag_i[i]    ),
-              .BWEB  ( '0               ),
-              .RTSEL ( 2'b01            ),
-              .WTSEL ( 2'b01            ),
-              .Q     ( ram_rtag_o[i]    )
-    );
+    //----------------------------------------------------
+    // This is just a place holder for the synthesis tool
+    //----------------------------------------------------
+    syn_memory i_tag_mem(
+                .CLK   ( clk_i            ),
+                .CEB   ( ~ram_enable_i[i] ),
+                .WEB   ( ~ram_write_i     ),
+                .A     ( ram_addr_i       ),
+                .D     ( ram_wtag_i[i]    ),
+                .BWEB  ( '0               ),
+                .RTSEL ( 2'b01            ),
+                .WTSEL ( 2'b01            ),
+                .Q     ( ram_rtag_o[i]    )
+      );
 
 `endif
 
-end
+  end
 
 endmodule
