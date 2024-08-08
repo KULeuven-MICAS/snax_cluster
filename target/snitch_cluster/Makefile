@@ -112,10 +112,6 @@ endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-hypercorex.hjson)
 
-	CLUSTER_NAME = snax_hypercorex_cluster
-
-$(eval $(call generate_snax_gen,snax_hypercorex))
-
 	VSIM_BENDER += -t hypercorex
 	VLT_BENDER  += -t hypercorex
 	VCS_BENDER  += -t hypercorex
