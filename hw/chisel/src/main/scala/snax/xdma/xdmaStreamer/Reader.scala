@@ -45,9 +45,20 @@ class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
   })
 
   // Address Generator
+  // val addressgen = Module(
+  //   new AddressGenUnit(
+  //     param.agu_param,
+  //     module_name_prefix = s"${clusterName}_xdma_Reader"
+  //   )
+  // )
+
+  // Address Generator
   val addressgen = Module(
-    new AddressGenUnit(
-      param.agu_param,
+    new AddressGenUnitNoMulDiv(
+      AddressGenUnitNoMulDivParam(
+        param.agu_param,
+        memorySize = param.tcdm_param.tcdmSize
+      ),
       module_name_prefix = s"${clusterName}_xdma_Reader"
     )
   )
