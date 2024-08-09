@@ -77,7 +77,7 @@ class ProgrammableCounter(width: Int, hasCeil: Boolean = true)
   nextValue := {
     if (hasCeil) {
       Mux(
-        io.reset || io.lastVal,
+        io.reset || (io.lastVal && io.tick),
         0.U,
         Mux(io.tick, value + io.step, value)
       )
