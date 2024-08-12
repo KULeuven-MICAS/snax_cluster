@@ -40,15 +40,7 @@ class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
     val bufferEmpty = Output(Bool())
   })
 
-  // Address Generator
-  // val addressgen = Module(
-  //   new AddressGenUnit(
-  //     param.agu_param,
-  //     module_name_prefix = s"${clusterName}_xdma_Writer"
-  //   )
-  // )
-
-  // Address Generator
+  // New Address Generator
   val addressgen = Module(
     new AddressGenUnitNoMulDiv(
       AddressGenUnitNoMulDivParam(
