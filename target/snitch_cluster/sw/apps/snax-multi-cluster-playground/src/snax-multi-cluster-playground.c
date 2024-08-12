@@ -11,7 +11,8 @@ int32_t main() {
     uint32_t hartid = snrt_hartid();
     uint32_t core_idx = snrt_cluster_core_idx();
     uint32_t current_mcycle = snrt_mcycle();
-    while (current_mcycle + 50000 * hartid > snrt_mcycle());
+    while (current_mcycle + 50000 * hartid > snrt_mcycle()) {
+    };
     printf("Core %d is wake up\n", hartid);
     printf("Hello from core %d in cluster %d\n", snrt_cluster_core_idx(),
            snrt_cluster_idx());
