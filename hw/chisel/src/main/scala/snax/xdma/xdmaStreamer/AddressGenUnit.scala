@@ -242,7 +242,7 @@ class AddressGenUnitNoMulDiv(
     val start = Input(Bool())
     // If the address is all generated and pushed into FIFO, busy is false
     val busy = Output(Bool())
-    // If all signal in address buffer is consumed, bufferEmpty becomes high (Dont know if it is useful)
+    // If all signal in address buffer is consumed, bufferEmpty becomes high
     val bufferEmpty = Output(Bool())
     // The calculated address. This equals to # of output channels (64-bit narrow TCDM)
     val addr =
