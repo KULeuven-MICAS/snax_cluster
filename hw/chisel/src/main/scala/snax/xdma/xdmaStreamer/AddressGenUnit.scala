@@ -238,7 +238,7 @@ class AddressGenUnitNoMulDiv(
     with RequireAsyncReset {
   val io = IO(new Bundle {
     val cfg = Input(new AddressGenUnitCfgIO(param.toAddressGenUnitParam))
-    // Intake the new cfg file and reset all the counters
+    // Take in the new cfg file and reset all the counters
     val start = Input(Bool())
     // If the address is all generated and pushed into FIFO, busy is false
     val busy = Output(Bool())
