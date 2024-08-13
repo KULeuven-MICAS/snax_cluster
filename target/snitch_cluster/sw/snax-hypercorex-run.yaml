@@ -6,4 +6,4 @@
 
 
 runs:
-  - elf: apps/snax-hypercorex/test-csr/build/test.csr.elf
+  - elf: apps/snax-hypercorex/test-csr/build/test-csr.elf
