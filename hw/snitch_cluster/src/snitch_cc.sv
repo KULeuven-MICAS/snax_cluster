@@ -244,9 +244,9 @@ module snitch_cc #(
   ) i_snitch (
     .clk_i ( clk_d2_i ), // if necessary operate on half the frequency
     .rst_i ( ~rst_ni ),
-    .hart_id_i,
-    .cluster_core_id_i,
-    .irq_i,
+    .hart_id_i (hart_id_i),
+    .cluster_core_id_i(cluster_core_id_i),
+    .irq_i(irq_i),
     .boot_addr_i(boot_addr_i),
     .cluster_base_addr_i(tcdm_addr_base_i),
     .flush_i_valid_o (hive_req_o.flush_i_valid),
