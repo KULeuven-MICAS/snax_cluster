@@ -15,38 +15,46 @@
 #include "snrt.h"
 #include "stdint.h"
 
-// This is used for writing unto the
-// instruction loop jump addresses
+
+//-------------------------------
+// Instruction loop control functions
+//
+// These isntructions take in 7 bits per configuration
+// and packs them into one 32-bit register
+// Upper MSBs are tied to 0s
+//
+// Note: This is a parameter that changes
+// depending on how large the instruction memory is
+//-------------------------------
+
 uint32_t hypercorex_set_inst_loop_jump_addr(uint8_t config1, uint8_t config2,
                                             uint8_t config3) {
-    uint32_t config = (config3 << 16) | (config2 << 8) | config1;
+    uint32_t config = ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
 
     csrw_ss(HYPERCOREX_INST_LOOP_JUMP_ADDR_REG_ADDR, config);
     return 0;
 };
 
-// This is used for writing unto the
-// instruction loop end addresses
 uint32_t hypercorex_set_inst_loop_end_addr(uint8_t config1, uint8_t config2,
                                            uint8_t config3) {
-    uint32_t config = (config3 << 16) | (config2 << 8) | config1;
+    uint32_t config = ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
 
     csrw_ss(HYPERCOREX_INST_LOOP_END_ADDR_REG_ADDR, config);
     return 0;
 };
 
-// This is used for writing unto the
-// instruction loop count
+
 uint32_t hypercorex_set_inst_loop_count(uint8_t config1, uint8_t config2,
                                         uint8_t config3) {
-    uint32_t config = (config3 << 16) | (config2 << 8) | config1;
+    uint32_t config = ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
 
     csrw_ss(HYPERCOREX_INST_LOOP_COUNT_REG_ADDR, config);
     return 0;
 };
 
-// This is used for writing registers to multiple
-// Orothoginal IM seeds
+//-------------------------------
+// Writing to orthogonal IM seeds
+//-------------------------------
 uint32_t hypercorex_set_im_base_seed(uint32_t im_idx, uint32_t config) {
     csrw_ss(HYPERCOREX_IM_BASE_SEED_REG_ADDR + im_idx, config);
     return 0;
