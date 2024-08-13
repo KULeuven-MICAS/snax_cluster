@@ -29,7 +29,6 @@ module testharness import ${cfg["cluster"]["name"]}_pkg::*; (
     .rst_ni               ( rst_ni          ),
     .hart_base_id_i       ( HartBaseID      ),
     .cluster_base_addr_i  ( ClusterBaseAddr ),
-    .boot_addr_i          ( BootAddr        ),
     .debug_req_i          ( '0              ),
     .meip_i               ( '0              ),
     .mtip_i               ( '0              ),
