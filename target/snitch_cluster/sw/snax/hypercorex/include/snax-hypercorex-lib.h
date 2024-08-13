@@ -11,6 +11,7 @@
 #pragma once
 #include <stdbool.h>
 #include "snax-hypercorex-csr.h"
+#include "snrt.h"
 #include "stdint.h"
 
 uint32_t hypercorex_set_inst_loop_jump_addr(uint8_t config1, uint8_t config2,

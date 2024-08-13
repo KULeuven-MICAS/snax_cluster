@@ -11,6 +11,7 @@
 // the HyperCoreX accelerator's CSRs.
 //-------------------------------
 
+#include <stdbool.h>
 #include "snax-hypercorex-csr.h"
 #include "snrt.h"
 #include "stdint.h"
