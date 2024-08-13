@@ -15,7 +15,6 @@
 #include "snrt.h"
 #include "stdint.h"
 
-
 //-------------------------------
 // Instruction loop control functions
 //
@@ -29,7 +28,8 @@
 
 uint32_t hypercorex_set_inst_loop_jump_addr(uint8_t config1, uint8_t config2,
                                             uint8_t config3) {
-    uint32_t config = ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
+    uint32_t config =
+        ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
 
     csrw_ss(HYPERCOREX_INST_LOOP_JUMP_ADDR_REG_ADDR, config);
     return 0;
@@ -37,16 +37,17 @@ uint32_t hypercorex_set_inst_loop_jump_addr(uint8_t config1, uint8_t config2,
 
 uint32_t hypercorex_set_inst_loop_end_addr(uint8_t config1, uint8_t config2,
                                            uint8_t config3) {
-    uint32_t config = ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
+    uint32_t config =
+        ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
 
     csrw_ss(HYPERCOREX_INST_LOOP_END_ADDR_REG_ADDR, config);
     return 0;
 };
 
-
 uint32_t hypercorex_set_inst_loop_count(uint8_t config1, uint8_t config2,
                                         uint8_t config3) {
-    uint32_t config = ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
+    uint32_t config =
+        ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
 
     csrw_ss(HYPERCOREX_INST_LOOP_COUNT_REG_ADDR, config);
     return 0;
