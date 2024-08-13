@@ -291,7 +291,6 @@ module ${cfg['name']}_wrapper (
   //-----------------------------
   input  logic [9:0]                             hart_base_id_i,
   input  logic [${cfg['addr_width']-1}:0]        cluster_base_addr_i,
-  input  logic [31:0]                            boot_addr_i,
 % if cfg['timing']['iso_crossings']:
   //-----------------------------
   // ISO crossings
@@ -612,7 +611,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     //-----------------------------
     .hart_base_id_i ( hart_base_id_i ),
     .cluster_base_addr_i ( cluster_base_addr_i ),
-    .boot_addr_i  (boot_addr_i),
+    .boot_addr_i  (${cfg['pkg_name']}::BootAddr),
     //-----------------------------
     // ISO crossings
     //-----------------------------
