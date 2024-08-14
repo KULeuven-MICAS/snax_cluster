@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+FROM ghcr.io/kuleuven-micas/llvm-build:main AS llvm-build
 FROM ubuntu:24.04 AS build-bender
 
 RUN apt-get update && apt-get install -y curl build-essential
@@ -35,7 +36,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
   vim \
   nano \
   openjdk-11-jre-headless openjdk-11-jdk-headless \
-  mlir-17-tools clang-format-17 python3 \
+  clang-format-17 python3 \
   help2man perl make autoconf g++ flex bison ccache \
   libgoogle-perftools-dev numactl perl-doc \
   libfl2 libfl-dev zlib1g zlib1g-dev \
@@ -46,6 +47,8 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
   # Enable break-system-packages for non-venv package installs
   python3 -m pip config set global.break-system-packages true
 
+# Get prebuilt mlir
+COPY --from=llvm-build /llvm-project/build/bin/mlir-opt /usr/bin/mlir-opt
 
 # Temporarily install python3.10 until xdsl has moved to newer MLIR version
 RUN add-apt-repository -y ppa:deadsnakes/ppa && \
