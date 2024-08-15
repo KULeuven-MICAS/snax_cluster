@@ -131,5 +131,9 @@ class ReaderWriter(
 }
 
 object ReaderWriterEmitter extends App {
-  println(getVerilogString(new ReaderWriter(new ReaderWriterParam, new ReaderWriterParam)))
+  println(
+    getVerilogString(
+      new ReaderWriter(new ReaderWriterParam, new ReaderWriterParam)
+    )
+  )
 }

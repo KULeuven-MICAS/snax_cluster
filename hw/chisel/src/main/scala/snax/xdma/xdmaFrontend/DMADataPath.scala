@@ -144,9 +144,7 @@ class DMADataPath(
         readerparam.rwParam.tcdmParam.numChannel,
         Flipped(
           Valid(
-            new TcdmRsp(tcdmDataWidth =
-              readerparam.rwParam.tcdmParam.dataWidth
-            )
+            new TcdmRsp(tcdmDataWidth = readerparam.rwParam.tcdmParam.dataWidth)
           )
         )
       )
@@ -244,9 +242,8 @@ class DMADataPath(
     reader.io.data <> readerExtensionList.head.io.data_i
     readerExtensionList.last.io.data_o <> reader_data_after_extension
     if (readerExtensionList.length > 1)
-      readerExtensionList.zip(readerExtensionList.tail).foreach {
-        case (a, b) =>
-          a.io.data_o -||> b.io.data_i
+      readerExtensionList.zip(readerExtensionList.tail).foreach { case (a, b) =>
+        a.io.data_o -||> b.io.data_i
       }
 
     // Connect busy
