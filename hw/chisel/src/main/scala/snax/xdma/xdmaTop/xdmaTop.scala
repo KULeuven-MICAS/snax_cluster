@@ -139,7 +139,7 @@ class xdmaTop(
 }
 
 object xdmaTopGen extends App {
-  val parsed_args = snax.utils.ArgParser.parse(args)
+  val parsedArgs = snax.utils.ArgParser.parse(args)
 
   /*
   Needed Parameters:
@@ -157,26 +157,26 @@ object xdmaTopGen extends App {
     HasTranspopser
    */
   val axiParam = new AXIParam(
-    dataWidth = parsed_args("axiDataWidth").toInt,
-    addrWidth = parsed_args("axiAddrWidth").toInt
+    dataWidth = parsedArgs("axiDataWidth").toInt,
+    addrWidth = parsedArgs("axiAddrWidth").toInt
   )
 
   val readerparam = new ReaderWriterParam(
-    dimension = parsed_args("readerDimension").toInt,
-    tcdmDataWidth = parsed_args("tcdmDataWidth").toInt,
-    tcdmSize = parsed_args("tcdmSize").toInt,
+    dimension = parsedArgs("readerDimension").toInt,
+    tcdmDataWidth = parsedArgs("tcdmDataWidth").toInt,
+    tcdmSize = parsedArgs("tcdmSize").toInt,
     numChannel =
-      parsed_args("axiDataWidth").toInt / parsed_args("tcdmDataWidth").toInt,
-    addressBufferDepth = parsed_args("readerBufferDepth").toInt
+      parsedArgs("axiDataWidth").toInt / parsedArgs("tcdmDataWidth").toInt,
+    addressBufferDepth = parsedArgs("readerBufferDepth").toInt
   )
 
   val writerparam = new ReaderWriterParam(
-    dimension = parsed_args("writerDimension").toInt,
-    tcdmDataWidth = parsed_args("tcdmDataWidth").toInt,
-    tcdmSize = parsed_args("tcdmSize").toInt,
+    dimension = parsedArgs("writerDimension").toInt,
+    tcdmDataWidth = parsedArgs("tcdmDataWidth").toInt,
+    tcdmSize = parsedArgs("tcdmSize").toInt,
     numChannel =
-      parsed_args("axiDataWidth").toInt / parsed_args("tcdmDataWidth").toInt,
-    addressBufferDepth = parsed_args("writerBufferDepth").toInt
+      parsedArgs("axiDataWidth").toInt / parsedArgs("tcdmDataWidth").toInt,
+    addressBufferDepth = parsedArgs("writerBufferDepth").toInt
   )
   var readerextensionparam = Seq[HasDMAExtension]()
   var writerextensionparam = Seq[HasDMAExtension]()
@@ -189,7 +189,7 @@ object xdmaTopGen extends App {
   // Extension developers only need to 1) Add the Extension source code 2) Add Has...: #priority in hjson configuration file
 
   val toolbox = currentMirror.mkToolBox()
-  parsed_args
+  parsedArgs
     .filter(i => i._1.startsWith("Has") && i._2.toInt > 0)
     .toSeq
     .map(i => (i._1, i._2.toInt))
@@ -206,7 +206,7 @@ return ${i._1}
   // Generation of the hardware
   var sv_string = getVerilogString(
     new xdmaTop(
-      clusterName = parsed_args.getOrElse("clusterName", ""),
+      clusterName = parsedArgs.getOrElse("clusterName", ""),
       readerParam =
         new DMADataPathParam(axiParam, readerparam, readerextensionparam),
       writerParam =
@@ -225,17 +225,17 @@ return ${i._1}
     .mkString("\n")
 
   // Write the sv_string to the SystemVerilog file
-  val hardware_dir = parsed_args.getOrElse(
+  val hardware_dir = parsedArgs.getOrElse(
     "hw-target-dir",
     "generated"
-  ) + "/" + s"${parsed_args.getOrElse("clusterName", "")}_xdma.sv"
+  ) + "/" + s"${parsedArgs.getOrElse("clusterName", "")}_xdma.sv"
   java.nio.file.Files.write(
     java.nio.file.Paths.get(hardware_dir),
     sv_string.getBytes(java.nio.charset.StandardCharsets.UTF_8)
   )
 
   // Generation of the software #define macros
-  val macro_dir = parsed_args.getOrElse(
+  val macro_dir = parsedArgs.getOrElse(
     "sw-target-dir",
     "generated"
   ) + "/include/snax-xdma-csr-addr.h"
