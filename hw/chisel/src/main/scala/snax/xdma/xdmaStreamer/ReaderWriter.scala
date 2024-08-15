@@ -54,8 +54,9 @@ class ReaderWriter(
         )
       )
     )
-    // The signal to control which byte is written to TCDM
+    // The signal to control which byte is read from or written to TCDM
     val readerStrb = Input(UInt((readerparam.tcdm_param.dataWidth / 8).W))
+    val writerStrb = Input(UInt((writerparam.tcdm_param.dataWidth / 8).W))
     // The signal trigger the start of Address Generator. The non-empty of address generator will cause data requestor to read the data
     val readerStart = Input(Bool())
     val writerStart = Input(Bool())
@@ -92,6 +93,7 @@ class ReaderWriter(
 
   writer.io.cfg := io.writercfg
   writer.io.data <> io.writerdata
+  writer.io.strb := io.writerStrb
   writer.io.start := io.writerStart
   io.writerBusy := writer.io.busy
   io.writerBufferEmpty := writer.io.bufferEmpty
@@ -126,4 +128,8 @@ class ReaderWriter(
 
   // Connect the response from TCDM to the reader
   io.tcdm_rsp <> reader.io.tcdm_rsp
+}
+
+object ReaderWriterEmitter extends App {
+  println(getVerilogString(new ReaderWriter(new ReaderWriterParam, new ReaderWriterParam)))
 }
