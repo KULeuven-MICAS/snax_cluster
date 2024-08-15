@@ -41,7 +41,7 @@ class AddressGenUnitTester
   )
     .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) {
       dut =>
-        dut.io.cfg.Ptr.poke(0x100000.U)
+        dut.io.cfg.Ptr.poke(0x1000.U)
         dut.io.cfg.Bounds(0).poke(8)
         dut.io.cfg.Bounds(1).poke(1)
         dut.io.cfg.Bounds(2).poke(16)
@@ -74,7 +74,7 @@ class AddressGenUnitTester
   )
     .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) {
       dut =>
-        dut.io.cfg.Ptr.poke(0x100000.U)
+        dut.io.cfg.Ptr.poke(0x1000.U)
         dut.io.cfg.Bounds(0).poke(8)
         dut.io.cfg.Bounds(1).poke(4)
         dut.io.cfg.Bounds(2).poke(4)

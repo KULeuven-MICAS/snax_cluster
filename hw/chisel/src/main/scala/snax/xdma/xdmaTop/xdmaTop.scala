@@ -138,22 +138,6 @@ class xdmaTop(
 
 }
 
-object xdmaTopEmitter extends App {
-  _root_.circt.stage.ChiselStage.emitSystemVerilogFile(
-    new xdmaTop(
-      clusterName = "test_cluster",
-      readerparam =
-        new DMADataPathParam(new AXIParam, new ReaderWriterParam, Seq()),
-      writerparam = new DMADataPathParam(
-        new AXIParam,
-        new ReaderWriterParam,
-        Seq(HasMaxPool, HasVerilogMemset, HasTransposer)
-      )
-    ),
-    args = Array("--split-verilog", "--target-dir", "generated/xdma")
-  )
-}
-
 object xdmaTopGen extends App {
   val parsed_args = snax.utils.ArgParser.parse(args)
 
@@ -174,7 +158,7 @@ object xdmaTopGen extends App {
    */
   val axiParam = new AXIParam(
     dataWidth = parsed_args("axiDataWidth").toInt,
-    addrWidth = parsed_args("axiAddressWidth").toInt
+    addrWidth = parsed_args("axiAddrWidth").toInt
   )
 
   val readerparam = new ReaderWriterParam(

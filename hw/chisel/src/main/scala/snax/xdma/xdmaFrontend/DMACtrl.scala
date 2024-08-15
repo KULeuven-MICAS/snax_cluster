@@ -18,7 +18,7 @@ class DMACtrlIO(readerparam: DMADataPathParam, writerparam: DMADataPathParam)
     extends Bundle {
   // clusterBaseAddress to determine if it is the local command or remote command
   val clusterBaseAddress = Input(
-    UInt(readerparam.rwParam.agu_param.addressWidth.W)
+    UInt(writerparam.axiParam.addrWidth.W)
   )
   // Local DMADatapath control signal (Which is connected to DMADataPath)
   val localDMADataPath = new Bundle {
@@ -52,7 +52,7 @@ class SrcConfigRouter(
   override val desiredName = s"${clusterName}_xdma_ctrl_srcConfigRouter"
 
   val io = IO(new Bundle {
-    val clusterBaseAddress = Input(dataType.agu_cfg.Ptr)
+    val clusterBaseAddress = Input(dataType.readerPtr)
     val from = Flipped(new Bundle {
       val remote = Decoupled(dataType)
       val local = Decoupled(dataType)
@@ -83,18 +83,17 @@ class SrcConfigRouter(
   val cValue = Wire(chiselTypeOf(cType_discard))
 
   when(
-    i_to_demux.io.in.bits.agu_cfg
-      .Ptr(
-        i_to_demux.io.in.bits.readerPtr.getWidth - 1,
-        i_to_demux.io.in.bits.agu_cfg.Ptr.getWidth
-      ) === io
+    i_to_demux.io.in.bits.readerPtr(
+      i_to_demux.io.in.bits.readerPtr.getWidth - 1,
+      i_to_demux.io.in.bits.agu_cfg.Ptr.getWidth
+    ) === io
       .clusterBaseAddress(
         i_to_demux.io.in.bits.readerPtr.getWidth - 1,
         i_to_demux.io.in.bits.agu_cfg.Ptr.getWidth
       )
   ) {
     cValue := cType_local // When cfg has the Ptr that fall within local TCDM, the data should be forwarded to the local ctrl path
-  }.elsewhen(i_to_demux.io.in.bits.agu_cfg.Ptr === 0.U) {
+  }.elsewhen(i_to_demux.io.in.bits.readerPtr === 0.U) {
     cValue := cType_discard // When cfg has the Ptr that is zero, This means that the frame need to be thrown away. This is important as when the data is moved from DRAM to TCDM or vice versa, DRAM part is handled by iDMA, thus only one config instead of two is submitted
   }.otherwise {
     cValue := cType_remote // For the remaining condition, the config is forward to remote DMA
@@ -118,7 +117,7 @@ class DstConfigRouter(
   override val desiredName = s"${clusterName}_xdma_ctrl_dstConfigRouter"
 
   val io = IO(new Bundle {
-    val clusterBaseAddress = Input(dataType.agu_cfg.Ptr)
+    val clusterBaseAddress = Input(dataType.writerPtr)
     val from = Flipped(new Bundle {
       val local = Decoupled(dataType)
     })
@@ -139,11 +138,10 @@ class DstConfigRouter(
   val cValue = Wire(chiselTypeOf(cType_discard))
 
   when(
-    i_to_demux.io.in.bits.agu_cfg
-      .Ptr(
-        i_to_demux.io.in.bits.writerPtr.getWidth - 1,
-        i_to_demux.io.in.bits.agu_cfg.Ptr.getWidth
-      ) === io
+    i_to_demux.io.in.bits.writerPtr(
+      i_to_demux.io.in.bits.writerPtr.getWidth - 1,
+      i_to_demux.io.in.bits.agu_cfg.Ptr.getWidth
+    ) === io
       .clusterBaseAddress(
         i_to_demux.io.in.bits.writerPtr.getWidth - 1,
         i_to_demux.io.in.bits.agu_cfg.Ptr.getWidth
@@ -203,8 +201,12 @@ class DMACtrl(
 
   i_csrmanager.io.csr_config_in <> io.csrIO
 
-  val preRoute_src_local = Decoupled(new DMADataPathCfgInternalIO(readerparam))
-  val preRoute_dst_local = Decoupled(new DMADataPathCfgInternalIO(writerparam))
+  val preRoute_src_local = Wire(
+    Decoupled(new DMADataPathCfgInternalIO(readerparam))
+  )
+  val preRoute_dst_local = Wire(
+    Decoupled(new DMADataPathCfgInternalIO(writerparam))
+  )
   var remainingCSR = i_csrmanager.io.csr_config_out.bits.toIndexedSeq
 
   // Pack the unstructured signal from csrManager to structured signal: Src side
