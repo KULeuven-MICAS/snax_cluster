@@ -20,7 +20,7 @@ class xdmaTopIO(
     writerparam: DMADataPathParam
 ) extends Bundle {
   val clusterBaseAddress = Input(
-    UInt(readerparam.rwParam.agu_param.addressWidth.W)
+    UInt(writerparam.axiParam.addrWidth.W)
   )
   val csrIO = new SnaxCsrIO(32)
 
