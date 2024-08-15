@@ -44,8 +44,8 @@ class DMACtrlTester extends AnyFlatSpec with ChiselScalatestTester {
   "The DMACtrl" should " pass" in {
     test(
       new DMACtrl(
-        readerparam = new DMADataPathParam(new ReaderWriterParam, Seq()),
-        writerparam = new DMADataPathParam(new ReaderWriterParam, Seq())
+        readerparam = new DMADataPathParam(new AXIParam, new ReaderWriterParam, Seq()),
+        writerparam = new DMADataPathParam(new AXIParam, new ReaderWriterParam, Seq())
       )
     ).withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) {
       dut =>

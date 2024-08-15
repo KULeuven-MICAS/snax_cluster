@@ -100,9 +100,11 @@ class xDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
   "The bahavior of XDMA is as expected" in test(
     new xdmaTop(
       readerparam = new DMADataPathParam(
+        axiParam = new AXIParam,
         rwParam = new ReaderWriterParam
       ),
       writerparam = new DMADataPathParam(
+        axiParam = new AXIParam,
         rwParam = new ReaderWriterParam,
         extParam = Seq(HasVerilogMemset, HasMaxPool, HasTransposer)
       )
