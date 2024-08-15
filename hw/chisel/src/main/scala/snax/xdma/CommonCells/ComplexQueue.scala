@@ -51,7 +51,7 @@ class ComplexQueueConcat(inputWidth: Int, outputWidth: Int, depth: Int)
     Module(new Queue(UInt(smallWidth.W), depth))
   }
 
-  if (io.in.length != 1 || (io.in.length == 1 && io.out.length == 1)) { 
+  if (io.in.length != 1 || (io.in.length == 1 && io.out.length == 1)) {
     // Cond 1: io.in is not equals to 1, thus it is a complexQueue
     // Cond 2: io.in is equals to 1 and io.out is equals to 1, thus it is a simpleQueue
     io.in.zip(queues).foreach { case (i, j) => i <> j.io.enq }
