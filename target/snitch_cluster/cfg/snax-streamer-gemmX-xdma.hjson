@@ -139,7 +139,7 @@
     snax_streamer_gemmX_streamer_template :{
 
         temporal_addrgen_unit_params: {
-            loop_dim: [6, 3, 2, 2, 2],
+            loop_dim: [6, 3, 3, 3, 3],
             share_temp_addr_gen_loop_bounds: false,
         }
 
