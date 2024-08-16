@@ -48,7 +48,7 @@ class ComplexQueueConcat(inputWidth: Int, outputWidth: Int, depth: Int)
   })
 
   val queues = for (i <- 0 until numChannel) yield {
-    Module(new Queue(UInt(smallWidth.W), depth))
+    Module(new Queue(UInt(smallWidth.W), depth, pipe = true))
   }
 
   if (io.in.length != 1 || (io.in.length == 1 && io.out.length == 1)) {
@@ -123,7 +123,7 @@ class ComplexQueueNtoOne[T <: Data](dataType: T, N: Int, depth: Int)
   })
 
   val queues = for (i <- 0 until N) yield {
-    Module(new Queue(dataType, depth))
+    Module(new Queue(dataType, depth, pipe = true))
   }
 
   io.in.zip(queues).foreach { case (i, j) => i <> j.io.enq }
