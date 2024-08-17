@@ -11,7 +11,11 @@ abstract class ReaderWriterCommomIO(val param: ReaderWriterParam)
   // The signal to control address generator
   val cfg = Input(new AddressGenUnitCfgIO(param.aguParam))
   // The signal to control which byte is written to TCDM
-  val strb = Input(UInt((param.tcdmParam.dataWidth / 8).W))
+  val strb =
+    if (param.configurableByteMask)
+      Input(UInt((param.tcdmParam.dataWidth / 8).W))
+    else Input(UInt(0.W))
+
   // The signal trigger the start of Address Generator. The non-empty of address generator will cause data requestor to read the data
   val start = Input(Bool())
   // The module is busy if addressgen is busy or fifo in addressgen is not empty
