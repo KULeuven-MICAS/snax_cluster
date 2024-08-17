@@ -75,8 +75,9 @@ class ReaderWriter(
   }
 
   // Connect the arbiter to the TCDM interface
-  readerwriterArbiter.zip(io.readerInterface.tcdmReq).foreach { case (arbiter, tcdmReq) =>
-    tcdmReq <> arbiter.io.out
+  readerwriterArbiter.zip(io.readerInterface.tcdmReq).foreach {
+    case (arbiter, tcdmReq) =>
+      tcdmReq <> arbiter.io.out
   }
 
   // Connect the response from TCDM to the reader
