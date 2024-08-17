@@ -4,7 +4,6 @@ import chisel3._
 import chisel3.util._
 
 import snax.utils._
-import snax.xdma.CommonCells._
 import snax.xdma.DesignParams._
 
 abstract class ReaderWriterCommomIO(val param: ReaderWriterParam)
