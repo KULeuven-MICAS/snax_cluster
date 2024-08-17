@@ -53,7 +53,9 @@ class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
   requestors.io.in.addr <> addressgen.io.addr
   requestors.io.in.data.get <> dataBuffer.io.out
   requestors.io.out.tcdmReq <> io.tcdmReq
-  requestors.io.in.strb := io.strb
+
+  if (param.configurableByteMask) requestors.io.in.strb := io.strb
+  else requestors.io.in.strb.asBools.foreach(_ := true.B)
 
   dataBuffer.io.in.head <> io.data
   io.busy := addressgen.io.busy | (~addressgen.io.bufferEmpty)
