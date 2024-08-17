@@ -55,7 +55,7 @@ object AddressGenUnitParam {
       numChannel: Int,
       outputBufferDepth: Int,
       tcdmSize: Int,
-      configurableSpatialBound: Boolean
+      configurableSpatialBound: Boolean = true
   ) = new AddressGenUnitParam(
     dimension = dimension,
     addressWidth = log2Ceil(tcdmSize) + 10,
