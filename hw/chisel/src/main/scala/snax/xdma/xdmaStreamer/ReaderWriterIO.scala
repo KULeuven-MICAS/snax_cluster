@@ -72,23 +72,13 @@ class ReaderWriterIO(
     readerParam: ReaderWriterParam,
     writerParam: ReaderWriterParam
 ) extends Bundle {
-  val readerInterface = new ReaderWriterCommomIO(readerParam)
-    with HasOutputDataIO
+  // As they share the same TCDM interface, different number of channel is meaningless
+  require(
+    readerParam.tcdmParam.numChannel == writerParam.tcdmParam.numChannel
+  )
+  // Full-funcional Reader interface
+  val readerInterface = new ReaderIO(readerParam)
+  // Writer interface without TCDM port
   val writerInterface = new ReaderWriterCommomIO(writerParam)
     with HasInputDataIO
-
-  // TCDM Interface
-  val tcdmReq = Vec(
-    readerParam.tcdmParam.numChannel,
-    Decoupled(
-      new TcdmReq(
-        addrWidth = readerParam.tcdmParam.addrWidth,
-        tcdmDataWidth = readerParam.tcdmParam.dataWidth
-      )
-    )
-  )
-  val tcdmRsp = Vec(
-    readerParam.tcdmParam.numChannel,
-    Flipped(Valid(new TcdmRsp(tcdmDataWidth = readerParam.tcdmParam.dataWidth)))
-  )
 }

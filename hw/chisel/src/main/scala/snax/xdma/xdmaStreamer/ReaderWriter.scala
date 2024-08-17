@@ -19,11 +19,6 @@ class ReaderWriter(
 
   override val desiredName = s"${clusterName}_xdma_ReaderWriter"
 
-  // As they share the same TCDM interface, different number of channel is meaningless
-  require(
-    readerParam.tcdmParam.numChannel == writerParam.tcdmParam.numChannel
-  )
-
   val io = IO(new ReaderWriterIO(readerParam, writerParam))
 
   // Reader
@@ -80,12 +75,12 @@ class ReaderWriter(
   }
 
   // Connect the arbiter to the TCDM interface
-  readerwriterArbiter.zip(io.tcdmReq).foreach { case (arbiter, tcdmReq) =>
+  readerwriterArbiter.zip(io.readerInterface.tcdmReq).foreach { case (arbiter, tcdmReq) =>
     tcdmReq <> arbiter.io.out
   }
 
   // Connect the response from TCDM to the reader
-  io.tcdmRsp <> reader.io.tcdmRsp
+  io.readerInterface.tcdmRsp <> reader.io.tcdmRsp
 }
 
 object ReaderWriterEmitter extends App {
