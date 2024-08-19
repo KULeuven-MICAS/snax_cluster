@@ -199,7 +199,16 @@ def emit_gemm_data(**kwargs):
         Atlbound6 = Nbatch
         Atlstride6 = Cin * (H + 2 * pad_h) * (W + 2 * pad_w)
 
-    assert M * K * N == Atlbound0 * Atlbound1 * Atlbound2 * Atlbound3 * Atlbound4 * Atlbound5 * Atlbound6
+    assert (
+        M * K * N
+        == Atlbound0
+        * Atlbound1
+        * Atlbound2
+        * Atlbound3
+        * Atlbound4
+        * Atlbound5
+        * Atlbound6
+    )
 
     data_str += [
         format_scalar_definition("int32_t", "Aslstride0", Aslstride0),
@@ -263,7 +272,12 @@ def emit_gemm_data(**kwargs):
         Btlbound3 = Nbatch
         Btlstride3 = 0
 
-    assert K * N * M == Btlbound0 * Btlbound1 * Btlbound2 * Btlbound3, ("K * N * M", K * N * M, "Loopbounds multipliers ", Btlbound0 * Btlbound1 * Btlbound2 * Btlbound3)
+    assert K * N * M == Btlbound0 * Btlbound1 * Btlbound2 * Btlbound3, (
+        "K * N * M",
+        K * N * M,
+        "Loopbounds multipliers ",
+        Btlbound0 * Btlbound1 * Btlbound2 * Btlbound3,
+    )
 
     data_str += [
         format_scalar_definition("int32_t", "Bslstride0", Bslstride0),
@@ -322,7 +336,7 @@ def emit_gemm_data(**kwargs):
         Ctlstride3 = Cout * H * W * 4
 
     assert M * N == Ctlbound0 * Ctlbound1 * Ctlbound2 * Ctlbound3
-    
+
     data_str += [
         format_scalar_definition("int32_t", "Cslstride0", Cslstride0),
         format_scalar_definition("int32_t", "Cslstride1", Cslstride1),
