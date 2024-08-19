@@ -738,7 +738,7 @@ module snitch_cluster
           start_wide_idx = SnaxWideStartIdx[i];
           end_wide_idx = SnaxWideEndIdx[i];
           wide_len = end_wide_idx - start_wide_idx + 1;
-  
+
           for (int j =0; j < wide_len; j++) begin
             snax_tcdm_req_wide[j+wide_offset] = snax_tcdm_req_i[j+start_wide_idx];
             snax_tcdm_rsp_o[j+start_wide_idx] = snax_tcdm_rsp_wide[j+wide_offset];
