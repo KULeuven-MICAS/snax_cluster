@@ -21,50 +21,37 @@ void hypercorex_set_streamer_lowdim_a(uint32_t loop_bound_0,
                                       uint32_t loop_bound_1,
                                       uint32_t temp_stride_0,
                                       uint32_t temp_stride_1,
-                                      uint32_t spat_stride,
-                                      uint32_t base_ptr);
+                                      uint32_t spat_stride, uint32_t base_ptr);
 
 void hypercorex_set_streamer_lowdim_b(uint32_t loop_bound_0,
-                                        uint32_t loop_bound_1,
-                                        uint32_t temp_stride_0,
-                                        uint32_t temp_stride_1,
-                                        uint32_t spat_stride,
-                                        uint32_t base_ptr);
+                                      uint32_t loop_bound_1,
+                                      uint32_t temp_stride_0,
+                                      uint32_t temp_stride_1,
+                                      uint32_t spat_stride, uint32_t base_ptr);
 
 void hypercorex_set_streamer_highdim_a(uint32_t loop_bound_0,
-                                        uint32_t loop_bound_1,
-                                        uint32_t temp_stride_0,
-                                        uint32_t temp_stride_1,
-                                        uint32_t spat_stride,
-                                        uint32_t base_ptr);
+                                       uint32_t loop_bound_1,
+                                       uint32_t temp_stride_0,
+                                       uint32_t temp_stride_1,
+                                       uint32_t spat_stride, uint32_t base_ptr);
 
 void hypercorex_set_streamer_highdim_b(uint32_t loop_bound_0,
-                                        uint32_t loop_bound_1,
-                                        uint32_t temp_stride_0,
-                                        uint32_t temp_stride_1,
-                                        uint32_t spat_stride,
-                                        uint32_t base_ptr);
+                                       uint32_t loop_bound_1,
+                                       uint32_t temp_stride_0,
+                                       uint32_t temp_stride_1,
+                                       uint32_t spat_stride, uint32_t base_ptr);
 
-void hypercorex_set_streamer_highdim_am(uint32_t loop_bound_0,
-                                         uint32_t loop_bound_1,
-                                         uint32_t temp_stride_0,
-                                         uint32_t temp_stride_1,
-                                         uint32_t spat_stride,
-                                         uint32_t base_ptr);
+void hypercorex_set_streamer_highdim_am(
+    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t temp_stride_0,
+    uint32_t temp_stride_1, uint32_t spat_stride, uint32_t base_ptr);
 
-void hypercorex_set_streamer_lowdim_predict(uint32_t loop_bound_0,
-                                            uint32_t loop_bound_1,
-                                            uint32_t temp_stride_0,
-                                            uint32_t temp_stride_1,
-                                            uint32_t spat_stride,
-                                            uint32_t base_ptr);
+void hypercorex_set_streamer_lowdim_predict(
+    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t temp_stride_0,
+    uint32_t temp_stride_1, uint32_t spat_stride, uint32_t base_ptr);
 
-void hypercorex_set_streamer_highdim_qhv(uint32_t loop_bound_0,
-                                            uint32_t loop_bound_1,
-                                            uint32_t temp_stride_0,
-                                            uint32_t temp_stride_1,
-                                            uint32_t spat_stride,
-                                            uint32_t base_ptr);
+void hypercorex_set_streamer_highdim_qhv(
+    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t temp_stride_0,
+    uint32_t temp_stride_1, uint32_t spat_stride, uint32_t base_ptr);
 
 void hypercorex_start_streamer(void);
 
