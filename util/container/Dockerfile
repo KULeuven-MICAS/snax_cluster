@@ -64,6 +64,15 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
   ln -fs /usr/bin/python3.10 /usr/bin/python3 && \
   ln -fs /bin/python3.10 /bin/python3
 
+# Get prebuilt CVA6 gcc toolchain
+ENV CVA6_GCC_URL = https://github.com/KULeuven-MICAS/llvm-build/releases/download/test-7/custom_toolchain_build.tar.gz && \
+RUN curl -L $CVA6_GCC_URL -o /tmp/cva6_gcc_toolchain.tar.gz && \
+    mkdir /tmp/cva6_gcc_toolchain && \
+    tar -xzvf /tmp/cva6_gcc_toolchain.tar.gz -C /tmp/cva6_gcc_toolchain && \
+    cp /tmp/cva6_gcc_toolchain/custom_toolchain_build /opt/cva6_gcc_toolchain -r && \
+    rm -rf /tmp/cva6_gcc_toolchain /tmp/cva6_gcc_toolchain.tar.gz
+
+
 # Install Verilator
 RUN git clone https://github.com/verilator/verilator && \
   cd verilator && \
