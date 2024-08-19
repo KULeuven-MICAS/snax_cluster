@@ -67,6 +67,9 @@ package ${cfg['name']}_pkg;
   localparam int unsigned AddrWidth = ${cfg['addr_width']};
   localparam int unsigned NarrowDataWidth = ${cfg['data_width']};
   localparam int unsigned WideDataWidth = ${cfg['dma_data_width']};
+% if cfg['use_ax_bw_converter']:
+  localparam int unsigned LowBWWideDataWidth = ${cfg['converted_axi_bandwidth']};
+% endif
 
   localparam int unsigned NarrowIdWidthIn = ${cfg['id_width_in']};
   localparam int unsigned NrMasters = 3;
@@ -104,23 +107,32 @@ package ${cfg['name']}_pkg;
   } sram_cfgs_t;
 
   // Re-defined typedefs used for other typedefs
-  typedef logic [AddrWidth-1:0]         addr_t;
-  typedef logic [NarrowDataWidth-1:0]   data_t;
-  typedef logic [NarrowDataWidth/8-1:0] strb_t;
-  typedef logic [WideDataWidth-1:0]     data_dma_t;
-  typedef logic [WideDataWidth/8-1:0]   strb_dma_t;
-  typedef logic [NarrowIdWidthIn-1:0]   narrow_in_id_t;
-  typedef logic [NarrowIdWidthOut-1:0]  narrow_out_id_t;
-  typedef logic [WideIdWidthIn-1:0]     wide_in_id_t;
-  typedef logic [WideIdWidthOut-1:0]    wide_out_id_t;
-  typedef logic [NarrowUserWidth-1:0]   user_t;
-  typedef logic [WideUserWidth-1:0]     user_dma_t;
+  typedef logic [AddrWidth-1:0]             addr_t;
+  typedef logic [NarrowDataWidth-1:0]       data_t;
+  typedef logic [NarrowDataWidth/8-1:0]     strb_t;
+  typedef logic [WideDataWidth-1:0]         data_dma_t;
+  typedef logic [WideDataWidth/8-1:0]       strb_dma_t;
+% if cfg['use_ax_bw_converter']:
+  typedef logic [LowBWWideDataWidth-1:0]    lowbw_data_dma_t;
+  typedef logic [LowBWWideDataWidth/8-1:0]  lowbw_strb_dma_t;
+% endif
+  typedef logic [NarrowIdWidthIn-1:0]       narrow_in_id_t;
+  typedef logic [NarrowIdWidthOut-1:0]      narrow_out_id_t;
+  typedef logic [WideIdWidthIn-1:0]         wide_in_id_t;
+  typedef logic [WideIdWidthOut-1:0]        wide_out_id_t;
+  typedef logic [NarrowUserWidth-1:0]       user_t;
+  typedef logic [WideUserWidth-1:0]         user_dma_t;
 
   // Typedefs for the AXI connections
   `AXI_TYPEDEF_ALL(narrow_in, addr_t, narrow_in_id_t, data_t, strb_t, user_t)
   `AXI_TYPEDEF_ALL(narrow_out, addr_t, narrow_out_id_t, data_t, strb_t, user_t)
   `AXI_TYPEDEF_ALL(wide_in, addr_t, wide_in_id_t, data_dma_t, strb_dma_t, user_dma_t)
   `AXI_TYPEDEF_ALL(wide_out, addr_t, wide_out_id_t, data_dma_t, strb_dma_t, user_dma_t)
+% if cfg['use_ax_bw_converter']:
+  // This is for lower bandwidth AXI declaration
+  `AXI_TYPEDEF_ALL(lowbw_wide_in, addr_t, wide_in_id_t, lowbw_data_dma_t, lowbw_strb_dma_t, user_dma_t)
+  `AXI_TYPEDEF_ALL(lowbw_wide_out, addr_t, wide_out_id_t, lowbw_data_dma_t, lowbw_strb_dma_t, user_dma_t)
+%endif
 
   localparam int unsigned TCDMMemAddrWidth = $clog2(TCDMDepth);
   localparam int unsigned TCDMSize = NrBanks * TCDMDepth * (NarrowDataWidth/8);
@@ -314,11 +326,88 @@ module ${cfg['name']}_wrapper (
   //-----------------------------
   //Wide AXI ports
   //-----------------------------
-  output ${cfg['pkg_name']}::wide_out_req_t      wide_out_req_o,
-  input  ${cfg['pkg_name']}::wide_out_resp_t     wide_out_resp_i,
-  input  ${cfg['pkg_name']}::wide_in_req_t       wide_in_req_i,
-  output ${cfg['pkg_name']}::wide_in_resp_t      wide_in_resp_o
+% if cfg['use_ax_bw_converter']:
+  output ${cfg['pkg_name']}::lowbw_wide_out_req_t  wide_out_req_o,
+  input  ${cfg['pkg_name']}::lowbw_wide_out_resp_t wide_out_resp_i,
+  input  ${cfg['pkg_name']}::lowbw_wide_in_req_t   wide_in_req_i,
+  output ${cfg['pkg_name']}::lowbw_wide_in_resp_t  wide_in_resp_o
+% else:
+  output ${cfg['pkg_name']}::wide_out_req_t        wide_out_req_o,
+  input  ${cfg['pkg_name']}::wide_out_resp_t       wide_out_resp_i,
+  input  ${cfg['pkg_name']}::wide_in_req_t         wide_in_req_i,
+  output ${cfg['pkg_name']}::wide_in_resp_t        wide_in_resp_o
+% endif
 );
+
+% if cfg['use_ax_bw_converter']:
+  //-----------------------------
+  // AXI bandwidth converter
+  //-----------------------------
+
+  ${cfg['pkg_name']}::wide_out_req_t  wide_out_req;
+  ${cfg['pkg_name']}::wide_out_resp_t wide_out_resp;
+  ${cfg['pkg_name']}::wide_in_req_t   wide_in_req;
+  ${cfg['pkg_name']}::wide_in_resp_t  wide_in_resp;
+
+  // Convert input port
+  // From AXI port to cluster 
+  axi_dw_converter #(
+    .AxiSlvPortDataWidth ( ${cfg['pkg_name']}::LowBWWideDataWidth     ), // Data width of the slv port
+    .AxiMstPortDataWidth ( ${cfg['pkg_name']}::WideDataWidth          ), // Data width of the mst port
+    .AxiAddrWidth        ( ${cfg['pkg_name']}::AddrWidth              ), // Address width
+    .AxiIdWidth          ( ${cfg['pkg_name']}::WideIdWidthIn          ), // ID width
+    .aw_chan_t           ( ${cfg['pkg_name']}::wide_in_aw_chan_t      ), // AW Channel Type
+    .mst_w_chan_t        ( ${cfg['pkg_name']}::wide_in_w_chan_t       ), //  W Channel Type for the mst port
+    .slv_w_chan_t        ( ${cfg['pkg_name']}::lowbw_wide_in_w_chan_t ), //  W Channel Type for the slv port
+    .b_chan_t            ( ${cfg['pkg_name']}::wide_in_b_chan_t       ), //  B Channel Type
+    .ar_chan_t           ( ${cfg['pkg_name']}::wide_in_ar_chan_t      ), // AR Channel Type
+    .mst_r_chan_t        ( ${cfg['pkg_name']}::wide_in_r_chan_t       ), //  R Channel Type for the mst port
+    .slv_r_chan_t        ( ${cfg['pkg_name']}::lowbw_wide_in_r_chan_t ), //  R Channel Type for the slv port
+    .axi_mst_req_t       ( ${cfg['pkg_name']}::wide_in_req_t          ), // AXI Request Type for mst ports
+    .axi_mst_resp_t      ( ${cfg['pkg_name']}::wide_in_resp_t         ), // AXI Response Type for mst ports
+    .axi_slv_req_t       ( ${cfg['pkg_name']}::lowbw_wide_in_req_t    ), // AXI Request Type for slv ports
+    .axi_slv_resp_t      ( ${cfg['pkg_name']}::lowbw_wide_in_resp_t   )  // AXI Response Type for slv ports
+  ) i_axi_dw_converter_in (
+    .clk_i               ( clk_i          ),
+    .rst_ni              ( rst_ni         ),
+    // Slave interface
+    .slv_req_i           ( wide_in_req_i  ),
+    .slv_resp_o          ( wide_in_resp_o ),
+    // Master interface
+    .mst_req_o           ( wide_in_req    ),
+    .mst_resp_i          ( wide_in_resp   )
+  );
+
+  // Convert output ports
+  // From cluster to AXI port
+  axi_dw_converter #(
+    .AxiSlvPortDataWidth ( ${cfg['pkg_name']}::WideDataWidth            ), // Data width of the slv port
+    .AxiMstPortDataWidth ( ${cfg['pkg_name']}::LowBWWideDataWidth       ), // Data width of the mst port
+    .AxiAddrWidth        ( ${cfg['pkg_name']}::AddrWidth                ), // Address width
+    .AxiIdWidth          ( ${cfg['pkg_name']}::WideIdWidthOut           ), // ID width
+    .aw_chan_t           ( ${cfg['pkg_name']}::lowbw_wide_out_aw_chan_t ), // AW Channel Type
+    .mst_w_chan_t        ( ${cfg['pkg_name']}::lowbw_wide_out_w_chan_t  ), //  W Channel Type for the mst port
+    .slv_w_chan_t        ( ${cfg['pkg_name']}::wide_out_w_chan_t        ), //  W Channel Type for the slv port
+    .b_chan_t            ( ${cfg['pkg_name']}::lowbw_wide_out_b_chan_t  ), //  B Channel Type
+    .ar_chan_t           ( ${cfg['pkg_name']}::lowbw_wide_out_ar_chan_t ), // AR Channel Type
+    .mst_r_chan_t        ( ${cfg['pkg_name']}::lowbw_wide_out_r_chan_t  ), //  R Channel Type for the mst port
+    .slv_r_chan_t        ( ${cfg['pkg_name']}::wide_out_r_chan_t        ), //  R Channel Type for the slv port
+    .axi_mst_req_t       ( ${cfg['pkg_name']}::lowbw_wide_out_req_t     ), // AXI Request Type for mst ports
+    .axi_mst_resp_t      ( ${cfg['pkg_name']}::lowbw_wide_out_resp_t    ), // AXI Response Type for mst ports
+    .axi_slv_req_t       ( ${cfg['pkg_name']}::wide_out_req_t           ), // AXI Request Type for slv ports
+    .axi_slv_resp_t      ( ${cfg['pkg_name']}::wide_out_resp_t          )  // AXI Response Type for slv ports
+  ) i_axi_dw_converter_out (
+    .clk_i               ( clk_i           ),
+    .rst_ni              ( rst_ni          ),
+    // Slave interface
+    .slv_req_i           ( wide_out_req    ),
+    .slv_resp_o          ( wide_out_resp   ),
+    // Master interface
+    .mst_req_o           ( wide_out_req_o  ),
+    .mst_resp_i          ( wide_out_resp_i )
+  );
+  
+% endif
 
 <%
 # Just some working variables
@@ -670,12 +759,18 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     //-----------------------------
     // Wide AXI ports
     //-----------------------------
+% if cfg['use_ax_bw_converter']:
+    .wide_out_req_o     ( wide_out_req      ),
+    .wide_out_resp_i    ( wide_out_resp     ),
+    .wide_in_req_i      ( wide_in_req       ),
+    .wide_in_resp_o     ( wide_in_resp      )
+% else:
     .wide_out_req_o     ( wide_out_req_o    ),
     .wide_out_resp_i    ( wide_out_resp_i   ),
     .wide_in_req_i      ( wide_in_req_i     ),
     .wide_in_resp_o     ( wide_in_resp_o    )
+% endif
   );
-
 % for idx, idx_key in enumerate(snax_core_acc):
   // ------------------------- Accelerator Set for Core ${idx} -------------------------
   // This is an accelerator set controlled by 1 Snitch core

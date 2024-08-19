@@ -154,6 +154,16 @@
             "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
             "additionalProperties": { "type": "number", "minimum": 1 }
         },
+        "use_ax_bw_converter": {
+            "type": "boolean",
+            "description": "Enable lower bandwidth switch.",
+            "default": false
+        },
+        "converted_axi_bandwidth": {
+            "type": "number",
+            "description": "Effective bandwidth of the converted AXI ports.",
+            "default": 256
+        },
         "timing": {
             "type": "object",
             "title": "Timing and Latency Tuning Parameter",

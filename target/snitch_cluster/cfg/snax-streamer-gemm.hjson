@@ -26,6 +26,9 @@
         dma_data_width: 512,
         dma_axi_req_fifo_depth: 3,
         dma_req_fifo_depth: 3,
+        // AXI bandwidth switcher
+        use_ax_bw_converter: true,
+        converted_axi_bandwidth: 256,
         // Timing parameters
         timing: {
             lat_comp_fp32: 3,
