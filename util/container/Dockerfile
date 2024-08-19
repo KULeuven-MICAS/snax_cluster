@@ -2,8 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-
-FROM ghcr.io/kuleuven-micas/llvm-build:main AS llvm-build
 FROM ubuntu:24.04 AS build-bender
 
 RUN apt-get update && apt-get install -y curl build-essential
@@ -48,7 +46,16 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
   python3 -m pip config set global.break-system-packages true
 
 # Get prebuilt mlir
-COPY --from=llvm-build /llvm-project/build/bin/mlir-opt /usr/bin/mlir-opt
+# Set the URL for the download
+ENV MLIR_URL=https://github.com/KULeuven-MICAS/llvm-build/releases/download/test-0/mlir-build.tar.gz
+
+# Download, extract, and install the specified files
+RUN wget $MLIR_URL -O /tmp/mlir-build.tar.gz && \
+    mkdir /tmp/mlir-build && \
+    tar -xzvf /tmp/mlir-build.tar.gz -C /tmp/mlir-build && \
+    cp /tmp/mlir-build/build/bin/mlir-opt /usr/bin/ && \
+    cp /tmp/mlir-build/build/bin/mlir-translate /usr/bin/ && \
+    rm -rf /tmp/mlir-build /tmp/mlir-build.tar.gz
 
 # Temporarily install python3.10 until xdsl has moved to newer MLIR version
 RUN add-apt-repository -y ppa:deadsnakes/ppa && \
