@@ -202,22 +202,22 @@ RUN git clone https://github.com/kuleuven-micas/snax_cluster /src && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
     CFG_OVERRIDE=cfg/snax-streamer-gemm-add-c.hjson -j $(nproc)
 
-FROM base as snax-kul-cluster-all-narrow
+FROM base as snax-kul-cluster-mixed-narrow-wide
 
-# RUN git clone https://github.com/kuleuven-micas/snax_cluster /src && \
-#     cd /src && git submodule update --init && \
-#     cd /src && sbt package && \
-#     cd /src && \
-#     make DEBUG=ON sw -j$(nproc) \
-#     -C target/snitch_cluster \
-#     SELECT_TOOLCHAIN=llvm-generic \
-#     SELECT_RUNTIME=rtl-generic \
-#     CFG_OVERRIDE=cfg/snax-kul-cluster-all-narrow.hjson && \
-#     cd /src && \
-#     make -C target/snitch_cluster rtl-gen \
-#     CFG_OVERRIDE=cfg/snax-kul-cluster-all-narrow.hjson && \
-#     make -C target/snitch_cluster bin/snitch_cluster.vlt \
-#     CFG_OVERRIDE=cfg/snax-kul-cluster-all-narrow.hjson -j $(nproc)
+RUN git clone https://github.com/kuleuven-micas/snax_cluster /src && \
+    cd /src && git submodule update --init && \
+    cd /src && sbt package && \
+    cd /src && \
+    make DEBUG=ON sw -j$(nproc) \
+    -C target/snitch_cluster \
+    SELECT_TOOLCHAIN=llvm-generic \
+    SELECT_RUNTIME=rtl-generic \
+    CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide.hjson && \
+    cd /src && \
+    make -C target/snitch_cluster rtl-gen \
+    CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide.hjson && \
+    make -C target/snitch_cluster bin/snitch_cluster.vlt \
+    CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide.hjson -j $(nproc)
 
 
 # Copy Hardware to final image
@@ -264,12 +264,12 @@ COPY --from=snax-streamer-gemm-add-c /src/sw/math/ /opt/snax-streamer-gemm-add-c
 COPY --from=snax-streamer-gemm-add-c /src/sw/deps/riscv-opcodes /opt/snax-streamer-gemm-add-c/sw/deps/riscv-opcodes
 COPY --from=snax-streamer-gemm-add-c /src/sw/deps/printf /opt/snax-streamer-gemm-add-c/sw/deps/printf
 
-# COPY --from=snax-kul-cluster-all-narrow /src/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-kul-cluster-all-narrow-rtl/bin/snitch_cluster.vlt
-# COPY --from=snax-kul-cluster-all-narrow /src/sw/snRuntime /opt/snax-kul-cluster-all-narrow/sw/snRuntime
-# COPY --from=snax-kul-cluster-all-narrow /src/target/snitch_cluster/sw/runtime/rtl /opt/snax-kul-cluster-all-narrow/target/snitch_cluster/sw/runtime/rtl
-# COPY --from=snax-kul-cluster-all-narrow /src/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-kul-cluster-all-narrow/target/snitch_cluster/sw/runtime/rtl-generic
-# COPY --from=snax-kul-cluster-all-narrow /src/target/snitch_cluster/sw/runtime/common /opt/snax-kul-cluster-all-narrow/target/snitch_cluster/sw/runtime/common
-# COPY --from=snax-kul-cluster-all-narrow /src/target/snitch_cluster/sw/snax/ /opt/snax-kul-cluster-all-narrow/target/snitch_cluster/sw/snax
-# COPY --from=snax-kul-cluster-all-narrow /src/sw/math/ /opt/snax-kul-cluster-all-narrow/sw/math/
-# COPY --from=snax-kul-cluster-all-narrow /src/sw/deps/riscv-opcodes /opt/snax-kul-cluster-all-narrow/sw/deps/riscv-opcodes
-# COPY --from=snax-kul-cluster-all-narrow /src/sw/deps/printf /opt/snax-kul-cluster-all-narrow/sw/deps/printf
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-kul-cluster-mixed-narrow-wide-rtl/bin/snitch_cluster.vlt
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/sw/snRuntime /opt/snax-kul-cluster-mixed-narrow-wide/sw/snRuntime
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/target/snitch_cluster/sw/runtime/rtl /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/runtime/rtl
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/runtime/rtl-generic
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/target/snitch_cluster/sw/runtime/common /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/runtime/common
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/target/snitch_cluster/sw/snax/ /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/snax
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/sw/math/ /opt/snax-kul-cluster-mixed-narrow-wide/sw/math/
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/sw/deps/riscv-opcodes /opt/snax-kul-cluster-mixed-narrow-wide/sw/deps/riscv-opcodes
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/sw/deps/printf /opt/snax-kul-cluster-mixed-narrow-wide/sw/deps/printf
