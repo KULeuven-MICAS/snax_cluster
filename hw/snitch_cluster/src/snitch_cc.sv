@@ -961,8 +961,6 @@ module snitch_cc #(
   // verilog_lint: waive-stop always-ff-non-blocking
   // pragma translate_on
 
-  //`ASSERT_INIT(BootAddrAligned, boot_addr_i[1:0] == 2'b00)
-
   BootAddrAligned: assert property (
       @(posedge clk_i) disable iff (!rst_ni)
       boot_addr_i[1:0] == 2'b00
