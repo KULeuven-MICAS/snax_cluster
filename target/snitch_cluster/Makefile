@@ -68,6 +68,17 @@ STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamP
 ####################
 
 # List manual conditions for different configurations
+ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
+
+	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
+	include $(SNAX_GEMM_ROOT)/Makefile
+
+	VSIM_BENDER += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
+	VLT_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
+	VCS_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
+
+endif
+
 ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 
 	VSIM_BENDER += -t snax_alu -t snax_alu_cluster
@@ -82,6 +93,14 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-hypercorex.hjson)
 	VLT_BENDER  += -t hypercorex -t snax_hypercorex_cluster
 	VCS_BENDER  += -t hypercorex -t snax_hypercorex_cluster
 
+endif
+
+ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm-add-c.hjson)
+
+    VSIM_BENDER += -t snax_streamer_gemm_add_c -t snax_streamer_gemm_add_c_cluster
+    VLT_BENDER  += -t snax_streamer_gemm_add_c -t snax_streamer_gemm_add_c_cluster
+    VCS_BENDER  += -t snax_streamer_gemm_add_c -t snax_streamer_gemm_add_c_cluster
+ 
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemmX-xdma.hjson)
