@@ -84,7 +84,7 @@ This is a good time to test our wrapper generation and see the changes in the CS
 
 1 - Go to the `$(ROOT)/target/snitch_cluster/` directory. Where `$(ROOT)` is the github root.
 
-2 - Run the RTL generatio make target.
+2 - Run the RTL generation make target.
 
 ```bash
 make CFG_OVERRIDE=cfg/snax-alu.hjson rtl-gen
