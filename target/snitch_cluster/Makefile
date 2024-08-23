@@ -70,9 +70,9 @@ STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamP
 # List manual conditions for different configurations
 ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
 
-	VSIM_BENDER += -t snax_gemm -t snax_streamer_gemm_cluster
-	VLT_BENDER  += -t snax_gemm -t snax_streamer_gemm_cluster
-	VCS_BENDER  += -t snax_gemm -t snax_streamer_gemm_cluster
+	VSIM_BENDER += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
+	VLT_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
+	VCS_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
 
 endif
 
