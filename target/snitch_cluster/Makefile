@@ -102,9 +102,9 @@ endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-kul-cluster-mixed-narrow-wide-xdma.hjson)
 
-	VSIM_BENDER += -t snax_gemmX -t snax_data_reshuffler -t snax_KUL_cluster_xdma -t snax_KUL_cluster
-	VLT_BENDER  += -t snax_gemmX -t snax_data_reshuffler -t snax_KUL_cluster_xdma -t snax_KUL_cluster
-	VCS_BENDER  += -t snax_gemmX -t snax_data_reshuffler -t snax_KUL_cluster_xdma -t snax_KUL_cluster
+	VSIM_BENDER += -t snax_gemmX -t snax_KUL_cluster_xdma -t snax_KUL_cluster
+	VLT_BENDER  += -t snax_gemmX -t snax_KUL_cluster_xdma -t snax_KUL_cluster
+	VCS_BENDER  += -t snax_gemmX -t snax_KUL_cluster_xdma -t snax_KUL_cluster
 
 endif
 
