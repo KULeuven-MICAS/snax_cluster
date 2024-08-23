@@ -68,7 +68,12 @@ STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamP
 ####################
 
 # List manual conditions for different configurations
+
+# TODO: This config should be removed in the future, as the accelerator is in the seperate repo
 ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
+
+	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
+	include $(SNAX_GEMM_ROOT)/Makefile
 
 	VSIM_BENDER += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
 	VLT_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
