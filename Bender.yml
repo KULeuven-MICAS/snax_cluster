@@ -322,7 +322,7 @@ sources:
       # Level 2
       - target/snitch_cluster/generated/snax_hypercorex/snax_hypercorex_wrapper.sv
 
-  - target: snax_gemm
+  - target: snax_streamer_gemm
     files:
       # Level 0
       - target/snitch_cluster/generated/snax_streamer_gemm/snax_streamer_gemm_csrman_CsrManager.sv
