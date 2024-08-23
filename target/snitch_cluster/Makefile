@@ -70,12 +70,9 @@ STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamP
 # List manual conditions for different configurations
 ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
 
-	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
-	include $(SNAX_GEMM_ROOT)/Makefile
-
-	VSIM_BENDER += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
-	VLT_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
-	VCS_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
+	VSIM_BENDER += -t snax_gemm -t snax_streamer_gemm_cluster
+	VLT_BENDER  += -t snax_gemm -t snax_streamer_gemm_cluster
+	VCS_BENDER  += -t snax_gemm -t snax_streamer_gemm_cluster
 
 endif
 
@@ -103,28 +100,19 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm-add-c.hjson)
  
 endif
 
-ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemmX-xdma.hjson)
+ifeq (${CFG_OVERRIDE}, cfg/snax-kul-cluster-mixed-narrow-wide-xdma.hjson)
 
-    VSIM_BENDER += -t snax_streamer_gemmX_xdma -t snax_streamer_gemmX_xdma_cluster
-    VLT_BENDER  += -t snax_streamer_gemmX_xdma -t snax_streamer_gemmX_xdma_cluster
-    VCS_BENDER  += -t snax_streamer_gemmX_xdma -t snax_streamer_gemmX_xdma_cluster
- 
+	VSIM_BENDER += -t snax_gemmX -t snax_data_reshuffler -t snax_KUL_cluster_xdma -t snax_KUL_cluster
+	VLT_BENDER  += -t snax_gemmX -t snax_data_reshuffler -t snax_KUL_cluster_xdma -t snax_KUL_cluster
+	VCS_BENDER  += -t snax_gemmX -t snax_data_reshuffler -t snax_KUL_cluster_xdma -t snax_KUL_cluster
+
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-kul-cluster-mixed-narrow-wide.hjson)
 
- 	CLUSTER_NAME = snax_KUL_cluster
-
-$(eval $(call generate_snax_gen,snax_streamer_gemmX))
-
-	SNAX_GEMMX_ROOT ?= $(ROOT)/hw/chisel_acc
-    include $(SNAX_GEMMX_ROOT)/Makefile
-
-$(eval $(call generate_snax_gen,snax_data_reshuffler))
-
-	VSIM_BENDER += -t snax_KUL_cluster
-	VLT_BENDER  += -t snax_KUL_cluster
-	VCS_BENDER  += -t snax_KUL_cluster
+	VSIM_BENDER += -t snax_gemmX -t snax_data_reshuffler -t snax_KUL_cluster
+	VLT_BENDER  += -t snax_gemmX -t snax_data_reshuffler -t snax_KUL_cluster
+	VCS_BENDER  += -t snax_gemmX -t snax_data_reshuffler -t snax_KUL_cluster
 
 endif
 
