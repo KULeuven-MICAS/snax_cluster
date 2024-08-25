@@ -390,7 +390,7 @@ sources:
       # Level 1
       - target/snitch_cluster/generated/snax_streamer_gemmX_xdma_cluster_xdma/snax_streamer_gemmX_xdma_cluster_xdma_wrapper.sv
 
-  - target: snax_KUL_cluster_xdma
+  - target: snax_KUL_xdma_cluster_xdma
     files:
       # Level 0
       - target/snitch_cluster/generated/snax_KUL_cluster_xdma/snax_KUL_xdma_cluster_xdma.sv
