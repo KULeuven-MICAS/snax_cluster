@@ -13,6 +13,6 @@
 %>
 #define CLUSTER_ADDRWIDTH ${cluster_addrwidth}
 #define CLUSTER_PERIPH_BASE_ADDR (CLUSTER_TCDM_BASE_ADDR + CLUSTER_TCDM_SIZE)
-#define CLUSTER_ZERO_MEM_START_ADDR (CLUSTER_PERIPH_BASE_ADDR + CLUSTER_TCDM_SIZE)
+#define CLUSTER_ZERO_MEM_START_ADDR (CLUSTER_PERIPH_BASE_ADDR + ${hex(cfg['cluster']['cluster_periph_size'] * 1024)})
 #define CLUSTER_ZERO_MEM_END_ADDR (CLUSTER_ZERO_MEM_START_ADDR + ${hex(cfg['cluster']['zero_mem_size'] * 1024)})
 #define CLINT_BASE_ADDR ${hex(cfg['peripherals']['clint']['address'])}
