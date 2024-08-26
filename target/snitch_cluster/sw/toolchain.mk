@@ -42,7 +42,7 @@ RISCV_CFLAGS += -menable-experimental-extensions
 else
 RISCV_CFLAGS += --target=riscv32-unknown-elf
 RISCV_CFLAGS += -mcpu=generic-rv32
-RISCV_CFLAGS += -march=rv32ima
+RISCV_CFLAGS += -march=rv32imafdzfh
 RISCV_CFLAGS += -fno-builtin-memset
 # Required by printf lib such that svnprintf does not emit __udivdi3
 RISCV_CFLAGS += -DPRINTF_DISABLE_SUPPORT_LONG_LONG
