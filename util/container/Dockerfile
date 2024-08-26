@@ -69,7 +69,7 @@ ENV CVA6_GCC_URL=https://github.com/KULeuven-MICAS/llvm-build/releases/latest/do
 RUN curl -L $CVA6_GCC_URL -o /tmp/cva6_gcc_toolchain.tar.gz && \
     mkdir /tmp/cva6_gcc_toolchain && \
     tar -xzvf /tmp/cva6_gcc_toolchain.tar.gz -C /tmp/cva6_gcc_toolchain && \
-    cp /tmp/cva6_gcc_toolchain/custom_toolchain_build /opt/cva6_gcc_toolchain -r && \
+    cp /tmp/cva6_gcc_toolchain/cva6_gcc_toolchain /opt/cva6_gcc_toolchain -r && \
     rm -rf /tmp/cva6_gcc_toolchain /tmp/cva6_gcc_toolchain.tar.gz
 
 
