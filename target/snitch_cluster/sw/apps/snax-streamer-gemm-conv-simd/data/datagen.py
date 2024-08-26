@@ -39,6 +39,7 @@ def emit_header_file(**kwargs):
 MIN = -128
 MAX = 127
 
+
 def emit_conv_data(**kwargs):
     Cin = kwargs["Cin"]
     Cout = kwargs["Cout"]
@@ -494,6 +495,7 @@ def emit_conv_data(**kwargs):
 
     return data_str, direct_conv2d_res
 
+
 def emit_matmul_data(**kwargs):
     # matmul settings
     data_str = []
@@ -555,10 +557,36 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "D8tlstride2", 0)]
 
     data_str += [format_scalar_definition("int32_t", "delta_local_a", 0)]
-    data_str += [format_scalar_definition("int32_t", "delta_local_b", 64 * kwargs["K"] * kwargs["M"])]
-    data_str += [format_scalar_definition("int32_t", "delta_local_c", 64 * kwargs["K"] * kwargs["M"] + 64 * kwargs["K"] * kwargs["N"])]
-    data_str += [format_scalar_definition("int32_t", "delta_local_d32", 64 * kwargs["K"] * kwargs["M"] + 64 * kwargs["K"] * kwargs["N"] + 256 * kwargs["M"] * kwargs["N"])]
-    data_str += [format_scalar_definition("int32_t", "delta_local_d8", 64 * kwargs["K"] * kwargs["M"] + 64 * kwargs["K"] * kwargs["N"] + 256 * kwargs["M"] * kwargs["N"])]
+    data_str += [
+        format_scalar_definition(
+            "int32_t", "delta_local_b", 64 * kwargs["K"] * kwargs["M"]
+        )
+    ]
+    data_str += [
+        format_scalar_definition(
+            "int32_t",
+            "delta_local_c",
+            64 * kwargs["K"] * kwargs["M"] + 64 * kwargs["K"] * kwargs["N"],
+        )
+    ]
+    data_str += [
+        format_scalar_definition(
+            "int32_t",
+            "delta_local_d32",
+            64 * kwargs["K"] * kwargs["M"]
+            + 64 * kwargs["K"] * kwargs["N"]
+            + 256 * kwargs["M"] * kwargs["N"],
+        )
+    ]
+    data_str += [
+        format_scalar_definition(
+            "int32_t",
+            "delta_local_d8",
+            64 * kwargs["K"] * kwargs["M"]
+            + 64 * kwargs["K"] * kwargs["N"]
+            + 256 * kwargs["M"] * kwargs["N"],
+        )
+    ]
 
     # Generating random 8 integer a and b for subtraction
     subtraction_a = np.random.randint(MIN, MAX)
@@ -575,7 +603,19 @@ def emit_matmul_data(**kwargs):
     C = np.random.randint(MIN, MAX, size=(kwargs["M"], kwargs["N"], 8, 8)).reshape(-1)
     data_str += [format_vector_definition("int32_t", "C", C)]
 
-    D32 = block_gemm_golden_model(kwargs["M"], kwargs["K"], kwargs["N"], 8, 8, 8, A, B, subtraction_a, subtraction_b, C)
+    D32 = block_gemm_golden_model(
+        kwargs["M"],
+        kwargs["K"],
+        kwargs["N"],
+        8,
+        8,
+        8,
+        A,
+        B,
+        subtraction_a,
+        subtraction_b,
+        C,
+    )
 
     return data_str, D32
 
@@ -589,7 +629,7 @@ def emit_gemmx_data(**kwargs):
         data_str += ["#define TEST_MATMUL"]
     else:
         data_str, D32 = emit_conv_data(**kwargs)
-    
+
     data_str += [format_vector_definition("int32_t", "D32", D32)]
 
     # -----------------------------------------------------------
@@ -629,9 +669,7 @@ def emit_gemmx_data(**kwargs):
         double_round_i,
         multiplier_i,
     )
-    data_str += [
-        format_vector_definition("int8_t", "D8", D8)
-    ]
+    data_str += [format_vector_definition("int8_t", "D8", D8)]
 
     data_str = "\n\n".join(data_str)
 
