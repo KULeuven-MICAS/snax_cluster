@@ -52,8 +52,6 @@ class DataReaderWriterIO(
     "fifoWidth should match with TCDM datawidth for now!"
   )
 
-  val ifTranspose = if (params.hasTranspose) Some(Input(Bool())) else None
-
 }
 
 //The DataReaderWriter class is a module that can both read and write data
@@ -122,11 +120,6 @@ class DataReaderWriter(
   data_reader.io.data_movement_done <> io.data_movement_done(0)
 
   data_reader.io.data_fifo_o <> io.data_fifo_o
-
-  // transpose signal
-  if (params.hasTranspose) {
-    data_reader.io.ifTranspose.get := io.ifTranspose.get
-  }
 
   /* connect signals for writer */
 
