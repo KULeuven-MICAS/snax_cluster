@@ -9,10 +9,10 @@ SELECT_RUNTIME ?= rtl
 
 ifeq ($(SELECT_RUNTIME), banshee)
 RUNTIME = runtime/banshee
-else ifeq ($(SELECT_RUNTIME), rtl-generic)
-RUNTIME = runtime/rtl-generic
-else
+else ifeq ($(SELECT_RUNTIME), rtl)
 RUNTIME = runtime/rtl
+else
+RUNTIME = runtime/rtl-generic
 endif
 
 SUBDIRS += math $(RUNTIME) snax/mac snax/data-reshuffler snax/streamer-gemm-conv-simd snax/xdma snax/hypercorex apps tests
