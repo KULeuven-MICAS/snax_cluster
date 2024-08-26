@@ -154,7 +154,9 @@ class DataReader(
     }
   } else {
     io.data_fifo_o.bits := Cat(data_fifo_input.reverse)
-    data_fifo_input_transpose := VecInit(Seq.fill(8)(VecInit(Seq.fill(8)(0.U(8.W)))))
+    data_fifo_input_transpose := VecInit(
+      Seq.fill(8)(VecInit(Seq.fill(8)(0.U(8.W))))
+    )
   }
 
   // ************************************************************
