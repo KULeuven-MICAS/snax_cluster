@@ -136,17 +136,17 @@ class DataReader(
       "transposeOutWidth must be params.tcdmPortsNum = 8 for now"
     )
   }
-  for (i <- 0 until 8) {
-    for (j <- 0 until 8) {
-      data_fifo_input_transpose(i)(j) := data_fifo_input_concat(
-        i * 8 + j * 8 * 8 + 7,
-        i * 8 + j * 8 * 8 + 0
-      )
-    }
-  }
 
   // gether all the response data
   if (params.hasTranspose) {
+    for (i <- 0 until 8) {
+      for (j <- 0 until 8) {
+        data_fifo_input_transpose(i)(j) := data_fifo_input_concat(
+          i * 8 + j * 8 * 8 + 7,
+          i * 8 + j * 8 * 8 + 0
+        )
+      }
+    }
     when(io.ifTranspose.get === true.B) {
       io.data_fifo_o.bits := data_fifo_input_transpose.asUInt
     }.otherwise {
@@ -154,6 +154,7 @@ class DataReader(
     }
   } else {
     io.data_fifo_o.bits := Cat(data_fifo_input.reverse)
+    data_fifo_input_transpose := VecInit(Seq.fill(8)(VecInit(Seq.fill(8)(0.U(8.W)))))
   }
 
   // ************************************************************
