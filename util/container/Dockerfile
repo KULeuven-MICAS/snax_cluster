@@ -47,7 +47,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
 
 # Get prebuilt mlir
 # Set the URL for the download
-ENV MLIR_URL=https://github.com/KULeuven-MICAS/llvm-build/releases/download/test-0/mlir-build.tar.gz
+ENV MLIR_URL=https://github.com/KULeuven-MICAS/llvm-build/releases/latest/download/mlir-build.tar.gz
 
 # Download, extract, and install the specified files
 RUN curl -L $MLIR_URL -o /tmp/mlir-build.tar.gz && \
@@ -65,7 +65,7 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
   ln -fs /bin/python3.10 /bin/python3
 
 # Get prebuilt CVA6 gcc toolchain
-ENV CVA6_GCC_URL=https://github.com/KULeuven-MICAS/llvm-build/releases/download/test-7/custom_toolchain_build.tar.gz
+ENV CVA6_GCC_URL=https://github.com/KULeuven-MICAS/llvm-build/releases/latest/download/cva6_gcc_toolchain.tar.gz
 RUN curl -L $CVA6_GCC_URL -o /tmp/cva6_gcc_toolchain.tar.gz && \
     mkdir /tmp/cva6_gcc_toolchain && \
     tar -xzvf /tmp/cva6_gcc_toolchain.tar.gz -C /tmp/cva6_gcc_toolchain && \
