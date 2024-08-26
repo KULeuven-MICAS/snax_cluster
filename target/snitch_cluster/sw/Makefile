@@ -5,7 +5,7 @@
 # Luca Colagrande <colluca@iis.ee.ethz.ch>
 
 TARGET ?= all
-SELECT_RUNTIME ?= rtl
+SELECT_RUNTIME ?= rtl-generic
 
 ifeq ($(SELECT_RUNTIME), banshee)
 RUNTIME = runtime/banshee
