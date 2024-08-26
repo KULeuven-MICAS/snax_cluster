@@ -47,15 +47,15 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
 
 # Get prebuilt mlir
 # Set the URL for the download
-ENV MLIR_URL=https://github.com/KULeuven-MICAS/llvm-build/releases/latest/download/mlir-build.tar.gz
+ENV MLIR_URL=https://github.com/KULeuven-MICAS/llvm-build/releases/latest/download/mlir.tar.gz
 
 # Download, extract, and install the specified files
-RUN curl -L $MLIR_URL -o /tmp/mlir-build.tar.gz && \
-    mkdir /tmp/mlir-build && \
-    tar -xzvf /tmp/mlir-build.tar.gz -C /tmp/mlir-build && \
-    cp /tmp/mlir-build/build/bin/mlir-opt /usr/bin/ && \
-    cp /tmp/mlir-build/build/bin/mlir-translate /usr/bin/ && \
-    rm -rf /tmp/mlir-build /tmp/mlir-build.tar.gz
+RUN curl -L $MLIR_URL -o /tmp/mlir.tar.gz && \
+    mkdir /tmp/mlir && \
+    tar -xzvf /tmp/mlir.tar.gz -C /tmp/mlir && \
+    cp /tmp/mlir/build/bin/mlir-opt /usr/bin/ && \
+    cp /tmp/mlir/build/bin/mlir-translate /usr/bin/ && \
+    rm -rf /tmp/mlir /tmp/mlir.tar.gz
 
 # Temporarily install python3.10 until xdsl has moved to newer MLIR version
 RUN add-apt-repository -y ppa:deadsnakes/ppa && \
