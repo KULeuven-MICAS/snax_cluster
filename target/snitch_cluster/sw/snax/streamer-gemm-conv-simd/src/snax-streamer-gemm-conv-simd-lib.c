@@ -18,6 +18,20 @@ int32_t gen_subtraction_config(int8_t subtraction_a, int8_t subtraction_b) {
     return ((uint8_t)subtraction_b << 8) | (uint8_t)subtraction_a;
 }
 
+int32_t gen_csr0_config(uint8_t input_zp_i, uint8_t output_zp_i,
+                        uint8_t shift_i, uint8_t max_int_i) {
+    // encode the configuration into a single 32-bit integer
+    return ((int32_t)max_int_i << 24) | ((int32_t)shift_i << 16) |
+           ((int32_t)output_zp_i << 8) | (int32_t)input_zp_i;
+}
+
+int32_t gen_csr1_config(uint8_t min_int_i, bool double_round_i) {
+    // encode the configuration into a single 32-bit integer
+    return ((uint8_t)double_round_i << 8) | (uint8_t)min_int_i;
+}
+
+int32_t gen_csr2_config(uint32_t multiplier_i) { return multiplier_i; }
+
 // Set STREAMER configuration CSR
 void set_gemmx_streamer_csr(
     int Aslstride0, int Aslstride1, int Atlbound0, int Atlstride0,

@@ -8,8 +8,6 @@
 
 #include "snax-gemmx-params.h"
 
-#include "snax-streamer-simd-lib.h"
-
 #include "snax-streamer-gemm-conv-simd-lib.h"
 
 // This is the main function for the SNAX GEMM for Conv2d
