@@ -613,8 +613,12 @@ def emit_matmul_data(**kwargs):
         B = B.reshape(kwargs["K"], kwargs["N"], 8, 8)
         B = B.transpose(0, 1, 3, 2).reshape(-1)
 
-    data_str += [format_scalar_definition("int32_t", "transposed_A", kwargs["transposed_A"])]
-    data_str += [format_scalar_definition("int32_t", "transposed_B", kwargs["transposed_B"])]
+    data_str += [
+        format_scalar_definition("int32_t", "transposed_A", kwargs["transposed_A"])
+    ]
+    data_str += [
+        format_scalar_definition("int32_t", "transposed_B", kwargs["transposed_B"])
+    ]
 
     D32 = block_gemm_golden_model(
         kwargs["M"],
