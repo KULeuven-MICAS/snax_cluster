@@ -33,7 +33,10 @@ def write_template(tpl_path, outdir, fname=None, **kwargs):
 
 
 def main():
-    """Generate a Snitch cluster TB and all corresponding configuration files."""
+    """
+        Generate a Snitch cluster TB and
+        all corresponding configuration files.
+    """
     parser = argparse.ArgumentParser(prog="clustergen")
     parser.add_argument("--clustercfg",
                         "-c",
@@ -102,7 +105,7 @@ def main():
             f.write(cluster_tb.render_mem_impl())
         with open(outdir / "config_spec.txt", "w") as f:
             f.write(cluster_tb.render_mem_spec())
-    
+
     if args.linker:
         with open(outdir / "link.ld", "w") as f:
             f.write(cluster_tb.render_linker_script())
