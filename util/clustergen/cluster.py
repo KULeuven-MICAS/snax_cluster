@@ -153,8 +153,8 @@ class SnitchCluster(Generator):
     files = {
         'cfg': "src/snitch_cfg.sv.tpl",
         'wrapper': "src/snitch_cluster_wrapper.sv.tpl",
-        'mem_spec': "src/config_spec.txt.tpl",
-        'mem_impl': "src/config_impl.txt.tpl"
+        'mem_spec': "../templates/config_spec.txt.tpl",
+        'mem_impl': "../templates/config_impl.txt.tpl"
     }
 
     def __init__(self, cfg, pma_cfg):
