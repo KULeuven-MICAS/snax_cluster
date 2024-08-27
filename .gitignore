@@ -4,7 +4,7 @@ Bender.lock
 __pycache__
 
 // File List Synthesis Fiels
-snps_flist.tcl
+*_flist.tcl
 
 // Modelsim Fiels
 *.wlf
@@ -17,3 +17,7 @@ gmon.out
 // Docs
 /site/
 /docs/generated/
+
+target/streams/
+target/scala*
+
