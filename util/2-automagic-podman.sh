@@ -13,7 +13,11 @@
 
 cd /repo/target/snitch_cluster
 
+pkill verible-v
+pkill verible
+
 make clean
+make CFG_OVERRIDE=cfg/snax-streamer-gemm-conv.hjson bin/snitch_cluster.vlt
 make CFG_OVERRIDE=cfg/snax-streamer-gemm-conv.hjson /repo/target/snitch_cluster/generated/syn_flist.tcl
 
 #check the generation

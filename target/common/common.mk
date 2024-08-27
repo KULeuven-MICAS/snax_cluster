@@ -39,6 +39,10 @@ MATCH_END := '/+incdir+/ s/$$/\/*\/*/'
 MATCH_BGN := 's/+incdir+//g'
 SED_SRCS  := sed -e ${MATCH_END} -e ${MATCH_BGN}
 
+#Synopsys DC compiler 
+SYNTH_BENDER += -t synthesis
+
+
 VSIM_BENDER   += -t test -t rtl -t simulation -t vsim
 VSIM_SOURCES   = $(shell ${BENDER} script flist ${VSIM_BENDER} | ${SED_SRCS})
 VSIM_BUILDDIR ?= work-vsim
