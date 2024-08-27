@@ -5,9 +5,9 @@
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 // Guilherme Paim <gppaim@ieee.org>
 
-`ifdef TARGET_SYNTHESIS
-`include "mem_def/mem_def.svh"
-`endif
+//`ifdef TARGET_SYNTHESIS
+//`include "mem_def/mem_def.svh"
+//`endif
 
 /// An actual cache lookup.
 module snitch_icache_lookup #(
