@@ -7,7 +7,7 @@
 SUBDIRS  = lto
 SUBDIRS += nop
 # Tests below don't work with the generic runtime
-ifneq ($(SELECT_RUNTIME), rtl-generic)
+ifneq ($(filter $(SELECT_RUNTIME),rtl banshee),)
 SUBDIRS += blas/axpy
 SUBDIRS += blas/gemm
 SUBDIRS += dnn/batchnorm
@@ -24,21 +24,16 @@ SUBDIRS += montecarlo/pi_estimation
 SUBDIRS += snax-mac
 SUBDIRS += snax-mac-simple/untiled
 SUBDIRS += snax-mac-simple/tiled
-SUBDIRS += snax-gemm-engine
-SUBDIRS += snax-gemm-base
-SUBDIRS += snax-block-gemm
-SUBDIRS += snax-streamer-gemm
-SUBDIRS += snax-streamer-simd
 SUBDIRS += snax-mac-mult
 SUBDIRS += snax-alu
 SUBDIRS += snax-data-reshuffler
 SUBDIRS += snax-streamer-gemm-conv-simd
-SUBDIRS += snax-streamer-gemm-conv
-SUBDIRS += snax-streamer-gemm-add-c
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-multi-cluster-playground
+ifeq ($(CFG_OVERRIDE), cfg/snax-hypercorex.hjson)
 SUBDIRS += snax-hypercorex/test-csr
-SUBDIRS += snax-xdma-maxpool
+SUBDIRS += snax-hypercorex/char-recog
+endif
 
 .PHONY: all clean $(SUBDIRS)
 

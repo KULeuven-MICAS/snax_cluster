@@ -16,6 +16,12 @@ ${c[prop]}${', ' if not loop.last else ''}\
   % endfor
 </%def>\
 
+<%def name="snax_custom_tcdm_idx(prop)">\
+  % for idx in range(len(cfg['snax_custom_tcdm_assign'][prop])):
+${cfg['snax_custom_tcdm_assign'][prop][idx]}${', ' if not loop.last else ''}\
+  % endfor
+</%def>\
+
 <%def name="acc_cfg(prop)">\
   % for idx in range(len(prop)):
 ${prop[idx]}${', ' if not loop.last else ''}\
@@ -56,9 +62,9 @@ ${',' if not loop.last else ''}
 package ${cfg['name']}_pkg;
 
   // Addressing Parameters
-  localparam int unsigned HartBaseID = ${to_sv_hex(cfg['cluster_base_hartid'], 10)};
-  localparam int unsigned ClusterBaseAddr = ${to_sv_hex(cfg['cluster_base_addr'], cfg['addr_width'])};
-  localparam int unsigned BootAddr = ${to_sv_hex(cfg['boot_addr'], 32)};
+  localparam logic [ 9:0] HartBaseID = ${to_sv_hex(cfg['cluster_base_hartid'], 10)};
+  localparam logic [${cfg['addr_width']-1}:0] ClusterBaseAddr = ${to_sv_hex(cfg['cluster_base_addr'], cfg['addr_width'])};
+  localparam logic [31:0] BootAddr = ${to_sv_hex(cfg['boot_addr'], 32)};
 
   // Base and pre-calculated parameters
   localparam int unsigned NrCores = ${cfg['nr_cores']};
@@ -461,6 +467,14 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
   localparam int unsigned SsrMuxRespDepth         [${cfg['nr_cores']}] = '{${core_cfg('ssr_mux_resp_depth')}};
   localparam int unsigned SnaxNarrowTcdmPorts     [${cfg['nr_cores']}] = '{${acc_cfg(snax_narrow_tcdm_ports_list)}};
   localparam int unsigned SnaxWideTcdmPorts       [${cfg['nr_cores']}] = '{${acc_cfg(snax_wide_tcdm_ports_list)}};
+% if 'snax_custom_tcdm_assign' in cfg:
+% if cfg['snax_custom_tcdm_assign']['snax_enable_assign_tcdm_idx']:
+  localparam int unsigned SnaxNarrowStartIdx      [${len(cfg['snax_custom_tcdm_assign']['snax_narrow_assign_start_idx'])}] = '{${snax_custom_tcdm_idx('snax_narrow_assign_start_idx')}};
+  localparam int unsigned SnaxNarrowEndIdx        [${len(cfg['snax_custom_tcdm_assign']['snax_narrow_assign_end_idx'])}] = '{${snax_custom_tcdm_idx('snax_narrow_assign_end_idx')}};
+  localparam int unsigned SnaxWideStartIdx        [${len(cfg['snax_custom_tcdm_assign']['snax_wide_assign_start_idx'])}] = '{${snax_custom_tcdm_idx('snax_wide_assign_start_idx')}};
+  localparam int unsigned SnaxWideEndIdx          [${len(cfg['snax_custom_tcdm_assign']['snax_wide_assign_end_idx'])}] = '{${snax_custom_tcdm_idx('snax_wide_assign_end_idx')}};
+% endif
+% endif
 
   //-----------------------------
   // SNAX Custom Instruction Ports
@@ -546,6 +560,17 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     .TotalSnaxNarrowTcdmPorts(${total_snax_narrow_ports}),
     .TotalSnaxWideTcdmPorts(${total_snax_wide_ports}),
     .SnaxUseCustomPorts (${core_cfg_flat('snax_use_custom_ports')}),
+% if 'snax_custom_tcdm_assign' in cfg:
+  % if cfg['snax_custom_tcdm_assign']['snax_enable_assign_tcdm_idx']:
+    .SnaxUseIdxTcdmAssign(1'b1),
+    .SnaxNumNarrowAssignIdx(${len(cfg['snax_custom_tcdm_assign']['snax_narrow_assign_start_idx'])}),
+    .SnaxNumWideAssignIdx(${len(cfg['snax_custom_tcdm_assign']['snax_wide_assign_start_idx'])}),
+    .SnaxNarrowStartIdx(SnaxNarrowStartIdx),
+    .SnaxNarrowEndIdx(SnaxNarrowEndIdx),
+    .SnaxWideStartIdx(SnaxWideStartIdx),
+    .SnaxWideEndIdx(SnaxWideEndIdx),
+  % endif
+% endif
     .FPUImplementation (${cfg['pkg_name']}::FPUImplementation),
     .SnitchPMACfg (${cfg['pkg_name']}::SnitchPMACfg),
     .NumIntOutstandingLoads (NumIntOutstandingLoads),

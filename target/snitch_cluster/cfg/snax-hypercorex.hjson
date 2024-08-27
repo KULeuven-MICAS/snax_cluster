@@ -13,7 +13,7 @@
         name: "snax_hypercorex_cluster",
         boot_addr: 4096, // 0x1000
         cluster_base_addr: 268435456, // 0x1000_0000
-        cluster_base_offset: 0, // 0x0
+        cluster_base_offset: 262144,  // 256KB
         cluster_base_hartid: 0,
         addr_width: 48,
         data_width: 64,
@@ -26,6 +26,14 @@
         dma_data_width: 512,
         dma_axi_req_fifo_depth: 3,
         dma_req_fifo_depth: 3,
+        // SNAX custom cluster TCDM assignment
+        snax_custom_tcdm_assign: {
+            snax_enable_assign_tcdm_idx: true,
+            snax_narrow_assign_start_idx: [0,26],
+            snax_narrow_assign_end_idx: [1,26],
+            snax_wide_assign_start_idx: [2,27],
+            snax_wide_assign_end_idx: [25,34],
+        },
         // Timing parameters
         timing: {
             lat_comp_fp32: 3,
@@ -130,7 +138,7 @@
     snax_hypercorex_streamer_template :{
 
         temporal_addrgen_unit_params: {
-            loop_dim: [3,3,3,3,3,3,3],
+            loop_dim: [2,2,2,2,2,2,2],
             share_temp_addr_gen_loop_bounds: false,
         }
 

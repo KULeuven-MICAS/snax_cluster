@@ -11,15 +11,15 @@
 
 DEBUG            ?= OFF  # ON to turn on debugging symbols
 CFG_OVERRIDE     ?=      # Override default config file
-SELECT_RUNTIME   ?=      # Select snRuntime implementation: "banshee", "rtl-generic" or "rtl" (default)
-SELECT_TOOLCHAIN ?=      # Select Toolchain: "llvm-generic" = llvm17 generic or "llvm-snitch" llvm 12 snitch_specific (default)
+SELECT_RUNTIME   ?=      # Select snRuntime implementation: "banshee", "rtl-generic(default)" or "rtl" 
+SELECT_TOOLCHAIN ?=      # Select Toolchain: "llvm-generic" = llvm17 generic (default) or "llvm-snitch" llvm 12 snitch_specific
  					     # Note that the default toolchain only works with some applications 
 						 # since it requires the rtl-generic runtime
 
 .DEFAULT_GOAL := help
 .PHONY: all clean
 all: sw
-clean: clean-sw clean-work clean-vsim clean-vlt clean-vcs clean-logs clean-bender clean-generated
+clean: clean-sw clean-work clean-vsim clean-vlt clean-vcs clean-syn clean-logs clean-bender clean-generated
 
 ##########
 # Common #
@@ -29,6 +29,7 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR  := $(dir $(MKFILE_PATH))
 ROOT        := ${MKFILE_DIR}../..
 SNITCH_ROOT := $(ROOT)
+SYN_ROOT    := $(ROOT)
 SNAX_CFG_PATH := $(ROOT)/target/snitch_cluster/cfg/
 SNAX_TPL_PATH := $(ROOT)/hw/templates/
 SNAX_TEST_PATH := $(ROOT)/target/snitch_cluster/test/
@@ -67,131 +68,81 @@ STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamP
 # SNAX Generations #
 ####################
 
+# This "function" simply adds
+# the tags necessary for each tool
+
+define add_tags
+	$(eval VSIM_BENDER += -t $1)
+	$(eval VLT_BENDER  += -t $1)
+	$(eval VCS_BENDER  += -t $1)
+	$(eval SYN_BENDER  += -t $1)
+endef
+
 # List manual conditions for different configurations
-ifeq (${CFG_OVERRIDE}, cfg/snax-gemm.hjson)
-	BYPASS_ACCGEN = true
 
-	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
-	include $(SNAX_GEMM_ROOT)/Makefile	
-
-	VSIM_BENDER += -t snax-gemm -t snax_gemm_cluster
-	VLT_BENDER  += -t snax-gemm -t snax_gemm_cluster
-	VCS_BENDER  += -t snax-gemm -t snax_gemm_cluster
-endif
-
+# TODO: This config should be removed in the future, as the accelerator is in the seperate repo
 ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
 
 	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
 	include $(SNAX_GEMM_ROOT)/Makefile
 
-	VSIM_BENDER += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
-	VLT_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
-	VCS_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_cluster
-
-endif
-
-ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-simd.hjson)
-
-	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-postprocessing-simd)
-	include $(SNAX_GEMM_ROOT)/Makefile
-
-	VSIM_BENDER += -t snax_streamer_simd -t snax_streamer_simd_cluster
-	VLT_BENDER  += -t snax_streamer_simd -t snax_streamer_simd_cluster
-	VCS_BENDER  += -t snax_streamer_simd -t snax_streamer_simd_cluster
-
+$(call add_tags,snax_streamer_gemm)
+$(call add_tags,snax_streamer_gemm_cluster)
 
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 
-	VSIM_BENDER += -t snax_alu -t snax_alu_cluster
-	VLT_BENDER  += -t snax_alu -t snax_alu_cluster
-	VCS_BENDER  += -t snax_alu -t snax_alu_cluster
+$(call add_tags,snax_alu)
+$(call add_tags,snax_alu_cluster)
 
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-hypercorex.hjson)
 
-	VSIM_BENDER += -t hypercorex -t snax_hypercorex_cluster
-	VLT_BENDER  += -t hypercorex -t snax_hypercorex_cluster
-	VCS_BENDER  += -t hypercorex -t snax_hypercorex_cluster
-
-endif
-
-ifeq (${CFG_OVERRIDE}, cfg/snax-data-reshuffler.hjson)
-
-	VSIM_BENDER += -t snax_data_reshuffler -t snax_data_reshuffler_cluster
-	VLT_BENDER  += -t snax_data_reshuffler -t snax_data_reshuffler_cluster
-	VCS_BENDER  += -t snax_data_reshuffler -t snax_data_reshuffler_cluster
+$(call add_tags,hypercorex)
+$(call add_tags,snax_hypercorex_cluster)
 
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm-add-c.hjson)
 
-    VSIM_BENDER += -t snax_streamer_gemm_add_c -t snax_streamer_gemm_add_c_cluster
-    VLT_BENDER  += -t snax_streamer_gemm_add_c -t snax_streamer_gemm_add_c_cluster
-    VCS_BENDER  += -t snax_streamer_gemm_add_c -t snax_streamer_gemm_add_c_cluster
+$(call add_tags,snax_streamer_gemm_add_c)
+$(call add_tags,snax_streamer_gemm_add_c_cluster)
  
 endif
 
-ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm-conv.hjson)
- 
-    SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
-    include $(SNAX_GEMM_ROOT)/Makefile
+ifeq (${CFG_OVERRIDE}, cfg/snax-kul-cluster-mixed-narrow-wide-xdma.hjson)
 
-    VSIM_BENDER += -t snax_streamer_gemm -t snax_streamer_gemm_conv_cluster
-    VLT_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_conv_cluster
-    VCS_BENDER  += -t snax_streamer_gemm -t snax_streamer_gemm_conv_cluster
- 
+$(call add_tags,snax_gemmX)
+$(call add_tags,snax_KUL_xdma_cluster_xdma)
+$(call add_tags,snax_KUL_xdma_cluster)
+
 endif
 
-ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemmX.hjson)
+ifeq (${CFG_OVERRIDE}, cfg/snax-kul-cluster-mixed-narrow-wide.hjson)
 
-    VSIM_BENDER += -t snax_streamer_gemmX -t snax_streamer_gemmX_cluster
-    VLT_BENDER  += -t snax_streamer_gemmX -t snax_streamer_gemmX_cluster
-    VCS_BENDER  += -t snax_streamer_gemmX -t snax_streamer_gemmX_cluster
- 
-endif
+$(call add_tags,snax_gemmX)
+$(call add_tags,snax_data_reshuffler)
+$(call add_tags,snax_KUL_cluster)
 
-ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemmX-xdma.hjson)
-
-    VSIM_BENDER += -t snax_streamer_gemmX_xdma -t snax_streamer_gemmX_xdma_cluster
-    VLT_BENDER  += -t snax_streamer_gemmX_xdma -t snax_streamer_gemmX_xdma_cluster
-    VCS_BENDER  += -t snax_streamer_gemmX_xdma -t snax_streamer_gemmX_xdma_cluster
- 
-endif
-
-ifeq (${CFG_OVERRIDE}, cfg/snax-wide-gemm-data-reshuffler.hjson)
-  
-    SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
-    include $(SNAX_GEMM_ROOT)/Makefile
-
-	SNAX_CHISEL_ACC_GEN = true
-	include $(SNAX_CHISEL_ACC_PATH)/Makefile
-
-	VSIM_BENDER += -t snax_wide_gemm_data_reshuffler -t snax_wide_gemm_data_reshuffler_cluster
-	VLT_BENDER  += -t snax_wide_gemm_data_reshuffler -t snax_wide_gemm_data_reshuffler_cluster
-	VCS_BENDER  += -t snax_wide_gemm_data_reshuffler -t snax_wide_gemm_data_reshuffler_cluster
- 
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-mac.hjson)
 
 	BYPASS_ACCGEN = true
-	
-	VSIM_BENDER += -t snax_mac -t snax_mac_cluster
-	VLT_BENDER  += -t snax_mac -t snax_mac_cluster
-	VCS_BENDER  += -t snax_mac -t snax_mac_cluster
+
+$(call add_tags,snax_mac)
+$(call add_tags,snax_mac_cluster)
 
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-mac-mult.hjson)
 
 	BYPASS_ACCGEN = true
-	
-	VSIM_BENDER += -t snax_mac -t snax_mac_mult_cluster
-	VLT_BENDER  += -t snax_mac -t snax_mac_mult_cluster
-	VCS_BENDER  += -t snax_mac -t snax_mac_mult_cluster
+
+$(call add_tags,snax_mac)
+$(call add_tags,snax_mac_mult_cluster)
 
 endif
 
@@ -199,9 +150,7 @@ ifeq (${CFG_OVERRIDE}, cfg/default.hjson)
 
 	BYPASS_ACCGEN = true
 
-	VSIM_BENDER += -t snitch_cluster
-	VLT_BENDER  += -t snitch_cluster
-	VCS_BENDER  += -t snitch_cluster
+$(call add_tags,snitch_cluster)
 
 endif
 
@@ -458,6 +407,21 @@ bin/snitch_cluster.vcs: ${VCS_SOURCES} ${TB_SRCS} $(TB_CC_SOURCES) $(TB_ASM_SOUR
 	$(VCS) -Mlib=$(VCS_BUILDDIR) -Mdir=$(VCS_BUILDDIR) -o bin/snitch_cluster.vcs -cc $(CC) -cpp $(CXX) \
 		-assert disable_cover -override_timescale=1ns/1ps -full64 tb_bin $(TB_CC_SOURCES) $(TB_ASM_SOURCES) \
 		-CFLAGS "$(TB_CC_FLAGS)" -LDFLAGS "-L${FESVR}/lib" -lfesvr
+
+###############
+# DC Compiler #
+###############
+
+.PHONY: gen-syn clean-syn
+
+gen-syn:
+	mkdir -p $(SYN_BUILDDIR)
+	${BENDER} script synopsys ${SYN_BENDER} > $(SYN_BUILDDIR)/$(SYN_FLIST)
+	sed -i '2c\set ROOT "$(SYN_ROOT)"' $(SYN_BUILDDIR)/$(SYN_FLIST)
+	chmod +x $(SYN_BUILDDIR)/$(SYN_FLIST)
+
+clean-syn: clean-work
+	rm -rf $(SYN_BUILDDIR)
 
 ########
 # Util #

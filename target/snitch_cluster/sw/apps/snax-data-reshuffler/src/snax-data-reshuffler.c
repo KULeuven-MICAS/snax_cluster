@@ -28,7 +28,7 @@ int main() {
     // Transfer data from L3 to L1
     // Using DMA only
     if (snrt_is_dm_core()) {
-        load_a_chrunk_of_data(local_in, DataIn, input_data_len);
+        snrt_dma_start_1d(local_in, DataIn, input_data_len * sizeof(int8_t));
     }
 
     // Wait for DMA to finish
@@ -36,7 +36,7 @@ int main() {
 
     uint32_t data_reshuffler_cycle;
 
-    if (CORE_IDX == 0) {
+    if (CORE_IDX == 1) {
         // Set data-reshuffler configuration CSR
         set_data_reshuffler_csr(
             tempLoop0_in, tempLoop1_in, tempLoop2_in, tempLoop3_in,

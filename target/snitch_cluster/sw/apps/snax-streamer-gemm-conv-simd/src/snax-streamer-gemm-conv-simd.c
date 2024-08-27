@@ -6,11 +6,7 @@
 
 #include "data.h"
 
-#include "snax-gemm-lib.h"
-#include "snax-gemm-params.h"
-
-#include "snax-streamer-gemm-lib.h"
-#include "snax-streamer-simd-lib.h"
+#include "snax-gemmx-params.h"
 
 #include "snax-streamer-gemm-conv-simd-lib.h"
 
@@ -36,9 +32,17 @@ int main() {
     // Transfer data from L3 to L1
     // Using DMA only
     if (snrt_is_dm_core()) {
-        load_conv_input_data(Nbatch, H + 2 * pad_h, W + 2 * pad_w, Cin, local_a,
-                             A);
-        load_weight_data(Cout, Kh, Kw, Cin, local_b, B);
+#ifdef TEST_MATMUL
+        snrt_dma_start_1d(local_a, A,
+                          M * K * meshRow * tileSize * sizeof(int8_t));
+        snrt_dma_start_1d(local_b, B,
+                          N * K * tileSize * meshCol * sizeof(int8_t));
+#else
+        snrt_dma_start_1d(
+            local_a, A,
+            Nbatch * (H + 2 * pad_h) * (W + 2 * pad_w) * Cin * sizeof(int8_t));
+        snrt_dma_start_1d(local_b, B, Cout * Kh * Kw * Cin * sizeof(int8_t));
+#endif
     }
 
     // Wait for DMA to finish
@@ -71,12 +75,12 @@ int main() {
             D32tlstride1, D32tlbound2, D32tlstride2,
 
             delta_local_a, delta_local_b, delta_local_d8, delta_local_c,
-            delta_local_d32, bypassSIMD);
+            delta_local_d32, bypassSIMD, transposed_A, transposed_B);
 
         // Set CSR to start Streamer for conv2d
         set_gemmx_streamer_start();
 
-        // Set GEMM configuration CSR
+        // Set GEMMX configuration CSR
         uint32_t subtraction_setting =
             gen_subtraction_config(subtraction_a, subtraction_b);
 
@@ -96,14 +100,17 @@ int main() {
 
         // check the result of the implicit im2col convolution
         if (!bypassSIMD) {
-            err +=
-                check_gemmx_result_D8(local_d8, D8_direct_conv2d, Batch, M, N);
+            err += check_gemmx_result_D8(local_d8, D8, Batch, M, N);
         } else {
-            err += check_gemmx_result_D32(local_d32, D32_direct_conv2d, Batch,
-                                          M, N);
+            err += check_gemmx_result_D32(local_d32, D32, Batch, M, N);
         }
+#ifdef TEST_MATMUL
+        printf("SNAX GEMM Matmul: %s, err = %d . bypassSIMD = %d .\n",
+               err ? "FAIL" : "PASS", err, bypassSIMD);
+#else
         printf("SNAX GEMM Conv2d: %s, err = %d . bypassSIMD = %d .\n",
                err ? "FAIL" : "PASS", err, bypassSIMD);
+#endif
     };
 
     return err;
