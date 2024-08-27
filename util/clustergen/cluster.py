@@ -49,8 +49,10 @@ class Generator(object):
 
     file_path = Path(__file__).parent
     snitch_cluster_folder = file_path / "../../hw/snitch_cluster"
+    template_folder = file_path / "../../hw/templates"
 
-    templates = TemplateLookup(directories=[snitch_cluster_folder],
+    templates = TemplateLookup(directories=[snitch_cluster_folder,
+                                            template_folder],
                                output_encoding="utf-8")
     """
     Generator class which contains common component to
@@ -153,8 +155,8 @@ class SnitchCluster(Generator):
     files = {
         'cfg': "src/snitch_cfg.sv.tpl",
         'wrapper': "src/snitch_cluster_wrapper.sv.tpl",
-        'mem_spec': "../templates/config_spec.txt.tpl",
-        'mem_impl': "../templates/config_impl.txt.tpl"
+        'mem_spec': "config_spec.txt.tpl",
+        'mem_impl': "config_impl.txt.tpl"
     }
 
     def __init__(self, cfg, pma_cfg):
