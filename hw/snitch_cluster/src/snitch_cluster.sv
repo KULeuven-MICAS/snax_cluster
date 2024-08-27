@@ -18,10 +18,6 @@
 
 `include "snitch_vm/typedef.svh"
 
-`ifdef TARGET_SYNTHESIS
-`include "mem_def/mem_def.svh"
-`endif
-
 /// Snitch many-core cluster with improved TCDM interconnect.
 /// Snitch Cluster Top-Level.
 module snitch_cluster
