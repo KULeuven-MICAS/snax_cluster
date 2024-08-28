@@ -24,6 +24,7 @@ from snax_utils import (  # noqa E402
     block_gemm_golden_model,
     data_reshuffler_golden_model,
     postprocessing_simd_golden_model,
+    align_wide_addr,
 )  # noqa E402
 
 np.random.seed(42)
@@ -137,19 +138,17 @@ def emit_conv_data(**kwargs):
 
     delta_local_b = input_padding.size
     assert input_padding.size == (Nbatch * Cin8 * (H + 2 * pad_h) * (W + 2 * pad_w) * 8)
-    if delta_local_b % 64 != 0:
-        delta_local_b = ((delta_local_b // 64) + 1) * 64
+
+    delta_local_b = align_wide_addr(delta_local_b, 64)
     assert delta_local_b % 64 == 0
 
     delta_local_c = delta_local_b + kernel.size
     assert kernel.size == (Cout8 * Cin8 * Kh * Kw * 8 * 8)
-    if delta_local_c % 64 != 0:
-        delta_local_c = ((delta_local_c // 64) + 1) * 64
+    delta_local_c = align_wide_addr(delta_local_c, 64)
     assert delta_local_c % 64 == 0
 
     delta_local_d8 = delta_local_c + length_c * 4
-    if delta_local_d8 % 64 != 0:
-        delta_local_d8 = ((delta_local_d8 // 64) + 1) * 64
+    delta_local_d8 = align_wide_addr(delta_local_d8, 64)
     assert delta_local_d8 % 64 == 0
 
     delta_local_d32 = delta_local_d8
@@ -223,7 +222,15 @@ def emit_conv_data(**kwargs):
         Atlbound6 = Nbatch
         Atlstride6 = Cin * (H + 2 * pad_h) * (W + 2 * pad_w)
 
-    assert Atlstride0 % 8 == 0 and Atlstride1 % 8 == 0 and Atlstride2 % 8 == 0 and Atlstride3 % 8 == 0 and Atlstride4 % 8 == 0 and Atlstride5 % 8 == 0 and Atlstride6 % 8 == 0
+    assert (
+        Atlstride0 % 8 == 0
+        and Atlstride1 % 8 == 0
+        and Atlstride2 % 8 == 0
+        and Atlstride3 % 8 == 0
+        and Atlstride4 % 8 == 0
+        and Atlstride5 % 8 == 0
+        and Atlstride6 % 8 == 0
+    )
 
     assert (
         M * K * N
@@ -298,7 +305,12 @@ def emit_conv_data(**kwargs):
         Btlbound3 = Nbatch
         Btlstride3 = 0
 
-    assert Btlstride0 % 64 == 0 and Btlstride1 % 64 == 0 and Btlstride2 % 64 == 0 and Btlstride3 % 64 == 0
+    assert (
+        Btlstride0 % 64 == 0
+        and Btlstride1 % 64 == 0
+        and Btlstride2 % 64 == 0
+        and Btlstride3 % 64 == 0
+    )
 
     assert K * N * M == Btlbound0 * Btlbound1 * Btlbound2 * Btlbound3, (
         "K * N * M",
@@ -363,7 +375,12 @@ def emit_conv_data(**kwargs):
         Ctlbound3 = Nbatch
         Ctlstride3 = Cout * H * W * 4
 
-    assert Ctlstride0 % 64 == 0 and Ctlstride1 % 64 == 0 and Ctlstride2 % 64 == 0 and Ctlstride3 % 64 == 0
+    assert (
+        Ctlstride0 % 64 == 0
+        and Ctlstride1 % 64 == 0
+        and Ctlstride2 % 64 == 0
+        and Ctlstride3 % 64 == 0
+    )
     assert M * N == Ctlbound0 * Ctlbound1 * Ctlbound2 * Ctlbound3
 
     data_str += [
@@ -420,7 +437,12 @@ def emit_conv_data(**kwargs):
         D32tlbound3 = Nbatch
         D32tlstride3 = D32out * out_height * out_width * 4
 
-    assert D32tlstride0 % 64 == 0 and D32tlstride1 % 64 == 0 and D32tlstride2 % 64 == 0 and D32tlstride3 % 64 == 0
+    assert (
+        D32tlstride0 % 64 == 0
+        and D32tlstride1 % 64 == 0
+        and D32tlstride2 % 64 == 0
+        and D32tlstride3 % 64 == 0
+    )
 
     data_str += [
         format_scalar_definition("int32_t", "D32slstride0", D32slstride0),
@@ -476,7 +498,12 @@ def emit_conv_data(**kwargs):
         D8tlbound3 = Nbatch
         D8tlstride3 = D8out * out_height * out_width
 
-    assert D8tlstride0 % 64 == 0 and D8tlstride1 % 64 == 0 and D8tlstride2 % 64 == 0 and D8tlstride3 % 64 == 0
+    assert (
+        D8tlstride0 % 64 == 0
+        and D8tlstride1 % 64 == 0
+        and D8tlstride2 % 64 == 0
+        and D8tlstride3 % 64 == 0
+    )
     data_str += [
         format_scalar_definition("int32_t", "D8slstride0", D8slstride0),
         format_scalar_definition("int32_t", "D8slstride1", D8slstride1),
