@@ -426,3 +426,9 @@ def max_pooling(
                     )
 
     return pooled_tensor
+
+
+def align_wide_addr(addr, alignment=64):
+    if(addr % alignment):
+        addr = ((addr // alignment) + 1) * alignment
+    return addr
