@@ -270,7 +270,7 @@ def tiled_block_gemm_golden_model(
                     * m
                     * row
                     * n
-                    * col: (mm2 * n2 + nn2 + 1)
+                    * col : (mm2 * n2 + nn2 + 1)
                     * m
                     * row
                     * n
@@ -429,6 +429,6 @@ def max_pooling(
 
 
 def align_wide_addr(addr, alignment=64):
-    if(addr % alignment):
+    if addr % alignment:
         addr = ((addr // alignment) + 1) * alignment
     return addr
