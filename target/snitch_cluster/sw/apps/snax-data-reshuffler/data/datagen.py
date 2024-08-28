@@ -235,7 +235,7 @@ def emit_gemm_data(**kwargs):
         tempStride0_in = 8
         tempStride1_in = padded_input_tensor_w * 8
         tempStride2_in = 8 * 8 * kwargs["stride_w"]
-        tempStride3_in = 8 * padded_input_tensor_w * 8 * kwargs["stride_h"]
+        tempStride3_in = padded_input_tensor_w * 8 * kwargs["stride_h"]
         tempStride4_in = padded_input_tensor_w * padded_input_tensor_h * 8
         data_str += [
             format_scalar_definition("int32_t", "delta_local_in", 0),
