@@ -64,13 +64,15 @@ RUN add-apt-repository -y ppa:deadsnakes/ppa && \
   ln -fs /usr/bin/python3.10 /usr/bin/python3 && \
   ln -fs /bin/python3.10 /bin/python3
 
-# Get prebuilt CVA6 gcc toolchain
-ENV CVA6_GCC_URL=https://github.com/KULeuven-MICAS/llvm-build/releases/latest/download/cva6_gcc_toolchain.tar.gz
-RUN curl -L $CVA6_GCC_URL -o /tmp/cva6_gcc_toolchain.tar.gz && \
-    mkdir /tmp/cva6_gcc_toolchain && \
-    tar -xzvf /tmp/cva6_gcc_toolchain.tar.gz -C /tmp/cva6_gcc_toolchain && \
-    cp /tmp/cva6_gcc_toolchain/cva6_gcc_toolchain /opt/cva6_gcc_toolchain -r && \
-    rm -rf /tmp/cva6_gcc_toolchain /tmp/cva6_gcc_toolchain.tar.gz
+
+# Get the CVA6 GCC toolchain
+ARG RISCV_GCC_VERSION=8.3.0-2020.04.0
+WORKDIR /tools
+RUN curl -Ls -o riscv-gcc.tar.gz https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-${RISCV_GCC_VERSION}-x86_64-linux-ubuntu14.tar.gz && \
+    mkdir -p /tools/riscv && chmod 777 /tools/riscv && \
+    tar -C /tools/riscv -xf riscv-gcc.tar.gz --strip-components=1 && \
+    rm -rf riscv-gcc.tar
+ENV RISCV_GCC_BINROOT="/tools/riscv/bin"
 
 
 # Install Verilator
