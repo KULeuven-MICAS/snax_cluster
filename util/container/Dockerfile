@@ -73,6 +73,7 @@ RUN curl -Ls -o riscv-gcc.tar.gz https://static.dev.sifive.com/dev-tools/riscv64
     tar -C /tools/riscv -xf riscv-gcc.tar.gz --strip-components=1 && \
     rm -rf riscv-gcc.tar
 ENV RISCV_GCC_BINROOT="/tools/riscv/bin"
+WORKDIR /
 
 
 # Install Verilator
