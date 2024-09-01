@@ -32,7 +32,6 @@ char_recog_dataset_path = hypercorex_path + \
 sys.path.append(hypercorex_path + "/hdc_exp/")
 sys.path.append(hypercorex_path + "/sw/")
 
-from hdc_util import gen_ca90_im_set  # noqa: E402
 from char_recog import (  # noqa: E402
     convert_to_data_indices,
     char_recog_dataset,
