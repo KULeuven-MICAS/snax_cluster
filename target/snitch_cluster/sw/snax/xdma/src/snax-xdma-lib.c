@@ -29,28 +29,18 @@ int32_t xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t* spatial_stride_src,
     csrw_ss(XDMA_DST_ADDR_PTR_MSB, (uint32_t)((uint64_t)dst >> 32));
     // Rule check
     // The enabled spatial bound for input should be equal to the enabled
-    // spatial bound for output
-    if (bound_src[0] > XDMA_SPATIAL_CHAN) {
-        XDMA_DEBUG_PRINT(
-            "Innermost bound at src is larger than the # of channels\n");
-        return -1;
-    }
-
-    // The innermost bound should be smaller than / equal to the # of channels
-    if (bound_dst[0] > XDMA_SPATIAL_CHAN) {
-        XDMA_DEBUG_PRINT(
-            "Innermost bound at dst is larger than the # of channels\n");
-        return -2;
-    }
-
-    // Src size and dst size should be equal
+    // Src frame count and dst frame count should be equal
     uint32_t src_size = 1;
-    for (uint32_t i = 1; i < temp_dim_src - 1; i++) {
-        src_size *= temp_bound_src[i];
+    if (temp_dim_src > 0) {
+        for (uint32_t i = 0; i < temp_dim_src; i++) {
+            src_size *= temp_bound_src[i];
+        }
     }
     uint32_t dst_size = 1;
-    for (uint32_t i = 1; i < temp_dim_dst - 1; i++) {
-        dst_size *= temp_bound_dst[i];
+    if (temp_dim_dst > 0) {
+        for (uint32_t i = 0; i < temp_dim_dst; i++) {
+            dst_size *= temp_bound_dst[i];
+        }
     }
     if (src_size != dst_size) {
         XDMA_DEBUG_PRINT("src loop and dst loop is not equal\n");
