@@ -31,7 +31,6 @@ class ReaderTester extends AnyFreeSpec with ChiselScalatestTester {
       dut.io.aguCfg.temporalBounds(1).poke(16)
 
       dut.io.readerwriterCfg.enabledChannel.poke(0xff.U)
-      dut.io.readerwriterCfg.enabledByte.poke(0xff.U)
 
       dut.io.start.poke(true)
       dut.clock.step()
