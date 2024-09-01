@@ -109,8 +109,8 @@ class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
   val ptr = UInt(param.addressWidth.W)
   val spatialStrides =
     Vec(param.spatialBounds.length, UInt(param.addressWidth.W))
-  val temporalStrides = Vec(param.temporalDimension, UInt(param.addressWidth.W))
   val temporalBounds = Vec(param.temporalDimension, UInt(param.addressWidth.W))
+  val temporalStrides = Vec(param.temporalDimension, UInt(param.addressWidth.W))
 
   def connectWithList(csrList: IndexedSeq[UInt]): IndexedSeq[UInt] = {
     var remainingCSR = csrList
@@ -122,14 +122,14 @@ class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
       spatialStrides(i) := remainingCSR.head
       remainingCSR = remainingCSR.tail
     }
-    // Connect the temporal strides
-    for (i <- 0 until temporalStrides.length) {
-      temporalStrides(i) := remainingCSR.head
-      remainingCSR = remainingCSR.tail
-    }
     // Connect the temporal bounds
     for (i <- 0 until temporalBounds.length) {
       temporalBounds(i) := remainingCSR.head
+      remainingCSR = remainingCSR.tail
+    }
+    // Connect the temporal strides
+    for (i <- 0 until temporalStrides.length) {
+      temporalStrides(i) := remainingCSR.head
       remainingCSR = remainingCSR.tail
     }
     remainingCSR
