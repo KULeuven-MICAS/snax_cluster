@@ -172,7 +172,7 @@ object xdmaTopGen extends App {
   )
 
   val writerparam = new ReaderWriterParam(
-    spatialBounds = parsedArgs("writerDimension").split(",").map(_.toInt).toList,
+    spatialBounds = parsedArgs("writerSpatialBounds").split(",").map(_.toInt).toList,
     temporalDimension = parsedArgs("writerTemporalDimension").toInt,
     tcdmDataWidth = parsedArgs("tcdmDataWidth").toInt,
     tcdmSize = parsedArgs("tcdmSize").toInt,
