@@ -190,8 +190,8 @@ int main() {
                 printf("Error in memset (region 0)\n");
                 return -1;
             }
-            printf("The memset of 4KB - 12KB is correct\n");
         }
+        printf("The memset of 4KB - 12KB is correct\n");
     } else {
         printf("Core %d is not xdma core. \n", snrt_cluster_core_idx());
     }
