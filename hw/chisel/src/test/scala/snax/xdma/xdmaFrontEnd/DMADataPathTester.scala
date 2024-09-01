@@ -28,11 +28,11 @@ class DMADataPathTester extends AnyFreeSpec with ChiselScalatestTester {
     new DMADataPath(
       readerparam = new DMADataPathParam(
         axiParam = new AXIParam,
-        rwParam = new ReaderWriterParam
+        rwParam = new ReaderWriterParam(configurableByteMask = false)
       ),
       writerparam = new DMADataPathParam(
         axiParam = new AXIParam,
-        rwParam = new ReaderWriterParam
+        rwParam = new ReaderWriterParam(configurableByteMask = true)
       )
     )
   ).withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) {
