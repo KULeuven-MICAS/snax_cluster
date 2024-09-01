@@ -162,7 +162,8 @@ object xdmaTopGen extends App {
   )
 
   val readerparam = new ReaderWriterParam(
-    spatialBounds = parsedArgs("readerSpatialBounds").split(",").map(_.toInt).toList,
+    spatialBounds =
+      parsedArgs("readerSpatialBounds").split(",").map(_.toInt).toList,
     temporalDimension = parsedArgs("readerTemporalDimension").toInt,
     tcdmDataWidth = parsedArgs("tcdmDataWidth").toInt,
     tcdmSize = parsedArgs("tcdmSize").toInt,
@@ -172,7 +173,8 @@ object xdmaTopGen extends App {
   )
 
   val writerparam = new ReaderWriterParam(
-    spatialBounds = parsedArgs("writerSpatialBounds").split(",").map(_.toInt).toList,
+    spatialBounds =
+      parsedArgs("writerSpatialBounds").split(",").map(_.toInt).toList,
     temporalDimension = parsedArgs("writerTemporalDimension").toInt,
     tcdmDataWidth = parsedArgs("tcdmDataWidth").toInt,
     tcdmSize = parsedArgs("tcdmSize").toInt,
@@ -260,11 +262,17 @@ return ${i._1}
 #define XDMA_SRC_TEMP_DIM ${readerparam.aguParam.temporalDimension}
 #define XDMA_SRC_SPATIAL_STRIDE_PTR XDMA_SRC_ADDR_PTR_MSB + 1
 #define XDMA_SRC_TEMP_STRIDE_PTR XDMA_SRC_SPATIAL_STRIDE_PTR + XDMA_SRC_SPATIAL_DIM
-#define XDMA_SRC_TEMP_BOUND_PTR XDMA_SRC_ADDR_PTR_MSB + XDMA_SRC_TEMP_DIM
+#define XDMA_SRC_TEMP_BOUND_PTR XDMA_SRC_TEMP_STRIDE_PTR + XDMA_SRC_TEMP_DIM
 #define XDMA_SRC_ENABLED_CHAN_PTR XDMA_SRC_TEMP_BOUND_PTR + XDMA_SRC_TEMP_DIM
-#define XDMA_SRC_BYPASS_PTR XDMA_SRC_ENABLED_CHAN_PTR + ${if (readerparam.configurableChannel) 1 else 0}
+#define XDMA_SRC_BYPASS_PTR XDMA_SRC_ENABLED_CHAN_PTR + ${if (
+        readerparam.configurableChannel
+      ) 1
+      else 0}
 #define XDMA_SRC_EXT_NUM ${readerextensionparam.length}
-#define XDMA_SRC_EXT_CSR_PTR XDMA_SRC_BYPASS_PTR + ${if (readerextensionparam.length > 0) 1 else 0}
+#define XDMA_SRC_EXT_CSR_PTR XDMA_SRC_BYPASS_PTR + ${if (
+        readerextensionparam.length > 0
+      ) 1
+      else 0}
 #define XDMA_SRC_EXT_CSR_NUM ${readerextensionparam
         .map(_.extensionParam.userCsrNum)
         .sum}
@@ -278,12 +286,21 @@ return ${i._1}
 #define XDMA_DST_TEMP_DIM ${writerparam.aguParam.temporalDimension}
 #define XDMA_DST_SPATIAL_STRIDE_PTR XDMA_DST_ADDR_PTR_MSB + 1
 #define XDMA_DST_TEMP_STRIDE_PTR XDMA_DST_SPATIAL_STRIDE_PTR + XDMA_DST_SPATIAL_DIM
-#define XDMA_DST_TEMP_BOUND_PTR XDMA_DST_ADDR_PTR_MSB + XDMA_DST_TEMP_DIM
+#define XDMA_DST_TEMP_BOUND_PTR XDMA_DST_TEMP_STRIDE_PTR + XDMA_DST_TEMP_DIM
 #define XDMA_DST_ENABLED_CHAN_PTR XDMA_DST_TEMP_BOUND_PTR + XDMA_DST_TEMP_DIM
-#define XDMA_DST_ENABLED_BYTE_PTR XDMA_DST_ENABLED_BYTE_PTR + ${if (writerparam.configurableChannel) 1 else 0}
-#define XDMA_DST_BYPASS_PTR XDMA_DST_ENABLED_CHAN_PTR + ${if (writerparam.configurableByteMask) 1 else 0}
+#define XDMA_DST_ENABLED_BYTE_PTR XDMA_DST_ENABLED_CHAN_PTR + ${if (
+        writerparam.configurableChannel
+      ) 1
+      else 0}
+#define XDMA_DST_BYPASS_PTR XDMA_DST_ENABLED_BYTE_PTR + ${if (
+        writerparam.configurableByteMask
+      ) 1
+      else 0}
 #define XDMA_DST_EXT_NUM ${writerextensionparam.length}
-#define XDMA_DST_EXT_CSR_PTR XDMA_DST_BYPASS_PTR + ${if (writerextensionparam.length > 0) 1 else 0}
+#define XDMA_DST_EXT_CSR_PTR XDMA_DST_BYPASS_PTR + ${if (
+        writerextensionparam.length > 0
+      ) 1
+      else 0}
 #define XDMA_DST_EXT_CSR_NUM ${writerextensionparam
         .map(_.extensionParam.userCsrNum)
         .sum}

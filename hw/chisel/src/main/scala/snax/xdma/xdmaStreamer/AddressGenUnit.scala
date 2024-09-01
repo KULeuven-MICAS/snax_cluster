@@ -107,7 +107,8 @@ class ProgrammableCounter(width: Int, hasCeil: Boolean = true)
 
 class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
   val ptr = UInt(param.addressWidth.W)
-  val spatialStrides = Vec(param.spatialBounds.length, UInt(param.addressWidth.W))
+  val spatialStrides =
+    Vec(param.spatialBounds.length, UInt(param.addressWidth.W))
   val temporalStrides = Vec(param.temporalDimension, UInt(param.addressWidth.W))
   val temporalBounds = Vec(param.temporalDimension, UInt(param.addressWidth.W))
 }
@@ -185,7 +186,9 @@ class AddressGenUnit(
     var remainder = i
     var spatialOffset = temporalOffset
     for (j <- 0 until param.spatialBounds.length) {
-      spatialOffset = spatialOffset + spatialOffsetTable(j)(remainder % param.spatialBounds(j))
+      spatialOffset = spatialOffset + spatialOffsetTable(j)(
+        remainder % param.spatialBounds(j)
+      )
       remainder = remainder / param.spatialBounds(j)
     }
     spatialOffset

@@ -42,11 +42,11 @@ class DMADataPathCfgIO(param: DMADataPathParam) extends Bundle {
 
     // Assigning aguCfg
     aguCfg := remainingData(aguCfg.asUInt.getWidth - 1, 0).asTypeOf(aguCfg)
-    remainingData =
-      remainingData(remainingData.getWidth - 1, aguCfg.getWidth)
+    remainingData = remainingData(remainingData.getWidth - 1, aguCfg.getWidth)
 
     // Assigning readerwriterCfg
-    readerwriterCfg := remainingData(readerwriterCfg.asUInt.getWidth - 1, 0).asTypeOf(readerwriterCfg)
+    readerwriterCfg := remainingData(readerwriterCfg.asUInt.getWidth - 1, 0)
+      .asTypeOf(readerwriterCfg)
       .asTypeOf(readerwriterCfg)
     remainingData =
       remainingData(remainingData.getWidth - 1, readerwriterCfg.asUInt.getWidth)

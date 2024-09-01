@@ -62,7 +62,8 @@ class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
   requestors.io.enable := io.readerwriterCfg.enabledChannel.asBools
   responsers.io.enable := io.readerwriterCfg.enabledChannel.asBools
 
-  if (param.configurableByteMask) requestors.io.in.strb := io.readerwriterCfg.enabledByte
+  if (param.configurableByteMask)
+    requestors.io.in.strb := io.readerwriterCfg.enabledByte
   else requestors.io.in.strb := Fill(requestors.io.in.strb.getWidth, 1.U)
 
   requestors.io.RequestorResponserLink.ResponsorReady.get := responsers.io.RequestorResponserLink.ResponsorReady
