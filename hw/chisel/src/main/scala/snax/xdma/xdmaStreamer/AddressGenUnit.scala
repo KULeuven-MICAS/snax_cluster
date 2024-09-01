@@ -148,6 +148,14 @@ class AddressGenUnit(
       Vec(param.numChannel, Decoupled(UInt(param.addressWidth.W)))
   })
 
+  require(param.spatialBounds.reduce(_ * _) <= param.numChannel)
+  if (param.spatialBounds.reduce(_ * _) > param.numChannel) {
+    Console.err.print(
+      s"The multiplication of temporal bounds (${param.spatialBounds
+          .reduce(_ * _)}) is larger than the number of channels(${param.numChannel}). Check the design parameter if you do not design it intentionally."
+    )
+  }
+
   override val desiredName = s"${module_name_prefix}_AddressGenUnitNoMulDiv"
 
   // Create counters for each dimension
