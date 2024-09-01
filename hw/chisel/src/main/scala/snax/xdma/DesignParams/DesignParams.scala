@@ -70,7 +70,7 @@ class ReaderWriterParam(
     numChannel: Int = 8,
     addressBufferDepth: Int = 8,
     dataBufferDepth: Int = 8,
-    val configurableChannel: Boolean = false,
+    val configurableChannel: Boolean = true,
     val configurableByteMask: Boolean = false,
     val hasTranspose: Boolean = false
 ) {
@@ -92,7 +92,7 @@ class ReaderWriterParam(
   val bufferDepth = dataBufferDepth
 
   val csrNum =
-    1 + 2 * dimension + (if (configurableSpatialBound) 1 else 0) + (if (
+    2 + spatialBounds.length + 2 * temporalDimension + (if (configurableChannel) 1 else 0) + (if (
                                                                       configurableByteMask
                                                                     ) 1
                                                                     else
@@ -140,27 +140,8 @@ class StreamerParam(
 
     // csr manager params
     val csrAddrWidth: Int,
-    val tagName: String = ""
+    val tagName: String = "Test_"
 ) {
-  // val readerParams = readerParams
-  // val writerParams = writerParams
-  // val readerWriterParams = readerWriterParams
-
-  // val csrAddrWidth = csrAddrWidth
-
-  val temporalDim: Seq[Int] =
-    readerParams.map(_.aguParam.dimension) ++ writerParams.map(
-      _.aguParam.dimension
-    ) ++ readerWriterParams.map(_.aguParam.dimension)
-  val spatialDim: Seq[Int] =
-    readerParams.map(_.aguParam.dimension) ++ writerParams.map(
-      _.aguParam.dimension
-    ) ++ readerWriterParams.map(_.aguParam.dimension)
-  // readerParams.map(_.spatialDim) ++ writerParams.map(
-  //   _.spatialDim
-  // ) ++ readerWriterParams.map(
-  //   _.spatialDim
-  // )
 
   val readerNum: Int = readerParams.length
   val writerNum: Int = writerParams.length
@@ -170,8 +151,10 @@ class StreamerParam(
 
   val readerTcdmPorts: Seq[Int] = readerParams.map(_.aguParam.numChannel)
   val writerTcdmPorts: Seq[Int] = writerParams.map(_.aguParam.numChannel)
+  // The tcdm ports for reader-writer, only the even index (reader's) is used
+  // reader and writer share the same tcdm ports
   val readerWriterTcdmPorts: Seq[Int] =
-    readerWriterParams.map(_.aguParam.numChannel)
+    readerWriterParams.map(_.aguParam.numChannel).zipWithIndex.filter { case (_, index) => index % 2 == 0 }.map(_._1)
   val tcdmPortsNum: Int =
     readerTcdmPorts.sum + writerTcdmPorts.sum + readerWriterTcdmPorts.sum
 
@@ -193,12 +176,12 @@ class StreamerParam(
 object StreamerParam {
   def apply() = new StreamerParam(
     readerParams =
-      Seq(new ReaderWriterParam( /* constructor parameters if any */ )),
+      Seq(new ReaderWriterParam( /* constructor parameters if any */ ), new ReaderWriterParam( /* constructor parameters if any */ )),
     writerParams =
       Seq(new ReaderWriterParam( /* constructor parameters if any */ )),
     readerWriterParams = Seq(
-      new ReaderWriterParam( /* constructor parameters if any */ ),
-      new ReaderWriterParam( /* constructor parameters if any */ )
+      new ReaderWriterParam( numChannel = 32 ),
+      new ReaderWriterParam( numChannel = 32 )
     ),
     csrAddrWidth = 32
   )

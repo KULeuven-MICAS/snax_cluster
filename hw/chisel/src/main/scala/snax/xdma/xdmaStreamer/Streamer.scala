@@ -16,8 +16,9 @@ class DataToAcceleratorX(
 ) extends Bundle {
   val data = MixedVec((0 until param.readerNum).map { i =>
     Decoupled(UInt(param.fifoWidthReader(i).W))
-  } ++ (0 until param.readerWriterNum).map { i =>
-    Decoupled(UInt(param.fifoWidthReaderWriter(i).W))
+    // even for reader, from streamer to accelerator
+  } ++ (0 until param.readerWriterNum / 2).map { i =>
+    Decoupled(UInt(param.fifoWidthReaderWriter(i * 2).W))
   })
 }
 
@@ -28,8 +29,9 @@ class DataFromAcceleratorX(
 ) extends Bundle {
   val data = MixedVec((0 until param.writerNum).map { i =>
     Flipped(Decoupled(UInt(param.fifoWidthWriter(i).W)))
-  } ++ (0 until param.readerWriterNum).map { i =>
-    Flipped(Decoupled(UInt(param.fifoWidthReaderWriter(i).W)))
+    // oven for writer, from accelerator to streamer
+  } ++ (0 until param.readerWriterNum / 2).map { i =>
+    Flipped(Decoupled(UInt(param.fifoWidthReaderWriter(i * 2 + 1).W)))
   })
 }
 
@@ -86,6 +88,29 @@ class Streamer(
   val io = IO(
     new StreamerIO(
       param
+    )
+  )
+
+  // --------------------------------------------------------------------------------
+  // ---------------------- csr manager instantiation--------------------------------
+  // --------------------------------------------------------------------------------
+
+  val reader_csr = param.readerParams.map(_.csrNum).reduce(_ + _)
+  val writer_csr = param.writerParams.map(_.csrNum).reduce(_ + _)
+  val reader_writer_csr = param.readerWriterParams.map(_.csrNum).reduce(_ + _)
+
+  // extra one is the start csr
+  val csrNumReadWrite =
+    reader_csr + writer_csr + reader_writer_csr + 1
+
+  // csrManager instantiation
+  val csrManager = Module(
+    new CsrManager(
+      csrNumReadWrite,
+      // 2 ready only csr for every streamer
+      2,
+      param.csrAddrWidth,
+      param.tagName
     )
   )
 
@@ -204,25 +229,6 @@ class Streamer(
   // ---------------------- csr manager connection----------------------------------------------
   // --------------------------------------------------------------------------------
 
-  val reader_csr = param.readerParams.map(_.csrNum).reduce(_ + _)
-  val writer_csr = param.writerParams.map(_.csrNum).reduce(_ + _)
-  val reader_writer_csr = param.readerWriterParams.map(_.csrNum).reduce(_ + _)
-
-  // extra one is the start csr
-  val csrNumReadWrite =
-    reader_csr + writer_csr + reader_writer_csr + 1
-
-  // csrManager instantiation
-  val csrManager = Module(
-    new CsrManager(
-      csrNumReadWrite,
-      // 2 ready only csr for every streamer
-      2,
-      param.csrAddrWidth,
-      param.tagName
-    )
-  )
-
   // connect the csrManager input and streamertop csr req input
   csrManager.io.csr_config_in.req <> io.csr.req
 
@@ -258,116 +264,30 @@ class Streamer(
   // ------------------------------------ csr mapping -------------------------------
   // --------------------------------------------------------------------------------
 
-  // ptr csr mapping
-  for (i <- 0 until param.dataMoverNum) {
-    if (i < param.readerNum) {
-      reader(i).io.cfg.ptr <> csrCfgReg(i)
-    } else {
-      if (i < param.readerNum + param.writerNum) {
-        writer(i - param.readerNum).io.cfg.ptr <> csrCfgReg(
-          i
-        )
-      } else {
-        reader_writer_idx = (i - param.readerNum - param.writerNum) / 2
-        reader_writer(
-          reader_writer_idx
-        ).io.readerInterface.cfg.ptr <> csrCfgReg(
-          i
-        )
-        reader_writer(
-          reader_writer_idx
-        ).io.writerInterface.cfg.ptr <> csrCfgReg(
-          i + 1
-        )
-      }
-    }
+  // reader
+  var reader_csr_base = 0
+  for (i <- 0 until param.readerNum) {
+    reader_csr_base = param.readerParams.take(i).map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+    reader(i).io.connectCfgWithList(csrCfgReg.slice(reader_csr_base, reader_csr_base + param.readerParams(i).csrNum))
   }
 
-  // temporal loopbound csr mapping
-  var tBCsrOffset = param.dataMoverNum
-  for (i <- 0 until param.dataMoverNum) {
-    for (j <- 0 until param.temporalDim(i)) {
-      if (i < param.readerNum) {
-        reader(i).io.cfg.bounds(j) <> csrCfgReg(
-          tBCsrOffset + param.readerParams
-            .map(_.aguParam.dimension)
-            .take(i)
-            .sum + j
-        )
-      } else {
-        if (i < param.readerNum + param.writerNum) {
-          writer(i - param.readerNum).io.cfg.bounds(j) <> csrCfgReg(
-            tBCsrOffset + param.readerParams
-              .map(_.aguParam.dimension)
-              .take(i)
-              .sum + i
-          )
-        } else {
-          reader_writer_idx = (i - param.readerNum - param.writerNum) / 2
-          reader_writer(reader_writer_idx).io.readerInterface.cfg
-            .bounds(j) <> csrCfgReg(
-            tBCsrOffset + param.readerParams
-              .map(_.aguParam.dimension)
-              .take(i)
-              .sum + i
-          )
-          reader_writer(reader_writer_idx).io.writerInterface.cfg
-            .bounds(j) <> csrCfgReg(
-            tBCsrOffset + param.readerParams
-              .map(_.aguParam.dimension)
-              .take(i)
-              .sum + i + 1
-          )
-        }
-      }
-    }
-  }
-
-// temporal stride csr mapping
-  var tSCsrOffset =
-    tBCsrOffset + param.readerParams.map(_.aguParam.dimension).sum
-  for (i <- 0 until param.dataMoverNum) {
-    for (j <- 0 until param.temporalDim(i)) {
-      if (i < param.readerNum) {
-        reader(i).io.cfg.strides(j) <> csrCfgReg(
-          tSCsrOffset + param.readerParams
-            .map(_.aguParam.dimension)
-            .take(i)
-            .sum + j
-        )
-      } else {
-        if (i < param.readerNum + param.writerNum) {
-          writer(i - param.readerNum).io.cfg.strides(j) <> csrCfgReg(
-            tSCsrOffset + param.readerParams
-              .map(_.aguParam.dimension)
-              .take(i)
-              .sum + i
-          )
-        } else {
-          reader_writer_idx = (i - param.readerNum - param.writerNum) / 2
-          reader_writer(reader_writer_idx).io.readerInterface.cfg
-            .strides(j) <> csrCfgReg(
-            tSCsrOffset + param.readerParams
-              .map(_.aguParam.dimension)
-              .take(i)
-              .sum + i
-          )
-          reader_writer(reader_writer_idx).io.writerInterface.cfg
-            .strides(j) <> csrCfgReg(
-            tSCsrOffset + param.readerParams
-              .map(_.aguParam.dimension)
-              .take(i)
-              .sum + i + 1
-          )
-        }
-      }
-    }
-  }
-
-  //
   // writer
+  var writer_csr_base = param.readerParams.map(_.csrNum).sum
+  for (i <- 0 until param.writerNum) {
+    writer_csr_base = param.readerParams.map(_.csrNum).sum + param.writerParams.take(i).map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+    writer(i).io.connectCfgWithList(csrCfgReg.slice(writer_csr_base, writer_csr_base + param.writerParams(i).csrNum))
+  }
 
   // reader_writer
+  var reader_writer_csr_base = param.readerParams.map(_.csrNum).sum + param.writerParams.map(_.csrNum).sum
+  for (i <- 0 until param.readerWriterNum) {
+    reader_writer_csr_base = param.readerParams.map(_.csrNum).sum + param.writerParams.map(_.csrNum).sum + param.readerWriterParams.take(i).map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+    if (i % 2 == 0) {
+      reader_writer(i / 2).io.readerInterface.connectCfgWithList(csrCfgReg.slice(reader_writer_csr_base, reader_writer_csr_base + param.readerWriterParams(i).csrNum))
+    }else{
+      reader_writer(i / 2).io.writerInterface.connectCfgWithList(csrCfgReg.slice(reader_writer_csr_base, reader_writer_csr_base + param.readerWriterParams(i).csrNum))
+    }
+  }
 
   // --------------------------------------------------------------------------------
   // ---------------------- data reader/writer <> TCDM connection-------------------
@@ -434,32 +354,35 @@ class Streamer(
 // --------------------------------------------------------------------------------
 
   for (i <- 0 until param.dataMoverNum) {
+    // reader
     if (i < param.readerNum) {
       reader(i).io.data <> io.data.streamer2accelerator.data(i)
     } else {
+      // writer
       if (i < param.readerNum + param.writerNum) {
         writer(
           i - param.readerNum
         ).io.data <> io.data.accelerator2streamer
           .data(i - param.readerNum)
       } else {
+        // reader_writer
         reader_writer_idx = (i - param.readerNum - param.writerNum) / 2
         reader_writer(
           reader_writer_idx
         ).io.readerInterface.data <> io.data.streamer2accelerator.data(
-          (i - param.readerNum - param.writerNum) / 2 + param.readerNum
+          reader_writer_idx + param.readerNum
         )
         reader_writer(
           reader_writer_idx
         ).io.writerInterface.data <> io.data.accelerator2streamer
           .data(
-            (i - param.writerNum - param.readerNum) / 2 + param.writerNum
+            reader_writer_idx + param.writerNum
           )
       }
     }
   }
 
-  val macro_dir = "generated"
+  val macro_dir = "./generated/header.h"
   val macro_template =
     s"""// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
