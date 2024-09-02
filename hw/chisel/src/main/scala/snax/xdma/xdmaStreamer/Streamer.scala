@@ -195,13 +195,13 @@ class Streamer(
   // if every data reader/writer is not busy
   streamer_finish := !(reader
     .map(_.io.busy)
-    .reduce(_ && _) && writer
+    .reduce(_ || _) || writer
     .map(_.io.busy)
-    .reduce(_ && _) && reader_writer
+    .reduce(_ || _) || reader_writer
     .map(_.io.readerInterface.busy)
-    .reduce(_ && _)) && reader_writer
+    .reduce(_ || _)) || reader_writer
     .map(_.io.writerInterface.busy)
-    .reduce(_ && _)
+    .reduce(_ || _)
 
   // --------------------------------------------------------------------------------
   // -----------------------data movers start-----------------------------------------
@@ -385,9 +385,9 @@ class Streamer(
   def genCSRMap(csrBase: Int, param: ReaderWriterParam, tag: String = "") = {
     var csrMap = "// CSR Mapp for " + tag + "\n"
     var csrOffset = csrBase
-    csrMap = csrMap + "#define BASE_PTR_" + tag + "_0 " + csrBase + "\n"
+    csrMap = csrMap + "#define BASE_PTR_" + tag + "_0 " + csrOffset + "\n"
     csrOffset = csrOffset + 1
-    csrMap = csrMap + "#define BASE_PTR_" + tag + "_1 " + csrBase + "\n"
+    csrMap = csrMap + "#define BASE_PTR_" + tag + "_1 " + csrOffset + "\n"
     csrOffset = csrOffset + 1
     for (i <- 0 until param.aguParam.spatialBounds.length) {
       csrMap = csrMap + "#define " + "S_STRIDE_" + tag + "_" + i + " " + csrOffset + "\n"
@@ -397,6 +397,9 @@ class Streamer(
     for (i <- 0 until param.aguParam.temporalDimension) {
       csrMap = csrMap + "#define " + "T_BOUND_" + tag + "_" + i + " " + csrOffset + "\n"
       csrOffset = csrOffset + 1
+    }
+
+    for (i <- 0 until param.aguParam.temporalDimension) {
       csrMap = csrMap + "#define " + "T_STRIDE_" + tag + "_" + i + " " + csrOffset + "\n"
       csrOffset = csrOffset + 1
     }
@@ -430,6 +433,17 @@ class Streamer(
     csrBase = 960 + param.readerParams.map(_.csrNum).sum + param.writerParams.map(_.csrNum).sum + param.readerWriterParams.take(i).map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
     csrMap = csrMap + genCSRMap(csrBase, param.readerWriterParams(i), "READER_WRITER_" + i)
   }
+
+  // start csr
+  csrBase = 960 + param.readerParams.map(_.csrNum).sum + param.writerParams.map(_.csrNum).sum + param.readerWriterParams.map(_.csrNum).sum
+  csrMap = csrMap + "#define STREAMER_START_CSR " + csrBase + "\n"
+
+  // streamer busy csr
+  csrBase = csrBase + 1
+  csrMap = csrMap + "#define STREAMER_BUSY_CSR " + csrBase + "\n"
+  // streamer performance counter csr
+  csrBase = csrBase + 1
+  csrMap = csrMap + "#define STREAMER_PERFORMANCE_COUNTER_CSR " + csrBase + "\n"
 
   println(csrMap)
 
