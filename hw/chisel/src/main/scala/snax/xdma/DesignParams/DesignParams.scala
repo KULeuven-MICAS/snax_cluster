@@ -83,12 +83,12 @@ class StreamerParam(
 object StreamerParam {
   def apply() = new StreamerParam(
     readerParams =
-      Seq(new ReaderWriterParam( /* constructor parameters if any */ ), new ReaderWriterParam( /* constructor parameters if any */ )),
+      Seq(new ReaderWriterParam( temporalDimension = 6 ), new ReaderWriterParam( temporalDimension = 3 )),
     writerParams =
-      Seq(new ReaderWriterParam( /* constructor parameters if any */ )),
+      Seq(new ReaderWriterParam( temporalDimension =  3 )),
     readerWriterParams = Seq(
-      new ReaderWriterParam( numChannel = 32 ),
-      new ReaderWriterParam( numChannel = 32 )
+      new ReaderWriterParam( temporalDimension = 3, numChannel = 32 ),
+      new ReaderWriterParam( temporalDimension = 3, numChannel = 32 )
     ),
     csrAddrWidth = 32
   )
