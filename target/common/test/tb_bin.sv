@@ -32,6 +32,8 @@ module tb_bin;
 
   // Generate clock
   initial begin
+    clk_i = 0;
+    #100ns;
     forever begin
       clk_i = 1;
       #(TCK/2);
