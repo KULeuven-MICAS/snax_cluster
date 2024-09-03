@@ -221,9 +221,10 @@ def main():
     if args.get_bender_targets:
         def get_bender_targets(cfg):
             targets = []
-            # If cfg is dictionary, then first check if it has bender_target, then iterate over the rest
+            # If cfg is dictionary, then first check if it has
+            # bender_target, then iterate over the rest
             if isinstance(cfg, dict):
-                for name,content in cfg.items():
+                for name, content in cfg.items():
                     if name == "bender_target":
                         targets.extend(content)
                     else:
@@ -234,10 +235,10 @@ def main():
                     targets.extend(get_bender_targets(item))
             # Return the list of targets with removing duplicates
             return list(set(targets))
-        
+
         bender_targets = get_bender_targets(cfg)
         for i in bender_targets:
-            print(" -t "+ i,end="")
+            print(" -t " + i, end="")
         print()
         return
 
