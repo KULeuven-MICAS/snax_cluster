@@ -47,13 +47,13 @@ class StreamerDataIO(
 
   // specify the interface to the TCDM
   // request interface with q_valid and q_ready
-  val tcdmReq =
+  val tcdm_req =
     (Vec(
       param.tcdmPortsNum,
       Decoupled(new TcdmReq(param.addrWidth, param.tcdmDataWidth))
     ))
   // response interface with p_valid
-  val tcdmRsp = (Vec(
+  val tcdm_rsp = (Vec(
     param.tcdmPortsNum,
     Flipped(Valid(new TcdmRsp(param.tcdmDataWidth)))
   ))
@@ -312,12 +312,12 @@ class Streamer(
   val read_flatten_seq = flattenSeq(param.readerTcdmPorts)
   for ((dimIndex, innerIndex, flattenedIndex) <- read_flatten_seq) {
     // read request to TCDM
-    io.data.tcdmReq(flattenedIndex) <> reader(dimIndex).io.tcdmReq(
+    io.data.tcdm_req(flattenedIndex) <> reader(dimIndex).io.tcdmReq(
       innerIndex
     )
 
     // signals from TCDM responses
-    reader(dimIndex).io.tcdmRsp(innerIndex) <> io.data.tcdmRsp(
+    reader(dimIndex).io.tcdmRsp(innerIndex) <> io.data.tcdm_rsp(
       flattenedIndex
     )
   }
@@ -327,7 +327,7 @@ class Streamer(
   val write_flatten_seq = flattenSeq(param.writerTcdmPorts)
   for ((dimIndex, innerIndex, flattenedIndex) <- write_flatten_seq) {
     // write request to TCDM
-    io.data.tcdmReq(flattenedIndex + tcdm_read_ports_num) <> writer(
+    io.data.tcdm_req(flattenedIndex + tcdm_read_ports_num) <> writer(
       dimIndex
     ).io.tcdmReq(innerIndex)
   }
@@ -336,7 +336,7 @@ class Streamer(
   val read_write_flatten_seq = flattenSeq(param.readerWriterTcdmPorts)
   for ((dimIndex, innerIndex, flattenedIndex) <- read_write_flatten_seq) {
     // read request to TCDM
-    io.data.tcdmReq(
+    io.data.tcdm_req(
       flattenedIndex + tcdm_read_ports_num + tcdm_write_ports_num
     ) <> reader_writer(dimIndex).io.readerInterface.tcdmReq(
       innerIndex
@@ -344,7 +344,7 @@ class Streamer(
 
     // signals from TCDM responses
     reader_writer(dimIndex).io.readerInterface.tcdmRsp(innerIndex) <> io.data
-      .tcdmRsp(
+      .tcdm_rsp(
         flattenedIndex + tcdm_read_ports_num + tcdm_write_ports_num
       )
   }
