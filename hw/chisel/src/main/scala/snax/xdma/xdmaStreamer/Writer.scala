@@ -56,7 +56,6 @@ class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
     }
   }
 
-
   // enabledChannel & enabledByteMask
   if (param.configurableChannel)
     requestors.io.zip(io.readerwriterCfg.enabledChannel.asBools).foreach {
