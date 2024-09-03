@@ -154,6 +154,7 @@ class Streamer(
   // --------------------------------------------------------------------------------
   // ---------------------- streamer state machine-----------------------------------
   // --------------------------------------------------------------------------------
+
   val streamer_config_fire = Wire(Bool())
   val streamer_finish = Wire(Bool())
   val streamer_busy = Wire(Bool())
@@ -267,31 +268,67 @@ class Streamer(
   // reader
   var reader_csr_base = 0
   for (i <- 0 until param.readerNum) {
-    reader_csr_base = param.readerParams.take(i).map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
-    reader(i).io.connectCfgWithList(csrCfgReg.slice(reader_csr_base, reader_csr_base + param.readerParams(i).csrNum))
+    reader_csr_base = param.readerParams
+      .take(i)
+      .map(_.csrNum)
+      .reduceLeftOption(_ + _)
+      .getOrElse(0)
+    reader(i).io.connectCfgWithList(
+      csrCfgReg.slice(
+        reader_csr_base,
+        reader_csr_base + param.readerParams(i).csrNum
+      )
+    )
   }
 
   // writer
   var writer_csr_base = param.readerParams.map(_.csrNum).sum
   for (i <- 0 until param.writerNum) {
-    writer_csr_base = param.readerParams.map(_.csrNum).sum + param.writerParams.take(i).map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
-    writer(i).io.connectCfgWithList(csrCfgReg.slice(writer_csr_base, writer_csr_base + param.writerParams(i).csrNum))
+    writer_csr_base = param.readerParams.map(_.csrNum).sum + param.writerParams
+      .take(i)
+      .map(_.csrNum)
+      .reduceLeftOption(_ + _)
+      .getOrElse(0)
+    writer(i).io.connectCfgWithList(
+      csrCfgReg.slice(
+        writer_csr_base,
+        writer_csr_base + param.writerParams(i).csrNum
+      )
+    )
   }
 
   // reader_writer
-  var reader_writer_csr_base = param.readerParams.map(_.csrNum).sum + param.writerParams.map(_.csrNum).sum
+  var reader_writer_csr_base =
+    param.readerParams.map(_.csrNum).sum + param.writerParams.map(_.csrNum).sum
   for (i <- 0 until param.readerWriterNum) {
-    reader_writer_csr_base = param.readerParams.map(_.csrNum).sum + param.writerParams.map(_.csrNum).sum + param.readerWriterParams.take(i).map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+    reader_writer_csr_base = param.readerParams
+      .map(_.csrNum)
+      .sum + param.writerParams.map(_.csrNum).sum + param.readerWriterParams
+      .take(i)
+      .map(_.csrNum)
+      .reduceLeftOption(_ + _)
+      .getOrElse(0)
     if (i % 2 == 0) {
-      reader_writer(i / 2).io.readerInterface.connectCfgWithList(csrCfgReg.slice(reader_writer_csr_base, reader_writer_csr_base + param.readerWriterParams(i).csrNum))
-    }else{
-      reader_writer(i / 2).io.writerInterface.connectCfgWithList(csrCfgReg.slice(reader_writer_csr_base, reader_writer_csr_base + param.readerWriterParams(i).csrNum))
+      reader_writer(i / 2).io.readerInterface.connectCfgWithList(
+        csrCfgReg.slice(
+          reader_writer_csr_base,
+          reader_writer_csr_base + param.readerWriterParams(i).csrNum
+        )
+      )
+    } else {
+      reader_writer(i / 2).io.writerInterface.connectCfgWithList(
+        csrCfgReg.slice(
+          reader_writer_csr_base,
+          reader_writer_csr_base + param.readerWriterParams(i).csrNum
+        )
+      )
     }
   }
 
   // --------------------------------------------------------------------------------
   // ---------------------- data reader/writer <> TCDM connection-------------------
   // --------------------------------------------------------------------------------
+
   def tcdm_read_ports_num =
     param.readerTcdmPorts.reduceLeftOption(_ + _).getOrElse(0)
   def tcdm_write_ports_num =
@@ -349,9 +386,9 @@ class Streamer(
       )
   }
 
-// --------------------------------------------------------------------------------
-// ---------------------- data reader/writer <> accelerator data connection-------
-// --------------------------------------------------------------------------------
+  // --------------------------------------------------------------------------------
+  // ---------------------- data reader/writer <> accelerator data connection-------
+  // --------------------------------------------------------------------------------
 
   for (i <- 0 until param.dataMoverNum) {
     // reader
@@ -382,35 +419,51 @@ class Streamer(
     }
   }
 
+  // --------------------------------------------------------------------------------
+  // ------------------ csr address map header file generation-----------------------
+  // -------------------------------------------------------------------------------- 
+
   def genCSRMap(csrBase: Int, param: ReaderWriterParam, tag: String = "") = {
     var csrMap = "// CSR Mapp for " + tag + "\n"
     var csrOffset = csrBase
+    // base pointer
     csrMap = csrMap + "#define BASE_PTR_" + tag + "_0 " + csrOffset + "\n"
     csrOffset = csrOffset + 1
     csrMap = csrMap + "#define BASE_PTR_" + tag + "_1 " + csrOffset + "\n"
     csrOffset = csrOffset + 1
+
+    // spatial bounds
     for (i <- 0 until param.aguParam.spatialBounds.length) {
-      csrMap = csrMap + "#define " + "S_STRIDE_" + tag + "_" + i + " " + csrOffset + "\n"
+      csrMap =
+        csrMap + "#define " + "S_STRIDE_" + tag + "_" + i + " " + csrOffset + "\n"
       csrOffset = csrOffset + 1
     }
 
+    // temporal bounds
     for (i <- 0 until param.aguParam.temporalDimension) {
-      csrMap = csrMap + "#define " + "T_BOUND_" + tag + "_" + i + " " + csrOffset + "\n"
+      csrMap =
+        csrMap + "#define " + "T_BOUND_" + tag + "_" + i + " " + csrOffset + "\n"
       csrOffset = csrOffset + 1
     }
 
+    // temporal stride
     for (i <- 0 until param.aguParam.temporalDimension) {
-      csrMap = csrMap + "#define " + "T_STRIDE_" + tag + "_" + i + " " + csrOffset + "\n"
+      csrMap =
+        csrMap + "#define " + "T_STRIDE_" + tag + "_" + i + " " + csrOffset + "\n"
       csrOffset = csrOffset + 1
     }
 
-    if (param.configurableChannel){
-      csrMap = csrMap + "#define " + "ENABLED_CHANNEL_" + tag + " " + csrOffset + "\n"
+    // channel enable
+    if (param.configurableChannel) {
+      csrMap =
+        csrMap + "#define " + "ENABLED_CHANNEL_" + tag + " " + csrOffset + "\n"
       csrOffset = csrOffset + 1
     }
 
-    if (param.configurableByteMask){
-      csrMap = csrMap + "#define " + "ENABLED_BYTE_" + tag + " " + csrOffset + "\n"
+    // byte mask enable
+    if (param.configurableByteMask) {
+      csrMap =
+        csrMap + "#define " + "ENABLED_BYTE_" + tag + " " + csrOffset + "\n"
       csrOffset = csrOffset + 1
     }
 
@@ -419,28 +472,53 @@ class Streamer(
 
   var csrBase = 0
   var csrMap = ""
+
+  // reader csr configuration
   for (i <- 0 until param.readerNum) {
-    csrBase = 960 + param.readerParams.take(i).map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+    csrBase = 960 + param.readerParams
+      .take(i)
+      .map(_.csrNum)
+      .reduceLeftOption(_ + _)
+      .getOrElse(0)
     csrMap = csrMap + genCSRMap(csrBase, param.readerParams(i), "READER_" + i)
   }
 
+  // writer csr configuration
   for (i <- 0 until param.writerNum) {
-    csrBase = 960 + param.readerParams.map(_.csrNum).sum + param.writerParams.take(i).map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+    csrBase = 960 + param.readerParams.map(_.csrNum).sum + param.writerParams
+      .take(i)
+      .map(_.csrNum)
+      .reduceLeftOption(_ + _)
+      .getOrElse(0)
     csrMap = csrMap + genCSRMap(csrBase, param.writerParams(i), "WRITER_" + i)
   }
 
+  // reader_writer csr configuration
   for (i <- 0 until param.readerWriterNum) {
-    csrBase = 960 + param.readerParams.map(_.csrNum).sum + param.writerParams.map(_.csrNum).sum + param.readerWriterParams.take(i).map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
-    csrMap = csrMap + genCSRMap(csrBase, param.readerWriterParams(i), "READER_WRITER_" + i)
+    csrBase = 960 + param.readerParams.map(_.csrNum).sum + param.writerParams
+      .map(_.csrNum)
+      .sum + param.readerWriterParams
+      .take(i)
+      .map(_.csrNum)
+      .reduceLeftOption(_ + _)
+      .getOrElse(0)
+    csrMap = csrMap + genCSRMap(
+      csrBase,
+      param.readerWriterParams(i),
+      "READER_WRITER_" + i
+    )
   }
 
   // start csr
-  csrBase = 960 + param.readerParams.map(_.csrNum).sum + param.writerParams.map(_.csrNum).sum + param.readerWriterParams.map(_.csrNum).sum
+  csrBase = 960 + param.readerParams.map(_.csrNum).sum + param.writerParams
+    .map(_.csrNum)
+    .sum + param.readerWriterParams.map(_.csrNum).sum
   csrMap = csrMap + "#define STREAMER_START_CSR " + csrBase + "\n"
 
   // streamer busy csr
   csrBase = csrBase + 1
   csrMap = csrMap + "#define STREAMER_BUSY_CSR " + csrBase + "\n"
+
   // streamer performance counter csr
   csrBase = csrBase + 1
   csrMap = csrMap + "#define STREAMER_PERFORMANCE_COUNTER_CSR " + csrBase + "\n"
