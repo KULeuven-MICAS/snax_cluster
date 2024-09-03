@@ -166,6 +166,12 @@ VLOG_FLAGS += -suppress 2583
 VLOG_FLAGS += -suppress 13314
 VLOG_FLAGS += ${VLOG_64BIT}
 
+ifeq ($(MEM_TYPE), exclude_tcsram)
+	VLOG_FLAGS += +define+TSMC_INITIALIZE_MEM_USING_DEFAULT_TASKS
+	VLOG_FLAGS += +define+TSMC_MEM_LOAD_0
+	VLOG_FLAGS += +define+TSMC_CM_UNIT_DELAY
+endif 
+
 VLT_FLAGS  += --trace
 
 ###############
