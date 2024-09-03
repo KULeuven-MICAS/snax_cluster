@@ -92,15 +92,18 @@ class ReaderWriterParam(
   val bufferDepth = dataBufferDepth
 
   val csrNum =
-    2 + spatialBounds.length + 2 * temporalDimension + (if (configurableChannel) 1 else 0) + (if (
-                                                                      configurableByteMask
-                                                                    ) 1
-                                                                    else
-                                                                      0) + (if (
-                                                                              hasTranspose
-                                                                            ) 1
-                                                                            else
-                                                                              0)
+    2 + spatialBounds.length + 2 * temporalDimension + (if (configurableChannel)
+                                                          1
+                                                        else
+                                                          0) + (if (
+                                                                  configurableByteMask
+                                                                ) 1
+                                                                else
+                                                                  0) + (if (
+                                                                          hasTranspose
+                                                                        ) 1
+                                                                        else
+                                                                          0)
 }
 
 // AXI Params
@@ -143,24 +146,32 @@ class StreamerParam(
     val tagName: String = "Test_"
 ) {
 
+  // reader, writer, reader-writer number inferred paramters
   val readerNum: Int = readerParams.length
   val writerNum: Int = writerParams.length
   val readerWriterNum: Int = readerWriterParams.length
   val dataMoverNum: Int =
     readerNum + writerNum + readerWriterNum
 
+  // reader, writer, reader-writer tcdm ports inferred parameters
   val readerTcdmPorts: Seq[Int] = readerParams.map(_.aguParam.numChannel)
   val writerTcdmPorts: Seq[Int] = writerParams.map(_.aguParam.numChannel)
   // The tcdm ports for reader-writer, only the even index (reader's) is used
   // reader and writer share the same tcdm ports
   val readerWriterTcdmPorts: Seq[Int] =
-    readerWriterParams.map(_.aguParam.numChannel).zipWithIndex.filter { case (_, index) => index % 2 == 0 }.map(_._1)
+    readerWriterParams
+      .map(_.aguParam.numChannel)
+      .zipWithIndex
+      .filter { case (_, index) => index % 2 == 0 }
+      .map(_._1)
   val tcdmPortsNum: Int =
     readerTcdmPorts.sum + writerTcdmPorts.sum + readerWriterTcdmPorts.sum
 
+  // inffered parameters for tcdm
   val addrWidth = readerParams(0).tcdmParam.addrWidth
   val tcdmDataWidth = readerParams(0).tcdmParam.dataWidth
 
+  // inffered parameters for data fifos
   val fifoWidthReader: Seq[Int] = readerParams.map(param =>
     param.aguParam.numChannel * param.tcdmParam.dataWidth
   )
@@ -175,13 +186,14 @@ class StreamerParam(
 
 object StreamerParam {
   def apply() = new StreamerParam(
-    readerParams =
-      Seq(new ReaderWriterParam( temporalDimension = 6 ), new ReaderWriterParam( temporalDimension = 3 )),
-    writerParams =
-      Seq(new ReaderWriterParam( temporalDimension =  3 )),
+    readerParams = Seq(
+      new ReaderWriterParam(temporalDimension = 6),
+      new ReaderWriterParam(temporalDimension = 3)
+    ),
+    writerParams = Seq(new ReaderWriterParam(temporalDimension = 3)),
     readerWriterParams = Seq(
-      new ReaderWriterParam( temporalDimension = 3, numChannel = 32 ),
-      new ReaderWriterParam( temporalDimension = 3, numChannel = 32 )
+      new ReaderWriterParam(temporalDimension = 3, numChannel = 32),
+      new ReaderWriterParam(temporalDimension = 3, numChannel = 32)
     ),
     csrAddrWidth = 32
   )
