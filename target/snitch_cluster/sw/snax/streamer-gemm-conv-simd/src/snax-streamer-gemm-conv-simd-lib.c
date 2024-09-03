@@ -156,7 +156,10 @@ void set_gemmx_streamer_csr(
 
 }
 
-#define GEMMX_CSR_ADDR_BASE 1014
+// Set CSR to start STREAMER
+void set_gemmx_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }
+
+#define GEMMX_CSR_ADDR_BASE (STREAMER_PERFORMANCE_COUNTER_CSR + 1)
 #define T_BOUND_K (GEMMX_CSR_ADDR_BASE + 0)
 #define T_BOUND_N (GEMMX_CSR_ADDR_BASE + 1)
 #define T_BOUND_M (GEMMX_CSR_ADDR_BASE + 2)
@@ -173,9 +176,6 @@ void set_gemmx_streamer_csr(
 #define GEMMX_START (GEMMX_CSR_ADDR_BASE + 9)
 #define GEMMX_BUSY (GEMMX_CSR_ADDR_BASE + 10)
 #define GEMMX_PERFORMANCE_COUNTER (GEMMX_CSR_ADDR_BASE + 11)
-
-// Set CSR to start STREAMER
-void set_gemmx_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }
 
 // Set GEMM configuration CSR
 void set_gemmx_csr(int tempLoop0, int tempLoop1, int tempLoop2,
@@ -212,13 +212,13 @@ void wait_gemmx_and_streamer() {
 
 // Read performance counter of the Streamer, a read-only CSR
 uint32_t read_gemmx_streamer_perf_counter() {
-    uint32_t perf_counter = read_csr(STREAMER_PERFORMANCE_COUNTER_CSR);
+    uint32_t perf_counter = csrr_ss(STREAMER_PERFORMANCE_COUNTER_CSR);
     return perf_counter;
 }
 
 // Read performance counter of GEMM, a read-only CSR
 uint32_t read_gemmx_perf_counter() {
-    uint32_t perf_counter = read_csr(GEMMX_PERFORMANCE_COUNTER);
+    uint32_t perf_counter = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
     return perf_counter;
 }
 
@@ -230,6 +230,8 @@ uint32_t check_gemmx_result_D8(int8_t* output, int8_t* output_golden,
 
     for (int i = 0; i < size; i++) {
         if (output[i] != output_golden[i]) {
+            printf("output[%d] = %d, output_golden[%d] = %d\n", i, output[i],
+                   i, output_golden[i]);
             err++;
         }
     }
@@ -244,6 +246,8 @@ uint32_t check_gemmx_result_D32(int32_t* output, int32_t* output_golden,
 
     for (int i = 0; i < size; i++) {
         if (output[i] != output_golden[i]) {
+            printf("output[%d] = %d, output_golden[%d] = %d\n", i, output[i],
+                   i, output_golden[i]);
             err++;
         }
     }
