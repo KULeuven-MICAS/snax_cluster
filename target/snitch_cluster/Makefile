@@ -160,10 +160,14 @@ VSIM_FLAGS += ${QUESTA_64BIT}
 VSIM_FLAGS += -t 1ps
 
 ifdef SDF_ANNOTATE_PATH
-VSIM_FLAGS += -do "sdfannotate \"$(SDF_ANNOTATE_PATH)\" log -r /*; run -a"
-else
-VSIM_FLAGS += -do "log -r /*; run -a"
+  ifdef SDF_TOP
+    VSIM_FLAGS += -sdftyp /${SDF_TOP}=$(SDF_ANNOTATE_PATH)
+  else
+    $(error "Error! Missing SDF_TOP")
+  endif
 endif
+
+VSIM_FLAGS += -do "log -r /*; run -a"
 
 VLOG_FLAGS += -svinputport=compat
 VLOG_FLAGS += -override_timescale 1ns/1ps
