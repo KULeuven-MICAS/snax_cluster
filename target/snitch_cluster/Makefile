@@ -158,7 +158,12 @@ VLOG_64BIT   = -64
 
 VSIM_FLAGS += ${QUESTA_64BIT}
 VSIM_FLAGS += -t 1ps
+
+ifdef SDF_ANNOTATE_PATH
+VSIM_FLAGS += -do "sdfannotate \"$(SDF_ANNOTATE_PATH)\" log -r /*; run -a"
+else
 VSIM_FLAGS += -do "log -r /*; run -a"
+endif
 
 VLOG_FLAGS += -svinputport=compat
 VLOG_FLAGS += -override_timescale 1ns/1ps
