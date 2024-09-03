@@ -104,8 +104,8 @@
             bender_target: ["snax_gemmX","snax_data_reshuffler"],
             // add a checker here?
             // some of the tcdm ports specificed here?
-            snax_narrow_tcdm_ports: 8,
-            snax_wide_tcdm_ports: 48,
+            snax_narrow_tcdm_ports: 56,
+            // snax_wide_tcdm_ports: 48,
             snax_num_rw_csr: 10,
             snax_num_ro_csr: 2,
             snax_streamer_cfg: {$ref: "#/snax_streamer_gemmX_streamer_template" }
@@ -217,8 +217,6 @@
         }
 
         stationarity: [0,0,0,0,0]
-
-        has_transpose: true
     },
     // SNAX Streamer Templates
     snax_data_reshuffler_streamer_template :{
