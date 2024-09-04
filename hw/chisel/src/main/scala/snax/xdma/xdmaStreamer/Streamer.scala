@@ -203,11 +203,13 @@ class Streamer(
     .reduce(_ || _) || reader_writer
     .map(_.io.writerInterface.busy)
     .reduce(_ || _))
+  dontTouch(streamer_finish)
 
   // --------------------------------------------------------------------------------
   // -----------------------data movers start-----------------------------------------
   // --------------------------------------------------------------------------------
 
+  // one clock cycle delay for the start signal to store the configuration first
   for (i <- 0 until param.dataMoverNum) {
     if (i < param.readerNum) {
       reader(i).io.start := streamer_config_fire
@@ -257,9 +259,11 @@ class Streamer(
 
   // store the configuration csr for each data mover when config fire
   val csrCfgReg = RegInit(VecInit(Seq.fill(csrNumReadWrite)(0.U(32.W))))
+  val csrCfg = Wire(Vec(csrNumReadWrite, UInt(32.W)))
   when(streamer_config_fire) {
     csrCfgReg := csrManager.io.csr_config_out.bits
   }
+  csrCfg := Mux(streamer_config_fire, csrManager.io.csr_config_out.bits, csrCfgReg)
 
   // --------------------------------------------------------------------------------
   // ------------------------------------ csr mapping -------------------------------
@@ -274,7 +278,7 @@ class Streamer(
       .reduceLeftOption(_ + _)
       .getOrElse(0)
     reader(i).io.connectCfgWithList(
-      csrCfgReg.slice(
+      csrCfg.slice(
         reader_csr_base,
         reader_csr_base + param.readerParams(i).csrNum
       )
@@ -290,7 +294,7 @@ class Streamer(
       .reduceLeftOption(_ + _)
       .getOrElse(0)
     writer(i).io.connectCfgWithList(
-      csrCfgReg.slice(
+      csrCfg.slice(
         writer_csr_base,
         writer_csr_base + param.writerParams(i).csrNum
       )
@@ -310,14 +314,14 @@ class Streamer(
       .getOrElse(0)
     if (i % 2 == 0) {
       reader_writer(i / 2).io.readerInterface.connectCfgWithList(
-        csrCfgReg.slice(
+        csrCfg.slice(
           reader_writer_csr_base,
           reader_writer_csr_base + param.readerWriterParams(i).csrNum
         )
       )
     } else {
       reader_writer(i / 2).io.writerInterface.connectCfgWithList(
-        csrCfgReg.slice(
+        csrCfg.slice(
           reader_writer_csr_base,
           reader_writer_csr_base + param.readerWriterParams(i).csrNum
         )
