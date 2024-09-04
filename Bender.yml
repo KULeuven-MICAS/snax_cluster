@@ -326,7 +326,7 @@ sources:
       - target/snitch_cluster/generated/snax_hypercorex/snax_hypercorex_streamer_wrapper.sv
       # Level 2
       - target/snitch_cluster/generated/snax_hypercorex/snax_hypercorex_wrapper.sv
-  
+
   # dimc
   - target: dimc
     files:
