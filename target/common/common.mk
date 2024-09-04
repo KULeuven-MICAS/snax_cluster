@@ -62,6 +62,9 @@ ifeq ($(MEM_TYPE), prep_syn_mem)
         SYN_BENDER  += -t tech_cells_generic_exclude_tc_sram
         SYN_BENDER  += -t prep_syn_mem
 endif
+ifeq ($(SIM_TYPE), gate_level_sim)
+        VSIM_BENDER += -t gate_level_sim
+endif
 SYN_SOURCES = $(shell ${BENDER} script synopsys ${SYN_BENDER})
 SYN_BUILDDIR := work-syn
 
