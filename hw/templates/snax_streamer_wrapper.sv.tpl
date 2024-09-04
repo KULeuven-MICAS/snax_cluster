@@ -152,7 +152,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
 
   // Streamer module that is generated
   // with template mechanics
-  ${cfg["tag_name"]}_streamer_StreamerTop i_${cfg["tag_name"]}_streamer_top (	
+  ${cfg["tag_name"]}_Streamer i_${cfg["tag_name"]}_streamer_top (	
     //-----------------------------
     // Clocks and reset
     //-----------------------------
