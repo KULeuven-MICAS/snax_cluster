@@ -328,7 +328,7 @@ sources:
       - target/snitch_cluster/generated/snax_hypercorex/snax_hypercorex_wrapper.sv
   
   # dimc
-  - target:
+  - target: dimc
     files:
       # Level 0
       - target/snitch_cluster/generated/snax_dimc/snax_dimc_streamer_StreamerTop.sv
@@ -446,6 +446,9 @@ sources:
   - target: snax_hypercorex_cluster
     files:
       - target/snitch_cluster/generated/snax_hypercorex_cluster_wrapper.sv
+  - target: snax_dimc_cluster
+    files:
+      - target/snitch_cluster/generated/snax_dimc_cluster_wrapper.sv
   # Note: this is about to be obsolete
   # but it uses the old snax-gemm still
   - target: snax_gemm_cluster
