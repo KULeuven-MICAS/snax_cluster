@@ -196,13 +196,13 @@ class Streamer(
   // if every data reader/writer is not busy
   streamer_finish := !(reader
     .map(_.io.busy)
-    .reduce(_ && _) && writer
+    .reduce(_ || _) || writer
     .map(_.io.busy)
-    .reduce(_ && _) && reader_writer
+    .reduce(_ || _) || reader_writer
     .map(_.io.readerInterface.busy)
-    .reduce(_ && _) && reader_writer
+    .reduce(_ || _) || reader_writer
     .map(_.io.writerInterface.busy)
-    .reduce(_ && _))
+    .reduce(_ || _))
 
   // --------------------------------------------------------------------------------
   // -----------------------data movers start-----------------------------------------
@@ -547,6 +547,6 @@ class Streamer(
 object StreamerEmitter extends App {
   emitVerilog(
     new Streamer(StreamerParam()),
-    Array("--target-dir", "generated")
+    Array("--target-dir", "../../target/snitch_cluster/generated")
   )
 }
