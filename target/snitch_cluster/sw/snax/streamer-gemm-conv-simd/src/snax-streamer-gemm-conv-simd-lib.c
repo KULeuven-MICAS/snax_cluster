@@ -234,8 +234,6 @@ uint32_t check_gemmx_result_D8(int8_t* output, int8_t* output_golden,
 
     for (int i = 0; i < size; i++) {
         if (output[i] != output_golden[i]) {
-            printf("output[%d] = %d, output_golden[%d] = %d\n", i, output[i],
-                   i, output_golden[i]);
             err++;
         }
     }
@@ -250,8 +248,6 @@ uint32_t check_gemmx_result_D32(int32_t* output, int32_t* output_golden,
 
     for (int i = 0; i < size; i++) {
         if (output[i] != output_golden[i]) {
-            printf("output[%d] = %d, output_golden[%d] = %d\n", i, output[i],
-                   i, output_golden[i]);
             err++;
         }
     }
