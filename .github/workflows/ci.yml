@@ -216,6 +216,55 @@ jobs:
           ./run.py --simulator verilator \
           sw/runtime.yaml \
           sw/snax-hypercorex-run.yaml -j
+snax-hypercorex-cluster-vlt-generic:
+    name: SNAX Hypercorex w/ Verilator (Generic LLVM)
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/snax:main
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      # Need this for the hypercorex packages
+      - name: Install prerequisites
+        run: |
+          pip install tqdm matplotlib
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw \
+          CFG_OVERRIDE=cfg/snax-hypercorex.hjson
+      - name: Generate RTL
+        run: |
+          make -C target/snitch_cluster rtl-gen \
+          CFG_OVERRIDE=cfg/snax-hypercorex.hjson
+      - name: Build Hardware
+        run: |
+          make CFG_OVERRIDE=cfg/snax-hypercorex.hjson \
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+      - name: Run Tests
+        working-directory: target/snitch_cluster
+        run: |-
+          ./run.py --simulator verilator \
+          sw/runtime.yaml \
+          sw/snax-hypercorex-run.yaml -j
+
+  snax-dimc-cluster-vlt-generic:
+    name: SNAX DIMC w/ Verilator (Generic LLVM)
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/snax:main
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Generate RTL
+        run: |
+          make -C target/snitch_cluster rtl-gen \
+          CFG_OVERRIDE=cfg/snax-dimc.hjson
+      - name: Build Hardware
+        run: |
+          make CFG_OVERRIDE=cfg/snax-dimc.hjson \
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
 
   sw-snax-KUL-cluster-vlt-generic:
     name: Build KUL-cluster HW w/ Verilator (Generic LLVM)
