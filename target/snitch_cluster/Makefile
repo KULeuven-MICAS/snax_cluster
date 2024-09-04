@@ -158,15 +158,22 @@ VLOG_64BIT   = -64
 
 VSIM_FLAGS += ${QUESTA_64BIT}
 VSIM_FLAGS += -t 1ps
-
+# Note: Only use this for post-synth sim purposes
+# the goal is also to have functional verification
+# with annotated delays
+# SDF_ANNOTATE_PATH = should point to the SDF file
+# SDF_TOP = should point to the top-level instance
+#           to where it should the annotations be placed
 ifdef SDF_ANNOTATE_PATH
   ifdef SDF_TOP
-    VSIM_FLAGS += -sdftyp /${SDF_TOP}=$(SDF_ANNOTATE_PATH)
+    VSIM_FLAGS += -sdfmax /tb_bin/i_dut/${SDF_TOP}=$(SDF_ANNOTATE_PATH)
+    VSIM_FLAGS += -sdfreport=${MKFILE_DIR}/${VSIM_BUILDDIR}/sdf_report.txt
+    VSIM_FLAGS += -sdfnoerror
+    VSIM_FLAGS += +notimingchecks
   else
     $(error "Error! Missing SDF_TOP")
   endif
 endif
-
 VSIM_FLAGS += -do "log -r /*; run -a"
 
 VLOG_FLAGS += -svinputport=compat
