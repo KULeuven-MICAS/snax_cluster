@@ -207,6 +207,10 @@ void set_gemmx_start() { csrw_ss(GEMMX_START, 1); }
 void wait_gemmx_and_streamer() {
     csrw_ss(STREAMER_START_CSR, 0);
     csrw_ss(STREAMER_START_CSR, 0);
+    while (csrr_ss(GEMMX_BUSY)) {
+    }
+    while (csrr_ss(STREAMER_BUSY_CSR)) {
+    }
     csrw_ss(GEMMX_START, 0);
 }
 
@@ -230,8 +234,6 @@ uint32_t check_gemmx_result_D8(int8_t* output, int8_t* output_golden,
 
     for (int i = 0; i < size; i++) {
         if (output[i] != output_golden[i]) {
-            printf("output[%d] = %d, output_golden[%d] = %d\n", i, output[i],
-                   i, output_golden[i]);
             err++;
         }
     }
@@ -246,8 +248,6 @@ uint32_t check_gemmx_result_D32(int32_t* output, int32_t* output_golden,
 
     for (int i = 0; i < size; i++) {
         if (output[i] != output_golden[i]) {
-            printf("output[%d] = %d, output_golden[%d] = %d\n", i, output[i],
-                   i, output_golden[i]);
             err++;
         }
     }
