@@ -96,8 +96,8 @@ object StreamerParam {
     ),
     writerParams = Seq(new ReaderWriterParam(temporalDimension = 3)),
     readerWriterParams = Seq(
-      new ReaderWriterParam(temporalDimension = 3, numChannel = 32),
-      new ReaderWriterParam(temporalDimension = 3, numChannel = 32)
+      new ReaderWriterParam(temporalDimension = 3, numChannel = 32, spatialBounds = List(32)),
+      new ReaderWriterParam(temporalDimension = 3, numChannel = 32, spatialBounds = List(32))
     ),
     csrAddrWidth = 32
   )
