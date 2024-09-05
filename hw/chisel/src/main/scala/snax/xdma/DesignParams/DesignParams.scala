@@ -1,8 +1,9 @@
 package snax.xdma.DesignParams
 
 import chisel3.util.log2Up
-import snax.xdma.xdmaExtension._
 import chisel3.util.log2Ceil
+import snax.readerWriter.ReaderWriterParam
+import snax.xdma.xdmaExtension._
 
 /*
  *  This is the collection of all design Params

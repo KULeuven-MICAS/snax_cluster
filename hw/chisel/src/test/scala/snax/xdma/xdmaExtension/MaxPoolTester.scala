@@ -2,14 +2,16 @@ package snax.xdma.xdmaExtension
 
 import chisel3._
 import chisel3.util._
+
+// Hardware and its Generation Param
+import snax.xdma.DesignParams._
+import snax.utils.DecoupledCut._
+
+// Import Chiseltest
 import org.scalatest.flatspec.AnyFlatSpec
 import chiseltest._
 
-import snax.xdma.CommonCells.DecoupledCut._
-
-import snax.xdma.DesignParams._
 import scala.util.Random
-import org.scalatest.Args
 
 class MaxPoolTester extends DMAExtensionTester {
 
