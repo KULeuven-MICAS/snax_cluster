@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: DoozyX/clang-format-lint-action@v0.16.2
+      - uses: DoozyX/clang-format-lint-action@v0.18.2
         with:
           clangFormatVersion: 10
           exclude: './target/snitch_cluster/sw/snax/xdma/include/snax-xdma-csr-addr.h'
