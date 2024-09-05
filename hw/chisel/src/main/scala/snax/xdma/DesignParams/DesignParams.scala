@@ -86,6 +86,15 @@ class StreamerParam(
     param.aguParam.numChannel * param.tcdmParam.dataWidth
   )
 
+  // design time spatial unrolling factors must match the channel number
+  val totalReaderWriterParams =
+    readerParams ++ writerParams ++ readerWriterParams
+  totalReaderWriterParams.foreach { param =>
+    require(
+      param.aguParam.spatialBounds.reduce(_ * _) == param.aguParam.numChannel
+    )
+  }
+
 }
 
 object StreamerParam {
@@ -96,9 +105,30 @@ object StreamerParam {
     ),
     writerParams = Seq(new ReaderWriterParam(temporalDimension = 3)),
     readerWriterParams = Seq(
-      new ReaderWriterParam(temporalDimension = 3, numChannel = 32, spatialBounds = List(32)),
-      new ReaderWriterParam(temporalDimension = 3, numChannel = 32, spatialBounds = List(32))
+      new ReaderWriterParam(
+        temporalDimension = 3,
+        numChannel = 32,
+        spatialBounds = List(32)
+      ),
+      new ReaderWriterParam(
+        temporalDimension = 3,
+        numChannel = 32,
+        spatialBounds = List(32)
+      )
     ),
     csrAddrWidth = 32
+  )
+  def apply(
+      readerParams: Seq[ReaderWriterParam],
+      writerParams: Seq[ReaderWriterParam],
+      readerWriterParams: Seq[ReaderWriterParam],
+      csrAddrWidth: Int,
+      tagName: String
+  ) = new StreamerParam(
+    readerParams = readerParams,
+    writerParams = writerParams,
+    readerWriterParams = readerWriterParams,
+    csrAddrWidth = csrAddrWidth,
+    tagName = tagName
   )
 }
