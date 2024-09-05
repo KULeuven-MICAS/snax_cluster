@@ -15,8 +15,7 @@ import snax.readerWriter.{
   Writer,
   ReaderWriterParam
 }
-import snax.xdma.xdmaStreamer._
-import snax.xdma.CommonCells._
+import snax.readerWriter._
 import snax.xdma.DesignParams._
 
 // The ReaderWriterCfg Class that used for interface between local Datapath and DMA Ctrl
