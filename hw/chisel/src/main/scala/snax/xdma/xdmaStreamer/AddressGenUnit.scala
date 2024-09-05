@@ -42,7 +42,7 @@ class BasicCounter(width: Int, hasCeil: Boolean = true)
 
   io.value := value
   io.lastVal := {
-    if (hasCeil) (value === io.ceil - 1.U) else (value.andR)
+    (if (hasCeil) (value === io.ceil - 1.U) else (value.andR)) && io.tick
   }
 }
 
