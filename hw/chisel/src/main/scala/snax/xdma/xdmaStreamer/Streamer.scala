@@ -263,7 +263,11 @@ class Streamer(
   when(streamer_config_fire) {
     csrCfgReg := csrManager.io.csr_config_out.bits
   }
-  csrCfg := Mux(streamer_config_fire, csrManager.io.csr_config_out.bits, csrCfgReg)
+  csrCfg := Mux(
+    streamer_config_fire,
+    csrManager.io.csr_config_out.bits,
+    csrCfgReg
+  )
 
   // --------------------------------------------------------------------------------
   // ------------------------------------ csr mapping -------------------------------
@@ -425,7 +429,7 @@ class Streamer(
 
   // --------------------------------------------------------------------------------
   // ------------------ csr address map header file generation-----------------------
-  // -------------------------------------------------------------------------------- 
+  // --------------------------------------------------------------------------------
 
   def genCSRMap(csrBase: Int, param: ReaderWriterParam, tag: String = "") = {
     var csrMap = "// CSR Mapp for " + tag + "\n"
