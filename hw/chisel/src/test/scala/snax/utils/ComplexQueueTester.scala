@@ -1,9 +1,9 @@
-package snax.xdma.CommonCells
+package snax.utils
 
 import chisel3._
 import org.scalatest.flatspec.AnyFlatSpec
 import chiseltest._
-import snax.xdma.CommonCells._
+import snax.utils.ComplexQueueConcat
 
 class ComplexQueueConcatTester extends AnyFlatSpec with ChiselScalatestTester {
   "The test of complexQueue (64->512)" should " pass" in {

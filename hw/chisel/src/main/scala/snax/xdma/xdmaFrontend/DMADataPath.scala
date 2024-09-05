@@ -5,9 +5,16 @@ import chisel3.util._
 
 import snax.utils._
 
-import snax.xdma.CommonCells.DecoupledCut._
-import snax.xdma.CommonCells.BitsConcat._
+import snax.utils.DecoupledCut._
+import snax.utils.BitsConcat._
 
+import snax.readerWriter.{
+  AddressGenUnitCfgIO,
+  ReaderWriterCfgIO,
+  Reader,
+  Writer,
+  ReaderWriterParam
+}
 import snax.xdma.xdmaStreamer._
 import snax.xdma.CommonCells._
 import snax.xdma.DesignParams._

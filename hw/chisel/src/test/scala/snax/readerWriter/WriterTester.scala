@@ -1,4 +1,4 @@
-package snax.xdma.xdmaStreamer
+package snax.readerWriter
 import chisel3._
 import chisel3.util._
 // Import Chiseltest

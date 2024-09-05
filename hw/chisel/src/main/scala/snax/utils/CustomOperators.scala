@@ -3,8 +3,6 @@ package snax.utils
 import chisel3._
 import chisel3.util._
 import chisel3.reflect.DataMirror
-import chisel3.internal.throwException
-import chisel3.internal.throwException
 
 /** The definition of -|> / -||> / -|||> connector for decoupled signal it
   * connects leftward Decoupled signal (Decoupled port) and rightward Decoupled

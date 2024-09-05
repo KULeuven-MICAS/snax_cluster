@@ -1,4 +1,4 @@
-package snax.xdma.xdmaStreamer
+package snax.readerWriter
 
 import chisel3._
 import org.scalatest.flatspec.AnyFlatSpec
