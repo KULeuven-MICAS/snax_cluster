@@ -134,5 +134,15 @@ class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
 }
 
 object ReaderEmitter extends App {
-  println(getVerilogString(new Reader(new ReaderWriterParam(tcdmDataWidth = 512, numChannel = 1, spatialBounds = List(1)))))
+  println(
+    getVerilogString(
+      new Reader(
+        new ReaderWriterParam(
+          tcdmDataWidth = 512,
+          numChannel = 1,
+          spatialBounds = List(1)
+        )
+      )
+    )
+  )
 }
