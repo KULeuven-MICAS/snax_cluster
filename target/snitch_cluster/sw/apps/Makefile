@@ -31,6 +31,7 @@ SUBDIRS += snax-streamer-gemm-conv-simd
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-maxpool
 SUBDIRS += snax-multi-cluster-playground
+SUBDIRS += snax-dimc
 ifeq ($(CFG_OVERRIDE), cfg/snax-hypercorex.hjson)
 SUBDIRS += snax-hypercorex/test-csr
 SUBDIRS += snax-hypercorex/char-recog
