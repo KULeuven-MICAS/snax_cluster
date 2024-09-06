@@ -21,7 +21,7 @@
   if("data_reader_writer_params" in cfg["snax_streamer_cfg"]):
       num_tcdm_reader_writer = sum(cfg["snax_streamer_cfg"]["data_reader_writer_params"]["num_channel"])
 
-  num_tcdm_ports = num_tcdm_reader + num_tcdm_writer + num_tcdm_reader_writer
+  num_tcdm_ports = num_tcdm_reader + num_tcdm_writer + int(num_tcdm_reader_writer / 2)
 %>
 //-----------------------------
 // Streamer wrapper
