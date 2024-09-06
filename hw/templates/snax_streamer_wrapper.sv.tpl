@@ -11,15 +11,15 @@
   num_writer_offset = 0
 
   if("data_reader_params" in cfg["snax_streamer_cfg"]):
-      num_tcdm_reader = sum(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
-      num_reader_offset = len(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
+      num_tcdm_reader = sum(cfg["snax_streamer_cfg"]["data_reader_params"]["num_channel"])
+      num_reader_offset = len(cfg["snax_streamer_cfg"]["data_reader_params"]["num_channel"])
 
   if("data_writer_params" in cfg["snax_streamer_cfg"]):
-      num_tcdm_writer = sum(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
-      num_writer_offset = len(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
+      num_tcdm_writer = sum(cfg["snax_streamer_cfg"]["data_writer_params"]["num_channel"])
+      num_writer_offset = len(cfg["snax_streamer_cfg"]["data_writer_params"]["num_channel"])
 
   if("data_reader_writer_params" in cfg["snax_streamer_cfg"]):
-      num_tcdm_reader_writer = sum(cfg["snax_streamer_cfg"]["data_reader_writer_params"]["tcdm_ports_num"])
+      num_tcdm_reader_writer = sum(cfg["snax_streamer_cfg"]["data_reader_writer_params"]["num_channel"])
 
   num_tcdm_ports = num_tcdm_reader + num_tcdm_writer + num_tcdm_reader_writer
 %>
