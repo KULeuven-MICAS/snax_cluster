@@ -95,63 +95,24 @@ def streamer_csr_num(acc_cfgs):
     num_data_reader_writer = 0
     num_data_mover = 0
 
-    # Calculation of spatial dimensions per data mover
-    # num_spatial_reader = 0
-    # num_spatial_writer = 0
-    # num_spatial_reader_writer = 0
-    # num_spatial_dim = 0
-
     if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
         num_data_reader = len(
             acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["num_channel"]  # noqa: E501
         )
-        # num_spatial_reader = sum(
-        #     acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"]
-        # )
 
     if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
         num_data_writer = len(
             acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["num_channel"]  # noqa: E501
         )
-        # num_spatial_writer = sum(
-        #     acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["spatial_dim"]
-        # )
 
     if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
         num_data_reader_writer = len(
             acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["num_channel"]  # noqa: E501
         )
-        # num_spatial_reader_writer = sum(
-        #     acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["spatial_dim"]  # noqa: E501
-        # )
 
     # This sets the total number of base pointers
     num_data_mover = num_data_reader + num_data_writer \
-        + num_data_reader_writer * 2
-    # num_spatial_dim = (
-    #     num_spatial_reader + num_spatial_writer + num_spatial_reader_writer * 2
-    # )
-
-    # if acc_cfgs["snax_streamer_cfg"]["temporal_addrgen_unit_params"][
-    #     "share_temp_addr_gen_loop_bounds"
-    # ]:
-    #     # num_dmove_x_loop_dim is the total number of stride registers
-    #     num_dmove_x_loop_dim = num_data_mover * num_loop_dim
-    #     streamer_csr_num = (
-    #         num_loop_dim
-    #         + num_dmove_x_loop_dim
-    #         + num_spatial_dim
-    #         + num_data_mover
-    #         + 1
-    #         + 1
-    #         + 1
-    #     )
-    # else:
-    #     # 2x num_loop_dim is because 1 is for the loop bound
-    #     # while the other is for number of strides
-    #     streamer_csr_num = (
-    #         2 * num_loop_dim + num_spatial_dim + num_data_mover + 1 + 1 + 1
-    #     )  # noqa: E501
+        + num_data_reader_writer
 
     streamer_csr_num = (
             # Total temporal loop dimensions and strides
@@ -166,8 +127,7 @@ def streamer_csr_num(acc_cfgs):
             1 + \
             # Busy register
             1
-    )  # noqa: E501
-
+    )
 
     # transpose csr
     if "has_transpose" in acc_cfgs["snax_streamer_cfg"]:
