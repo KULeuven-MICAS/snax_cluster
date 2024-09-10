@@ -92,7 +92,7 @@ void dimc_set_streamer_dim_w(uint32_t loop_bound_0,
     csrw_ss(DIMC_STREAMER_W_0_BASE_PTR, base_ptr);
 }
 
-void dimc_start_streamer_r() {
+void dimc_start_streamer() {
     csrw_ss(DIMC_STREAMER_START, 1);
 }
 

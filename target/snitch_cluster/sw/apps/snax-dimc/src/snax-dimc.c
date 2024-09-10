@@ -18,13 +18,20 @@ int main() {
 
     // Allocates space in TCDM for matrix Q
     uint64_t *local_q, *local_wq, *local_k, *local_wk, *local_wv, *local_v, *local_q1k1t;
+    // local_wk = (uint64_t *)snrt_l1_next();
     local_q = (uint64_t *)snrt_l1_next();
     local_wq = local_q + Q_LENGTH;
     local_k = local_wq + Q_LENGTH;
     local_wk = local_k + Q_LENGTH;
     local_wv = local_wk + Q_LENGTH;
     local_v = local_wv + Q_LENGTH;
-    local_q1k1t = local_v + 1;
+    // local_q1k1t = local_v + 1;
+
+    /**************************************************************************/
+    // for testing simple TCDM & DMA functionality
+    uint64_t * test_array;
+    /**************************************************************************/
+
 
     if(snrt_is_dm_core()) {
         printf("DMA core will be configured\n ");
@@ -32,7 +39,6 @@ int main() {
         // This measures the start of cycle count
         // for preloading the data to the L1 memory
         uint32_t start_dma_load = snrt_mcycle();
-
         /**********************************************************************/
         // initialize TCDM by DMA
         /**********************************************************************/
@@ -41,6 +47,12 @@ int main() {
         // read matrix Q from data.h
         size_t vector_size = Q_LENGTH * sizeof(uint64_t);
         size_t vector_size_q1k1t = 512 * sizeof(uint64_t);
+
+        /**********************************************************************/
+        // for testing simple TCDM & DMA functionality
+        size_t test_array_size = 5 * sizeof(uint64_t);
+        snrt_dma_start_1d(test_array, test_array, test_array_size);
+        /**********************************************************************/
 
         // snrt_dma_start_1d(local_q, matrix_Q, vector_size);
         // snrt_dma_start_1d(local_wq, matrix_WQ, vector_size);
@@ -51,18 +63,18 @@ int main() {
         // snrt_dma_start_1d(local_q1k1t, matrix_Q1K1T, vector_size_q1k1t);
 
         // Measure the end of the transfer process
+        // printf("DMA core exits\n"); 
+        // uint32_t end_dma_load = snrt_mcycle();
+        snrt_dma_wait_all();
+
         uint32_t end_dma_load = snrt_mcycle();
-        
-        // printf("DMA core exits\n ");
     }
 
     // Wait until DMA transfer is done
     snrt_cluster_hw_barrier();
 
-    if(snrt_is_dm_core()) delay_cycles(1000000);
-    printf("DMA core exits\n  ");
-
     if (snrt_is_compute_core()){
+        // printf("COMPUTE CORE\n");
         
         /**********************************************************************/
         // simple testing code for DMA bahaivour
@@ -89,41 +101,43 @@ int main() {
         
 
         //test_val = csrr_ss(994); // read reg for cehcking busy state
-        // printf("Query Busy Returns %d \n ", test_val);        
+        // printf("Query Busy Returns %d \n", test_val);        
         
         
         /**********************************************************************/
         // configure the accelerator
         /**********************************************************************/
-        printf("ENTERING MHA MODE\n ");
+        printf("ENTERING MHA MODE\n");
 
-        dimc_query_busy();
+        // dimc_query_busy();
 
-        printf("QUERYING BUSY SUCCEEDED\n ");
+        printf("QUERYING BUSY SUCCEEDED\n");
 
-        dimc_set_alpha_qkv(128);
+        // dimc_set_alpha_qkv(128);
 
-        printf("SETTING ALPHA QKV SUCCEEDED\n ");
+        printf("SETTING ALPHA QKV SUCCEEDED\n");
 
-        dimc_set_alpha_qkt(128);
+        // dimc_set_alpha_qkt(128);
 
-        printf("SETTING ALPHA QKT SUCCEEDED\n ");
+        printf("SETTING ALPHA QKT SUCCEEDED\n");
 
-        dimc_start_mha();
+        // dimc_start_mha();
 
-        printf("STARTING MHA SUCCEEDED\n ");
+        printf("STARTING MHA SUCCEEDED\n");
 
         /**********************************************************************/
         // configure the streamer
         /**********************************************************************/
         
-        printf("CONFIGURING STREAMER\n ");
+        printf("CONFIGURING STREAMER\n");
 
         // LOAD WK
-        // dimc_set_streamer_dim_r0(128, 0, 256, 0, 0, (local_wk + 0));
-        // dimc_set_streamer_dim_r1(128, 0, 256, 0, 0, (local_wk + 1));
-        // dimc_set_streamer_dim_r2(128, 0, 256, 0, 0, (local_wk + 2));
-        // dimc_set_streamer_dim_r3(128, 0, 256, 0, 0, (local_wk + 3));
+        // dimc_set_streamer_dim_r0(128, 0, 256, 0, 0, (uint32_t)(local_wk + 0));
+        // dimc_set_streamer_dim_r1(128, 0, 256, 0, 0, (uint32_t)(local_wk + 1));
+        // dimc_set_streamer_dim_r2(128, 0, 256, 0, 0, (uint32_t)(local_wk + 2));
+        // dimc_set_streamer_dim_r3(128, 0, 256, 0, 0, (uint32_t)(local_wk + 3));
+
+        // dimc_start_streamer();
         
         // dimc_start_streamer_r();
         /**********************************************************************/

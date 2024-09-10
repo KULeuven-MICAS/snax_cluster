@@ -25,6 +25,8 @@ uint64_t matrix_V[4096] = {4};
 // 64x64x8/64 = 512
 uint64_t matrix_Q1K1T[512] = {5};
 
+uint64_t test_array[5] = {0, 1, 2, 3, 4};
+
 
 void delay_cycles(uint32_t cycle) {
     uint32_t target_cycle, current_cycle;
