@@ -99,7 +99,7 @@ module ${cfg["tag_name"]}_wrapper # (
   // Ports from accelerator to streamer by reader-writer data movers
 % for idx, dw in enumerate(cfg["snax_streamer_cfg"]["data_reader_writer_params"]["num_channel"]):
 % if idx % 2 == 0:
-  logic [${dw-1}:0] acc2stream_${int(idx/2+num_writer_offset)}_data;
+  logic [${dw*cfg["tcdm_data_width"]-1}:0] acc2stream_${int(idx/2+num_writer_offset)}_data;
   logic acc2stream_${int(idx/2+num_writer_offset)}_valid;
   logic acc2stream_${int(idx/2+num_writer_offset)}_ready;
 
@@ -119,7 +119,7 @@ module ${cfg["tag_name"]}_wrapper # (
   // Ports from streamer to accelerator by reader-writer data movers
 % for idx, dw in enumerate(cfg["snax_streamer_cfg"]["data_reader_writer_params"]["num_channel"]):
 % if idx % 2 == 0:
-  logic [${dw-1}:0] stream2acc_${int(idx/2+num_reader_offset)}_data;
+  logic [${dw*cfg["tcdm_data_width"]-1}:0] stream2acc_${int(idx/2+num_reader_offset)}_data;
   logic stream2acc_${int(idx/2+num_reader_offset)}_valid;
   logic stream2acc_${int(idx/2+num_reader_offset)}_ready;
 
