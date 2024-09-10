@@ -27,6 +27,11 @@ uint64_t matrix_Q1K1T[512] = {5};
 
 uint64_t test_array[5] = {0, 1, 2, 3, 4};
 
+uint64_t matrix_WK0[1024] = {1, 2, 3, 4, 5, 6, 7, 8};
+uint64_t matrix_WK1[1024] = {1, 2, 3, 4, 5, 6, 7, 8};
+uint64_t matrix_WK2[1024] = {1, 2, 3, 4, 5, 6, 7, 8};
+uint64_t matrix_WK3[1024] = {1, 2, 3, 4, 5, 6, 7, 8};
+
 
 void delay_cycles(uint32_t cycle) {
     uint32_t target_cycle, current_cycle;

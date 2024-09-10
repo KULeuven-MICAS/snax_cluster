@@ -18,7 +18,7 @@
 #define DIMC_STREAMER_OFFSET 34
 
 // Loop bound registers per streamer, first configured, second 0
-#define DIMC_STREAMER_R_0_LOOP_BOUND_0 (SNAX_CSR_BASE + 0)
+#define DIMC_STREAMER_R_0_LOOP_BOUND_0 (SNAX_CSR_BASE )
 #define DIMC_STREAMER_R_0_LOOP_BOUND_1 (SNAX_CSR_BASE + 1)
 
 #define DIMC_STREAMER_R_1_LOOP_BOUND_0 (SNAX_CSR_BASE + 2)
@@ -33,7 +33,7 @@
 #define DIMC_STREAMER_W_0_LOOP_BOUND_0 (SNAX_CSR_BASE + 8)
 #define DIMC_STREAMER_W_0_LOOP_BOUND_1 (SNAX_CSR_BASE + 9)
 
-// Temporal stride registers per streamer, first one needs to be configures, second random
+// Temporal stride registers per streamer, first one needs to be configures, second 0
 #define DIMC_STREAMER_R_0_TEMP_STRIDE_0 (SNAX_CSR_BASE + 10)
 #define DIMC_STREAMER_R_0_TEMP_STRIDE_1 (SNAX_CSR_BASE + 11)
 
@@ -49,14 +49,14 @@
 #define DIMC_STREAMER_W_0_TEMP_STRIDE_0 (SNAX_CSR_BASE + 18)
 #define DIMC_STREAMER_W_0_TEMP_STRIDE_1 (SNAX_CSR_BASE + 19)
 
-// Spatial stride registers per streamer, these should have a random value
+// Spatial stride registers per streamer, these can be 0
 #define DIMC_STREAMER_R_0_SPAT_STRIDE (SNAX_CSR_BASE + 20)
 #define DIMC_STREAMER_R_1_SPAT_STRIDE (SNAX_CSR_BASE + 21)
 #define DIMC_STREAMER_R_2_SPAT_STRIDE (SNAX_CSR_BASE + 22)
 #define DIMC_STREAMER_R_3_SPAT_STRIDE (SNAX_CSR_BASE + 23)
 #define DIMC_STREAMER_W_0_SPAT_STRIDE (SNAX_CSR_BASE + 24)
 
-// Base pointer registers per streamer, these should have a random value
+// Base pointer registers per streamer, these should be configured
 #define DIMC_STREAMER_R_0_BASE_PTR (SNAX_CSR_BASE + 35)
 #define DIMC_STREAMER_R_1_BASE_PTR (SNAX_CSR_BASE + 26)
 #define DIMC_STREAMER_R_2_BASE_PTR (SNAX_CSR_BASE + 27)
