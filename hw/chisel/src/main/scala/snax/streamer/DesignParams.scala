@@ -20,7 +20,8 @@ class StreamerParam(
 
     // csr manager params
     val csrAddrWidth: Int,
-    val tagName: String = "Test_"
+    val tagName: String = "Test_",
+    val headerFilepath: String = "./generated/"
 ) {
 
   // reader, writer, reader-writer number inferred paramters
@@ -96,12 +97,14 @@ object StreamerParam {
       writerParams: Seq[ReaderWriterParam],
       readerWriterParams: Seq[ReaderWriterParam],
       csrAddrWidth: Int,
-      tagName: String
+      tagName: String,
+      headerFilepath: String
   ) = new StreamerParam(
     readerParams = readerParams,
     writerParams = writerParams,
     readerWriterParams = readerWriterParams,
     csrAddrWidth = csrAddrWidth,
-    tagName = tagName
+    tagName = tagName,
+    headerFilepath = headerFilepath
   )
 }
