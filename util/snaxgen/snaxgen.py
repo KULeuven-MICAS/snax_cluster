@@ -201,9 +201,6 @@ def main():
 
     # For generating all bender targets
     if args.get_bender_targets:
-        print("---------------------------------")
-        print("    Extracting bender targets    ")
-        print("---------------------------------")
         def get_bender_targets(cfg):
             targets = []
             # If cfg is dictionary, then first check if it has
