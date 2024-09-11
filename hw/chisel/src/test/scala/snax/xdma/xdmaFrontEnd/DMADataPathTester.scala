@@ -19,7 +19,6 @@ import scala.util.Random
 // Import break support for loops
 import scala.util.control.Breaks.{break, breakable}
 
-
 class ReaderWriterTesterParam(
     val address: Int,
     val dimension: Int,
