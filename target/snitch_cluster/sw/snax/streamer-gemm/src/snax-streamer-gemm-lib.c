@@ -13,7 +13,6 @@ void set_streamer_csr(int tempLoop0, int tempLoop1, int tempLoop2,
                       int tempStride0B, int tempStride1B, int spatialStride1B,
                       int tempStride1C, int tempStride2C, int spatialStride1C,
                       int delta_local_a, int delta_local_b, int delta_local_c) {
-
     // base ptr for A
     csrw_ss(BASE_PTR_READER_0_Low, (uint32_t)(delta_local_a + snrt_l1_next()));
 
@@ -36,7 +35,7 @@ void set_streamer_csr(int tempLoop0, int tempLoop1, int tempLoop2,
     // spatial strides for B
     csrw_ss(S_STRIDE_READER_1_0, spatialStride1B);
 
-   // loop bounds, from innermost to outermost, from K to N to M
+    // loop bounds, from innermost to outermost, from K to N to M
     csrw_ss(T_BOUND_READER_1_0, tempLoop0);
     csrw_ss(T_BOUND_READER_1_1, tempLoop1);
     csrw_ss(T_BOUND_READER_1_2, tempLoop2);
@@ -52,7 +51,7 @@ void set_streamer_csr(int tempLoop0, int tempLoop1, int tempLoop2,
     // spatial strides for C
     csrw_ss(S_STRIDE_WRITER_0_0, spatialStride1C);
 
-   // loop bounds, from innermost to outermost, from K to N to M
+    // loop bounds, from innermost to outermost, from K to N to M
     csrw_ss(T_BOUND_WRITER_0_0, tempLoop0);
     csrw_ss(T_BOUND_WRITER_0_1, tempLoop1);
     csrw_ss(T_BOUND_WRITER_0_2, tempLoop2);
@@ -61,7 +60,6 @@ void set_streamer_csr(int tempLoop0, int tempLoop1, int tempLoop2,
     csrw_ss(T_STRIDE_WRITER_0_0, 0);
     csrw_ss(T_STRIDE_WRITER_0_1, tempStride1C);
     csrw_ss(T_STRIDE_WRITER_0_2, tempStride2C);
-
 }
 
 // Set CSR to start STREAMER
