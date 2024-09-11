@@ -56,7 +56,7 @@ void set_gemmx_streamer_csr(
     int delta_local_d32, int bypassSIMD, int32_t transpose_A,
     int32_t transpose_B) {
     // base ptr for A
-    csrw_ss(BASE_PTR_READER_0_0, (uint32_t)(delta_local_a + snrt_l1_next()));
+    csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)(delta_local_a + snrt_l1_next()));
 
     // spatial strides for A
     csrw_ss(S_STRIDE_READER_0_0, Aslstride1);
@@ -78,7 +78,7 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_READER_0_5, Atlstride5);
 
     // base ptr for B
-    csrw_ss(BASE_PTR_READER_1_0, (uint32_t)(delta_local_b + snrt_l1_next()));
+    csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)(delta_local_b + snrt_l1_next()));
 
     // spatial strides for B
     csrw_ss(S_STRIDE_READER_1_0, Bslstride1);
@@ -94,7 +94,7 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_READER_1_2, Btlstride2);
 
     // base ptr for D8
-    csrw_ss(BASE_PTR_WRITER_0_0, (uint32_t)(delta_local_d8 + snrt_l1_next()));
+    csrw_ss(BASE_PTR_WRITER_0_LOW, (uint32_t)(delta_local_d8 + snrt_l1_next()));
 
     // spatial strides for D8
     csrw_ss(S_STRIDE_WRITER_0_0, D8slstride1);
@@ -116,7 +116,7 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_WRITER_0_2, D8tlstride2);
 
     // base ptr for C
-    csrw_ss(BASE_PTR_READER_WRITER_0_0,
+    csrw_ss(BASE_PTR_READER_WRITER_0_LOW,
             (uint32_t)(delta_local_c + snrt_l1_next()));
 
     // spatial strides for C
@@ -133,7 +133,7 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_READER_WRITER_0_2, Ctlstride2);
 
     // base ptr for D32
-    csrw_ss(BASE_PTR_READER_WRITER_1_0,
+    csrw_ss(BASE_PTR_READER_WRITER_1_LOW,
             (uint32_t)(delta_local_d32 + snrt_l1_next()));
 
     // spatial strides for D32
