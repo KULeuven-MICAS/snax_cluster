@@ -39,7 +39,8 @@ void set_data_reshuffler_csr(int tempLoop0_in, int tempLoop1_in,
     csrw_ss(T_STRIDE_READER_0_4, tempStride4_in);
 
     // base ptr for data writer (Out)
-    csrw_ss(BASE_PTR_WRITER_0_LOW, (uint32_t)(delta_local_out + snrt_l1_next()));
+    csrw_ss(BASE_PTR_WRITER_0_LOW,
+            (uint32_t)(delta_local_out + snrt_l1_next()));
 
     // fixed spatial strides for data writer (Out)
     csrw_ss(S_STRIDE_WRITER_0_0, spatialStride1_out);
