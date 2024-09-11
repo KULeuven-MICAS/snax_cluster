@@ -19,47 +19,46 @@ void set_data_reshuffler_csr(int tempLoop0_in, int tempLoop1_in,
                              int tempStride2_out, int spatialStride1_out,
                              int32_t delta_local_in, int32_t delta_local_out) {
     // base ptr for data reader (In)
-    write_csr(BASE_PTR_READER_0_0, (uint32_t)(delta_local_in + snrt_l1_next()));
+    csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)(delta_local_in + snrt_l1_next()));
 
     // fixed spatial strides for data reader (In)
-    write_csr(S_STRIDE_READER_0_0, spatialStride1_in);
+    csrw_ss(S_STRIDE_READER_0_0, spatialStride1_in);
 
     // temporal loop bounds, from innermost to outermost for data reader (In)
-    write_csr(T_BOUND_READER_0_0, tempLoop0_in);
-    write_csr(T_BOUND_READER_0_1, tempLoop1_in);
-    write_csr(T_BOUND_READER_0_2, tempLoop2_in);
-    write_csr(T_BOUND_READER_0_3, tempLoop3_in);
-    write_csr(T_BOUND_READER_0_4, tempLoop4_in);
+    csrw_ss(T_BOUND_READER_0_0, tempLoop0_in);
+    csrw_ss(T_BOUND_READER_0_1, tempLoop1_in);
+    csrw_ss(T_BOUND_READER_0_2, tempLoop2_in);
+    csrw_ss(T_BOUND_READER_0_3, tempLoop3_in);
+    csrw_ss(T_BOUND_READER_0_4, tempLoop4_in);
 
     // temporal strides for data reader (In)
-    write_csr(T_STRIDE_READER_0_0, tempStride0_in);
-    write_csr(T_STRIDE_READER_0_1, tempStride1_in);
-    write_csr(T_STRIDE_READER_0_2, tempStride2_in);
-    write_csr(T_STRIDE_READER_0_3, tempStride3_in);
-    write_csr(T_STRIDE_READER_0_4, tempStride4_in);
+    csrw_ss(T_STRIDE_READER_0_0, tempStride0_in);
+    csrw_ss(T_STRIDE_READER_0_1, tempStride1_in);
+    csrw_ss(T_STRIDE_READER_0_2, tempStride2_in);
+    csrw_ss(T_STRIDE_READER_0_3, tempStride3_in);
+    csrw_ss(T_STRIDE_READER_0_4, tempStride4_in);
 
     // base ptr for data writer (Out)
-    write_csr(BASE_PTR_WRITER_0_0,
-              (uint32_t)(delta_local_out + snrt_l1_next()));
+    csrw_ss(BASE_PTR_WRITER_0_LOW, (uint32_t)(delta_local_out + snrt_l1_next()));
 
     // fixed spatial strides for data writer (Out)
-    write_csr(S_STRIDE_WRITER_0_0, spatialStride1_out);
+    csrw_ss(S_STRIDE_WRITER_0_0, spatialStride1_out);
 
     // temporal loop bounds, from innermost to outermost for data writer (Out)
-    write_csr(T_BOUND_WRITER_0_0, tempLoop0_out);
-    write_csr(T_BOUND_WRITER_0_1, tempLoop1_out);
-    write_csr(T_BOUND_WRITER_0_2, tempLoop2_out);
+    csrw_ss(T_BOUND_WRITER_0_0, tempLoop0_out);
+    csrw_ss(T_BOUND_WRITER_0_1, tempLoop1_out);
+    csrw_ss(T_BOUND_WRITER_0_2, tempLoop2_out);
 
     // temporal strides for data writer (Out)
-    write_csr(T_STRIDE_WRITER_0_0, tempStride0_out);
-    write_csr(T_STRIDE_WRITER_0_1, tempStride1_out);
-    write_csr(T_STRIDE_WRITER_0_2, tempStride2_out);
+    csrw_ss(T_STRIDE_WRITER_0_0, tempStride0_out);
+    csrw_ss(T_STRIDE_WRITER_0_1, tempStride1_out);
+    csrw_ss(T_STRIDE_WRITER_0_2, tempStride2_out);
 }
 
 // Set CSR to start STREAMER
-void start_streamer() { write_csr(STREAMER_START_CSR, 1); }
+void start_streamer() { csrw_ss(STREAMER_START_CSR, 1); }
 
-void wait_streamer() { write_csr(STREAMER_START_CSR, 0); }
+void wait_streamer() { csrw_ss(STREAMER_START_CSR, 0); }
 
 #define DATA_RESHUFFLER_CSR_ADDR_BASE (STREAMER_PERFORMANCE_COUNTER_CSR + 1)
 #define DATA_RESHUFFLER_SETTING (DATA_RESHUFFLER_CSR_ADDR_BASE + 0)
@@ -71,15 +70,15 @@ void set_data_reshuffler(int T2Len, int reduceLen, int opcode) {
     // set transpose or not
     uint32_t csr0 = ((uint32_t)T2Len << 8) | ((uint32_t)reduceLen << 2) |
                     ((uint32_t)opcode);
-    write_csr(DATA_RESHUFFLER_SETTING, csr0);
+    csrw_ss(DATA_RESHUFFLER_SETTING, csr0);
 }
 
-void start_data_reshuffler() { write_csr(DATA_RESHUFFLER_START, 1); }
+void start_data_reshuffler() { csrw_ss(DATA_RESHUFFLER_START, 1); }
 
-void wait_data_reshuffler() { write_csr(DATA_RESHUFFLER_START, 0); }
+void wait_data_reshuffler() { csrw_ss(DATA_RESHUFFLER_START, 0); }
 
 uint32_t read_data_reshuffler_perf_counter() {
-    uint32_t perf_counter = read_csr(DATA_RESHUFFLER_PERFORMANCE_COUNTER);
+    uint32_t perf_counter = csrr_ss(DATA_RESHUFFLER_PERFORMANCE_COUNTER);
     return perf_counter;
 }
 

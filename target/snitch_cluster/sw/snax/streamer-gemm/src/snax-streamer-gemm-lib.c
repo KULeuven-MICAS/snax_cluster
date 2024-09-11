@@ -14,7 +14,7 @@ void set_streamer_csr(int tempLoop0, int tempLoop1, int tempLoop2,
                       int tempStride1C, int tempStride2C, int spatialStride1C,
                       int delta_local_a, int delta_local_b, int delta_local_c) {
     // base ptr for A
-    csrw_ss(BASE_PTR_READER_0_Low, (uint32_t)(delta_local_a + snrt_l1_next()));
+    csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)(delta_local_a + snrt_l1_next()));
 
     // spatial strides for A
     csrw_ss(S_STRIDE_READER_0_0, spatialStride1A);
@@ -30,7 +30,7 @@ void set_streamer_csr(int tempLoop0, int tempLoop1, int tempLoop2,
     csrw_ss(T_STRIDE_READER_0_2, tempStride2A);
 
     // base ptr for B
-    csrw_ss(BASE_PTR_READER_1_Low, (uint32_t)(delta_local_b + snrt_l1_next()));
+    csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)(delta_local_b + snrt_l1_next()));
 
     // spatial strides for B
     csrw_ss(S_STRIDE_READER_1_0, spatialStride1B);
@@ -46,7 +46,7 @@ void set_streamer_csr(int tempLoop0, int tempLoop1, int tempLoop2,
     csrw_ss(T_STRIDE_READER_1_2, 0);
 
     // base ptr for C
-    csrw_ss(BASE_PTR_WRITER_0_Low, (uint32_t)(delta_local_c + snrt_l1_next()));
+    csrw_ss(BASE_PTR_WRITER_0_LOW, (uint32_t)(delta_local_c + snrt_l1_next()));
 
     // spatial strides for C
     csrw_ss(S_STRIDE_WRITER_0_0, spatialStride1C);
