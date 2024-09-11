@@ -5,10 +5,10 @@
 // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
 #include "snax-streamer-gemm-conv-simd-lib.h"
-#include "streamer_csr_addr_map.h"
 #include <stdbool.h>
 #include "snrt.h"
 #include "stdint.h"
+#include "streamer_csr_addr_map.h"
 
 int32_t gen_size_config(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N) {
     return ((int32_t)Batch << 24) | ((int32_t)M << 16) | ((int32_t)K << 8) |
@@ -55,7 +55,6 @@ void set_gemmx_streamer_csr(
     int delta_local_a, int delta_local_b, int delta_local_d8, int delta_local_c,
     int delta_local_d32, int bypassSIMD, int32_t transpose_A,
     int32_t transpose_B) {
-
     // base ptr for A
     csrw_ss(BASE_PTR_READER_0_0, (uint32_t)(delta_local_a + snrt_l1_next()));
 
@@ -117,7 +116,8 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_WRITER_0_2, D8tlstride2);
 
     // base ptr for C
-    csrw_ss(BASE_PTR_READER_WRITER_0_0, (uint32_t)(delta_local_c + snrt_l1_next()));
+    csrw_ss(BASE_PTR_READER_WRITER_0_0,
+            (uint32_t)(delta_local_c + snrt_l1_next()));
 
     // spatial strides for C
     csrw_ss(S_STRIDE_READER_WRITER_0_0, Cslstride1);
@@ -133,7 +133,8 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_READER_WRITER_0_2, Ctlstride2);
 
     // base ptr for D32
-    csrw_ss(BASE_PTR_READER_WRITER_1_0, (uint32_t)(delta_local_d32 + snrt_l1_next()));
+    csrw_ss(BASE_PTR_READER_WRITER_1_0,
+            (uint32_t)(delta_local_d32 + snrt_l1_next()));
 
     // spatial strides for D32
     csrw_ss(S_STRIDE_READER_WRITER_1_0, D32slstride1);
@@ -153,7 +154,6 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_READER_WRITER_1_0, D32tlstride0);
     csrw_ss(T_STRIDE_READER_WRITER_1_1, D32tlstride1);
     csrw_ss(T_STRIDE_READER_WRITER_1_2, D32tlstride2);
-
 }
 
 // Set CSR to start STREAMER

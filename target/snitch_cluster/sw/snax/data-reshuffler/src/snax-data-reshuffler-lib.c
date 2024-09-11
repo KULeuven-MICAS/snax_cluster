@@ -18,7 +18,6 @@ void set_data_reshuffler_csr(int tempLoop0_in, int tempLoop1_in,
                              int tempStride0_out, int tempStride1_out,
                              int tempStride2_out, int spatialStride1_out,
                              int32_t delta_local_in, int32_t delta_local_out) {
-
     // base ptr for data reader (In)
     write_csr(BASE_PTR_READER_0_0, (uint32_t)(delta_local_in + snrt_l1_next()));
 
@@ -40,7 +39,8 @@ void set_data_reshuffler_csr(int tempLoop0_in, int tempLoop1_in,
     write_csr(T_STRIDE_READER_0_4, tempStride4_in);
 
     // base ptr for data writer (Out)
-    write_csr(BASE_PTR_WRITER_0_0, (uint32_t)(delta_local_out + snrt_l1_next()));
+    write_csr(BASE_PTR_WRITER_0_0,
+              (uint32_t)(delta_local_out + snrt_l1_next()));
 
     // fixed spatial strides for data writer (Out)
     write_csr(S_STRIDE_WRITER_0_0, spatialStride1_out);
@@ -54,7 +54,6 @@ void set_data_reshuffler_csr(int tempLoop0_in, int tempLoop1_in,
     write_csr(T_STRIDE_WRITER_0_0, tempStride0_out);
     write_csr(T_STRIDE_WRITER_0_1, tempStride1_out);
     write_csr(T_STRIDE_WRITER_0_2, tempStride2_out);
-
 }
 
 // Set CSR to start STREAMER
