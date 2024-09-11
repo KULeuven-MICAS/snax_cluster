@@ -18,7 +18,6 @@ import scala.util.Random
 // Import break support for loops
 import scala.util.control.Breaks.{break, breakable}
 
-
 class DMACtrlTester extends AnyFlatSpec with ChiselScalatestTester {
 
   def write_csr(dut: Module, port: SnaxCsrIO, addr: Int, data: Int) = {

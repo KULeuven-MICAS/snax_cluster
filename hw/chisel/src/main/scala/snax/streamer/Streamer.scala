@@ -93,9 +93,12 @@ class Streamer(
   // ---------------------- csr manager instantiation--------------------------------
   // --------------------------------------------------------------------------------
 
-  val reader_csr = param.readerParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
-  val writer_csr = param.writerParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
-  val reader_writer_csr = param.readerWriterParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+  val reader_csr =
+    param.readerParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+  val writer_csr =
+    param.writerParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+  val reader_writer_csr =
+    param.readerWriterParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
 
   // extra one is the start csr
   val csrNumReadWrite =
@@ -194,13 +197,17 @@ class Streamer(
   // if every data reader/writer is not busy
   streamer_finish := !(reader
     .map(_.io.busy)
-    .reduceLeftOption(_ || _).getOrElse(0.B) || writer
+    .reduceLeftOption(_ || _)
+    .getOrElse(0.B) || writer
     .map(_.io.busy)
-    .reduceLeftOption(_ || _).getOrElse(0.B) || reader_writer
+    .reduceLeftOption(_ || _)
+    .getOrElse(0.B) || reader_writer
     .map(_.io.readerInterface.busy)
-    .reduceLeftOption(_ || _).getOrElse(0.B) || reader_writer
+    .reduceLeftOption(_ || _)
+    .getOrElse(0.B) || reader_writer
     .map(_.io.writerInterface.busy)
-    .reduceLeftOption(_ || _).getOrElse(0.B))
+    .reduceLeftOption(_ || _)
+    .getOrElse(0.B))
   dontTouch(streamer_finish)
 
   // --------------------------------------------------------------------------------
@@ -428,7 +435,7 @@ class Streamer(
 }
 
 class StreamerHeaderFile(param: StreamerParam) {
-  
+
   // --------------------------------------------------------------------------------
   // ------------------ csr address map header file generation-----------------------
   // --------------------------------------------------------------------------------
