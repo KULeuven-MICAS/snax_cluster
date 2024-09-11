@@ -5,6 +5,7 @@
 // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
 #include "snax-streamer-gemm-add-c-lib.h"
+#include "streamer_csr_addr_map.h"
 
 // Set STREAMER configuration CSR
 void set_streamer_csr(int tempLoop0, int tempLoop1, int tempLoop2,

@@ -145,5 +145,6 @@
             fifo_depth: [2],
         }
 
+        snax_library_name: "streamer-gemm"
     }
 }

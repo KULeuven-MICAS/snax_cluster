@@ -217,5 +217,6 @@
 
         snax_library_name: "data-reshuffler",
 
+        streamer_header_file_path: "data-reshuffler"
     }
 }
