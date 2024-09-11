@@ -180,21 +180,23 @@
             temporal_dim: [6, 3],
             num_channel: [8, 8],
             fifo_depth: [2, 2],
-        }
+        },
 
         data_writer_params:{
             spatial_bounds: [[8]],
             temporal_dim: [3],
             num_channel: [8],
             fifo_depth: [2],
-        }
+        },
 
         data_reader_writer_params:{
             spatial_bounds: [[32], [32]],
             temporal_dim: [3, 3],
             num_channel: [32, 32],
             fifo_depth: [2, 2],
-        }
+        },
+
+        snax_library_name: "streamer-gemm-conv-simd",
     },
     // SNAX Streamer Templates
     snax_data_reshuffler_streamer_template :{
@@ -204,14 +206,16 @@
             temporal_dim: [5],
             num_channel: [8],
             fifo_depth: [2],
-        }
+        },
 
         data_writer_params:{
             spatial_bounds: [[8]],
             temporal_dim: [3],
             num_channel: [8],
             fifo_depth: [2],
-        }
+        },
+
+        snax_library_name: "data-reshuffler",
 
     }
 }
