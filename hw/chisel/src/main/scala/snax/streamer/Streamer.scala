@@ -425,17 +425,21 @@ class Streamer(
     }
   }
 
+}
+
+class StreamerHeaderFile(param: StreamerParam) {
+  
   // --------------------------------------------------------------------------------
   // ------------------ csr address map header file generation-----------------------
   // --------------------------------------------------------------------------------
 
   def genCSRMap(csrBase: Int, param: ReaderWriterParam, tag: String = "") = {
-    var csrMap = "// CSR Mapp for " + tag + "\n"
+    var csrMap = "// CSR Map for " + tag + "\n"
     var csrOffset = csrBase
     // base pointer
-    csrMap = csrMap + "#define BASE_PTR_" + tag + "_0 " + csrOffset + "\n"
+    csrMap = csrMap + "#define BASE_PTR_" + tag + "_Low " + csrOffset + "\n"
     csrOffset = csrOffset + 1
-    csrMap = csrMap + "#define BASE_PTR_" + tag + "_1 " + csrOffset + "\n"
+    csrMap = csrMap + "#define BASE_PTR_" + tag + "_HIGH " + csrOffset + "\n"
     csrOffset = csrOffset + 1
 
     // spatial bounds
@@ -516,12 +520,15 @@ class Streamer(
   }
 
   // start csr
+  csrMap = csrMap + "// Other resgiters\n"
+  csrMap = csrMap + "// Status register\n"
   csrBase = 960 + param.readerParams.map(_.csrNum).sum + param.writerParams
     .map(_.csrNum)
     .sum + param.readerWriterParams.map(_.csrNum).sum
   csrMap = csrMap + "#define STREAMER_START_CSR " + csrBase + "\n"
 
   // streamer busy csr
+  csrMap = csrMap + "// Read only CSRs\n"
   csrBase = csrBase + 1
   csrMap = csrMap + "#define STREAMER_BUSY_CSR " + csrBase + "\n"
 
@@ -531,7 +538,7 @@ class Streamer(
 
   println(csrMap)
 
-  val macro_dir = "../../target/snitch_cluster/generated/header.h"
+  val macro_dir = param.headerFilepath + "/streamer_csr_addr_map.h"
   val macro_template =
     s"""// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
