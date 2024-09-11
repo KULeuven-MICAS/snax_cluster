@@ -444,7 +444,7 @@ class StreamerHeaderFile(param: StreamerParam) {
     var csrMap = "// CSR Map for " + tag + "\n"
     var csrOffset = csrBase
     // base pointer
-    csrMap = csrMap + "#define BASE_PTR_" + tag + "_Low " + csrOffset + "\n"
+    csrMap = csrMap + "#define BASE_PTR_" + tag + "_LOW " + csrOffset + "\n"
     csrOffset = csrOffset + 1
     csrMap = csrMap + "#define BASE_PTR_" + tag + "_HIGH " + csrOffset + "\n"
     csrOffset = csrOffset + 1
