@@ -259,14 +259,14 @@ jobs:
         run: |
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide-xdma.hjson
-      - name: Build Software
-        run: |
-          make -C target/snitch_cluster sw \
-          CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide-xdma.hjson
       - name: Build Hardware
         run: |
           make CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide-xdma.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw \
+          CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide-xdma.hjson
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
