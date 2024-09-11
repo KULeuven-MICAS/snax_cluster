@@ -93,9 +93,9 @@ class Streamer(
   // ---------------------- csr manager instantiation--------------------------------
   // --------------------------------------------------------------------------------
 
-  val reader_csr = param.readerParams.map(_.csrNum).reduce(_ + _)
-  val writer_csr = param.writerParams.map(_.csrNum).reduce(_ + _)
-  val reader_writer_csr = param.readerWriterParams.map(_.csrNum).reduce(_ + _)
+  val reader_csr = param.readerParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+  val writer_csr = param.writerParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+  val reader_writer_csr = param.readerWriterParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
 
   // extra one is the start csr
   val csrNumReadWrite =
@@ -194,13 +194,13 @@ class Streamer(
   // if every data reader/writer is not busy
   streamer_finish := !(reader
     .map(_.io.busy)
-    .reduce(_ || _) || writer
+    .reduceLeftOption(_ || _).getOrElse(0.B) || writer
     .map(_.io.busy)
-    .reduce(_ || _) || reader_writer
+    .reduceLeftOption(_ || _).getOrElse(0.B) || reader_writer
     .map(_.io.readerInterface.busy)
-    .reduce(_ || _) || reader_writer
+    .reduceLeftOption(_ || _).getOrElse(0.B) || reader_writer
     .map(_.io.writerInterface.busy)
-    .reduce(_ || _))
+    .reduceLeftOption(_ || _).getOrElse(0.B))
   dontTouch(streamer_finish)
 
   // --------------------------------------------------------------------------------
@@ -531,7 +531,7 @@ class Streamer(
 
   println(csrMap)
 
-  val macro_dir = "./generated/header.h"
+  val macro_dir = "../../target/snitch_cluster/generated/header.h"
   val macro_template =
     s"""// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
