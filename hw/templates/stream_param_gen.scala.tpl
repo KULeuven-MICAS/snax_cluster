@@ -88,14 +88,22 @@ ${'   ), ' if not loop.last else '    )'}
   )
 % endif
 
+<<<<<<< HEAD
   def headerFilepath = "../../target/snitch_cluster/sw/snax/${cfg["snax_streamer_cfg"]["snax_library_name"]}/include"
+=======
+  def headerFilepath = "../../target/snitch_cluster/generated/"
+>>>>>>> 1ab7222 (tpl: add header directory)
 }
 
 
 object StreamerGen {
   def main(args: Array[String]): Unit = {
     val outPath =
+<<<<<<< HEAD
       args.headOption.getOrElse("../../target/snitch_cluster/generated")
+=======
+      args.headOption.getOrElse("../../target/snitch_cluster/generated/")
+>>>>>>> 1ab7222 (tpl: add header directory)
     emitVerilog(
       new Streamer(
         StreamerParam(
