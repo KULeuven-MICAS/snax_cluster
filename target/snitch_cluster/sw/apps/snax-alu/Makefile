@@ -6,7 +6,7 @@
 
 APP     = snax-alu
 SRCS    = src/snax-alu.c
-INCDIRS = data
+INCDIRS = data src
 
 include ../common.mk
 include ./data/Makefile
