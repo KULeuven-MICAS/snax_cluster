@@ -88,13 +88,14 @@ ${'   ), ' if not loop.last else '    )'}
   )
 % endif
 
+  def headerFilepath = "../../target/snitch_cluster/sw/snax/${cfg["snax_streamer_cfg"]["snax_library_name"]}/include"
 }
 
 
 object StreamerGen {
   def main(args: Array[String]): Unit = {
     val outPath =
-      args.headOption.getOrElse("../../target/snitch_cluster/generated/.")
+      args.headOption.getOrElse("../../target/snitch_cluster/generated")
     emitVerilog(
       new Streamer(
         StreamerParam(
@@ -102,10 +103,26 @@ object StreamerGen {
           writerParams = StreamerParametersGen.writerParams,
           readerWriterParams = StreamerParametersGen.readerWriterParams,
           csrAddrWidth = 32,
-          tagName = "${cfg["tag_name"]}_"
+          tagName = "${cfg["tag_name"]}_",
+          headerFilepath = StreamerParametersGen.headerFilepath
         )
       ),
       Array("--target-dir", outPath)
+    )
+  }
+}
+
+object StreamerHeaderFileGen {
+  def main(args: Array[String]): Unit = {
+    new StreamerHeaderFile(
+      StreamerParam(
+        readerParams = StreamerParametersGen.readerParams,
+        writerParams = StreamerParametersGen.writerParams,
+        readerWriterParams = StreamerParametersGen.readerWriterParams,
+        csrAddrWidth = 32,
+        tagName = "${cfg["tag_name"]}_",
+        headerFilepath = StreamerParametersGen.headerFilepath
+      )
     )
   }
 }
