@@ -201,6 +201,9 @@ def main():
 
     # For generating all bender targets
     if args.get_bender_targets:
+        print("---------------------------------")
+        print("    Extracting bender targets    ")
+        print("---------------------------------")
         def get_bender_targets(cfg):
             targets = []
             # If cfg is dictionary, then first check if it has
@@ -224,11 +227,8 @@ def main():
         print()
         return
 
-    # ---------------------------------------
-    # Generate the accelerator specific wrappers
-    # ---------------------------------------
     print("------------------------------------------------")
-    print("    Generating accelerator specific wrappers")
+    print("    Generating accelerator specific wrappers    ")
     print("------------------------------------------------")
 
     if (args.bypass_accgen == "false"):
@@ -345,6 +345,13 @@ def main():
             gen_chisel_file(
                 chisel_path=args.chisel_path,
                 chisel_param="snax.streamer.StreamerGen",
+                gen_path=rtl_target_path,
+            )
+
+            # Generate headerfile of streamer
+            gen_chisel_file(
+                chisel_path=args.chisel_path,
+                chisel_param="snax.streamer.StreamerHeaderFileGen",
                 gen_path=rtl_target_path,
             )
 
