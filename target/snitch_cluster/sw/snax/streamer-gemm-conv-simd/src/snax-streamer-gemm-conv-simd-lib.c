@@ -5,7 +5,7 @@
 // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
 #include "snax-streamer-gemm-conv-simd-lib.h"
-#include "header.h"
+#include "streamer_csr_addr_map.h"
 #include <stdbool.h>
 #include "snrt.h"
 #include "stdint.h"

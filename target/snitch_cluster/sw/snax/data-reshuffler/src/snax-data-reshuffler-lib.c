@@ -5,6 +5,7 @@
 // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
 #include "snax-data-reshuffler-lib.h"
+#include "streamer_csr_addr_map.h"
 
 // Set STREAMER configuration CSR
 void set_data_reshuffler_csr(int tempLoop0_in, int tempLoop1_in,
