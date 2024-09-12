@@ -5,8 +5,15 @@
 # Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
 APP     = snax-alu
+
+INCDIRS = data
+
+INCDIRS += ../../snax/snax-alu/include
+
+# Include this binary in the final build
+RISCV_LDFLAGS += ../../snax/snax-alu/build/snax-alu-lib.o
+
 SRCS    = src/snax-alu.c
-INCDIRS = data src
 
 include ../common.mk
 include ./data/Makefile
