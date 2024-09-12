@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "snrt.h"
-
+#include "snax-alu-lib.h"
+#include "streamer_csr_addr_map.h"
 #include "data.h"
-#include "snax-csr.h"
 
 int main() {
     // Set err value for checking
@@ -47,49 +47,50 @@ int main() {
         // setting of CSRs for the accelerator
         uint32_t start_csr_setup = snrt_mcycle();
 
-        csrw_ss(BASE_PTR_READER_0_0, (uint64_t)local_a);
-        csrw_ss(BASE_PTR_READER_0_1, 0);
-        csrw_ss(S_STRIDE_READER_0_0, 8);
-        csrw_ss(T_BOUND_READER_0_0, LOOP_ITER);
-        csrw_ss(T_STRIDE_READER_0_0, 32);
+        // Configure streamer settings
+        configure_streamer_a(
+            (uint64_t)local_a,
+            0,
+            8,
+            LOOP_ITER,
+            32
+        );
 
-        csrw_ss(BASE_PTR_READER_1_0, (uint64_t)local_b);
-        csrw_ss(BASE_PTR_READER_1_1, 0);
-        csrw_ss(S_STRIDE_READER_1_0, 8);
-        csrw_ss(T_BOUND_READER_1_0, LOOP_ITER);
-        csrw_ss(T_STRIDE_READER_1_0, 32);
+        configure_streamer_b(
+            (uint64_t)local_b,
+            0,
+            8,
+            LOOP_ITER,
+            32
+        );
 
-        csrw_ss(BASE_PTR_WRITER_0_0, (uint64_t)local_o);
-        csrw_ss(BASE_PTR_WRITER_0_1, 0);
-        csrw_ss(S_STRIDE_WRITER_0_0, 8);
-        csrw_ss(T_BOUND_WRITER_0_0, LOOP_ITER);
-        csrw_ss(T_STRIDE_WRITER_0_0, 32);
+        configure_streamer_o(
+            (uint64_t)local_o,
+            0,
+            8,
+            LOOP_ITER,
+            32
+        );
 
-        //------------------------------
-        // 2nd set the CSRs of the accelerator
-        // 0x3d0 - mode of the ALU (RW)
-        //       - 0 for add, 1 for sub, 2 for mul, 3 for XOR
-        // 0x3d1 - length of data (RW)
-        // 0x3d2 - send configurations to accelerator (RW)
-        // 0x3d3 - busy status (RO)
-        // 0x3d4 - performance counter (RO)
-        //------------------------------
-        csrw_ss(ALU_RW_MODE, MODE);
-        csrw_ss(ALU_RW_DATALEN, LOOP_ITER);
+        // Configure ALU settings
+        configure_alu(
+            MODE,
+            LOOP_ITER
+        );
 
         // Start streamer then start ALU
-        csrw_ss(STREAMER_START_CSR, 1);
-        csrw_ss(ALU_RW_START, 1);
+        start_streamer();
+        start_alu();
 
         // Mark the end of the CSR setup cycles
         uint32_t end_csr_setup = snrt_mcycle();
 
         // Do this to poll the accelerator
-        while (csrr_ss(ALU_RO_BUSY)) {
+        while (read_busy_alu()) {
         };
 
         // Do this to poll the streamer state
-        while (csrr_ss(STREAMER_BUSY_CSR)) {
+        while (read_busy_streamer()) {
         };
 
         // Compare results and check if the
