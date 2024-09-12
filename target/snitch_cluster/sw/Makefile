@@ -15,7 +15,7 @@ else
 RUNTIME = runtime/rtl-generic
 endif
 
-SUBDIRS += math $(RUNTIME) snax/mac snax/hypercorex apps tests
+SUBDIRS += math $(RUNTIME) snax/mac apps tests
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-kul-cluster-mixed-narrow-wide.hjson)
 SUBDIRS += snax/streamer-gemm-conv-simd snax/data-reshuffler
@@ -26,6 +26,10 @@ endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 SUBDIRS += snax/snax-alu
+endif
+
+ifeq (${CFG_OVERRIDE}, cfg/snax-hypercorex.hjson)
+SUBDIRS += snax/hypercorex
 endif
 
 .PHONY: all $(SUBDIRS)
