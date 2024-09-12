@@ -128,7 +128,6 @@ uint32_t hypercorex_read_perf_counter(void) {
     return csrr_ss(STREAMER_PERFORMANCE_COUNTER_CSR);
 };
 
-
 //-------------------------------
 // Instruction loading functions
 //-------------------------------

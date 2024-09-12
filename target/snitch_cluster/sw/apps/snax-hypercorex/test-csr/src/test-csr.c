@@ -15,6 +15,7 @@
 //-------------------------------
 
 #include "snrt.h"
+
 #include "data.h"
 #include "snax-hypercorex-lib.h"
 #include "streamer_csr_addr_map.h"

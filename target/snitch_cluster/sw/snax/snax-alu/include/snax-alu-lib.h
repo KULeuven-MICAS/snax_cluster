@@ -5,6 +5,7 @@
 // Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
 #include "snrt.h"
+
 #include <stdbool.h>
 #include "stdint.h"
 
@@ -38,5 +39,3 @@ void configure_alu(uint32_t mode, uint32_t data_len);
 void start_alu(void);
 
 uint32_t read_busy_alu(void);
-
-
