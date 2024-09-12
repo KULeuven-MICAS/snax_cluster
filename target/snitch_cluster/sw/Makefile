@@ -28,6 +28,10 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 SUBDIRS += snax/snax-alu
 endif
 
+ifeq (${CFG_OVERRIDE}, cfg/snax-hypercorex.hjson)
+SUBDIRS += snax/hypercorex
+endif
+
 .PHONY: all $(SUBDIRS)
 
 all: $(SUBDIRS)
