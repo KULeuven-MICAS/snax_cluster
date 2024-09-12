@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "snrt.h"
+
+#include "data.h"
 #include "snax-alu-lib.h"
 #include "streamer_csr_addr_map.h"
-#include "data.h"
 
 int main() {
     // Set err value for checking
@@ -48,35 +49,14 @@ int main() {
         uint32_t start_csr_setup = snrt_mcycle();
 
         // Configure streamer settings
-        configure_streamer_a(
-            (uint64_t)local_a,
-            0,
-            8,
-            LOOP_ITER,
-            32
-        );
+        configure_streamer_a((uint64_t)local_a, 0, 8, LOOP_ITER, 32);
 
-        configure_streamer_b(
-            (uint64_t)local_b,
-            0,
-            8,
-            LOOP_ITER,
-            32
-        );
+        configure_streamer_b((uint64_t)local_b, 0, 8, LOOP_ITER, 32);
 
-        configure_streamer_o(
-            (uint64_t)local_o,
-            0,
-            8,
-            LOOP_ITER,
-            32
-        );
+        configure_streamer_o((uint64_t)local_o, 0, 8, LOOP_ITER, 32);
 
         // Configure ALU settings
-        configure_alu(
-            MODE,
-            LOOP_ITER
-        );
+        configure_alu(MODE, LOOP_ITER);
 
         // Start streamer then start ALU
         start_streamer();
