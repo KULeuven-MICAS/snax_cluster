@@ -81,13 +81,19 @@ def streamer_csr_num(acc_cfgs):
     # This is the total number of loop dimension registers
     num_loop_dim = 0
     if ("data_reader_params" in acc_cfgs["snax_streamer_cfg"]):
-        num_loop_dim += sum(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["temporal_dim"])
+        num_loop_dim += sum(
+            acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["temporal_dim"]
+            )
 
     if ("data_writer_params" in acc_cfgs["snax_streamer_cfg"]):
-        num_loop_dim += sum(acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["temporal_dim"])
+        num_loop_dim += sum(
+            acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["temporal_dim"]
+            )
 
     if ("data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]):
-        num_loop_dim += sum(acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["temporal_dim"])
+        num_loop_dim += sum(
+            acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["temporal_dim"]
+            )
 
     # Calculation of data movers
     num_data_reader = 0
@@ -116,11 +122,11 @@ def streamer_csr_num(acc_cfgs):
 
     streamer_csr_num = (
             # Total temporal loop dimensions and strides
-        2 * num_loop_dim + \
+            2 * num_loop_dim + \
             # Number of spatial strides
             num_data_mover + \
             # Number of base pointers
-        2 * num_data_mover + \
+            2 * num_data_mover + \
             # Start register
             1 + \
             # Performance counter
@@ -276,7 +282,7 @@ def main():
                 file_name=file_name,
             )
 
-            #CSR manager scala parameter generation
+            # CSR manager scala parameter generation
             if not acc_cfgs[i].get("snax_disable_csr_manager", False):
                 chisel_target_path = args.chisel_path + \
                     "src/main/scala/snax/csr_manager/"

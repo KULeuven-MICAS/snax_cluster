@@ -145,5 +145,6 @@
             fifo_depth: [8],
         },
 
+        snax_library_name: "snax-alu",
     }
 }
