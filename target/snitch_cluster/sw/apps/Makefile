@@ -26,8 +26,10 @@ SUBDIRS += snax-mac-simple/untiled
 SUBDIRS += snax-mac-simple/tiled
 SUBDIRS += snax-mac-mult
 SUBDIRS += snax-alu
+ifeq ($(CFG_OVERRIDE), cfg/snax-kul-cluster-mixed-narrow-wide.hjson)
 SUBDIRS += snax-data-reshuffler
 SUBDIRS += snax-streamer-gemm-conv-simd
+endif
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-maxpool
 SUBDIRS += snax-multi-cluster-playground
