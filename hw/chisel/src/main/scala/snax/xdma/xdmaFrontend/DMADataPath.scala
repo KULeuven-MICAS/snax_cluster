@@ -15,11 +15,8 @@ import snax.readerWriter.{
   Writer,
   ReaderWriterParam
 }
-import snax.readerWriter._
 import snax.xdma.DesignParams._
-
-import snax.xdma.xdmaExtension._
-import dataclass.data
+import snax.DataPathExtension._
 
 // The ReaderWriterCfg Class that used for interface between local Datapath and DMA Ctrl
 // The length of addresses is the short version, which is just enough to reside TCDM

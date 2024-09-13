@@ -7,8 +7,8 @@ import snax.csr_manager._
 import snax.utils._
 
 import snax.readerWriter.ReaderWriterParam
+import snax.DataPathExtension._
 import snax.xdma.xdmaFrontend._
-import snax.xdma.xdmaExtension._
 import snax.xdma.DesignParams._
 import os.write
 

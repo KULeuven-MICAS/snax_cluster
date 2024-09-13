@@ -3,7 +3,8 @@ package snax.xdma.DesignParams
 import chisel3.util.log2Up
 import chisel3.util.log2Ceil
 import snax.readerWriter.ReaderWriterParam
-import snax.xdma.xdmaExtension._
+import snax.DataPathExtension.HasDataPathExtension
+import snax.DataPathExtension.HasDataPathExtension
 
 /*
  *  This is the collection of all design Params

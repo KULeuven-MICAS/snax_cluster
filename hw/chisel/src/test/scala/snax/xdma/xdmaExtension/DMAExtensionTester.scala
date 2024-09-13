@@ -12,6 +12,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import chiseltest._
 
 import scala.util.Random
+import snax.DataPathExtension.HasDataPathExtension
 
 /** The parent (abstract) Class for the DMA Extension Testbench It includes two
   * things: 1) A Testharness to wrap the extension 2) A Testbench to emulate

@@ -1,4 +1,4 @@
-package snax.xdma.xdmaExtension
+package snax.DataPathExtension
 
 import chisel3._
 import chisel3.util._
