@@ -5,8 +5,10 @@ import snax.utils._
 import chisel3._
 import chisel3.util._
 
-class Writer(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_cluster")
-    extends Module
+class Writer(
+    param: ReaderWriterParam,
+    moduleNamePrefix: String = "unnamed_cluster"
+) extends Module
     with RequireAsyncReset {
 
   override val desiredName = s"${moduleNamePrefix}_Writer"

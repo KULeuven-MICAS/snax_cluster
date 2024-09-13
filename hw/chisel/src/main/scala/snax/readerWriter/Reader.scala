@@ -7,8 +7,10 @@ import chisel3.util._
 
 // The reader takes the address from the AGU, offer to requestor, and responser collect the data from TCDM and pushed to FIFO packer to recombine into 512 bit data
 
-class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_cluster")
-    extends Module
+class Reader(
+    param: ReaderWriterParam,
+    moduleNamePrefix: String = "unnamed_cluster"
+) extends Module
     with RequireAsyncReset {
 
   override val desiredName = s"${moduleNamePrefix}_Reader"
