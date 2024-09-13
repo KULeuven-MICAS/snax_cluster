@@ -336,7 +336,7 @@ sources:
   - target: dimc
     files:
       # Level 0
-      - target/snitch_cluster/generated/snax_dimc/snax_dimc_streamer_StreamerTop.sv
+      - target/snitch_cluster/generated/snax_dimc/snax_dimc_Streamer.sv
       # Level 1
       # TODO: implement this wrapepr file
       - hw/snax_dimc/snax_dimc_shell_wrapper.sv
