@@ -206,7 +206,7 @@ object xdmaTopGen extends App {
     .foreach(i => {
       writerextensionparam = writerextensionparam :+ toolbox
         .compile(toolbox.parse(s"""
-import snax.xdma.xdmaExtension._
+import snax.DataPathExtension._
 return ${i._1}
       """))()
         .asInstanceOf[HasDataPathExtension]
