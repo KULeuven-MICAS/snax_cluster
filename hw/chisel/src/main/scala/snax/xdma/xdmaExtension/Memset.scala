@@ -4,8 +4,8 @@ import chisel3._
 import chisel3.util._
 import snax.xdma.DesignParams._
 
-object HasMemset extends HasDMAExtension {
-  implicit val extensionParam: DMAExtensionParam = new DMAExtensionParam(
+object HasMemset extends HasDatapathExtension {
+  implicit val extensionParam: DatapathExtensionParam = new DatapathExtensionParam(
     moduleName = "Memset",
     userCsrNum = 1,
     dataWidth = 512
@@ -15,8 +15,8 @@ object HasMemset extends HasDMAExtension {
   })
 }
 
-class Memset()(implicit extensionParam: DMAExtensionParam)
-    extends DMAExtension {
+class Memset()(implicit extensionParam: DatapathExtensionParam)
+    extends DataPathExtension {
   val out = WireInit(
     VecInit(Seq.fill(extensionParam.dataWidth / 8)(ext_csr_i(0)(7, 0)))
   )
@@ -30,7 +30,7 @@ object MemsetEmitter extends App {
   println(
     getVerilogString(
       new Memset()(
-        new DMAExtensionParam(
+        new DatapathExtensionParam(
           moduleName = "Memset",
           userCsrNum = 1,
           dataWidth = 512

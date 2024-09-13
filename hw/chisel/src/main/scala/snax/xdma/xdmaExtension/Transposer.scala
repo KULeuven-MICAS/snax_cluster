@@ -4,8 +4,8 @@ import chisel3._
 import chisel3.util._
 import snax.xdma.DesignParams._
 
-object HasTransposer extends HasDMAExtension {
-  implicit val extensionParam: DMAExtensionParam = new DMAExtensionParam(
+object HasTransposer extends HasDatapathExtension {
+  implicit val extensionParam: DatapathExtensionParam = new DatapathExtensionParam(
     moduleName = "Transposer",
     userCsrNum = 0,
     dataWidth = 512
@@ -16,8 +16,8 @@ object HasTransposer extends HasDMAExtension {
   })
 }
 
-class Transposer()(implicit extensionParam: DMAExtensionParam)
-    extends DMAExtension {
+class Transposer()(implicit extensionParam: DatapathExtensionParam)
+    extends DataPathExtension {
 
   require(
     extensionParam.dataWidth == 512 && 512 == extensionParam.dataWidth,
@@ -45,7 +45,7 @@ object TransposerEmitter extends App {
   println(
     getVerilogString(
       new Transposer()(
-        extensionParam = new DMAExtensionParam(
+        extensionParam = new DatapathExtensionParam(
           moduleName = "Transposer",
           userCsrNum = 1,
           dataWidth = 512

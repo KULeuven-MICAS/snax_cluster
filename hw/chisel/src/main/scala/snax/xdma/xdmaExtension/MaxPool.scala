@@ -26,8 +26,8 @@ class MAXPoolPE(dataWidth: Int) extends Module with RequireAsyncReset {
   io.data_o := tempValue
 }
 
-object HasMaxPool extends HasDMAExtension {
-  implicit val extensionParam: DMAExtensionParam = new DMAExtensionParam(
+object HasMaxPool extends HasDatapathExtension {
+  implicit val extensionParam: DatapathExtensionParam = new DatapathExtensionParam(
     moduleName = "MaxPool",
     userCsrNum = 1,
     dataWidth = 512
@@ -39,8 +39,8 @@ object HasMaxPool extends HasDMAExtension {
   )
 }
 
-class MaxPool(elementWidth: Int)(implicit extensionParam: DMAExtensionParam)
-    extends DMAExtension {
+class MaxPool(elementWidth: Int)(implicit extensionParam: DatapathExtensionParam)
+    extends DataPathExtension {
   require(extensionParam.dataWidth % elementWidth == 0)
 
   // Counter to record the steps

@@ -187,8 +187,8 @@ object xdmaTopGen extends App {
     configurableChannel = true,
     configurableByteMask = true
   )
-  var readerextensionparam = Seq[HasDMAExtension]()
-  var writerextensionparam = Seq[HasDMAExtension]()
+  var readerextensionparam = Seq[HasDatapathExtension]()
+  var writerextensionparam = Seq[HasDatapathExtension]()
 
   // The following complex code is to dynamically load the extension modules
   // The target is that: 1) the sequence of the extension can be specified by the user 2) users can add their own extensions in the minimal effort (Does not need to modify the generation code)
@@ -209,7 +209,7 @@ object xdmaTopGen extends App {
 import snax.xdma.xdmaExtension._
 return ${i._1}
       """))()
-        .asInstanceOf[HasDMAExtension]
+        .asInstanceOf[HasDatapathExtension]
     })
 
   // Generation of the hardware

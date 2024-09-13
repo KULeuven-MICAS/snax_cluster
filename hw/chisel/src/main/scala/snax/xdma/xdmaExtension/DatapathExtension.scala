@@ -15,26 +15,25 @@ import snax.xdma.DesignParams._
   * Usage:
   *
   * 1) For every custom extension "CustomExtension", an object
-  * "HasCustomExtension" should be declared, extending from HasDMAExtension.
+  * "HasCustomExtension" should be declared, extending from HasDatapathExtension.
   *
-  * 2) @extensionParam, or basic parameters consumed by DMAExtension parent
+  * 2) @extensionParam, or basic parameters consumed by DatapathExtension parent
   * class needs to be provided.
   *
   * 3) The instantiate method of the module needs to be provided.
   */
 
-abstract class HasDMAExtension {
-  implicit val extensionParam: DMAExtensionParam
+abstract class HasDatapathExtension {
+  implicit val extensionParam: DatapathExtensionParam
 
-  def totalCsrNum = extensionParam.userCsrNum
   def namePostfix = "_xdma_extension_" + extensionParam.moduleName
-  def instantiate(clusterName: String): DMAExtension
+  def instantiate(clusterName: String): DataPathExtension
 }
 
 /** The parent (abstract) Class for the DMA Extension Implementation (Circuit)
   * All classes need to extends from this parent class like below: class
-  * CustomModule(userParams)(implicit extensionParam: DMAExtensionParam) extends
-  * DMAExtension Inside the body of CustomModule, the following thing must be
+  * CustomModule(userParams)(implicit extensionParam: DatapathExtensionParam) extends
+  * DatapathExtension Inside the body of CustomModule, the following thing must be
   * done:
   *
   * 1) Connect ext_data_i to your module's datapath input: ext_data_i <>
@@ -53,7 +52,7 @@ abstract class HasDMAExtension {
   * when there is data under processing.
   */
 
-abstract class DMAExtension(implicit extensionParam: DMAExtensionParam)
+abstract class DataPathExtension(implicit extensionParam: DatapathExtensionParam)
     extends Module
     with RequireAsyncReset {
 
@@ -153,7 +152,7 @@ abstract class DMAExtension(implicit extensionParam: DMAExtensionParam)
   * Several reminders for developers:
   *
   * 1> Two parameters is provided by XDMA generator: userCsrNum and dataWidth,
-  * which is user-definable in HasDMAExtension class.
+  * which is user-definable in HasDatapathExtension class.
   *
   * 2> rst_ni is the active low asynchronous reset signal.
   *
@@ -165,11 +164,11 @@ abstract class DMAExtension(implicit extensionParam: DMAExtensionParam)
   *
   * 2) After the writing of the SystemVerilog module, give Chisel generator the
   * method to integrate the SystemVerilog module. This is done by the
-  * declaration of HasDMAExtension object. (Take a llok at example in
+  * declaration of HasDatapathExtension object. (Take a llok at example in
   * VerilogMemset.scala)
   *
   * 3) The instantiate method should be provided, with a new
-  * SystemVerilogDMAExtension class.This class need two parameters: topmodule
+  * SystemVerilogDatapathExtension class.This class need two parameters: topmodule
   * and filelist. The topmodule is the name of the SystemVerilog module (very
   * similar to defining the top module in the backend flow), and the filelist is
   * the list of SystemVerilog files that are needed to be integrated. 4) The
@@ -178,9 +177,9 @@ abstract class DMAExtension(implicit extensionParam: DMAExtensionParam)
   * to put it in the src/main/systemverilog folder for the management purpose.
   */
 
-class SystemVerilogDMAExtension(topmodule: String, filelist: Seq[String])(
-    implicit extensionParam: DMAExtensionParam
-) extends DMAExtension {
+class SystemVerilogDatapathExtension(topmodule: String, filelist: Seq[String])(
+    implicit extensionParam: DatapathExtensionParam
+) extends DataPathExtension {
 
   val sv_module = Module(
     new BlackBox(
