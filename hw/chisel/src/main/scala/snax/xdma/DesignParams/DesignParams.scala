@@ -20,10 +20,10 @@ class AXIParam(
 class DMADataPathParam(
     val axiParam: AXIParam,
     val rwParam: ReaderWriterParam,
-    val extParam: Seq[HasDatapathExtension] = Seq[HasDatapathExtension]()
+    val extParam: Seq[HasDataPathExtension] = Seq[HasDataPathExtension]()
 )
 
-class DatapathExtensionParam(
+class DataPathExtensionParam(
     val moduleName: String,
     val userCsrNum: Int,
     val dataWidth: Int = 512
@@ -35,6 +35,6 @@ class DatapathExtensionParam(
 class DMACtrlParam(
     val readerparam: ReaderWriterParam,
     val writerparam: ReaderWriterParam,
-    val readerextparam: Seq[DatapathExtensionParam] = Seq[DatapathExtensionParam](),
-    val writerextparam: Seq[DatapathExtensionParam] = Seq[DatapathExtensionParam]()
+    val readerextparam: Seq[DataPathExtensionParam] = Seq[DataPathExtensionParam](),
+    val writerextparam: Seq[DataPathExtensionParam] = Seq[DataPathExtensionParam]()
 )

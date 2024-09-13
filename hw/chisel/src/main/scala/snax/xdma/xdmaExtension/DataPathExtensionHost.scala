@@ -4,8 +4,8 @@ import chisel3._
 import chisel3.util._
 import snax.utils.DecoupledCut._
 
-class DatapathExtensionHostIO(
-    extensionList: Seq[HasDatapathExtension],
+class DataPathExtensionHostIO(
+    extensionList: Seq[HasDataPathExtension],
     dataWidth: Int = 512
 ) extends Bundle {
   val data = new Bundle {
@@ -41,13 +41,13 @@ class DatapathExtensionHostIO(
   }
 }
 
-class DatapathExtensionHost(
-    extensionList: Seq[HasDatapathExtension],
+class DataPathExtensionHost(
+    extensionList: Seq[HasDataPathExtension],
     dataWidth: Int = 512,
     moduleNamePrefix: String = "unnamed_cluster"
 ) extends Module {
-  override def desiredName = s"${moduleNamePrefix}_DatapathExtensionHost"
-  val io = IO(new DatapathExtensionHostIO(extensionList, dataWidth = dataWidth))
+  override def desiredName = s"${moduleNamePrefix}_DataPathExtensionHost"
+  val io = IO(new DataPathExtensionHostIO(extensionList, dataWidth = dataWidth))
 
   if (extensionList.isEmpty) {
     io.data.out <> io.data.in

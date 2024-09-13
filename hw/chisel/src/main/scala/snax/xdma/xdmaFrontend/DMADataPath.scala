@@ -224,7 +224,7 @@ class DMADataPath(
   val readerDataAfterExtension = Wire(chiselTypeOf(reader.io.data))
 
   val readerExtensions = Module(
-    new DatapathExtensionHost(
+    new DataPathExtensionHost(
       readerparam.extParam,
       dataWidth =
         readerparam.rwParam.tcdmParam.dataWidth * readerparam.rwParam.tcdmParam.numChannel,
@@ -241,7 +241,7 @@ class DMADataPath(
   val writerDataBeforeExtension = Wire(chiselTypeOf(writer.io.data))
 
   val writerExtensions = Module(
-    new DatapathExtensionHost(
+    new DataPathExtensionHost(
       writerparam.extParam,
       dataWidth =
         writerparam.rwParam.tcdmParam.dataWidth * writerparam.rwParam.tcdmParam.numChannel,

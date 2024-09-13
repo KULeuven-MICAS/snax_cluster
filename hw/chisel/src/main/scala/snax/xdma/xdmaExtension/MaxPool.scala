@@ -26,8 +26,8 @@ class MAXPoolPE(dataWidth: Int) extends Module with RequireAsyncReset {
   io.data_o := tempValue
 }
 
-object HasMaxPool extends HasDatapathExtension {
-  implicit val extensionParam: DatapathExtensionParam = new DatapathExtensionParam(
+object HasMaxPool extends HasDataPathExtension {
+  implicit val extensionParam: DataPathExtensionParam = new DataPathExtensionParam(
     moduleName = "MaxPool",
     userCsrNum = 1,
     dataWidth = 512
@@ -39,7 +39,7 @@ object HasMaxPool extends HasDatapathExtension {
   )
 }
 
-class MaxPool(elementWidth: Int)(implicit extensionParam: DatapathExtensionParam)
+class MaxPool(elementWidth: Int)(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
   require(extensionParam.dataWidth % elementWidth == 0)
 
