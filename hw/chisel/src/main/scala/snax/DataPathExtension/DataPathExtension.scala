@@ -15,7 +15,8 @@ import snax.xdma.DesignParams._
   * Usage:
   *
   * 1) For every custom extension "CustomExtension", an object
-  * "HasCustomExtension" should be declared, extending from HasDataPathExtension.
+  * "HasCustomExtension" should be declared, extending from
+  * HasDataPathExtension.
   *
   * 2) @extensionParam, or basic parameters consumed by DataPathExtension parent
   * class needs to be provided.
@@ -32,9 +33,9 @@ abstract class HasDataPathExtension {
 
 /** The parent (abstract) Class for the DMA Extension Implementation (Circuit)
   * All classes need to extends from this parent class like below: class
-  * CustomModule(userParams)(implicit extensionParam: DataPathExtensionParam) extends
-  * DataPathExtension Inside the body of CustomModule, the following thing must be
-  * done:
+  * CustomModule(userParams)(implicit extensionParam: DataPathExtensionParam)
+  * extends DataPathExtension Inside the body of CustomModule, the following
+  * thing must be done:
   *
   * 1) Connect ext_data_i to your module's datapath input: ext_data_i <>
   * userDefinedInput.
@@ -52,8 +53,9 @@ abstract class HasDataPathExtension {
   * when there is data under processing.
   */
 
-abstract class DataPathExtension(implicit extensionParam: DataPathExtensionParam)
-    extends Module
+abstract class DataPathExtension(implicit
+    extensionParam: DataPathExtensionParam
+) extends Module
     with RequireAsyncReset {
 
   val io = IO(new Bundle {
@@ -168,13 +170,14 @@ abstract class DataPathExtension(implicit extensionParam: DataPathExtensionParam
   * VerilogMemset.scala)
   *
   * 3) The instantiate method should be provided, with a new
-  * SystemVerilogDataPathExtension class.This class need two parameters: topmodule
-  * and filelist. The topmodule is the name of the SystemVerilog module (very
-  * similar to defining the top module in the backend flow), and the filelist is
-  * the list of SystemVerilog files that are needed to be integrated. 4) The
-  * location of SystemVerilog file doesn't matter. Because Chisel will include
-  * all the code you write inside the body of XDMA. However, it is recommended
-  * to put it in the src/main/systemverilog folder for the management purpose.
+  * SystemVerilogDataPathExtension class.This class need two parameters:
+  * topmodule and filelist. The topmodule is the name of the SystemVerilog
+  * module (very similar to defining the top module in the backend flow), and
+  * the filelist is the list of SystemVerilog files that are needed to be
+  * integrated. 4) The location of SystemVerilog file doesn't matter. Because
+  * Chisel will include all the code you write inside the body of XDMA. However,
+  * it is recommended to put it in the src/main/systemverilog folder for the
+  * management purpose.
   */
 
 class SystemVerilogDataPathExtension(topmodule: String, filelist: Seq[String])(

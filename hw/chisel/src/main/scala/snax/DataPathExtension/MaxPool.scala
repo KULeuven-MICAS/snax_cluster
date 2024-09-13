@@ -27,11 +27,12 @@ class MAXPoolPE(dataWidth: Int) extends Module with RequireAsyncReset {
 }
 
 object HasMaxPool extends HasDataPathExtension {
-  implicit val extensionParam: DataPathExtensionParam = new DataPathExtensionParam(
-    moduleName = "MaxPool",
-    userCsrNum = 1,
-    dataWidth = 512
-  )
+  implicit val extensionParam: DataPathExtensionParam =
+    new DataPathExtensionParam(
+      moduleName = "MaxPool",
+      userCsrNum = 1,
+      dataWidth = 512
+    )
   def instantiate(clusterName: String): MaxPool = Module(
     new MaxPool(elementWidth = 8) {
       override def desiredName = clusterName + namePostfix
@@ -39,8 +40,9 @@ object HasMaxPool extends HasDataPathExtension {
   )
 }
 
-class MaxPool(elementWidth: Int)(implicit extensionParam: DataPathExtensionParam)
-    extends DataPathExtension {
+class MaxPool(elementWidth: Int)(implicit
+    extensionParam: DataPathExtensionParam
+) extends DataPathExtension {
   require(extensionParam.dataWidth % elementWidth == 0)
 
   // Counter to record the steps

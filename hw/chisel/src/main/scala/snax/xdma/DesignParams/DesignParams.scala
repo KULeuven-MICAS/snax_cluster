@@ -36,6 +36,8 @@ class DataPathExtensionParam(
 class DMACtrlParam(
     val readerparam: ReaderWriterParam,
     val writerparam: ReaderWriterParam,
-    val readerextparam: Seq[DataPathExtensionParam] = Seq[DataPathExtensionParam](),
-    val writerextparam: Seq[DataPathExtensionParam] = Seq[DataPathExtensionParam]()
+    val readerextparam: Seq[DataPathExtensionParam] =
+      Seq[DataPathExtensionParam](),
+    val writerextparam: Seq[DataPathExtensionParam] =
+      Seq[DataPathExtensionParam]()
 )

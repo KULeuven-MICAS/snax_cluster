@@ -5,11 +5,12 @@ import chisel3.util._
 import snax.xdma.DesignParams._
 
 object HasTransposer extends HasDataPathExtension {
-  implicit val extensionParam: DataPathExtensionParam = new DataPathExtensionParam(
-    moduleName = "Transposer",
-    userCsrNum = 0,
-    dataWidth = 512
-  )
+  implicit val extensionParam: DataPathExtensionParam =
+    new DataPathExtensionParam(
+      moduleName = "Transposer",
+      userCsrNum = 0,
+      dataWidth = 512
+    )
 
   def instantiate(clusterName: String): Transposer = Module(new Transposer {
     override def desiredName = clusterName + namePostfix

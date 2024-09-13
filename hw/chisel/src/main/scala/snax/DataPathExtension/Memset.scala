@@ -5,11 +5,12 @@ import chisel3.util._
 import snax.xdma.DesignParams._
 
 object HasMemset extends HasDataPathExtension {
-  implicit val extensionParam: DataPathExtensionParam = new DataPathExtensionParam(
-    moduleName = "Memset",
-    userCsrNum = 1,
-    dataWidth = 512
-  )
+  implicit val extensionParam: DataPathExtensionParam =
+    new DataPathExtensionParam(
+      moduleName = "Memset",
+      userCsrNum = 1,
+      dataWidth = 512
+    )
   def instantiate(clusterName: String): Memset = Module(new Memset {
     override def desiredName = clusterName + namePostfix
   })
