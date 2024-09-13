@@ -11,11 +11,11 @@ import chisel3.util._
 class ReaderWriter(
     readerParam: ReaderWriterParam,
     writerParam: ReaderWriterParam,
-    clusterName: String = "unnamed_cluster"
+    moduleNamePrefix: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
 
-  override val desiredName = s"${clusterName}_ReaderWriter"
+  override val desiredName = s"${moduleNamePrefix}_ReaderWriter"
 
   val io = IO(new ReaderWriterIO(readerParam, writerParam))
 
@@ -23,7 +23,7 @@ class ReaderWriter(
   val reader = Module(
     new Reader(
       readerParam,
-      clusterName = s"${clusterName}_RWReader"
+      moduleNamePrefix = s"${moduleNamePrefix}_RWReader"
     )
   )
 
@@ -38,7 +38,7 @@ class ReaderWriter(
   val writer = Module(
     new Writer(
       writerParam,
-      clusterName = s"${clusterName}_RWWriter"
+      moduleNamePrefix = s"${moduleNamePrefix}_RWWriter"
     )
   )
 

@@ -7,11 +7,11 @@ import chisel3.util._
 
 // The reader takes the address from the AGU, offer to requestor, and responser collect the data from TCDM and pushed to FIFO packer to recombine into 512 bit data
 
-class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
+class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_cluster")
     extends Module
     with RequireAsyncReset {
 
-  override val desiredName = s"${clusterName}_Reader"
+  override val desiredName = s"${moduleNamePrefix}_Reader"
 
   require(
     param.configurableByteMask == false,
@@ -24,7 +24,7 @@ class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
   val addressgen = Module(
     new AddressGenUnit(
       param.aguParam,
-      module_name_prefix = s"${clusterName}_Reader"
+      moduleNamePrefix = s"${moduleNamePrefix}_Reader"
     )
   )
 
@@ -35,7 +35,7 @@ class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
       tcdmAddressWidth = param.tcdmParam.addrWidth,
       numChannel = param.tcdmParam.numChannel,
       isReader = true,
-      module_name_prefix = s"${clusterName}_Reader"
+      moduleNamePrefix = s"${moduleNamePrefix}_Reader"
     )
   )
 
@@ -44,7 +44,7 @@ class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
     new DataResponsers(
       tcdmDataWidth = param.tcdmParam.dataWidth,
       numChannel = param.tcdmParam.numChannel,
-      module_name_prefix = s"${clusterName}_Reader"
+      moduleNamePrefix = s"${moduleNamePrefix}_Reader"
     )
   )
 
@@ -55,7 +55,7 @@ class Reader(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
       outputWidth = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
       depth = param.bufferDepth
     ) {
-      override val desiredName = s"${clusterName}_Reader_DataBuffer"
+      override val desiredName = s"${moduleNamePrefix}_Reader_DataBuffer"
     }
   )
 

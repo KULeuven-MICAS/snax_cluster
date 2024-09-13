@@ -195,10 +195,10 @@ class DMADataPath(
   })
 
   val reader = Module(
-    new Reader(readerparam.rwParam, clusterName = clusterName)
+    new Reader(readerparam.rwParam, moduleNamePrefix = clusterName)
   )
   val i_writer = Module(
-    new Writer(writerparam.rwParam, clusterName = clusterName)
+    new Writer(writerparam.rwParam, moduleNamePrefix = clusterName)
   )
 
   // Connect TCDM memory to reader and writer

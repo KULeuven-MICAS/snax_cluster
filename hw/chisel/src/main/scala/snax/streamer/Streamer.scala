@@ -125,7 +125,7 @@ class Streamer(
     Module(
       new Reader(
         param.readerParams(i),
-        param.tagName
+        param.tagName + "_C" + i.toString()
       )
     )
   }: _*)
@@ -136,7 +136,7 @@ class Streamer(
     Module(
       new Writer(
         param.writerParams(i),
-        param.tagName
+        param.tagName + "_C" + i.toString()
       )
     )
   }: _*)
@@ -147,7 +147,7 @@ class Streamer(
       new ReaderWriter(
         param.readerWriterParams(i / 2),
         param.readerWriterParams(i / 2 + 1),
-        param.tagName
+        param.tagName + "_C" + i.toString()
       )
     )
   }: _*)

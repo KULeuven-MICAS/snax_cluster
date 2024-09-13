@@ -5,11 +5,11 @@ import snax.utils._
 import chisel3._
 import chisel3.util._
 
-class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
+class Writer(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_cluster")
     extends Module
     with RequireAsyncReset {
 
-  override val desiredName = s"${clusterName}_Writer"
+  override val desiredName = s"${moduleNamePrefix}_Writer"
 
   val io = IO(new WriterIO(param))
 
@@ -17,7 +17,7 @@ class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
   val addressgen = Module(
     new AddressGenUnit(
       param.aguParam,
-      module_name_prefix = s"${clusterName}_Writer"
+      moduleNamePrefix = s"${moduleNamePrefix}_Writer"
     )
   )
 
@@ -29,7 +29,7 @@ class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
       tcdmAddressWidth = param.tcdmParam.addrWidth,
       numChannel = param.tcdmParam.numChannel,
       isReader = false,
-      module_name_prefix = s"${clusterName}_Writer"
+      moduleNamePrefix = s"${moduleNamePrefix}_Writer"
     )
   )
 
@@ -39,7 +39,7 @@ class Writer(param: ReaderWriterParam, clusterName: String = "unnamed_cluster")
       outputWidth = param.tcdmParam.dataWidth,
       depth = param.bufferDepth
     ) {
-      override val desiredName = s"${clusterName}_Writer_DataBuffer"
+      override val desiredName = s"${moduleNamePrefix}_Writer_DataBuffer"
     }
   )
 

@@ -154,7 +154,7 @@ class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
   */
 class AddressGenUnit(
     param: AddressGenUnitParam,
-    module_name_prefix: String = "unnamed_cluster"
+    moduleNamePrefix: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
   val io = IO(new Bundle {
@@ -178,14 +178,14 @@ class AddressGenUnit(
     )
   }
 
-  override val desiredName = s"${module_name_prefix}_AddressGenUnitNoMulDiv"
+  override val desiredName = s"${moduleNamePrefix}_AddressGenUnit"
 
   // Create counters for each dimension
   val counters = for (i <- 0 until param.temporalDimension) yield {
     val counter = Module(
       new ProgrammableCounter(param.addressWidth, hasCeil = true) {
         override val desiredName =
-          s"${module_name_prefix}_AddressGenUnitNoMulDiv_Counter_${i}"
+          s"${moduleNamePrefix}_AddressGenUnit_Counter_${i}"
       }
     )
     counter.io.reset := io.start
@@ -202,7 +202,7 @@ class AddressGenUnit(
       outputWidth = io.addr.head.bits.getWidth,
       depth = param.outputBufferDepth
     ) {
-      override val desiredName = s"${module_name_prefix}_AddressBufferFIFO"
+      override val desiredName = s"${moduleNamePrefix}_AddressBufferFIFO"
     }
   )
 

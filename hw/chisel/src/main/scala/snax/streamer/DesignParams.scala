@@ -20,7 +20,7 @@ class StreamerParam(
 
     // csr manager params
     val csrAddrWidth: Int,
-    val tagName: String = "Test_",
+    val tagName: String = "Test",
     val headerFilepath: String = "./generated/"
 ) {
 
