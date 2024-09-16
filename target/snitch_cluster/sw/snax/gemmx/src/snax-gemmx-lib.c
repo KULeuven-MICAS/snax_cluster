@@ -4,9 +4,9 @@
 //
 // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
-#include "snax-gemmx-params.h"
 #include "snax-gemmx-lib.h"
 #include <stdbool.h>
+#include "snax-gemmx-params.h"
 #include "snrt.h"
 #include "stdint.h"
 #include "streamer_csr_addr_map.h"
