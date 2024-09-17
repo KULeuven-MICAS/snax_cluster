@@ -60,8 +60,8 @@ GENERATED_DIR     ?= $(MKFILE_DIR)generated
 #  Default Values  #
 ####################
 BYPASS_ACCGEN ?= false
-DISABLE_HEADER_GEN = false
-SNAX_CHISEL_ACC_GEN = false
+DISABLE_HEADER_GEN ?= false
+SNAX_CHISEL_ACC_GEN ?= false
 CSRMAN_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/csr_manager/CsrManParamGen.scala
 STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamParamGen.scala
 
