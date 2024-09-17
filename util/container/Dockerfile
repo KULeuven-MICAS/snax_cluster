@@ -142,15 +142,15 @@ CMD ["zsh"]
 # Default systems
 FROM base as snax-mac
 
-WORKDIR /snax_cluster/
-RUN ls
-RUN sbt package && \
+COPY . /src/
+RUN cd /src && sbt package && \
+    cd /src && \
     make DEBUG=ON sw -j$(nproc) \
     -C target/snitch_cluster \
     SELECT_TOOLCHAIN=llvm-generic \
     SELECT_RUNTIME=rtl-generic \
     CFG_OVERRIDE=cfg/snax-mac.hjson && \
-    cd /snax_cluster && \
+    cd /src && \
     make -C target/snitch_cluster rtl-gen \
     CFG_OVERRIDE=cfg/snax-mac.hjson && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
@@ -158,15 +158,15 @@ RUN sbt package && \
 
 FROM base as snax-alu
 
-WORKDIR /snax_cluster/
-RUN ls
-RUN sbt package && \
+COPY . /src/
+RUN cd /src && sbt package && \
+    cd /src && \
     make DEBUG=ON sw -j$(nproc) \
     -C target/snitch_cluster \
     SELECT_TOOLCHAIN=llvm-generic \
     SELECT_RUNTIME=rtl-generic \
     CFG_OVERRIDE=cfg/snax-alu.hjson && \
-    cd /snax_cluster && \
+    cd /src && \
     make -C target/snitch_cluster rtl-gen \
     CFG_OVERRIDE=cfg/snax-alu.hjson && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
@@ -174,14 +174,15 @@ RUN sbt package && \
 
 FROM base as snax-streamer-gemm
 
-WORKDIR /snax_cluster/
-RUN sbt package && \
+COPY . /src/
+RUN cd /src && sbt package && \
+    cd /src && \
     make DEBUG=ON sw -j$(nproc) \
     -C target/snitch_cluster \
     SELECT_TOOLCHAIN=llvm-generic \
     SELECT_RUNTIME=rtl-generic \
     CFG_OVERRIDE=cfg/snax-streamer-gemm.hjson && \
-    cd /snax_cluster && \
+    cd /src && \
     make -C target/snitch_cluster rtl-gen \
     CFG_OVERRIDE=cfg/snax-streamer-gemm.hjson && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
@@ -190,15 +191,15 @@ RUN sbt package && \
 
 FROM base as snax-streamer-gemm-add-c
 
-WORKDIR /snax_cluster/
-RUN ls
-RUN sbt package && \
+COPY . /src/
+RUN cd /src && sbt package && \
+    cd /src && \
     make DEBUG=ON sw -j$(nproc) \
     -C target/snitch_cluster \
     SELECT_TOOLCHAIN=llvm-generic \
     SELECT_RUNTIME=rtl-generic \
     CFG_OVERRIDE=cfg/snax-streamer-gemm-add-c.hjson && \
-    cd /snax_cluster && \
+    cd /src && \
     make -C target/snitch_cluster rtl-gen \
     CFG_OVERRIDE=cfg/snax-streamer-gemm-add-c.hjson && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
@@ -206,15 +207,15 @@ RUN sbt package && \
 
 FROM base as snax-kul-cluster-mixed-narrow-wide
 
-WORKDIR /snax_cluster/
-RUN ls
-RUN sbt package && \
+COPY . /src/
+RUN cd /src && sbt package && \
+    cd /src && \
     make DEBUG=ON sw -j$(nproc) \
     -C target/snitch_cluster \
     SELECT_TOOLCHAIN=llvm-generic \
     SELECT_RUNTIME=rtl-generic \
     CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide.hjson && \
-    cd /snax_cluster && \
+    cd /src && \
     make -C target/snitch_cluster rtl-gen \
     CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide.hjson && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
@@ -224,53 +225,53 @@ RUN sbt package && \
 # Copy Hardware to final image
 FROM base as target
 
-COPY --from=snax-mac /snax_cluster/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-mac-rtl/bin/snitch_cluster.vlt
-COPY --from=snax-mac /snax_cluster/sw/snRuntime /opt/snax-mac/sw/snRuntime
-COPY --from=snax-mac /snax_cluster/target/snitch_cluster/sw/runtime/rtl /opt/snax-mac/target/snitch_cluster/sw/runtime/rtl
-COPY --from=snax-mac /snax_cluster/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-mac/target/snitch_cluster/sw/runtime/rtl-generic
-COPY --from=snax-mac /snax_cluster/target/snitch_cluster/sw/runtime/common /opt/snax-mac/target/snitch_cluster/sw/runtime/common
-COPY --from=snax-mac /snax_cluster/target/snitch_cluster/sw/snax/ /opt/snax-mac/target/snitch_cluster/sw/snax
-COPY --from=snax-mac /snax_cluster/sw/math/ /opt/snax-mac/sw/math/
-COPY --from=snax-mac /snax_cluster/sw/deps/riscv-opcodes /opt/snax-mac/sw/deps/riscv-opcodes
-COPY --from=snax-mac /snax_cluster/sw/deps/printf /opt/snax-mac/sw/deps/printf
-COPY --from=snax-mac /snax_cluster/util/trace/gen_trace.py /opt/gen_trace.py
+COPY --from=snax-mac /src/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-mac-rtl/bin/snitch_cluster.vlt
+COPY --from=snax-mac /src/sw/snRuntime /opt/snax-mac/sw/snRuntime
+COPY --from=snax-mac /src/target/snitch_cluster/sw/runtime/rtl /opt/snax-mac/target/snitch_cluster/sw/runtime/rtl
+COPY --from=snax-mac /src/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-mac/target/snitch_cluster/sw/runtime/rtl-generic
+COPY --from=snax-mac /src/target/snitch_cluster/sw/runtime/common /opt/snax-mac/target/snitch_cluster/sw/runtime/common
+COPY --from=snax-mac /src/target/snitch_cluster/sw/snax/ /opt/snax-mac/target/snitch_cluster/sw/snax
+COPY --from=snax-mac /src/sw/math/ /opt/snax-mac/sw/math/
+COPY --from=snax-mac /src/sw/deps/riscv-opcodes /opt/snax-mac/sw/deps/riscv-opcodes
+COPY --from=snax-mac /src/sw/deps/printf /opt/snax-mac/sw/deps/printf
+COPY --from=snax-mac /src/util/trace/gen_trace.py /opt/gen_trace.py
 
-COPY --from=snax-alu /snax_cluster/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-alu-rtl/bin/snitch_cluster.vlt
-COPY --from=snax-alu /snax_cluster/sw/snRuntime /opt/snax-alu/sw/snRuntime
-COPY --from=snax-alu /snax_cluster/target/snitch_cluster/sw/runtime/rtl /opt/snax-alu/target/snitch_cluster/sw/runtime/rtl
-COPY --from=snax-alu /snax_cluster/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-alu/target/snitch_cluster/sw/runtime/rtl-generic
-COPY --from=snax-alu /snax_cluster/target/snitch_cluster/sw/runtime/common /opt/snax-alu/target/snitch_cluster/sw/runtime/common
-COPY --from=snax-alu /snax_cluster/target/snitch_cluster/sw/snax/ /opt/snax-alu/target/snitch_cluster/sw/snax
-COPY --from=snax-alu /snax_cluster/sw/math/ /opt/snax-alu/sw/math/
-COPY --from=snax-alu /snax_cluster/sw/deps/riscv-opcodes /opt/snax-alu/sw/deps/riscv-opcodes
-COPY --from=snax-alu /snax_cluster/sw/deps/printf /opt/snax-alu/sw/deps/printf
+COPY --from=snax-alu /src/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-alu-rtl/bin/snitch_cluster.vlt
+COPY --from=snax-alu /src/sw/snRuntime /opt/snax-alu/sw/snRuntime
+COPY --from=snax-alu /src/target/snitch_cluster/sw/runtime/rtl /opt/snax-alu/target/snitch_cluster/sw/runtime/rtl
+COPY --from=snax-alu /src/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-alu/target/snitch_cluster/sw/runtime/rtl-generic
+COPY --from=snax-alu /src/target/snitch_cluster/sw/runtime/common /opt/snax-alu/target/snitch_cluster/sw/runtime/common
+COPY --from=snax-alu /src/target/snitch_cluster/sw/snax/ /opt/snax-alu/target/snitch_cluster/sw/snax
+COPY --from=snax-alu /src/sw/math/ /opt/snax-alu/sw/math/
+COPY --from=snax-alu /src/sw/deps/riscv-opcodes /opt/snax-alu/sw/deps/riscv-opcodes
+COPY --from=snax-alu /src/sw/deps/printf /opt/snax-alu/sw/deps/printf
 
-COPY --from=snax-streamer-gemm /snax_cluster/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-streamer-gemm-rtl/bin/snitch_cluster.vlt
-COPY --from=snax-streamer-gemm /snax_cluster/sw/snRuntime /opt/snax-streamer-gemm/sw/snRuntime
-COPY --from=snax-streamer-gemm /snax_cluster/target/snitch_cluster/sw/runtime/rtl /opt/snax-streamer-gemm/target/snitch_cluster/sw/runtime/rtl
-COPY --from=snax-streamer-gemm /snax_cluster/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-streamer-gemm/target/snitch_cluster/sw/runtime/rtl-generic
-COPY --from=snax-streamer-gemm /snax_cluster/target/snitch_cluster/sw/runtime/common /opt/snax-streamer-gemm/target/snitch_cluster/sw/runtime/common
-COPY --from=snax-streamer-gemm /snax_cluster/target/snitch_cluster/sw/snax/ /opt/snax-streamer-gemm/target/snitch_cluster/sw/snax
-COPY --from=snax-streamer-gemm /snax_cluster/sw/math/ /opt/snax-streamer-gemm/sw/math/
-COPY --from=snax-streamer-gemm /snax_cluster/sw/deps/riscv-opcodes /opt/snax-streamer-gemm/sw/deps/riscv-opcodes
-COPY --from=snax-streamer-gemm /snax_cluster/sw/deps/printf /opt/snax-streamer-gemm/sw/deps/printf
+COPY --from=snax-streamer-gemm /src/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-streamer-gemm-rtl/bin/snitch_cluster.vlt
+COPY --from=snax-streamer-gemm /src/sw/snRuntime /opt/snax-streamer-gemm/sw/snRuntime
+COPY --from=snax-streamer-gemm /src/target/snitch_cluster/sw/runtime/rtl /opt/snax-streamer-gemm/target/snitch_cluster/sw/runtime/rtl
+COPY --from=snax-streamer-gemm /src/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-streamer-gemm/target/snitch_cluster/sw/runtime/rtl-generic
+COPY --from=snax-streamer-gemm /src/target/snitch_cluster/sw/runtime/common /opt/snax-streamer-gemm/target/snitch_cluster/sw/runtime/common
+COPY --from=snax-streamer-gemm /src/target/snitch_cluster/sw/snax/ /opt/snax-streamer-gemm/target/snitch_cluster/sw/snax
+COPY --from=snax-streamer-gemm /src/sw/math/ /opt/snax-streamer-gemm/sw/math/
+COPY --from=snax-streamer-gemm /src/sw/deps/riscv-opcodes /opt/snax-streamer-gemm/sw/deps/riscv-opcodes
+COPY --from=snax-streamer-gemm /src/sw/deps/printf /opt/snax-streamer-gemm/sw/deps/printf
 
-COPY --from=snax-streamer-gemm-add-c /snax_cluster/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-streamer-gemm-add-c-rtl/bin/snitch_cluster.vlt
-COPY --from=snax-streamer-gemm-add-c /snax_cluster/sw/snRuntime /opt/snax-streamer-gemm-add-c/sw/snRuntime
-COPY --from=snax-streamer-gemm-add-c /snax_cluster/target/snitch_cluster/sw/runtime/rtl /opt/snax-streamer-gemm-add-c/target/snitch_cluster/sw/runtime/rtl
-COPY --from=snax-streamer-gemm-add-c /snax_cluster/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-streamer-gemm-add-c/target/snitch_cluster/sw/runtime/rtl-generic
-COPY --from=snax-streamer-gemm-add-c /snax_cluster/target/snitch_cluster/sw/runtime/common /opt/snax-streamer-gemm-add-c/target/snitch_cluster/sw/runtime/common
-COPY --from=snax-streamer-gemm-add-c /snax_cluster/target/snitch_cluster/sw/snax/ /opt/snax-streamer-gemm-add-c/target/snitch_cluster/sw/snax
-COPY --from=snax-streamer-gemm-add-c /snax_cluster/sw/math/ /opt/snax-streamer-gemm-add-c/sw/math/
-COPY --from=snax-streamer-gemm-add-c /snax_cluster/sw/deps/riscv-opcodes /opt/snax-streamer-gemm-add-c/sw/deps/riscv-opcodes
-COPY --from=snax-streamer-gemm-add-c /snax_cluster/sw/deps/printf /opt/snax-streamer-gemm-add-c/sw/deps/printf
+COPY --from=snax-streamer-gemm-add-c /src/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-streamer-gemm-add-c-rtl/bin/snitch_cluster.vlt
+COPY --from=snax-streamer-gemm-add-c /src/sw/snRuntime /opt/snax-streamer-gemm-add-c/sw/snRuntime
+COPY --from=snax-streamer-gemm-add-c /src/target/snitch_cluster/sw/runtime/rtl /opt/snax-streamer-gemm-add-c/target/snitch_cluster/sw/runtime/rtl
+COPY --from=snax-streamer-gemm-add-c /src/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-streamer-gemm-add-c/target/snitch_cluster/sw/runtime/rtl-generic
+COPY --from=snax-streamer-gemm-add-c /src/target/snitch_cluster/sw/runtime/common /opt/snax-streamer-gemm-add-c/target/snitch_cluster/sw/runtime/common
+COPY --from=snax-streamer-gemm-add-c /src/target/snitch_cluster/sw/snax/ /opt/snax-streamer-gemm-add-c/target/snitch_cluster/sw/snax
+COPY --from=snax-streamer-gemm-add-c /src/sw/math/ /opt/snax-streamer-gemm-add-c/sw/math/
+COPY --from=snax-streamer-gemm-add-c /src/sw/deps/riscv-opcodes /opt/snax-streamer-gemm-add-c/sw/deps/riscv-opcodes
+COPY --from=snax-streamer-gemm-add-c /src/sw/deps/printf /opt/snax-streamer-gemm-add-c/sw/deps/printf
 
-COPY --from=snax-kul-cluster-mixed-narrow-wide /snax_cluster/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-kul-cluster-mixed-narrow-wide-rtl/bin/snitch_cluster.vlt
-COPY --from=snax-kul-cluster-mixed-narrow-wide /snax_cluster/sw/snRuntime /opt/snax-kul-cluster-mixed-narrow-wide/sw/snRuntime
-COPY --from=snax-kul-cluster-mixed-narrow-wide /snax_cluster/target/snitch_cluster/sw/runtime/rtl /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/runtime/rtl
-COPY --from=snax-kul-cluster-mixed-narrow-wide /snax_cluster/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/runtime/rtl-generic
-COPY --from=snax-kul-cluster-mixed-narrow-wide /snax_cluster/target/snitch_cluster/sw/runtime/common /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/runtime/common
-COPY --from=snax-kul-cluster-mixed-narrow-wide /snax_cluster/target/snitch_cluster/sw/snax/ /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/snax
-COPY --from=snax-kul-cluster-mixed-narrow-wide /snax_cluster/sw/math/ /opt/snax-kul-cluster-mixed-narrow-wide/sw/math/
-COPY --from=snax-kul-cluster-mixed-narrow-wide /snax_cluster/sw/deps/riscv-opcodes /opt/snax-kul-cluster-mixed-narrow-wide/sw/deps/riscv-opcodes
-COPY --from=snax-kul-cluster-mixed-narrow-wide /snax_cluster/sw/deps/printf /opt/snax-kul-cluster-mixed-narrow-wide/sw/deps/printf
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-kul-cluster-mixed-narrow-wide-rtl/bin/snitch_cluster.vlt
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/sw/snRuntime /opt/snax-kul-cluster-mixed-narrow-wide/sw/snRuntime
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/target/snitch_cluster/sw/runtime/rtl /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/runtime/rtl
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/target/snitch_cluster/sw/runtime/rtl-generic /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/runtime/rtl-generic
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/target/snitch_cluster/sw/runtime/common /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/runtime/common
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/target/snitch_cluster/sw/snax/ /opt/snax-kul-cluster-mixed-narrow-wide/target/snitch_cluster/sw/snax
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/sw/math/ /opt/snax-kul-cluster-mixed-narrow-wide/sw/math/
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/sw/deps/riscv-opcodes /opt/snax-kul-cluster-mixed-narrow-wide/sw/deps/riscv-opcodes
+COPY --from=snax-kul-cluster-mixed-narrow-wide /src/sw/deps/printf /opt/snax-kul-cluster-mixed-narrow-wide/sw/deps/printf
