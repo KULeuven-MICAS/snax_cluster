@@ -143,6 +143,7 @@ CMD ["zsh"]
 FROM base as snax-mac
 
 WORKDIR /snax_cluster/
+RUN ls
 RUN sbt package && \
     make DEBUG=ON sw -j$(nproc) \
     -C target/snitch_cluster \
@@ -158,6 +159,7 @@ RUN sbt package && \
 FROM base as snax-alu
 
 WORKDIR /snax_cluster/
+RUN ls
 RUN sbt package && \
     make DEBUG=ON sw -j$(nproc) \
     -C target/snitch_cluster \
@@ -189,6 +191,7 @@ RUN sbt package && \
 FROM base as snax-streamer-gemm-add-c
 
 WORKDIR /snax_cluster/
+RUN ls
 RUN sbt package && \
     make DEBUG=ON sw -j$(nproc) \
     -C target/snitch_cluster \
@@ -204,6 +207,7 @@ RUN sbt package && \
 FROM base as snax-kul-cluster-mixed-narrow-wide
 
 WORKDIR /snax_cluster/
+RUN ls
 RUN sbt package && \
     make DEBUG=ON sw -j$(nproc) \
     -C target/snitch_cluster \
