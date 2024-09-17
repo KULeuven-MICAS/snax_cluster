@@ -149,6 +149,7 @@ RUN sbt package && \
     SELECT_TOOLCHAIN=llvm-generic \
     SELECT_RUNTIME=rtl-generic \
     CFG_OVERRIDE=cfg/snax-mac.hjson && \
+    cd /snax_cluster && \
     make -C target/snitch_cluster rtl-gen \
     CFG_OVERRIDE=cfg/snax-mac.hjson && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
@@ -163,6 +164,7 @@ RUN sbt package && \
     SELECT_TOOLCHAIN=llvm-generic \
     SELECT_RUNTIME=rtl-generic \
     CFG_OVERRIDE=cfg/snax-alu.hjson && \
+    cd /snax_cluster && \
     make -C target/snitch_cluster rtl-gen \
     CFG_OVERRIDE=cfg/snax-alu.hjson && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
@@ -177,6 +179,7 @@ RUN sbt package && \
     SELECT_TOOLCHAIN=llvm-generic \
     SELECT_RUNTIME=rtl-generic \
     CFG_OVERRIDE=cfg/snax-streamer-gemm.hjson && \
+    cd /snax_cluster && \
     make -C target/snitch_cluster rtl-gen \
     CFG_OVERRIDE=cfg/snax-streamer-gemm.hjson && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
@@ -192,6 +195,7 @@ RUN sbt package && \
     SELECT_TOOLCHAIN=llvm-generic \
     SELECT_RUNTIME=rtl-generic \
     CFG_OVERRIDE=cfg/snax-streamer-gemm-add-c.hjson && \
+    cd /snax_cluster && \
     make -C target/snitch_cluster rtl-gen \
     CFG_OVERRIDE=cfg/snax-streamer-gemm-add-c.hjson && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
@@ -206,6 +210,7 @@ RUN sbt package && \
     SELECT_TOOLCHAIN=llvm-generic \
     SELECT_RUNTIME=rtl-generic \
     CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide.hjson && \
+    cd /snax_cluster && \
     make -C target/snitch_cluster rtl-gen \
     CFG_OVERRIDE=cfg/snax-kul-cluster-mixed-narrow-wide.hjson && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
