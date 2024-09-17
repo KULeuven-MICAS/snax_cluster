@@ -374,6 +374,15 @@ def main():
         rtl_target_path = args.gen_path + acc_cfgs[i]["snax_acc_name"] + "/"
 
         if acc_cfgs[i]["snax_acc_name"] == "snax_streamer_gemmX":
+            if not (
+                "snax_gemmx_tile_size" in acc_cfgs[i]
+                and "snax_gemmx_mesh_row" in acc_cfgs[i]
+                and "snax_gemmx_mesh_col" in acc_cfgs[i]
+                and "with_pipeline" in acc_cfgs[i]
+            ):
+                raise ValueError(
+                    "Missing gemmX configuration, please set snax_gemmx_mesh_row, snax_gemmx_mesh_col, snax_gemmx_tile_size, with_pipeline"
+                )
             gen_chisel_file(
                 chisel_path=chisel_acc_path,
                 chisel_param="snax_acc.gemmx.BlockGemmRescaleSIMDGen "
