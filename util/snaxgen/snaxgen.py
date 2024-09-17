@@ -381,7 +381,8 @@ def main():
                 and "with_pipeline" in acc_cfgs[i]
             ):
                 raise ValueError(
-                    "Missing gemmX configuration, please set snax_gemmx_mesh_row, snax_gemmx_mesh_col, snax_gemmx_tile_size, with_pipeline"
+                    "Missing gemmX configuration. \n"
+                    "Please set snax_gemmx_mesh_row, snax_gemmx_mesh_col, snax_gemmx_tile_size, with_pipeline"
                 )
             gen_chisel_file(
                 chisel_path=chisel_acc_path,
