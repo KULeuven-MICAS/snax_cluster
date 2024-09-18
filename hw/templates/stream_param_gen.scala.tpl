@@ -8,7 +8,6 @@
   tcdm_data_width = cfg["tcdm_data_width"]
   tcdm_depth = cfg["tcdm_depth"]
   num_banks = cfg["tcdm_num_banks"]
-  // tcdm_size in KB
   tcdm_size = int(num_banks * tcdm_depth * (tcdm_data_width/8) / 1024)
   tcdm_addr_width = math.ceil(math.log2(tcdm_size))
 %>
@@ -27,6 +26,7 @@ import chisel3._
 import chisel3.util._
 
 // Streamer parameters
+// tcdm_size in KB
 object StreamerParametersGen {
 
 % if "data_reader_params" not in cfg["snax_streamer_cfg"]:
