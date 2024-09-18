@@ -86,7 +86,6 @@ module ${cfg["name"]}_xdma_wrapper #(
   always_comb begin
     for ( int i = 0; i < TCDMNumPorts; i++) begin
       // Give tcdm_req.q.addr a default value so that the mismatched bits will not be z
-      tcdm_req_o[i].q.addr         = '0;
       tcdm_req_o[i].q.addr         = tcdm_req_addr   [i];
       tcdm_req_o[i].q.write        = tcdm_req_write  [i];
       tcdm_req_o[i].q.amo          = reqrsp_pkg::AMONone;
