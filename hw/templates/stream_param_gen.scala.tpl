@@ -8,7 +8,8 @@
   tcdm_data_width = cfg["tcdm_data_width"]
   tcdm_depth = cfg["tcdm_depth"]
   num_banks = cfg["tcdm_num_banks"]
-  tcdm_size = num_banks * tcdm_depth * (tcdm_data_width/8)
+  // tcdm_size in KB
+  tcdm_size = int(num_banks * tcdm_depth * (tcdm_data_width/8) / 1024)
   tcdm_addr_width = math.ceil(math.log2(tcdm_size))
 %>
 <%def name="list_elem(prop)">\
@@ -40,6 +41,8 @@ object StreamerParametersGen {
 % endfor
       ),
       temporalDimension = ${cfg["snax_streamer_cfg"]["data_reader_params"]["temporal_dim"][idx]},
+      tcdmDataWidth = ${tcdm_data_width},
+      tcdmSize = ${tcdm_size},
       numChannel = ${cfg["snax_streamer_cfg"]["data_reader_params"]["num_channel"][idx]},
       addressBufferDepth = ${cfg["snax_streamer_cfg"]["data_reader_params"]["fifo_depth"][idx]},
       dataBufferDepth = ${cfg["snax_streamer_cfg"]["data_reader_params"]["fifo_depth"][idx]}
@@ -60,6 +63,8 @@ ${'   ), ' if not loop.last else '    )'}
 % endfor
       ),
       temporalDimension = ${cfg["snax_streamer_cfg"]["data_writer_params"]["temporal_dim"][idx]},
+      tcdmDataWidth = ${tcdm_data_width},
+      tcdmSize = ${tcdm_size},
       numChannel = ${cfg["snax_streamer_cfg"]["data_writer_params"]["num_channel"][idx]},
       addressBufferDepth = ${cfg["snax_streamer_cfg"]["data_writer_params"]["fifo_depth"][idx]},
       dataBufferDepth = ${cfg["snax_streamer_cfg"]["data_writer_params"]["fifo_depth"][idx]}
@@ -80,6 +85,8 @@ ${'   ), ' if not loop.last else '    )'}
 % endfor
       ),
       temporalDimension = ${cfg["snax_streamer_cfg"]["data_reader_writer_params"]["temporal_dim"][idx]},
+      tcdmDataWidth = ${tcdm_data_width},
+      tcdmSize = ${tcdm_size},
       numChannel = ${cfg["snax_streamer_cfg"]["data_reader_writer_params"]["num_channel"][idx]},
       addressBufferDepth = ${cfg["snax_streamer_cfg"]["data_reader_writer_params"]["fifo_depth"][idx]},
       dataBufferDepth = ${cfg["snax_streamer_cfg"]["data_reader_writer_params"]["fifo_depth"][idx]}
