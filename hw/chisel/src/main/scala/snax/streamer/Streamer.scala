@@ -221,7 +221,7 @@ class Streamer(
     .getOrElse(0.B) || reader_writer
     .map(_.io.writerInterface.busy)
     .reduceLeftOption(_ || _)
-    .getOrElse(0.B))
+    .getOrElse(0.B) || readerExtensions.map(_.io.busy).reduceLeftOption(_ || _).getOrElse(0.B))
   dontTouch(streamer_finish)
 
   // --------------------------------------------------------------------------------
