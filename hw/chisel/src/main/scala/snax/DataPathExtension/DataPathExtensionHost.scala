@@ -120,7 +120,7 @@ class DataPathExtensionHost(
     } else {
       extensions.last.io.data_o <> io.data.out
     }
-    
+
     extensions.head.io.data_i <> io.data.in
     extensions.last.io.data_o <> io.data.out
     extensions.zip(extensions.tail).foreach {
