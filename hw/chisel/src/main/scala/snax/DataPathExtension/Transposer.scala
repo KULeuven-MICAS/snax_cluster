@@ -39,7 +39,7 @@ class Transposer()(implicit extensionParam: DataPathExtensionParam)
   }
 
   val outBuffered = Wire(chiselTypeOf(ext_data_o))
-  outBuffered -|> ext_data_o
+  outBuffered -||> ext_data_o
 
   ext_data_i.ready := outBuffered.ready
   outBuffered.valid := ext_data_i.valid
