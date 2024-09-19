@@ -36,10 +36,16 @@ class Transposer()(implicit extensionParam: DataPathExtensionParam)
       )
     }
   }
-  ext_data_i.ready := ext_data_o.ready
-  ext_data_o.valid := ext_data_i.valid
-  ext_busy_o := false.B
-  ext_data_o.bits := out_data_array.asUInt
+
+  val output_stall = Wire(Bool())
+  output_stall := ext_data_o.valid && !ext_data_o.ready
+  val keep_output = RegInit(false.B)
+  keep_output := output_stall
+
+  ext_data_i.ready := ext_data_o.ready && !output_stall
+  ext_data_o.valid := RegNext(ext_data_i.valid) || keep_output
+  ext_busy_o := ext_data_o.valid
+  ext_data_o.bits := RegNext(out_data_array.asUInt)
 }
 
 object TransposerEmitter extends App {
