@@ -3,6 +3,7 @@ package snax.DataPathExtension
 import chisel3._
 import chisel3.util._
 import snax.xdma.DesignParams._
+import snax.utils.DecoupledCut._
 
 object HasTransposer extends HasDataPathExtension {
   implicit val extensionParam: DataPathExtensionParam =
@@ -37,15 +38,15 @@ class Transposer()(implicit extensionParam: DataPathExtensionParam)
     }
   }
 
-  val output_stall = Wire(Bool())
-  output_stall := ext_data_o.valid && !ext_data_o.ready
-  val keep_output = RegInit(false.B)
-  keep_output := output_stall
+  val outBuffered = Wire(chiselTypeOf(ext_data_o))
+  outBuffered -|> ext_data_o
 
-  ext_data_i.ready := ext_data_o.ready && !output_stall
-  ext_data_o.valid := RegNext(ext_data_i.valid) || keep_output
+  ext_data_i.ready := outBuffered.ready
+  outBuffered.valid := ext_data_i.valid
+  outBuffered.bits := out_data_array.asUInt
+
   ext_busy_o := ext_data_o.valid
-  ext_data_o.bits := RegNext(out_data_array.asUInt)
+
 }
 
 object TransposerEmitter extends App {
