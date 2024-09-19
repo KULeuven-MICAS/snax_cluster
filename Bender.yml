@@ -96,7 +96,7 @@ export_include_dirs:
 sources:
   # Note: These tapeout tags are for internal use only
   # tapeout tags:
-  - target: all(tech_cells_generic_exclude_tc_sram, tc_sram_cluster_only) 
+  - target: all(tech_cells_generic_exclude_tc_sram, tc_sram_cluster_only)
     files:
       - /users/micas/shares/project_snax/tapeout_modules/snax_cluster/tc_sram_impl.sv
   # future
