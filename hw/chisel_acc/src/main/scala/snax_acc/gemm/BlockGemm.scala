@@ -73,7 +73,7 @@ class BlockGemm(params: GemmParams) extends Module with RequireAsyncReset {
   // counter used to record if need to output to outside
   val d_output_ifvalid_counter = RegInit(0.U(params.sizeConfigWidth.W))
   // counter to record how many output data has been written
-  val d_output_counter = RegInit(0.U((params.sizeConfigWidth).W))
+  val d_output_counter = RegInit(0.U((2 * params.sizeConfigWidth).W))
 
   val performance_counter = RegInit(0.U(32.W))
 
