@@ -103,9 +103,9 @@ class DataPathExtensionHost(
     // Connect the data path
     if (headCut) {
       if (halfCut) {
-        io.data.in -/> extensions.head.io.data_i
+        io.data.in -\> extensions.head.io.data_i
       } else {
-        io.data.in -||> extensions.head.io.data_i
+        io.data.in -|> extensions.head.io.data_i
       }
     } else {
       io.data.in <> extensions.head.io.data_i
@@ -113,9 +113,9 @@ class DataPathExtensionHost(
 
     if (tailCut) {
       if (halfCut) {
-        extensions.last.io.data_o -/> io.data.out
+        extensions.last.io.data_o -\> io.data.out
       } else {
-        extensions.last.io.data_o -||> io.data.out
+        extensions.last.io.data_o -|> io.data.out
       }
     } else {
       extensions.last.io.data_o <> io.data.out
@@ -126,9 +126,9 @@ class DataPathExtensionHost(
     extensions.zip(extensions.tail).foreach {
       case (a, b) => {
         if (halfCut) {
-          a.io.data_o -/> b.io.data_i
+          a.io.data_o -\> b.io.data_i
         } else {
-          a.io.data_o -||> b.io.data_i
+          a.io.data_o -|> b.io.data_i
         }
       }
     }
