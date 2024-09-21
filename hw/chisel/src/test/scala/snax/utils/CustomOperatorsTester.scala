@@ -20,7 +20,7 @@ class CustomOperatorsTester extends AnyFlatSpec with ChiselScalatestTester {
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) {
         dut =>
           dut.clock.setTimeout(0)
-          
+
           var concurrent_threads =
             new chiseltest.internal.TesterThreadList(Seq())
           // Turn on and off the gate
