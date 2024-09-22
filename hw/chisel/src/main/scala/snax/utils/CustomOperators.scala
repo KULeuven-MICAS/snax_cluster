@@ -26,8 +26,7 @@ import chisel3.reflect.DataMirror
 
 // }
 
-class DataCut[T <: Data](gen: T, delay: Int)
-    extends Module {
+class DataCut[T <: Data](gen: T, delay: Int) extends Module {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(gen))
     val out = Decoupled(gen)
@@ -37,7 +36,8 @@ class DataCut[T <: Data](gen: T, delay: Int)
   val out = Wire(ValidIO(gen))
   val shiftPermission = Wire(Bool())
   val shiftSuggestion = Wire(Bool())
-  val shift = shiftPermission && shiftSuggestion  // shift is true when both shiftPermission and shiftSuggestion are true
+  val shift =
+    shiftPermission && shiftSuggestion // shift is true when both shiftPermission and shiftSuggestion are true
   in.bits := io.in.bits
   in.valid := io.in.valid
   io.in.ready := shiftPermission
@@ -89,7 +89,7 @@ object DecoupledCut {
       buffer.io.deq <> right
       right
     }
-    
+
     def -\>(
         right: DecoupledIO[T]
     )(implicit sourceInfo: chisel3.experimental.SourceInfo): DecoupledIO[T] = {
