@@ -10,19 +10,52 @@ import chisel3.reflect.DataMirror
   * long combinatorial datapath
   */
 
-class DataCut[T <: Data](gen: T, delay: Int, pipeline: Boolean = false)
+// class DataCut[T <: Data](gen: T, delay: Int, pipeline: Boolean = false)
+//     extends Module {
+//   val io = IO(new Bundle {
+//     val in = Flipped(Decoupled(gen))
+//     val out = Decoupled(gen)
+//   })
+//   val cuts = Seq.fill(delay)(Module(new Queue(gen, 1, pipe = true)))
+
+//   io.in <> cuts.head.io.enq
+//   cuts.zip(cuts.tail).foreach { case (left, right) =>
+//     left.io.deq <> right.io.enq
+//   }
+//   cuts.last.io.deq <> io.out
+
+// }
+
+class DataCut[T <: Data](gen: T, delay: Int)
     extends Module {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(gen))
     val out = Decoupled(gen)
   })
-  val cuts = Seq.fill(delay)(Module(new Queue(gen, 1, pipe = true)))
 
-  io.in <> cuts.head.io.enq
-  cuts.zip(cuts.tail).foreach { case (left, right) =>
-    left.io.deq <> right.io.enq
-  }
-  cuts.last.io.deq <> io.out
+  val in = Wire(ValidIO(gen))
+  val out = Wire(ValidIO(gen))
+  val shiftPermission = Wire(Bool())
+  val shiftSuggestion = Wire(Bool())
+  val shift = shiftPermission && shiftSuggestion  // shift is true when both shiftPermission and shiftSuggestion are true
+  in.bits := io.in.bits
+  in.valid := io.in.valid
+  io.in.ready := shiftPermission
+  io.out.valid := out.valid
+  io.out.bits := out.bits
+  out := ShiftRegister(in, delay, shift)
+
+  // shiftPermission is true when last item's valid is true and io.out.ready is true or last item's valid is false
+  shiftPermission := (out.valid && io.out.ready) || !out.valid
+
+  val dataInsideShiftRegister = Wire(Bool())
+
+  // shiftSuggestion is true when dataInsideShiftRegister is true or input.valid is true
+  shiftSuggestion := dataInsideShiftRegister || io.in.valid
+
+  // When the counter is abbout to overflow, data does not inside the shift register
+  val insideCounter = Counter(0 to delay, shift, io.in.valid)
+  dataInsideShiftRegister := insideCounter._1 =/= delay.U
 
 }
 
@@ -34,72 +67,66 @@ object DecoupledCut {
 
     def -|>(
         right: DecoupledIO[T]
-    )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
+    )(implicit sourceInfo: chisel3.experimental.SourceInfo): DecoupledIO[T] = {
       val buffer = Module(
         new Queue(chiselTypeOf(left.bits), entries = 1, pipe = false)
       )
-      buffer.suggestName("fullCut1")
+      buffer.suggestName("fullCutHalfBandwidth")
 
       left <> buffer.io.enq
       buffer.io.deq <> right
+      right
     }
 
     def -||>(
         right: DecoupledIO[T]
-    )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
+    )(implicit sourceInfo: chisel3.experimental.SourceInfo): DecoupledIO[T] = {
       val buffer = Module(
         new Queue(chiselTypeOf(left.bits), entries = 2, pipe = false)
       )
-      buffer.suggestName("fullCut2")
+      buffer.suggestName("fullCutFullBandwidth")
       left <> buffer.io.enq
       buffer.io.deq <> right
+      right
     }
-
-    def -|||>(
-        right: DecoupledIO[T]
-    )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
-      val buffer = Module(
-        new Queue(chiselTypeOf(left.bits), entries = 3, pipe = false)
-      )
-      buffer.suggestName("fullCut3")
-      left <> buffer.io.enq
-      buffer.io.deq <> right
-    }
-
+    
     def -\>(
         right: DecoupledIO[T]
-    )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
+    )(implicit sourceInfo: chisel3.experimental.SourceInfo): DecoupledIO[T] = {
       val buffer = Module(
-        new DataCut(chiselTypeOf(left.bits), delay = 1, pipeline = true)
+        new DataCut(chiselTypeOf(left.bits), delay = 1)
       )
       buffer.suggestName("dataCut1")
 
       left <> buffer.io.in
       buffer.io.out <> right
+      right
     }
 
     def -\\>(
         right: DecoupledIO[T]
-    )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
+    )(implicit sourceInfo: chisel3.experimental.SourceInfo): DecoupledIO[T] = {
       val buffer = Module(
-        new DataCut(chiselTypeOf(left.bits), delay = 2, pipeline = true)
+        new DataCut(chiselTypeOf(left.bits), delay = 2)
       )
       buffer.suggestName("dataCut2")
 
       left <> buffer.io.in
       buffer.io.out <> right
+      right
     }
 
     def -\\\>(
         right: DecoupledIO[T]
-    )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
+    )(implicit sourceInfo: chisel3.experimental.SourceInfo): DecoupledIO[T] = {
       val buffer = Module(
-        new DataCut(chiselTypeOf(left.bits), delay = 3, pipeline = true)
+        new DataCut(chiselTypeOf(left.bits), delay = 3)
       )
       buffer.suggestName("dataCut3")
 
       left <> buffer.io.in
       buffer.io.out <> right
+      right
     }
   }
 }
