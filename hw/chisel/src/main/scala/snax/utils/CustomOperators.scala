@@ -10,22 +10,6 @@ import chisel3.reflect.DataMirror
   * long combinatorial datapath
   */
 
-// class DataCut[T <: Data](gen: T, delay: Int, pipeline: Boolean = false)
-//     extends Module {
-//   val io = IO(new Bundle {
-//     val in = Flipped(Decoupled(gen))
-//     val out = Decoupled(gen)
-//   })
-//   val cuts = Seq.fill(delay)(Module(new Queue(gen, 1, pipe = true)))
-
-//   io.in <> cuts.head.io.enq
-//   cuts.zip(cuts.tail).foreach { case (left, right) =>
-//     left.io.deq <> right.io.enq
-//   }
-//   cuts.last.io.deq <> io.out
-
-// }
-
 class DataCut[T <: Data](gen: T, delay: Int) extends Module {
   val io = IO(new Bundle {
     val in = Flipped(Decoupled(gen))
