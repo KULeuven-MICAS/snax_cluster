@@ -200,7 +200,8 @@ class AddressGenUnit(
     new ComplexQueueConcat(
       inputWidth = io.addr.head.bits.getWidth * param.numChannel,
       outputWidth = io.addr.head.bits.getWidth,
-      depth = param.outputBufferDepth
+      depth = param.outputBufferDepth,
+      pipe = true
     ) {
       override val desiredName = s"${moduleNamePrefix}_AddressBufferFIFO"
     }
@@ -210,8 +211,14 @@ class AddressGenUnit(
   val temporalOffset = VecInit(counters.map(_.io.value)).reduceTree(_ + _)
   // This is a table for all possible values that the spatial offset can take
   val spatialOffsetTable = for (i <- 0 until param.spatialBounds.length) yield {
-    (0 until param.spatialBounds(i)).map(io.cfg.spatialStrides(i) * _.U)
+    var offset = 0.U(io.cfg.spatialStrides(i).getWidth.W)
+    (0 until param.spatialBounds(i)).map { _ =>
+      val ret = offset
+      offset = offset + io.cfg.spatialStrides(i)
+      ret
+    }
   }
+
   val spatialOffsets = for (i <- 0 until param.numChannel) yield {
     var remainder = i
     var spatialOffset = temporalOffset
