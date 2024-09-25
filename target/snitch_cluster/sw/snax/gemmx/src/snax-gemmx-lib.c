@@ -133,6 +133,8 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_READER_WRITER_0_1, Ctlstride1);
     csrw_ss(T_STRIDE_READER_WRITER_0_2, Ctlstride2);
 
+    csrw_ss(ENABLED_CHANNEL_READER_WRITER_0, 0x0);
+
     // base ptr for D32
     csrw_ss(BASE_PTR_READER_WRITER_1_LOW,
             (uint32_t)(delta_local_d32 + snrt_l1_next()));
