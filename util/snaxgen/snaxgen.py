@@ -79,22 +79,36 @@ def gen_chisel_file(chisel_path, chisel_param, gen_path):
 def streamer_csr_num(acc_cfgs):
     # Regardless if shared or not, it is the same total
     # This is the total number of loop dimension registers
-    num_loop_dim = 0
+    num_t_loop_dim = 0
     if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
-        num_loop_dim += sum(
+        num_t_loop_dim += sum(
             acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["temporal_dim"]
         )
 
     if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
-        num_loop_dim += sum(
+        num_t_loop_dim += sum(
             acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["temporal_dim"]
         )
 
     if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
-        num_loop_dim += sum(
+        num_t_loop_dim += sum(
             acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["temporal_dim"]
         )
 
+    num_s_loop_dim = 0
+    if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
+        num_s_loop_dim += sum(
+            (len(i) for i in acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["spatial_bounds"])
+        )
+    if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
+        num_s_loop_dim += sum(
+            (len(i) for i in acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["spatial_bounds"])
+        )
+    if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
+        num_s_loop_dim += sum(
+            (len(i) for i in acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["spatial_bounds"])
+        )
+    
     # Calculation of data movers
     num_data_reader = 0
     num_data_writer = 0
@@ -125,14 +139,33 @@ def streamer_csr_num(acc_cfgs):
     # This sets the total number of base pointers
     num_data_mover = num_data_reader + num_data_writer + num_data_reader_writer
 
+    num_configurable_channel = 0
+
+    # if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
+    #     num_configurable_channel += sum(
+    #         acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["configurable_channel"]
+    #     )
+    # if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
+    #     num_configurable_channel += sum(
+    #         acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["configurable_channel"]
+    #     )
+    # if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
+    #     num_configurable_channel += sum(
+    #         acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"][
+    #             "configurable_channel"
+    #         ]
+    #     )
+    num_configurable_channel = 1
+    
     streamer_csr_num = (
         # Total temporal loop dimensions and strides
-        2 * num_loop_dim  # Number of spatial strides
-        + num_data_mover  # Number of base pointers
-        + 2 * num_data_mover  # Start register
+        2 * num_t_loop_dim  # Number of temporal strides and loopbounds
+        + num_s_loop_dim # Number of spatial strides
+        + 2 * num_data_mover  # Number of base pointers, 2 for each
+        + num_configurable_channel  # Number of configurable channels
         + 1  # Performance counter
         + 1  # Busy register
-        + 1
+        + 1  # Start register
     )
 
     # transpose csr
