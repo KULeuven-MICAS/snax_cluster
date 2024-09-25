@@ -174,7 +174,7 @@ object xdmaTopGen extends App {
       parsedArgs("axiDataWidth").toInt / parsedArgs("tcdmDataWidth").toInt,
     addressBufferDepth = parsedArgs("readerBufferDepth").toInt,
     configurableChannel = true,
-    configurableByteMask = false, 
+    configurableByteMask = false,
     pipeFifo = true
   )
 
@@ -188,7 +188,7 @@ object xdmaTopGen extends App {
       parsedArgs("axiDataWidth").toInt / parsedArgs("tcdmDataWidth").toInt,
     addressBufferDepth = parsedArgs("writerBufferDepth").toInt,
     configurableChannel = true,
-    configurableByteMask = true, 
+    configurableByteMask = true,
     pipeFifo = true
   )
   var readerextensionparam = Seq[HasDataPathExtension]()
