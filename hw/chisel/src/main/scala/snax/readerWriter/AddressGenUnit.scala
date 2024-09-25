@@ -201,7 +201,7 @@ class AddressGenUnit(
       inputWidth = io.addr.head.bits.getWidth * param.numChannel,
       outputWidth = io.addr.head.bits.getWidth,
       depth = param.outputBufferDepth,
-      pipe = true
+      pipe = param.pipeFifo
     ) {
       override val desiredName = s"${moduleNamePrefix}_AddressBufferFIFO"
     }
@@ -209,14 +209,10 @@ class AddressGenUnit(
 
   // Calculate the current base address: the first stride need to be left-shifted
   val temporalOffset = VecInit(counters.map(_.io.value)).reduceTree(_ + _)
+
   // This is a table for all possible values that the spatial offset can take
   val spatialOffsetTable = for (i <- 0 until param.spatialBounds.length) yield {
-    var offset = 0.U(io.cfg.spatialStrides(i).getWidth.W)
-    (0 until param.spatialBounds(i)).map { _ =>
-      val ret = offset
-      offset = offset + io.cfg.spatialStrides(i)
-      ret
-    }
+    (0 until param.spatialBounds(i)).map(io.cfg.spatialStrides(i) * _.U)
   }
 
   val spatialOffsets = for (i <- 0 until param.numChannel) yield {
