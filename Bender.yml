@@ -320,7 +320,7 @@ sources:
     files:
       # Level 0
       - target/snitch_cluster/generated/snax_cgra/snax_cgra_csrman_CsrManager.sv
-      - target/snitch_cluster/generated/snax_cgra/snax_cgra_streamer_StreamerTop.sv
+      - target/snitch_cluster/generated/snax_cgra/snax_cgra_Streamer.sv
       # Level 1
       - hw/snax_cgra/src/snax_cgra_shell_wrapper.sv
       - target/snitch_cluster/generated/snax_cgra/snax_cgra_csrman_wrapper.sv
