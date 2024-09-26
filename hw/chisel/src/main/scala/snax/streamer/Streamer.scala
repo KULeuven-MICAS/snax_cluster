@@ -309,7 +309,6 @@ class Streamer(
   var remainingCSR = csrCfg.toIndexedSeq
 
   // reader
-  var reader_csr_base = 0
   for (i <- 0 until param.readerNum) {
     remainingCSR = reader(i).io.connectCfgWithList(
       remainingCSR
@@ -345,6 +344,7 @@ class Streamer(
     )
   }
 
+  // 1 left csr for start signal
   require(remainingCSR.length == 1)
 
   // --------------------------------------------------------------------------------
