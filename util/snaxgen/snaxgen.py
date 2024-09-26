@@ -141,22 +141,22 @@ def streamer_csr_num(acc_cfgs):
 
     num_configurable_channel = 0
 
-    # if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
-    #     num_configurable_channel += sum(
-    #         acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["configurable_channel"]
-    #     )
-    # if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
-    #     num_configurable_channel += sum(
-    #         acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["configurable_channel"]
-    #     )
-    # if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
-    #     num_configurable_channel += sum(
-    #         acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"][
-    #             "configurable_channel"
-    #         ]
-    #     )
-    num_configurable_channel = 1
-    
+    if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
+        if "configurable_channel" in acc_cfgs["snax_streamer_cfg"]["data_reader_params"]:
+            num_configurable_channel += sum(
+                acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["configurable_channel"]
+            )
+    if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
+        if "configurable_channel" in acc_cfgs["snax_streamer_cfg"]["data_writer_params"]:
+            num_configurable_channel += sum(
+                acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["configurable_channel"]
+            )
+    if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
+        if "configurable_channel" in acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]:
+            num_configurable_channel += sum(
+                acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["configurable_channel"]
+            )
+
     streamer_csr_num = (
         # Total temporal loop dimensions and strides
         2 * num_t_loop_dim  # Number of temporal strides and loopbounds
