@@ -226,7 +226,7 @@ module snax_cgra_shell_wrapper # (
   //   output logic [63:0] cgra_send_ni_data__msg [0:7] ,
   //   input logic [0:0] cgra_send_ni_data__rdy [0:7] 
   // );
-  CGRARTL__332d123efc0840be i_cgrartl (
+  CGRARTL__top i_cgrartl (
     //---------------------------
     // Clocks and reset
     //---------------------------
