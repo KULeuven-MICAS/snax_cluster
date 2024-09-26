@@ -135,7 +135,7 @@ inline snrt_dma_txid_t snrt_dma_start_2d_wideptr(uint64_t dst, uint64_t src,
     }
 }
 
-/// Initiate an asynchronous 2D DMA transfer.
+/// Initiate an asynchronous 2D DMA transfer. (for local-chip transfers)
 inline snrt_dma_txid_t snrt_dma_start_2d(void *dst, const void *src,
                                          size_t size, size_t dst_stride,
                                          size_t src_stride, size_t repeat) {
