@@ -53,10 +53,14 @@ inline snrt_dma_txid_t snrt_dma_start_1d_wideptr(uint64_t dst, uint64_t src,
     }
 }
 
-/// Initiate an asynchronous 1D DMA transfer.
+/// Initiate an asynchronous 1D DMA transfer. (for local-chip transfers)
 inline snrt_dma_txid_t snrt_dma_start_1d(void *dst, const void *src,
                                          size_t size) {
-    return snrt_dma_start_1d_wideptr((size_t)dst, (size_t)src, size);
+    uint64_t dst_wideptr = (uint64_t)dst;
+    dst_wideptr += (uint64_t)snrt_cluster_base_addrh << 32;
+    uint64_t src_wideptr = (uint64_t)src;
+    src_wideptr += (uint64_t)snrt_cluster_base_addrh << 32;
+    return snrt_dma_start_1d_wideptr(dst_wideptr, src_wideptr, size);
 }
 
 /// Initiate an asynchronous 2D DMA transfer with wide 64-bit pointers.
@@ -135,7 +139,11 @@ inline snrt_dma_txid_t snrt_dma_start_2d_wideptr(uint64_t dst, uint64_t src,
 inline snrt_dma_txid_t snrt_dma_start_2d(void *dst, const void *src,
                                          size_t size, size_t dst_stride,
                                          size_t src_stride, size_t repeat) {
-    return snrt_dma_start_2d_wideptr((size_t)dst, (size_t)src, size, dst_stride,
+    uint64_t dst_wideptr = (uint64_t)dst;
+    dst_wideptr += (uint64_t)snrt_cluster_base_addrh << 32;
+    uint64_t src_wideptr = (uint64_t)src;
+    src_wideptr += (uint64_t)snrt_cluster_base_addrh << 32;
+    return snrt_dma_start_2d_wideptr(dst_wideptr, src_wideptr, size, dst_stride,
                                      src_stride, repeat);
 }
 
