@@ -105,7 +105,6 @@ class BlockGemm(params: GemmParams) extends Module with RequireAsyncReset {
   def a_bits_len = params.meshRow * params.tileSize * params.dataWidthA
   def b_bits_len = params.tileSize * params.meshCol * params.dataWidthB
   def a_b_bits_len = a_bits_len + b_bits_len
-  val combined_a_b_bits = WireInit(0.U(a_b_bits_len.W))
 
   val combined_decoupled_a_b_in = Wire(Decoupled(UInt(a_b_bits_len.W)))
   val combined_decoupled_a_b_out = Wire(Decoupled(UInt(a_b_bits_len.W)))
@@ -277,10 +276,6 @@ class BlockGemm(params: GemmParams) extends Module with RequireAsyncReset {
   gemm_array.io.data.a_i := a_split_out.bits
   gemm_array.io.data.b_i := b_split_out.bits
   gemm_array.io.data.c_i := io.data.c_i.bits
-
-  // ready for pop out the data from outside
-  // io.data.a_i.ready := cstate === sBUSY && gemm_a_b_input_fire
-  // io.data.b_i.ready := cstate === sBUSY && gemm_a_b_input_fire
 
   a_split_out.ready := cstate === sBUSY && gemm_a_b_input_fire
   b_split_out.ready := cstate === sBUSY && gemm_a_b_input_fire
