@@ -5,6 +5,9 @@
 /// A DMA transfer identifier.
 typedef uint32_t snrt_dma_txid_t;
 
+// Early declaration of the functions
+inline uint32_t __attribute__((const)) snrt_cluster_base_addrh();
+
 /// Initiate an asynchronous 1D DMA transfer with wide 64-bit pointers.
 inline snrt_dma_txid_t snrt_dma_start_1d_wideptr(uint64_t dst, uint64_t src,
                                                  size_t size) {
