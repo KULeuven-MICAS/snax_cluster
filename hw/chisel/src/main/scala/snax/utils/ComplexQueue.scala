@@ -55,8 +55,8 @@ class ComplexQueueConcat(
 
   val queues = for (i <- 0 until numChannel) yield {
     val queue = Module(new Queue(UInt(smallWidth.W), depth, pipe))
-    io.nearlyEmpty(i) := queue.io.count < 2.U
-    io.nearlyFull(i) := queue.io.count > (depth - 2).U
+    io.nearlyEmpty(i) := queue.io.count === 0.U && ~queue.io.enq.fire
+    io.nearlyFull(i) := queue.io.count === depth.U && ~queue.io.deq.fire
     queue
   }
 
