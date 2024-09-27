@@ -56,7 +56,7 @@ class Reader(
       inputWidth = param.tcdmParam.dataWidth,
       outputWidth = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
       depth = param.bufferDepth,
-      pipe = param.pipeFifo
+      pipe = true
     ) {
       override val desiredName = s"${moduleNamePrefix}_Reader_DataBuffer"
     }
