@@ -31,7 +31,7 @@ object RescaleSIMDConstant {
   def readWriteCsrNum: Int = 13
 
   // sharedScaleFactorPerGroupSize
-  def sharedScaleFactorPerGroupSize = 1
+  def sharedScaleFactorPerGroupSize = 8
 
 }
 
@@ -58,6 +58,6 @@ object PipelinedConfig {
     dataLen = RescaleSIMDConstant.dataLen,
     laneLen = 8,
     readWriteCsrNum = RescaleSIMDConstant.readWriteCsrNum,
-    sharedScaleFactorPerGroupSize = 8
+    sharedScaleFactorPerGroupSize = 1
   )
 }

@@ -39,8 +39,7 @@ class RescaleSIMD(params: RescaleSIMDParams)
   val lane = Seq.fill(params.laneLen)(Module(new RescalePE(params)))
 
   // control csr registers for storing the control data
-  def ctrl_csr_set_num = params.dataLen / params.sharedScaleFactorPerGroupSize
-  require(ctrl_csr_set_num == params.laneLen)
+  def ctrl_csr_set_num = params.laneLen / params.sharedScaleFactorPerGroupSize
 
   // Create a Vec of ctrl_csr_set_num instances of RescalePECtrl(params)
   val ctrl_csr = VecInit(Seq.fill(ctrl_csr_set_num) {
