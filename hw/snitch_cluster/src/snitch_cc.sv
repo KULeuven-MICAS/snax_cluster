@@ -388,6 +388,7 @@ module snitch_cc #(
     ) i_axi_dma_tc_snitch_fe (
       .clk_i            ( clk_i                     ),
       .rst_ni           ( rst_ni                    ),
+      .cluster_base_addr_i ( tcdm_addr_base_i       ),
       .axi_dma_req_o    ( axi_dma_req_o             ),
       .axi_dma_res_i    ( axi_dma_res_i             ),
       .dma_busy_o       ( axi_dma_busy_o            ),
@@ -852,7 +853,7 @@ module snitch_cc #(
     #0;
 `endif
     $system("mkdir logs -p");
-    $sformat(fn, "logs/trace_hart_%05x.dasm", hart_id_i);
+    $sformat(fn, "logs/chip_%02x_%02x/trace_hart_%05x.dasm", tcdm_addr_base_i[47:44], tcdm_addr_base_i[43:40], hart_id_i);
     f = $fopen(fn, "w");
     $display("[Tracer] Logging Hart %d to %s", hart_id_i, fn);
   end
