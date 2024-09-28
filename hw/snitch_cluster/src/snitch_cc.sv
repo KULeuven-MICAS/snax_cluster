@@ -850,7 +850,7 @@ module snitch_cc #(
     // `hart_id_i` won't have a value assigned at the beginning of the first
     // delta cycle.
 `ifndef VERILATOR
-    #0;
+    #1;
 `endif
     $system("mkdir -p logs");
     $sformat(fn, "logs/trace_chip_%01x%01x_hart_%05x.dasm", tcdm_addr_base_i[47:44],
