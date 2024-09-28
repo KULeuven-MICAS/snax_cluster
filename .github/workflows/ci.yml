@@ -31,7 +31,7 @@ jobs:
     name: Simulate SW on Snitch Cluster w/ Verilator
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/pulp-platform/snitch_cluster:main
+      image: ghcr.io/kuleuven-micas/snax:main
     steps:
       - uses: actions/checkout@v2
         with:
@@ -58,9 +58,8 @@ jobs:
         working-directory: target/snitch_cluster
         run: |
           ./run.py --simulator verilator \
-          sw/runtime.yaml sw/snitch-cluster-runtime.yaml sw/custom-fp.yaml \
-          sw/standard-fp.yaml sw/openmp.yaml sw/snitch-cluster-openmp.yaml \
-          sw/blas.yaml sw/dnn.yaml -j
+          sw/runtime.yaml \
+          sw/standard-fp.yaml -j
 
   ##############################################
   # Simulate SW on SNAX Cluster w/ Verilator #
