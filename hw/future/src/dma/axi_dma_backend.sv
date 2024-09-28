@@ -300,7 +300,8 @@ module axi_dma_backend #(
       // open file
       initial begin
         #1;
-        $sformat(fn, "logs/trace_chip_%02x%02x_dma_%05x.log", cluster_base_addr_i[47:44], cluster_base_addr_i[43:40], dma_id_i);
+        $sformat(fn, "logs/trace_chip_%02x%02x_dma_%05x.log", cluster_base_addr_i[47:44],
+                 cluster_base_addr_i[43:40], dma_id_i);
         f = $fopen(fn, "w");
         $display("[Tracer] Logging DMA %d to %s", dma_id_i, fn);
       end

@@ -853,7 +853,8 @@ module snitch_cc #(
     #0;
 `endif
     $system("mkdir -p logs");
-    $sformat(fn, "logs/trace_chip_%02x%02x_hart_%05x.dasm", tcdm_addr_base_i[47:44], tcdm_addr_base_i[43:40], hart_id_i);
+    $sformat(fn, "logs/trace_chip_%02x%02x_hart_%05x.dasm", tcdm_addr_base_i[47:44],
+             tcdm_addr_base_i[43:40], hart_id_i);
     f = $fopen(fn, "w");
     $display("[Tracer] Logging Hart %d to %s", hart_id_i, fn);
   end
