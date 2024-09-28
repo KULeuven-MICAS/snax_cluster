@@ -103,7 +103,8 @@ module axi_dma_tc_snitch_fe #(
     ) i_axi_dma_backend (
         .clk_i            ( clk_i               ),
         .rst_ni           ( rst_ni              ),
-        .cluster_base_addr_i(cluster_base_addr_i),
+        // Chip ID is retrieved from base_addr, and is hard coded here
+        .chip_id_i        (cluster_base_addr_i[47:40]),
         .axi_dma_req_o    ( axi_dma_req_o       ),
         .axi_dma_res_i    ( axi_dma_res_i       ),
         .burst_req_i      ( burst_req           ),

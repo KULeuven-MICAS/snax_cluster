@@ -57,7 +57,7 @@ module axi_dma_backend #(
     /// Asynchronous reset, active low
     input  logic                        rst_ni,
     /// Cluster base address, just for correct logging
-    input  addr_t                       cluster_base_addr_i,
+    input  [7:0]                        chip_id_i,
     /// AXI4+ATOP master request
     output axi_req_t                    axi_dma_req_o,
     /// AXI4+ATOP master response
@@ -300,8 +300,8 @@ module axi_dma_backend #(
       // open file
       initial begin
         #1;
-        $sformat(fn, "logs/trace_chip_%01x%01x_dma_%05x.log", cluster_base_addr_i[47:44],
-                 cluster_base_addr_i[43:40], dma_id_i);
+        $sformat(fn, "logs/trace_chip_%01x%01x_dma_%05x.log", chip_id_i[7:4],
+                 chip_id_i[3:0], dma_id_i);
         f = $fopen(fn, "w");
         $display("[Tracer] Logging DMA %d to %s", dma_id_i, fn);
       end
