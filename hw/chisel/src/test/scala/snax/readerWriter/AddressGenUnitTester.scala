@@ -6,21 +6,6 @@ import chiseltest._
 
 import snax.xdma.DesignParams._
 
-class basicCounterTester extends AnyFlatSpec with ChiselScalatestTester {
-  println(getVerilogString(new BasicCounter(8)))
-  "The basic counter" should " pass" in {
-    test(new BasicCounter(8)).withAnnotations(
-      Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)
-    ) { dut =>
-      dut.io.ceil.poke(28)
-      for (i <- 0 until 128) {
-        dut.io.tick.poke(i % 2)
-        dut.clock.step()
-      }
-    }
-  }
-}
-
 class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
 
   println(
