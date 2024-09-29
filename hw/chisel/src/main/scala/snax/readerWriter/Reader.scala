@@ -46,6 +46,7 @@ class Reader(
     new DataResponsers(
       tcdmDataWidth = param.tcdmParam.dataWidth,
       numChannel = param.tcdmParam.numChannel,
+      fifoDepth = param.bufferDepth,
       moduleNamePrefix = s"${moduleNamePrefix}_Reader"
     )
   )

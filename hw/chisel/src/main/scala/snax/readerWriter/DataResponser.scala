@@ -56,7 +56,7 @@ class DataResponser(tcdmDataWidth: Int, fifoDepth: Int)
 class DataResponsers(
     tcdmDataWidth: Int = 64,
     numChannel: Int = 8,
-    fifoDepth: Int = 8,
+    fifoDepth: Int,
     moduleNamePrefix: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
@@ -78,6 +78,8 @@ class DataResponsers(
 
 object DataResponserEmitter extends App {
   println(
-    getVerilogString(new DataResponsers(tcdmDataWidth = 64, numChannel = 8))
+    getVerilogString(
+      new DataResponsers(tcdmDataWidth = 64, numChannel = 8, fifoDepth = 8)
+    )
   )
 }
