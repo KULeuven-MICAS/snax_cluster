@@ -43,8 +43,8 @@ class DataResponser(tcdmDataWidth: Int, fifoDepth: Int)
   // The responsorReady Ctrl Logic
   // Implemented by a bi-directional counter
   // If the dataBuffer is full and there is no data sent from the output, then the Responsor is not ready to intake more data
-  val fifoUtilizationCounter = Module(new UpDownCounter(log2Up(fifoDepth)))
-  fifoUtilizationCounter.io.ceil := fifoDepth.U
+  val fifoUtilizationCounter = Module(new UpDownCounter(log2Up(fifoDepth + 1)))
+  fifoUtilizationCounter.io.ceil := (fifoDepth + 1).U
   fifoUtilizationCounter.io.reset := 0.U
   fifoUtilizationCounter.io.tickUp := io.reqrspLink.reqSubmit
   fifoUtilizationCounter.io.tickDown := io.out.dataFifoPopped
