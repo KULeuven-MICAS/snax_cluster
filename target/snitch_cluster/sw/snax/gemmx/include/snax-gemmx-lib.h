@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include "snrt.h"
 #include "stdint.h"
+#include "streamer_csr_addr_map.h"
 
 #pragma once
 
@@ -76,7 +77,25 @@ void set_gemmx_streamer_csr(
     int32_t transpose_B, int32_t channel_en_C);
 
 // Set CSR to start STREAMER
-void set_gemmx_streamer_start();
+inline void set_gemmx_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }
+
+#define GEMMX_CSR_ADDR_BASE (STREAMER_PERFORMANCE_COUNTER_CSR + 1)
+#define T_BOUND_K (GEMMX_CSR_ADDR_BASE + 0)
+#define T_BOUND_N (GEMMX_CSR_ADDR_BASE + 1)
+#define T_BOUND_M (GEMMX_CSR_ADDR_BASE + 2)
+
+#define SUBTRACTIONS (GEMMX_CSR_ADDR_BASE + 3)
+
+#define SIMD_CSR0 (GEMMX_CSR_ADDR_BASE + 4)
+#define SIMD_CSR1 (GEMMX_CSR_ADDR_BASE + 5)
+#define SIMD_CSR2 (GEMMX_CSR_ADDR_BASE + 6)
+
+#define TEMPORAL_LOOP_BOUND (GEMMX_CSR_ADDR_BASE + 7)
+#define BYPASS_SIMD (GEMMX_CSR_ADDR_BASE + 8)
+
+#define GEMMX_START (GEMMX_CSR_ADDR_BASE + 9)
+#define GEMMX_BUSY (GEMMX_CSR_ADDR_BASE + 10)
+#define GEMMX_PERFORMANCE_COUNTER (GEMMX_CSR_ADDR_BASE + 11)
 
 // Set GEMM configuration CSR
 void set_gemmx_csr(int tempLoop0, int tempLoop1, int tempLoop2,
@@ -89,7 +108,7 @@ void set_gemmx_csr(int tempLoop0, int tempLoop1, int tempLoop2,
                    uint32_t temporal_loop_bound, uint32_t bypassSIMD);
 
 // Set CSR to start GEMM
-void set_gemmx_start();
+inline void set_gemmx_start() { csrw_ss(GEMMX_START, 1); }
 
 // Poll until Streamer and GEMM accelerator finish
 void wait_gemmx_and_streamer();
