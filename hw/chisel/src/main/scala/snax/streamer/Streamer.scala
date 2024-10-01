@@ -595,8 +595,8 @@ class StreamerHeaderFile(param: StreamerParam) {
 
   // c broadcast csr configuration
   csrBase = csrBase + (if (param.hasTranspose)
-              param.readerParams.length
-            else 0)
+                         param.readerParams.length
+                       else 0)
   if (param.hasCBroadcast) {
     csrMap = csrMap + "#define C_BROADCAST_EXTENSION_ENABLE \n"
     for (i <- 0 until param.readerWriterParams.length / 2) {

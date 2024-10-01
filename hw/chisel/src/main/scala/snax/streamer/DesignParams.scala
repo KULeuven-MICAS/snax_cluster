@@ -110,7 +110,7 @@ class StreamerParam(
       "CBroadcast only supports for readers with the same 2048 data width"
     )
   }
-  
+
 }
 
 object StreamerParam {
