@@ -99,7 +99,11 @@ class AddressGenUnit(
   // Create counters for each dimension
   val counters = for (i <- 0 until param.temporalDimension) yield {
     val counter = Module(
-      new ProgrammableCounter(param.addressWidth, hasCeil = true, s"${moduleNamePrefix}_AddressGenUnitCounter")
+      new ProgrammableCounter(
+        param.addressWidth,
+        hasCeil = true,
+        s"${moduleNamePrefix}_AddressGenUnitCounter"
+      )
     )
     counter.io.reset := io.start
     // counter.io.tick is conenected later, when all necessary signal becomes available

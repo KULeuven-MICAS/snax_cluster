@@ -83,8 +83,11 @@ class UpDownCounter(width: Int) extends Module with RequireAsyncReset {
   io.firstVal := value === 0.U
 }
 
-class ProgrammableCounter(width: Int, hasCeil: Boolean = true, moduleName: String = "unnamed_counter")
-    extends Module
+class ProgrammableCounter(
+    width: Int,
+    hasCeil: Boolean = true,
+    moduleName: String = "unnamed_counter"
+) extends Module
     with RequireAsyncReset {
   override val desiredName = moduleName
   val io = IO(new Bundle {

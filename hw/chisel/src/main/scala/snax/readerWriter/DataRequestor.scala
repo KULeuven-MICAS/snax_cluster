@@ -38,7 +38,7 @@ class DataRequestorIO(
 class DataRequestor(
     tcdmDataWidth: Int,
     tcdmAddressWidth: Int,
-    isReader: Boolean, 
+    isReader: Boolean,
     moduleNamePrefix: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
@@ -102,7 +102,12 @@ class DataRequestors(
   // new DataRequestorsIO(tcdmDataWidth, tcdmAddressWidth, isReader, numChannel)
   val DataRequestor = for (i <- 0 until numChannel) yield {
     val module = Module(
-      new DataRequestor(tcdmDataWidth, tcdmAddressWidth, isReader, moduleNamePrefix = moduleNamePrefix)
+      new DataRequestor(
+        tcdmDataWidth,
+        tcdmAddressWidth,
+        isReader,
+        moduleNamePrefix = moduleNamePrefix
+      )
     )
 
     // Connect the IO
