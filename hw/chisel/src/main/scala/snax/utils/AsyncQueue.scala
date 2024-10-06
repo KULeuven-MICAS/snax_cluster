@@ -24,12 +24,12 @@ class AsyncQueue[T <: Data](dataType: T, depth: Int = 4)
   // The bit is precalculated and will be used by both readCounter and writeCounter
   val counterBits = log2Up(depth)
 
-  val readerPointer = Wire(UInt(counterBits.W))
-  val writerPointer = Wire(UInt(counterBits.W))
-  val readerPointerGray = Wire(UInt(counterBits.W))
-  val writerPointerGray = Wire(UInt(counterBits.W))
-  val nextReaderPointerGray = Wire(UInt(counterBits.W))
-  val nextWriterPointerGray = Wire(UInt(counterBits.W))
+  val deqPointer = Wire(UInt(counterBits.W))
+  val enqPointer = Wire(UInt(counterBits.W))
+  val deqPointerGray = Wire(UInt(counterBits.W))
+  val enqPointerGray = Wire(UInt(counterBits.W))
+  val nextDeqPointerGray = Wire(UInt(counterBits.W))
+  val nextEnqPointerGray = Wire(UInt(counterBits.W))
 
   // empty and full signals will be driven later
   val empty = Wire(Bool())
@@ -42,39 +42,39 @@ class AsyncQueue[T <: Data](dataType: T, depth: Int = 4)
   val mem = Mem(depth, dataType)
 
   withClock(io.enq.clock) {
-    val writerCounter = Counter(depth)
-    writerPointer := writerCounter.value
-    writerPointerGray := writerPointer ^ (writerPointer >> 1.U)
-    nextWriterPointerGray := (writerPointer + 1.U) ^ ((writerPointer + 1.U) >> 1.U)
+    val enqCounter = Counter(depth)
+    enqPointer := enqCounter.value
+    enqPointerGray := enqPointer ^ (enqPointer >> 1.U)
+    nextEnqPointerGray := (enqPointer + 1.U) ^ ((enqPointer + 1.U) >> 1.U)
 
-    full := nextWriterPointerGray === RegNext(
-      RegNext(readerPointerGray, 0.U),
+    full := nextEnqPointerGray === RegNext(
+      RegNext(deqPointerGray, 0.U),
       0.U
     )
 
     when(io.enq.data.fire) {
-      mem.write(writerPointer, io.enq.data.bits, io.enq.clock)
-      writerCounter.inc()
+      mem.write(enqPointer, io.enq.data.bits, io.enq.clock)
+      enqCounter.inc()
     }
   }
 
   withClock(io.deq.clock) {
-    val readerCounter = Counter(depth)
-    readerPointer := readerCounter.value
-    readerPointerGray := readerPointer ^ (readerPointer >> 1.U)
-    nextReaderPointerGray := (readerPointer + 1.U) ^ ((readerPointer + 1.U) >> 1.U)
+    val deqCounter = Counter(depth)
+    deqPointer := deqCounter.value
+    deqPointerGray := deqPointer ^ (deqPointer >> 1.U)
+    nextDeqPointerGray := (deqPointer + 1.U) ^ ((deqPointer + 1.U) >> 1.U)
 
-    empty := readerPointerGray === RegNext(
-      RegNext(writerPointerGray, 0.U),
+    empty := deqPointerGray === RegNext(
+      RegNext(enqPointerGray, 0.U),
       0.U
     )
 
     when(io.deq.data.fire) {
-      readerCounter.inc()
+      deqCounter.inc()
     }
   }
 
-  io.deq.data.bits := mem.read(readerPointer, io.deq.clock)
+  io.deq.data.bits := mem.read(deqPointer, io.deq.clock)
 }
 
 object AsyncQueueEmitter extends App {
