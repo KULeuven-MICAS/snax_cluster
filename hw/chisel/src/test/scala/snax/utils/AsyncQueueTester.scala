@@ -25,8 +25,6 @@ class AsyncQueueMultiClockShell[T <: Data](dataType: T, depth: Int)
 }
 
 class AsyncQueueTester extends AnyFlatSpec with ChiselScalatestTester {
-  behavior of "AsyncQueue"
-
   "AsyncQueue Test" should "pass" in {
     test(new AsyncQueueMultiClockShell(UInt(8.W), 16))
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) {
@@ -81,6 +79,137 @@ class AsyncQueueTester extends AnyFlatSpec with ChiselScalatestTester {
                 dut.io.deq.data.ready.poke(false.B)
               }
               dut.clock.step(6)
+            }
+          }
+
+          concurrentThreads = concurrentThreads.fork {
+            dut.clock.step(500)
+            testTerminated = true
+          }
+
+          concurrentThreads.joinAndStep()
+      }
+  }
+}
+
+
+// This test is aiming to emulate Mace's condition where the relationship between two clocks is 4:1, to see if the AsyncQueue can work without bottleneck. 
+// Target: The slower clock side's transmission is continuous. 
+class AsyncQueueMaceTester extends AnyFlatSpec with ChiselScalatestTester {
+  "AsyncQueue Test Slow -> Fast" should "pass" in {
+    test(new AsyncQueueMultiClockShell(UInt(8.W), 4))
+      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) {
+        dut =>
+          var inputClock = false
+          var outputClock = false
+          val dataBuffer = scala.collection.mutable.Queue[Int]()
+
+          var concurrentThreads =
+            new chiseltest.internal.TesterThreadList(Seq())
+          var testTerminated = false
+
+          // Two clock signals
+          concurrentThreads = concurrentThreads.fork {
+            while (!testTerminated) {
+              dut.io.enq.clock.poke(inputClock.B)
+              inputClock = !inputClock
+              dut.clock.step(4)
+            }
+          }
+          concurrentThreads = concurrentThreads.fork {
+            while (!testTerminated) {
+              dut.io.deq.clock.poke(outputClock.B)
+              outputClock = !outputClock
+              dut.clock.step(1)
+            }
+          }
+          concurrentThreads = concurrentThreads.fork {
+            while (!testTerminated) {
+              if (dut.io.enq.data.ready.peek().litToBoolean) {
+                val randomData = scala.util.Random.nextInt(256)
+                dut.io.enq.data.valid.poke(true.B)
+                dut.io.enq.data.bits.poke(randomData.U)
+                dataBuffer.enqueue(randomData)
+              } else {
+                dut.io.enq.data.valid.poke(false.B)
+              }
+              dut.clock.step(8)
+            }
+          }
+
+          concurrentThreads = concurrentThreads.fork {
+            while (!testTerminated) {
+              if (dut.io.deq.data.valid.peek().litToBoolean) {
+                val data = dataBuffer.dequeue()
+                dut.io.deq.data.ready.poke(true.B)
+                dut.io.deq.data.bits.expect(data.U)
+              } else {
+                dut.io.deq.data.ready.poke(false.B)
+              }
+              dut.clock.step(2)
+            }
+          }
+
+          concurrentThreads = concurrentThreads.fork {
+            dut.clock.step(500)
+            testTerminated = true
+          }
+
+          concurrentThreads.joinAndStep()
+      }
+  }
+
+  "AsyncQueue Test Fast -> Slow" should "pass" in {
+    test(new AsyncQueueMultiClockShell(UInt(8.W), 4))
+      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) {
+        dut =>
+          var inputClock = false
+          var outputClock = false
+          val dataBuffer = scala.collection.mutable.Queue[Int]()
+
+          var concurrentThreads =
+            new chiseltest.internal.TesterThreadList(Seq())
+          var testTerminated = false
+
+          // Two clock signals
+          concurrentThreads = concurrentThreads.fork {
+            while (!testTerminated) {
+              dut.io.enq.clock.poke(inputClock.B)
+              inputClock = !inputClock
+              dut.clock.step(1)
+            }
+          }
+          concurrentThreads = concurrentThreads.fork {
+            while (!testTerminated) {
+              dut.io.deq.clock.poke(outputClock.B)
+              outputClock = !outputClock
+              dut.clock.step(4)
+            }
+          }
+          concurrentThreads = concurrentThreads.fork {
+            while (!testTerminated) {
+              if (dut.io.enq.data.ready.peek().litToBoolean) {
+                val randomData = scala.util.Random.nextInt(256)
+                dut.io.enq.data.valid.poke(true.B)
+                dut.io.enq.data.bits.poke(randomData.U)
+                dataBuffer.enqueue(randomData)
+              } else {
+                dut.io.enq.data.valid.poke(false.B)
+              }
+              dut.clock.step(2)
+            }
+          }
+
+          concurrentThreads = concurrentThreads.fork {
+            while (!testTerminated) {
+              if (dut.io.deq.data.valid.peek().litToBoolean) {
+                val data = dataBuffer.dequeue()
+                dut.io.deq.data.ready.poke(true.B)
+                dut.io.deq.data.bits.expect(data.U)
+              } else {
+                dut.io.deq.data.ready.poke(false.B)
+              }
+              dut.clock.step(8)
             }
           }
 

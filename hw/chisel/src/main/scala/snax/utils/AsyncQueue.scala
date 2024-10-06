@@ -3,7 +3,7 @@ package snax.utils
 import chisel3._
 import chisel3.util._
 
-class AsyncQueue[T <: Data](dataType: T, depth: Int = 2)
+class AsyncQueue[T <: Data](dataType: T, depth: Int = 4)
     extends Module
     with RequireAsyncReset {
   require(
