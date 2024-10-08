@@ -498,8 +498,12 @@ class Streamer(
           writer(i - param.readerNum).io.accClock.get := io.accClock.get
         } else {
           reader_writer_idx = (i - param.readerNum - param.writerNum) / 2
-          reader_writer(reader_writer_idx).io.readerInterface.accClock.get := io.accClock.get
-          reader_writer(reader_writer_idx).io.writerInterface.accClock.get := io.accClock.get
+          reader_writer(
+            reader_writer_idx
+          ).io.readerInterface.accClock.get := io.accClock.get
+          reader_writer(
+            reader_writer_idx
+          ).io.writerInterface.accClock.get := io.accClock.get
         }
       }
     }

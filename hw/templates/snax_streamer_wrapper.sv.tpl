@@ -167,7 +167,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
     //-----------------------------
     // clock from accelerator domain
 % if "has_crossClockDomain" in cfg["snax_streamer_cfg"] and cfg["snax_streamer_cfg"]["has_crossClockDomain"]:
-    .accClock ( acc_clk_i ),
+    .io_accClock ( acc_clk_i ),
 % endif
     .clock ( clk_i   ),
     .reset ( ~rst_ni ),
