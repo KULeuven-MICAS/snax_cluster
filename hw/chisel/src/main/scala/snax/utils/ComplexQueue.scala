@@ -28,7 +28,7 @@ class ComplexQueueConcat(
   val smallWidth = Seq(inputWidth, outputWidth).min
 
   val queueModuleName =
-    "Queue_W" + smallWidth.toString + "_D" + depth.toString + "_H"+ BigInt(
+    "Queue_W" + smallWidth.toString + "_D" + depth.toString + "_H" + BigInt(
       numbits = 30,
       scala.util.Random
     ).toString(radix = 32)
@@ -131,7 +131,7 @@ class ComplexQueueNtoOne[T <: Data](dataType: T, N: Int, depth: Int)
   require(depth > 0)
 
   val queueModuleName =
-    "Queue_W" + dataType.getWidth.toString + "_D" + depth.toString + "_H"+ BigInt(
+    "Queue_W" + dataType.getWidth.toString + "_D" + depth.toString + "_H" + BigInt(
       numbits = 30,
       scala.util.Random
     ).toString(radix = 32)
@@ -185,7 +185,7 @@ class ComplexQueueOnetoN[T <: Data](dataType: T, N: Int, depth: Int)
   require(depth > 0)
 
   val queueModuleName =
-    "Queue_W" + dataType.getWidth.toString + "_D" + depth.toString + "_H"+ BigInt(
+    "Queue_W" + dataType.getWidth.toString + "_D" + depth.toString + "_H" + BigInt(
       numbits = 30,
       scala.util.Random
     ).toString(radix = 32)
