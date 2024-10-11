@@ -642,7 +642,11 @@ def emit_matmul_data(**kwargs):
 
     data_str += [format_scalar_definition("int32_t", "Cslstride0", bankWidth / 8)]
     c32_spatial_bound_0 = 4
-    data_str += [format_scalar_definition("int32_t", "Cslstride1", c32_spatial_bound_0 * (bankWidth / 8))]
+    data_str += [
+        format_scalar_definition(
+            "int32_t", "Cslstride1", c32_spatial_bound_0 * (bankWidth / 8)
+        )
+    ]
     data_str += [format_scalar_definition("int32_t", "Ctlbound0", kwargs["N"])]
     data_str += [
         format_scalar_definition(
@@ -662,7 +666,11 @@ def emit_matmul_data(**kwargs):
 
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
     d32_spatial_bound_0 = 4
-    data_str += [format_scalar_definition("int32_t", "D32slstride1", d32_spatial_bound_0 * (bankWidth / 8))]
+    data_str += [
+        format_scalar_definition(
+            "int32_t", "D32slstride1", d32_spatial_bound_0 * (bankWidth / 8)
+        )
+    ]
     data_str += [format_scalar_definition("int32_t", "D32tlbound0", kwargs["N"])]
     data_str += [
         format_scalar_definition(
