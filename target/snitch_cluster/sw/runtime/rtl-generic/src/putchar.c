@@ -11,7 +11,7 @@
 static uint8_t uart_initialized = 0;
 
 void _putchar(char character) {
-    if (uart_initialized == 0) {
+    if (!uart_initialized) {
         init_uart(32, 1);
         uart_initialized = 1;
     }
