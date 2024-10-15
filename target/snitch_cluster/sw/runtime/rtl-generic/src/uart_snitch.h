@@ -8,9 +8,7 @@
 
 // extern uint32_t __base_uart_sym;
 
-uint32_t __base_uart_sym = 0x02002000;
-
-#define UART_BASE_ADDR (uintptr_t) & __base_uart_sym
+#define UART_BASE_ADDR (uintptr_t) 0x02002000
 
 #define UART_RBR UART_BASE_ADDR + 0
 #define UART_THR UART_BASE_ADDR + 0
