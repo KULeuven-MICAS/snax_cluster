@@ -555,7 +555,7 @@ module snitch_cluster
   logic [NrCores-1:0] cl_interrupt;
   logic [NrCores-1:0] barrier_in;
   logic barrier_out;
-  logic [NrCores-1:0] obs_signal;
+  logic [ObsWidth-1:0] obs_signal [NrCores];
 
   //--------------
   // Observability register
