@@ -248,7 +248,7 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
   logic csr_stall_d, csr_stall_q;
   logic snax_csr_stall_d, snax_csr_stall_q;
   logic snax_csr_barr_en_d, snax_csr_barr_en_q;
-  logic snax_obs_reg_q, snax_obs_reg_d;
+  logic [31:0] snax_csr_obs_d, snax_csr_obs_q;
 
   localparam logic M = 0;
   localparam logic S = 1;
@@ -320,7 +320,7 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
   `FFAR(csr_stall_q, csr_stall_d, '0, clk_i, rst_i)
   `FFAR(snax_csr_stall_q, snax_csr_stall_d, '0, clk_i, rst_i)
   `FFAR(snax_csr_barr_en_q, snax_csr_barr_en_d, '0, clk_i, rst_i)
-  `FFAR(snax_obs_reg_q, snax_obs_reg_d, '0, clk_i, rst_i)
+  `FFAR(snax_csr_obs_q, snax_csr_obs_d, '0, clk_i, rst_i)
 
   typedef struct packed {
     fpnew_pkg::fmt_mode_t  fmode;
@@ -2373,6 +2373,7 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
     csr_stall_d = csr_stall_q;
     snax_csr_stall_d = snax_csr_stall_q;
     snax_csr_barr_en_d = snax_csr_barr_en_q;
+    snax_csr_obs_d = snax_csr_obs_q;
 
     // Snitch barrier
     if (barrier_i) csr_stall_d = 1'b0;
@@ -2612,6 +2613,11 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
 
           csr_snax_def::SNAX_CSR_BARRIER: begin
             snax_csr_stall_d = 1'b1;
+          end
+          // Observable register
+          csr_snax_def::SNAX_CSR_OBSERVE: begin
+            csr_rvalue = snax_csr_obs_q;
+            snax_csr_obs_d = alu_result;
           end
           // HW cluster barrier
           CSR_BARRIER: begin
