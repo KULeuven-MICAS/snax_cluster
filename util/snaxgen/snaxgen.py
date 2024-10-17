@@ -125,12 +125,32 @@ def streamer_csr_num(acc_cfgs):
         )
 
     address_remapper_csr_num = 0
-    if "tcdm_logic_word_size" in acc_cfgs["snax_streamer_cfg"]["data_reader_params"]:
-        address_remapper_csr_num += len(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["tcdm_logic_word_size"])
-    if "tcdm_logic_word_size" in acc_cfgs["snax_streamer_cfg"]["data_writer_params"]:
-        address_remapper_csr_num += len(acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["tcdm_logic_word_size"])
-    if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"] and "tcdm_logic_word_size" in acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]:
-        address_remapper_csr_num += len(acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["tcdm_logic_word_size"])
+    if (
+        "data_reader_params" in acc_cfgs["snax_streamer_cfg"]
+        and "tcdm_logic_word_size"
+        in acc_cfgs["snax_streamer_cfg"]["data_reader_params"]
+    ):
+        address_remapper_csr_num += len(
+            acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["tcdm_logic_word_size"]
+        )
+    if (
+        "data_writer_params" in acc_cfgs["snax_streamer_cfg"]
+        and "tcdm_logic_word_size"
+        in acc_cfgs["snax_streamer_cfg"]["data_writer_params"]
+    ):
+        address_remapper_csr_num += len(
+            acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["tcdm_logic_word_size"]
+        )
+    if (
+        "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]
+        and "tcdm_logic_word_size"
+        in acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]
+    ):
+        address_remapper_csr_num += len(
+            acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"][
+                "tcdm_logic_word_size"
+            ]
+        )
 
     # Calculation of data movers
     num_data_reader = 0
