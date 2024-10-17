@@ -127,5 +127,9 @@ class ReaderWriterParam(
                                                                   configurableByteMask
                                                                 ) 1
                                                                 else
-                                                                  0)
+                                                                  0) + (if (
+                                                                          tcdmLogicWordSize.length > 1
+                                                                        ) 1
+                                                                        else
+                                                                          0)
 }
