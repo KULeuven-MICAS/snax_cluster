@@ -107,7 +107,7 @@ int main() {
         if (!bypassSIMD) {
             err += check_gemmx_result_D8(local_d8, D8, Batch, M, N);
         } else {
-            err += check_gemmx_result_D32(local_d32, D32, Batch, M, N);
+            err += check_gemmx_result_D32(local_d32, D32, Batch, M, N, false);
         }
 #ifdef TEST_MATMUL
         printf("SNAX GEMM Matmul: %s, Error: %d . bypassSIMD = %d .\n",

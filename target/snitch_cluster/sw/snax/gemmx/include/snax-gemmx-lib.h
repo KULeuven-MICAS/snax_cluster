@@ -110,4 +110,5 @@ uint32_t check_gemmx_result_D8(int8_t* output, int8_t* output_golden,
                                int32_t Batch, int32_t M, int32_t N);
 
 uint32_t check_gemmx_result_D32(int32_t* output, int32_t* output_golden,
-                                int32_t Batch, int32_t M, int32_t N);
+                                int32_t Batch, int32_t M, int32_t N,
+                                bool banked_data_layout);
