@@ -422,3 +422,11 @@ sources:
   - target: snax_test_harness
     files:
       - target/snitch_cluster/test/testharness.sv
+
+  #---------------------------
+  # SNAX FPGA Prototyping
+  #---------------------------
+  - target: snax_fpga
+    files:
+      - target/snitch_cluster/fpga/axi_flat.sv
+      - target/snitch_cluster/fpga/snax_xilinx.sv
