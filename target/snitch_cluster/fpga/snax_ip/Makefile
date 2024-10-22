@@ -7,8 +7,7 @@
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR  := $(dir $(MKFILE_PATH))
 ROOT        := ${MKFILE_DIR}../../..
-DEBUG       ?= 1
-EXT_JTAG    ?= 1
+
 
 VIVADO ?= vivado
 BENDER ?= bender

@@ -83,7 +83,7 @@ if {[get_property PROGRESS [get_run $run]] != "100%"} {
 }
 
 # Implement
-set_property strategy Peformance_ExplorePostRoutePhysOpt [get_runs impl_1]
+set_property strategy Performance_ExploreWithRemap [get_runs impl_1]
 launch_runs impl_1 -jobs ${nproc}
 wait_on_run impl_1
 
