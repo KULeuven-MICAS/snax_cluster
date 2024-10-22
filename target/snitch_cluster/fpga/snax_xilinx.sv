@@ -4,7 +4,7 @@
 module snax_xilinx (
     // Clock and reset
     input clk_i,
-    input rst_n_i,
+    input rst_ni,
 
     // CSR Observation Bits for external inspection
     output [7:0] obs_o,
@@ -87,7 +87,7 @@ module snax_xilinx (
 
   snax_KUL_xdma_cluster_wrapper snax_cluster (
       .clk_i(clk_i),
-      .rst_n_i(rst_n_i),
+      .rst_ni(rst_ni),
       .obs_o(obs_o),
       .meip_i('0),
       .mtip_i('0),
@@ -121,10 +121,10 @@ module snax_xilinx (
       .ar_chan_t(narrow_out_ar_chan_t),
       .r_chan_t(narrow_out_r_chan_t),
       // AXI request & response structs
-      .req_t(narrow_out_req_t),
-      .resp_t(narrow_out_resp_t)
+      .axi_req_t(narrow_out_req_t),
+      .axi_resp_t(narrow_out_resp_t)
   ) i_snax_out_cut (
-      .clk,
+      .clk_i,
       .rst_ni,
       // salve port
       .slv_req_i (narrow_snax_req_o),
@@ -132,6 +132,50 @@ module snax_xilinx (
       // master port
       .mst_req_o (snax_to_xbar_req),
       .mst_resp_i(snax_to_xbar_rsp)
+  );
+
+  narrow_in_req_t  snax_to_xbar_wc_req;
+  narrow_in_resp_t snax_to_xbar_wc_rsp;
+
+  axi_id_remap #(
+      /// ID width of the AXI4+ATOP slave port.
+      .AxiSlvPortIdWidth(4),
+      .AxiSlvPortMaxUniqIds(4),
+      .AxiMaxTxnsPerId(16),
+      .AxiMstPortIdWidth(2),
+      .slv_req_t(narrow_out_req_t),
+      .slv_resp_t(narrow_out_resp_t),
+      .mst_req_t(narrow_in_req_t),
+      .mst_resp_t(narrow_in_resp_t)
+  ) i_snax_to_xbar_remap (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i (snax_to_xbar_req),
+      .slv_resp_o(snax_to_xbar_rsp),
+      .mst_req_o (snax_to_xbar_wc_req),
+      .mst_resp_i(snax_to_xbar_wc_rsp)
+  );
+
+  narrow_out_req_t  xbar_to_snax_wc_req;
+  narrow_out_resp_t xbar_to_snax_wc_rsp;
+
+  axi_id_remap #(
+      /// ID width of the AXI4+ATOP slave port.
+      .AxiSlvPortIdWidth(4),
+      .AxiSlvPortMaxUniqIds(4),
+      .AxiMaxTxnsPerId(16),
+      .AxiMstPortIdWidth(2),
+      .slv_req_t(narrow_out_req_t),
+      .slv_resp_t(narrow_out_resp_t),
+      .mst_req_t(narrow_in_req_t),
+      .mst_resp_t(narrow_in_resp_t)
+  ) i_xbar_to_snax_remap (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i (xbar_to_snax_wc_req),
+      .slv_resp_o(xbar_to_snax_wc_rsp),
+      .mst_req_o (xbar_to_snax_req),
+      .mst_resp_i(xbar_to_snax_rsp)
   );
 
   axi_multicut #(
@@ -143,10 +187,10 @@ module snax_xilinx (
       .ar_chan_t(narrow_in_ar_chan_t),
       .r_chan_t(narrow_in_r_chan_t),
       // AXI request & response structs
-      .req_t(narrow_in_req_t),
-      .resp_t(narrow_in_resp_t)
+      .axi_req_t(narrow_in_req_t),
+      .axi_resp_t(narrow_in_resp_t)
   ) i_snax_in_cut (
-      .clk,
+      .clk_i,
       .rst_ni,
       // salve port
       .slv_req_i (xbar_to_snax_req),
@@ -159,6 +203,28 @@ module snax_xilinx (
   narrow_in_req_t xbar_to_mem_req, axi_mem_req;
   narrow_in_resp_t xbar_to_mem_rsp, axi_mem_rsp;
 
+  narrow_out_req_t  xbar_to_mem_wc_req;
+  narrow_out_resp_t xbar_to_mem_wc_rsp;
+
+  axi_id_remap #(
+      /// ID width of the AXI4+ATOP slave port.
+      .AxiSlvPortIdWidth(4),
+      .AxiSlvPortMaxUniqIds(4),
+      .AxiMaxTxnsPerId(16),
+      .AxiMstPortIdWidth(2),
+      .slv_req_t(narrow_out_req_t),
+      .slv_resp_t(narrow_out_resp_t),
+      .mst_req_t(narrow_in_req_t),
+      .mst_resp_t(narrow_in_resp_t)
+  ) i_xbar_to_mem_remap (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i (xbar_to_mem_wc_req),
+      .slv_resp_o(xbar_to_mem_wc_rsp),
+      .mst_req_o (xbar_to_mem_req),
+      .mst_resp_i(xbar_to_mem_rsp)
+  );
+
   axi_multicut #(
       .NoCuts(32'd1),
       // AXI channel structs
@@ -168,10 +234,10 @@ module snax_xilinx (
       .ar_chan_t(narrow_in_ar_chan_t),
       .r_chan_t(narrow_in_r_chan_t),
       // AXI request & response structs
-      .req_t(narrow_in_req_t),
-      .resp_t(narrow_in_resp_t)
+      .axi_req_t(narrow_in_req_t),
+      .axi_resp_t(narrow_in_resp_t)
   ) i_mem_cut (
-      .clk,
+      .clk_i,
       .rst_ni,
       // salve port
       .slv_req_i (xbar_to_mem_req),
@@ -201,8 +267,8 @@ module snax_xilinx (
       .HideStrb(0),
       .OutFifoDepth(1)
   ) i_axi_to_mem (
-      .clk(clk_i),
-      .rst_ni(rst_n_i),
+      .clk_i,
+      .rst_ni,
       .busy_o(),
       .axi_req_i(axi_mem_req),
       .axi_resp_o(axi_mem_rsp),
@@ -243,6 +309,28 @@ module snax_xilinx (
   narrow_out_req_t  xilinx_to_xbar_req;
   narrow_out_resp_t xilinx_to_xbar_rsp;
 
+  narrow_in_req_t   xilinx_to_xbar_wc_req;
+  narrow_in_resp_t  xilinx_to_xbar_wc_rsp;
+
+  axi_id_remap #(
+      /// ID width of the AXI4+ATOP slave port.
+      .AxiSlvPortIdWidth(4),
+      .AxiSlvPortMaxUniqIds(4),
+      .AxiMaxTxnsPerId(16),
+      .AxiMstPortIdWidth(2),
+      .slv_req_t(narrow_out_req_t),
+      .slv_resp_t(narrow_out_resp_t),
+      .mst_req_t(narrow_in_req_t),
+      .mst_resp_t(narrow_in_resp_t)
+  ) i_xilinx_to_xbar_remap (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i (xilinx_to_xbar_req),
+      .slv_resp_o(xilinx_to_xbar_rsp),
+      .mst_req_o (xilinx_to_xbar_wc_req),
+      .mst_resp_i(xilinx_to_xbar_wc_rsp)
+  );
+
   axi_multicut #(
       .NoCuts(32'd5),
       // AXI channel structs
@@ -252,10 +340,10 @@ module snax_xilinx (
       .ar_chan_t(narrow_out_ar_chan_t),
       .r_chan_t(narrow_out_r_chan_t),
       // AXI request & response structs
-      .req_t(narrow_out_req_t),
-      .resp_t(narrow_out_resp_t)
+      .axi_req_t(narrow_out_req_t),
+      .axi_resp_t(narrow_out_resp_t)
   ) i_xilinx_xbar_cut (
-      .clk,
+      .clk_i,
       .rst_ni,
       // salve port
       .slv_req_i (xilinx_s_req_i),
@@ -275,8 +363,8 @@ module snax_xilinx (
       FallThrough: 0,
       LatencyMode: axi_pkg::CUT_ALL_PORTS,
       PipelineStages: 0,
-      AxiIdWidthSlvPorts: 4,
-      AxiIdUsedSlvPorts: 4,
+      AxiIdWidthSlvPorts: 2,
+      AxiIdUsedSlvPorts: 2,
       UniqueIds: 0,
       AxiAddrWidth: 48,
       AxiDataWidth: 64,
@@ -299,28 +387,28 @@ module snax_xilinx (
       .Cfg          (XbarCfg),
       .Connectivity (4'b1111),
       .ATOPs        (0),
-      .slv_aw_chan_t(narrow_out_aw_chan_t),
-      .mst_aw_chan_t(narrow_in_aw_chan_t),
-      .w_chan_t     (narrow_in_w_chan_t),
-      .slv_b_chan_t (narrow_out_b_chan_t),
-      .mst_b_chan_t (narrow_in_b_chan_t),
-      .slv_ar_chan_t(narrow_out_ar_chan_t),
-      .mst_ar_chan_t(narrow_in_ar_chan_t),
-      .slv_r_chan_t (narrow_out_r_chan_t),
-      .mst_r_chan_t (narrow_in_r_chan_t),
-      .slv_req_t    (narrow_out_req_t),
-      .slv_resp_t   (narrow_out_resp_t),
-      .mst_req_t    (narrow_in_req_t),
-      .mst_resp_t   (narrow_in_resp_t),
+      .slv_aw_chan_t(narrow_in_aw_chan_t),
+      .mst_aw_chan_t(narrow_out_aw_chan_t),
+      .w_chan_t     (narrow_out_w_chan_t),
+      .slv_b_chan_t (narrow_in_b_chan_t),
+      .mst_b_chan_t (narrow_out_b_chan_t),
+      .slv_ar_chan_t(narrow_in_ar_chan_t),
+      .mst_ar_chan_t(narrow_out_ar_chan_t),
+      .slv_r_chan_t (narrow_in_r_chan_t),
+      .mst_r_chan_t (narrow_out_r_chan_t),
+      .slv_req_t    (narrow_in_req_t),
+      .slv_resp_t   (narrow_in_resp_t),
+      .mst_req_t    (narrow_out_req_t),
+      .mst_resp_t   (narrow_out_resp_t),
       .rule_t       (xbar_rule_48_t)
   ) i_soc_wide_xbar (
       .clk_i                (clk_i),
       .rst_ni               (rst_ni),
       .test_i               (test_mode_i),
-      .slv_ports_req_i      ({xbar_to_mem_req, xbar_to_snax_req}),
-      .slv_ports_resp_o     ({xbar_to_mem_rsp, xbar_to_snax_rsp}),
-      .mst_ports_req_o      ({snax_to_xbar_req, xilinx_to_xbar_req}),
-      .mst_ports_resp_i     ({snax_to_xbar_rsp, xilinx_to_xbar_rsp}),
+      .slv_ports_req_i      ({xbar_to_mem_wc_req, xbar_to_snax_wc_req}),
+      .slv_ports_resp_o     ({xbar_to_mem_wc_rsp, xbar_to_snax_wc_rsp}),
+      .mst_ports_req_o      ({snax_to_xbar_wc_req, xilinx_to_xbar_wc_req}),
+      .mst_ports_resp_i     ({snax_to_xbar_wc_rsp, xilinx_to_xbar_wc_rsp}),
       .addr_map_i           (XbarAddrmap),
       .en_default_mst_port_i('1),
       .default_mst_port_i   (1)
