@@ -1,8 +1,9 @@
-# Copyright 2020 ETH Zurich and University of Bologna.
+# Copyright 2024 KU Leuven and ETH Zurich.
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
 # SPDX-License-Identifier: SHL-0.51
 #
 # Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+# Yunhao Deng <yunhao.deng@kuleuven.be>
 
 # Create project
 set project snax
