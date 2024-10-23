@@ -1,3 +1,12 @@
+// Copyright 2024 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Yunhao Deng <nwistoff@iis.ee.ethz.ch>
+
+// The simple wrapper with very basic AXI infrastructure to avoid Vivado to optimize everything away
+// The wrapper, after more development, is possible to make snitch work.
+
 `include "axi/typedef.svh"
 `include "axi_flat.sv"
 
