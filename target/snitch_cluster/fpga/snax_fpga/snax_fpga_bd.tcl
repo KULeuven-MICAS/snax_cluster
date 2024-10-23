@@ -226,7 +226,7 @@ proc create_root_design { parentCell } {
       PMC_CRP_HSM1_REF_CTRL_FREQMHZ {133.333} \
       PMC_CRP_LSBUS_REF_CTRL_FREQMHZ {100} \
       PMC_CRP_NOC_REF_CTRL_FREQMHZ {960} \
-      PMC_CRP_PL0_REF_CTRL_FREQMHZ {200} \
+      PMC_CRP_PL0_REF_CTRL_FREQMHZ {150} \
       PMC_CRP_PL1_REF_CTRL_FREQMHZ {334} \
       PMC_CRP_PL5_REF_CTRL_FREQMHZ {400} \
       PMC_HSM0_CLK_ENABLE {1} \
@@ -244,7 +244,7 @@ proc create_root_design { parentCell } {
       PS_HSDP_INGRESS_TRAFFIC {JTAG} \
       PS_HSDP_MODE {NONE} \
       PS_M_AXI_FPD_DATA_WIDTH {64} \
-      PS_M_AXI_LPD_DATA_WIDTH {64} \
+      PS_M_AXI_LPD_DATA_WIDTH {128} \
       PS_NUM_FABRIC_RESETS {1} \
       PS_PL_CONNECTIVITY_MODE {Custom} \
       PS_USE_M_AXI_FPD {1} \
@@ -316,7 +316,6 @@ proc create_root_design { parentCell } {
   # Restore current instance
   current_bd_instance $oldCurInst
 
-  validate_bd_design
   save_bd_design
 }
 # End of create_root_design()
@@ -328,4 +327,6 @@ proc create_root_design { parentCell } {
 
 create_root_design ""
 
+
+common::send_gid_msg -ssname BD::TCL -id 2053 -severity "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
 
