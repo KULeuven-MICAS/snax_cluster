@@ -249,7 +249,7 @@ def emit_data_reshuffler(**kwargs):
         input_data_len = input_padding.size
 
         explicit_im2col, _ = im2col(
-            input_data, kernel, stride = (stride_h, stride_w), padding = (pad_h, pad_w)
+            input_data, kernel, stride=(stride_h, stride_w), padding=(pad_h, pad_w)
         )
         output_data_len = explicit_im2col.size
 
@@ -367,7 +367,9 @@ def emit_data_reshuffler(**kwargs):
             format_scalar_definition(
                 "int32_t", "tempLoop0_out", padded_output_tensor_w // 8
             ),
-            format_scalar_definition("int32_t", "tempLoop1_out", padded_output_tensor_h),
+            format_scalar_definition(
+                "int32_t", "tempLoop1_out", padded_output_tensor_h
+            ),
             format_scalar_definition("int32_t", "tempLoop2_out", kwargs["Cin"] // 8),
             # data length setting
             format_scalar_definition("int32_t", "output_data_len", output_data_len),
@@ -518,7 +520,9 @@ def emit_data_reshuffler(**kwargs):
             format_scalar_definition(
                 "int32_t", "tempLoop1_out", padded_output_tensor_w // 8
             ),
-            format_scalar_definition("int32_t", "tempLoop2_out", padded_output_tensor_h),
+            format_scalar_definition(
+                "int32_t", "tempLoop2_out", padded_output_tensor_h
+            ),
             # data length setting
             format_scalar_definition("int32_t", "input_data_len", input_data_len),
             format_scalar_definition("int32_t", "output_data_len", output_data_len),
