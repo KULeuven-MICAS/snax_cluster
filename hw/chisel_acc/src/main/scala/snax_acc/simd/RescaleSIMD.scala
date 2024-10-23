@@ -53,7 +53,9 @@ class RescaleSIMD(params: RescaleSIMDParams)
   )
 
   // one cycle delayed input data using DecoupledCut
-  val one_cycle_dalayed_decoupled_input_data = Wire(Decoupled(UInt((params.laneLen * params.inputType).W)))
+  val one_cycle_dalayed_decoupled_input_data = Wire(
+    Decoupled(UInt((params.laneLen * params.inputType).W))
+  )
 
   io.data.input_i -\> one_cycle_dalayed_decoupled_input_data
 
@@ -139,7 +141,7 @@ class RescaleSIMD(params: RescaleSIMDParams)
 
   }
 
-  simd_input_fire := one_cycle_dalayed_decoupled_input_data.fire
+  simd_input_fire := io.data.input_i.fire
   when(simd_input_fire) {
     read_counter := read_counter + 1.U
   }.elsewhen(cstate === sIDLE) {
@@ -181,13 +183,17 @@ class RescaleSIMD(params: RescaleSIMDParams)
   }
 
   // always ready for new input unless is sending the last output (output stalled)
-  one_cycle_dalayed_decoupled_input_data.ready := lane.map(_.io.input_i.ready).reduce(_ && _) && (cstate === sBUSY)
+  one_cycle_dalayed_decoupled_input_data.ready := lane
+    .map(_.io.input_i.ready)
+    .reduce(_ && _) && (cstate === sBUSY)
 
   // concat every result to a big data bus for output
   io.data.output_o.bits := Cat(result.reverse)
 
   // propogate the valid signal
-  io.data.output_o.valid := lane.map(_.io.output_o.valid).reduce(_ && _) && (cstate === sBUSY)
+  io.data.output_o.valid := lane
+    .map(_.io.output_o.valid)
+    .reduce(_ && _) && (cstate === sBUSY)
 
 }
 

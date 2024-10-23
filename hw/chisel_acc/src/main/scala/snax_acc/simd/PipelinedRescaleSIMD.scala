@@ -44,7 +44,9 @@ class PipelinedRescaleSIMD(params: RescaleSIMDParams)
   )
 
   lane_input_valid := io.data.input_i.fire || pipe_input_counter =/= 0.U
-  when(current_input_data.fire && pipe_input_counter =/= lane_comp_cycle.U - 1.U) {
+  when(
+    current_input_data.fire && pipe_input_counter =/= lane_comp_cycle.U - 1.U
+  ) {
     pipe_input_counter := pipe_input_counter + 1.U
   }.elsewhen(
     current_input_data.fire && pipe_input_counter === lane_comp_cycle.U - 1.U
