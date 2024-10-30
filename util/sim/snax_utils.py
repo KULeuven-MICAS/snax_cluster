@@ -196,7 +196,7 @@ def block_gemm_golden_model(
             )
     # Flatten d and add c
     d = d.reshape(m * n * row * col) + c
-    
+
     return d
 
 
