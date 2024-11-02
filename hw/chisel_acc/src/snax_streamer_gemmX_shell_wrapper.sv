@@ -65,7 +65,8 @@ module snax_streamer_gemmX_shell_wrapper #(
 
   wire io_ctrl_gemm_ctrl_ready;
   wire io_ctrl_simd_ctrl_ready;
-  assign csr_reg_set_ready_o = io_ctrl_gemm_ctrl_ready & io_ctrl_simd_ctrl_ready;
+  wire bypassSIMD = csr_reg_set_i[17][0];
+  assign csr_reg_set_ready_o = bypassSIMD ? io_ctrl_gemm_ctrl_ready : io_ctrl_gemm_ctrl_ready & io_ctrl_simd_ctrl_ready;
   assign csr_reg_ro_set_o[0][31:1] = 0;
 
   BlockGemmRescaleSIMD inst_block_gemm_simd (
@@ -94,7 +95,7 @@ module snax_streamer_gemmX_shell_wrapper #(
     .io_ctrl_simd_ctrl_bits_11(csr_reg_set_i[15]),
     .io_ctrl_simd_ctrl_bits_12(csr_reg_set_i[16]),
 
-    .io_ctrl_bypassSIMD(csr_reg_set_i[17][0]),
+    .io_ctrl_bypassSIMD(bypassSIMD),
 
     .io_ctrl_busy_o(csr_reg_ro_set_o[0][0]),
     .io_ctrl_performance_counter(csr_reg_ro_set_o[1]),
