@@ -32,7 +32,7 @@ package snitch_pma_pkg;
 
   // Public interface
   // Hack the Public interface to make it working with floating addresses with floating addresses
-  // Since snitch is a 32b core, it never touch MSB; and MSB is automatically padded with the chip_id, so it does not need to be checked
+  // Since snitch is a 32b core, it never touch MSB; and MSB is automatically padded with the chip_id, so no checking on MSB is needed
   function automatic logic range_check(logic[47:0] base, logic[47:0] mask, logic[47:0] address);
     return (address[39:0] & mask[39:0]) == (base[39:0] & mask[39:0]);
   endfunction : range_check
