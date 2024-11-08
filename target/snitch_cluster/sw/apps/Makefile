@@ -31,6 +31,7 @@ endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster.hjson)
 SUBDIRS += snax-data-reshuffler
 SUBDIRS += snax-gemmx-matmul
+SUBDIRS += snax-gemmx-roofline
 SUBDIRS += snax-gemmx-conv
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_xdma_cluster.hjson)
