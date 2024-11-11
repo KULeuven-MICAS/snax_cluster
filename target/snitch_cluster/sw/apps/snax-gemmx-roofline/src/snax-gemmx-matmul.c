@@ -108,7 +108,9 @@ int main() {
     printf("Running tiled matmul \n");
   }
   int32_t start = snrt_mcycle();
-  run_matmul();
+  for(int i = 0; i < 128; i++) {
+    run_matmul();
+  }
   int32_t end = snrt_mcycle();
 
   if (snrt_is_dm_core()) {
