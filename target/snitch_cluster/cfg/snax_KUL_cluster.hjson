@@ -47,13 +47,6 @@
             emaw: 2,
             emas: 1
         },
-        snax_custom_tcdm_assign: {
-            snax_enable_assign_tcdm_idx: true,
-            snax_narrow_assign_start_idx: [0,56],
-            snax_narrow_assign_end_idx: [7,71],
-            snax_wide_assign_start_idx: [8],
-            snax_wide_assign_end_idx: [55],
-        },
         // AXI bandwidth switcher
         use_ax_bw_converter: true,
         converted_axi_bandwidth: 256,
