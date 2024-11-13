@@ -89,7 +89,6 @@
                 },
                 cores: [
                     { $ref: "#/snax_streamer_gemmX_core_template" },
-                    { $ref: "#/snax_data_reshuffler_core_template" },
                     { $ref: "#/dma_core_template" },
                 ]
             }
