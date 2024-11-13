@@ -20,7 +20,7 @@
         data_width: 64,
         user_width: 3,
         tcdm: {
-            size: 128,
+            size: 4096,
             banks: 32,
         },
         cluster_periph_size: 64, // kB
@@ -124,8 +124,7 @@
         snax_acc_cfg: {
             snax_acc_name: "snax_streamer_gemmX",
             bender_target: ["snax_gemmX","snax_data_reshuffler"],
-            snax_narrow_tcdm_ports: 8,
-            snax_wide_tcdm_ports: 48,
+            snax_narrow_tcdm_ports: 56,
             snax_num_rw_csr: 19,
             snax_num_ro_csr: 2,
             snax_gemmx_mesh_row: 8,
@@ -201,11 +200,10 @@
 
         data_reader_params: {
             spatial_bounds: [[8], [8]],
-            temporal_dim: [6, 3],
+            temporal_dim: [7, 7],
             num_channel: [8, 8],
             fifo_depth: [8, 8],
             configurable_channel: [0, 0],
-            tcdm_logic_word_size: [[256, 128, 64], [256, 128, 64]],
         },
 
         data_writer_params:{
@@ -214,16 +212,14 @@
             num_channel: [8],
             fifo_depth: [1],
             configurable_channel: [0],
-            tcdm_logic_word_size: [[256, 128, 64]],
         },
 
         data_reader_writer_params:{
             spatial_bounds: [[8, 4], [8, 4]],
-            temporal_dim: [3, 3],
+            temporal_dim: [7, 7],
             num_channel: [32, 32],
             fifo_depth: [1, 1],
             configurable_channel: [1, 0],
-            tcdm_logic_word_size: [[256, 128, 64], [256, 128, 64]],
         },
 
         has_transpose: true,
