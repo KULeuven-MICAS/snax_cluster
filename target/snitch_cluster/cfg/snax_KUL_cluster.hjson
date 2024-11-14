@@ -210,7 +210,7 @@
         },
 
         data_reader_writer_params:{
-            spatial_bounds: [[8, 4], [8, 4]],
+            spatial_bounds: [[4, 8], [4, 8]],
             temporal_dim: [7, 7],
             num_channel: [32, 32],
             fifo_depth: [1, 1],
