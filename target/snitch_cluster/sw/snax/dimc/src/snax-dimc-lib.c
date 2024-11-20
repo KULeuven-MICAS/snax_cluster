@@ -149,7 +149,6 @@ void configure_accelerator() {
     csrw_ss(DIMC_CFG_OUTPUT_ZP_QKV, 0);
     csrw_ss(DIMC_CFG_OUTPUT_ZP_QKT, 0);
     csrw_ss(DIMC_CFG_OUTPUT_ZP_CONV, 0);
-
     csrw_ss(DIMC_CFG_MULTIPLIER_QKV, 10);
     csrw_ss(DIMC_CFG_MULTIPLIER_QKT, 10);
     csrw_ss(DIMC_CFG_MULTIPLIER_CONV, 10);
@@ -174,5 +173,5 @@ void configure_accelerator() {
 }
 
 uint32_t read_zp() {
-    return csrr_ss(DIMC_CFG_INPUT_ZP_QKV);
+    return csrr_ss(DIMC_RD_QKV_INPUT_ZP);
 }

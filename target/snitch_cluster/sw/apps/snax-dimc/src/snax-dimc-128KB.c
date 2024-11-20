@@ -22,16 +22,18 @@ int main() {
 
     activation_ptr = (uint64_t *)snrt_l1_next();
     weight_ptr     = activation_ptr + Q_LENGTH;
-    output_ptr     = weight_ptr + Q_LENGTH;
+    output_ptr     = output_ptr + Q_LENGTH;
     
     // allocate 4KB in TCDM for Q1K1T and final result
-    uint64_t *buffer_ptr = output_ptr + Q_LENGTH;
+    uint64_t *buffer_ptr = output_ptr + Q_LENGTH/8;
 
     // alias for output_ptr, also holding Q
     uint64_t *activation_ptr_i = output_ptr; 
 
+    /**************************************************************************/
     // stage 1:
     // load WK, K, Q to TCDM
+    /**************************************************************************/
 
     if (snrt_is_dm_core()) {
         printf("DMA core is configured for K and WK\n");
@@ -59,6 +61,8 @@ int main() {
     /**************************************************************************/
     // wait for the DMA to finish loading WK and K to TCDM
     snrt_cluster_hw_barrier();
+    /**************************************************************************/
+
     /**************************************************************************/
     // stage 2: all three regions are occupied with WK, K, and Q
     // send WK from TCDM to DIMC
@@ -104,11 +108,12 @@ int main() {
     // wait for streamer to finish sending WK to DIMC
     snrt_cluster_hw_barrier();
     /**************************************************************************/
+    
+    /**************************************************************************/
     // stage 3: weight_ptr is free, has K and Q in TCDM
     // load WQ to TCDM;
     // send K from TCDM to DIMC; kick start K1 generation;
     /**************************************************************************/
-    
     if (snrt_is_dm_core()) {
         printf("DMA core is configured for WQ\n");
 
@@ -139,6 +144,8 @@ int main() {
     // wait for the DMA to finish loading WQ to TCDM and K1 generation
     snrt_cluster_hw_barrier();
     /**************************************************************************/
+    
+    /**************************************************************************/
     // stage 4: activation_ptr is free, has WQ and Q in TCDM
     // streamer sends WQ to DIMC
     /**************************************************************************/
@@ -162,11 +169,12 @@ int main() {
     // wait for the streamer to finish sending WQ to DIMC
     snrt_cluster_hw_barrier();
     /**************************************************************************/
+
+    /**************************************************************************/
     // stage 5: weight_ptr and actication_ptr are free, has Q in TCDM
     // load WV and V to TCDM;
     // streamer sends Q to DIMC & kick start Q1K1T generation;
     /**************************************************************************/
-
     if (snrt_is_dm_core()) {
         printf("DMA core is configured for WQ\n");
 
@@ -198,10 +206,11 @@ int main() {
     // wait for the streamer to finish receiving Q1K1T
     snrt_cluster_hw_barrier();
     /**************************************************************************/
+
+    /**************************************************************************/
     // stage 6: activation_ptr_i is free, has V and WV in TCDM
     // send V to DIMC
     /**************************************************************************/
-
     if (snrt_is_compute_core()){
         // send V
         printf("CONFIGURING STREAMERS for V\n");
@@ -220,6 +229,8 @@ int main() {
     /**************************************************************************/
     // wait for the streamer to finish sending V to DIMC
     snrt_cluster_hw_barrier();
+    /**************************************************************************/
+
     /**************************************************************************/
     // stage 7: activation_ptr, activation_ptr_i are free, has WV in TCDM
     // send WV to DIMC
@@ -243,6 +254,8 @@ int main() {
     /**************************************************************************/
     // wait for the streamer to finish sending WV to DIMC and V1 generation
     snrt_cluster_hw_barrier();
+    /**************************************************************************/
+
     /**************************************************************************/
     // stage 8: activation_ptr, activation_ptr_i, weight_ptr are free
     // has Q1K1T in TCDM
@@ -276,11 +289,11 @@ int main() {
                 uint8_t tmp_res = (uint8_t)((value >> (j * 8)) & 0xFF);
                 // printf("%d ", tmp_res);
                 if(tmp_res != gold[index + j]) {
-                    printf("MISMATCH at %d, res:%d, gold:%d\n", (index + j), tmp_res, gold[index + j]);
+                    printf("MISMATCH\n");
                     break;
                 }
             }
-            // printf("RESULTS MATCH WITH GOLDEN MODEL\n");
+            printf("\n");
         }
     }
 }
