@@ -238,7 +238,7 @@ FROM base as target
 # COPY --from=snax-mac /src/sw/math/ /opt/snax-mac/sw/math/
 # COPY --from=snax-mac /src/sw/deps/riscv-opcodes /opt/snax-mac/sw/deps/riscv-opcodes
 # COPY --from=snax-mac /src/sw/deps/printf /opt/snax-mac/sw/deps/printf
-COPY --from=snax-mac /src/util/trace/gen_trace.py /opt/gen_trace.py
+# COPY --from=snax-mac /src/util/trace/gen_trace.py /opt/gen_trace.py
 # 
 # COPY --from=snax-alu /src/target/snitch_cluster/bin/snitch_cluster.vlt /opt/snax-alu-rtl/bin/snitch_cluster.vlt
 # COPY --from=snax-alu /src/sw/snRuntime /opt/snax-alu/sw/snRuntime
