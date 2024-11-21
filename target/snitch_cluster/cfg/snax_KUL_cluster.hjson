@@ -195,7 +195,7 @@
             spatial_bounds: [[8], [8]],
             temporal_dim: [7, 7],
             num_channel: [8, 8],
-            fifo_depth: [6, 6],
+            fifo_depth: [7, 7],
             configurable_channel: [0, 0],
             tcdm_logic_word_size: [[256, 128, 64], [256, 128, 64]],
         },
