@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: SHL-0.51
 
 #include <printf.h>
+#include <cstdlib>  // For std::getenv
+#include <iostream> // For std::cout, std::cerr
+#include <string>   // For std::string
+#include <stdexcept> // For std::invalid_argument, std::out_of_range
 
 #include "Vtestharness.h"
 #include "Vtestharness__Dpi.h"
@@ -105,6 +109,39 @@ void tb_memory_write(long long addr, int len, const svOpenArrayHandle data,
     sim::MEM.write(addr, len, (const uint8_t *)data_ptr,
                    (const uint8_t *)strb_ptr);
 }
+
+int get_int_from_env(const char* var_name, int default_value = 0) {
+    const char* env_var = std::getenv(var_name);
+    if (env_var != nullptr) {
+        try {
+            // Convert string to integer using std::stoi
+            return std::stoi(env_var);
+        } catch (const std::invalid_argument&) {
+            std::cerr << "Environment variable " << var_name << " is not a valid integer: " << env_var << '\n';
+        } catch (const std::out_of_range&) {
+            std::cerr << "Environment variable " << var_name << " is out of integer range: " << env_var << '\n';
+        }
+    }
+    return default_value; // Return the default value if not found or invalid
+}
+
+svBit enable_tracing() {
+    // function to enable/disable tracers
+    return get_int_from_env("ENABLE_TRACING", 1);
+}
+
+const char* get_trace_file_prefix() {
+    static std::string log_file_name = "my_favorite_prefix"; // Default name
+    // Logic to dynamically determine the log file name
+    // For example, from command-line arguments:
+    const char* env_name = std::getenv("LOG_FILE_NAME");
+    if (env_name != nullptr) {
+        log_file_name = env_name;
+    }
+    return log_file_name.c_str();
+}
+
+
 
 const long long clint_addr = sim::BOOTDATA.clint_base;
 const long num_cores = sim::BOOTDATA.core_count;

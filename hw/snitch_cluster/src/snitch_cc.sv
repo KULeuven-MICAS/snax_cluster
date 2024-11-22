@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: SHL-0.51
 
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+//
+import "DPI-C" function bit enable_tracing();
+import "DPI-C" function string get_trace_file_prefix();
 
 `include "common_cells/assertions.svh"
 `include "common_cells/registers.svh"
@@ -849,6 +852,8 @@ module snitch_cc #(
   // pragma translate_off
   int f;
   string fn;
+  string trace_file;
+  string folder = "logs";
   logic [63:0] cycle = 0;
   initial begin
     // We need to schedule the assignment into a safe region, otherwise
@@ -857,113 +862,120 @@ module snitch_cc #(
 `ifndef VERILATOR
     #1;
 `endif
-    $system("mkdir -p logs");
-    $sformat(fn, "logs/trace_chip_%01x%01x_hart_%05x.dasm", tcdm_addr_base_i[47:44],
-             tcdm_addr_base_i[43:40], hart_id_i);
-    f = $fopen(fn, "w");
-    $display("[Tracer] Logging Hart %d to %s", hart_id_i, fn);
+    if(enable_tracing()) begin
+      $sformat(fn, "trace_chip_%01x%01x_hart_%05x.dasm", tcdm_addr_base_i[47:44],
+               tcdm_addr_base_i[43:40], hart_id_i);
+      $sformat(trace_file, "%s_%s", get_trace_file_prefix(), fn);
+      f = $fopen(trace_file, "w");
+      $display("[Tracer] Logging Hart %d to %s", hart_id_i, trace_file);
+    end
   end
 
   // verilog_lint: waive-start always-ff-non-blocking
   always_ff @(posedge clk_i) begin
-    automatic string trace_entry;
-    automatic string extras_str;
-    automatic snitch_pkg::snitch_trace_port_t extras_snitch;
-    automatic snitch_pkg::fpu_trace_port_t extras_fpu;
-    automatic snitch_pkg::fpu_sequencer_trace_port_t extras_fpu_seq_out;
+    if (enable_tracing()) begin
+      automatic string trace_entry;
+      automatic string extras_str;
+      automatic snitch_pkg::snitch_trace_port_t extras_snitch;
+      automatic snitch_pkg::fpu_trace_port_t extras_fpu;
+      automatic snitch_pkg::fpu_sequencer_trace_port_t extras_fpu_seq_out;
 
-    if (rst_ni) begin
-      extras_snitch = '{
-        // State
-        source:       snitch_pkg::SrcSnitch,
-        stall:        i_snitch.stall,
-        exception:    i_snitch.exception,
-        // Decoding
-        rs1:          i_snitch.rs1,
-        rs2:          i_snitch.rs2,
-        rd:           i_snitch.rd,
-        is_load:      i_snitch.is_load,
-        is_store:     i_snitch.is_store,
-        is_branch:    i_snitch.is_branch,
-        pc_d:         i_snitch.pc_d,
-        // Operands
-        opa:          i_snitch.opa,
-        opb:          i_snitch.opb,
-        opa_select:   i_snitch.opa_select,
-        opb_select:   i_snitch.opb_select,
-        write_rd:     i_snitch.write_rd,
-        csr_addr:     i_snitch.inst_data_i[31:20],
-        // Pipeline writeback
-        writeback:    i_snitch.alu_writeback,
-        // Load/Store
-        gpr_rdata_1:  i_snitch.gpr_rdata[1],
-        ls_size:      i_snitch.ls_size,
-        ld_result_32: i_snitch.ld_result[31:0],
-        lsu_rd:       i_snitch.lsu_rd,
-        retire_load:  i_snitch.retire_load,
-        alu_result:   i_snitch.alu_result,
-        // Atomics
-        ls_amo:       i_snitch.ls_amo,
-        // Accelerator
-        retire_acc:   i_snitch.retire_acc,
-        acc_pid:      i_snitch.acc_prsp_i.id,
-        acc_pdata_32: i_snitch.acc_prsp_i.data[31:0],
-        // FPU offload
-        fpu_offload:
-          (i_snitch.acc_qready_i && i_snitch.acc_qvalid_o && i_snitch.acc_qreq_o.addr == 0),
-        is_seq_insn:  (i_snitch.inst_data_i inside {riscv_instr::FREP_I, riscv_instr::FREP_O})
-      };
-
-      if (FPEn) begin
-        extras_fpu = fpu_trace;
-        if (Xfrep) begin
-          // Addenda to FPU extras iff popping sequencer
-          extras_fpu_seq_out = fpu_sequencer_trace;
+      if (rst_ni) begin
+        extras_snitch = '{
+          // State
+          source:       snitch_pkg::SrcSnitch,
+          stall:        i_snitch.stall,
+          exception:    i_snitch.exception,
+          // Decoding
+          rs1:          i_snitch.rs1,
+          rs2:          i_snitch.rs2,
+          rd:           i_snitch.rd,
+          is_load:      i_snitch.is_load,
+          is_store:     i_snitch.is_store,
+          is_branch:    i_snitch.is_branch,
+          pc_d:         i_snitch.pc_d,
+          // Operands
+          opa:          i_snitch.opa,
+          opb:          i_snitch.opb,
+          opa_select:   i_snitch.opa_select,
+          opb_select:   i_snitch.opb_select,
+          write_rd:     i_snitch.write_rd,
+          csr_addr:     i_snitch.inst_data_i[31:20],
+          // Pipeline writeback
+          writeback:    i_snitch.alu_writeback,
+          // Load/Store
+          gpr_rdata_1:  i_snitch.gpr_rdata[1],
+          ls_size:      i_snitch.ls_size,
+          ld_result_32: i_snitch.ld_result[31:0],
+          lsu_rd:       i_snitch.lsu_rd,
+          retire_load:  i_snitch.retire_load,
+          alu_result:   i_snitch.alu_result,
+          // Atomics
+          ls_amo:       i_snitch.ls_amo,
+          // Accelerator
+          retire_acc:   i_snitch.retire_acc,
+          acc_pid:      i_snitch.acc_prsp_i.id,
+          acc_pdata_32: i_snitch.acc_prsp_i.data[31:0],
+          // FPU offload
+          fpu_offload:
+            (i_snitch.acc_qready_i && i_snitch.acc_qvalid_o && i_snitch.acc_qreq_o.addr == 0),
+          is_seq_insn:  (i_snitch.inst_data_i inside {riscv_instr::FREP_I, riscv_instr::FREP_O})
+        };
+        if (FPEn) begin
+          extras_fpu = fpu_trace;
+          if (Xfrep) begin
+            // Addenda to FPU extras iff popping sequencer
+            extras_fpu_seq_out = fpu_sequencer_trace;
+          end
         end
-      end
 
-      cycle++;
-      // Trace snitch iff:
-      // we are not stalled <==> we have issued and processed an instruction (including offloads)
-      // OR we are retiring (issuing a writeback from) a load or accelerator instruction
-      if (
-          !i_snitch.stall || i_snitch.retire_load || i_snitch.retire_acc
-      ) begin
-        $sformat(trace_entry, "%t %1d %8d 0x%h DASM(%h) #; %s\n",
-            $time, cycle, i_snitch.priv_lvl_q, i_snitch.pc_q, i_snitch.inst_data_i,
-            snitch_pkg::print_snitch_trace(extras_snitch));
-        $fwrite(f, trace_entry);
-      end
-      if (FPEn) begin
-        // Trace FPU iff:
-        // an incoming handshake on the accelerator bus occurs <==> an instruction was issued
-        // OR an FPU result is ready to be written back to an FPR register or the bus
-        // OR an LSU result is ready to be written back to an FPR register or the bus
-        // OR an FPU result, LSU result or bus value is ready to be written back to an FPR register
-        if (extras_fpu.acc_q_hs || extras_fpu.fpu_out_hs
-        || extras_fpu.lsu_q_hs || extras_fpu.fpr_we) begin
-          $sformat(trace_entry, "%t %1d %8d 0x%h DASM(%h) #; %s\n",
-              $time, cycle, i_snitch.priv_lvl_q, 32'hz, extras_fpu.op_in,
-              snitch_pkg::print_fpu_trace(extras_fpu));
-          $fwrite(f, trace_entry);
-        end
-        // sequencer instructions
-        if (Xfrep) begin
-          if (extras_fpu_seq_out.cbuf_push) begin
+        cycle++;
+        // Trace snitch iff:
+        // we are not stalled <==> we have issued and processed an instruction (including offloads)
+        // OR we are retiring (issuing a writeback from) a load or accelerator instruction
+        if (
+            !i_snitch.stall || i_snitch.retire_load || i_snitch.retire_acc
+        ) begin
+          if(enable_tracing()) begin
             $sformat(trace_entry, "%t %1d %8d 0x%h DASM(%h) #; %s\n",
-                $time, cycle, i_snitch.priv_lvl_q, 32'hz, 64'hz,
-                snitch_pkg::print_fpu_sequencer_trace(extras_fpu_seq_out));
+                $time, cycle, i_snitch.priv_lvl_q, i_snitch.pc_q, i_snitch.inst_data_i,
+                snitch_pkg::print_snitch_trace(extras_snitch));
             $fwrite(f, trace_entry);
           end
         end
+        if (FPEn) begin
+          // Trace FPU iff:
+          // an incoming handshake on the accelerator bus occurs <==> an instruction was issued
+          // OR an FPU result is ready to be written back to an FPR register or the bus
+          // OR an LSU result is ready to be written back to an FPR register or the bus
+          // OR an FPU result, LSU result or bus value is ready to be written back to an FPR register
+          if (extras_fpu.acc_q_hs || extras_fpu.fpu_out_hs
+          || extras_fpu.lsu_q_hs || extras_fpu.fpr_we) begin
+            $sformat(trace_entry, "%t %1d %8d 0x%h DASM(%h) #; %s\n",
+                $time, cycle, i_snitch.priv_lvl_q, 32'hz, extras_fpu.op_in,
+                snitch_pkg::print_fpu_trace(extras_fpu));
+            $fwrite(f, trace_entry);
+          end
+          // sequencer instructions
+          if (Xfrep) begin
+            if (extras_fpu_seq_out.cbuf_push) begin
+              $sformat(trace_entry, "%t %1d %8d 0x%h DASM(%h) #; %s\n",
+                  $time, cycle, i_snitch.priv_lvl_q, 32'hz, 64'hz,
+                  snitch_pkg::print_fpu_sequencer_trace(extras_fpu_seq_out));
+              $fwrite(f, trace_entry);
+            end
+          end
+        end
+      end else begin
+        cycle = '0;
       end
-    end else begin
-      cycle = '0;
     end
   end
 
   final begin
-    $fclose(f);
+    if (enable_tracing()) begin
+      $fclose(f);
+    end
   end
   // verilog_lint: waive-stop always-ff-non-blocking
   // pragma translate_on
