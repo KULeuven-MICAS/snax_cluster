@@ -7,6 +7,8 @@
 #include <iostream> // For std::cout, std::cerr
 #include <string>   // For std::string
 #include <stdexcept> // For std::invalid_argument, std::out_of_range
+#include <filesystem> // C++17 filesystem library
+#include <system_error> // For error handling
 
 #include "Vtestharness.h"
 #include "Vtestharness__Dpi.h"
@@ -14,6 +16,11 @@
 #include "tb_lib.hh"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
+
+// Declare these as globally declared (and parsed) in tb_bin.cc
+extern bool WRAPPER_disable_tracing;
+extern char* WRAPPER_trace_prefix;
+
 namespace sim {
 
 // Number of cycles between HTIF checks.
@@ -127,18 +134,26 @@ int get_int_from_env(const char* var_name, int default_value = 0) {
 
 svBit enable_tracing() {
     // function to enable/disable tracers
-    return get_int_from_env("ENABLE_TRACING", 1);
+    if (WRAPPER_disable_tracing){
+        return 0;
+    }
+    else {
+        return 1;
+    }
 }
 
 const char* get_trace_file_prefix() {
-    static std::string log_file_name = "my_favorite_prefix"; // Default name
-    // Logic to dynamically determine the log file name
-    // For example, from command-line arguments:
-    const char* env_name = std::getenv("LOG_FILE_NAME");
-    if (env_name != nullptr) {
-        log_file_name = env_name;
+    if (WRAPPER_trace_prefix == nullptr){
+	// Use the standard prefix, and create a logs directory if necessary
+        std::string foldername = "logs/";
+        std::filesystem::create_directories(foldername);
+        static std::string log_file_name = "logs/";
+        return log_file_name.c_str();
     }
-    return log_file_name.c_str();
+    // Return the one parsed from the command line otherwise
+    else {
+        return WRAPPER_trace_prefix;
+    }
 }
 
 

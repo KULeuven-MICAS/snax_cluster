@@ -865,7 +865,7 @@ module snitch_cc #(
     if(enable_tracing()) begin
       $sformat(fn, "trace_chip_%01x%01x_hart_%05x.dasm", tcdm_addr_base_i[47:44],
                tcdm_addr_base_i[43:40], hart_id_i);
-      $sformat(trace_file, "%s_%s", get_trace_file_prefix(), fn);
+      $sformat(trace_file, "%s%s", get_trace_file_prefix(), fn);
       f = $fopen(trace_file, "w");
       $display("[Tracer] Logging Hart %d to %s", hart_id_i, trace_file);
     end
