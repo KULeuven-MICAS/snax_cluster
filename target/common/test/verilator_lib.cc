@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: SHL-0.51
 
 #include <printf.h>
-#include <string>
 #include <filesystem>
+#include <string>
 
 #include "Vtestharness.h"
 #include "Vtestharness__Dpi.h"
@@ -15,7 +15,7 @@
 
 // Declare these as globally declared (and parsed) in tb_bin.cc
 extern bool WRAPPER_disable_tracing;
-extern char* WRAPPER_trace_prefix;
+extern char *WRAPPER_trace_prefix;
 
 namespace sim {
 
@@ -118,9 +118,9 @@ svBit disable_tracing() {
     return WRAPPER_disable_tracing;
 }
 
-const char* get_trace_file_prefix() {
-    if (WRAPPER_trace_prefix == nullptr){
-	// Use the standard prefix, and create a logs directory if necessary
+const char *get_trace_file_prefix() {
+    if (WRAPPER_trace_prefix == nullptr) {
+        // Use the standard prefix, and create a logs directory if necessary
         std::string foldername = "logs/";
         std::filesystem::create_directories(foldername);
         static std::string log_file_name = "logs/";
@@ -131,8 +131,6 @@ const char* get_trace_file_prefix() {
         return WRAPPER_trace_prefix;
     }
 }
-
-
 
 const long long clint_addr = sim::BOOTDATA.clint_base;
 const long num_cores = sim::BOOTDATA.core_count;
