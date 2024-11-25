@@ -8,15 +8,10 @@
 
 `ifdef VERILATOR // For verilator-based simulations, tracing can be disabled and prefixed
 
-    import "DPI-C" function bit enable_tracing();
+    import "DPI-C" function bit disable_tracing();
     import "DPI-C" function string get_trace_file_prefix();
 
-    `define BEGIN_DISABLEBLE_TRACING() if(enable_tracing()) begin
-    `define END_DISABLEBLE_TRACING() end
-
-`else // For non-verilator disabling tracing is not possible
-
-    `define BEGIN_DISABLEBLE_TRACING() begin
+    `define BEGIN_DISABLEBLE_TRACING() if(!disable_tracing()) begin
     `define END_DISABLEBLE_TRACING() end
 
 `endif
@@ -878,28 +873,35 @@ module snitch_cc #(
 `ifndef VERILATOR
     #1;
 `endif
-    BEGIN_DISABLEBLE_TRACING()
+    `ifdef VERILATOR
+    if(!disable_tracing()) begin
+    `endif
 
     `ifdef VERILATOR
-    // Verilator allows prefixing trace, and makes logs folder in C++ code in the default case
+    // With verilator we can prefix the trace, make logs folder in C++ code in the default case
     $sformat(suffix, "trace_chip_%01x%01x_hart_%05x.dasm", tcdm_addr_base_i[47:44],
              tcdm_addr_base_i[43:40], hart_id_i);
     $sformat(trace_file, "%s%s", get_trace_file_prefix(), suffix);
     `else
     // Make the logs directory from systemverilog
-    $system("mkdir -p logs")
+    $system("mkdir -p logs");
     $sformat(trace_file, "logs/trace_chip_%01x%01x_hart_%05x.dasm", tcdm_addr_base_i[47:44],
              tcdm_addr_base_i[43:40], hart_id_i);
 
     `endif
     f = $fopen(trace_file, "w");
     $display("[Tracer] Logging Hart %d to %s", hart_id_i, trace_file);
-    END_DISABLEBLE_TRACING()
+    `ifdef VERILATOR
+    end
+    `endif
   end
 
   // verilog_lint: waive-start always-ff-non-blocking
   always_ff @(posedge clk_i) begin
-    BEGIN_DISABLEBLE_TRACING()
+
+    `ifdef VERILATOR
+    if(!disable_tracing()) begin
+    `endif
     automatic string trace_entry;
     automatic string extras_str;
     automatic snitch_pkg::snitch_trace_port_t extras_snitch;
@@ -993,13 +995,19 @@ module snitch_cc #(
     end else begin
       cycle = '0;
     end
-    END_DISABLEBLE_TRACING()
+    `ifdef VERILATOR
+    end
+    `endif
   end
 
   final begin
-    BEGIN_DISABLEBLE_TRACING()
+    `ifdef VERILATOR
+    if(!disable_tracing()) begin
+    `endif
     $fclose(f);
-    END_DISABLEBLE_TRACING()
+    `ifdef VERILATOR
+    end
+    `endif
   end
   // verilog_lint: waive-stop always-ff-non-blocking
   // pragma translate_on

@@ -117,29 +117,9 @@ void tb_memory_write(long long addr, int len, const svOpenArrayHandle data,
                    (const uint8_t *)strb_ptr);
 }
 
-int get_int_from_env(const char* var_name, int default_value = 0) {
-    const char* env_var = std::getenv(var_name);
-    if (env_var != nullptr) {
-        try {
-            // Convert string to integer using std::stoi
-            return std::stoi(env_var);
-        } catch (const std::invalid_argument&) {
-            std::cerr << "Environment variable " << var_name << " is not a valid integer: " << env_var << '\n';
-        } catch (const std::out_of_range&) {
-            std::cerr << "Environment variable " << var_name << " is out of integer range: " << env_var << '\n';
-        }
-    }
-    return default_value; // Return the default value if not found or invalid
-}
-
-svBit enable_tracing() {
+svBit disable_tracing() {
     // function to enable/disable tracers
-    if (WRAPPER_disable_tracing){
-        return 0;
-    }
-    else {
-        return 1;
-    }
+    return WRAPPER_disable_tracing;
 }
 
 const char* get_trace_file_prefix() {
