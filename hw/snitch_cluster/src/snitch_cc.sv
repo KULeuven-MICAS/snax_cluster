@@ -879,13 +879,18 @@ module snitch_cc #(
     #1;
 `endif
     BEGIN_DISABLEBLE_TRACING()
-    `ifdef VERILATOR // Verilator allows prefixing trace
+
+    `ifdef VERILATOR
+    // Verilator allows prefixing trace, and makes logs folder in C++ code in the default case
     $sformat(suffix, "trace_chip_%01x%01x_hart_%05x.dasm", tcdm_addr_base_i[47:44],
              tcdm_addr_base_i[43:40], hart_id_i);
     $sformat(trace_file, "%s%s", get_trace_file_prefix(), suffix);
     `else
-    $sformat(trace_file, "trace_chip_%01x%01x_hart_%05x.dasm", tcdm_addr_base_i[47:44],
+    // Make the logs directory from systemverilog
+    $system("mkdir -p logs")
+    $sformat(trace_file, "logs/trace_chip_%01x%01x_hart_%05x.dasm", tcdm_addr_base_i[47:44],
              tcdm_addr_base_i[43:40], hart_id_i);
+
     `endif
     f = $fopen(trace_file, "w");
     $display("[Tracer] Logging Hart %d to %s", hart_id_i, trace_file);
