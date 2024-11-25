@@ -5,7 +5,6 @@
 #include <printf.h>
 #include <iostream>
 #include <vector>
-#include <string>
 #include <cstring>
 
 #include "sim.hh"
