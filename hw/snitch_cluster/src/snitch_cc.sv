@@ -7,13 +7,8 @@
 
 
 `ifdef VERILATOR // For verilator-based simulations, tracing can be disabled and prefixed
-
-    import "DPI-C" function bit disable_tracing();
-    import "DPI-C" function string get_trace_file_prefix();
-
-    `define BEGIN_DISABLEBLE_TRACING() if(!disable_tracing()) begin
-    `define END_DISABLEBLE_TRACING() end
-
+import "DPI-C" function bit disable_tracing();
+import "DPI-C" function string get_trace_file_prefix();
 `endif
 
 
