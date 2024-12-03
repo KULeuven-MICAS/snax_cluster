@@ -221,11 +221,12 @@ class SystemVerilogDataPathExtension(topmodule: String, filelist: Seq[String])(
         val ext_busy_o = Output(Bool())
       })
       override def desiredName: String = topmodule
-      var InLineSV = ""
+      var inlineSV = ""
       for (file <- filelist) {
-        InLineSV += scala.io.Source.fromFile(file).getLines().mkString("\n")
+        inlineSV += scala.io.Source.fromFile(file).getLines().mkString("\n")
+        inlineSV += "\n"
       }
-      setInline(extensionParam.moduleName + ".sv", InLineSV)
+      setInline(extensionParam.moduleName + ".sv", inlineSV)
     }
   )
 
