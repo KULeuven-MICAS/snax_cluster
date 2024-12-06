@@ -59,12 +59,12 @@ static inline void snrt_init_tls() {
 #ifdef SNRT_INIT_BSS
 static inline void snrt_init_bss() {
     extern volatile uint32_t __bss_start, __bss_end;
-
     // Only one core needs to perform the initialization
+    // As the snitch core is 32bit, initialize the bss region above 4GB does not make sense. 
     if (snrt_cluster_idx() == 0 && snrt_is_dm_core()) {
         size_t size = (size_t)(&__bss_end) - (size_t)(&__bss_start);
-        snrt_dma_start_1d_wideptr((uint64_t)(&__bss_start),
-                                  (uint64_t)(snrt_zero_memory_ptr()), size);
+        snrt_dma_start_1d((void *)(&__bss_start),
+                          (void *)(snrt_zero_memory_ptr()), size);
     }
 }
 #endif
