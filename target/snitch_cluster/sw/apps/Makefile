@@ -45,6 +45,10 @@ SUBDIRS += snax-hypercorex/test-csr
 SUBDIRS += snax-hypercorex/char-recog
 endif
 
+ifeq ($(CFG_OVERRIDE), cfg/snax_dimc_cluster.hjson)
+SUBDIRS += snax-dimc
+endif
+
 .PHONY: all clean $(SUBDIRS)
 
 all: $(SUBDIRS)
