@@ -4,6 +4,7 @@
 
 name: build-conda
 on:
+  push:
   workflow_dispatch:
 jobs:
   build-conda:
