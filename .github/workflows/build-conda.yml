@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 name: build-conda
 on:
-  push:
   workflow_dispatch:
 jobs:
   build-conda:
