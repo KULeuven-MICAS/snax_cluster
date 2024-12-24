@@ -203,14 +203,14 @@ module snax_cgra_shell_wrapper # (
 
   generate
     genvar i;
-    for(i=0; i<NumRwCsr; i++) begin
+    for(i=0; i<NumRwCsr; i++) begin: gen_csr_rw_set
       assign cgra_csr_reg_set_i[i] = csr_reg_set_i[i];
     end
   endgenerate
 
   generate
     genvar j;
-    for(j=0; j<NumRoCsr; j++) begin
+    for(j=0; j<NumRoCsr; j++) begin: gen_csr_ro_set
       assign csr_reg_ro_set_o[j] = cgra_csr_reg_ro_set_o[j];
     end
   endgenerate
