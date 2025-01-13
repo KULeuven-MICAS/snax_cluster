@@ -38,3 +38,6 @@ sbt = ">=1.10.2,<2"
 bin2coe = "*"
 editorconfig-checker = "==2.3.51"
 hjson = "*"
+
+[activation.env]
+VLT_ROOT = "${CONDA_PREFIX}/share/verilator"
