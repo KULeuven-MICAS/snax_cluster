@@ -59,8 +59,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gcc_impl_linux-64-14.2.0-h6b349bd_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gcc_linux-64-14.2.0-h5910c8f_7.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/giflib-5.2.2-hd590300_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/gitdb-4.0.12-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/gitpython-3.1.44-pyhff2d567_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/graphite2-1.3.13-h59595ed_1003.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gxx-14.2.0-h96c4ede_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gxx_impl_linux-64-14.2.0-h2c03514_1.conda
@@ -200,7 +198,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/sbt-1.10.2-h707e725_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/setuptools-75.8.0-pyhff2d567_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/six-1.17.0-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/smmap-5.0.0-pyhd8ed1ab_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/sysroot_linux-64-2.17-h0157908_18.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tabledata-1.3.3-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tabulate-0.9.0-pyhd8ed1ab_2.conda
@@ -898,31 +895,6 @@ packages:
   purls: []
   size: 77248
   timestamp: 1712692454246
-- conda: https://conda.anaconda.org/conda-forge/noarch/gitdb-4.0.12-pyhd8ed1ab_0.conda
-  sha256: dbbec21a369872c8ebe23cb9a3b9d63638479ee30face165aa0fccc96e93eec3
-  md5: 7c14f3706e099f8fcd47af2d494616cc
-  depends:
-  - python >=3.9
-  - smmap >=3.0.1,<6
-  license: BSD-3-Clause
-  license_family: BSD
-  purls:
-  - pkg:pypi/gitdb?source=hash-mapping
-  size: 53136
-  timestamp: 1735887290843
-- conda: https://conda.anaconda.org/conda-forge/noarch/gitpython-3.1.44-pyhff2d567_0.conda
-  sha256: b996e717ca693e4e831d3d3143aca3abb47536561306195002b226fe4dde53c3
-  md5: 140a4e944f7488467872e562a2a52789
-  depends:
-  - gitdb >=4.0.1,<5
-  - python >=3.9
-  - typing_extensions >=3.7.4.3
-  license: BSD-3-Clause
-  license_family: BSD
-  purls:
-  - pkg:pypi/gitpython?source=hash-mapping
-  size: 157200
-  timestamp: 1735929768433
 - conda: https://conda.anaconda.org/conda-forge/linux-64/graphite2-1.3.13-h59595ed_1003.conda
   sha256: 0595b009f20f8f60f13a6398e7cdcbd2acea5f986633adcf85f5a2283c992add
   md5: f87c7b7c2cb45f323ffbce941c78ab7c
@@ -2771,17 +2743,6 @@ packages:
   - pkg:pypi/six?source=hash-mapping
   size: 16385
   timestamp: 1733381032766
-- conda: https://conda.anaconda.org/conda-forge/noarch/smmap-5.0.0-pyhd8ed1ab_0.tar.bz2
-  sha256: 23011cb3e064525bdb8787c75126a2e78d2344a72cd6773922006d1da1f2af16
-  md5: 62f26a3d1387acee31322208f0cfa3e0
-  depends:
-  - python >=3.5
-  license: BSD-3-Clause
-  license_family: BSD
-  purls:
-  - pkg:pypi/smmap?source=hash-mapping
-  size: 22483
-  timestamp: 1634310465482
 - conda: https://conda.anaconda.org/conda-forge/noarch/sysroot_linux-64-2.17-h0157908_18.conda
   sha256: 69ab5804bdd2e8e493d5709eebff382a72fab3e9af6adf93a237ccf8f7dbd624
   md5: 460eba7851277ec1fd80a1a24080787a
