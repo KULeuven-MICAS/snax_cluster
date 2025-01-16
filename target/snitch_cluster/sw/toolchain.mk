@@ -20,12 +20,13 @@ ifeq ($(SELECT_TOOLCHAIN), llvm-snitch)
 # specialized version does not use a version specifier in the binary
 LLVM_BINROOT    = /tools/riscv-llvm/bin/
 LLVM_VERSION    = 
+RISCV_LD        ?= $(LLVM_BINROOT)ld.lld$(LLVM_VERSION)
 else
 LLVM_BINROOT    =
 LLVM_VERSION    =
+RISCV_LD        ?= $(LLVM_BINROOT)lld$(LLVM_VERSION)
 endif
 RISCV_CC        ?= $(LLVM_BINROOT)clang$(LLVM_VERSION)
-RISCV_LD        ?= $(LLVM_BINROOT)lld$(LLVM_VERSION)
 RISCV_AR        ?= $(LLVM_BINROOT)llvm-ar$(LLVM_VERSION)
 RISCV_OBJCOPY   ?= $(LLVM_BINROOT)llvm-objcopy$(LLVM_VERSION)
 RISCV_OBJDUMP   ?= $(LLVM_BINROOT)llvm-objdump$(LLVM_VERSION)
