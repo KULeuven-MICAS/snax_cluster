@@ -9,11 +9,11 @@ version = "0.2.8"
 [tasks]
 
 [dependencies]
-python = "3.12.*"
+python = ">=3.12.*,<3.13"
 verilator = ">=5.30,<6"
 make = ">=4.4.1,<5"
-clang = ">=19.1.6,<20"
-clangxx = ">=19.1.6,<20"
+clang = ">=19.1.7,<20"
+clangxx = ">=19.1.7,<20"
 lld = ">=19.1.7,<20"
 pandas = ">=2.2.3,<3"
 jsonref = ">=1.1.0,<2"
@@ -30,15 +30,15 @@ gxx_linux-64 = ">=14.2.0,<15"
 gcc = ">=14.2.0,<14.3"
 gxx = ">=14.2.0,<14.3"
 binutils = ">=2.43,<3"
-boost = "*"
-boost-cpp = "*"
+boost = ">=1.84.0,<2"
+boost-cpp = ">=1.84.0,<2"
 tabulate = ">=0.9.0,<0.10"
 setuptools = ">=75.8.0,<76"
 llvm-tools = ">=19.1.7,<20"
-bender = "*"
+bender = ">=0.28.1,<0.29"
 
 [pypi-dependencies]
-hjson = "*"
+hjson = ">=3.1.0, <4"
 
 [activation.env]
 VLT_ROOT = "${CONDA_PREFIX}/share/verilator"
