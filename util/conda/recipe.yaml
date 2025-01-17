@@ -20,6 +20,7 @@ requirements:
     - pip
     - bender
     - git
+    - wget
     - verilator >=5.30,<6
     - make >=4.4.1,<5
     - clang >=19.1.6,< 20
