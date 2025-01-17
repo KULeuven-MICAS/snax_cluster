@@ -1,3 +1,7 @@
+# Copyright 2025 KU Leuven.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
 name: pixi environment test
 
 on:
@@ -17,7 +21,8 @@ jobs:
       - uses: prefix-dev/setup-pixi@v0.8.1
         with:
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
       - name: Pixi RTL GEN
         run: |
           pixi run make CFG_OVERRIDE=cfg/snax_KUL_dse_cluster.hjson \
@@ -40,4 +45,3 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
-
