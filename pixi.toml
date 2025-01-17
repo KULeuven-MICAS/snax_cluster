@@ -1,10 +1,10 @@
 [project]
-authors = ["Josse Van Delm <josse.vandelm@gmail.com>"]
-channels = ["conda-forge", "kuleuven-micas"]
-description = "Add a short description here"
+authors = ["Josse Van Delm <jvandelm@esat.kuleuven.be>"]
+channels = ["conda-forge","kuleuven-micas"]
+description = "A heterogeneous accelerator-centric compute cluster"
 name = "snax_cluster"
 platforms = ["linux-64"]
-version = "0.1.0"
+version = "0.2.8"
 
 [tasks]
 
@@ -35,6 +35,7 @@ boost-cpp = "*"
 tabulate = ">=0.9.0,<0.10"
 setuptools = ">=75.8.0,<76"
 llvm-tools = ">=19.1.7,<20"
+bender = "*"
 
 [pypi-dependencies]
 hjson = "*"

@@ -12,6 +12,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-2_gnu.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/alsa-lib-1.2.13-hb9d3cd8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/attrs-24.3.0-pyh71513ae_0.conda
+      - conda: https://conda.anaconda.org/kuleuven-micas/linux-64/bender-0.28.1-hb0f4dca_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_impl_linux-64-2.43-h4bf12b8_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils_linux-64-2.43-h4852527_2.conda
@@ -196,6 +197,15 @@ packages:
   - pkg:pypi/attrs?source=hash-mapping
   size: 56354
   timestamp: 1734348889193
+- conda: https://conda.anaconda.org/kuleuven-micas/linux-64/bender-0.28.1-hb0f4dca_0.conda
+  sha256: 75da8e9c10c5190a4665c1dd392fb245c59febe5c1c9d7e3410c3c57e0710cc7
+  md5: 0ac175058bdf418a001c4964f6d93051
+  constrains:
+  - __glibc >=2.17
+  license: Apache-2.0
+  license_family: Apache
+  size: 2864754
+  timestamp: 1737120657831
 - conda: https://conda.anaconda.org/conda-forge/linux-64/binutils-2.43-h4852527_2.conda
   sha256: 92be0f8ccd501ceeb3c782e2182e6ea04dca46799038176de40a57bca45512c5
   md5: 348619f90eee04901f4a70615efff35b
