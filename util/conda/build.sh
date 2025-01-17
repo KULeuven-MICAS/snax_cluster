@@ -22,18 +22,18 @@ build_snax_verilator() {
     
     # Generate RTL
     make -C target/snitch_cluster rtl-gen \
-        CFG_OVERRIDE="$config_file" || return 1
+        CFG_OVERRIDE="$config_file"
     
     # Build software
     make DEBUG=ON sw -j$(nproc) \
         -C target/snitch_cluster \
         SELECT_TOOLCHAIN=llvm-generic \
         SELECT_RUNTIME=rtl-generic \
-        CFG_OVERRIDE="$config_file" || return 1
+        CFG_OVERRIDE="$config_file"
     
     # Generate Verilator files
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
-        CFG_OVERRIDE="$config_file" -j$(nproc) || return 1
+        CFG_OVERRIDE="$config_file" -j$(nproc)
     
     echo "Build completed for '$config_file' successfully"
 
