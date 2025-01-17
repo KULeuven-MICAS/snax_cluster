@@ -57,7 +57,7 @@ PIP_NO_INDEX= pip install hjson #Unset PIP_NO_INDEX to allow pypi installation
 
 build_snax_verilator cfg/snax_mac_cluster.hjson ${PREFIX}/snax-utils/snax-mac
 build_snax_verilator cfg/snax_alu_cluster.hjson ${PREFIX}/snax-utils/snax-alu
-build_snax_verilator cfg/snax_streamer_gemm_cluster.hjson ${PREFIX}/snax-utilssnax-streamer-gemm
+build_snax_verilator cfg/snax_streamer_gemm_cluster.hjson ${PREFIX}/snax-utils/snax-streamer-gemm
 build_snax_verilator cfg/snax_streamer_gemm_add_c_cluster.hjson ${PREFIX}/snax-utils/snax-streamer-gemm-add-c
 build_snax_verilator cfg/snax_KUL_cluster.hjson ${PREFIX}/snax-utils/snax-kul-cluster-mixed-narrow-wide
 cp /bin/spike-dasm ${PREFIX}/bin/spike-dasm
