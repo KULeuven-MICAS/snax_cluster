@@ -3,7 +3,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-PIP_NO_INDEX= pip install hjson #Unset PIP_NO_INDEX to allow pypi installation
-make -C target/snitch_cluster rtl-gen CFG_OVERRIDE=cfg/snax_KUL_cluster.hjson
-make -C target/snitch_cluster bin/snitch_cluster.vlt CFG_OVERRIDE=cfg/snax_KUL_cluster.hjson -j
-make -C target/snitch_cluster sw CFG_OVERRIDE=cfg/snax_KUL_cluster.hjson -j
+docker create --name dummy ghcr.io/kuleuven-micas/snax:latest
+docker cp dummy:/opt ${PREFIX}/snax-utils
+mkdir -p ${PREFIX}/bin
+docker cp dummy:/bin/spike-dasm ${PREFIX}/bin/spike-dasm
+docker rm dummy
