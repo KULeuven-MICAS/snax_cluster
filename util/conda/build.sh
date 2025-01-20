@@ -53,8 +53,8 @@ build_snax_verilator() {
     return 0
 }
 
+export VLT_ROOT="${BUILD_PREFIX}/share/verilator"
 PIP_NO_INDEX= pip install hjson #Unset PIP_NO_INDEX to allow pypi installation
-export VLT_ROOT="${PREFIX}/share/verilator"
 build_snax_verilator cfg/snax_mac_cluster.hjson ${PREFIX}/snax-utils/snax-mac
 build_snax_verilator cfg/snax_alu_cluster.hjson ${PREFIX}/snax-utils/snax-alu
 build_snax_verilator cfg/snax_streamer_gemm_cluster.hjson ${PREFIX}/snax-utils/snax-streamer-gemm
