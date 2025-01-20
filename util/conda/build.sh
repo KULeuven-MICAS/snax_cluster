@@ -37,18 +37,20 @@ build_snax_verilator() {
     
     echo "Build completed for '$config_file' successfully"
 
-    cp target/snitch_cluster/bin/snitch_cluster.vlt ${target_dir}/bin/snitch_cluster.vlt && \
-    cp sw/snRuntime ${target_dir}/sw/snRuntime && \
-    cp target/snitch_cluster/sw/runtime/rtl ${target_dir}/target/snitch_cluster/sw/runtime/rtl && \
-    cp target/snitch_cluster/sw/runtime/rtl-generic ${target_dir}/target/snitch_cluster/sw/runtime/rtl-generic && \
-    cp target/snitch_cluster/sw/runtime/common ${target_dir}/target/snitch_cluster/sw/runtime/common && \
-    cp target/snitch_cluster/sw/snax/ ${target_dir}/target/snitch_cluster/sw/snax && \
-    cp sw/math/ ${target_dir}/sw/math/ && \
-    cp sw/deps/riscv-opcodes ${target_dir}/sw/deps/riscv-opcodes && \
-    cp sw/deps/printf ${target_dir}/sw/deps/printf
+    cp --parents target/snitch_cluster/bin/snitch_cluster.vlt ${target_dir}/bin/snitch_cluster.vlt && \
+    cp --parents sw/snRuntime ${target_dir}/sw/snRuntime && \
+    cp --parents target/snitch_cluster/sw/runtime/rtl ${target_dir}/target/snitch_cluster/sw/runtime/rtl && \
+    cp --parents target/snitch_cluster/sw/runtime/rtl-generic ${target_dir}/target/snitch_cluster/sw/runtime/rtl-generic && \
+    cp --parents target/snitch_cluster/sw/runtime/common ${target_dir}/target/snitch_cluster/sw/runtime/common && \
+    cp --parents target/snitch_cluster/sw/snax/ ${target_dir}/target/snitch_cluster/sw/snax && \
+    cp --parents sw/math/ ${target_dir}/sw/math/ && \
+    cp --parents sw/deps/riscv-opcodes ${target_dir}/sw/deps/riscv-opcodes && \
+    cp --parents sw/deps/printf ${target_dir}/sw/deps/printf
 
     echo "Successfully installed in '$target_dir'"
 
+    make -C target/snitch_cluster clean \
+        CFG_OVERRIDE="$config_file" -j$(nproc)
 
     return 0
 }
