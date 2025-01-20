@@ -5,11 +5,12 @@
  
 
 clean_and_fetch_git() {
-    cd .. && \ 
-    rm -rf snax_cluster && \
-    git clone --recursive https://github.com/kuleuven-micas/snax_cluster && \
-    cd snax_cluster && \
+    cd ..
+    rm -rf snax_cluster
+    git clone --recursive https://github.com/kuleuven-micas/snax_cluster
+    cd snax_cluster
     git checkout 86e2a519805b255377ed379d08686248379a24d5
+    return 0
 }
 
 # Function to build multiple snitch_cluster.vlt instances
