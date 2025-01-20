@@ -4,6 +4,14 @@
 # SPDX-License-Identifier: Apache-2.0
  
 
+clean_and_fetch_git() {
+    cd .. && \ 
+    rm -rf snax_cluster && \
+    git clone --recursive https://github.com/kuleuven-micas/snax_cluster && \
+    cd snax_cluster && \
+    git checkout 86e2a519805b255377ed379d08686248379a24d5
+}
+
 # Function to build multiple snitch_cluster.vlt instances
 build_snax_verilator() {
     local config_file="$1"
@@ -57,9 +65,14 @@ build_snax_verilator() {
 
 export VLT_ROOT="${BUILD_PREFIX}/share/verilator"
 PIP_NO_INDEX= pip install hjson #Unset PIP_NO_INDEX to allow pypi installation
+clean_and_fetch_git
 build_snax_verilator cfg/snax_mac_cluster.hjson ${PREFIX}/snax-utils/snax-mac
+clean_and_fetch_git
 build_snax_verilator cfg/snax_alu_cluster.hjson ${PREFIX}/snax-utils/snax-alu
+clean_and_fetch_git
 build_snax_verilator cfg/snax_streamer_gemm_cluster.hjson ${PREFIX}/snax-utils/snax-streamer-gemm
+clean_and_fetch_git
 build_snax_verilator cfg/snax_streamer_gemm_add_c_cluster.hjson ${PREFIX}/snax-utils/snax-streamer-gemm-add-c
+clean_and_fetch_git
 build_snax_verilator cfg/snax_KUL_cluster.hjson ${PREFIX}/snax-utils/snax-kul-cluster-mixed-narrow-wide
 cp /bin/spike-dasm ${PREFIX}/bin/spike-dasm
