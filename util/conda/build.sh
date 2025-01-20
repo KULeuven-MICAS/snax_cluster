@@ -69,7 +69,8 @@ PIP_NO_INDEX= pip install hjson #Unset PIP_NO_INDEX to allow pypi installation
 wget https://github.com/pulp-platform/riscv-isa-sim/releases/download/snitch-v0.1.0/snitch-spike-dasm-0.1.0-x86_64-linux-gnu-ubuntu18.04.tar.gz
 tar xzf snitch-spike-dasm-0.1.0-x86_64-linux-gnu-ubuntu18.04.tar.gz
 rm snitch-spike-dasm-0.1.0-x86_64-linux-gnu-ubuntu18.04.tar.gz
-cp --parents spike-dasm ${PREFIX}/bin/spike-dasm
+mkdir -p ${PREFIX}/bin
+cp spike-dasm ${PREFIX}/bin/spike-dasm
 build_snax_verilator cfg/snax_mac_cluster.hjson ${PREFIX}/snax-utils/snax-mac
 build_snax_verilator cfg/snax_alu_cluster.hjson ${PREFIX}/snax-utils/snax-alu
 build_snax_verilator cfg/snax_streamer_gemm_add_c_cluster.hjson ${PREFIX}/snax-utils/snax-streamer-gemm-add-c
