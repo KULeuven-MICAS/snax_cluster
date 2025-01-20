@@ -36,7 +36,7 @@ requirements:
     - termcolor >=2.5.0,<3
     - pyelftools >=0.31,<0.32
     - psutil >=6.1.1,<7
-    - sbt >=1.10.2,<2
+    - sbt == 1.9.6
     - dtc >=1.7.2,<2
     - gcc_linux-64 >=14.2.0,<15
     - gxx_linux-64 >=14.2.0,<15
