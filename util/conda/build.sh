@@ -38,22 +38,16 @@ build_snax_verilator() {
 
     mkdir -p ${target_dir}/bin
     cp target/snitch_cluster/bin/snitch_cluster.vlt ${target_dir}/bin/snitch_cluster.vlt
-    mkdir -p ${target_dir}/sw/snRuntime/
-    cp -R sw/snRuntime/ ${target_dir}/sw/snRuntime/
-    mkdir -p ${target_dir}/target/snitch_cluster/sw/runtime/rtl/
-    cp -R target/snitch_cluster/sw/runtime/rtl/ ${target_dir}/target/snitch_cluster/sw/runtime/rtl/
-    mkdir -p ${target_dir}/target/snitch_cluster/sw/runtime/rtl-generic/
-    cp -R target/snitch_cluster/sw/runtime/rtl-generic/ ${target_dir}/target/snitch_cluster/sw/runtime/rtl-generic/
-    mkdir -p ${target_dir}/target/snitch_cluster/sw/runtime/common
-    cp -R target/snitch_cluster/sw/runtime/common/ ${target_dir}/target/snitch_cluster/sw/runtime/common/
-    mkdir -p ${target_dir}/target/snitch_cluster/sw/snax
-    cp -R target/snitch_cluster/sw/snax/ ${target_dir}/target/snitch_cluster/sw/snax
-    mkdir -p ${target_dir}/sw/math/
-    cp -R sw/math/ ${target_dir}/sw/math/
-    mkdir -p ${target_dir}/sw/deps/riscv-opcodes
-    cp -R sw/deps/riscv-opcodes/ ${target_dir}/sw/deps/riscv-opcodes
-    mkdir -p ${target_dir}/sw/deps/printf
-    cp -R sw/deps/printf/ ${target_dir}/sw/deps/printf
+    mkdir -p ${target_dir}/target/snitch_cluster/sw/runtime
+    cp -R target/snitch_cluster/sw/runtime/rtl ${target_dir}/target/snitch_cluster/sw/runtime
+    cp -R target/snitch_cluster/sw/runtime/rtl-generic ${target_dir}/target/snitch_cluster/sw/runtime
+    cp -R target/snitch_cluster/sw/runtime/common ${target_dir}/target/snitch_cluster/sw/runtime
+    cp -R target/snitch_cluster/sw/snax ${target_dir}/target/snitch_cluster/sw
+    mkdir -p ${target_dir}/sw/deps
+    cp -R sw/snRuntime ${target_dir}/sw
+    cp -R sw/math ${target_dir}/sw
+    cp -R sw/deps/riscv-opcodes ${target_dir}/sw/deps
+    cp -R sw/deps/printf ${target_dir}/sw/deps
 
     echo "Successfully installed in '$target_dir'"
 
