@@ -2,13 +2,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+context:
+  version: "0.2.8"
+
 package:
   name: snax-cluster
-  version: 0.2.8
+  version: ${{ version }}
 
 source:
   git: https://github.com/KULeuven-MICAS/snax_cluster
-  rev: 86e2a519805b255377ed379d08686248379a24d5 
+  tag: v${{ version }}
 
 about:
   homepage: https://github.com/KULeuven-MICAS/snax_cluster
