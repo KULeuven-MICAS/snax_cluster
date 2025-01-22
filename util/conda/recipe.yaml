@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 context:
-  version: "0.2.8"
+  git_repo_url: "https://github.com/kuleuven-micas/snax_cluster"
+  latest_tag: ${{ git.latest_tag( git_repo_url ) }}
+  version: ${{ latest_tag[1:] }}
 
 package:
   name: snax-cluster
