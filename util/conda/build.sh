@@ -36,8 +36,8 @@ build_snax_verilator() {
     
     echo "Build completed for '$config_file' successfully"
 
-    mkdir -p ${target_dir}/bin
-    cp target/snitch_cluster/bin/snitch_cluster.vlt ${target_dir}/bin/snitch_cluster.vlt
+    mkdir -p ${target_dir}-rtl/bin
+    cp target/snitch_cluster/bin/snitch_cluster.vlt ${target_dir}-rtl/bin/snitch_cluster.vlt
     mkdir -p ${target_dir}/target/snitch_cluster/sw/runtime
     cp -R target/snitch_cluster/sw/runtime/rtl ${target_dir}/target/snitch_cluster/sw/runtime
     cp -R target/snitch_cluster/sw/runtime/rtl-generic ${target_dir}/target/snitch_cluster/sw/runtime
