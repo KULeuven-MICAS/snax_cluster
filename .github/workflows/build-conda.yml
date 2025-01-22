@@ -25,4 +25,4 @@ jobs:
         uses: prefix-dev/rattler-build-action@v0.2.23
         with:
           recipe-path: util/conda/recipe.yaml
-          build-args: -c conda-forge -c kuleuven-micas
+          build-args: -c conda-forge -c kuleuven-micas --experimental
