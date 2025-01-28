@@ -12,8 +12,10 @@ This script mainly serves to prevent code duplication.
 
 import tomllib
 
+
 def add_dependency(dependency: str, version: str):
     print(f"        - {dependency} {version}")
+
 
 def print_conda_deps_as_yaml(pixiconfig: dict):
     for dependency, version in pixiconfig.items():
@@ -53,18 +55,15 @@ if __name__ == "__main__":
     with open("../../pixi.toml", "rb") as pixitoml:
         pixiconfig = tomllib.load(pixitoml)["dependencies"]
         print(PREAMBLE)
-        # Prebuilt package -> all deps are build deps, build.sh prebuilds 
-        print(PACKAGE_DEF.format("snax-cluster-prebuilt","build"))
-        add_dependency("git","")
-        add_dependency("wget","")
+        # Prebuilt package -> all deps are build deps, build.sh prebuilds
+        print(PACKAGE_DEF.format("snax-cluster-prebuilt", "build"))
+        add_dependency("git", "")
+        add_dependency("wget", "")
         print_conda_deps_as_yaml(pixiconfig)
         print(PACKAGE_BUILD.format("build.sh"))
         # Dev package -> all deps are run deps, build-dev.sh does nothing
-        print(PACKAGE_DEF.format("snax-cluster-dev","run"))
+        print(PACKAGE_DEF.format("snax-cluster-dev", "run"))
         # Add prebuilt package to dev package
-        add_dependency("${{ pin_subpackage(\"snax-cluster-prebuilt\", exact=True) }}","")
+        add_dependency('${{ pin_subpackage("snax-cluster-prebuilt", exact=True) }}', "")
         print_conda_deps_as_yaml(pixiconfig)
         print(PACKAGE_BUILD.format("build-dev.sh"))
-
-
-
