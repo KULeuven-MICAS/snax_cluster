@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+      - name: Generate recipe based on pixi.toml
+        run: python3 genrecipe.yaml > recipe.yaml
+        working-directory: util/conda
       - name: Activate conda explicitly
         run: |
           echo "/opt/conda/bin" >> $GITHUB_PATH
