@@ -4,8 +4,8 @@
 
 
 """
-This script emits a recipe.yaml for rattler-build. 
-Such a script can hardly be called idiomatic, 
+This script emits a recipe.yaml for rattler-build.
+Such a script can hardly be called idiomatic,
 but otherwise we have to define dependencies in at least 3 different places.
 This script mainly serves to prevent code duplication.
 """
@@ -64,6 +64,7 @@ if __name__ == "__main__":
         # Dev package -> all deps are run deps, build-dev.sh does nothing
         print(PACKAGE_DEF.format("snax-cluster-dev", "run"))
         # Add prebuilt package to dev package
-        add_dependency('${{ pin_subpackage("snax-cluster-prebuilt", exact=True) }}', "")
+        pin = '${{ pin_subpackage("snax-cluster-prebuilt", exact=True) }}'
+        add_dependency(pin, "")
         print_conda_deps_as_yaml(pixiconfig)
         print(PACKAGE_BUILD.format("build-dev.sh"))
