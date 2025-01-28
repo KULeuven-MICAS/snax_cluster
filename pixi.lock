@@ -21,6 +21,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/cairo-1.18.2-h3394656_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/clang-19-19.1.7-default_hb5137d0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/clang-19.1.7-default_h9e3a008_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/clang-format-19-19.1.7-default_hb5137d0_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/clang-format-19.1.7-default_hb5137d0_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/clangxx-19.1.7-default_ha78316a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/dtc-1.7.2-hb9d3cd8_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/flex-2.6.4-h58526e2_1004.tar.bz2
@@ -331,6 +333,37 @@ packages:
   purls: []
   size: 778990
   timestamp: 1736957477022
+- conda: https://conda.anaconda.org/conda-forge/linux-64/clang-format-19.1.7-default_hb5137d0_1.conda
+  sha256: 1ca1277807bb2755d55f17576eb486ea0c1fb3b9448156b94abadd08da3aa06f
+  md5: e69a1ccc9498b27d140b95f7fd15e0e9
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - clang-format-19 19.1.7 default_hb5137d0_1
+  - libclang-cpp19.1 >=19.1.7,<19.2.0a0
+  - libgcc >=13
+  - libllvm19 >=19.1.7,<19.2.0a0
+  - libstdcxx >=13
+  arch: x86_64
+  platform: linux
+  license: Apache-2.0 WITH LLVM-exception
+  license_family: Apache
+  size: 23904
+  timestamp: 1737784937306
+- conda: https://conda.anaconda.org/conda-forge/linux-64/clang-format-19-19.1.7-default_hb5137d0_1.conda
+  sha256: c6552cc069caf4f8b7e69743d65055123625a9008d4ceadf06d1918041d59fea
+  md5: 4f13ce85162bd71d938d3fb0280c6516
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libclang-cpp19.1 >=19.1.7,<19.2.0a0
+  - libgcc >=13
+  - libllvm19 >=19.1.7,<19.2.0a0
+  - libstdcxx >=13
+  arch: x86_64
+  platform: linux
+  license: Apache-2.0 WITH LLVM-exception
+  license_family: Apache
+  size: 67153
+  timestamp: 1737784877614
 - conda: https://conda.anaconda.org/conda-forge/linux-64/clangxx-19.1.7-default_ha78316a_0.conda
   sha256: 40810d4af751bce998e9d4b0bc261d9275d0883013a0b2588c9d6ccde225ad47
   md5: db62bb2b5da665002d4b81f8e2716887
