@@ -203,8 +203,7 @@ void set_gemmx_streamer_csr(
 // Set GEMM configuration CSR
 void set_gemmx_csr(int tempLoop0, int tempLoop1, int tempLoop2,
                    int subtractions, uint32_t csr0, uint32_t csr1,
-                   int* shared_bitpacked_shift,
-                   int* shared_multiplier,
+                   int* shared_bitpacked_shift, int* shared_multiplier,
                    uint32_t temporal_loop_bound, uint32_t bypassSIMD) {
     // set loop bounds, from innermost to outermost, aka from K to N to M
     csrw_ss(T_BOUND_K, tempLoop0);

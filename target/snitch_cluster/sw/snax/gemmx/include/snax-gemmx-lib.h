@@ -5,10 +5,10 @@
 // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
 #include <stdbool.h>
+#include "simd_csr_addr_map.h"
 #include "snrt.h"
 #include "stdint.h"
 #include "streamer_csr_addr_map.h"
-#include "simd_csr_addr_map.h"
 
 #pragma once
 
@@ -74,8 +74,7 @@ inline void set_gemmx_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }
 // Set GEMM configuration CSR
 void set_gemmx_csr(int tempLoop0, int tempLoop1, int tempLoop2,
                    int subtractions, uint32_t csr0, uint32_t csr1,
-                   int* shared_bitpacked_shift,
-                   int* shared_multiplier,
+                   int* shared_bitpacked_shift, int* shared_multiplier,
                    uint32_t temporal_loop_bound, uint32_t bypassSIMD);
 
 // Set CSR to start GEMM

@@ -103,7 +103,6 @@ int main() {
 
         printf("SNAX GEMM Matmul: %s, Error: %d . bypassSIMD = %d .\n",
                err ? "FAIL" : "PASS", err, bypassSIMD);
-
     };
 
     return err;
