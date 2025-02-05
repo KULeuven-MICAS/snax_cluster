@@ -81,7 +81,7 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_READER_0_5, Atlstride5);
 
     // set the address remap index for A
-#ifdef ADDR_REMAP_EXTENSION_ENABLE
+#ifdef ADDR_REMAP_EXTENSION_ENABLE_READER_0
     csrw_ss(ADDR_REMAP_INDEX_READER_0, set_addr_remap_index_A);
 #endif
 
@@ -102,7 +102,7 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_READER_1_2, Btlstride2);
 
     // set the address remap index for B
-#ifdef ADDR_REMAP_EXTENSION_ENABLE
+#ifdef ADDR_REMAP_EXTENSION_ENABLE_READER_1
     csrw_ss(ADDR_REMAP_INDEX_READER_1, set_addr_remap_index_B);
 #endif
 
@@ -129,7 +129,7 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_WRITER_0_2, D8tlstride2);
 
     // set the address remap index for D8
-#ifdef ADDR_REMAP_EXTENSION_ENABLE
+#ifdef ADDR_REMAP_EXTENSION_ENABLE_WRITER_0
     csrw_ss(ADDR_REMAP_INDEX_WRITER_0, set_addr_remap_index_D8);
 #endif
 
@@ -152,7 +152,7 @@ void set_gemmx_streamer_csr(
     csrw_ss(T_STRIDE_READER_WRITER_0_2, Ctlstride2);
 
     // set the address remap index for C
-#ifdef ADDR_REMAP_EXTENSION_ENABLE
+#ifdef ADDR_REMAP_EXTENSION_ENABLE_WRITER_0
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_0, set_addr_remap_index_C);
 #endif
 
