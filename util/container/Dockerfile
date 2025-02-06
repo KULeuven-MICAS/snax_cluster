@@ -176,39 +176,6 @@ RUN cd /src && sbt package && \
     make -C target/snitch_cluster bin/snitch_cluster.vlt \
     CFG_OVERRIDE=cfg/snax_alu_cluster.hjson -j $(nproc)
 
-FROM base as snax-streamer-gemm
-
-COPY . /src/
-RUN cd /src && sbt package && \
-    cd /src && \
-    make -C target/snitch_cluster rtl-gen \
-    CFG_OVERRIDE=cfg/snax_streamer_gemm_cluster.hjson && \
-    make DEBUG=ON sw -j$(nproc) \
-    -C target/snitch_cluster \
-    SELECT_TOOLCHAIN=llvm-generic \
-    SELECT_RUNTIME=rtl-generic \
-    CFG_OVERRIDE=cfg/snax_streamer_gemm_cluster.hjson && \
-    cd /src && \
-    make -C target/snitch_cluster bin/snitch_cluster.vlt \
-    CFG_OVERRIDE=cfg/snax_streamer_gemm_cluster.hjson -j $(nproc)
-
-
-FROM base as snax-streamer-gemm-add-c
-
-COPY . /src/
-RUN cd /src && sbt package && \
-    cd /src && \
-    make -C target/snitch_cluster rtl-gen \
-    CFG_OVERRIDE=cfg/snax_streamer_gemm_add_c_cluster.hjson && \
-    make DEBUG=ON sw -j$(nproc) \
-    -C target/snitch_cluster \
-    SELECT_TOOLCHAIN=llvm-generic \
-    SELECT_RUNTIME=rtl-generic \
-    CFG_OVERRIDE=cfg/snax_streamer_gemm_add_c_cluster.hjson && \
-    cd /src && \
-    make -C target/snitch_cluster bin/snitch_cluster.vlt \
-    CFG_OVERRIDE=cfg/snax_streamer_gemm_add_c_cluster.hjson -j $(nproc)
-
 FROM base as snax-kul-cluster-mixed-narrow-wide
 
 COPY . /src/
