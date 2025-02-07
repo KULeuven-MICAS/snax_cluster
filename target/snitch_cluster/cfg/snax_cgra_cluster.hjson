@@ -156,14 +156,14 @@
 
         data_reader_params: {
             spatial_bounds: [[1], [1], [1], [1], [1], [1], [1], [1]],
-            temporal_dim: [6, 6, 6, 6, 6, 6, 6, 6],
+            temporal_dim: [8, 8, 8, 8, 8, 8, 8, 8],
             num_channel: [1, 1, 1, 1, 1, 1, 1, 1],
             fifo_depth: [4, 4, 4, 4, 4, 4, 4, 4],
         },
 
         data_writer_params: {
             spatial_bounds: [[1], [1], [1], [1], [1], [1], [1], [1]],
-            temporal_dim: [3, 3, 3, 3, 3, 3, 3, 3],
+            temporal_dim: [8, 8, 8, 8, 8, 8, 8, 8],
             num_channel: [1, 1, 1, 1, 1, 1, 1, 1],
             fifo_depth: [4, 4, 4, 4, 4, 4, 4, 4],
         },
