@@ -558,20 +558,6 @@ def main():
             + str(cfg["cluster"]["tcdm"]["size"])
             + " --xdmaCfg "
             + hjson.dumpsJSON(obj=snax_xdma_cfg, separators=(",", ":")).replace(" ", "")
-
-            # + " --readerSpatialBounds "
-            # + str(snax_xdma_cfg["reader_agu_spatial_bounds"])
-            # + " --readerTemporalDimension "
-            # + str(snax_xdma_cfg["reader_agu_temporal_dimension"])
-            # + " --writerSpatialBounds "
-            # + str(snax_xdma_cfg["writer_agu_spatial_bounds"])
-            # + " --writerTemporalDimension "
-            # + str(snax_xdma_cfg["writer_agu_temporal_dimension"])
-            # + " --readerBufferDepth "
-            # + str(snax_xdma_cfg["reader_buffer"])
-            # + " --writerBufferDepth "
-            # + str(snax_xdma_cfg["writer_buffer"])
-            # + xdma_extension_arg
             + " --hw-target-dir "
             + args.gen_path
             + cfg["cluster"]["name"]
