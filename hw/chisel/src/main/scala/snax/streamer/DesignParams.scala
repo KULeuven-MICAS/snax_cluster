@@ -5,7 +5,6 @@ import snax.DataPathExtension._
 
 import chisel3.util.log2Up
 import chisel3.util.log2Ceil
-import os.read.inputStream
 
 /*
  *  This is the collection of all design Params
