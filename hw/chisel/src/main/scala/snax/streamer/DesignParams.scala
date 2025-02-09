@@ -5,6 +5,7 @@ import snax.DataPathExtension._
 
 import chisel3.util.log2Up
 import chisel3.util.log2Ceil
+import os.read.inputStream
 
 /*
  *  This is the collection of all design Params
@@ -95,7 +96,7 @@ class StreamerParam(
   val dataPathABExtensionParam: Seq[HasDataPathExtension] =
     (if (hasTranspose)
        Seq[HasDataPathExtension](
-         new HasTransposer
+         new HasTransposer(row = 8, col = 8, elementBits = 8)
        )
      else
        Seq[HasDataPathExtension]())
@@ -103,7 +104,7 @@ class StreamerParam(
   val dataPathCExtensionParam: Seq[HasDataPathExtension] =
     (if (hasCBroadcast)
        Seq[HasDataPathExtension](
-         new HasBroadcaster256to2048
+         new HasBroadcaster(inputLength = 256, outputLength = 2048)
        )
      else
        Seq[HasDataPathExtension]())
