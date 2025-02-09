@@ -4,7 +4,8 @@ import chisel3._
 import chisel3.util._
 import snax.xdma.DesignParams._
 
-class HasBroadcaster(inputLength: Int, outputLength: Int) extends HasDataPathExtension {
+class HasBroadcaster(inputLength: Int, outputLength: Int)
+    extends HasDataPathExtension {
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
       moduleName = s"Broadcaster${inputLength}to${outputLength}",
