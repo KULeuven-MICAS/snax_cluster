@@ -145,7 +145,7 @@ class xdmaTop(
 
 object xdmaTopGen extends App {
   val parsedArgs = snax.utils.ArgParser.parse(args)
-  // The xdmaCfg region is passed to Scala program as a string in 
+  // The xdmaCfg region is passed to chisel generator as a JSON string
   val xdmaCfg = parsedArgs.find(_._1 == "xdmaCfg")
   if (xdmaCfg.isEmpty) {
     println("xdmaCfg is not provided, generation failed. ")
