@@ -157,18 +157,18 @@ object xdmaTopGen extends App {
   Transferred Parameters:
     snax_xdma_cfg: {
         bender_target: ["snax_KUL_cluster_xdma"],
-        reader_buffer: 4, 
-        writer_buffer: 4, 
+        reader_buffer: 4,
+        writer_buffer: 4,
         reader_agu_spatial_bounds: "8",
-        reader_agu_temporal_dimension: 6, 
+        reader_agu_temporal_dimension: 6,
         writer_agu_spatial_bounds: "8",
-        writer_agu_temporal_dimension: 6, 
+        writer_agu_temporal_dimension: 6,
         HasVerilogMemset: "",
         HasMaxPool: "",
-        HasTransposer: "row=Seq(8), col=Seq(8), elementWidth=Seq(8)", 
+        HasTransposer: "row=Seq(8), col=Seq(8), elementWidth=Seq(8)",
     }
    */
-  
+
   val axiParam = new AXIParam(
     dataWidth = parsedArgs("axiDataWidth").toInt,
     addrWidth = parsedArgs("axiAddrWidth").toInt
