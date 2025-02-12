@@ -202,7 +202,6 @@ void set_gemmx_streamer_csr(
 #ifdef READER_WRITER_EXTENSION_0_CSR_BASE
     csrw_ss(READER_WRITER_EXTENSION_0_CSR_BASE, broadcast_C == 1 ? 0 : 1);
 #endif
-
 }
 
 // Set GEMM configuration CSR

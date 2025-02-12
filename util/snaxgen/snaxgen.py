@@ -67,7 +67,7 @@ def gen_file(cfg, tpl, target_path: str, file_name: str) -> None:
 # Call chisel environment and generate the system verilog file
 def gen_chisel_file(chisel_path, chisel_param, gen_path):
     cmd = f" cd {chisel_path} && \
-        sbt \'runMain {chisel_param} {gen_path}\' "
+        sbt 'runMain {chisel_param} {gen_path}' "
     print(f"Running command: {cmd}")
     if os.system(cmd) != 0:
         raise ChildProcessError("Chisel generation error. ")
@@ -227,7 +227,7 @@ def streamer_csr_num(acc_cfgs):
         + 1  # Start register
     )
 
-    # datapath extension CSRs. 
+    # datapath extension CSRs.
     # Note: this only works for transposer with one possible shape!
     if "has_transpose" in acc_cfgs["snax_streamer_cfg"]:
         if acc_cfgs["snax_streamer_cfg"]["has_transpose"]:
@@ -239,24 +239,28 @@ def streamer_csr_num(acc_cfgs):
 
     return streamer_csr_num
 
+
 def find_keys_with_keyword(data, keyword, parent_key=""):
     """
     Recursively searches for keys containing a specific keyword.
     """
     results = {}
-    
+
     if isinstance(data, dict):
         for key, value in data.items():
             full_key = f"{parent_key}.{key}" if parent_key else key
             if keyword in key:
                 results[full_key] = value
             results.update(find_keys_with_keyword(value, keyword, full_key))
-    
+
     elif isinstance(data, list):
         for index, item in enumerate(data):
-            results.update(find_keys_with_keyword(item, keyword, f"{parent_key}[{index}]"))
-    
+            results.update(
+                find_keys_with_keyword(item, keyword, f"{parent_key}[{index}]")
+            )
+
     return results
+
 
 # Main function run and parsing
 def main():
@@ -467,7 +471,13 @@ def main():
             gen_chisel_file(
                 chisel_path=args.chisel_path,
                 chisel_param="snax.streamer.StreamerGen",
-                gen_path=" --streamercfg " + hjson.dumpsJSON(obj=streamer_cfg, separators=(",", ":")).replace(" ", "") + " " + " --hw-target-dir " + rtl_target_path,
+                gen_path=" --streamercfg "
+                + hjson.dumpsJSON(obj=streamer_cfg, separators=(",", ":")).replace(
+                    " ", ""
+                )
+                + " "
+                + " --hw-target-dir "
+                + rtl_target_path,
             )
 
         print("Generation of accelerator specific wrappers done!")
