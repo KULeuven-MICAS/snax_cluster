@@ -979,13 +979,14 @@ object StreamerGen {
         splitByOneLevelBrackets(data_reader_extentions)
 
       // geenrate the datapath extension parameters for each reader gradually
-      readerDatapathExtentionList.zipWithIndex.foreach { case (datapath_extension, i) =>
-        readerDatapathExtention = readerDatapathExtention.updated(
-          i,
-          genDatapathExtensionPerStreamer(
-            datapath_extension
+      readerDatapathExtentionList.zipWithIndex.foreach {
+        case (datapath_extension, i) =>
+          readerDatapathExtention = readerDatapathExtention.updated(
+            i,
+            genDatapathExtensionPerStreamer(
+              datapath_extension
+            )
           )
-        )
       }
     }
 
@@ -995,13 +996,14 @@ object StreamerGen {
         splitByOneLevelBrackets(data_writer_extentions)
 
       // geenrate the datapath extension parameters for each writer gradually
-      writerDatapathExtentionList.zipWithIndex.foreach { case (datapath_extension, i) =>
-        writerDatapathExtention = writerDatapathExtention.updated(
-          i,
-          genDatapathExtensionPerStreamer(
-            datapath_extension
+      writerDatapathExtentionList.zipWithIndex.foreach {
+        case (datapath_extension, i) =>
+          writerDatapathExtention = writerDatapathExtention.updated(
+            i,
+            genDatapathExtensionPerStreamer(
+              datapath_extension
+            )
           )
-        )
       }
     }
 
@@ -1010,13 +1012,14 @@ object StreamerGen {
       val readerWriterDatapathExtentionList =
         splitByOneLevelBrackets(data_reader_writer_extentions)
 
-      readerWriterDatapathExtentionList.zipWithIndex.foreach { case (datapath_extension, i) =>
-        readerWriterDatapathExtention = readerWriterDatapathExtention.updated(
-          i,
-          genDatapathExtensionPerStreamer(
-            datapath_extension
+      readerWriterDatapathExtentionList.zipWithIndex.foreach {
+        case (datapath_extension, i) =>
+          readerWriterDatapathExtention = readerWriterDatapathExtention.updated(
+            i,
+            genDatapathExtensionPerStreamer(
+              datapath_extension
+            )
           )
-        )
       }
 
     }
