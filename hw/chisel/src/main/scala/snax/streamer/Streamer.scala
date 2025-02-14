@@ -710,46 +710,49 @@ class Streamer(
 
   // reader extension csr configuration
   for (i <- 0 until param.readerDatapathExtention.length) {
-    csrBase_i = csrBase + get_extension_list_csr_num(
-      param.readerDatapathExtention.take(i)
-    )
-
-    csrMap =
-      csrMap + "#define READER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
     extension_csr_num = get_extension_csr_num(param.readerDatapathExtention(i))
-    csrMap =
-      csrMap + s"#define READER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+    if (extension_csr_num > 0) {
+      csrBase_i = csrBase + get_extension_list_csr_num(
+        param.readerDatapathExtention.take(i)
+      )
+      csrMap =
+        csrMap + "#define READER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
+      csrMap =
+        csrMap + s"#define READER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+    }
   }
   csrBase = csrBase + reader_extension_csr
 
   // writer extension csr configuration
   for (i <- 0 until param.writerDatapathExtention.length) {
-    csrBase_i = csrBase + get_extension_list_csr_num(
-      param.writerDatapathExtention.take(i)
-    )
-
-    csrMap =
-      csrMap + "#define WRITER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
     extension_csr_num = get_extension_csr_num(param.writerDatapathExtention(i))
-    csrMap =
-      csrMap + s"#define WRITER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+    if (extension_csr_num > 0) {
+      csrBase_i = csrBase + get_extension_list_csr_num(
+        param.writerDatapathExtention.take(i)
+      )
+      csrMap =
+        csrMap + "#define WRITER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
+      csrMap =
+        csrMap + s"#define WRITER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+    }
   }
   csrBase = csrBase + writer_extension_csr
 
   // reader_writer extension csr configuration
   for (i <- 0 until param.readerWriterDatapathExtention.length) {
-    csrBase_i = csrBase + get_extension_list_csr_num(
-      param.readerWriterDatapathExtention
-        .take(i)
-    )
-
-    csrMap =
-      csrMap + "#define READER_WRITER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
     extension_csr_num = get_extension_csr_num(
       param.readerWriterDatapathExtention(i)
     )
-    csrMap =
-      csrMap + s"#define READER_WRITER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+    if (extension_csr_num > 0) {
+      csrBase_i = csrBase + get_extension_list_csr_num(
+        param.readerWriterDatapathExtention
+          .take(i)
+      )
+      csrMap =
+        csrMap + "#define READER_WRITER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
+      csrMap =
+        csrMap + s"#define READER_WRITER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+    }
   }
   csrBase = csrBase + reader_writer_extension_csr
 

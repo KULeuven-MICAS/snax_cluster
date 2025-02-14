@@ -249,6 +249,7 @@ def find_keys_with_keyword(data, keyword, parent_key=""):
     if isinstance(data, dict):
         for key, value in data.items():
             full_key = f"{parent_key}.{key}" if parent_key else key
+            # If the key contains the keyword
             if keyword in key:
                 results[full_key] = value
             results.update(find_keys_with_keyword(value, keyword, full_key))
@@ -466,7 +467,7 @@ def main():
                     gen_path=rtl_target_path,
                 )
 
-            streamer_cfg = find_keys_with_keyword(cfg, "streamer")
+            streamer_cfg = find_keys_with_keyword(cfg, f"{acc_cfgs[i]['tag_name']}_streamer")
             # Generate chisel component using chisel generation script
             gen_chisel_file(
                 chisel_path=args.chisel_path,
