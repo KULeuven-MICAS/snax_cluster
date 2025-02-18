@@ -49,7 +49,6 @@ quantized_output_data_width = 8
 def emit_conv_data(**kwargs):
 
     meshRow = kwargs["meshRow"]
-    tileSize = kwargs["tileSize"]
     meshCol = kwargs["meshCol"]
 
     # size extraction
@@ -131,7 +130,8 @@ def emit_conv_data(**kwargs):
 
     if broadcast_C == 1:
         assert meshCol * output_data_width % bankWidth == 0
-        channel_en_C_1_bits = int(meshCol * output_data_width / bankWidth)
+        # Note: if C is hanged to wide ports, the mimimum number of bits to enable is multipliers of 8 (8 narrow channels equal to 1 wide channel)
+        channel_en_C_1_bits = int((meshCol * output_data_width / bankWidth + 7 ) // 8 * 8)
         # Generate the elements
         channel_en_C = [0] * enabled_channel_CSR_num  # Initialize with zeros
 
