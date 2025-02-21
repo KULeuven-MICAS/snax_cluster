@@ -284,5 +284,6 @@ jobs:
         run: |-
           ./run.py --simulator verilator \
           sw/runtime.yaml \
-          sw/snax-gemmx-run.yaml \
+          sw/snax-gemmx-matmul-run.yaml \
+          sw/snax-gemmx-conv-run.yaml \
           sw/snax-xdma-run.yaml -j
