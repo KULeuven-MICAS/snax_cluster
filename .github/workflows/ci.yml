@@ -210,22 +210,23 @@ jobs:
           submodules: "recursive"
       - name: RTL GEN
         run: |
-          make CFG_OVERRIDE=cfg/snax_KUL_dse_cluster.hjson \
+          make CFG_OVERRIDE=cfg/snax_KUL_dse_cluster_3D.hjson \
           -C target/snitch_cluster rtl-gen
       - name: Build Hardware
         run: |
-          make CFG_OVERRIDE=cfg/snax_KUL_dse_cluster.hjson \
+          make CFG_OVERRIDE=cfg/snax_KUL_dse_cluster_3D.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \
-          CFG_OVERRIDE=cfg/snax_KUL_dse_cluster.hjson
+          CFG_OVERRIDE=cfg/snax_KUL_dse_cluster_3D.hjson
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
           ./run.py --simulator verilator \
           sw/runtime.yaml \
-          sw/snax-gemmx-run.yaml \
+          sw/snax-gemmx-matmul-run.yaml \
+          sw/snax-gemmx-conv-run.yaml \
           sw/snax-data-reshuffler-run.yaml -j
 
   snax-KUL-cluster-vlt-generic:
