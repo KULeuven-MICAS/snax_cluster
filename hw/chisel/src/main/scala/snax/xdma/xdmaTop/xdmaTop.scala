@@ -19,8 +19,8 @@ import scala.reflect.runtime.universe._
 import play.api.libs.json._
 
 class xdmaTopIO(
-    readerParam: DMADataPathParam,
-    writerParam: DMADataPathParam
+    readerParam: XDMAParam,
+    writerParam: XDMAParam
 ) extends Bundle {
   val clusterBaseAddress = Input(
     UInt(writerParam.axiParam.addrWidth.W)
@@ -28,9 +28,14 @@ class xdmaTopIO(
   val csrIO = new SnaxCsrIO(32)
 
   val remoteDMADataPathCfg = new Bundle {
-    val fromRemote = Flipped(Decoupled(UInt(writerParam.axiParam.dataWidth.W)))
-    val toRemote = Decoupled(UInt(writerParam.axiParam.dataWidth.W))
-  }
+    val reader = new Bundle {
+      val fromRemote = Flipped(Decoupled(UInt(readerParam.axiParam.dataWidth.W)))
+      val toRemote = Decoupled(UInt(readerParam.axiParam.dataWidth.W))
+    }
+    val writer = new Bundle {
+      val fromRemote = Flipped(Decoupled(UInt(writerParam.axiParam.dataWidth.W)))
+      val toRemote = Decoupled(UInt(writerParam.axiParam.dataWidth.W))
+    }  }
 
   val tcdmReader = new Bundle {
     val req = Vec(
@@ -82,8 +87,8 @@ class xdmaTopIO(
 }
 
 class xdmaTop(
-    readerParam: DMADataPathParam,
-    writerParam: DMADataPathParam,
+    readerParam: XDMAParam,
+    writerParam: XDMAParam,
     clusterName: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
@@ -96,7 +101,7 @@ class xdmaTop(
   )
 
   val dmaCtrl = Module(
-    new DMACtrl(
+    new XDMACtrl(
       readerparam = readerParam,
       writerparam = writerParam,
       clusterName = clusterName
@@ -104,7 +109,7 @@ class xdmaTop(
   )
 
   val dmaDatapath = Module(
-    new DMADataPath(
+    new XDMADataPath(
       readerparam = readerParam,
       writerparam = writerParam,
       clusterName = clusterName
@@ -172,6 +177,13 @@ object xdmaTopGen extends App {
   val axiParam = new AXIParam(
     dataWidth = parsedArgs("axiDataWidth").toInt,
     addrWidth = parsedArgs("axiAddrWidth").toInt
+  )
+
+  val crossClusterParam = new CrossClusterParam(
+    maxMulticastDest = (parsedXdmaCfg \ "max_multicast").as[Int], 
+    maxDimension = (parsedXdmaCfg \ "max_dimension").as[Int],
+    maxMemSize = (parsedXdmaCfg \ "max_mem_size").as[Int],
+    AxiAddressWidth = parsedArgs("axiAddrWidth").toInt
   )
 
   val readerparam = new ReaderWriterParam(
@@ -248,9 +260,9 @@ return new ${i._1}(${i._2
     new xdmaTop(
       clusterName = parsedArgs.getOrElse("clusterName", ""),
       readerParam =
-        new DMADataPathParam(axiParam, readerparam, readerextensionparam),
+        new XDMAParam(axiParam, crossClusterParam, readerparam, readerextensionparam),
       writerParam =
-        new DMADataPathParam(axiParam, writerparam, writerextensionparam)
+        new XDMAParam(axiParam, crossClusterParam, writerparam, writerextensionparam)
     )
   )
 

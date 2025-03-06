@@ -38,14 +38,14 @@ class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
       spatialStrides(i) := remainingCSR.head
       remainingCSR = remainingCSR.tail
     }
-    // Connect the temporal bounds
-    for (i <- 0 until temporalBounds.length) {
-      temporalBounds(i) := remainingCSR.head
-      remainingCSR = remainingCSR.tail
-    }
     // Connect the temporal strides
     for (i <- 0 until temporalStrides.length) {
       temporalStrides(i) := remainingCSR.head
+      remainingCSR = remainingCSR.tail
+    }
+    // Connect the temporal bounds
+    for (i <- 0 until temporalBounds.length) {
+      temporalBounds(i) := remainingCSR.head
       remainingCSR = remainingCSR.tail
     }
 
