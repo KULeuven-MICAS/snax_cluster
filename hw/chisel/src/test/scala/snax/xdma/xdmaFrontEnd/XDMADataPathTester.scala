@@ -7,7 +7,7 @@ import chisel3.util._
 import snax.xdma.xdmaFrontend.XDMADataPath
 import snax.xdma.DesignParams.XDMADataPathParam
 import snax.readerWriter.ReaderWriterParam
-import snax.xdma.xdmaTop.xdmaTopGen.axiParam
+import snax.xdma.xdmaTop.XDMATopGen.axiParam
 
 // Import Chiseltest
 import chiseltest._

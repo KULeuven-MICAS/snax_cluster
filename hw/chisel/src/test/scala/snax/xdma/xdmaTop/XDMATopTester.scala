@@ -109,7 +109,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
   }
 
   "The bahavior of XDMA is as expected" in test(
-    new xdmaTop(
+    new XDMATop(
       readerParam = new XDMAParam(
         axiParam = new AXIParam,
         crossClusterParam = new CrossClusterParam,
@@ -1157,7 +1157,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
 
 object xdmaTopEmitter extends App {
   _root_.circt.stage.ChiselStage.emitSystemVerilogFile(
-    new xdmaTop(
+    new XDMATop(
       clusterName = "test_cluster",
       readerParam = new XDMAParam(
         new AXIParam,
