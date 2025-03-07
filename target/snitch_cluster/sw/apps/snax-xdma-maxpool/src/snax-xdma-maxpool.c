@@ -74,8 +74,8 @@ int main() {
         }
 
         // --------------------- Configure the AGU --------------------- //
-        xdma_memcpy_nd(tcdm_in, tcdm_out, spatialStride1_in, spatialStride1_out, 5,
-                       tstride_src, tbound_src, 3, tstride_dst, tbound_dst,
+        xdma_memcpy_nd(tcdm_in, tcdm_out, spatialStride1_in, spatialStride1_out,
+                       5, tstride_src, tbound_src, 3, tstride_dst, tbound_dst,
                        0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         int task_id = xdma_start();
         xdma_wait(task_id);
