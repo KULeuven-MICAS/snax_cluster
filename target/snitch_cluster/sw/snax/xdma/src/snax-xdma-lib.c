@@ -104,7 +104,7 @@ int32_t xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t spatial_stride_src,
                        uint32_t enabled_chan_dst, uint32_t enabled_byte_dst) {
     uint64_t cluster_base_address_h = snrt_cluster_base_addrh();
     cluster_base_address_h = cluster_base_address_h << 32;
-    xdma_memcpy_nd_full_addr(
+    return xdma_memcpy_nd_full_addr(
         (uint64_t)src + cluster_base_address_h,
         (uint64_t)dst + cluster_base_address_h, spatial_stride_src,
         spatial_stride_dst, temp_dim_src, temp_stride_src, temp_bound_src,
@@ -119,10 +119,9 @@ int32_t xdma_memcpy_1d_full_addr(uint64_t src, uint64_t dst, uint32_t size) {
     }
     uint32_t temporal_stride[1] = {XDMA_WIDTH};
     uint32_t temporal_bound[1] = {size / XDMA_WIDTH};
-    uint32_t bound[2] = {XDMA_SPATIAL_CHAN, size / XDMA_WIDTH};
     return xdma_memcpy_nd_full_addr(
         src, dst, XDMA_WIDTH / XDMA_SPATIAL_CHAN,
-        XDMA_WIDTH / XDMA_SPATIAL_CHAN, 2, temporal_stride, temporal_bound, 2,
+        XDMA_WIDTH / XDMA_SPATIAL_CHAN, 1, temporal_stride, temporal_bound, 1,
         temporal_stride, temporal_bound, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
 }
 
@@ -133,10 +132,9 @@ int32_t xdma_memcpy_1d(uint8_t* src, uint8_t* dst, uint32_t size) {
     }
     uint32_t temporal_stride[1] = {XDMA_WIDTH};
     uint32_t temporal_bound[1] = {size / XDMA_WIDTH};
-    uint32_t bound[2] = {XDMA_SPATIAL_CHAN, size / XDMA_WIDTH};
     return xdma_memcpy_nd(src, dst, XDMA_WIDTH / XDMA_SPATIAL_CHAN,
-                          XDMA_WIDTH / XDMA_SPATIAL_CHAN, 2, temporal_stride,
-                          temporal_bound, 2, temporal_stride, temporal_bound,
+                          XDMA_WIDTH / XDMA_SPATIAL_CHAN, 1, temporal_stride,
+                          temporal_bound, 1, temporal_stride, temporal_bound,
                           0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
 }
 
@@ -152,7 +150,6 @@ int32_t xdma_multicast_nd_full_address(
 
     if (dst_num > XDMA_MAX_DST_COUNT) {
         XDMA_DEBUG_PRINT("Number of destination exceeds the hardware limit\n");
-        // return -3;
     }
 
     // Set the destination address for each destination
@@ -249,7 +246,7 @@ int32_t xdma_multicast_nd(uint8_t* src, uint8_t** dst, uint32_t dst_num,
         dst_full_address[i] = 0;
     }
 
-    xdma_multicast_nd_full_address(
+    return xdma_multicast_nd_full_address(
         (uint64_t)src + cluster_base_address_h, dst_full_address, dst_num,
         spatial_stride_src, spatial_stride_dst, temp_dim_src, temp_stride_src,
         temp_bound_src, temp_dim_dst, temp_stride_dst, temp_bound_dst,
@@ -264,10 +261,9 @@ int32_t xdma_multicast_1d_full_address(uint64_t src, uint64_t* dst,
     }
     uint32_t temporal_stride[1] = {XDMA_WIDTH};
     uint32_t temporal_bound[1] = {size / XDMA_WIDTH};
-    uint32_t bound[2] = {XDMA_SPATIAL_CHAN, size / XDMA_WIDTH};
     return xdma_multicast_nd_full_address(
         src, dst, dst_num, XDMA_WIDTH / XDMA_SPATIAL_CHAN,
-        XDMA_WIDTH / XDMA_SPATIAL_CHAN, 2, temporal_stride, temporal_bound, 2,
+        XDMA_WIDTH / XDMA_SPATIAL_CHAN, 1, temporal_stride, temporal_bound, 1,
         temporal_stride, temporal_bound, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
 }
 
@@ -279,10 +275,9 @@ int32_t xdma_multicast_1d(uint8_t* src, uint8_t** dst, uint32_t dst_num,
     }
     uint32_t temporal_stride[1] = {XDMA_WIDTH};
     uint32_t temporal_bound[1] = {size / XDMA_WIDTH};
-    uint32_t bound[2] = {XDMA_SPATIAL_CHAN, size / XDMA_WIDTH};
     return xdma_multicast_nd(src, dst, dst_num, XDMA_WIDTH / XDMA_SPATIAL_CHAN,
-                             XDMA_WIDTH / XDMA_SPATIAL_CHAN, 2, temporal_stride,
-                             temporal_bound, 2, temporal_stride, temporal_bound,
+                             XDMA_WIDTH / XDMA_SPATIAL_CHAN, 1, temporal_stride,
+                             temporal_bound, 1, temporal_stride, temporal_bound,
                              0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
 }
 
