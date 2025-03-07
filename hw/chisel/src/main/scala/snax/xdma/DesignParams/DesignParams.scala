@@ -21,13 +21,14 @@ class AXIParam(
 class CrossClusterParam(
     val maxMulticastDest: Int = 4,
     val maxDimension: Int = 6,
-    val maxMemSize: Int = 4096, 
+    val maxMemSize: Int = 4096,
     val AxiAddressWidth: Int = 48,
     val AxiDataWidth: Int = 512,
     val wordlineWidth: Int = 64
 ) {
-    val maxLocalAddressWidth: Int = log2Ceil(maxMemSize) + 10 - log2Ceil(wordlineWidth / 8)
-    val channelNum: Int = AxiDataWidth / wordlineWidth
+  val maxLocalAddressWidth: Int =
+    log2Ceil(maxMemSize) + 10 - log2Ceil(wordlineWidth / 8)
+  val channelNum: Int = AxiDataWidth / wordlineWidth
 }
 
 // DMA Params

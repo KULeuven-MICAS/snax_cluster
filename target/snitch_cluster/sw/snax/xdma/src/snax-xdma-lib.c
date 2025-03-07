@@ -16,8 +16,7 @@
 #define XDMA_DEBUG_PRINT(...)
 #endif
 
-int32_t xdma_memcpy_nd(uint8_t* src, uint8_t* dst, 
-                       uint32_t* spatial_stride_src,
+int32_t xdma_memcpy_nd(uint8_t* src, uint8_t* dst, uint32_t* spatial_stride_src,
                        uint32_t* spatial_stride_dst, uint32_t temp_dim_src,
                        uint32_t* temp_stride_src, uint32_t* temp_bound_src,
                        uint32_t temp_dim_dst, uint32_t* temp_stride_dst,
