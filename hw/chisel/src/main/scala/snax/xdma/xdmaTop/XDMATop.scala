@@ -328,7 +328,7 @@ return new ${i._1}(${i._2
 // The stride and bound region of the reader of XDMA
 #define XDMA_SRC_SPATIAL_DIM ${readerparam.aguParam.spatialBounds.length}
 #define XDMA_SRC_TEMP_DIM ${readerparam.aguParam.temporalDimension}
-#define XDMA_SRC_SPATIAL_STRIDE_PTR XDMA_DST_ADDR_PTR_MSB + XDMA_MAX_DST_COUNT * 2
+#define XDMA_SRC_SPATIAL_STRIDE_PTR XDMA_DST_ADDR_PTR_LSB + XDMA_MAX_DST_COUNT * 2
 #define XDMA_SRC_TEMP_STRIDE_PTR XDMA_SRC_SPATIAL_STRIDE_PTR + XDMA_SRC_SPATIAL_DIM
 #define XDMA_SRC_TEMP_BOUND_PTR XDMA_SRC_TEMP_STRIDE_PTR + XDMA_SRC_TEMP_DIM
 
