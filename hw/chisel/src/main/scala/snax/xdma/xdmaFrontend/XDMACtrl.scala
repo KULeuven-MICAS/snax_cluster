@@ -67,11 +67,12 @@ class XDMACrossClusterCfgIO(param: XDMAParam) extends Bundle {
     UInt(param.crossClusterParam.AxiAddressWidth.W)
   )
   val spatialStride = UInt(param.crossClusterParam.maxLocalAddressWidth.W)
-  val temporalStrides = Vec(
+
+  val temporalBounds = Vec(
     param.crossClusterParam.maxDimension,
     UInt(param.crossClusterParam.maxLocalAddressWidth.W)
   )
-  val temporalBounds = Vec(
+  val temporalStrides = Vec(
     param.crossClusterParam.maxDimension,
     UInt(param.crossClusterParam.maxLocalAddressWidth.W)
   )
@@ -141,9 +142,9 @@ class XDMACrossClusterCfgIO(param: XDMAParam) extends Bundle {
   }
 
   def serialize: UInt =
-    enabledByte ## enabledChannel ## temporalBounds.reverse.reduce(
+    enabledByte ## enabledChannel ## temporalStrides.reverse.reduce(
       _ ## _
-    ) ## temporalStrides.reverse.reduce(
+    ) ## temporalBounds.reverse.reduce(
       _ ## _
     ) ## spatialStride ## writerPtr.reverse.reduce(_ ## _) ## readerPtr
   def deserialize(data: UInt): UInt = {
@@ -174,16 +175,7 @@ class XDMACrossClusterCfgIO(param: XDMAParam) extends Bundle {
       remainingData.getWidth - 1,
       param.crossClusterParam.maxLocalAddressWidth
     )
-    temporalStrides.foreach { i =>
-      i := remainingData(
-        param.crossClusterParam.maxLocalAddressWidth - 1,
-        0
-      )
-      remainingData = remainingData(
-        remainingData.getWidth - 1,
-        param.crossClusterParam.maxLocalAddressWidth
-      )
-    }
+
     temporalBounds.foreach { i =>
       i := remainingData(
         param.crossClusterParam.maxLocalAddressWidth - 1,
@@ -194,6 +186,18 @@ class XDMACrossClusterCfgIO(param: XDMAParam) extends Bundle {
         param.crossClusterParam.maxLocalAddressWidth
       )
     }
+
+    temporalStrides.foreach { i =>
+      i := remainingData(
+        param.crossClusterParam.maxLocalAddressWidth - 1,
+        0
+      )
+      remainingData = remainingData(
+        remainingData.getWidth - 1,
+        param.crossClusterParam.maxLocalAddressWidth
+      )
+    }
+
     enabledChannel := remainingData(
       param.crossClusterParam.channelNum - 1,
       0
@@ -202,6 +206,7 @@ class XDMACrossClusterCfgIO(param: XDMAParam) extends Bundle {
       remainingData.getWidth - 1,
       param.crossClusterParam.channelNum
     )
+
     enabledByte := remainingData(
       param.crossClusterParam.wordlineWidth / 8 - 1,
       0
@@ -210,6 +215,7 @@ class XDMACrossClusterCfgIO(param: XDMAParam) extends Bundle {
       remainingData.getWidth - 1,
       param.crossClusterParam.wordlineWidth / 8
     )
+
     remainingData
   }
 }

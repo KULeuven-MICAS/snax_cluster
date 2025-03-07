@@ -209,16 +209,16 @@ class XDMACtrlTester extends AnyFlatSpec with ChiselScalatestTester {
                   // The address for the writer side
                   (BigInt(0x2000_0000) << 48) +
                   (BigInt(Reader_Spatial_Strides(0) >> 3) << 96) +
-                  (BigInt(Reader_Temporal_Strides(0) >> 3) << 115) +
-                  (BigInt(Reader_Temporal_Strides(1) >> 3) << 134) +
-                  // 2, 3, 4, 5 are all 0
-                  (BigInt(Reader_Temporal_Bounds(0)) << 229) +
-                  (BigInt(Reader_Temporal_Bounds(1)) << 248) +
+                  (BigInt(Reader_Temporal_Bounds(0) >> 3) << 115) +
+                  (BigInt(Reader_Temporal_Bounds(1) >> 3) << 134) +
                   // 2, 3, 4, 5 are all 1
-                  (BigInt(1) << 267) +
-                  (BigInt(1) << 286) +
-                  (BigInt(1) << 305) +
-                  (BigInt(1) << 324) +
+                  (BigInt(1) << 153) +
+                  (BigInt(1) << 172) +
+                  (BigInt(1) << 191) +
+                  (BigInt(1) << 210) +
+                  (BigInt(Reader_Temporal_Strides(0)) << 229) +
+                  (BigInt(Reader_Temporal_Strides(1)) << 248) +
+                  // 2, 3, 4, 5 are all 0
                   // Enabled channels
                   (BigInt(0xff) << 343) +
                   // Enabled Byte
@@ -249,21 +249,20 @@ class XDMACtrlTester extends AnyFlatSpec with ChiselScalatestTester {
                   // The address for the writer side
                   ((Writer_PointerAddress + i + 1) << 48) +
                   (BigInt(Writer_Spatial_Strides(0) >> 3) << 96) +
-                  (BigInt(Writer_Temporal_Strides(0) >> 3) << 115) +
-                  (BigInt(Writer_Temporal_Strides(1) >> 3) << 134) +
-                  // 2, 3, 4, 5 are all 0
-                  (BigInt(Writer_Temporal_Bounds(0)) << 229) +
-                  (BigInt(Writer_Temporal_Bounds(1)) << 248) +
+                  (BigInt(Writer_Temporal_Bounds(0) >> 3) << 115) +
+                  (BigInt(Writer_Temporal_Bounds(1) >> 3) << 134) +
                   // 2, 3, 4, 5 are all 1
-                  (BigInt(1) << 267) +
-                  (BigInt(1) << 286) +
-                  (BigInt(1) << 305) +
-                  (BigInt(1) << 324) +
+                  (BigInt(1) << 153) +
+                  (BigInt(1) << 172) +
+                  (BigInt(1) << 191) +
+                  (BigInt(1) << 210) +
+                  (BigInt(Writer_Temporal_Strides(0)) << 229) +
+                  (BigInt(Writer_Temporal_Strides(1)) << 248) +
+                  // 2, 3, 4, 5 are all 0
                   // Enabled channels
                   (BigInt(0xff) << 343) +
                   // Enabled Byte
                   (BigInt(0xff) << 351)
-              // 214b for AGU, all remaining can be used as the chained copy
 
               dut.io.remoteDMADataPathCfg.writer.fromRemote.bits
                 .poke(writerRemoteConfig)

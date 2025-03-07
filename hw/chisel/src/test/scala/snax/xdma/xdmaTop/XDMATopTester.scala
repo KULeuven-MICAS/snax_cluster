@@ -223,7 +223,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        readerAGUParam.temporalStrides.foreach { i =>
+        readerAGUParam.temporalBounds.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -233,7 +233,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        readerAGUParam.temporalBounds.foreach { i =>
+        readerAGUParam.temporalStrides.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -265,7 +265,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        writerAGUParam.temporalStrides.foreach { i =>
+        writerAGUParam.temporalBounds.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -275,7 +275,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        writerAGUParam.temporalBounds.foreach { i =>
+        writerAGUParam.temporalStrides.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -438,7 +438,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        readerAGUParam.temporalStrides.foreach { i =>
+        readerAGUParam.temporalBounds.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -448,7 +448,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        readerAGUParam.temporalBounds.foreach { i =>
+        readerAGUParam.temporalStrides.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -480,7 +480,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        writerAGUParam.temporalStrides.foreach { i =>
+        writerAGUParam.temporalBounds.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -490,7 +490,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        writerAGUParam.temporalBounds.foreach { i =>
+        writerAGUParam.temporalStrides.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -649,7 +649,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        readerAGUParam.temporalStrides.foreach { i =>
+        readerAGUParam.temporalBounds.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -659,7 +659,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        readerAGUParam.temporalBounds.foreach { i =>
+        readerAGUParam.temporalStrides.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -691,7 +691,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        writerAGUParam.temporalStrides.foreach { i =>
+        writerAGUParam.temporalBounds.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -701,7 +701,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        writerAGUParam.temporalBounds.foreach { i =>
+        writerAGUParam.temporalStrides.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -895,7 +895,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        readerAGUParam.temporalStrides.foreach { i =>
+        readerAGUParam.temporalBounds.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -905,7 +905,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        readerAGUParam.temporalBounds.foreach { i =>
+        readerAGUParam.temporalStrides.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -937,7 +937,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        writerAGUParam.temporalStrides.foreach { i =>
+        writerAGUParam.temporalBounds.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
@@ -947,7 +947,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           currentAddress += 1
         }
 
-        writerAGUParam.temporalBounds.foreach { i =>
+        writerAGUParam.temporalStrides.foreach { i =>
           write_csr(
             dut = dut,
             port = dut.io.csrIO,
