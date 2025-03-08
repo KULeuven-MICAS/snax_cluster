@@ -28,18 +28,10 @@ class XDMATopIO(
   val csrIO = new SnaxCsrIO(32)
 
   val remoteXDMACfg = new Bundle {
-    val reader = new Bundle {
-      val fromRemote = Flipped(
-        Decoupled(UInt(readerParam.axiParam.dataWidth.W))
-      )
-      val toRemote = Decoupled(UInt(readerParam.axiParam.dataWidth.W))
-    }
-    val writer = new Bundle {
-      val fromRemote = Flipped(
-        Decoupled(UInt(writerParam.axiParam.dataWidth.W))
-      )
-      val toRemote = Decoupled(UInt(writerParam.axiParam.dataWidth.W))
-    }
+    val fromRemote = Flipped(
+      Decoupled(UInt(readerParam.axiParam.dataWidth.W))
+    )
+    val toRemote = Decoupled(UInt(readerParam.axiParam.dataWidth.W))
   }
 
   val tcdmReader = new Bundle {
