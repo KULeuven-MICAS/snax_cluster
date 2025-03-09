@@ -35,9 +35,9 @@ class RWParamTest(
 
 class ExtParam(
     val bypassMemset: Int,
-    val MemsetValue: Int,
+    val memsetValue: Int,
     val bypassMaxPool: Int,
-    val MaxPoolPeriod: Int,
+    val maxPoolPeriod: Int,
     val bypassTransposer: Int
 )
 
@@ -166,9 +166,9 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
 
         var writerExtParam = new ExtParam(
           bypassMemset = 1,
-          MemsetValue = 0,
+          memsetValue = 0,
           bypassMaxPool = 1,
-          MaxPoolPeriod = 0,
+          maxPoolPeriod = 0,
           bypassTransposer = 1
         )
 
@@ -316,7 +316,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           dut = dut,
           port = dut.io.csrIO,
           addr = currentAddress,
-          data = writerExtParam.MemsetValue
+          data = writerExtParam.memsetValue
         )
         currentAddress += 1
 
@@ -324,7 +324,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           dut = dut,
           port = dut.io.csrIO,
           addr = currentAddress,
-          data = writerExtParam.MaxPoolPeriod
+          data = writerExtParam.maxPoolPeriod
         )
         currentAddress += 1
 
@@ -382,9 +382,9 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
 
         writerExtParam = new ExtParam(
           bypassMemset = 0,
-          MemsetValue = 0,
+          memsetValue = 0,
           bypassMaxPool = 1,
-          MaxPoolPeriod = 0,
+          maxPoolPeriod = 0,
           bypassTransposer = 1
         )
 
@@ -531,7 +531,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           dut = dut,
           port = dut.io.csrIO,
           addr = currentAddress,
-          data = writerExtParam.MemsetValue
+          data = writerExtParam.memsetValue
         )
         currentAddress += 1
 
@@ -539,7 +539,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           dut = dut,
           port = dut.io.csrIO,
           addr = currentAddress,
-          data = writerExtParam.MaxPoolPeriod
+          data = writerExtParam.maxPoolPeriod
         )
         currentAddress += 1
 
@@ -593,9 +593,9 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
 
         writerExtParam = new ExtParam(
           bypassMemset = 0,
-          MemsetValue = 0xff,
+          memsetValue = 0xff,
           bypassMaxPool = 1,
-          MaxPoolPeriod = 0,
+          maxPoolPeriod = 0,
           bypassTransposer = 1
         )
 
@@ -742,7 +742,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           dut = dut,
           port = dut.io.csrIO,
           addr = currentAddress,
-          data = writerExtParam.MemsetValue
+          data = writerExtParam.memsetValue
         )
         currentAddress += 1
 
@@ -750,7 +750,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           dut = dut,
           port = dut.io.csrIO,
           addr = currentAddress,
-          data = writerExtParam.MaxPoolPeriod
+          data = writerExtParam.maxPoolPeriod
         )
         currentAddress += 1
 
@@ -839,9 +839,9 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
 
         writerExtParam = new ExtParam(
           bypassMemset = 1,
-          MemsetValue = 0xff,
+          memsetValue = 0xff,
           bypassMaxPool = 1,
-          MaxPoolPeriod = 0,
+          maxPoolPeriod = 0,
           bypassTransposer = 0
         )
 
@@ -988,7 +988,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           dut = dut,
           port = dut.io.csrIO,
           addr = currentAddress,
-          data = writerExtParam.MemsetValue
+          data = writerExtParam.memsetValue
         )
         currentAddress += 1
 
@@ -996,7 +996,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           dut = dut,
           port = dut.io.csrIO,
           addr = currentAddress,
-          data = writerExtParam.MaxPoolPeriod
+          data = writerExtParam.maxPoolPeriod
         )
         currentAddress += 1
 

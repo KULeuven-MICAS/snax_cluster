@@ -97,7 +97,7 @@ class XDMATop(
     )
   )
 
-  val dmaCtrl = Module(
+  val xdmaCtrl = Module(
     new XDMACtrl(
       readerparam = readerParam,
       writerparam = writerParam,
@@ -105,7 +105,7 @@ class XDMATop(
     )
   )
 
-  val dmaDatapath = Module(
+  val xdmaDatapath = Module(
     new XDMADataPath(
       readerparam = readerParam,
       writerparam = writerParam,
@@ -114,34 +114,34 @@ class XDMATop(
   )
 
   // Give the dmactrl the current cluster address
-  dmaCtrl.io.clusterBaseAddress := io.clusterBaseAddress
+  xdmaCtrl.io.clusterBaseAddress := io.clusterBaseAddress
 
   // IO0: Start to connect datapath to TCDM
-  io.tcdmReader <> dmaDatapath.io.tcdmReader
-  io.tcdmWriter <> dmaDatapath.io.tcdmWriter
+  io.tcdmReader <> xdmaDatapath.io.tcdmReader
+  io.tcdmWriter <> xdmaDatapath.io.tcdmWriter
 
   // IO1: Start to connect datapath to axi
-  io.remoteXDMAData.fromRemote <> dmaDatapath.io.remoteDMADataPath.fromRemote
-  io.remoteXDMAData.toRemote <> dmaDatapath.io.remoteDMADataPath.toRemote
+  io.remoteXDMAData.fromRemote <> xdmaDatapath.io.remoteDMADataPath.fromRemote
+  io.remoteXDMAData.toRemote <> xdmaDatapath.io.remoteDMADataPath.toRemote
 
   // IO2: Start to coonect ctrl to csr
-  io.csrIO <> dmaCtrl.io.csrIO
+  io.csrIO <> xdmaCtrl.io.csrIO
 
   // IO3: Start to connect ctrl to remoteDMADataPath
-  io.remoteXDMACfg <> dmaCtrl.io.remoteDMADataPathCfg
+  io.remoteXDMACfg <> xdmaCtrl.io.remoteDMADataPathCfg
 
   // Interconnection between ctrl and datapath
-  dmaCtrl.io.localDMADataPath.readerCfg <> dmaDatapath.io.readerCfg
+  xdmaCtrl.io.localDMADataPath.readerCfg <> xdmaDatapath.io.readerCfg
 
-  dmaCtrl.io.localDMADataPath.writerCfg <> dmaDatapath.io.writerCfg
+  xdmaCtrl.io.localDMADataPath.writerCfg <> xdmaDatapath.io.writerCfg
 
-  dmaDatapath.io.readerStart := dmaCtrl.io.localDMADataPath.readerStart
+  xdmaDatapath.io.readerStart := xdmaCtrl.io.localDMADataPath.readerStart
 
-  dmaDatapath.io.writerStart := dmaCtrl.io.localDMADataPath.writerStart
+  xdmaDatapath.io.writerStart := xdmaCtrl.io.localDMADataPath.writerStart
 
-  dmaCtrl.io.localDMADataPath.readerBusy := dmaDatapath.io.readerBusy
+  xdmaCtrl.io.localDMADataPath.readerBusy := xdmaDatapath.io.readerBusy
 
-  dmaCtrl.io.localDMADataPath.writerBusy := dmaDatapath.io.writerBusy
+  xdmaCtrl.io.localDMADataPath.writerBusy := xdmaDatapath.io.writerBusy
 
 }
 
