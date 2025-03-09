@@ -103,12 +103,7 @@ class XDMACrossClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam)
       temporalStrides.length - cfg.aguCfg.temporalStrides.length
     )(0.U)
 
-    temporalBounds := cfg.aguCfg.temporalBounds.map(
-      _.apply(
-        cfg.aguCfg.temporalBounds(0).getWidth - 1,
-        log2Ceil(readerParam.crossClusterParam.wordlineWidth / 8)
-      )
-    ) ++ Seq.fill(
+    temporalBounds := cfg.aguCfg.temporalBounds ++ Seq.fill(
       temporalBounds.length - cfg.aguCfg.temporalBounds.length
     )(1.U)
     enabledChannel := cfg.readerwriterCfg.enabledChannel
