@@ -81,6 +81,11 @@ class XDMATopIO(
       )
     )
   }
+
+  val status = new Bundle {
+    val readerBusy = Output(Bool())
+    val writerBusy = Output(Bool())
+  }
 }
 
 class XDMATop(
@@ -143,6 +148,10 @@ class XDMATop(
 
   xdmaCtrl.io.localDMADataPath.writerBusy := xdmaDatapath.io.writerBusy
 
+  // The status signal
+  io.status.readerBusy := xdmaCtrl.io.localDMADataPath.readerBusy
+
+  io.status.writerBusy := xdmaCtrl.io.localDMADataPath.writerBusy
 }
 
 object XDMATopGen extends App {

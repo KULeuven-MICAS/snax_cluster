@@ -55,11 +55,15 @@ class DualXDMA(readerParam: XDMAParam, writerParam: XDMAParam)
       val csrIO = chiselTypeOf(xdma1.io.csrIO)
       val tcdmReader = chiselTypeOf(xdma1.io.tcdmReader)
       val tcdmWriter = chiselTypeOf(xdma1.io.tcdmWriter)
+      val readerBusy = Output(Bool())
+      val writerBusy = Output(Bool())
     }
     val instance2 = new Bundle {
       val csrIO = chiselTypeOf(xdma2.io.csrIO)
       val tcdmReader = chiselTypeOf(xdma2.io.tcdmReader)
       val tcdmWriter = chiselTypeOf(xdma2.io.tcdmWriter)
+      val readerBusy = Output(Bool())
+      val writerBusy = Output(Bool())
     }
   })
 
@@ -69,6 +73,10 @@ class DualXDMA(readerParam: XDMAParam, writerParam: XDMAParam)
   io.instance2.csrIO <> xdma2.io.csrIO
   io.instance2.tcdmReader <> xdma2.io.tcdmReader
   io.instance2.tcdmWriter <> xdma2.io.tcdmWriter
+  io.instance1.readerBusy := xdma1.io.status.readerBusy
+  io.instance1.writerBusy := xdma1.io.status.writerBusy
+  io.instance2.readerBusy := xdma2.io.status.readerBusy
+  io.instance2.writerBusy := xdma2.io.status.writerBusy
 }
 
 class DualXDMATester extends AnyFreeSpec with ChiselScalatestTester {
@@ -622,7 +630,7 @@ class DualXDMATester extends AnyFreeSpec with ChiselScalatestTester {
         addr = currentAddress,
         data = 1
       )
-      currentAddress += 1
+      currentAddress += 3
 
       // Check if the DMA is finished
       while (
@@ -632,6 +640,12 @@ class DualXDMATester extends AnyFreeSpec with ChiselScalatestTester {
           addr = currentAddress + 1
         ) != 1
       ) {}
+
+      dut.clock.step(8192)
+
+      while (dut.io.instance2.writerBusy.peekBoolean()) {
+        dut.clock.step()
+      }
 
       // Check the data in the TCDM
       if (tcdmMem_1 != tcdmMem_2)

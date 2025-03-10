@@ -155,12 +155,13 @@ class XDMACrossClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam)
       _ ## _
     ) ## readerPtr ## isReaderSide.asUInt ## taskID
 
-  def deserialize(data: UInt): UInt = {
+  def deserialize(data: UInt): Unit = {
     var remainingData = data
     taskID := remainingData(
       taskID.getWidth - 1,
       0
     )
+    remainingData = remainingData(remainingData.getWidth - 1, taskID.getWidth)
     isReaderSide := remainingData(0)
     remainingData = remainingData(remainingData.getWidth - 1, 1)
     readerPtr := remainingData(
@@ -225,11 +226,6 @@ class XDMACrossClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam)
       readerParam.crossClusterParam.wordlineWidth / 8 - 1,
       0
     )
-    remainingData = remainingData(
-      remainingData.getWidth - 1,
-      readerParam.crossClusterParam.wordlineWidth / 8
-    )
-    remainingData
   }
 }
 
