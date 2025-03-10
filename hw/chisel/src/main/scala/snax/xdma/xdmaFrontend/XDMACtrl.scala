@@ -19,6 +19,7 @@ import snax.xdma.DesignParams.{XDMADataPathParam, XDMAParam}
 // Loopback signal is also included in this class, for the purpose of early judgement
 // Also the extension cfg is included in this class
 class XDMACfgIO(param: XDMAParam) extends XDMADataPathCfgIO(param: XDMAParam) {
+  val taskID = UInt(8.W)
   val readerPtr = UInt(param.axiParam.addrWidth.W)
   // val writerPtr = UInt(param.axiParam.addrWidth.W)
   val writerPtr =
@@ -62,6 +63,7 @@ class XDMACfgIO(param: XDMAParam) extends XDMADataPathCfgIO(param: XDMAParam) {
 
 class XDMACrossClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam)
     extends Bundle {
+  val taskID = UInt(8.W)
   val isReaderSide = Bool()
   val readerPtr = UInt(readerParam.crossClusterParam.AxiAddressWidth.W)
   val writerPtr = Vec(
@@ -85,6 +87,7 @@ class XDMACrossClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam)
       readerSide: Boolean,
       cfg: XDMACfgIO
   ): Unit = {
+    taskID := cfg.taskID
     isReaderSide := readerSide.B
     readerPtr := cfg.readerPtr
     writerPtr := cfg.writerPtr
@@ -115,6 +118,7 @@ class XDMACrossClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam)
     else { Wire(new XDMACfgIO(writerParam)) }
 
     xdmaCfg := 0.U.asTypeOf(xdmaCfg)
+    xdmaCfg.taskID := taskID
     xdmaCfg.readerPtr := readerPtr
     xdmaCfg.writerPtr := writerPtr
     xdmaCfg.aguCfg.ptr := { if (readerSide) readerPtr else writerPtr(0) }
@@ -149,10 +153,14 @@ class XDMACrossClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam)
       _ ## _
     ) ## spatialStride ## writerPtr.reverse.reduce(
       _ ## _
-    ) ## readerPtr ## isReaderSide.asUInt
+    ) ## readerPtr ## isReaderSide.asUInt ## taskID
 
   def deserialize(data: UInt): UInt = {
     var remainingData = data
+    taskID := remainingData(
+      taskID.getWidth - 1,
+      0
+    )
     isReaderSide := remainingData(0)
     remainingData = remainingData(remainingData.getWidth - 1, 1)
     readerPtr := remainingData(
@@ -221,7 +229,6 @@ class XDMACrossClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam)
       remainingData.getWidth - 1,
       readerParam.crossClusterParam.wordlineWidth / 8
     )
-
     remainingData
   }
 }
@@ -437,8 +444,8 @@ class XDMACtrl(
               .reduce(_ + _) + 1
         } + // The total num of param on writer (custom CSR + bypass CSR)
         1, // The start CSR
-      csrNumReadOnly = 2,
-      // Set to two at current, 1) The number of submitted request; 2) The number of finished request. Since the reader path may be forward to remote, here I only count the writer branch
+      csrNumReadOnly = 4,
+      // Set to four at current, 1) The number of submitted local request; 2) The number of submitted remote request; 3) The number of finished local request; 4) The number of finished remote request
       csrAddrWidth = 32,
       // Set a name for the module class so that it will not overlapped with other csrManagers in user-defined accelerators
       csrModuleTagName = s"${clusterName}_xdma_"
@@ -495,6 +502,43 @@ class XDMACtrl(
   csrManager.io.csr_config_out.ready := preRoute_src_local.ready & preRoute_dst_local.ready
   preRoute_src_local.valid := csrManager.io.csr_config_out.ready & csrManager.io.csr_config_out.valid
   preRoute_dst_local.valid := csrManager.io.csr_config_out.ready & csrManager.io.csr_config_out.valid
+
+  // Task ID Counter to assign the ID for each transaction
+  val localSubmittedTaskIDCounter = Module(
+    new BasicCounter(
+      width = 8,
+      hasCeil = false
+    ) {
+      override val desiredName = s"${clusterName}_xdmaCtrl_localTaskIDCounter"
+    }
+  )
+  localSubmittedTaskIDCounter.io.ceil := DontCare
+  localSubmittedTaskIDCounter.io.tick := loopBack && csrManager.io.csr_config_out.fire
+  localSubmittedTaskIDCounter.io.reset := false.B
+
+  val remoteSubmittedTaskIDCounter = Module(
+    new BasicCounter(
+      width = 8,
+      hasCeil = false
+    ) {
+      override val desiredName = s"${clusterName}_xdmaCtrl_remoteTaskIDCounter"
+    }
+  )
+  remoteSubmittedTaskIDCounter.io.ceil := DontCare
+  remoteSubmittedTaskIDCounter.io.tick := (~loopBack) && csrManager.io.csr_config_out.fire
+  remoteSubmittedTaskIDCounter.io.reset := false.B
+
+  csrManager.io.read_only_csr(0) := localSubmittedTaskIDCounter.io.value
+  csrManager.io.read_only_csr(1) := remoteSubmittedTaskIDCounter.io.value
+
+  // Connect the task ID to the structured signal
+  val taskID = Mux(
+    loopBack,
+    localSubmittedTaskIDCounter.io.value,
+    remoteSubmittedTaskIDCounter.io.value
+  ) + 1.U
+  preRoute_src_local.bits.taskID := taskID
+  preRoute_dst_local.bits.taskID := taskID
 
   // Cfg from remote side
   val cfgFromRemote = Wire(
@@ -730,23 +774,24 @@ class XDMACtrl(
   // Data Signals in Dst Path
   io.localDMADataPath.writerCfg := current_cfg_dst.bits
 
-  // Counter for submitted cfg and finished cfg (With these two values, the control core knows which task is finished)
-  val submittedTaskCounter = Module(new BasicCounter(32, hasCeil = false) {
-    override val desiredName = s"${clusterName}_xdma_ctrl_submittedTaskCounter"
+  // Counter for finished task
+  val localFinishedTaskCounter = Module(new BasicCounter(8, hasCeil = false) {
+    override val desiredName =
+      s"${clusterName}_xdma_ctrl_localFinishedTaskCounter"
   })
-  submittedTaskCounter.io.ceil := DontCare
-  submittedTaskCounter.io.reset := false.B
-  submittedTaskCounter.io.tick := csrManager.io.csr_config_out.fire
-  csrManager.io.read_only_csr(0) := submittedTaskCounter.io.value
+  localFinishedTaskCounter.io.ceil := DontCare
+  localFinishedTaskCounter.io.reset := false.B
+  localFinishedTaskCounter.io.tick := current_cfg_dst.fire && current_cfg_dst.bits.loopBack
 
-  val finishedTaskCounter = Module(new BasicCounter(32, hasCeil = false) {
-    override val desiredName = s"${clusterName}_xdma_ctrl_finishedTaskCounter"
+  val remoteFinishedTaskCounter = Module(new BasicCounter(8, hasCeil = false) {
+    override val desiredName =
+      s"${clusterName}_xdma_ctrl_remoteFinishedTaskCounter"
   })
-  finishedTaskCounter.io.ceil := DontCare
-  finishedTaskCounter.io.reset := false.B
-  finishedTaskCounter.io.tick := (RegNext(
-    io.localDMADataPath.writerBusy,
-    init = false.B
-  ) === true.B) && (io.localDMADataPath.writerBusy === false.B)
-  csrManager.io.read_only_csr(1) := finishedTaskCounter.io.value
+  remoteFinishedTaskCounter.io.ceil := DontCare
+  remoteFinishedTaskCounter.io.reset := false.B
+  remoteFinishedTaskCounter.io.tick := io.remoteDMADataPathCfg.toRemote.fire
+
+  // Connect the finished task counter to the read-only CSR
+  csrManager.io.read_only_csr(2) := localFinishedTaskCounter.io.value
+  csrManager.io.read_only_csr(3) := remoteFinishedTaskCounter.io.value
 }

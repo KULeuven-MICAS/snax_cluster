@@ -335,14 +335,14 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           addr = currentAddress,
           data = 1
         )
-        currentAddress += 1
+        currentAddress += 3
 
         // Check if the DMA is finished
         while (
           read_csr(
             dut = dut,
             port = dut.io.csrIO,
-            addr = currentAddress + 1
+            addr = currentAddress
           ) != 1
         ) {}
 
@@ -550,14 +550,14 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           addr = currentAddress,
           data = 1
         )
-        currentAddress += 1
+        currentAddress += 3
 
         // Check if the DMA is finished
         while (
           read_csr(
             dut = dut,
             port = dut.io.csrIO,
-            addr = currentAddress + 1
+            addr = currentAddress
           ) != 2
         ) {}
 
@@ -761,14 +761,14 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           addr = currentAddress,
           data = 1
         )
-        currentAddress += 1
+        currentAddress += 3
 
         // Check if the DMA is finished
         while (
           read_csr(
             dut = dut,
             port = dut.io.csrIO,
-            addr = currentAddress + 1
+            addr = currentAddress
           ) != 3
         ) {}
 
@@ -1007,14 +1007,14 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           addr = currentAddress,
           data = 1
         )
-        currentAddress += 1
+        currentAddress += 3
 
         // Check if the DMA is finished
         while (
           read_csr(
             dut = dut,
             port = dut.io.csrIO,
-            addr = currentAddress + 1
+            addr = currentAddress
           ) != 4
         ) {}
 
