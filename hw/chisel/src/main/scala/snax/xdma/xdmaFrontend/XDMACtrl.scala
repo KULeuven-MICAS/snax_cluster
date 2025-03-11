@@ -236,7 +236,7 @@ class XDMACtrlIO(readerParam: XDMAParam, writerParam: XDMAParam)
     UInt(writerParam.axiParam.addrWidth.W)
   )
   // Local DMADatapath control signal (Which is connected to DMADataPath)
-  val localDMADataPath = new Bundle {
+  val localXDMACfg = new Bundle {
     val readerCfg = Output(new XDMADataPathCfgIO(readerParam))
     val writerCfg = Output(new XDMADataPathCfgIO(writerParam))
 
@@ -250,7 +250,7 @@ class XDMACtrlIO(readerParam: XDMAParam, writerParam: XDMAParam)
   }
   // Remote control signal, which include the signal from other cluster or signal to other cluster. Both of them is AXI related, serialized signal
   // The remote control signal will contain only src information, in other words, the DMA system can proceed remote read or local read, but only local write
-  val remoteDMADataPathCfg = new Bundle {
+  val remoteXDMACfg = new Bundle {
     val fromRemote = Flipped(Decoupled(UInt(readerParam.axiParam.dataWidth.W)))
     val toRemote = Decoupled(UInt(readerParam.axiParam.dataWidth.W))
   }
@@ -540,9 +540,9 @@ class XDMACtrl(
   val cfgFromRemote = Wire(
     Decoupled(new XDMACrossClusterCfgIO(readerparam, writerparam))
   )
-  cfgFromRemote.bits.deserialize(io.remoteDMADataPathCfg.fromRemote.bits)
-  cfgFromRemote.valid := io.remoteDMADataPathCfg.fromRemote.valid
-  io.remoteDMADataPathCfg.fromRemote.ready := cfgFromRemote.ready
+  cfgFromRemote.bits.deserialize(io.remoteXDMACfg.fromRemote.bits)
+  cfgFromRemote.valid := io.remoteXDMACfg.fromRemote.valid
+  io.remoteXDMACfg.fromRemote.ready := cfgFromRemote.ready
 
   // Demux the cfg from the cfg_in port
   val cfgFromRemoteDemux = Module(
@@ -561,9 +561,9 @@ class XDMACtrl(
   val cfgToRemote = Wire(
     Decoupled(new XDMACrossClusterCfgIO(readerparam, writerparam))
   )
-  io.remoteDMADataPathCfg.toRemote.bits := cfgToRemote.bits.serialize
-  io.remoteDMADataPathCfg.toRemote.valid := cfgToRemote.valid
-  cfgToRemote.ready := io.remoteDMADataPathCfg.toRemote.ready
+  io.remoteXDMACfg.toRemote.bits := cfgToRemote.bits.serialize
+  io.remoteXDMACfg.toRemote.valid := cfgToRemote.valid
+  cfgToRemote.ready := io.remoteXDMACfg.toRemote.ready
 
   // Mux+Arbitrator the Cfg to cfg_out port
   val cfgToRemoteMux = Module(
@@ -718,26 +718,26 @@ class XDMACtrl(
   dstCfgArbiter.io.out -|> current_cfg_dst
 
   // Default value: Not pop out config, not start reader/writer, not change state
-  io.localDMADataPath.readerStart := false.B
-  io.localDMADataPath.writerStart := false.B
+  io.localXDMACfg.readerStart := false.B
+  io.localXDMACfg.writerStart := false.B
   current_cfg_src.ready := false.B
   current_cfg_dst.ready := false.B
 
   // Control signals in Src Path
   switch(current_state_src) {
     is(sIdle) {
-      when(current_cfg_src.valid & (~io.localDMADataPath.readerBusy)) {
+      when(current_cfg_src.valid & (~io.localXDMACfg.readerBusy)) {
         current_state_src := sWaitBusy
-        io.localDMADataPath.readerStart := true.B
+        io.localXDMACfg.readerStart := true.B
       }
     }
     is(sWaitBusy) {
-      when(io.localDMADataPath.readerBusy) {
+      when(io.localXDMACfg.readerBusy) {
         current_state_src := sBusy
       }
     }
     is(sBusy) {
-      when(~io.localDMADataPath.readerBusy) {
+      when(~io.localXDMACfg.readerBusy) {
         current_state_src := sIdle
         current_cfg_src.ready := true.B
       }
@@ -747,18 +747,18 @@ class XDMACtrl(
   // Control signals in Dst Path
   switch(current_state_dst) {
     is(sIdle) {
-      when(current_cfg_dst.valid & (~io.localDMADataPath.writerBusy)) {
+      when(current_cfg_dst.valid & (~io.localXDMACfg.writerBusy)) {
         current_state_dst := sWaitBusy
-        io.localDMADataPath.writerStart := true.B
+        io.localXDMACfg.writerStart := true.B
       }
     }
     is(sWaitBusy) {
-      when(io.localDMADataPath.writerBusy) {
+      when(io.localXDMACfg.writerBusy) {
         current_state_dst := sBusy
       }
     }
     is(sBusy) {
-      when(~io.localDMADataPath.writerBusy) {
+      when(~io.localXDMACfg.writerBusy) {
         current_state_dst := sIdle
         current_cfg_dst.ready := true.B
       }
@@ -766,9 +766,9 @@ class XDMACtrl(
   }
 
   // Data Signals in Src Path
-  io.localDMADataPath.readerCfg := current_cfg_src.bits
+  io.localXDMACfg.readerCfg := current_cfg_src.bits
   // Data Signals in Dst Path
-  io.localDMADataPath.writerCfg := current_cfg_dst.bits
+  io.localXDMACfg.writerCfg := current_cfg_dst.bits
 
   // Counter for finished task
   val localFinishedTaskCounter = Module(new BasicCounter(8, hasCeil = false) {
@@ -785,7 +785,7 @@ class XDMACtrl(
   })
   remoteFinishedTaskCounter.io.ceil := DontCare
   remoteFinishedTaskCounter.io.reset := false.B
-  remoteFinishedTaskCounter.io.tick := io.remoteDMADataPathCfg.toRemote.fire
+  remoteFinishedTaskCounter.io.tick := io.remoteXDMACfg.toRemote.fire
 
   // Connect the finished task counter to the read-only CSR
   csrManager.io.read_only_csr(2) := localFinishedTaskCounter.io.value

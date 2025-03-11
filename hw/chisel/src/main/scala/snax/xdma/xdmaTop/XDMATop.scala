@@ -126,32 +126,32 @@ class XDMATop(
   io.tcdmWriter <> xdmaDatapath.io.tcdmWriter
 
   // IO1: Start to connect datapath to axi
-  io.remoteXDMAData.fromRemote <> xdmaDatapath.io.remoteDMADataPath.fromRemote
-  io.remoteXDMAData.toRemote <> xdmaDatapath.io.remoteDMADataPath.toRemote
+  io.remoteXDMAData.fromRemote <> xdmaDatapath.io.remoteXDMAData.fromRemote
+  io.remoteXDMAData.toRemote <> xdmaDatapath.io.remoteXDMAData.toRemote
 
   // IO2: Start to coonect ctrl to csr
   io.csrIO <> xdmaCtrl.io.csrIO
 
   // IO3: Start to connect ctrl to remoteDMADataPath
-  io.remoteXDMACfg <> xdmaCtrl.io.remoteDMADataPathCfg
+  io.remoteXDMACfg <> xdmaCtrl.io.remoteXDMACfg
 
   // Interconnection between ctrl and datapath
-  xdmaCtrl.io.localDMADataPath.readerCfg <> xdmaDatapath.io.readerCfg
+  xdmaCtrl.io.localXDMACfg.readerCfg <> xdmaDatapath.io.readerCfg
 
-  xdmaCtrl.io.localDMADataPath.writerCfg <> xdmaDatapath.io.writerCfg
+  xdmaCtrl.io.localXDMACfg.writerCfg <> xdmaDatapath.io.writerCfg
 
-  xdmaDatapath.io.readerStart := xdmaCtrl.io.localDMADataPath.readerStart
+  xdmaDatapath.io.readerStart := xdmaCtrl.io.localXDMACfg.readerStart
 
-  xdmaDatapath.io.writerStart := xdmaCtrl.io.localDMADataPath.writerStart
+  xdmaDatapath.io.writerStart := xdmaCtrl.io.localXDMACfg.writerStart
 
-  xdmaCtrl.io.localDMADataPath.readerBusy := xdmaDatapath.io.readerBusy
+  xdmaCtrl.io.localXDMACfg.readerBusy := xdmaDatapath.io.readerBusy
 
-  xdmaCtrl.io.localDMADataPath.writerBusy := xdmaDatapath.io.writerBusy
+  xdmaCtrl.io.localXDMACfg.writerBusy := xdmaDatapath.io.writerBusy
 
   // The status signal
-  io.status.readerBusy := xdmaCtrl.io.localDMADataPath.readerBusy
+  io.status.readerBusy := xdmaCtrl.io.localXDMACfg.readerBusy
 
-  io.status.writerBusy := xdmaCtrl.io.localDMADataPath.writerBusy
+  io.status.writerBusy := xdmaCtrl.io.localXDMACfg.writerBusy
 }
 
 object XDMATopGen extends App {
