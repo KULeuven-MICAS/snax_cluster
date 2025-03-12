@@ -143,7 +143,7 @@ make -C target/snitch_cluster CFG_OVERRIDE=cfg/snax_alu_cluster.hjson sw -j
 3 - Run the program:
 
 ```bash
-./target/snitch_clusterbin/snitch_cluster.vlt ./target/snitch_clustersw/apps/snax-alu/build/snax-alu.elf
+./target/snitch_cluster/bin/snitch_cluster.vlt ./target/snitch_cluster/sw/apps/snax-alu/build/snax-alu.elf
 ```
 
 You should see a log:
