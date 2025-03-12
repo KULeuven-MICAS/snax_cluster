@@ -69,12 +69,12 @@ jobs:
   sw-snax-mac-cluster-vlt-generic:
     name: Simulate SW on SNAX MAC Cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/kuleuven-micas/snax:main
     steps:
-      - name: Setup pixi env
-        run:
-          . /pixi/shell-hook
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -99,12 +99,12 @@ jobs:
   sw-snax-mac-mult-cluster-vlt-generic:
     name: Simulate SW on SNAX Multiple MAC Cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/kuleuven-micas/snax:main
     steps:
-      - name: Setup pixi env
-        run:
-          . /pixi/shell-hook
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -130,12 +130,12 @@ jobs:
   snax-alu-cluster-vlt-generic:
     name: Simulate SW on SNAX ALU Cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/kuleuven-micas/snax:main
     steps:
-      - name: Setup pixi env
-        run:
-          . /pixi/shell-hook
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -161,12 +161,12 @@ jobs:
   snax-hypercorex-cluster-vlt-generic:
     name: SNAX Hypercorex w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/kuleuven-micas/snax:main
     steps:
-      - name: Setup pixi env
-        run:
-          . /pixi/shell-hook
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -196,12 +196,12 @@ jobs:
   snax_dimc-cluster-vlt-generic:
     name: SNAX DIMC w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/kuleuven-micas/snax:main
     steps:
-      - name: Setup pixi env
-        run:
-          . /pixi/shell-hook
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -217,12 +217,12 @@ jobs:
   sw-snax-KUL-dse-cluster-3D-vlt-generic:
     name: Build KUL-dse-cluster-3D HW w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/kuleuven-micas/snax:main
     steps:
-      - name: Setup pixi env
-        run:
-          . /pixi/shell-hook
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -250,12 +250,12 @@ jobs:
   sw-snax-KUL-dse-cluster-2D-vlt-generic:
     name: Build KUL-dse-cluster-2D HW w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/kuleuven-micas/snax:main
     steps:
-      - name: Setup pixi env
-        run:
-          . /pixi/shell-hook
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -282,12 +282,12 @@ jobs:
   snax-KUL-cluster-vlt-generic:
     name: Simulate SW on KUL cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/kuleuven-micas/snax:main
     steps:
-      - name: Setup pixi env
-        run:
-          . /pixi/shell-hook
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
