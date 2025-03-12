@@ -16,3 +16,4 @@ COPY --from=build /pixi/.pixi/envs/default /pixi/.pixi/envs/default
 COPY --from=build /pixi/shell-hook /pixi/shell-hook
 RUN chmod +x /pixi/shell-hook
 RUN echo "source /pixi/shell-hook" >> /root/.bashrc
+ENV BASH_ENV=/pixi/shell-hook
