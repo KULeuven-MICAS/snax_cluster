@@ -72,6 +72,9 @@ jobs:
     container:
       image: ghcr.io/kuleuven-micas/snax:main
     steps:
+      - name: Setup pixi env
+        run:
+          source /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -99,6 +102,9 @@ jobs:
     container:
       image: ghcr.io/kuleuven-micas/snax:main
     steps:
+      - name: Setup pixi env
+        run:
+          source /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -127,6 +133,9 @@ jobs:
     container:
       image: ghcr.io/kuleuven-micas/snax:main
     steps:
+      - name: Setup pixi env
+        run:
+          source /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -155,6 +164,9 @@ jobs:
     container:
       image: ghcr.io/kuleuven-micas/snax:main
     steps:
+      - name: Setup pixi env
+        run:
+          source /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -187,6 +199,9 @@ jobs:
     container:
       image: ghcr.io/kuleuven-micas/snax:main
     steps:
+      - name: Setup pixi env
+        run:
+          source /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -205,6 +220,9 @@ jobs:
     container:
       image: ghcr.io/kuleuven-micas/snax:main
     steps:
+      - name: Setup pixi env
+        run:
+          source /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -235,6 +253,9 @@ jobs:
     container:
       image: ghcr.io/kuleuven-micas/snax:main
     steps:
+      - name: Setup pixi env
+        run:
+          source /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -264,6 +285,9 @@ jobs:
     container:
       image: ghcr.io/kuleuven-micas/snax:main
     steps:
+      - name: Setup pixi env
+        run:
+          source /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
