@@ -74,7 +74,7 @@ jobs:
     steps:
       - name: Setup pixi env
         run:
-          source /pixi/shell-hook
+          . /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -104,7 +104,7 @@ jobs:
     steps:
       - name: Setup pixi env
         run:
-          source /pixi/shell-hook
+          . /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -135,7 +135,7 @@ jobs:
     steps:
       - name: Setup pixi env
         run:
-          source /pixi/shell-hook
+          . /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -166,7 +166,7 @@ jobs:
     steps:
       - name: Setup pixi env
         run:
-          source /pixi/shell-hook
+          . /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -201,7 +201,7 @@ jobs:
     steps:
       - name: Setup pixi env
         run:
-          source /pixi/shell-hook
+          . /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -222,7 +222,7 @@ jobs:
     steps:
       - name: Setup pixi env
         run:
-          source /pixi/shell-hook
+          . /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -255,7 +255,7 @@ jobs:
     steps:
       - name: Setup pixi env
         run:
-          source /pixi/shell-hook
+          . /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
@@ -287,7 +287,7 @@ jobs:
     steps:
       - name: Setup pixi env
         run:
-          source /pixi/shell-hook
+          . /pixi/shell-hook
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"

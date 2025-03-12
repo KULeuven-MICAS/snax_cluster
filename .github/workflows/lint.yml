@@ -168,7 +168,7 @@ jobs:
     steps:
       - name: Setup pixi env
         run:
-          source /pixi/shell-hook
+          . /pixi/shell-hook
       - uses: actions/checkout@v2
       - name: Run the unit tests
         working-directory: hw/chisel
