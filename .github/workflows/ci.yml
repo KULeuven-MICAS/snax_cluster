@@ -70,7 +70,7 @@ jobs:
     name: Simulate SW on SNAX MAC Cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/kuleuven-micas/snax:main
+      image: ghcr.io/kuleuven-micas/snax:pr-449
     steps:
       - uses: actions/checkout@v2
         with:
@@ -97,7 +97,7 @@ jobs:
     name: Simulate SW on SNAX Multiple MAC Cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/kuleuven-micas/snax:main
+      image: ghcr.io/kuleuven-micas/snax:pr-449
     steps:
       - uses: actions/checkout@v2
         with:
@@ -125,7 +125,7 @@ jobs:
     name: Simulate SW on SNAX ALU Cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/kuleuven-micas/snax:main
+      image: ghcr.io/kuleuven-micas/snax:pr-449
     steps:
       - uses: actions/checkout@v2
         with:
@@ -153,7 +153,7 @@ jobs:
     name: SNAX Hypercorex w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/kuleuven-micas/snax:main
+      image: ghcr.io/kuleuven-micas/snax:pr-449
     steps:
       - uses: actions/checkout@v2
         with:
@@ -185,7 +185,7 @@ jobs:
     name: SNAX DIMC w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/kuleuven-micas/snax:main
+      image: ghcr.io/kuleuven-micas/snax:pr-449
     steps:
       - uses: actions/checkout@v2
         with:
@@ -203,7 +203,7 @@ jobs:
     name: Build KUL-dse-cluster-3D HW w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/kuleuven-micas/snax:main
+      image: ghcr.io/kuleuven-micas/snax:pr-449
     steps:
       - uses: actions/checkout@v2
         with:
@@ -233,7 +233,7 @@ jobs:
     name: Build KUL-dse-cluster-2D HW w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/kuleuven-micas/snax:main
+      image: ghcr.io/kuleuven-micas/snax:pr-449
     steps:
       - uses: actions/checkout@v2
         with:
@@ -262,7 +262,7 @@ jobs:
     name: Simulate SW on KUL cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/kuleuven-micas/snax:main
+      image: ghcr.io/kuleuven-micas/snax:pr-449
     steps:
       - uses: actions/checkout@v2
         with:
