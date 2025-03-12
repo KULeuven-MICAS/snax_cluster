@@ -78,6 +78,7 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
+          activate-environment: true
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
@@ -108,6 +109,7 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
+          activate-environment: true
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
@@ -139,6 +141,7 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
+          activate-environment: true
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
@@ -170,6 +173,7 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
+          activate-environment: true
       # Need this for the hypercorex packages
       - name: Install prerequisites
         run: |
@@ -205,6 +209,7 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
+          activate-environment: true
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
@@ -226,6 +231,7 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
+          activate-environment: true
       - name: RTL GEN
         run: |
           make CFG_OVERRIDE=cfg/snax_KUL_dse_cluster_3D.hjson \
@@ -259,6 +265,7 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
+          activate-environment: true
       - name: RTL GEN
         run: |
           make CFG_OVERRIDE=cfg/snax_KUL_dse_cluster_2D.hjson \
@@ -291,6 +298,7 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
+          activate-environment: true
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
