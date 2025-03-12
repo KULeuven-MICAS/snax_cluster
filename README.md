@@ -35,7 +35,7 @@ git submodule update --init --recursive
 2 ) Download the docker:
 
 ``` bash
-$ docker pull ghcr.io/kuleuven-micas/snax:main
+docker pull ghcr.io/kuleuven-micas/snax:main
 ```
 
 3 ) Start the container:
