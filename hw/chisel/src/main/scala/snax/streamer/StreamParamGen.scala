@@ -2,13 +2,12 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-
 package snax.streamer
- 
+
 import snax.readerWriter._
 import snax.csr_manager._
 import snax.utils._
- 
+
 import chisel3._
 import chisel3.util._
 
@@ -33,7 +32,7 @@ object StreamerParametersGen {
       dataBufferDepth = 8,
       configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
-   ), 
+    ),
     new ReaderWriterParam(
       spatialBounds = List(
         4
