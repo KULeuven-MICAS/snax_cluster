@@ -26,4 +26,4 @@ jobs:
       - name: Run the unit tests
         working-directory: hw/chisel
         run: |
-          mill Snax.test
+          sbt test
