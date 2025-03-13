@@ -43,6 +43,8 @@ bender = ">=0.28.2,<0.29"
 hjson-py = ">=3.1.0,<4"
 clang-format = ">=19.1.7,<20"
 wget = ">=1.21.4,<2"
+tqdm = ">=4.67.1,<5"
+matplotlib = ">=3.10.1,<4"
 
 [activation.env]
 VLT_ROOT = "${CONDA_PREFIX}/share/verilator"
