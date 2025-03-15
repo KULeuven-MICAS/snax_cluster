@@ -75,27 +75,30 @@ int main() {
     }
 
     snrt_cluster_hw_barrier();
-    
+
     int32_t Aslstride[] = {Aslstride0};
-    int32_t Atlbound[] = {Atlbound0, Atlbound1, Atlbound2, Atlbound3, Atlbound4, Atlbound5};
-    int32_t Atlstride[] = {Atlstride0, Atlstride1, Atlstride2, Atlstride3, Atlstride4, Atlstride5};
+    int32_t Atlbound[] = {Atlbound0, Atlbound1, Atlbound2,
+                          Atlbound3, Atlbound4, Atlbound5};
+    int32_t Atlstride[] = {Atlstride0, Atlstride1, Atlstride2,
+                           Atlstride3, Atlstride4, Atlstride5};
     int32_t Bslstride[] = {Bslstride0};
     int32_t Btlbound[] = {Btlbound0, Btlbound1, Btlbound2};
     int32_t Btlstride[] = {Btlstride0, Btlstride1, Btlstride2};
     int32_t D8slstride[] = {D8slstride0};
-    int32_t D8tlbound []= {D8tlbound0, D8tlbound1, D8tlbound2, D8tlbound3};
-    int32_t D8tlstride []= {D8tlstride0, D8tlstride1, D8tlstride2, D8tlstride3};
-    int32_t Cslstride []= {Cslstride0};
+    int32_t D8tlbound[] = {D8tlbound0, D8tlbound1, D8tlbound2, D8tlbound3};
+    int32_t D8tlstride[] = {D8tlstride0, D8tlstride1, D8tlstride2, D8tlstride3};
+    int32_t Cslstride[] = {Cslstride0};
     int32_t Ctlbound[] = {Ctlbound0, Ctlbound1, Ctlbound2, Ctlbound3};
     int32_t Ctlstride[] = {Ctlstride0, Ctlstride1, Ctlstride2, Ctlstride3};
     int32_t D32slstride[] = {D32slstride0};
-    int32_t D32tlbound []= {D32tlbound0, D32tlbound1, D32tlbound2, D32tlbound3};
-    int32_t D32tlstride[] = {D32tlstride0, D32tlstride1, D32tlstride2, D32tlstride3};
+    int32_t D32tlbound[] = {D32tlbound0, D32tlbound1, D32tlbound2, D32tlbound3};
+    int32_t D32tlstride[] = {D32tlstride0, D32tlstride1, D32tlstride2,
+                             D32tlstride3};
 
     if (snrt_global_core_idx() == 0) {
         // Set Streamer configuration CSR for conv2d
         set_gemmx_streamer_csr(
-            Aslstride, Atlbound, Atlstride , set_addr_remap_index_A,
+            Aslstride, Atlbound, Atlstride, set_addr_remap_index_A,
 
             Bslstride, Btlbound, Btlstride, set_addr_remap_index_B,
 

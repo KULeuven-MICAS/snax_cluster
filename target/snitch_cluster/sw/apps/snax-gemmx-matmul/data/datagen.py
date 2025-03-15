@@ -122,7 +122,13 @@ def emit_matmul_data(**kwargs):
     c32_spatial_bound_0 = 8
     # temporal settings
     # serial input for C
-    data_str += [format_scalar_definition("int32_t", "Ctlbound0", output_data_width * meshRow * meshCol / snax_gemmx_serial_c32_d32_width)]
+    data_str += [
+        format_scalar_definition(
+            "int32_t",
+            "Ctlbound0",
+            output_data_width * meshRow * meshCol / snax_gemmx_serial_c32_d32_width,
+        )
+    ]
     data_str += [
         format_scalar_definition(
             "int32_t", "Ctlstride0", c32_spatial_bound_0 * (bankWidth / 8)
@@ -152,7 +158,13 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
     d32_spatial_bound_0 = 8
     # temporal settings
-    data_str += [format_scalar_definition("int32_t", "D32tlbound0", output_data_width * meshRow * meshCol / snax_gemmx_serial_c32_d32_width)]
+    data_str += [
+        format_scalar_definition(
+            "int32_t",
+            "D32tlbound0",
+            output_data_width * meshRow * meshCol / snax_gemmx_serial_c32_d32_width,
+        )
+    ]
     data_str += [
         format_scalar_definition(
             "int32_t", "D32tlstride0", d32_spatial_bound_0 * (bankWidth / 8)
@@ -183,7 +195,16 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "D8slstride0", bankWidth / 8)]
     # temporal settings
     d8_spatial_bound_0 = 8
-    data_str += [format_scalar_definition("int32_t", "D8tlbound0", quantized_output_data_width * meshRow * meshCol / snax_gemmx_serial_d8_width)]
+    data_str += [
+        format_scalar_definition(
+            "int32_t",
+            "D8tlbound0",
+            quantized_output_data_width
+            * meshRow
+            * meshCol
+            / snax_gemmx_serial_d8_width,
+        )
+    ]
     data_str += [
         format_scalar_definition(
             "int32_t", "D8tlstride0", d8_spatial_bound_0 * (bankWidth / 8)
