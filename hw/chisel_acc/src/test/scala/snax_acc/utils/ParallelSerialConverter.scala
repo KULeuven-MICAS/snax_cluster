@@ -115,6 +115,9 @@ class SerialToParallelSpec
           // Step to capture this byte
           dut.clock.step()
         }
+
+        // dut.io.out.valid.expect(true.B)
+        // dut.io.out.bits.expect(expectedParallel.U)
         dut.clock.step()
 
       }
@@ -133,6 +136,8 @@ class SerialToParallelSpec
           dut.clock.step()
         }
 
+        // dut.io.out.valid.expect(true.B)
+        // dut.io.out.bits.expect(expectedParallel.U)
         dut.clock.step()
 
       }
