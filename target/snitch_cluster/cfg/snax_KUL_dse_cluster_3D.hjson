@@ -131,6 +131,8 @@
             snax_gemmx_mesh_row: 8,
             snax_gemmx_tile_size: 8,
             snax_gemmx_mesh_col: 8,
+            snax_gemmx_serial_c32_d32_width: 512,
+            snax_gemmx_serial_d8_width: 512,
             with_pipeline: false,
             snax_streamer_cfg: {$ref: "#/snax_streamer_gemmX_streamer_template" }
         },
@@ -212,7 +214,7 @@
 
         data_writer_params:{
             spatial_bounds: [[8]],
-            temporal_dim: [3],
+            temporal_dim: [4],
             num_channel: [8],
             fifo_depth: [1],
             configurable_channel: [0],
@@ -220,13 +222,13 @@
         },
 
         data_reader_writer_params:{
-            spatial_bounds: [[8, 4], [8, 4]],
-            temporal_dim: [3, 3],
-            num_channel: [32, 32],
+            spatial_bounds: [[8], [8]],
+            temporal_dim: [4, 4],
+            num_channel: [8, 8],
             fifo_depth: [1, 1],
             configurable_channel: [1, 0],
             tcdm_logic_word_size: [[256, 128, 64], [256, 128, 64]],
-            datapath_extensions: [{HasBroadcaster: {inputLength: 256, outputLength: 2048}}, {}]
+            datapath_extensions: [{HasBroadcaster: {inputLength: 256, outputLength: 512}}, {}]
         },
 
         has_transpose: true,
