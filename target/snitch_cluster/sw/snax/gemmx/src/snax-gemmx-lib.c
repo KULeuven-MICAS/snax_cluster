@@ -167,6 +167,13 @@ void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_0, set_addr_remap_index_C);
 #endif
 
+    // set the channel enable
+#ifdef ENABLED_CHANNEL_READER_WRITER_0
+    for (int i = 0; i < ENABLED_CHANNEL_READER_WRITER_0_CSR_NUM; i++) {
+        csrw_ss(ENABLED_CHANNEL_READER_WRITER_0 + i, channel_en_C[i]);
+    }
+#endif
+
     // ----------------------------------D32-----------------------------------
     // ----------------------------------D32-----------------------------------
     // ----------------------------------D32-----------------------------------
@@ -191,7 +198,7 @@ void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
     }
 
     // temporal strides for D32
-    for (int i = 0; i < T_STRIDE_BASE_READER_WRITER_1; i++) {
+    for (int i = 0; i < T_STRIDE_NUM_READER_WRITER_1; i++) {
         csrw_ss(T_STRIDE_BASE_READER_WRITER_1 + i, D32tlstride[i]);
     }
 
@@ -200,6 +207,10 @@ void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_1, set_addr_remap_index_D32);
 #endif
 
+    // ------------------------- datapath extension ----------------------------
+    // ------------------------- datapath extension ----------------------------
+    // ------------------------- datapath extension ----------------------------
+
     // set the transpose
 #ifdef READER_EXTENSION_0_CSR_BASE
     csrw_ss(READER_EXTENSION_0_CSR_BASE, transpose_A == 1 ? 0 : 1);
@@ -207,13 +218,6 @@ void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
 
 #ifdef READER_EXTENSION_1_CSR_BASE
     csrw_ss(READER_EXTENSION_1_CSR_BASE, transpose_B == 1 ? 0 : 1);
-#endif
-
-    // set the channel enable
-#ifdef ENABLED_CHANNEL_READER_WRITER_0
-    for (int i = 0; i < ENABLED_CHANNEL_READER_WRITER_0_CSR_NUM; i++) {
-        csrw_ss(ENABLED_CHANNEL_READER_WRITER_0 + i, channel_en_C[i]);
-    }
 #endif
 
 #ifdef READER_WRITER_EXTENSION_0_CSR_BASE
