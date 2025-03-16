@@ -243,15 +243,17 @@ object BlockGemmRescaleSIMDGen {
       sharedScaleFactorPerGroupSize = meshRow
     )
 
+    val params = BlockGemmRescaleSIMDParams(
+      gemmParams,
+      (if (withPipeline == true)
+         snax_acc.simd.PipelinedConfig.rescaleSIMDConfig
+       else SIMDParamsWithoutPipeline),
+      withPipeline
+    )
+
     emitVerilog(
       new BlockGemmRescaleSIMD(
-        BlockGemmRescaleSIMDParams(
-          gemmParams,
-          (if (withPipeline == true)
-             snax_acc.simd.PipelinedConfig.rescaleSIMDConfig
-           else SIMDParamsWithoutPipeline),
-          withPipeline
-        )
+        params
       ),
       Array("--target-dir", "generated/gemmx")
     )
@@ -274,10 +276,9 @@ object BlockGemmRescaleSIMDGen {
 """
     val DataWidthA = GemmConstant.dataWidthA * meshRow * tileSize
     val DataWidthB = GemmConstant.dataWidthB * tileSize * meshCol
-    val DataWidthC = GemmConstant.dataWidthC * meshRow * meshCol
-    val DataWidthD32 = GemmConstant.dataWidthC * meshRow * meshCol
-    val DataWidthD8 =
-      RescaleSIMDConstant.outputType * meshRow * meshCol
+    val DataWidthC = params.C32_D32_width
+    val DataWidthD32 = params.C32_D32_width
+    val DataWidthD8 = params.D8_width
 
     var SIMDCSRConnect = ""
     for (i <- 4 to (4 + SIMDReadWriteCsrNum - 1)) {
