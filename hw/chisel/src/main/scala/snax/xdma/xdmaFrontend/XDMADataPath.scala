@@ -172,7 +172,7 @@ class XDMADataPath(
   writerExtensions.io.start := io.writerStart
   io.writerBusy := writer.io.busy | (~writer.io.bufferEmpty) | writerExtensions.io.busy
 
-  // The following code only tackle with readerDataAfterExtension and writerDataBeforeExtension: they should be either loopbacked or forwarded to the external interface (cluster_data_i / cluster_data_o)
+  // The following muxes and demuxes are used to do the local loopback and remote loopback, the wires connected to the reader and writer are: readerDataAfterExtension and writerDataBeforeExtension. The wires between all the demuxes and muxes should not be cutted
   val readerDemux = Module(
     new DemuxDecoupled(
       chiselTypeOf(readerDataAfterExtension.bits),
@@ -190,8 +190,8 @@ class XDMADataPath(
     }
   )
 
-  readerDemux.io.sel := io.readerCfg.loopBack
-  writerMux.io.sel := io.writerCfg.loopBack
+  readerDemux.io.sel := io.readerCfg.localLoopback
+  writerMux.io.sel := io.writerCfg.localLoopback
   readerDataAfterExtension <> readerDemux.io.in
   writerMux.io.out <> writerDataBeforeExtension
 
@@ -201,24 +201,24 @@ class XDMADataPath(
 
   // Connect the AccompaniedCfg signal
   io.remoteXDMAData.fromRemoteAccompaniedCfg.convertFromXDMACfgIO(
-    loopBack = io.writerCfg.loopBack,
+    loopBack = io.writerCfg.localLoopback,
     cfg = io.writerCfg,
     isReaderSide = false
   )
   io.remoteXDMAData.toRemoteAccompaniedCfg.convertFromXDMACfgIO(
-    loopBack = io.readerCfg.loopBack,
+    loopBack = io.readerCfg.localLoopback,
     cfg = io.readerCfg,
     isReaderSide = true
   )
 
   io.remoteXDMAData.fromRemoteAccompaniedCfg.readyToTransmit := Mux(
-    io.writerCfg.loopBack,
+    io.writerCfg.localLoopback,
     false.B,
     writer.io.busy
   )
 
   io.remoteXDMAData.toRemoteAccompaniedCfg.readyToTransmit := Mux(
-    io.readerCfg.loopBack,
+    io.readerCfg.localLoopback,
     false.B,
     reader.io.busy
   )

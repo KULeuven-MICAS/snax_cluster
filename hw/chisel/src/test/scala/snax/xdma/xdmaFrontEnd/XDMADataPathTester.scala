@@ -133,8 +133,8 @@ class DMADataPathTester extends AnyFreeSpec with ChiselScalatestTester {
         .temporalStrides(1)
         .poke(writerTestingParams.temporal_stride(1))
       // Poke the loop back to ture since we are only testing w/o any axi transactions
-      dut.io.readerCfg.loopBack.poke(true)
-      dut.io.writerCfg.loopBack.poke(true)
+      dut.io.readerCfg.localLoopback.poke(true)
+      dut.io.writerCfg.localLoopback.poke(true)
 
       // Start the reader and writer
       dut.io.readerStart.poke(true)

@@ -296,7 +296,7 @@ class XDMACtrlTester extends AnyFlatSpec with ChiselScalatestTester {
                 if (testTerminated) break()
               }
               println(
-                "[Local Reader Checker] " + dut.io.localXDMACfg.readerCfg.aguCfg.ptr
+                "[Local Reader Checker] " + dut.io.localXDMACfg.readerCfg.readerPtr
                   .peekInt()
                   .toInt
                   .toHexString
@@ -304,24 +304,16 @@ class XDMACtrlTester extends AnyFlatSpec with ChiselScalatestTester {
 
               if (
                 unreceived_reader_cfg
-                  .find(i =>
-                    (i & 0xffff) == dut.io.localXDMACfg.readerCfg.aguCfg.ptr
-                      .peekInt()
-                  )
+                  .find(_ == dut.io.localXDMACfg.readerCfg.readerPtr.peekInt())
                   .isDefined
               ) {
                 unreceived_reader_cfg.remove(
-                  unreceived_reader_cfg
-                    .find(i =>
-                      (i & 0xffff) == dut.io.localXDMACfg.readerCfg.aguCfg.ptr
-                        .peekInt()
-                    )
-                    .get
+                  dut.io.localXDMACfg.readerCfg.readerPtr.peekInt().toInt
                 )
-
               } else {
                 throw new Exception(
-                  "[Local Reader Checker] The received pointer " + dut.io.localXDMACfg.readerCfg.aguCfg.ptr
+                // println(
+                  "[Local Reader Checker] The received pointer " + dut.io.localXDMACfg.readerCfg.readerPtr
                     .peekInt()
                     .toInt
                     .toHexString + " is not in the buffer"
@@ -346,7 +338,8 @@ class XDMACtrlTester extends AnyFlatSpec with ChiselScalatestTester {
                 if (testTerminated) break()
               }
               println(
-                "[Local Writer Checker] " + dut.io.localXDMACfg.writerCfg.aguCfg.ptr
+                "[Local Writer Checker] " + dut.io.localXDMACfg.writerCfg
+                  .writerPtr(0)
                   .peekInt()
                   .toInt
                   .toHexString
@@ -354,24 +347,19 @@ class XDMACtrlTester extends AnyFlatSpec with ChiselScalatestTester {
 
               if (
                 unreceived_writer_cfg
-                  .find(i =>
-                    (i & 0xffff) == dut.io.localXDMACfg.writerCfg.aguCfg.ptr
-                      .peekInt()
+                  .find(
+                    _ == dut.io.localXDMACfg.writerCfg.writerPtr(0).peekInt()
                   )
                   .isDefined
               ) {
                 unreceived_writer_cfg.remove(
-                  unreceived_writer_cfg
-                    .find(i =>
-                      (i & 0xffff) == dut.io.localXDMACfg.writerCfg.aguCfg.ptr
-                        .peekInt()
-                    )
-                    .get
+                  dut.io.localXDMACfg.writerCfg.writerPtr(0).peekInt().toInt
                 )
-
               } else {
                 throw new Exception(
-                  "[Local Writer Checker] The received pointer " + dut.io.localXDMACfg.writerCfg.aguCfg.ptr
+                // println(
+                  "[Local Writer Checker] The received pointer " + dut.io.localXDMACfg.writerCfg
+                    .writerPtr(0)
                     .peekInt()
                     .toInt
                     .toHexString + " is not in the buffer"

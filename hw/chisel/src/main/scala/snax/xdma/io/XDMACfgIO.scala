@@ -34,7 +34,10 @@ class XDMACfgIO(param: XDMAParam) extends Bundle {
       param.rwParam.aguParam
     ) // Buffered within AGU
   val readerwriterCfg = new ReaderWriterCfgIO(param.rwParam)
-  val loopBack = Bool()
+  // The LocalLoopback signal to control the data in reader directly sending back to writer
+  val localLoopback = Bool()
+  // The RemoteLoopback signal to control the data in fromRemoteData directly seending back to toRemoteData
+  val remoteLoopback = Bool()
 
   val extCfg = if (param.extParam.length != 0) {
     Vec(
