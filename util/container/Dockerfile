@@ -14,8 +14,7 @@ RUN cat /pixi/shell-hook >> /pixi/entrypoint.sh
 # extend the shell-hook script to run the command passed to the container
 RUN echo 'exec "$@"' >> /pixi/entrypoint.sh
 
-FROM ubuntu:24.04 AS production
-WORKDIR /pixi
+FROM ubuntu:24.04
 COPY --from=build /pixi/.pixi/envs/default /pixi/.pixi/envs/default
 COPY --from=build /pixi/entrypoint.sh /pixi/entrypoint.sh
 RUN chmod +x /pixi/entrypoint.sh
