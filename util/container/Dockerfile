@@ -9,10 +9,15 @@ COPY pixi.toml .
 COPY pixi.lock .
 RUN pixi install --locked
 RUN pixi shell-hook -s bash > /pixi/shell-hook
+RUN echo "#!/bin/bash" > /pixi/entrypoint.sh
+RUN cat /pixi/shell-hook >> /pixi/entrypoint.sh
+# extend the shell-hook script to run the command passed to the container
+RUN echo 'exec "$@"' >> /pixi/entrypoint.sh
 
-FROM ubuntu:24.04
-
+FROM ubuntu:24.04 AS production
+WORKDIR /pixi
 COPY --from=build /pixi/.pixi/envs/default /pixi/.pixi/envs/default
-COPY --from=build /pixi/shell-hook /pixi/shell-hook
-RUN chmod +x /pixi/shell-hook
-RUN echo "source /pixi/shell-hook" >> /root/.bashrc
+COPY --from=build /pixi/entrypoint.sh /pixi/entrypoint.sh
+RUN chmod +x /pixi/entrypoint.sh
+
+ENTRYPOINT [ "/pixi/entrypoint.sh" ]
