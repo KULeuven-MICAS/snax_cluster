@@ -20,3 +20,4 @@ COPY --from=build /pixi/entrypoint.sh /pixi/entrypoint.sh
 RUN chmod +x /pixi/entrypoint.sh
 
 ENTRYPOINT [ "/pixi/entrypoint.sh" ]
+CMD ["/bin/bash"]
