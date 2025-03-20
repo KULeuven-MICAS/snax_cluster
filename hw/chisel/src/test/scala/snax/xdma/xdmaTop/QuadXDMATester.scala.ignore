@@ -127,6 +127,11 @@ class QuadXDMA(readerParam: XDMAParam, writerParam: XDMAParam)
   io.instance4.readerBusy := xdma4.io.status.readerBusy
   io.instance4.writerBusy := xdma4.io.status.writerBusy
 
+  xdma1.io.remoteTaskFinished := 0.U
+  xdma2.io.remoteTaskFinished := 0.U
+  xdma3.io.remoteTaskFinished := 0.U
+  xdma4.io.remoteTaskFinished := 0.U
+
   dontTouch(xdma1.io)
   dontTouch(xdma2.io)
   dontTouch(xdma3.io)
@@ -753,14 +758,6 @@ class QuadXDMATester extends AnyFreeSpec with ChiselScalatestTester {
       currentAddress += 3
 
       // Check if the DMA is finished
-      while (
-        XDMATesterInfrastructure.read_csr(
-          dut = dut,
-          port = dut.io.instance1.csrIO,
-          addr = currentAddress
-        ) != 1
-      ) {}
-
       dut.clock.step(64)
 
       while (dut.io.instance4.writerBusy.peekBoolean() == true) {

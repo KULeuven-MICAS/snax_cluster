@@ -50,6 +50,9 @@ class DualXDMA(readerParam: XDMAParam, writerParam: XDMAParam)
   xdma2.io.remoteXDMAData.toRemote -||> xdma1.io.remoteXDMAData.fromRemote
   xdma1.io.remoteXDMAData.toRemote -||> xdma2.io.remoteXDMAData.fromRemote
 
+  xdma1.io.remoteTaskFinished := 0.U
+  xdma2.io.remoteTaskFinished := 0.U
+
   val io = IO(new Bundle {
     val instance1 = new Bundle {
       val csrIO = chiselTypeOf(xdma1.io.csrIO)
@@ -438,14 +441,6 @@ class DualXDMATester extends AnyFreeSpec with ChiselScalatestTester {
       currentAddress += 3
 
       // Check if the DMA is finished
-      while (
-        XDMATesterInfrastructure.read_csr(
-          dut = dut,
-          port = dut.io.instance1.csrIO,
-          addr = currentAddress
-        ) != 1
-      ) {}
-
       dut.clock.step(16)
 
       while (dut.io.instance2.writerBusy.peekBoolean() == true) {
@@ -480,14 +475,6 @@ class DualXDMATester extends AnyFreeSpec with ChiselScalatestTester {
       currentAddress += 3
 
       // Check if the DMA is finished
-      while (
-        XDMATesterInfrastructure.read_csr(
-          dut = dut,
-          port = dut.io.instance2.csrIO,
-          addr = currentAddress
-        ) != 1
-      ) {}
-
       dut.clock.step(16)
 
       while (dut.io.instance2.writerBusy.peekBoolean() == true) {
@@ -536,14 +523,6 @@ class DualXDMATester extends AnyFreeSpec with ChiselScalatestTester {
       currentAddress += 3
 
       // Check if the DMA is finished
-      while (
-        XDMATesterInfrastructure.read_csr(
-          dut = dut,
-          port = dut.io.instance1.csrIO,
-          addr = currentAddress
-        ) != 2
-      ) {}
-
       dut.clock.step(16)
 
       while (dut.io.instance1.writerBusy.peekBoolean() == true) {
@@ -579,14 +558,6 @@ class DualXDMATester extends AnyFreeSpec with ChiselScalatestTester {
       currentAddress += 3
 
       // Check if the DMA is finished
-      while (
-        XDMATesterInfrastructure.read_csr(
-          dut = dut,
-          port = dut.io.instance2.csrIO,
-          addr = currentAddress
-        ) != 2
-      ) {}
-
       dut.clock.step(16)
 
       while (dut.io.instance1.writerBusy.peekBoolean() == true) {

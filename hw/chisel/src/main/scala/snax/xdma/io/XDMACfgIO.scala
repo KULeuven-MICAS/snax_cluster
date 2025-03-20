@@ -261,7 +261,7 @@ class XDMADataPathCfgIO(
     axiParam: AXIParam,
     crossClusterParam: CrossClusterParam
 ) extends Bundle {
-  val readyToTransmit = Bool()
+  val readyToTransfer = Bool()
   val taskID = UInt(8.W)
   val length = UInt(crossClusterParam.maxLocalAddressWidth.W)
   val taskType = Bool()

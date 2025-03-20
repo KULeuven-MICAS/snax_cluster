@@ -271,7 +271,7 @@ class XDMADataPath(
 
   // The readyToSubmit signal should only be high when the localLoopback is false
   // (The data needs to come from / to the remote side)
-  fromRemoteAccompaniedCfg.readyToTransmit := Mux(
+  fromRemoteAccompaniedCfg.readyToTransfer := Mux(
     io.writerCfg.localLoopback,
     false.B,
     writer.io.busy
@@ -283,7 +283,7 @@ class XDMADataPath(
     fromRemoteAccompaniedCfg.taskTypeIsRemoteWrite.B
   )
 
-  toRemoteAccompaniedCfg.readyToTransmit := Mux(
+  toRemoteAccompaniedCfg.readyToTransfer := Mux(
     io.readerCfg.localLoopback,
     false.B,
     reader.io.busy
@@ -295,7 +295,7 @@ class XDMADataPath(
     toRemoteAccompaniedCfg.taskTypeIsRemoteRead.B
   )
 
-  toRemoteChainedWriteAccompaniedCfg.readyToTransmit := io.writerCfg.remoteLoopback && io.writerBusy
+  toRemoteChainedWriteAccompaniedCfg.readyToTransfer := io.writerCfg.remoteLoopback && io.writerBusy
   toRemoteChainedWriteAccompaniedCfg.taskType := toRemoteChainedWriteAccompaniedCfg.taskTypeIsRemoteWrite.B
 
   // The actual output of AccompaniedCfg is determined by the remoteLoopback signal:

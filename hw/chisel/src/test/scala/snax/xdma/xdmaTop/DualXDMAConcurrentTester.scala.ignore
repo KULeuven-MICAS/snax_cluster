@@ -489,7 +489,7 @@ class DualXDMAConcurrentTester extends AnyFreeSpec with ChiselScalatestTester {
           "[TEST Passed] Test 1"
         )
 
-      // Test 2: C0 copy to C1 (Initiated by C1), C0 copy to C0, C1 copy to C1 (initiated by C0)
+      // Test 2: C0 copy to C1 (Initiated by C1), C0 copy to C0, C1 copy to C1
       // Reinitialize the TCDM data
       println(
         "[TEST] Test 2: C0 copy to C1, C0 copy to C0, C1 copy to C1"

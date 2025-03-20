@@ -43,6 +43,9 @@ class XDMACtrlIO(readerParam: XDMAParam, writerParam: XDMAParam)
   }
   // This is the port for CSR Manager to SNAX port
   val csrIO = new SnaxCsrIO(csrAddrWidth = 32)
+  
+  // The external port to indicate the finish of one task
+  val remoteTaskFinished = Input(Bool())
 }
 
 class SrcConfigRouter(
@@ -572,23 +575,23 @@ class XDMACtrl(
   io.localXDMACfg.writerCfg := currentCfgDst.bits
 
   // Counter for finished task
-  val localFinishedTaskCounter = Module(new BasicCounter(8, hasCeil = false) {
+  val localFinishedTaskIDCounter = Module(new BasicCounter(8, hasCeil = false) {
     override val desiredName =
       s"${clusterName}_xdma_ctrl_localFinishedTaskCounter"
   })
-  localFinishedTaskCounter.io.ceil := DontCare
-  localFinishedTaskCounter.io.reset := false.B
-  localFinishedTaskCounter.io.tick := currentCfgDst.fire && currentCfgDst.bits.localLoopback
+  localFinishedTaskIDCounter.io.ceil := DontCare
+  localFinishedTaskIDCounter.io.reset := false.B
+  localFinishedTaskIDCounter.io.tick := currentCfgDst.fire && currentCfgDst.bits.localLoopback
 
-  val remoteFinishedTaskCounter = Module(new BasicCounter(8, hasCeil = false) {
+  val remoteFinishedTaskIDCounter = Module(new BasicCounter(8, hasCeil = false) {
     override val desiredName =
       s"${clusterName}_xdma_ctrl_remoteFinishedTaskCounter"
   })
-  remoteFinishedTaskCounter.io.ceil := DontCare
-  remoteFinishedTaskCounter.io.reset := false.B
-  remoteFinishedTaskCounter.io.tick := io.remoteXDMACfg.toRemote.fire
+  remoteFinishedTaskIDCounter.io.ceil := DontCare
+  remoteFinishedTaskIDCounter.io.reset := false.B
+  remoteFinishedTaskIDCounter.io.tick := io.remoteTaskFinished
 
   // Connect the finished task counter to the read-only CSR
-  csrManager.io.read_only_csr(2) := localFinishedTaskCounter.io.value
-  csrManager.io.read_only_csr(3) := remoteFinishedTaskCounter.io.value
+  csrManager.io.read_only_csr(2) := localFinishedTaskIDCounter.io.value
+  csrManager.io.read_only_csr(3) := remoteFinishedTaskIDCounter.io.value
 }

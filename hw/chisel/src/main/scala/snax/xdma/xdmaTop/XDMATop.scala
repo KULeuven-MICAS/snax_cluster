@@ -40,7 +40,7 @@ class XDMATopIO(
       Decoupled(
         new TcdmReq(
           // The address width of the TCDM => Should be equal to axiAddrWidth
-          readerParam.axiParam.addrWidth,
+          readerParam.rwParam.tcdmParam.addrWidth,
           readerParam.rwParam.tcdmParam.dataWidth
         )
       )
@@ -60,7 +60,7 @@ class XDMATopIO(
       Decoupled(
         new TcdmReq(
           // The address width of the TCDM => Should be equal to axiAddrWidth
-          writerParam.axiParam.addrWidth,
+          writerParam.rwParam.tcdmParam.addrWidth,
           writerParam.rwParam.tcdmParam.dataWidth
         )
       )
@@ -93,6 +93,8 @@ class XDMATopIO(
       )
     )
   }
+
+  val remoteTaskFinished = Input(Bool())
 
   val status = new Bundle {
     val readerBusy = Output(Bool())
@@ -163,6 +165,9 @@ class XDMATop(
   io.status.readerBusy := xdmaCtrl.io.localXDMACfg.readerBusy
 
   io.status.writerBusy := xdmaCtrl.io.localXDMACfg.writerBusy
+
+  // The remote task finished signal
+  xdmaCtrl.io.remoteTaskFinished := io.remoteTaskFinished
 }
 
 object XDMATopGen extends App {
