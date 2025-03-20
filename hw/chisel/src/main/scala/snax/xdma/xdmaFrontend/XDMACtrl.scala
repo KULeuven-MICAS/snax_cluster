@@ -137,44 +137,55 @@ class DstConfigRouter(
   inputCfgArbiter.io.in(0) <> io.from.local
   inputCfgArbiter.io.in(1) <> io.from.remote
 
-  val outputCfgDemux = Module(
-    new DemuxDecoupled(dataType = dataType, numOutput = 3) {
-      override val desiredName =
-        s"${clusterName}_xdma_ctrl_dstConfigRouter_Demux"
-    }
-  )
-  inputCfgArbiter.io.out -|> outputCfgDemux.io.in
+  val bufferedCfg = Wire(chiselTypeOf(inputCfgArbiter.io.out))
+  inputCfgArbiter.io.out -|> bufferedCfg
 
   // At the output of cut: Do the rule check
-  val cTypeLocal :: cTypeRemote :: cTypeDiscard :: Nil = Enum(3)
-  val cValue = Wire(chiselTypeOf(cTypeDiscard))
-
-  when(
-    outputCfgDemux.io.in.bits
+  val forwardToLocal = {
+    bufferedCfg.bits
       .writerPtr(0)
       .apply(
-        outputCfgDemux.io.in.bits.writerPtr(0).getWidth - 1,
-        outputCfgDemux.io.in.bits.aguCfg.ptr.getWidth
+        bufferedCfg.bits.writerPtr(0).getWidth - 1,
+        bufferedCfg.bits.aguCfg.ptr.getWidth
       ) === io
       .clusterBaseAddress(
-        outputCfgDemux.io.in.bits.writerPtr(0).getWidth - 1,
-        outputCfgDemux.io.in.bits.aguCfg.ptr.getWidth
+        bufferedCfg.bits.writerPtr(0).getWidth - 1,
+        bufferedCfg.bits.aguCfg.ptr.getWidth
       )
-  ) {
-    cValue := cTypeLocal // When cfg has the Ptr that fall within local TCDM, the data should be forwarded to the local ctrl path
-  }.elsewhen(outputCfgDemux.io.in.bits.readerPtr === 0.U) {
-    cValue := cTypeDiscard // When cfg has the Ptr that is zero, This means that the frame need to be thrown away. This is important as when the data is moved from DRAM to TCDM or vice versa, DRAM part is handled by iDMA, thus only one config instead of two is submitted
-  }.otherwise {
-    cValue := cTypeRemote // For the remaining condition, the config is forward to remote DMA
   }
+  val isChainedWrite = if (bufferedCfg.bits.writerPtr.length > 1) {
+    bufferedCfg.bits.writerPtr(
+      1
+    ) =/= 0.U && bufferedCfg.bits.origination === bufferedCfg.bits.originationIsFromRemote.B
+  } else false.B
+  val forwardToRemote =
+    (~forwardToLocal | isChainedWrite) && bufferedCfg.bits.writerPtr(0) =/= 0.U
 
-  outputCfgDemux.io.sel := cValue
-  // Port local is connected to the outside
-  outputCfgDemux.io.out(cTypeLocal.litValue.toInt) <> io.to.local
-  // Port remote is connected to the outside
-  outputCfgDemux.io.out(cTypeRemote.litValue.toInt) <> io.to.remote
-  // Port discard is not connected and will always be discarded
-  outputCfgDemux.io.out(cTypeDiscard.litValue.toInt).ready := true.B
+  val outputCfgSplitter = Module(
+    new SplitterDecoupled(
+      dataType = chiselTypeOf(bufferedCfg.bits),
+      numOutput = 2
+    ) {
+      override val desiredName =
+        s"${clusterName}_xdma_ctrl_DstConfigRouter_Splitter"
+    }
+  )
+  outputCfgSplitter.io.in <> bufferedCfg
+
+  outputCfgSplitter.io.sel(0) := forwardToLocal
+  outputCfgSplitter.io.sel(1) := forwardToRemote
+  outputCfgSplitter.io.out(0) <> io.to.local
+  outputCfgSplitter.io.out(1) <> io.to.remote
+
+  when(isChainedWrite) {
+    io.to.remote.bits.readerPtr := bufferedCfg.bits.writerPtr(0)
+    io.to.remote.bits.writerPtr
+      .zip(bufferedCfg.bits.writerPtr.tail)
+      .foreach { case (a, b) =>
+        a := b
+      }
+    io.to.remote.bits.writerPtr.last := 0.U
+  }
 }
 
 class XDMACtrl(
@@ -458,51 +469,9 @@ class XDMACtrl(
       false.B
     else
       postRoute_dst_local.bits.writerPtr(
-        2
+        1
       ) =/= 0.U
   }
-
-  // Loopback / Non-loopback seperation for pseudo-OoO commit
-  val srcLoopbackDemux = Module(
-    new DemuxDecoupled(chiselTypeOf(postRoute_src_local.bits), numOutput = 2) {
-      override val desiredName = s"${clusterName}_xdma_ctrl_src_LoopbackDemux"
-    }
-  )
-  val dstLoopbackDemux = Module(
-    new DemuxDecoupled(chiselTypeOf(postRoute_dst_local.bits), numOutput = 2) {
-      override val desiredName = s"${clusterName}_xdma_ctrl_dst_LoopbackDemux"
-    }
-  )
-
-  // (1) is loopback; (0) is non-loopback
-  srcLoopbackDemux.io.sel := postRoute_src_local.bits.localLoopback
-  dstLoopbackDemux.io.sel := postRoute_dst_local.bits.localLoopback
-  srcLoopbackDemux.io.in <> postRoute_src_local
-  dstLoopbackDemux.io.in <> postRoute_dst_local
-
-  val srcCfgArbiter = Module(
-    new Arbiter(chiselTypeOf(postRoute_src_local.bits), 2) {
-      override val desiredName = s"${clusterName}_xdma_ctrl_srcCfgArbiter"
-    }
-  )
-  // Non-loopback has lower priority, so that it is connect to 1st port of arbiter
-  // Optional FIFO for non-loopback cfg is added (depth = 2)
-  srcLoopbackDemux.io.out(0) -||> srcCfgArbiter.io.in(1)
-  // Loopback has higher priority, so that it is connect to 0th port of arbiter
-  // Optional FIFO for loopback cfg is not added
-  srcLoopbackDemux.io.out(1) <> srcCfgArbiter.io.in(0)
-
-  val dstCfgArbiter = Module(
-    new Arbiter(chiselTypeOf(postRoute_dst_local.bits), 2) {
-      override val desiredName = s"${clusterName}_xdma_ctrl_dstCfgArbiter"
-    }
-  )
-  // Non-loopback has lower priority, so that it is connect to 1st port of arbiter
-  // Optional FIFO for non-loopback cfg is added (depth = 2)
-  dstLoopbackDemux.io.out(0) -||> dstCfgArbiter.io.in(1)
-  // Loopback has higher priority, so that it is connect to 0th port of arbiter
-  // Optional FIFO for loopback cfg is not added
-  dstLoopbackDemux.io.out(1) <> dstCfgArbiter.io.in(0)
 
   // Connect these two cfg to the actual input: Need two small (Mealy) FSMs to manage the start signal and pop out the consumed cfg
   val sIdle :: sWaitBusy :: sBusy :: Nil = Enum(3)
@@ -520,10 +489,10 @@ class XDMACtrl(
   val currentStateDst = RegNext(nextStateDst, sIdle)
 
   // Two Data Cut to store the buffer the current cfg
-  val currentCfgSrc = Wire(chiselTypeOf(srcCfgArbiter.io.out))
-  val currentCfgDst = Wire(chiselTypeOf(dstCfgArbiter.io.out))
-  srcCfgArbiter.io.out -|> currentCfgSrc
-  dstCfgArbiter.io.out -|> currentCfgDst
+  val currentCfgSrc = Wire(chiselTypeOf(postRoute_src_local))
+  val currentCfgDst = Wire(chiselTypeOf(postRoute_dst_local))
+  postRoute_src_local -|> currentCfgSrc
+  postRoute_dst_local -|> currentCfgDst
 
   // Default value: Not pop out config, not start reader/writer, not change state
   io.localXDMACfg.readerStart := false.B

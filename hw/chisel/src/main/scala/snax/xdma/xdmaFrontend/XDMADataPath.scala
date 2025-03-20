@@ -173,59 +173,142 @@ class XDMADataPath(
   io.writerBusy := writer.io.busy | (~writer.io.bufferEmpty) | writerExtensions.io.busy
 
   // The following muxes and demuxes are used to do the local loopback and remote loopback, the wires connected to the reader and writer are: readerDataAfterExtension and writerDataBeforeExtension. The wires between all the demuxes and muxes should not be cutted
-  val readerDemux = Module(
+  // LocalLoopbackDemux takes the data from the Reader side, and send it to either the remote cluster (0) or loopback to the writer side (1)
+  val localLoopbackDemux = Module(
     new DemuxDecoupled(
       chiselTypeOf(readerDataAfterExtension.bits),
       numOutput = 2
     ) {
-      override def desiredName = clusterName + "_xdma_datapath_demux"
+      override def desiredName = clusterName + "_xdma_datapath_local_demux"
     }
   )
-  val writerMux = Module(
+  // LocalLoopbackMux takes the data from either loopback or the remote side, and send it to writer
+  val localLoopbackMux = Module(
     new MuxDecoupled(
       chiselTypeOf(writerDataBeforeExtension.bits),
       numInput = 2
     ) {
-      override def desiredName = clusterName + "_xdma_datapath_mux"
+      override def desiredName = clusterName + "_xdma_datapath_local_mux"
     }
   )
 
-  readerDemux.io.sel := io.readerCfg.localLoopback
-  writerMux.io.sel := io.writerCfg.localLoopback
-  readerDataAfterExtension <> readerDemux.io.in
-  writerMux.io.out <> writerDataBeforeExtension
+  localLoopbackDemux.io.sel := io.readerCfg.localLoopback
+  localLoopbackMux.io.sel := io.writerCfg.localLoopback
+  readerDataAfterExtension <> localLoopbackDemux.io.in
+  localLoopbackMux.io.out <> writerDataBeforeExtension
 
-  readerDemux.io.out(1) <> writerMux.io.in(1)
-  readerDemux.io.out(0) <> io.remoteXDMAData.toRemote
-  writerMux.io.in(0) <> io.remoteXDMAData.fromRemote
+  val readerLocaltoRemoteLoopback = Wire(chiselTypeOf(readerDataAfterExtension))
+  val writerLocaltoRemoteLoopback = Wire(
+    chiselTypeOf(writerDataBeforeExtension)
+  )
+
+  localLoopbackDemux.io.out(1) <> localLoopbackMux.io.in(1)
+  localLoopbackDemux.io.out(0) <> readerLocaltoRemoteLoopback
+  localLoopbackMux.io.in(0) <> writerLocaltoRemoteLoopback
+
+  // RemoteLoopbackMux takes the data from readerLocaltoRemoteLoopback(0) or the remote loopback side (1), and send it to the remote side
+  val remoteLoopbackMux = Module(
+    new MuxDecoupled(
+      chiselTypeOf(readerLocaltoRemoteLoopback.bits),
+      numInput = 2
+    ) {
+      override def desiredName = clusterName + "_xdma_datapath_remote_mux"
+    }
+  )
+
+  // The remoteLoopbackSplitter takes the data from the remote side, and always send it to writerLocaltoRemoteLoopback (0) and selectively send it to the remote loopback side (1)
+  val remoteLoopbackSplitter = Module(
+    new SplitterDecoupled(
+      chiselTypeOf(io.remoteXDMAData.fromRemote.bits),
+      numOutput = 2
+    ) {
+      override def desiredName = clusterName + "_xdma_datapath_remote_splitter"
+    }
+  )
+  remoteLoopbackMux.io.sel := io.writerCfg.remoteLoopback && io.writerBusy
+  remoteLoopbackSplitter.io.sel(0) := true.B
+  remoteLoopbackSplitter.io.sel(
+    1
+  ) := io.writerCfg.remoteLoopback && io.writerBusy
+
+  remoteLoopbackMux.io.in(0) <> readerLocaltoRemoteLoopback
+  remoteLoopbackMux.io.in(1) <> remoteLoopbackSplitter.io.out(1)
+  remoteLoopbackSplitter.io.out(0) <> writerLocaltoRemoteLoopback
+
+  // The output of the remoteLoopbackMux is the data that will be sent to the remote side
+  io.remoteXDMAData.toRemote <> remoteLoopbackMux.io.out
+  // The input of the remoteLoopbackSplitter is the data that will be get from the remote side
+  io.remoteXDMAData.fromRemote <> remoteLoopbackSplitter.io.in
 
   // Connect the AccompaniedCfg signal
-  io.remoteXDMAData.fromRemoteAccompaniedCfg.convertFromXDMACfgIO(
-    loopBack = io.writerCfg.localLoopback,
-    cfg = io.writerCfg,
-    isReaderSide = false
+  // Create three intermediate wires to convert from XDMACfgIO to XDMADataPathCfgIO
+  // Normal Read: toRemoteAccompaniedCfg <- Coming from reader side
+  // Normal Write: fromRemoteAccompaniedCfg <- Coming from writer side
+  // Chained Write (Reader side's cfg): toRemoteChainedWriteAccompaniedCfg <- Coming from writer side
+  val fromRemoteAccompaniedCfg = Wire(
+    chiselTypeOf(io.remoteXDMAData.fromRemoteAccompaniedCfg)
   )
-  io.remoteXDMAData.toRemoteAccompaniedCfg.convertFromXDMACfgIO(
-    loopBack = io.readerCfg.localLoopback,
-    cfg = io.readerCfg,
-    isReaderSide = true
+  fromRemoteAccompaniedCfg.convertFromXDMACfgIO(
+    cfg = io.writerCfg,
+    isChainedWrite = false
   )
 
-  io.remoteXDMAData.fromRemoteAccompaniedCfg.readyToTransmit := Mux(
+  val toRemoteAccompaniedCfg = Wire(
+    chiselTypeOf(io.remoteXDMAData.toRemoteAccompaniedCfg)
+  )
+  toRemoteAccompaniedCfg.convertFromXDMACfgIO(
+    cfg = io.readerCfg,
+    isChainedWrite = false
+  )
+
+  val toRemoteChainedWriteAccompaniedCfg = Wire(
+    chiselTypeOf(io.remoteXDMAData.toRemoteAccompaniedCfg)
+  )
+  toRemoteChainedWriteAccompaniedCfg.convertFromXDMACfgIO(
+    cfg = io.writerCfg,
+    isChainedWrite = true
+  )
+
+  // The readyToSubmit signal should only be high when the localLoopback is false
+  // (The data needs to come from / to the remote side)
+  fromRemoteAccompaniedCfg.readyToTransmit := Mux(
     io.writerCfg.localLoopback,
     false.B,
     writer.io.busy
   )
 
-  io.remoteXDMAData.toRemoteAccompaniedCfg.readyToTransmit := Mux(
+  fromRemoteAccompaniedCfg.taskType := Mux(
+    io.writerCfg.origination === io.writerCfg.originationIsFromLocal.B,
+    fromRemoteAccompaniedCfg.taskTypeIsRemoteRead.B,
+    fromRemoteAccompaniedCfg.taskTypeIsRemoteWrite.B
+  )
+
+  toRemoteAccompaniedCfg.readyToTransmit := Mux(
     io.readerCfg.localLoopback,
     false.B,
     reader.io.busy
   )
+
+  toRemoteAccompaniedCfg.taskType := Mux(
+    io.readerCfg.origination === io.readerCfg.originationIsFromLocal.B,
+    toRemoteAccompaniedCfg.taskTypeIsRemoteWrite.B,
+    toRemoteAccompaniedCfg.taskTypeIsRemoteRead.B
+  )
+
+  toRemoteChainedWriteAccompaniedCfg.readyToTransmit := io.writerCfg.remoteLoopback && io.writerBusy
+  toRemoteChainedWriteAccompaniedCfg.taskType := toRemoteChainedWriteAccompaniedCfg.taskTypeIsRemoteWrite.B
+
+  // The actual output of AccompaniedCfg is determined by the remoteLoopback signal:
+  // If the remoteLoopback signal is high, toRemoteAccompaniedCfg needs to be shifted
+  io.remoteXDMAData.fromRemoteAccompaniedCfg := fromRemoteAccompaniedCfg
+  io.remoteXDMAData.toRemoteAccompaniedCfg := Mux(
+    io.writerCfg.remoteLoopback && io.writerBusy,
+    toRemoteChainedWriteAccompaniedCfg,
+    toRemoteAccompaniedCfg
+  )
 }
 
 // Below is the class to determine if chisel generate Verilog correctly
-
 object XDMADataPathEmitter extends App {
   emitVerilog(
     new XDMADataPath(

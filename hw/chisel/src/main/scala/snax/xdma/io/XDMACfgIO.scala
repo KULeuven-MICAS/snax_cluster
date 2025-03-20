@@ -21,6 +21,11 @@ import snax.readerWriter.{
 // Also the extension cfg is included in this class
 class XDMACfgIO(param: XDMAParam) extends Bundle {
   val taskID = UInt(8.W)
+
+  // Definition origination = 0 means the data is from local, origination = 1 means the data is from remote
+  val originationIsFromLocal = false
+  val originationIsFromRemote = true
+  val origination = Bool()
   val readerPtr = UInt(param.axiParam.addrWidth.W)
   // val writerPtr = UInt(param.axiParam.addrWidth.W)
   val writerPtr =
@@ -73,6 +78,7 @@ class XDMACfgIO(param: XDMAParam) extends Bundle {
   def connectWithList(
       csrList: IndexedSeq[UInt]
   ): IndexedSeq[UInt] = {
+    origination := originationIsFromLocal.B
     var remaincsrList = csrList
     remaincsrList = aguCfg.connectWithList(remaincsrList)
     remaincsrList = readerwriterCfg.connectWithList(remaincsrList)
@@ -164,6 +170,7 @@ class XDMACrossClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam)
 
     xdmaCfg.readerwriterCfg.enabledChannel := enabledChannel
     xdmaCfg.readerwriterCfg.enabledByte := enabledByte
+    xdmaCfg.origination := xdmaCfg.originationIsFromRemote.B
     xdmaCfg
   }
 
@@ -257,27 +264,29 @@ class XDMADataPathCfgIO(
   val readyToTransmit = Bool()
   val taskID = UInt(8.W)
   val length = UInt(crossClusterParam.maxLocalAddressWidth.W)
-  val nextDestination = UInt(axiParam.addrWidth.W)
+  val taskType = Bool()
+  val taskTypeIsRemoteRead = true
+  val taskTypeIsRemoteWrite = false
+  val src = UInt(axiParam.addrWidth.W)
+  val dst = UInt(axiParam.addrWidth.W)
 
   def convertFromXDMACfgIO(
-      loopBack: Bool,
       cfg: XDMACfgIO,
-      isReaderSide: Boolean
+      isChainedWrite: Boolean
   ): Unit = {
-    when(~loopBack) {
-      taskID := cfg.taskID
-      length := cfg.aguCfg.temporalBounds.reduceTree { case (a, b) =>
-        (a * b).apply(length.getWidth - 1, 0)
-      }
-      nextDestination := {
-        if (isReaderSide)
-          cfg.writerPtr(0)
-        else cfg.readerPtr(1)
-      }
-    } otherwise {
-      taskID := 0.U
-      length := 0.U
-      nextDestination := 0.U
+    taskID := cfg.taskID
+    length := cfg.aguCfg.temporalBounds.reduceTree { case (a, b) =>
+      (a * b).apply(length.getWidth - 1, 0)
+    }
+    src := {
+      if (isChainedWrite)
+        cfg.writerPtr(0)
+      else cfg.readerPtr
+    }
+    dst := {
+      if (isChainedWrite)
+        cfg.writerPtr(1)
+      else cfg.writerPtr(0)
     }
   }
 }
