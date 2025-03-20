@@ -8,6 +8,7 @@
   num_tcdm_ports = round(cfg["dma_data_width"] / cfg["data_width"] * 2)
   ## Half of them are used for the reader, and half of them are used for writer
 
+  tcdm_addr_width = cfg["tcdm"]["size"].bit_length() - 1 + 10
 %>
 //-----------------------------
 // xdma wrapper
@@ -19,7 +20,7 @@ module ${cfg["name"]}_xdma_wrapper #(
   // Parameters related to TCDM
   parameter int unsigned TCDMDataWidth = ${cfg["data_width"]},
   parameter int unsigned TCDMNumPorts  = ${num_tcdm_ports},
-  parameter int unsigned TCDMAddrWidth = ${cfg["tcdm_addr_width"]},
+  parameter int unsigned TCDMAddrWidth = ${tcdm_addr_width},
   parameter int unsigned PhysicalAddrWidth = ${cfg["addr_width"]}
 )(
   //-----------------------------
