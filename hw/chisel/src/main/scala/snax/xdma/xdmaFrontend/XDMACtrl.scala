@@ -43,7 +43,7 @@ class XDMACtrlIO(readerParam: XDMAParam, writerParam: XDMAParam)
   }
   // This is the port for CSR Manager to SNAX port
   val csrIO = new SnaxCsrIO(csrAddrWidth = 32)
-  
+
   // The external port to indicate the finish of one task
   val remoteTaskFinished = Input(Bool())
 }
@@ -583,10 +583,12 @@ class XDMACtrl(
   localFinishedTaskIDCounter.io.reset := false.B
   localFinishedTaskIDCounter.io.tick := currentCfgDst.fire && currentCfgDst.bits.localLoopback
 
-  val remoteFinishedTaskIDCounter = Module(new BasicCounter(8, hasCeil = false) {
-    override val desiredName =
-      s"${clusterName}_xdma_ctrl_remoteFinishedTaskCounter"
-  })
+  val remoteFinishedTaskIDCounter = Module(
+    new BasicCounter(8, hasCeil = false) {
+      override val desiredName =
+        s"${clusterName}_xdma_ctrl_remoteFinishedTaskCounter"
+    }
+  )
   remoteFinishedTaskIDCounter.io.ceil := DontCare
   remoteFinishedTaskIDCounter.io.reset := false.B
   remoteFinishedTaskIDCounter.io.tick := io.remoteTaskFinished
