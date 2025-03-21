@@ -22,21 +22,15 @@ class Multiplier[T <: Data with Num[T]](
 }
 
 object MultiplierEmitterUInt extends App {
-  println(
-    getVerilogString(
-      new Multiplier(UInt(8.W), UInt(4.W), UInt(16.W))
-    )
+  emitVerilog(
+    new Multiplier(UInt(8.W), UInt(4.W), UInt(16.W)),
+    Array("--target-dir", "generated/SpatialArray")
   )
 }
 
 object MultiplierEmitterSInt extends App {
-  println(
-    getVerilogString(
-      new Multiplier(SInt(8.W), SInt(4.W), SInt(16.W))
-    )
-  )
   emitVerilog(
     new Multiplier(SInt(8.W), SInt(4.W), SInt(16.W)),
-    Array("--target-dir", "generated/SpacialArray")
+    Array("--target-dir", "generated/SpatialArray")
   )
 }
