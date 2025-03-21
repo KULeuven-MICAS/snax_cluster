@@ -175,11 +175,6 @@ class SpatialArray(params: SpatialArrayParam)
 }
 
 object SpatialArrayEmitter extends App {
-  println(
-    getVerilogString(
-      new SpatialArray(SpatialArrayParam())
-    )
-  )
   emitVerilog(
     new SpatialArray(SpatialArrayParam()),
     Array("--target-dir", "generated/SpatialArray")
