@@ -5,10 +5,10 @@
 // Yunhao Deng <yunhao.deng@kuleuven.be>
 
 {
-    M: 128, // Number of rows / height
-    N: 256, // Number of columns / width
+    M: 64, // Number of rows / height
+    N: 32, // Number of columns / width
     // Input layout can be NM or NMNaMb, where b should be larger than 8 for any cases and a should be larger than 8 if transpose is needed. 
-    input_layout: "NM"
-    output_layout: "NM"
+    input_layout: "M8N16MN"
+    output_layout: "M8N8MN"
     enable_transpose: true
 }

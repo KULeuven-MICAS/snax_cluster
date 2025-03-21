@@ -43,11 +43,20 @@ int main() {
             printf("The xdma extension 1 is disabled\n");
         }
 
-        if (xdma_enable_dst_ext(2, (uint32_t *)NULL) != 0) {
-            printf("Error in enabling xdma extension 2\n");
-            err++;
+        if (enable_transpose) {
+            if (xdma_enable_dst_ext(2, (uint32_t *)NULL) != 0) {
+                printf("Error in enabling xdma extension 2\n");
+                err++;
+            } else {
+                printf("The xdma extension 2 is enabled\n");
+            }
         } else {
-            printf("The xdma extension 2 is enabled\n");
+            if (xdma_disable_dst_ext(2) != 0) {
+                printf("Error in disabling xdma extension 1\n");
+                err++;
+            } else {
+                printf("The xdma extension 2 is disabled\n");
+            }
         }
 
         // --------------------- Configure the AGU --------------------- //

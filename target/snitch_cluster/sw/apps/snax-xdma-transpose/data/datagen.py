@@ -37,19 +37,19 @@ def emit_transposer_data(**kwargs):
     emit_str = []
     matrix_data = np.random.randint(low=0, high=255, size=(
         kwargs["M"], kwargs["N"]), dtype=np.uint8)
-    input_matrix = None
-    if kwargs["input_layout"] == "NM":
-        input_matrix = matrix_data.ravel()
+    input_matrix = matrix_data
+    if kwargs["input_layout"] == "MN":
+        input_matrix = input_matrix.ravel()
     else:
-        match = re.search(r'NMN(\d+)x(\d+)', kwargs["input_layout"])
+        match = re.search(r'M(\d+)N(\d+)MN', kwargs["input_layout"])
         if match:
-            n, m = match.groups()
-            n, m = int(n), int(m)
-            input_matrix = matrix_data.reshape(
-                kwargs["n"] // n,
-                n,
-                kwargs["M"] // m,
-                m).swapaxes(
+            m, n = match.groups()
+            m, n = int(m), int(n)
+            input_matrix = input_matrix.reshape(
+                input_matrix.shape[0] // m,
+                m,
+                input_matrix.shape[1] // n,
+                n).swapaxes(
                 1,
                 2).ravel()
         else:
@@ -58,29 +58,28 @@ def emit_transposer_data(**kwargs):
     # Emit input matrix
     emit_str += [
         format_scalar_definition(
-            "uint8_t",
+            "uint32_t",
             "matrix_size",
-            kwargs["M"] *
-            kwargs["N"])]
+            matrix_data.size)]
     emit_str += [format_vector_definition("uint8_t",
                                           "input_matrix", input_matrix)]
 
     # Emit output matrix
     output_matrix = matrix_data
     if kwargs["enable_transpose"] is True:
-        output_matrix = matrix_data.T
-    if kwargs["output_layout"] == "NM":
+        output_matrix = output_matrix.T
+    if kwargs["output_layout"] == "MN":
         output_matrix = output_matrix.ravel()
     else:
-        match = re.search(r'NMN(\d+)x(\d+)', kwargs["output_layout"])
+        match = re.search(r'M(\d+)N(\d+)MN', kwargs["output_layout"])
         if match:
-            n, m = match.groups()
-            n, m = int(n), int(m)
+            m, n = match.groups()
+            m, n = int(m), int(n)
             output_matrix = output_matrix.reshape(
-                kwargs["n"] // n,
-                n,
-                kwargs["M"] // m,
-                m).swapaxes(
+                output_matrix.shape[0] // m,
+                m,
+                output_matrix.shape[1] // n,
+                n).swapaxes(
                 1,
                 2).ravel()
         else:
@@ -98,44 +97,44 @@ def emit_transposer_data(**kwargs):
     temporal_bounds_src = []
     temporal_bounds_dst = []
 
-    if kwargs["input_layout"] == "NM":
-        spatial_stride_src = kwargs["N"]
-        temporal_bounds_src = [kwargs["N"] // 8, kwargs["M"] // 8]
-        temporal_strides_src = [8, kwargs["N"] * 8]
+    if kwargs["input_layout"] == "MN":
+        spatial_stride_src = matrix_data.shape[1]
+        temporal_bounds_src = [matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
+        temporal_strides_src = [8, matrix_data.shape[1] * 8]
     else:
-        match = re.search(r'NMN(\d+)x(\d+)', kwargs["input_layout"])
+        match = re.search(r'M(\d+)N(\d+)MN', kwargs["input_layout"])
         n, m = match.groups()
         n, m = int(n), int(m)
         spatial_stride_src = n
         temporal_bounds_src = [n // 8, m // 8,
-                               kwargs["N"] // n, kwargs["M"] // m]
-        temporal_strides_src = [8, n * 8, m * n, kwargs["N"] * m]
+                               matrix_data.shape[1] // n, matrix_data.shape[0] // m]
+        temporal_strides_src = [8, n * 8, m * n, matrix_data.shape[1] * m]
     if kwargs["enable_transpose"] is True:
-        if kwargs["output_layout"] == "NM":
-            spatial_stride_dst = kwargs["M"]
-            temporal_bounds_dst = [kwargs["N"] // 8, kwargs["M"] // 8]
-            temporal_strides_dst = [kwargs["M"] * 8, 8]
+        if kwargs["output_layout"] == "MN":
+            spatial_stride_dst = matrix_data.shape[0]
+            temporal_bounds_dst = [matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
+            temporal_strides_dst = [matrix_data.shape[0] * 8, 8]
         else:
-            match = re.search(r'NMN(\d+)x(\d+)', kwargs["output_layout"])
-            n, m = match.groups()
-            n, m = int(n), int(m)
-            spatial_stride_dst = n
+            match = re.search(r'M(\d+)N(\d+)MN', kwargs["output_layout"])
+            m, n = match.groups()
+            m, n = int(m), int(n)
+            spatial_stride_dst = m
             temporal_bounds_dst = [n // 8, m // 8,
-                                kwargs["N"] // n, kwargs["M"] // m]
-            temporal_strides_dst = [m * 8, 8, n * kwargs["M"], m]
+                                matrix_data.shape[1] // n, matrix_data.shape[0] // m]
+            temporal_strides_dst = [m * 8, 8, n * matrix_data.shape[0], m]
     else:
-        if kwargs["output_layout"] == "NM":
-            spatial_stride_dst = kwargs["N"]
-            temporal_bounds_dst = [kwargs["N"] // 8, kwargs["M"] // 8]
-            temporal_strides_dst = [8, kwargs["N"] * 8]
+        if kwargs["output_layout"] == "MN":
+            spatial_stride_dst = matrix_data.shape[1]
+            temporal_bounds_dst = [matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
+            temporal_strides_dst = [8, matrix_data.shape[1] * 8]
         else:
-            match = re.search(r'NMN(\d+)x(\d+)', kwargs["output_layout"])
-            n, m = match.groups()
-            n, m = int(n), int(m)
+            match = re.search(r'M(\d+)N(\d+)MN', kwargs["output_layout"])
+            m, n = match.groups()
+            m, n = int(m), int(n)
             spatial_stride_dst = n
             temporal_bounds_dst = [n // 8, m // 8,
-                                kwargs["N"] // n, kwargs["M"] // m]
-            temporal_strides_dst = [8, n * 8, m * n, kwargs["N"] * m]
+                                matrix_data.shape[1] // n, matrix_data.shape[0] // m]
+            temporal_strides_dst = [8, n * 8, m * n, matrix_data.shape[1] * m]
 
     emit_str += [
         format_scalar_definition(
