@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Yunhao Deng <fanchen.kong@kuleuven.be>
+// Yunhao Deng <yunhao.deng@kuleuven.be>
 
 #include "data.h"
 #include "snax-xdma-lib.h"
