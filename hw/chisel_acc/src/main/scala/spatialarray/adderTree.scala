@@ -27,6 +27,7 @@ class AdderTree[T <: Data with Num[T]](
     val cfg = Input(UInt(log2Ceil(groupSizes.length + 1).W))
   })
 
+  // adder tree initialization
   val maxGroupSize = groupSizes.max
   val treeDepth = log2Ceil(maxGroupSize)
   val layers = Wire(Vec(treeDepth + 1, Vec(numElements, outputType)))
@@ -52,15 +53,13 @@ class AdderTree[T <: Data with Num[T]](
 }
 
 object AdderTreeEmitterUInt extends App {
-  println(
-    getVerilogString(new AdderTree(UInt(8.W), UInt(9.W), 8, Seq(1, 2, 4)))
+  emitVerilog(
+    new AdderTree(UInt(8.W), UInt(9.W), 8, Seq(1, 2, 4)),
+    Array("--target-dir", "generated/SpatialArray")
   )
 }
 
 object AdderTreeEmitterSInt extends App {
-  println(
-    getVerilogString(new AdderTree(SInt(8.W), SInt(9.W), 8, Seq(1, 2, 4)))
-  )
   emitVerilog(
     new AdderTree(SInt(16.W), SInt(32.W), 1024, Seq(1, 2, 8)),
     Array("--target-dir", "generated/SpatialArray")
