@@ -99,7 +99,8 @@ def emit_transposer_data(**kwargs):
 
     if kwargs["input_layout"] == "MN":
         spatial_stride_src = matrix_data.shape[1]
-        temporal_bounds_src = [matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
+        temporal_bounds_src = [matrix_data.shape[1] //
+                               8, matrix_data.shape[0] // 8]
         temporal_strides_src = [8, matrix_data.shape[1] * 8]
     else:
         match = re.search(r'M(\d+)N(\d+)MN', kwargs["input_layout"])
@@ -112,27 +113,37 @@ def emit_transposer_data(**kwargs):
     if kwargs["enable_transpose"] is True:
         if kwargs["output_layout"] == "MN":
             spatial_stride_dst = matrix_data.shape[0]
-            temporal_bounds_dst = [matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
+            temporal_bounds_dst = [
+                matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
             temporal_strides_dst = [matrix_data.shape[0] * 8, 8]
         else:
             match = re.search(r'M(\d+)N(\d+)MN', kwargs["output_layout"])
             m, n = match.groups()
             m, n = int(m), int(n)
             spatial_stride_dst = n
-            temporal_bounds_dst = [m // 8, matrix_data.shape[1] // m, n // 8, matrix_data.shape[0] // n]
+            temporal_bounds_dst = [
+                m // 8,
+                matrix_data.shape[1] // m,
+                n // 8,
+                matrix_data.shape[0] // n]
             temporal_strides_dst = [n * 8, m * matrix_data.shape[0], 8, m * n]
     else:
         if kwargs["output_layout"] == "MN":
             spatial_stride_dst = matrix_data.shape[1]
-            temporal_bounds_dst = [matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
+            temporal_bounds_dst = [
+                matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
             temporal_strides_dst = [8, matrix_data.shape[1] * 8]
         else:
             match = re.search(r'M(\d+)N(\d+)MN', kwargs["output_layout"])
             m, n = match.groups()
             m, n = int(m), int(n)
             spatial_stride_dst = n
-            temporal_bounds_dst = [n // 8, matrix_data.shape[1] // n, m // 8, matrix_data.shape[0] // m]
-            temporal_strides_dst = [8,m * n,  n * 8, matrix_data.shape[1] * m]
+            temporal_bounds_dst = [
+                n // 8,
+                matrix_data.shape[1] // n,
+                m // 8,
+                matrix_data.shape[0] // m]
+            temporal_strides_dst = [8, m * n, n * 8, matrix_data.shape[1] * m]
 
     emit_str += [
         format_scalar_definition(
@@ -165,7 +176,8 @@ def emit_transposer_data(**kwargs):
 
     emit_str += [format_scalar_definition("uint8_t",
                                           "enable_transpose",
-                                          1 if kwargs["enable_transpose"] else 0)]
+                                          1 if kwargs["enable_transpose"]
+                                          else 0)]
     return emit_str
 
 
