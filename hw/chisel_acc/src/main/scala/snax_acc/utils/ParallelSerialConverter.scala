@@ -53,38 +53,38 @@ class ParallelToSerial(val p: ParallelToSerialParams) extends Module {
     // Accept a new parallel word only if we have nothing left to send.
     io.in.ready := (count === 0.U)
 
-    // Once we get a new parallel word, store it and prepare to send.
-    // store in the vector of regs
-    if (p.parallelWidth <= 2048) {
-      when(io.in.fire) {
-        shiftReg(0) := io.in.bits
+  // Once we get a new parallel word, store it and prepare to send.
+  // store in the vector of regs
+  if (p.parallelWidth <= 2048) {
+    when(io.in.fire) {
+      shiftReg(0) := io.in.bits
+    }
+      .elsewhen(io.out.fire) {
+        shiftReg(0) := shiftReg(0) >> p.serialWidth.U
       }
-        .elsewhen(io.out.fire) {
-          shiftReg(0) := shiftReg(0) >> p.serialWidth.U
-        }
-    } else {
-      when(io.in.fire) {
-        for (i <- 0 until numRegs) {
-          shiftReg(i) := io.in.bits(i * 2048 + 2047, i * 2048)
-        }
-      }.elsewhen(io.out.fire) {
-        for (i <- 0 until numRegs) {
-          if (i == numRegs - 1) {
-            // If we are at the last register, we need to shift in zeros
-            shiftReg(i) := Cat(
-              0.U(p.serialWidth.W),
-              shiftReg(i)(2047, p.serialWidth)
-            )
-          } else {
-            // Otherwise, shift in the next register
-            shiftReg(i) := Cat(
-              shiftReg(i + 1)(p.serialWidth - 1, 0),
-              shiftReg(i)(2047, p.serialWidth)
-            )
-          }
+  } else {
+    when(io.in.fire) {
+      for (i <- 0 until numRegs) {
+        shiftReg(i) := io.in.bits(i * 2048 + 2047, i * 2048)
+      }
+    }.elsewhen(io.out.fire) {
+      for (i <- 0 until numRegs) {
+        if (i == numRegs - 1) {
+          // If we are at the last register, we need to shift in zeros
+          shiftReg(i) := Cat(
+            0.U(p.serialWidth.W),
+            shiftReg(i)(2047, p.serialWidth)
+          )
+        } else {
+          // Otherwise, shift in the next register
+          shiftReg(i) := Cat(
+            shiftReg(i + 1)(p.serialWidth - 1, 0),
+            shiftReg(i)(2047, p.serialWidth)
+          )
         }
       }
     }
+  }
 
     // On handshake, shift to the next chunk and decrement count.
     when(io.in.fire) {

@@ -1,4 +1,4 @@
-package snax_acc.spatialarray
+package snax_acc.spatial_array
 
 import chisel3._
 import chiseltest._
