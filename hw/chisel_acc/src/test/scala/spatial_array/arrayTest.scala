@@ -4,11 +4,11 @@ import chisel3._
 import chisel3.util._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
+import scala.util.Random
 
 class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
-  "SpatialArray" should "correctly compute output" in {
-    // Define test parameters
+  "SpatialArray" should "correctly compute output with random test data" in {
     val params = SpatialArrayParam(
       macNum = 8,
       inputAType = UInt(8.W),
@@ -20,92 +20,83 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
       inputBWidth = 64,
       inputCWidth = 256,
       outputWidth = 256,
-      arrayDim = Seq(Seq(2, 2, 2), Seq(2, 1, 4), Seq(4, 1, 2), Seq(4, 2, 1), Seq(1, 8, 1)), // 2x2x2 array dimensions
+      arrayDim = Seq(Seq(2, 2, 2), Seq(2, 1, 4), Seq(4, 1, 2), Seq(4, 2, 1), Seq(1, 8, 1))
     )
 
-    // Instantiate the module
     test(new SpatialArray(params)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
-      // Construct 'a' using shift and OR operations
-      val a = (BigInt(8.toByte)  << 56) | 
-              (BigInt(7.toByte)  << 48) | 
-              (BigInt(6.toByte)  << 40) | 
-              (BigInt(5.toByte)  << 32) | 
-              (BigInt(4.toByte)  << 24) | 
-              (BigInt(3.toByte)  << 16) | 
-              (BigInt(2.toByte)  << 8)  | 
-              (BigInt(1.toByte))
+      val rand = new Random()
 
-      // Construct 'b' using shift and OR operations
-      val b = (BigInt(16.toByte) << 56) | 
-              (BigInt(15.toByte) << 48) | 
-              (BigInt(14.toByte) << 40) | 
-              (BigInt(13.toByte) << 32) | 
-              (BigInt(12.toByte) << 24) | 
-              (BigInt(11.toByte) << 16) | 
-              (BigInt(10.toByte) << 8)  | 
-              (BigInt(9.toByte))
+      // Generate random values for 'a' and 'b'
+      val aValues = Array.fill(8)(rand.nextInt(256))  // 8 random 8-bit values
+      val bValues = Array.fill(8)(rand.nextInt(256))  // 8 random 8-bit values
+
+      // Construct 'a' and 'b' from the random values
+      val a = aValues.zipWithIndex.map { case (v, i) => BigInt(v) << (i * 8) }.sum
+      val b = bValues.zipWithIndex.map { case (v, i) => BigInt(v) << (i * 8) }.sum
+
+      // Print generated test inputs
+      println(s"Randomly generated A values: ${aValues.mkString(", ")}")
+      println(s"Randomly generated B values: ${bValues.mkString(", ")}")
 
       val results = Seq(
-        Seq( // res_cfg1
-          1 * 9 + 2 * 10,
-          1 * 11 + 2 * 12,
-          3 * 9 + 4 * 10,
-          3 * 11 + 4 * 12
+        Seq(
+          aValues(0) * bValues(0) + aValues(1) * bValues(1),
+          aValues(0) * bValues(2) + aValues(1) * bValues(3),
+          aValues(2) * bValues(0) + aValues(3) * bValues(1),
+          aValues(2) * bValues(2) + aValues(3) * bValues(3)
         ),
-        Seq( // res_cfg2
-          1 * 9,
-          1 * 10,
-          1 * 11,
-          1 * 12,
-          2 * 9,
-          2 * 10,
-          2 * 11,
-          2 * 12
+        Seq(
+          aValues(0) * bValues(0),
+          aValues(0) * bValues(1),
+          aValues(0) * bValues(2),
+          aValues(0) * bValues(3),
+          aValues(1) * bValues(0),
+          aValues(1) * bValues(1),
+          aValues(1) * bValues(2),
+          aValues(1) * bValues(3)
         ),
-        Seq( // res_cfg3
-          1 * 9, 1 * 10, 2 * 9, 2 * 10,
-          3 * 9, 3 * 10, 4 * 9, 4 * 10
+        Seq(
+          aValues(0) * bValues(0), aValues(0) * bValues(1), aValues(1) * bValues(0), aValues(1) * bValues(1),
+          aValues(2) * bValues(0), aValues(2) * bValues(1), aValues(3) * bValues(0), aValues(3) * bValues(1)
         ),
-        Seq( // res_cfg4
-          1 * 9 + 2 * 10,
-          3 * 9 + 4 * 10,
-          5 * 9 + 6 * 10,
-          7 * 9 + 8 * 10
+        Seq(
+          aValues(0) * bValues(0) + aValues(1) * bValues(1),
+          aValues(2) * bValues(0) + aValues(3) * bValues(1),
+          aValues(4) * bValues(0) + aValues(5) * bValues(1),
+          aValues(6) * bValues(0) + aValues(7) * bValues(1)
         ),
-        Seq( // res_cfg5
-          1 * 9 + 2 * 10 + 3 * 11 + 4 * 12 + 5 * 13 + 6 * 14 + 7 * 15 + 8 * 16
+        Seq(
+          (0 until 8).map(i => aValues(i) * bValues(i)).sum
         )
       )
 
-      // Poke the values
+      // Poke the random values
       c.io.data.in_a.bits.poke(a.U)
       c.io.data.in_b.bits.poke(b.U)
       c.io.data.in_c.bits.poke(0.U)
 
-      // Test the ready/valid handshake
+      // Enable valid signals
       c.io.data.in_a.valid.poke(true.B)
       c.io.data.in_b.valid.poke(true.B)
       c.io.data.in_c.valid.poke(true.B)
 
-      // Test configurations 0 to 4
-      for (cfg <- 0 until results.length) {
+      // Test different configurations
+      for (cfg <- results.indices) {
         c.io.ctrl.spatialArrayCfg.poke(cfg.U)
         c.clock.step(1)
 
-        // Read 256-bit output and extract 8 separate 32-bit values
         val out_d = c.io.data.out_d.bits.peek().litValue
         val extractedOutputs = Seq(
-          out_d & 0xFFFFFFFFL,          // Lowest 32 bits (LSB)
+          out_d & 0xFFFFFFFFL,
           (out_d >> 32)  & 0xFFFFFFFFL,
           (out_d >> 64)  & 0xFFFFFFFFL,
           (out_d >> 96)  & 0xFFFFFFFFL,
           (out_d >> 128) & 0xFFFFFFFFL,
           (out_d >> 160) & 0xFFFFFFFFL,
           (out_d >> 192) & 0xFFFFFFFFL,
-          (out_d >> 224) & 0xFFFFFFFFL   // Highest 32 bits (MSB)
+          (out_d >> 224) & 0xFFFFFFFFL
         )
 
-        // Print and compare results
         println(s"Checking res_cfg${cfg + 1}...")
 
         for (i <- results(cfg).indices) {
