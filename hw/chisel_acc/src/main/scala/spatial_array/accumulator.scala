@@ -8,7 +8,8 @@ class Accumulator[T <: Data with Num[T]](
     val inputType: T,
     val outputType: T,
     val numElements: Int
-) extends Module {
+) extends Module
+    with RequireAsyncReset {
   val io = IO(new Bundle {
     val in1 = Flipped(DecoupledIO(Vec(numElements, inputType)))
     val in2 = Flipped(DecoupledIO(Vec(numElements, inputType)))

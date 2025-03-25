@@ -157,7 +157,6 @@ class SpatialArray(params: SpatialArrayParam)
       params.arrayDim.map(dim => dim(1))
     )
   )
-  println(params.arrayDim.map(dim => dim(1)))
 
   adderTree.io.in := multipliers.map(_.io.out_c)
   adderTree.io.cfg := io.ctrl.spatialArrayCfg

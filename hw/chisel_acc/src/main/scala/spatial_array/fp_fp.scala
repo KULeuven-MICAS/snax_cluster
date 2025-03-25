@@ -34,7 +34,8 @@ class FPNewFMAFP(
     val widthA: Int,
     val widthB: Int,
     val widthC: Int
-) extends Module {
+) extends Module
+    with RequireAsyncReset {
 
   val io = IO(new Bundle {
     val operand_a_i = Input(UInt(widthA.W))

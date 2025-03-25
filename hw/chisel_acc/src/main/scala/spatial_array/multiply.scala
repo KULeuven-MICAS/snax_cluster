@@ -16,7 +16,8 @@ class Multiplier[T <: Data with Num[T]](
     inputAType: T,
     inputBType: T,
     mulType: T
-) extends Module {
+) extends Module
+    with RequireAsyncReset {
   val io = IO(new MultiplierIO(inputAType, inputBType, mulType))
   io.out_c := io.in_a * io.in_b
 }

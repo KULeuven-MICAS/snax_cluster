@@ -8,7 +8,8 @@ class AdderTree[T <: Data with Num[T]](
     val outputType: T,
     val numElements: Int,
     val groupSizes: Seq[Int]
-) extends Module {
+) extends Module
+    with RequireAsyncReset {
   require(
     isPow2(numElements),
     "numElements must be a power of 2"
