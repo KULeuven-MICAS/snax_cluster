@@ -29,12 +29,11 @@ PREAMBLE = r"""
 
 context:
   git_repo_url: "https://github.com/kuleuven-micas/snax_cluster"
-  latest_tag: ${{ git.latest_tag( git_repo_url ) }}
-  version: ${{ latest_tag[1:] }}
+  version: 0.2.11.micro_v0
 
 source:
   git: https://github.com/KULeuven-MICAS/snax_cluster
-  tag: v${{ version }}
+  tag: v0.2.11.micro_v0
 
 about:
   homepage: https://github.com/KULeuven-MICAS/snax_cluster
