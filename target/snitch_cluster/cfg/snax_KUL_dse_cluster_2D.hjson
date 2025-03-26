@@ -214,7 +214,7 @@
 
         data_reader_params: {
             spatial_bounds: [[4], [2]],
-            temporal_dim: [6, 3],
+            temporal_dim: [6, 6],
             num_channel: [4, 2],
             fifo_depth: [8, 8],
             configurable_channel: [0, 0],
@@ -223,7 +223,7 @@
 
         data_writer_params:{
             spatial_bounds: [[8]],
-            temporal_dim: [4],
+            temporal_dim: [6],
             num_channel: [8],
             fifo_depth: [1],
             configurable_channel: [0],
@@ -231,7 +231,7 @@
 
         data_reader_writer_params:{
             spatial_bounds: [[8], [8]],
-            temporal_dim: [4, 4],
+            temporal_dim: [6, 6],
             num_channel: [8, 8],
             fifo_depth: [1, 1],
             configurable_channel: [1, 0],
