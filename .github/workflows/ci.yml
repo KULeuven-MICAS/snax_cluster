@@ -286,8 +286,8 @@ jobs:
           sw/snax-gemmx-matmul-run.yaml \
           sw/snax-data-reshuffler-run.yaml -j
 
-  sw-snax-KUL-dse-cluster-2D-vlt-generic:
-    name: Build KUL-dse-cluster-2D HW w/ Verilator (Generic LLVM)
+  sw-snax-KUL-dse-cluster-1D-vlt-generic:
+    name: Build KUL-dse-cluster-1D HW w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
