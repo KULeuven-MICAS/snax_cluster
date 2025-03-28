@@ -21,3 +21,6 @@ gmon.out
 target/streams/
 target/scala*
 
+.metals/
+.bender/
+test_run_dir/

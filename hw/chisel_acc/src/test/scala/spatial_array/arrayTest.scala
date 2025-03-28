@@ -10,12 +10,13 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
   "SpatialArray" should "correctly compute output with random test data" in {
     val params = SpatialArrayParam(
+      opType = OpType.SIntSIntOp,
       macNum = 8,
-      inputAType = UInt(8.W),
-      inputBType = UInt(8.W),
-      inputCType = UInt(32.W),
-      mulType = UInt(16.W),
-      outType = UInt(32.W),
+      inputAElemWidth = 8,
+      inputBElemWidth = 8,
+      inputCElemWidth = 8,
+      mulElemWidth = 16,
+      outElemWidth = 32,
       inputAWidth = 64,
       inputBWidth = 64,
       inputCWidth = 256,

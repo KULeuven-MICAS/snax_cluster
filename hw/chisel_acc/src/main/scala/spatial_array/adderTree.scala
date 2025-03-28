@@ -3,9 +3,10 @@ package snax_acc.spatial_array
 import chisel3._
 import chisel3.util._
 
-class AdderTree[T <: Data with Num[T]](
-    val inputType: T,
-    val outputType: T,
+class AdderTree(
+    val opType: Int,
+    val inputElemWidth: Int,
+    val outputElemWidth: Int,
     val numElements: Int,
     val groupSizes: Seq[Int]
 ) extends Module
@@ -21,26 +22,53 @@ class AdderTree[T <: Data with Num[T]](
     groupSizes.length < 32 && groupSizes.length >= 1,
     "groupSizes must be less than 32 and greater than 0"
   )
+  require(
+    opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp,
+    "Currenty we only support UIntUIntOp or SIntSIntOp"
+  )
 
   val io = IO(new Bundle {
-    val in = Input(Vec(numElements, inputType))
-    val out = Output(Vec(numElements, outputType))
+    val in = Input(Vec(numElements, UInt(inputElemWidth.W)))
+    val out = Output(Vec(numElements, UInt(outputElemWidth.W)))
     val cfg = Input(UInt(log2Ceil(groupSizes.length + 1).W))
   })
 
   // adder tree initialization
   val maxGroupSize = groupSizes.max
   val treeDepth = log2Ceil(maxGroupSize)
-  val layers = Wire(Vec(treeDepth + 1, Vec(numElements, outputType)))
+  val layers = Wire(
+    Vec(treeDepth + 1, Vec(numElements, UInt(outputElemWidth.W)))
+  )
 
+  // Initialize the output type based on the operation type
+  // For SIntSIntOp, we need to use SInt for the output
+  // For UIntUIntOp, we can use UInt for the output
+  val outputType = if (opType == OpType.SIntSIntOp) {
+    SInt(outputElemWidth.W)
+  } else {
+    UInt(outputElemWidth.W)
+  }
+
+  // Initialize all layers to zero
   layers.map(_.map(_ := 0.U.asTypeOf(outputType)))
-  layers(0) := io.in.map(_.asTypeOf(outputType))
+  // Initialize the first layer with input values
+  layers(0) := VecInit(io.in.map(_.asTypeOf(outputType)))
 
   // Generate adder tree layers
   for (d <- 0 until treeDepth) {
     val step = 1
     for (i <- 0 until numElements by (2 * step)) {
-      layers(d + 1)(i / 2) := layers(d)(i) + layers(d)(i + step)
+      val adder = Module(
+        new Adder(
+          opType,
+          outputElemWidth,
+          outputElemWidth,
+          outputElemWidth
+        )
+      )
+      adder.io.in_a := layers(d)(i)
+      adder.io.in_b := layers(d)(i + step)
+      layers(d + 1)(i / 2) := adder.io.out_c
     }
   }
 
@@ -55,14 +83,14 @@ class AdderTree[T <: Data with Num[T]](
 
 object AdderTreeEmitterUInt extends App {
   emitVerilog(
-    new AdderTree(UInt(8.W), UInt(9.W), 8, Seq(1, 2, 4)),
+    new AdderTree(OpType.UIntUIntOp, 8, 9, 8, Seq(1, 2, 4)),
     Array("--target-dir", "generated/SpatialArray")
   )
 }
 
 object AdderTreeEmitterSInt extends App {
   emitVerilog(
-    new AdderTree(SInt(16.W), SInt(32.W), 1024, Seq(1, 2, 8)),
+    new AdderTree(OpType.SIntSIntOp, 16, 32, 1024, Seq(1, 2, 8)),
     Array("--target-dir", "generated/SpatialArray")
   )
 }
