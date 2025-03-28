@@ -2,13 +2,21 @@ package snax_acc.spatial_array
 
 import chisel3._
 
+object OpType {
+  def UIntUIntOp = 1
+  def SIntSIntOp = 2
+  def Float16IntOp = 3
+  def Float16Float16Op = 4
+}
+
 class SpatialArrayParam(
+    val opType: Int,
     val macNum: Int,
-    val inputAType: Data,
-    val inputBType: Data,
-    val inputCType: Data,
-    val mulType: Data,
-    val outType: Data,
+    val inputAElemWidth: Int,
+    val inputBElemWidth: Int,
+    val inputCElemWidth: Int,
+    val mulElemWidth: Int,
+    val outElemWidth: Int,
     val inputAWidth: Int,
     val inputBWidth: Int,
     val inputCWidth: Int,
@@ -19,12 +27,13 @@ class SpatialArrayParam(
 object SpatialArrayParam {
   // test config
   def apply(): SpatialArrayParam = apply(
+    opType = OpType.UIntUIntOp,
     macNum = 1024,
-    inputAType = UInt(8.W),
-    inputBType = UInt(8.W),
-    inputCType = UInt(8.W),
-    mulType = UInt(16.W),
-    outType = UInt(32.W),
+    inputAElemWidth = 8,
+    inputBElemWidth = 8,
+    inputCElemWidth = 8,
+    mulElemWidth = 16,
+    outElemWidth = 32,
     inputAWidth = 512,
     inputBWidth = 512,
     inputCWidth = 16384,
@@ -34,24 +43,26 @@ object SpatialArrayParam {
   )
 
   def apply(
+      opType: Int,
       macNum: Int,
-      inputAType: Data,
-      inputBType: Data,
-      inputCType: Data,
-      mulType: Data,
-      outType: Data,
+      inputAElemWidth: Int,
+      inputBElemWidth: Int,
+      inputCElemWidth: Int,
+      mulElemWidth: Int,
+      outElemWidth: Int,
       inputAWidth: Int,
       inputBWidth: Int,
       inputCWidth: Int,
       outputWidth: Int,
       arrayDim: Seq[Seq[Int]]
   ): SpatialArrayParam = new SpatialArrayParam(
+    opType = OpType.UIntUIntOp,
     macNum = macNum,
-    inputAType = inputAType,
-    inputBType = inputBType,
-    inputCType = inputCType,
-    mulType = mulType,
-    outType = outType,
+    inputAElemWidth = inputAElemWidth,
+    inputBElemWidth = inputBElemWidth,
+    inputCElemWidth = inputCElemWidth,
+    mulElemWidth = mulElemWidth,
+    outElemWidth = outElemWidth,
     inputAWidth = inputAWidth,
     inputBWidth = inputBWidth,
     inputCWidth = inputCWidth,
