@@ -9,7 +9,11 @@ class FPNewFMAUIntBlackBox(
     widthA: Int,
     widthB: Int,
     widthC: Int
-) extends BlackBox
+) extends BlackBox(
+      Map(
+        "WIDTH_B" -> widthB
+      )
+    )
     with HasBlackBoxResource {
 
   val io = IO(new Bundle {
@@ -37,6 +41,8 @@ class FPNewFMAUInt(
 ) extends Module
     with RequireAsyncReset {
 
+  override def desiredName: String = "FPNewFMAUInt_" + topmodule
+
   val io = IO(new Bundle {
     val operand_a_i = Input(UInt(widthA.W))
     val operand_b_i = Input(UInt(widthB.W))
@@ -55,12 +61,48 @@ class FPNewFMAUInt(
 
 }
 
-object FPNewFMAUIntEmitter extends App {
+object FPNewFMAUInt4Emitter extends App {
   emitVerilog(
     new FPNewFMAUInt(
       topmodule = "fpnew_fma_uint",
       widthA = 16,
       widthB = 4,
+      widthC = 32
+    ),
+    Array("--target-dir", "generated/SpatialArray")
+  )
+}
+
+object FPNewFMAUInt3Emitter extends App {
+  emitVerilog(
+    new FPNewFMAUInt(
+      topmodule = "fpnew_fma_uint",
+      widthA = 16,
+      widthB = 3,
+      widthC = 32
+    ),
+    Array("--target-dir", "generated/SpatialArray")
+  )
+}
+
+object FPNewFMAUInt2Emitter extends App {
+  emitVerilog(
+    new FPNewFMAUInt(
+      topmodule = "fpnew_fma_uint",
+      widthA = 16,
+      widthB = 2,
+      widthC = 32
+    ),
+    Array("--target-dir", "generated/SpatialArray")
+  )
+}
+
+object FPNewFMAUInt1Emitter extends App {
+  emitVerilog(
+    new FPNewFMAUInt(
+      topmodule = "fpnew_fma_uint",
+      widthA = 16,
+      widthB = 1,
       widthC = 32
     ),
     Array("--target-dir", "generated/SpatialArray")
