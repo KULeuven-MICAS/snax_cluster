@@ -561,7 +561,8 @@ def main():
                 raise ValueError(
                     "Missing gemmX configuration. \n"
                     "Please set snax_gemmx_mesh_row, snax_gemmx_mesh_col, "
-                    "snax_gemmx_tile_size, snax_gemmx_serial_c32_d32_width, snax_gemmx_serial_d8_width, with_pipeline"
+                    "snax_gemmx_tile_size, snax_gemmx_serial_c32_d32_width, "
+                    "snax_gemmx_serial_d8_width, with_pipeline"
                 )
             gen_chisel_file(
                 chisel_path=chisel_acc_path,
