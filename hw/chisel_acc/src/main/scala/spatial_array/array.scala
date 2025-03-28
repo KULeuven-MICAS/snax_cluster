@@ -30,9 +30,10 @@ class SpatialArray(params: SpatialArrayParam)
   val multipliers = Seq.fill(params.macNum)(
     Module(
       new Multiplier(
-        UInt(params.inputAType.getWidth.W),
-        UInt(params.inputBType.getWidth.W),
-        UInt(params.mulType.getWidth.W)
+        params.opType,
+        params.inputAElemWidth,
+        params.inputBElemWidth,
+        params.mulElemWidth
       )
     )
   )
@@ -43,13 +44,13 @@ class SpatialArray(params: SpatialArrayParam)
     // mac number should be enough to support the computation bound
     require(dim(0) * dim(1) * dim(2) <= params.macNum)
     // inputAWidth should be enough to support the bandwidth bound
-    require(params.inputAWidth >= dim(0) * dim(1) * params.inputAType.getWidth)
+    require(params.inputAWidth >= dim(0) * dim(1) * params.inputAElemWidth)
     // inputBWidth should be enough to support the bandwidth bound
-    require(params.inputBWidth >= dim(1) * dim(2) * params.inputBType.getWidth)
+    require(params.inputBWidth >= dim(1) * dim(2) * params.inputBElemWidth)
     // inputCWidth should be enough to support the bandwidth bound
-    require(params.inputCWidth >= dim(0) * dim(2) * params.inputCType.getWidth)
+    require(params.inputCWidth >= dim(0) * dim(2) * params.inputCElemWidth)
     // outputWidth should be enough to support the bandwidth bound
-    require(params.outputWidth >= dim(0) * dim(2) * params.outType.getWidth)
+    require(params.outputWidth >= dim(0) * dim(2) * params.outElemWidth)
 
     // adder tree should be power of 2
     require(isPow2(dim(1)))
@@ -88,7 +89,7 @@ class SpatialArray(params: SpatialArrayParam)
   val inputA = params.arrayDim.map(dim => {
     dataForward(
       params.macNum,
-      params.inputAType.getWidth,
+      params.inputAElemWidth,
       // Mu, Ku, Nu
       dim(0),
       dim(1),
@@ -103,7 +104,7 @@ class SpatialArray(params: SpatialArrayParam)
   val inputB = params.arrayDim.map(dim => {
     dataForward(
       params.macNum,
-      params.inputBType.getWidth,
+      params.inputBElemWidth,
       // Mu, Ku, Nu
       dim(0),
       dim(1),
@@ -118,7 +119,7 @@ class SpatialArray(params: SpatialArrayParam)
   val inputC = params.arrayDim.map(dim => {
     dataForward(
       params.macNum,
-      params.inputCType.getWidth,
+      params.inputCElemWidth,
       // Mu, Ku = 1, Nu, only two dimensions
       dim(0),
       1,
@@ -151,8 +152,9 @@ class SpatialArray(params: SpatialArrayParam)
   // adder tree
   val adderTree = Module(
     new AdderTree(
-      UInt(params.mulType.getWidth.W),
-      UInt(params.outType.getWidth.W),
+      params.opType,
+      params.mulElemWidth,
+      params.outElemWidth,
       params.macNum,
       params.arrayDim.map(dim => dim(1))
     )
@@ -179,12 +181,13 @@ object SpatialArrayEmitter extends App {
     Array("--target-dir", "generated/SpatialArray")
   )
   val params = SpatialArrayParam(
+    opType = OpType.UIntUIntOp,
     macNum = 8,
-    inputAType = UInt(8.W),
-    inputBType = UInt(8.W),
-    inputCType = UInt(32.W),
-    mulType = UInt(16.W),
-    outType = UInt(32.W),
+    inputAElemWidth = 8,
+    inputBElemWidth = 8,
+    inputCElemWidth = 8,
+    mulElemWidth = 16,
+    outElemWidth = 32,
     inputAWidth = 64,
     inputBWidth = 64,
     inputCWidth = 256,
@@ -195,7 +198,7 @@ object SpatialArrayEmitter extends App {
       Seq(4, 1, 2),
       Seq(4, 2, 1),
       Seq(1, 8, 1)
-    ) // 2x2x2 array dimensions
+    )
   )
   emitVerilog(
     new SpatialArray(params),
