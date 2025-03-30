@@ -24,8 +24,8 @@ class XDMACtrlIO(readerParam: XDMAParam, writerParam: XDMAParam)
   )
   // Local DMADatapath control signal (Which is connected to DMADataPath)
   val localXDMACfg = new Bundle {
-    val readerCfg = Output(new XDMACfgIO(readerParam))
-    val writerCfg = Output(new XDMACfgIO(writerParam))
+    val readerCfg = Output(new XDMAIntraClusterCfgIO(readerParam))
+    val writerCfg = Output(new XDMAIntraClusterCfgIO(writerParam))
 
     // Two start signal will inform the new cfg is available, trigger agu, and inform all extension that a stream is coming
     val readerStart = Output(Bool())
@@ -211,8 +211,8 @@ class XDMACtrl(
   val csrManager = Module(
     new CsrManager(
       csrNumReadWrite = numCSRPerPtr + // Reader Pointer needs numCSRPerPtr CSRs
-        readerparam.rwParam.aguParam.spatialBounds.length + // Spatiaial Strides for reader
-        readerparam.rwParam.aguParam.temporalDimension * 2 + // Temporal Strides + Bounds for reader
+        readerparam.crossClusterParam.maxSpatialDimension + // Spatial Strides for reader
+        readerparam.crossClusterParam.maxTemporalDimension * 2 + // Temporal Strides + Bounds for reader
         {
           if (readerparam.rwParam.configurableChannel) 1 else 0
         } + // Enabled Channel for reader
@@ -225,8 +225,8 @@ class XDMACtrl(
               .reduce(_ + _) + 1
         } + // The total num of param on reader extension (custom CSR + bypass CSR)
         numCSRPerPtr * writerparam.crossClusterParam.maxMulticastDest + // Writer Pointer needs numCSRPerPtr * maxMulticastDest CSRs
-        writerparam.rwParam.aguParam.spatialBounds.length + // Spatiaial Strides for writer
-        writerparam.rwParam.aguParam.temporalDimension * 2 + // Strides + Bounds for writer
+        writerparam.crossClusterParam.maxSpatialDimension + // Spatial Strides for writer
+        writerparam.crossClusterParam.maxTemporalDimension * 2 + // Temporal Strides + Bounds for writer
         {
           if (writerparam.rwParam.configurableChannel) 1 else 0
         } + // Enabled Channel for writer
@@ -345,7 +345,7 @@ class XDMACtrl(
 
   // Cfg from remote side
   val cfgFromRemote = Wire(
-    Decoupled(new XDMACrossClusterCfgIO(readerparam, writerparam))
+    Decoupled(new XDMAInterClusterCfgIO(readerparam, writerparam))
   )
   cfgFromRemote.bits.deserialize(io.remoteXDMACfg.fromRemote.bits)
   cfgFromRemote.valid := io.remoteXDMACfg.fromRemote.valid
@@ -366,7 +366,7 @@ class XDMACtrl(
 
   // Cfg to remote side
   val cfgToRemote = Wire(
-    Decoupled(new XDMACrossClusterCfgIO(readerparam, writerparam))
+    Decoupled(new XDMAInterClusterCfgIO(readerparam, writerparam))
   )
   io.remoteXDMACfg.toRemote.bits := cfgToRemote.bits.serialize
   io.remoteXDMACfg.toRemote.valid := cfgToRemote.valid
@@ -414,7 +414,7 @@ class XDMACtrl(
   // Connect Port 3 to remoteCfgMux to send to the remote side
   cfgToRemoteMux.io.in(1).bits := {
     // Structured signal => Converted to crossClusterCfg => Serialized to final signal
-    val srcRemoteCfg = Wire(new XDMACrossClusterCfgIO(readerparam, writerparam))
+    val srcRemoteCfg = Wire(new XDMAInterClusterCfgIO(readerparam, writerparam))
     srcRemoteCfg.convertFromXDMACfgIO(
       readerSide = true,
       cfg = postRoute_src_remote.bits
@@ -454,7 +454,7 @@ class XDMACtrl(
   // Connect Port 3 to remoteCfgMux to send to the remote side
   cfgToRemoteMux.io.in(0).bits := {
     // Structured signal => Converted to crossClusterCfg => Serialized to final signal
-    val dstRemoteCfg = Wire(new XDMACrossClusterCfgIO(readerparam, writerparam))
+    val dstRemoteCfg = Wire(new XDMAInterClusterCfgIO(readerparam, writerparam))
     dstRemoteCfg.convertFromXDMACfgIO(
       readerSide = false,
       cfg = postRoute_dst_remote.bits
@@ -570,9 +570,9 @@ class XDMACtrl(
   }
 
   // Data Signals in Src Path
-  io.localXDMACfg.readerCfg := currentCfgSrc.bits
+  io.localXDMACfg.readerCfg.convertFromXDMACfgIO(currentCfgSrc.bits)
   // Data Signals in Dst Path
-  io.localXDMACfg.writerCfg := currentCfgDst.bits
+  io.localXDMACfg.writerCfg.convertFromXDMACfgIO(currentCfgDst.bits)
 
   // Counter for finished task
   val localFinishedTaskIDCounter = Module(new BasicCounter(8, hasCeil = false) {
