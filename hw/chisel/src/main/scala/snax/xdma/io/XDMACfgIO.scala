@@ -20,7 +20,7 @@ import snax.readerWriter.{
 // The truncated version of address is assigned to aguCfg for the generation of local address which will be consumed by TCDM
 // Loopback signal is also included in this class, for the purpose of early judgement
 // Also the extension cfg is included in this class
-class XDMACfgIO(param: XDMAParam) extends Bundle {
+class XDMACfgIO(val param: XDMAParam) extends Bundle {
   val taskID = UInt(8.W)
 
   // Definition origination = 0 means the data is from local, origination = 1 means the data is from remote
@@ -132,7 +132,7 @@ class XDMAIntraClusterCfgIO(param: XDMAParam) extends Bundle {
   def convertFromXDMACfgIO(cfg: XDMACfgIO): Unit = {
     taskID := cfg.taskID
     origination := cfg.origination
-    readerPtr := cfg.origination
+    readerPtr := cfg.readerPtr
     writerPtr := cfg.writerPtr
     aguCfg.addressRemapIndex := cfg.aguCfg.addressRemapIndex
     aguCfg.ptr := cfg.aguCfg.ptr
@@ -144,17 +144,11 @@ class XDMAIntraClusterCfgIO(param: XDMAParam) extends Bundle {
     aguCfg.temporalStrides := cfg.aguCfg.temporalStrides.take(
       aguCfg.temporalStrides.length
     )
-    cfg.aguCfg.temporalStrides.drop(aguCfg.temporalStrides.length).foreach {
-      i => assert(i === 0.U)
-    }
 
     // The unused fields in the temporalBounds should always be 1
     aguCfg.temporalBounds := cfg.aguCfg.temporalBounds.take(
       aguCfg.temporalBounds.length
     )
-    cfg.aguCfg.temporalBounds.drop(aguCfg.temporalBounds.length).foreach { i =>
-      assert(i === 1.U)
-    }
 
     readerwriterCfg := cfg.readerwriterCfg
     localLoopback := cfg.localLoopback

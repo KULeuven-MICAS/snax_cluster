@@ -90,11 +90,13 @@ class SrcConfigRouter(
   when(
     outputCfgDemux.io.in.bits.readerPtr(
       outputCfgDemux.io.in.bits.readerPtr.getWidth - 1,
-      outputCfgDemux.io.in.bits.aguCfg.ptr.getWidth
+      log2Ceil(outputCfgDemux.io.in.bits.param.rwParam.tcdmParam.tcdmSize) + 10
     ) === io
       .clusterBaseAddress(
         outputCfgDemux.io.in.bits.readerPtr.getWidth - 1,
-        outputCfgDemux.io.in.bits.aguCfg.ptr.getWidth
+        log2Ceil(
+          outputCfgDemux.io.in.bits.param.rwParam.tcdmParam.tcdmSize
+        ) + 10
       )
   ) {
     cValue := cTypeLocal // When cfg has the Ptr that fall within local TCDM, the data should be forwarded to the local ctrl path
@@ -149,11 +151,11 @@ class DstConfigRouter(
       .writerPtr(0)
       .apply(
         bufferedCfg.bits.writerPtr(0).getWidth - 1,
-        bufferedCfg.bits.aguCfg.ptr.getWidth
+        log2Ceil(bufferedCfg.bits.param.rwParam.tcdmParam.tcdmSize) + 10
       ) === io
       .clusterBaseAddress(
         bufferedCfg.bits.writerPtr(0).getWidth - 1,
-        bufferedCfg.bits.aguCfg.ptr.getWidth
+        log2Ceil(bufferedCfg.bits.param.rwParam.tcdmParam.tcdmSize) + 10
       )
   }
   val isChainedWrite = if (bufferedCfg.bits.writerPtr.length > 1) {
@@ -286,12 +288,12 @@ class XDMACtrl(
   val localLoopback =
     preRoute_dst_local.bits.readerPtr(
       preRoute_dst_local.bits.readerPtr.getWidth - 1,
-      preRoute_dst_local.bits.aguCfg.ptr.getWidth
+      log2Ceil(preRoute_dst_local.bits.param.rwParam.tcdmParam.tcdmSize) + 10
     ) === preRoute_dst_local.bits
       .writerPtr(0)
       .apply(
         preRoute_dst_local.bits.writerPtr(0).getWidth - 1,
-        preRoute_dst_local.bits.aguCfg.ptr.getWidth
+        log2Ceil(preRoute_dst_local.bits.param.rwParam.tcdmParam.tcdmSize) + 10
       )
   preRoute_src_local.bits.localLoopback := localLoopback
   preRoute_dst_local.bits.localLoopback := localLoopback

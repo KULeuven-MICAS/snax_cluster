@@ -215,7 +215,7 @@ object XDMATopGen extends App {
     temporalDimension =
       (parsedXdmaCfg \ "reader_agu_temporal_dimension").as[Int],
     tcdmDataWidth = parsedArgs("tcdmDataWidth").toInt,
-    tcdmSize = (parsedXdmaCfg \ "max_mem_size").as[Int],
+    tcdmSize = parsedArgs("tcdmSize").toInt,
     numChannel =
       parsedArgs("axiDataWidth").toInt / parsedArgs("tcdmDataWidth").toInt,
     addressBufferDepth = (parsedXdmaCfg \ "reader_buffer").as[Int],

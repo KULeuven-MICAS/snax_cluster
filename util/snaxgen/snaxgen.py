@@ -628,6 +628,8 @@ def main():
             + str(cfg["cluster"]["dma_data_width"])
             + " --axiAddrWidth "
             + str(cfg["cluster"]["addr_width"])
+            + " --tcdmSize "
+            + str(cfg["cluster"]["tcdm"]["size"])
             + " --xdmaCfg "
             + hjson.dumpsJSON(obj=snax_xdma_cfg, separators=(",", ":")).replace(" ", "")
             + " --hw-target-dir "
