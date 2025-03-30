@@ -501,12 +501,12 @@ def emit_conv_data(**kwargs):
     D8tlbound3 = out_height
     D8tlstride3 = out_width * meshCol * (quantized_output_data_width // 8)
 
-    # assert (
-    #     D8tlstride0 % (bankWidth / 8) == 0
-    #     and D8tlstride1 % (bankWidth / 8) == 0
-    #     and D8tlstride2 % (bankWidth / 8) == 0
-    #     and D8tlstride3 % (bankWidth / 8) == 0
-    # )
+    assert (
+        D8tlstride0 % (bankWidth / 8) == 0
+        and D8tlstride1 % (bankWidth / 8) == 0
+        and D8tlstride2 % (bankWidth / 8) == 0
+        and D8tlstride3 % (bankWidth / 8) == 0
+    )
 
     data_str += [
         format_scalar_definition("int32_t", "D8slstride0", D8slstride0),

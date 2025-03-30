@@ -242,7 +242,7 @@ def tiled_block_gemm_golden_model(
                     * m
                     * k
                     * row
-                    * size : (mm2 * k2 + kk2 + 1)
+                    * size: (mm2 * k2 + kk2 + 1)
                     * m
                     * k
                     * row
@@ -253,7 +253,7 @@ def tiled_block_gemm_golden_model(
                     * n
                     * k
                     * size
-                    * col : (nn2 * k2 + kk2 + 1)
+                    * col: (nn2 * k2 + kk2 + 1)
                     * n
                     * k
                     * size
@@ -264,7 +264,7 @@ def tiled_block_gemm_golden_model(
                     * m
                     * row
                     * n
-                    * col : (mm2 * n2 + nn2 + 1)
+                    * col: (mm2 * n2 + nn2 + 1)
                     * m
                     * row
                     * n
@@ -291,7 +291,7 @@ def tiled_block_gemm_golden_model(
                     * m
                     * row
                     * n
-                    * col : (mm2 * n2 + nn2 + 1)
+                    * col: (mm2 * n2 + nn2 + 1)
                     * m
                     * row
                     * n
