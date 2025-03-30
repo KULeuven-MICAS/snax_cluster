@@ -65,3 +65,12 @@ class NestCounter(width: Int, loopNum: Int)
   io.value := counter.map(_.io.value)
   io.lastVal := counter.map(_.io.lastVal)
 }
+
+object NestCounterEmitter extends App {
+  val width = 4
+  val loopNum = 3
+  emitVerilog(
+    new NestCounter(width, loopNum),
+    Array("--target-dir", "generated/SpatialArray")
+  )
+}

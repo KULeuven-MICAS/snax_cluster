@@ -21,7 +21,8 @@ class SpatialArrayParam(
     val inputBWidth: Int,
     val inputCWidth: Int,
     val outputWidth: Int,
-    val arrayDim: Seq[Seq[Int]]
+    val arrayDim: Seq[Seq[Int]],
+    val ConfigWidth: Int = 32
 )
 
 object SpatialArrayParam {

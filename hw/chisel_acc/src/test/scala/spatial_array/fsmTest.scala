@@ -8,50 +8,76 @@ import scala.util.Random
 
 class NestCounterTest extends AnyFlatSpec with ChiselScalatestTester {
 
-  "NestCounter" should "correctly compute counter values with random test data" in {
-    val width = 4  // Set the width of the counter
-    val loopNum = 3  // Set the number of loops (counters)
-
+  def testNestCounter(width: Int, loopNum: Int, ceilValues: Array[Int]): Unit = {
     test(new NestCounter(width, loopNum)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
-      val rand = new Random()
-
-      // Generate random values for 'ceil' for each counter
-      val ceilValues = Array.fill(loopNum)(rand.nextInt(8) + 1)  // Random ceil between 1 and 8 for each counter
-
       // Print generated ceil values
-      println(s"Randomly generated ceil values: ${ceilValues.mkString(", ")}")
+      println(s"Testing with loopNum=$loopNum, ceilValues: ${ceilValues.mkString(", ")}")
 
-      // Poke the random ceil values to the NestCounter inputs
+      // Poke the ceil values to the NestCounter inputs
       for (i <- 0 until loopNum) {
         c.io.ceil(i).poke(ceilValues(i).U)
       }
 
       // Apply reset signal
       c.io.reset.poke(true.B)
-      step(1)  // Step to allow reset to take effect
+      c.clock.step(1)  // Step to allow reset to take effect
       c.io.reset.poke(false.B)
 
+      // Track expected counter values
+      val expectedValues = Array.fill(loopNum)(0)
+
       // Apply tick signal and test counter incrementing
-      for (tickCount <- 1 to 10) {
+      for (tickCount <- 1 to ceilValues.reduce(_*_)) {  // Run enough cycles to test nested behavior
         c.io.tick.poke(true.B)
-        step(1)  // Step to simulate one cycle of the clock
+        c.clock.step(1)  // Step to simulate one cycle of the clock
+
+        // Update expected values
+        var carry = true
+        for (i <- 0 until loopNum if carry) {
+          if (expectedValues(i) == ceilValues(i) - 1) {
+            expectedValues(i) = 0  // Reset and propagate carry
+          } else {
+            expectedValues(i) += 1
+            carry = false  // Stop propagation if no carry
+          }
+        }
 
         // Check values after each tick
         for (i <- 0 until loopNum) {
-          val expected = (tickCount % ceilValues(i))
-          val actual = c.io.value(i).peek().litValue
-          println(s"Counter[$i] after tick $tickCount: got $actual (Expected: $expected)")
-          // assert(actual == expected, s"Mismatch at counter $i: got $actual, expected $expected")
+          val actual = c.io.value(i).peek().litValue.toInt
+          println(s"Counter[$i] after tick $tickCount: got $actual (Expected: ${expectedValues(i)})")
+          assert(actual == expectedValues(i), s"Mismatch at counter $i: got $actual, expected ${expectedValues(i)}")
         }
       }
 
-      // Test lastVal logic for each counter
-      for (i <- 0 until loopNum) {
-        val expectedLastVal = (ceilValues(i) - 1) == c.io.value(i).peek().litValue
-        val actualLastVal = c.io.lastVal(i).peek().litValue
-        println(s"lastVal[$i]: got $actualLastVal (Expected: $expectedLastVal)")
-        // assert(actualLastVal == expectedLastVal, s"Mismatch at lastVal for counter $i: got $actualLastVal, expected $expectedLastVal")
-      }
     }
+  }
+
+  "NestCounter" should "correctly compute counter values with hierarchical dependencies" in {
+    val width = 4  // Set the width of the counter
+    var loopNum = 3  // Set the number of loops (counters)
+    val rand = new Random()
+    var ceilValues = Array.fill(loopNum)(rand.nextInt(8) + 1)  // Random ceil between 1 and 8 for each counter
+
+    testNestCounter(width, loopNum, ceilValues)
+
+    // Test with a different set of ceil values
+    ceilValues = Array.fill(loopNum)(rand.nextInt(1) + 1)  // Random ceil between 1 and 8 for each counter
+    testNestCounter(width, loopNum, ceilValues)
+
+    // Test with a different set of ceil values
+    ceilValues = Array(1, 2, 3)  // Random ceil between 1 and 8 for each counter
+    testNestCounter(width, loopNum, ceilValues)
+    // Test with a different set of ceil values
+    ceilValues = Array(2, 1, 4)  // Random ceil between 1 and 8 for each counter
+    testNestCounter(width, loopNum, ceilValues)
+    // Test with a different set of ceil values
+    ceilValues = Array(3, 2, 1)  // Random ceil between 1 and 8 for each counter
+    testNestCounter(width, loopNum, ceilValues)
+
+    // test with different loopNum
+    loopNum = 5
+    ceilValues = Array.fill(loopNum)(rand.nextInt(4) + 1)  // Random ceil between 1 and 8 for each counter
+    testNestCounter(width, loopNum, ceilValues)
   }
 }
