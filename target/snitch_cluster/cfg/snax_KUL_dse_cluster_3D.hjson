@@ -82,7 +82,6 @@
                 },
                 cores: [
                     { $ref: "#/snax_streamer_gemmX_core_template" },
-                    { $ref: "#/snax_data_reshuffler_core_template" },
                     { $ref: "#/dma_core_template" },
                 ]
             }
@@ -174,7 +173,7 @@
         isa: "rv32ima",
         // Xdiv_sqrt: true,
         # isa: "rv32ema",
-        xdma: true
+        xdma: false
         xssr: false
         xfrep: false
         xf16: false,
