@@ -7,7 +7,7 @@ class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
   val in_a = Flipped(DecoupledIO(UInt(params.inputAWidth.W)))
   val in_b = Flipped(DecoupledIO(UInt(params.inputBWidth.W)))
   val in_c = Flipped(DecoupledIO(UInt(params.inputCWidth.W)))
-  val out_d = DecoupledIO(UInt(params.outputWidth.W))
+  val out_d = DecoupledIO(UInt(params.outputDWidth.W))
 }
 
 class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
@@ -49,8 +49,8 @@ class SpatialArray(params: SpatialArrayParam)
     require(params.inputBWidth >= dim(1) * dim(2) * params.inputBElemWidth)
     // inputCWidth should be enough to support the bandwidth bound
     require(params.inputCWidth >= dim(0) * dim(2) * params.inputCElemWidth)
-    // outputWidth should be enough to support the bandwidth bound
-    require(params.outputWidth >= dim(0) * dim(2) * params.outElemWidth)
+    // outputDWidth should be enough to support the bandwidth bound
+    require(params.outputDWidth >= dim(0) * dim(2) * params.outElemWidth)
 
     // adder tree should be power of 2
     require(isPow2(dim(1)))
@@ -182,23 +182,18 @@ object SpatialArrayEmitter extends App {
   )
   val params = SpatialArrayParam(
     opType = OpType.UIntUIntOp,
-    macNum = 8,
+    macNum = 1024,
     inputAElemWidth = 8,
     inputBElemWidth = 8,
     inputCElemWidth = 8,
     mulElemWidth = 16,
     outElemWidth = 32,
-    inputAWidth = 64,
-    inputBWidth = 64,
-    inputCWidth = 256,
-    outputWidth = 256,
-    arrayDim = Seq(
-      Seq(2, 2, 2),
-      Seq(2, 1, 4),
-      Seq(4, 1, 2),
-      Seq(4, 2, 1),
-      Seq(1, 8, 1)
-    )
+    inputAWidth = 1024,
+    inputBWidth = 8192,
+    inputCWidth = 4096,
+    outputDWidth = 4096,
+    // Mu, Ku, Nu
+    arrayDim = Seq(Seq(16, 8, 8), Seq(1, 32, 32))
   )
   emitVerilog(
     new SpatialArray(params),
