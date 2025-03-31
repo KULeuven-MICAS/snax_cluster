@@ -1,6 +1,7 @@
 /logs/
 /generated/
 /bin/
+/cfg/default.hjson
 /cfg/lru.hjson
 /sw/snax/snax-alu/include/streamer_csr_addr_map.h
 /work/
@@ -10,3 +11,5 @@
 /*.log
 /runs/
 /test/testharness.sv
+
+**/data.h
