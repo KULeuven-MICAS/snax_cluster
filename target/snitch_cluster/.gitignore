@@ -3,7 +3,7 @@
 /bin/
 /cfg/default.hjson
 /cfg/lru.hjson
-/sw/snax/snax-alu/include/streamer_csr_addr_map.h
+/sw/**/include/*csr_addr_map.h
 /work/
 /work-vsim/
 /work-vlt/
