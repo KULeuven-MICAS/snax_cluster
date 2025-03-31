@@ -18,10 +18,10 @@ endif
 SUBDIRS += math $(RUNTIME) snax/mac apps tests
 
 ifeq (${CFG_OVERRIDE}, cfg/snax_KUL_dse_cluster_3D.hjson)
-SUBDIRS += snax/gemmx snax/data-reshuffler
+SUBDIRS += snax/gemmx
 endif
 ifeq (${CFG_OVERRIDE}, cfg/snax_KUL_dse_cluster_2D.hjson)
-SUBDIRS += snax/gemmx snax/data-reshuffler
+SUBDIRS += snax/gemmx
 endif
 ifeq (${CFG_OVERRIDE}, cfg/snax_KUL_dse_cluster_1D.hjson)
 SUBDIRS += snax/gemmx snax/data-reshuffler
