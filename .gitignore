@@ -2,11 +2,12 @@
 Bender.lock
 .vscode/
 .metals
+.bloop
+.bsp
 .scala-build
 __pycache__
 env
 logs
-.bsp
 
 #  File List Synthesis Files
 *_flist.tcl
