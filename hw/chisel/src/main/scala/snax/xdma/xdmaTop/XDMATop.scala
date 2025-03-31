@@ -346,15 +346,15 @@ return new ${i._1}(${i._2
 
 // The channel and strobe region of the reader of XDMA
 #define XDMA_SRC_ENABLED_CHAN_PTR XDMA_SRC_TEMP_STRIDE_PTR + XDMA_SRC_TEMP_DIM
-#define XDMA_SRC_BYPASS_PTR XDMA_SRC_ENABLED_CHAN_PTR + ${if (
-        readerParam.configurableChannel
-      ) 1
-      else 0}
+#define XDMA_SRC_BYPASS_PTR XDMA_SRC_ENABLED_CHAN_PTR + ${
+        if (readerParam.configurableChannel) 1
+        else 0
+      }
 #define XDMA_SRC_EXT_NUM ${readerExtensionParam.length}
-#define XDMA_SRC_EXT_CSR_PTR XDMA_SRC_BYPASS_PTR + ${if (
-        readerExtensionParam.length > 0
-      ) 1
-      else 0}
+#define XDMA_SRC_EXT_CSR_PTR XDMA_SRC_BYPASS_PTR + ${
+        if (readerExtensionParam.length > 0) 1
+        else 0
+      }
 #define XDMA_SRC_EXT_CSR_NUM ${readerExtensionParam
         .map(_.extensionParam.userCsrNum)
         .sum}
@@ -368,19 +368,19 @@ return new ${i._1}(${i._2
 #define XDMA_DST_TEMP_STRIDE_PTR XDMA_DST_TEMP_BOUND_PTR + XDMA_DST_TEMP_DIM
 
 #define XDMA_DST_ENABLED_CHAN_PTR XDMA_DST_TEMP_STRIDE_PTR + XDMA_DST_TEMP_DIM
-#define XDMA_DST_ENABLED_BYTE_PTR XDMA_DST_ENABLED_CHAN_PTR + ${if (
-        writerParam.configurableChannel
-      ) 1
-      else 0}
-#define XDMA_DST_BYPASS_PTR XDMA_DST_ENABLED_BYTE_PTR + ${if (
-        writerParam.configurableByteMask
-      ) 1
-      else 0}
+#define XDMA_DST_ENABLED_BYTE_PTR XDMA_DST_ENABLED_CHAN_PTR + ${
+        if (writerParam.configurableChannel) 1
+        else 0
+      }
+#define XDMA_DST_BYPASS_PTR XDMA_DST_ENABLED_BYTE_PTR + ${
+        if (writerParam.configurableByteMask) 1
+        else 0
+      }
 #define XDMA_DST_EXT_NUM ${writerExtensionParam.length}
-#define XDMA_DST_EXT_CSR_PTR XDMA_DST_BYPASS_PTR + ${if (
-        writerExtensionParam.length > 0
-      ) 1
-      else 0}
+#define XDMA_DST_EXT_CSR_PTR XDMA_DST_BYPASS_PTR + ${
+        if (writerExtensionParam.length > 0) 1
+        else 0
+      }
 #define XDMA_DST_EXT_CSR_NUM ${writerExtensionParam
         .map(_.extensionParam.userCsrNum)
         .sum}
