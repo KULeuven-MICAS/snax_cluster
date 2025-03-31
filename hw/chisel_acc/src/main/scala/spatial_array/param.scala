@@ -20,7 +20,7 @@ class SpatialArrayParam(
     val inputAWidth: Int,
     val inputBWidth: Int,
     val inputCWidth: Int,
-    val outputWidth: Int,
+    val outputDWidth: Int,
     val arrayDim: Seq[Seq[Int]],
     val ConfigWidth: Int = 32
 )
@@ -38,7 +38,7 @@ object SpatialArrayParam {
     inputAWidth = 512,
     inputBWidth = 512,
     inputCWidth = 16384,
-    outputWidth = 16384,
+    outputDWidth = 16384,
     // Seq(Mu, Ku, Nu)
     arrayDim = Seq(Seq(8, 8, 8), Seq(32, 1, 16), Seq(32, 2, 16))
   )
@@ -54,7 +54,7 @@ object SpatialArrayParam {
       inputAWidth: Int,
       inputBWidth: Int,
       inputCWidth: Int,
-      outputWidth: Int,
+      outputDWidth: Int,
       arrayDim: Seq[Seq[Int]]
   ): SpatialArrayParam = new SpatialArrayParam(
     opType = OpType.UIntUIntOp,
@@ -67,7 +67,7 @@ object SpatialArrayParam {
     inputAWidth = inputAWidth,
     inputBWidth = inputBWidth,
     inputCWidth = inputCWidth,
-    outputWidth = outputWidth,
+    outputDWidth = outputDWidth,
     arrayDim = arrayDim
   )
 }
