@@ -45,7 +45,7 @@ class NestCounterTest extends AnyFlatSpec with ChiselScalatestTester {
         // Check values after each tick
         for (i <- 0 until loopNum) {
           val actual = c.io.value(i).peek().litValue.toInt
-          println(s"Counter[$i] after tick $tickCount: got $actual (Expected: ${expectedValues(i)})")
+          // println(s"Counter[$i] after tick $tickCount: got $actual (Expected: ${expectedValues(i)})")
           assert(actual == expectedValues(i), s"Mismatch at counter $i: got $actual, expected ${expectedValues(i)}")
         }
       }
