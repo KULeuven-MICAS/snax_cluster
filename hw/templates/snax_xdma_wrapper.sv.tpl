@@ -17,7 +17,7 @@ module ${cfg["name"]}_xdma_wrapper
 import xdma_pkg::*;
 #(
   // Address width
-  parameter int unsigned PhysicalAddrWidth = cfg["addr_width"],
+  parameter int unsigned PhysicalAddrWidth = ${cfg["addr_width"]},
   // TCDM typedefs
   parameter type         tcdm_req_t        = logic,
   parameter type         tcdm_rsp_t        = logic,
