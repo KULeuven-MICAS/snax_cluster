@@ -554,7 +554,6 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     .NrHives (${cfg['nr_hives']}),
     .NrCores (${cfg['nr_cores']}),
     .TCDMDepth (${cfg['pkg_name']}::TCDMDepth),
-    .ZeroMemorySize (${cfg['zero_mem_size']}),
     .ClusterPeriphSize (${cfg['cluster_periph_size']}),
     .ClusterAddrSpace (${cfg['cluster_base_offset']/1024}),
     .NrBanks (${cfg['pkg_name']}::NrBanks),
@@ -937,6 +936,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
   ${cfg['name']}_xdma_wrapper # (
     .tcdm_req_t       ( ${cfg['pkg_name']}::tcdm_req_t     ),
     .tcdm_rsp_t       ( ${cfg['pkg_name']}::tcdm_rsp_t     ),
+    .wide_slv_id_t    ( ${cfg['pkg_name']}::wide_out_id_t  ),
     .wide_out_req_t   ( ${cfg['pkg_name']}::wide_out_req_t ),
     .wide_out_resp_t  ( ${cfg['pkg_name']}::wide_out_resp_t),
     .wide_in_req_t    ( ${cfg['pkg_name']}::wide_in_req_t  ),

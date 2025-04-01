@@ -22,6 +22,7 @@ import xdma_pkg::*;
   parameter type         tcdm_req_t        = logic,
   parameter type         tcdm_rsp_t        = logic,
   // AXI type
+  parameter type         wide_slv_id_t     = logic,
   parameter type         wide_out_req_t    = logic,
   parameter type         wide_out_resp_t   = logic,
   parameter type         wide_in_req_t     = logic,
@@ -173,7 +174,7 @@ import xdma_pkg::*;
     dst_addr:          xdma_to_remote_data_accompany_cfg_dst_addr,
     dma_length:        xdma_to_remote_data_accompany_cfg_dma_length,
     ready_to_transfer: xdma_to_remote_data_accompany_cfg_ready_to_transfer
-  }
+  };
   assign xdma_from_remote_data_accompany_cfg = xdma_pkg::xdma_accompany_cfg_t'{
     dma_id:            xdma_from_remote_data_accompany_cfg_dma_id,
     dma_type:          xdma_from_remote_data_accompany_cfg_dma_type,
@@ -181,7 +182,7 @@ import xdma_pkg::*;
     dst_addr:          xdma_from_remote_data_accompany_cfg_dst_addr,
     dma_length:        xdma_from_remote_data_accompany_cfg_dma_length,
     ready_to_transfer: xdma_from_remote_data_accompany_cfg_ready_to_transfer
-  }
+  };
 
   // Streamer module that is generated
   // with template mechanics
@@ -294,27 +295,27 @@ import xdma_pkg::*;
 
 
     xdma_axi_adapter_top #(
-        .axi_id_t       (id_dma_slv_t),
-        .axi_out_req_t  (axi_mst_dma_req_t ),
-        .axi_out_resp_t (axi_mst_dma_resp_t),
-        .axi_in_req_t   (axi_slv_dma_req_t ),
-        .axi_in_resp_t  (axi_slv_dma_resp_t),
-        .reqrsp_req_t   (xdma_pkg::reqrsp_req_t),
-        .reqrsp_rsp_t   (xdma_pkg::reqrsp_rsp_t),
-        .data_t         (xdma_pkg::data_t),
-        .strb_t         (xdma_pkg::strb_t),
-        .addr_t         (xdma_pkg::addr_t),
-        .len_t          (xdma_pkg::len_t),
-        .xdma_to_remote_cfg_t (xdma_pkg::xdma_inter_cluster_cfg_t),
-        .xdma_to_remote_data_t(xdma_pkg::xdma_to_remote_data_t),
-        .xdma_to_remote_data_accompany_cfg_t(xdma_pkg::xdma_accompany_cfg_t),
-        .xdma_req_desc_t(xdma_pkg::xdma_req_desc_t),
-        .xdma_req_meta_t(xdma_pkg::xdma_req_meta_t),
-        .xdma_to_remote_grant_t(xdma_pkg::xdma_to_remote_grant_t),
-        .xdma_from_remote_grant_t(xdma_pkg::xdma_from_remote_grant_t),
-        .xdma_from_remote_cfg_t(xdma_pkg::xdma_inter_cluster_cfg_t),
-        .xdma_from_remote_data_t(xdma_pkg::xdma_from_remote_data_t),
-        .xdma_from_remote_data_accompany_cfg_t(xdma_pkg::xdma_accompany_cfg_t)
+        .axi_id_t                             (wide_slv_id_t                     ),
+        .axi_out_req_t                        (wide_out_req_t                    ),
+        .axi_out_resp_t                       (wide_out_resp_t                   ),
+        .axi_in_req_t                         (wide_in_req_t                     ),
+        .axi_in_resp_t                        (wide_in_resp_t                    ),
+        .reqrsp_req_t                         (xdma_pkg::reqrsp_req_t            ),
+        .reqrsp_rsp_t                         (xdma_pkg::reqrsp_rsp_t            ),
+        .data_t                               (xdma_pkg::data_t                  ),
+        .strb_t                               (xdma_pkg::strb_t                  ),
+        .addr_t                               (xdma_pkg::addr_t                  ),
+        .len_t                                (xdma_pkg::len_t                   ),
+        .xdma_to_remote_cfg_t                 (xdma_pkg::xdma_inter_cluster_cfg_t),
+        .xdma_to_remote_data_t                (xdma_pkg::xdma_to_remote_data_t   ),
+        .xdma_to_remote_data_accompany_cfg_t  (xdma_pkg::xdma_accompany_cfg_t    ),
+        .xdma_req_desc_t                      (xdma_pkg::xdma_req_desc_t         ),
+        .xdma_req_meta_t                      (xdma_pkg::xdma_req_meta_t         ),
+        .xdma_to_remote_grant_t               (xdma_pkg::xdma_to_remote_grant_t  ),
+        .xdma_from_remote_grant_t             (xdma_pkg::xdma_from_remote_grant_t),
+        .xdma_from_remote_cfg_t               (xdma_pkg::xdma_inter_cluster_cfg_t),
+        .xdma_from_remote_data_t              (xdma_pkg::xdma_from_remote_data_t ),
+        .xdma_from_remote_data_accompany_cfg_t(xdma_pkg::xdma_accompany_cfg_t    )
     ) i_xdma_axi_adapter (
         .clk_i                           (clk),
         .rst_ni                          (rst_n),
