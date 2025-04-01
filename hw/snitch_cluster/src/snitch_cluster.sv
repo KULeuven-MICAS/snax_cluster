@@ -44,10 +44,12 @@ module snitch_cluster
   parameter int unsigned NrCores            = 8,
   /// Data/TCDM memory depth per cut (in words).
   parameter int unsigned TCDMDepth          = 1024,
-  /// Zero memory address region size (in kB).
-  parameter int unsigned ZeroMemorySize     = 64,
   /// Cluster peripheral address region size (in kB).
   parameter int unsigned ClusterPeriphSize  = 64,
+  /// Cluster MMIO address region size (in kB).
+  parameter int unsigned ClusterMMIOSize    = 12,
+  /// Cluster Addr Space (in KB)
+  parameter int unsigned ClusterAddrSpace   = 1024,
   /// Number of TCDM Banks. It is recommended to have twice the number of banks
   /// as cores. If SSRs are enabled, we recommend 4 times the the number of
   /// banks.
@@ -285,6 +287,12 @@ module snitch_cluster
   /// AXI Core cluster out-port.
   output narrow_out_req_t               narrow_out_req_o,
   input  narrow_out_resp_t              narrow_out_resp_i,
+  /// XDMA Out ports
+  output wide_out_req_t                 xdma_wide_out_req_o,
+  input  wide_out_resp_t                xdma_wide_out_resp_i,
+  /// XDMA In ports
+  input  wide_in_req_t                  xdma_wide_in_req_i,
+  output wide_in_resp_t                 xdma_wide_in_resp_o,
   /// AXI DMA cluster out-port. Usually wider than the cluster ports so that the
   /// DMA engine can efficiently transfer bulk of data.
   output wide_out_req_t                 wide_out_req_o,
@@ -331,7 +339,7 @@ module snitch_cluster
   localparam int unsigned NrRules = NrSlaves - 1;
 
   // DMA, SoC Request, `n` instruction caches.
-  localparam int unsigned NrWideMasters = 2 + NrHives;
+  localparam int unsigned NrWideMasters = 3 + NrHives;
   localparam int unsigned WideIdWidthOut = $clog2(NrWideMasters) + WideIdWidthIn;
   // DMA X-BAR configuration
   localparam int unsigned NrWideSlaves = 3;
@@ -499,9 +507,10 @@ module snitch_cluster
   assign cluster_periph_start_address = tcdm_end_address;
   assign cluster_periph_end_address   = tcdm_end_address + ClusterPeriphSize * 1024;
 
-  addr_t zero_mem_start_address, zero_mem_end_address;
-  assign zero_mem_start_address = cluster_periph_end_address;
-  assign zero_mem_end_address   = cluster_periph_end_address + ZeroMemorySize * 1024;
+  // The MMIO is at the end of each cluster
+  addr_t xdma_mmio_start_address, xdma_mmio_end_address;
+  assign xdma_mmio_start_address = cluster_base_addr_i + ClusterAddrSpace * 1024 - ClusterMMIOSize * 1024
+  assign xdma_mmio_end_address = cluster_base_addr_i + ClusterAddrSpace * 1024 ;
 
   // ----------------
   // Wire Definitions
@@ -604,7 +613,16 @@ module snitch_cluster
     .mst_req_o (wide_axi_mst_req[SoCDMAIn]),
     .mst_resp_i (wide_axi_mst_rsp[SoCDMAIn])
   );
-
+  // -------------
+  // XDMA Ports
+  // -------------
+  assign xdma_wide_out_req_o = wide_axi_slv_req[XDMAOut];
+  assign xdma_wide_out_resp_i = wide_axi_slv_rsp[XDMAOut];
+  assign xdma_wide_in_req_i = wide_axi_mst_req[XDMAIn];
+  assign xdma_wide_in_resp_o = wide_axi_mst_rsp[XDMAIn];
+  // -------------
+  // DMA XBAR Rule
+  // -------------
   logic [DmaXbarCfg.NoSlvPorts-1:0][$clog2(DmaXbarCfg.NoMstPorts)-1:0] dma_xbar_default_port;
   xbar_rule_t [DmaXbarCfg.NoAddrRules-1:0] dma_xbar_rule;
 
@@ -616,10 +634,10 @@ module snitch_cluster
       end_addr:   tcdm_end_address
     },
     '{
-      idx:        ZeroMemory,
-      start_addr: zero_mem_start_address,
-      end_addr:   zero_mem_end_address
-    }
+      idx:        XDMAOut,
+      start_addr: xdma_mmio_start_address,
+      end_addr:   xdma_mmio_end_address
+    },    
   };
   localparam bit [DmaXbarCfg.NoSlvPorts-1:0] DMAEnableDefaultMstPort = '1;
   axi_xbar #(
@@ -650,22 +668,6 @@ module snitch_cluster
     .addr_map_i (dma_xbar_rule),
     .en_default_mst_port_i (DMAEnableDefaultMstPort),
     .default_mst_port_i (dma_xbar_default_port)
-  );
-
-  axi_zero_mem #(
-    .axi_req_t (axi_slv_dma_req_t),
-    .axi_resp_t (axi_slv_dma_resp_t),
-    .AddrWidth (PhysicalAddrWidth),
-    .DataWidth (WideDataWidth),
-    .IdWidth (WideIdWidthOut),
-    .NumBanks (1),
-    .BufDepth (1)
-  ) i_axi_zeromem (
-    .clk_i,
-    .rst_ni,
-    .busy_o (),
-    .axi_req_i (wide_axi_slv_req[ZeroMemory]),
-    .axi_resp_o (wide_axi_slv_rsp[ZeroMemory])
   );
 
   addr_t ext_dma_req_q_addr_nontrunc;
