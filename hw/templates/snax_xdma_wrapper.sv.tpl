@@ -16,18 +16,20 @@
 module ${cfg["name"]}_xdma_wrapper
 import xdma_pkg::*;
 #(
+  // Address width
+  parameter int unsigned PhysicalAddrWidth = cfg["addr_width"],
   // TCDM typedefs
-  parameter type         tcdm_req_t    = logic,
-  parameter type         tcdm_rsp_t    = logic,
+  parameter type         tcdm_req_t        = logic,
+  parameter type         tcdm_rsp_t        = logic,
   // AXI type
-  parameter type         wide_out_req_t  = logic,
-  parameter type         wide_out_resp_t = logic,
-  parameter type         wide_in_req_t   = logic,
-  parameter type         wide_in_resp_t  = logic,
+  parameter type         wide_out_req_t    = logic,
+  parameter type         wide_out_resp_t   = logic,
+  parameter type         wide_in_req_t     = logic,
+  parameter type         wide_in_resp_t    = logic,
   // Parameters related to TCDM
-  parameter int unsigned TCDMDataWidth = ${cfg["data_width"]},
-  parameter int unsigned TCDMNumPorts  = ${num_tcdm_ports},
-  parameter int unsigned TCDMAddrWidth = ${tcdm_addr_width}
+  parameter int unsigned TCDMDataWidth     = ${cfg["data_width"]},
+  parameter int unsigned TCDMNumPorts      = ${num_tcdm_ports},
+  parameter int unsigned TCDMAddrWidth     = ${tcdm_addr_width}
 )(
   //-----------------------------
   // Clocks and reset
@@ -129,7 +131,7 @@ import xdma_pkg::*;
   // to remote data
   xdma_pkg::xdma_to_remote_data_t    xdma_to_remote_data;
   logic                              xdma_to_remote_data_valid;
-  logic                              xdma_to_remote_data_ready
+  logic                              xdma_to_remote_data_ready;
   // to remote accompany cfg
   xdma_pkg::xdma_accompany_cfg_t     xdma_to_remote_data_accompany_cfg;
   xdma_pkg::id_t                     xdma_to_remote_data_accompany_cfg_dma_id;
@@ -152,7 +154,7 @@ import xdma_pkg::*;
   logic                              xdma_from_remote_data_valid;
   logic                              xdma_from_remote_data_ready;
   // from remote data accompany cfg
-  xdma_pkg::xdma_accompany_cfg_t     xdma_from_remote_data_accompany_cfg
+  xdma_pkg::xdma_accompany_cfg_t     xdma_from_remote_data_accompany_cfg;
   xdma_pkg::id_t                     xdma_from_remote_data_accompany_cfg_dma_id;
   logic                              xdma_from_remote_data_accompany_cfg_dma_type;
   xdma_pkg::addr_t                   xdma_from_remote_data_accompany_cfg_src_addr;
@@ -164,7 +166,7 @@ import xdma_pkg::*;
   ///---------------------------------------------------------------
   // Assign Signals
   ///---------------------------------------------------------------
-  xdma_to_remote_data_accompany_cfg = xdma_pkg::xdma_accompany_cfg_t'{
+  assign xdma_to_remote_data_accompany_cfg = xdma_pkg::xdma_accompany_cfg_t'{
     dma_id:            xdma_to_remote_data_accompany_cfg_dma_id,
     dma_type:          xdma_to_remote_data_accompany_cfg_dma_type,
     src_addr:          xdma_to_remote_data_accompany_cfg_src_addr,
@@ -172,7 +174,7 @@ import xdma_pkg::*;
     dma_length:        xdma_to_remote_data_accompany_cfg_dma_length,
     ready_to_transfer: xdma_to_remote_data_accompany_cfg_ready_to_transfer
   }
-  xdma_from_remote_data_accompany_cfg = xdma_pkg::xdma_accompany_cfg_t'{
+  assign xdma_from_remote_data_accompany_cfg = xdma_pkg::xdma_accompany_cfg_t'{
     dma_id:            xdma_from_remote_data_accompany_cfg_dma_id,
     dma_type:          xdma_from_remote_data_accompany_cfg_dma_type,
     src_addr:          xdma_from_remote_data_accompany_cfg_src_addr,
@@ -316,7 +318,7 @@ import xdma_pkg::*;
     ) i_xdma_axi_adapter (
         .clk_i                           (clk),
         .rst_ni                          (rst_n),
-        .cluster_base_addr_i             (xdma_pkg::ClusterBaseAddr),
+        .cluster_base_addr_i             (cluster_base_addr_i),
         // To remote cfg
         .to_remote_cfg_i                 (xdma_to_remote_cfg),
         .to_remote_cfg_valid_i           (xdma_to_remote_cfg_valid),
