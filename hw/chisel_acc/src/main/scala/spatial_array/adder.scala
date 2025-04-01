@@ -28,9 +28,9 @@ class Adder(
   if (opType == OpType.UIntUIntOp) {
     io.out_c := io.in_a + io.in_b
   } else if (opType == OpType.SIntSIntOp) {
-    io.out_c := io.in_a.asTypeOf(SInt(inputAElemWidth.W)) + io.in_b.asTypeOf(
+    io.out_c := (io.in_a.asTypeOf(SInt(inputAElemWidth.W)) + io.in_b.asTypeOf(
       SInt(inputBElemWidth.W)
-    )
+    )).asUInt
   } else {
     // TODO: add support for other types
     // For now, just set the output to 0

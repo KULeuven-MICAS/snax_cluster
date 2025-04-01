@@ -36,6 +36,7 @@ class AdderTree(
   // adder tree initialization
   val maxGroupSize = groupSizes.max
   val treeDepth = log2Ceil(maxGroupSize)
+
   val layers = Wire(
     Vec(treeDepth + 1, Vec(numElements, UInt(outputElemWidth.W)))
   )
@@ -43,6 +44,7 @@ class AdderTree(
   // Initialize the output type based on the operation type
   // For SIntSIntOp, we need to use SInt for the output
   // For UIntUIntOp, we can use UInt for the output
+  // TODO: pay attention to other types
   val outputType = if (opType == OpType.SIntSIntOp) {
     SInt(outputElemWidth.W)
   } else {
@@ -50,9 +52,11 @@ class AdderTree(
   }
 
   // Initialize all layers to zero
-  layers.map(_.map(_ := 0.U.asTypeOf(outputType)))
+  layers.map(_.map(_ := 0.U.asTypeOf(UInt(outputElemWidth.W))))
   // Initialize the first layer with input values
-  layers(0) := VecInit(io.in.map(_.asTypeOf(outputType)))
+  layers(0) := VecInit(
+    io.in.map(_.asTypeOf(outputType).asTypeOf(UInt(outputElemWidth.W)))
+  )
 
   // Generate adder tree layers
   for (d <- 0 until treeDepth) {
@@ -73,7 +77,7 @@ class AdderTree(
   }
 
   // Generate multiple adder tree outputs based on groupSizes
-  val adderResults = groupSizes.map(size => (layers(log2Ceil(size))))
+  val adderResults = groupSizes.map(size => layers(log2Ceil(size)))
 
   // Mux output based on cfg
   io.out := MuxLookup(io.cfg, adderResults(0))(

@@ -11,7 +11,10 @@ class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
 }
 
 class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
-  val spatialArrayCfg = Input(UInt(log2Ceil(params.arrayDim.length + 1).W))
+  val spatialArrayCfg = Input(
+    UInt(params.configWidth.W)
+  )
+  val dataTypeCfg = Input(UInt(params.configWidth.W))
 }
 
 class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {
@@ -26,38 +29,65 @@ class SpatialArray(params: SpatialArrayParam)
   // io instantiation
   val io = IO(new SpatialArrayIO(params))
 
-  // 1D multipliers
-  val multipliers = Seq.fill(params.macNum)(
-    Module(
-      new Multiplier(
-        params.opType,
-        params.inputAElemWidth,
-        params.inputBElemWidth,
-        params.mulElemWidth
+  // different type of 1D multipliers
+  val multipliers = (0 until params.opType.length).map(i =>
+    Seq.fill(params.macNum(i))(
+      Module(
+        new Multiplier(
+          params.opType(i),
+          params.inputAElemWidth(i),
+          params.inputBElemWidth(i),
+          params.mulElemWidth(i)
+        )
       )
     )
   )
 
   // constraints, regardless of the computation bound or bandwidth bound array
-  params.arrayDim.map(dim => {
-    require(dim.length == 3)
-    // mac number should be enough to support the computation bound
-    require(dim(0) * dim(1) * dim(2) <= params.macNum)
-    // inputAWidth should be enough to support the bandwidth bound
-    require(params.inputAWidth >= dim(0) * dim(1) * params.inputAElemWidth)
-    // inputBWidth should be enough to support the bandwidth bound
-    require(params.inputBWidth >= dim(1) * dim(2) * params.inputBElemWidth)
-    // inputCWidth should be enough to support the bandwidth bound
-    require(params.inputCWidth >= dim(0) * dim(2) * params.inputCElemWidth)
-    // outputDWidth should be enough to support the bandwidth bound
-    require(params.outputDWidth >= dim(0) * dim(2) * params.outElemWidth)
+  params.arrayDim.zipWithIndex.foreach { case (dims, i) =>
+    dims.foreach { dim =>
+      {
+        require(dim.length == 3)
+        // mac number should be enough to support the computation bound
+        require(dim(0) * dim(1) * dim(2) <= params.macNum(i))
+        // inputAWidth should be enough to support the bandwidth bound
+        require(
+          params.inputAWidth >= dim(0) * dim(1) * params.inputAElemWidth(i)
+        )
+        // inputBWidth should be enough to support the bandwidth bound
+        require(
+          params.inputBWidth >= dim(1) * dim(2) * params.inputBElemWidth(i)
+        )
+        // inputCWidth should be enough to support the bandwidth bound
+        require(
+          params.inputCWidth >= dim(0) * dim(2) * params.inputCElemWidth(i)
+        )
+        // outputDWidth should be enough to support the bandwidth bound
+        require(params.outputDWidth >= dim(0) * dim(2) * params.outElemWidth(i))
 
-    // adder tree should be power of 2
-    require(isPow2(dim(1)))
+        // adder tree should be power of 2
+        require(isPow2(dim(1)))
 
-  })
+      }
+    }
+  }
 
-  require(params.arrayDim.length < 32 && params.arrayDim.length >= 1)
+  require(
+    params.arrayDim.map(_.length).sum < 32 && params.arrayDim
+      .map(_.length)
+      .sum >= 1
+  )
+
+  require(
+    params.opType.length == params.macNum.length &&
+      params.inputAElemWidth.length == params.macNum.length &&
+      params.inputBElemWidth.length == params.macNum.length &&
+      params.inputCElemWidth.length == params.macNum.length &&
+      params.mulElemWidth.length == params.macNum.length &&
+      params.outElemWidth.length == params.macNum.length &&
+      params.arrayDim.length == params.macNum.length,
+    "All data type related parameters should have the same length"
+  )
 
   // data feeding network
   def dataForward(
@@ -86,87 +116,113 @@ class SpatialArray(params: SpatialArrayParam)
     data
   }
 
-  val inputA = params.arrayDim.map(dim => {
-    dataForward(
-      params.macNum,
-      params.inputAElemWidth,
-      // Mu, Ku, Nu
-      dim(0),
-      dim(1),
-      dim(2),
-      // stride_Ku, stride_Nu, stride_Mu
-      1,
-      0,
-      dim(1),
-      io.data.in_a.bits
-    )
-  })
-  val inputB = params.arrayDim.map(dim => {
-    dataForward(
-      params.macNum,
-      params.inputBElemWidth,
-      // Mu, Ku, Nu
-      dim(0),
-      dim(1),
-      dim(2),
-      // stride_Ku, stride_Nu, stride_Mu
-      1,
-      dim(1),
-      0,
-      io.data.in_b.bits
-    )
-  })
-  val inputC = params.arrayDim.map(dim => {
-    dataForward(
-      params.macNum,
-      params.inputCElemWidth,
-      // Mu, Ku = 1, Nu, only two dimensions
-      dim(0),
-      1,
-      dim(2),
-      // stride_Ku, stride_Nu, stride_Mu
-      0,
-      1,
-      dim(2),
-      io.data.in_c.bits
-    )
-  })
-
-  // mac tree
-  multipliers.zipWithIndex.foreach { case (mac, i) =>
-    mac.io.in_a := MuxLookup(
-      io.ctrl.spatialArrayCfg,
-      inputA(0)(i)
-    )(
-      (0 until params.arrayDim.length).map(j => j.U -> inputA(j)(i))
-    )
-
-    mac.io.in_b := MuxLookup(
-      io.ctrl.spatialArrayCfg,
-      inputB(0)(i)
-    )(
-      (0 until params.arrayDim.length).map(j => j.U -> inputB(j)(i))
-    )
+  val inputA = params.arrayDim.zipWithIndex.map { case (dims, i) =>
+    dims.map(dim => {
+      dataForward(
+        params.macNum(i),
+        params.inputAElemWidth(i),
+        // Mu, Ku, Nu
+        dim(0),
+        dim(1),
+        dim(2),
+        // stride_Ku, stride_Nu, stride_Mu
+        1,
+        0,
+        dim(1),
+        io.data.in_a.bits
+      )
+    })
   }
 
+  val inputB = params.arrayDim.zipWithIndex.map { case (dims, i) =>
+    dims.map(dim => {
+      dataForward(
+        params.macNum(i),
+        params.inputBElemWidth(i),
+        // Mu, Ku, Nu
+        dim(0),
+        dim(1),
+        dim(2),
+        // stride_Ku, stride_Nu, stride_Mu
+        1,
+        dim(1),
+        0,
+        io.data.in_b.bits
+      )
+    })
+  }
+
+  val inputC = params.arrayDim.zipWithIndex.map { case (dims, i) =>
+    dims.map(dim => {
+      dataForward(
+        params.macNum(i),
+        params.inputCElemWidth(i),
+        // Mu, Ku = 1, Nu, only two dimensions
+        dim(0),
+        1,
+        dim(2),
+        // stride_Ku, stride_Nu, stride_Mu
+        0,
+        1,
+        dim(2),
+        io.data.in_c.bits
+      )
+    })
+  }
+
+  // multipliers
+  (0 until params.opType.length).foreach(i =>
+    multipliers(i).zipWithIndex.foreach { case (mul, mulIdx) =>
+      mul.io.in_a := MuxLookup(
+        io.ctrl.spatialArrayCfg,
+        inputA(i)(0)(mulIdx)
+      )(
+        (0 until params.arrayDim(i).length).map(j =>
+          j.U -> inputA(i)(j)(mulIdx)
+        )
+      )
+      mul.io.in_b := MuxLookup(
+        io.ctrl.spatialArrayCfg,
+        inputB(i)(0)(mulIdx)
+      )(
+        (0 until params.arrayDim(i).length).map(j =>
+          j.U -> inputB(i)(j)(mulIdx)
+        )
+      )
+    }
+  )
+
   // adder tree
-  val adderTree = Module(
-    new AdderTree(
-      params.opType,
-      params.mulElemWidth,
-      params.outElemWidth,
-      params.macNum,
-      params.arrayDim.map(dim => dim(1))
+  val adderTree = (0 until params.opType.length).map(i =>
+    Module(
+      new AdderTree(
+        params.opType(i),
+        params.mulElemWidth(i),
+        params.outElemWidth(i),
+        params.macNum(i),
+        params.arrayDim(i).map(_(1))
+      )
     )
   )
 
-  adderTree.io.in := multipliers.map(_.io.out_c)
-  adderTree.io.cfg := io.ctrl.spatialArrayCfg
+  // connect multipliers to adder tree
+  multipliers.zipWithIndex.foreach { case (muls, dataTypeIdx) =>
+    muls.zipWithIndex.foreach { case (mul, mulIdx) =>
+      adderTree(dataTypeIdx).io.in(mulIdx) := mul.io.out_c
+    }
+  }
+
+  adderTree.foreach(_.io.cfg := io.ctrl.spatialArrayCfg)
 
   // accumulator
 
   // output data
-  io.data.out_d.bits := adderTree.io.out.asUInt
+  io.data.out_d.bits := MuxLookup(
+    io.ctrl.dataTypeCfg,
+    adderTree(0).io.out.asUInt
+  )(
+    (0 until params.arrayDim.length).map(i => i.U -> adderTree(i).io.out.asUInt)
+  )
 
   // ready/valid signals
   io.data.in_a.ready := false.B
@@ -180,23 +236,24 @@ object SpatialArrayEmitter extends App {
     new SpatialArray(SpatialArrayParam()),
     Array("--target-dir", "generated/SpatialArray")
   )
-  val params = SpatialArrayParam(
-    opType = OpType.UIntUIntOp,
-    macNum = 1024,
-    inputAElemWidth = 8,
-    inputBElemWidth = 8,
-    inputCElemWidth = 8,
-    mulElemWidth = 16,
-    outElemWidth = 32,
-    inputAWidth = 1024,
-    inputBWidth = 8192,
-    inputCWidth = 4096,
-    outputDWidth = 4096,
-    // Mu, Ku, Nu
-    arrayDim = Seq(Seq(16, 8, 8), Seq(1, 32, 32))
-  )
-  emitVerilog(
-    new SpatialArray(params),
-    Array("--target-dir", "generated/SpatialArray")
-  )
+
+  // val params = SpatialArrayParam(
+  //   opType = Seq(OpType.UIntUIntOp),
+  //   macNum = Seq(1024),
+  //   inputAElemWidth = Seq(8),
+  //   inputBElemWidth = Seq(8),
+  //   inputCElemWidth = Seq(8),
+  //   mulElemWidth = Seq(16),
+  //   outElemWidth = Seq(32),
+  //   inputAWidth = 1024,
+  //   inputBWidth = 8192,
+  //   inputCWidth = 4096,
+  //   outputDWidth = 4096,
+  //   // Mu, Ku, Nu
+  //   arrayDim = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
+  // )
+  // emitVerilog(
+  //   new SpatialArray(params),
+  //   Array("--target-dir", "generated/SpatialArray")
+  // )
 }

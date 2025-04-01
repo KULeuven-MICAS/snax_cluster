@@ -28,26 +28,34 @@ class Accumulator(
     VecInit(Seq.fill(numElements)(0.U(outputElemWidth.W)))
   )
 
-  when(io.in1.fire && io.in2.fire && io.add_ext_in) {
-    accumulator_reg := io.in1.bits.zip(io.in2.bits).map {
-      case (a, b) => {
-        val adder = Module(
-          new Adder(
-            opType,
-            inputElemWidth,
-            inputElemWidth,
-            outputElemWidth
-          )
-        )
-        adder.io.in_a := a
-        adder.io.in_b := b
-        adder.io.out_c
+  // Create the adders once outside the when block
+  val adders = Seq.fill(numElements) (
+    Module(new Adder(opType, inputElemWidth, inputElemWidth, outputElemWidth)).io
+  )
+
+  when(io.in1.fire && io.in2.fire) {
+    when(io.add_ext_in) {
+      accumulator_reg := adders.zip(io.in1.bits.zip(io.in2.bits)).map {
+        case (adder, (a, b)) =>
+          adder.in_a := a
+          adder.in_b := b
+          adder.out_c
+      }
+    }.otherwise {
+      accumulator_reg := adders.zip(io.in1.bits.zip(accumulator_reg)).map {
+        case (adder, (a, acc)) =>
+          adder.in_a := a
+          adder.in_b := acc
+          adder.out_c
       }
     }
-
-  }.elsewhen(io.in1.fire && io.in2.fire && !io.add_ext_in) {
-    accumulator_reg := io.in1.bits.zipWithIndex.map { case (a, i) =>
-      a + accumulator_reg(i)
+  }.otherwise {
+    // If not firing, keep the accumulator value
+    accumulator_reg := accumulator_reg
+    // adder inputs are not used, so set them to 0
+    adders.zipWithIndex.foreach { case (adder, i) =>
+      adder.in_a := io.in1.bits(i)
+      adder.in_b := io.in2.bits(i)
     }
   }
 

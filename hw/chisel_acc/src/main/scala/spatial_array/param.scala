@@ -10,54 +10,57 @@ object OpType {
 }
 
 class SpatialArrayParam(
-    val opType: Int,
-    val macNum: Int,
-    val inputAElemWidth: Int,
-    val inputBElemWidth: Int,
-    val inputCElemWidth: Int,
-    val mulElemWidth: Int,
-    val outElemWidth: Int,
+    val opType: Seq[Int],
+    val macNum: Seq[Int],
+    val inputAElemWidth: Seq[Int],
+    val inputBElemWidth: Seq[Int],
+    val inputCElemWidth: Seq[Int],
+    val mulElemWidth: Seq[Int],
+    val outElemWidth: Seq[Int],
     val inputAWidth: Int,
     val inputBWidth: Int,
     val inputCWidth: Int,
     val outputDWidth: Int,
-    val arrayDim: Seq[Seq[Int]],
-    val ConfigWidth: Int = 32
+    val arrayDim: Seq[Seq[Seq[Int]]],
+    val configWidth: Int = 32
 )
 
 object SpatialArrayParam {
   // test config
   def apply(): SpatialArrayParam = apply(
-    opType = OpType.UIntUIntOp,
-    macNum = 1024,
-    inputAElemWidth = 8,
-    inputBElemWidth = 8,
-    inputCElemWidth = 8,
-    mulElemWidth = 16,
-    outElemWidth = 32,
+    opType = Seq(OpType.UIntUIntOp, OpType.SIntSIntOp),
+    macNum = Seq(1024, 2048),
+    inputAElemWidth = Seq(8, 4),
+    inputBElemWidth = Seq(8, 4),
+    inputCElemWidth = Seq(8, 4),
+    mulElemWidth = Seq(16, 8),
+    outElemWidth = Seq(32, 16),
     inputAWidth = 512,
     inputBWidth = 512,
     inputCWidth = 16384,
     outputDWidth = 16384,
     // Seq(Mu, Ku, Nu)
-    arrayDim = Seq(Seq(8, 8, 8), Seq(32, 1, 16), Seq(32, 2, 16))
+    arrayDim = Seq(
+      Seq(Seq(8, 8, 8), Seq(32, 1, 16), Seq(32, 2, 16)),
+      Seq(Seq(8, 16, 8), Seq(32, 1, 32), Seq(32, 1, 16))
+    )
   )
 
   def apply(
-      opType: Int,
-      macNum: Int,
-      inputAElemWidth: Int,
-      inputBElemWidth: Int,
-      inputCElemWidth: Int,
-      mulElemWidth: Int,
-      outElemWidth: Int,
+      opType: Seq[Int],
+      macNum: Seq[Int],
+      inputAElemWidth: Seq[Int],
+      inputBElemWidth: Seq[Int],
+      inputCElemWidth: Seq[Int],
+      mulElemWidth: Seq[Int],
+      outElemWidth: Seq[Int],
       inputAWidth: Int,
       inputBWidth: Int,
       inputCWidth: Int,
       outputDWidth: Int,
-      arrayDim: Seq[Seq[Int]]
+      arrayDim: Seq[Seq[Seq[Int]]]
   ): SpatialArrayParam = new SpatialArrayParam(
-    opType = OpType.UIntUIntOp,
+    opType = opType,
     macNum = macNum,
     inputAElemWidth = inputAElemWidth,
     inputBElemWidth = inputBElemWidth,
