@@ -117,7 +117,7 @@ def emit_transposer_data(**kwargs):
                 matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
             temporal_strides_dst = [matrix_data.shape[0] * 8, 8]
         else:
-            match = re.search(r'M(\d+)N(\d+)MN', kwargs["output_layout"])
+            match = re.search(r'MNM(\d+)N(\d+)', kwargs["output_layout"])
             m, n = match.groups()
             m, n = int(m), int(n)
             spatial_stride_dst = n
@@ -134,7 +134,7 @@ def emit_transposer_data(**kwargs):
                 matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
             temporal_strides_dst = [8, matrix_data.shape[1] * 8]
         else:
-            match = re.search(r'M(\d+)N(\d+)MN', kwargs["output_layout"])
+            match = re.search(r'MNM(\d+)N(\d+)', kwargs["output_layout"])
             m, n = match.groups()
             m, n = int(m), int(n)
             spatial_stride_dst = n
