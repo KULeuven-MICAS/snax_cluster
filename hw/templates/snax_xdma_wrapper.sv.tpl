@@ -317,8 +317,8 @@ import xdma_pkg::*;
         .xdma_from_remote_data_t              (xdma_pkg::xdma_from_remote_data_t ),
         .xdma_from_remote_data_accompany_cfg_t(xdma_pkg::xdma_accompany_cfg_t    )
     ) i_xdma_axi_adapter (
-        .clk_i                           (clk),
-        .rst_ni                          (rst_n),
+        .clk_i                           (clk_i),
+        .rst_ni                          (rst_ni),
         .cluster_base_addr_i             (cluster_base_addr_i),
         // To remote cfg
         .to_remote_cfg_i                 (xdma_to_remote_cfg),
