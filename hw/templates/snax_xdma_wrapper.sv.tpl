@@ -121,7 +121,8 @@ import xdma_pkg::*;
   ///---------------------------------------------------------------
   // XDMA Intercluster Signals
   ///---------------------------------------------------------------
-
+  xdma_pkg::data_t                   xdma_to_remote_cfg_bits;
+  xdma_pkg::data_t                   xdma_from_remote_cfg_bits;
   ///---------------------
   /// TO REMOTE
   ///---------------------
@@ -167,6 +168,8 @@ import xdma_pkg::*;
   ///---------------------------------------------------------------
   // Assign Signals
   ///---------------------------------------------------------------
+  assign xdma_to_remote_cfg = xdma_pkg::xdma_inter_cluster_cfg_t'(xdma_to_remote_cfg_bits);
+  assign xdma_from_remote_cfg_bits = xdma_pkg::data_t'(xdma_from_remote_cfg);
   assign xdma_to_remote_data_accompany_cfg = xdma_pkg::xdma_accompany_cfg_t'{
     dma_id:            xdma_to_remote_data_accompany_cfg_dma_id,
     dma_type:          xdma_to_remote_data_accompany_cfg_dma_type,
@@ -286,11 +289,11 @@ import xdma_pkg::*;
     // 512 bit Cfg
     .io_remoteXDMACfg_fromRemote_valid                         (xdma_from_remote_cfg_valid),
     .io_remoteXDMACfg_fromRemote_ready                         (xdma_from_remote_cfg_ready),
-    .io_remoteXDMACfg_fromRemote_bits                          (xdma_from_remote_cfg),
+    .io_remoteXDMACfg_fromRemote_bits                          (xdma_from_remote_cfg_bits ),
 
-    .io_remoteXDMACfg_toRemote_ready                           (xdma_to_remote_cfg_ready),
-    .io_remoteXDMACfg_toRemote_valid                           (xdma_to_remote_cfg_valid),
-    .io_remoteXDMACfg_toRemote_bits                            (xdma_to_remote_cfg      )
+    .io_remoteXDMACfg_toRemote_ready                           (xdma_to_remote_cfg_ready  ),
+    .io_remoteXDMACfg_toRemote_valid                           (xdma_to_remote_cfg_valid  ),
+    .io_remoteXDMACfg_toRemote_bits                            (xdma_to_remote_cfg_bits   )
   );
 
 
