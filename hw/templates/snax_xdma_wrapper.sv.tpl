@@ -62,10 +62,10 @@ import xdma_pkg::*;
   //-----------------------------
   // XDMA Intercluster Ports
   //-----------------------------
-  wide_out_req_t      xdma_wide_out_req_o,
-  wide_out_resp_t     xdma_wide_out_resp_i,
-  wide_in_req_t       xdma_wide_in_req_i,
-  wide_in_resp_t      xdma_wide_in_resp_o
+  output wide_out_req_t      xdma_wide_out_req_o,
+  input  wide_out_resp_t     xdma_wide_out_resp_i,
+  input  wide_in_req_t       xdma_wide_in_req_i,
+  output wide_in_resp_t      xdma_wide_in_resp_o
 );
   
   //-----------------------------

@@ -617,8 +617,8 @@ module snitch_cluster
   // XDMA Ports
   // -------------
   assign xdma_wide_out_req_o = wide_axi_slv_req[XDMAOut];
-  assign xdma_wide_out_resp_i = wide_axi_slv_rsp[XDMAOut];
-  assign xdma_wide_in_req_i = wide_axi_mst_req[XDMAIn];
+  assign wide_axi_slv_rsp[XDMAOut] = xdma_wide_out_resp_i;
+  assign wide_axi_mst_req[XDMAIn] = xdma_wide_in_req_i;
   assign xdma_wide_in_resp_o = wide_axi_mst_rsp[XDMAIn];
   // -------------
   // DMA XBAR Rule
