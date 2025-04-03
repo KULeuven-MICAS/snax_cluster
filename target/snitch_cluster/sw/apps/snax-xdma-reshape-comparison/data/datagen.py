@@ -101,7 +101,7 @@ def emit_transposer_data(**kwargs):
     if kwargs["input_layout"] == "MN":
         spatial_stride_src_xdma = matrix_data.shape[1]
         temporal_bounds_src_xdma = [matrix_data.shape[1] //
-                               8, matrix_data.shape[0] // 8]
+                                    8, matrix_data.shape[0] // 8]
         temporal_strides_src_xdma = [8, matrix_data.shape[1] * 8]
     else:
         match = re.search(r'MNM(\d+)N(\d+)', kwargs["input_layout"])
@@ -109,7 +109,7 @@ def emit_transposer_data(**kwargs):
         m, n = int(m), int(n)
         spatial_stride_src_xdma = n
         temporal_bounds_src_xdma = [n // 8, matrix_data.shape[1] // n, m // 8,
-                               matrix_data.shape[0] // m]
+                                    matrix_data.shape[0] // m]
         temporal_strides_src_xdma = [8, m * n, n * 8, matrix_data.shape[1] * m]
 
     if kwargs["output_layout"] == "MN":
@@ -169,14 +169,16 @@ def emit_transposer_data(**kwargs):
     else:
         match = re.search(r'MNM(\d+)N(\d+)', kwargs["input_layout"])
         input_layout_tile_m, input_layout_tile_n = match.groups()
-        input_layout_tile_m, input_layout_tile_n = int(input_layout_tile_m), int(input_layout_tile_n)
+        input_layout_tile_m, input_layout_tile_n = int(
+            input_layout_tile_m), int(input_layout_tile_n)
     if kwargs["output_layout"] == "MN":
         output_layout_tile_m = matrix_data.shape[0]
         output_layout_tile_n = matrix_data.shape[1]
     else:
         match = re.search(r'MNM(\d+)N(\d+)', kwargs["output_layout"])
         output_layout_tile_m, output_layout_tile_n = match.groups()
-        output_layout_tile_m, output_layout_tile_n = int(output_layout_tile_m), int(output_layout_tile_n)
+        output_layout_tile_m, output_layout_tile_n = int(
+            output_layout_tile_m), int(output_layout_tile_n)
 
     min_layout_tile_m = min(input_layout_tile_m, output_layout_tile_m)
     min_layout_tile_n = min(input_layout_tile_n, output_layout_tile_n)
@@ -193,20 +195,25 @@ def emit_transposer_data(**kwargs):
     emit_str += [format_scalar_definition("uint32_t",
                                           "repeat_idma",
                                           min_layout_tile_m)]
-    emit_str += [format_scalar_define("total_iterations_idma",
-                                          matrix_data.shape[0] * matrix_data.shape[1] // min_layout_tile_m // min_layout_tile_n)]
+    emit_str += [
+        format_scalar_define(
+            "total_iterations_idma",
+            matrix_data.shape[0] *
+            matrix_data.shape[1] //
+            min_layout_tile_m //
+            min_layout_tile_n)]
     emit_str += [format_vector_definition("uint32_t",
                                           "sw_src_bound_idma",
                                           [input_layout_tile_n // min_layout_tile_n,
                                            matrix_data.shape[1] // input_layout_tile_n,
-                                           input_layout_tile_m // min_layout_tile_m, 
+                                           input_layout_tile_m // min_layout_tile_m,
                                            matrix_data.shape[0] // input_layout_tile_m])]
     emit_str += [format_vector_definition("uint32_t",
                                           "sw_dst_bound_idma",
-                                            [output_layout_tile_n // min_layout_tile_n,
-                                             matrix_data.shape[1] // output_layout_tile_n,
-                                             output_layout_tile_m // min_layout_tile_m,
-                                             matrix_data.shape[0] // output_layout_tile_m])]
+                                          [output_layout_tile_n // min_layout_tile_n,
+                                           matrix_data.shape[1] // output_layout_tile_n,
+                                           output_layout_tile_m // min_layout_tile_m,
+                                           matrix_data.shape[0] // output_layout_tile_m])]
     emit_str += [format_vector_definition("uint32_t",
                                           "sw_src_stride_idma",
                                           [min_layout_tile_n,
@@ -219,7 +226,7 @@ def emit_transposer_data(**kwargs):
                                            output_layout_tile_m * output_layout_tile_n,
                                            min_layout_tile_m * output_layout_tile_n,
                                            output_layout_tile_m * matrix_data.shape[1]])]
-    
+
     return emit_str
 
 
