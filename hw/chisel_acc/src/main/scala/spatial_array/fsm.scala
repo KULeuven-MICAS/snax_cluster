@@ -1,22 +1,19 @@
 package snax_acc.spatial_array
 
 import chisel3._
-import chisel3.util._
 
-class BasicCounter(width: Int, hasCeil: Boolean = true)
-    extends Module
-    with RequireAsyncReset {
-  val io = IO(new Bundle {
-    val tick = Input(Bool())
+class BasicCounter(width: Int, hasCeil: Boolean = true) extends Module with RequireAsyncReset {
+  val io        = IO(new Bundle {
+    val tick  = Input(Bool())
     val reset = Input(Bool())
-    val ceil = Input(UInt(width.W))
+    val ceil  = Input(UInt(width.W))
 
-    val value = Output(UInt(width.W))
+    val value   = Output(UInt(width.W))
     val lastVal = Output(Bool())
   })
   // 32.W should be enough to count any loops
   val nextValue = Wire(UInt(width.W))
-  val value = RegNext(nextValue, 0.U)
+  val value     = RegNext(nextValue, 0.U)
   nextValue := {
     if (hasCeil) {
       Mux(
@@ -29,21 +26,19 @@ class BasicCounter(width: Int, hasCeil: Boolean = true)
     }
   }
 
-  io.value := value
+  io.value   := value
   io.lastVal := {
     (if (hasCeil) (value === io.ceil - 1.U) else (value.andR)) && io.tick
   }
 }
 
-class NestCounter(width: Int, loopNum: Int)
-    extends Module
-    with RequireAsyncReset {
+class NestCounter(width: Int, loopNum: Int) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
-    val tick = Input(Bool())
+    val tick  = Input(Bool())
     val reset = Input(Bool())
-    val ceil = Input(Vec(loopNum, UInt(width.W)))
+    val ceil  = Input(Vec(loopNum, UInt(width.W)))
 
-    val value = Output(Vec(loopNum, UInt(width.W)))
+    val value   = Output(Vec(loopNum, UInt(width.W)))
     val lastVal = Output(Vec(loopNum, Bool()))
   })
 
@@ -51,7 +46,7 @@ class NestCounter(width: Int, loopNum: Int)
 
   counter.zipWithIndex.map { case (c, i) =>
     c.io.reset := io.reset
-    c.io.ceil := io.ceil(i)
+    c.io.ceil  := io.ceil(i)
   }
 
   // Connect the tick signal to the first counter
@@ -62,12 +57,12 @@ class NestCounter(width: Int, loopNum: Int)
     c2.io.tick := c1.io.lastVal && io.tick
   }
 
-  io.value := counter.map(_.io.value)
+  io.value   := counter.map(_.io.value)
   io.lastVal := counter.map(_.io.lastVal)
 }
 
 object NestCounterEmitter extends App {
-  val width = 4
+  val width   = 4
   val loopNum = 3
   emitVerilog(
     new NestCounter(width, loopNum),

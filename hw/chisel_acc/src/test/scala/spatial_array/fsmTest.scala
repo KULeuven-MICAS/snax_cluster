@@ -1,10 +1,11 @@
 package snax_acc.spatial_array
 
+import scala.util.Random
+
 import chisel3._
-import chisel3.util._
+
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
-import scala.util.Random
 
 class NestCounterTest extends AnyFlatSpec with ChiselScalatestTester {
 

@@ -38,7 +38,7 @@ trait fpUtils {
       
     // Generalized helper function to decode UInt to Float
     def uintToFloat(expWidth: Int, sigWidth: Int, bits: BigInt): scala.Float = {
-      val totalWidth = expWidth + sigWidth + 1 // Sign bit + exponent + significand
+      expWidth + sigWidth + 1 // Sign bit + exponent + significand
 
       // Extract sign, exponent, and significand
       val sign = (bits >> (expWidth + sigWidth)) & 0x1

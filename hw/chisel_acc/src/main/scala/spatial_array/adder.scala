@@ -3,20 +3,20 @@ package snax_acc.spatial_array
 import chisel3._
 
 class AdderIO(
-    inputAElemWidth: Int,
-    inputBElemWidth: Int,
-    mulElemWidth: Int
+  inputAElemWidth: Int,
+  inputBElemWidth: Int,
+  mulElemWidth:    Int
 ) extends Bundle {
-  val in_a = Input(UInt(inputAElemWidth.W))
-  val in_b = Input(UInt(inputBElemWidth.W))
+  val in_a  = Input(UInt(inputAElemWidth.W))
+  val in_b  = Input(UInt(inputBElemWidth.W))
   val out_c = Output(UInt(mulElemWidth.W))
 }
 
 class Adder(
-    opType: Int,
-    inputAElemWidth: Int,
-    inputBElemWidth: Int,
-    mulElemWidth: Int
+  opType:          Int,
+  inputAElemWidth: Int,
+  inputBElemWidth: Int,
+  mulElemWidth:    Int
 ) extends Module
     with RequireAsyncReset {
   val io = IO(new AdderIO(inputAElemWidth, inputBElemWidth, mulElemWidth))

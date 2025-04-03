@@ -1,12 +1,12 @@
 package snax_acc.spatial_array
 
-import chisel3._
-import chiseltest._
-import org.scalatest.flatspec.AnyFlatSpec
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import chiseltest.simulator.VerilatorBackendAnnotation
 import scala.util.Random
+
+import chisel3._
+
+import chiseltest._
+import chiseltest.simulator.VerilatorBackendAnnotation
+import org.scalatest.flatspec.AnyFlatSpec
 
 trait FPNewFMAUIntTestUtils extends fpUtils {
 
@@ -31,7 +31,7 @@ trait FPNewFMAUIntTestUtils extends fpUtils {
     try {
       assert(reseult == expected_o)
     } catch {
-      case e: java.lang.AssertionError => {
+      case _: java.lang.AssertionError => {
         println(f"-----------Test id: $test_id Expected: 0x${expected_o.toString(16)}, Got: 0x${reseult.toString(16)}-----------")
       }
     }
@@ -80,7 +80,7 @@ class FPNewFMAUInt4Test extends AnyFlatSpec with ChiselScalatestTester with fpUt
 
       testfma(dut, 4, A, B, C)
 
-      val random = new Random()
+      new Random()
 
       // Generate 10 test cases with:
       // - A: Random Float16-compatible float
@@ -138,7 +138,7 @@ class FPNewFMAUInt3Test extends AnyFlatSpec with ChiselScalatestTester with fpUt
 
       testfma(dut, 4, A, B, C)
 
-      val random = new Random()
+      new Random()
 
       // Generate 10 test cases with:
       // - A: Random Float16-compatible float
@@ -196,7 +196,7 @@ class FPNewFMAUInt2Test extends AnyFlatSpec with ChiselScalatestTester with fpUt
 
       testfma(dut, 4, A, B, C)
 
-      val random = new Random()
+      new Random()
 
       // Generate 10 test cases with:
       // - A: Random Float16-compatible float
@@ -254,7 +254,7 @@ class FPNewFMAUInt1Test extends AnyFlatSpec with ChiselScalatestTester with fpUt
 
       testfma(dut, 4, A, B, C)
 
-      val random = new Random()
+      new Random()
 
       // Generate 10 test cases with:
       // - A: Random Float16-compatible float

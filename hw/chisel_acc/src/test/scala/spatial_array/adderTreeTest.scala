@@ -1,6 +1,7 @@
 package snax_acc.spatial_array
 
 import chisel3._
+
 import chiseltest._
 import org.scalatest.funsuite.AnyFunSuite
 
