@@ -24,6 +24,18 @@ def variable_attributes(alignment=None, section=None):
     return attributes
 
 
+def format_vector_define(uid, vector):
+    s = f'#define {uid.upper()} ' + '{'
+    for el in vector:
+        if type != 'char':
+            el_str = f'{el}'
+        else:
+            el_str = f'0x{el:02x}'
+        s += f'{el_str},'    
+    s += '}'
+    return s
+
+
 def format_vector_definition(type, uid, vector, alignment=None, section=None):
     attributes = variable_attributes(alignment, section)
     s = f'{type} {uid}[{len(vector)}] {attributes} = ' + '{\n'
@@ -40,6 +52,11 @@ def format_vector_definition(type, uid, vector, alignment=None, section=None):
 def format_vector_declaration(type, uid, vector, alignment=None, section=None):
     attributes = variable_attributes(alignment, section)
     s = f'{type} {uid}[{len(vector)}] {attributes};'
+    return s
+
+
+def format_scalar_define(uid, scalar):
+    s = f'#define {uid.upper()} {scalar}'
     return s
 
 
