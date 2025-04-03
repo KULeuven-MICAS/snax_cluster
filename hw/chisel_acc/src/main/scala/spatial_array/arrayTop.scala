@@ -3,7 +3,7 @@ package snax_acc.spatial_array
 import chisel3._
 import chisel3.util._
 
-import snax_acc.utils._ 
+import snax_acc.utils._
 import snax_acc.utils.DecoupledCut._
 
 // arrayTop with the fsm controller and array
@@ -79,8 +79,14 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     }
   }
 
-  config_valid := io.ctrl.fire && !zeroLoopBoundCase
+  config_valid  := io.ctrl.fire && !zeroLoopBoundCase
   io.ctrl.ready := cstate === sIDLE
+
+  val dOutputCounter = Module(new BasicCounter(params.configWidth))
+  dOutputCounter.io.ceil  := csrReg.fsmCfg.M_i * csrReg.fsmCfg.N_i
+  dOutputCounter.io.tick  := io.data.out_d.fire && cstate === sBUSY
+  dOutputCounter.io.reset := cstate === sBUSY   && nstate === sIDLE
+  computation_finish      := dOutputCounter.io.lastVal
 
   // Store the configurations when config valid
   when(config_valid && cstate === sIDLE) {
@@ -96,9 +102,6 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     }
     csrReg.fsmCfg.subtraction_constant_i := io.ctrl.bits.fsmCfg.subtraction_constant_i
   }
-
-  // hardware loop
-
 
   // -----------------------------------
   // state machine ends
@@ -200,18 +203,46 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   // array instance and data handshake signal connections starts
   // ------------------------------------
 
+  // array accAddExtIn control signal
+
+  val accAddExtIn        = WireInit(0.B)
+  val computeFireCounter = Module(new BasicCounter(params.configWidth))
+  computeFireCounter.io.ceil := csrReg.fsmCfg.K_i
+  val addCFire  = (a_after_cut.fire && b_after_cut.fire && C_s2p.io.out.fire && computeFireCounter.io.value === 0.U)
+  val mulABFire = (a_after_cut.fire && b_after_cut.fire && computeFireCounter.io.value =/= 0.U)
+  computeFireCounter.io.tick  := (addCFire || mulABFire) && cstate === sBUSY
+  computeFireCounter.io.reset := cstate === sBUSY        && nstate === sIDLE
+
+  accAddExtIn := computeFireCounter.io.value === 0.U && cstate === sBUSY
+
   val array = Module(new SpatialArray(params))
 
   // ctrl signals
   array.io.ctrl.spatialArrayCfg := csrReg.arrayCfg.spatialArrayCfg
   array.io.ctrl.dataTypeCfg     := csrReg.arrayCfg.dataTypeCfg
+  array.io.ctrl.accAddExtIn     := accAddExtIn
+  array.io.ctrl.accClear        := cstate === sBUSY && nstate === sIDLE
 
   // data signals
   array.io.data.in_a <> a_after_cut
   array.io.data.in_b <> b_after_cut
-  array.io.data.in_c <> C_s2p.io.out
-  array.io.data.out_d <> D_p2s.io.in
+
+  array.io.data.in_c.bits  := C_s2p.io.out.bits
+  array.io.data.in_c.valid := C_s2p.io.out.valid && cstate === sBUSY
+  // array c_ready  considering output stationary
+  C_s2p.io.out.ready       := addCFire           && cstate === sBUSY
+
   array.io.data.in_substraction <> sub_after_cut
+
+  // array d_ready considering output stationary
+  val dOutputValidCounter = Module(new BasicCounter(params.configWidth))
+  dOutputValidCounter.io.ceil  := csrReg.fsmCfg.K_i
+  dOutputValidCounter.io.tick  := array.io.data.out_d.fire && cstate === sBUSY
+  dOutputValidCounter.io.reset := cstate === sBUSY         && nstate === sIDLE
+
+  D_p2s.io.in.bits := array.io.data.out_d.bits
+  D_p2s.io.in.valid := array.io.data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.K_i - 1.U)
+  array.io.data.out_d.ready := Mux(D_p2s.io.in.valid, D_p2s.io.in.ready, true.B) && cstate === sBUSY
 
   // ------------------------------------
   // array instance and data handshake signal connections ends
