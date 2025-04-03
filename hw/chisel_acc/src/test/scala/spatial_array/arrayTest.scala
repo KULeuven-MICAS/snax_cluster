@@ -66,22 +66,34 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
             c.io.data.in_a.valid.poke(true.B)
             c.io.data.in_b.valid.poke(true.B)
             c.io.data.in_c.valid.poke(true.B)
+            c.io.data.in_substraction.valid.poke(false.B)
+            c.io.data.out_d.ready.poke(true.B)
+
             c.io.ctrl.spatialArrayCfg.poke(fgIdx.U)
             c.io.ctrl.dataTypeCfg.poke(idx.U)
+            c.io.ctrl.accAddExtIn.poke(false.B)
+            c.io.ctrl.accClear.poke(false.B)
+
             c.clock.step(1)
 
+            // Check the output
+            c.io.data.out_d.valid.expect(true.B)
             val out_d = c.io.data.out_d.bits.peek().litValue
             val extractedOutputs = (0 until (Mu * Nu)).map { i =>
               ((out_d >> (i * outElemWidth)) & (math.pow(2, outElemWidth).toLong - 1)).toInt
             }
 
-          println(s"Checking res_cfg${fgIdx + 1}...")
+          println(s"Checking opType${idx + 1} res_cfg${fgIdx + 1}...")
           var expected = expectedResult1.flatten
           for (i <- expected.indices) {
             val actual = extractedOutputs(i)
             // println(s"  Output[$i]: $actual (Expected: ${expected(i)})")
             assert(actual == expected(i), f"Mismatch at index $i: got 0x$actual%X, expected 0x${expected(i)}%X")
           }
+
+            c.io.ctrl.accClear.poke(true.B)
+            c.clock.step(1)
+            c.io.ctrl.accClear.poke(false.B)
 
         }
       }
