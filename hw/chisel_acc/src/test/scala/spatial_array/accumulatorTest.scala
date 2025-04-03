@@ -14,7 +14,7 @@ class AccumulatorTest extends AnyFunSuite with ChiselScalatestTester {
       def testConfig(
           in1Values: Seq[Int],
           in2Values: Seq[Int],
-          addExtIn: Boolean,
+          accAddExtIn: Boolean,
           expectedOutput: Seq[Int]
       ): Unit = {
         // Set input values
@@ -26,38 +26,41 @@ class AccumulatorTest extends AnyFunSuite with ChiselScalatestTester {
         }
 
         // Set control signals
-        dut.io.add_ext_in.poke(addExtIn.B)
+        dut.io.accAddExtIn.poke(accAddExtIn.B)
+        dut.io.enable.poke(true.B)
+        dut.io.accClear.poke(false.B)
         dut.io.in1.valid.poke(true.B)
         dut.io.in2.valid.poke(true.B)
+        dut.io.out.ready.poke(true.B)
 
         // Step clock
         dut.clock.step()
 
         // Check expected output
         expectedOutput.zipWithIndex.foreach { case (expected, idx) =>
-          dut.io.out(idx).expect(expected.U)
+          dut.io.out.bits(idx).expect(expected.U)
         }
       }
 
-      // Test case 1: Element-wise addition when add_ext_in is true
+      // Test case 1: Element-wise addition when accAddExtIn is true
       testConfig(
         in1Values = Seq(1, 2, 3, 4),
         in2Values = Seq(4, 3, 2, 1),
-        addExtIn = true,
+        accAddExtIn = true,
         expectedOutput = Seq(5, 5, 5, 5) // [1+4, 2+3, 3+2, 4+1]
       )
 
-      // Test case 2: Accumulate in1 values when add_ext_in is false
+      // Test case 2: Accumulate in1 values when accAddExtIn is false
       testConfig(
         in1Values = Seq(1, 2, 3, 4),
         in2Values = Seq(0, 0, 0, 0), // Unused
-        addExtIn = false,
+        accAddExtIn = false,
         expectedOutput = Seq(6, 7, 8, 9) // Initial accumulation
       )
       testConfig(
         in1Values = Seq(1, 2, 3, 4),
         in2Values = Seq(0, 0, 0, 0), // Unused
-        addExtIn = false,
+        accAddExtIn = false,
         expectedOutput = Seq(7, 9, 11, 13) // Initial accumulation
       )
 
@@ -65,7 +68,7 @@ class AccumulatorTest extends AnyFunSuite with ChiselScalatestTester {
       testConfig(
         in1Values = Seq(0, 0, 0, 0), // Unused
         in2Values = Seq(0, 0, 0, 0), // Unused
-        addExtIn = true,
+        accAddExtIn = true,
         expectedOutput = Seq(0, 0, 0, 0) // Initial accumulation
       )
 
@@ -73,7 +76,7 @@ class AccumulatorTest extends AnyFunSuite with ChiselScalatestTester {
       testConfig(
         in1Values = Seq(2, 3, 4, 5),
         in2Values = Seq(0, 0, 0, 0), // Unused
-        addExtIn = false,
+        accAddExtIn = false,
         expectedOutput = Seq(2, 3, 4, 5) // 
       )
     }

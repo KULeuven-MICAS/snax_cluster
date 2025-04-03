@@ -4,17 +4,18 @@ import chisel3._
 import chisel3.util._
 
 class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
-  val in_a  = Flipped(DecoupledIO(UInt(params.inputAWidth.W)))
-  val in_b  = Flipped(DecoupledIO(UInt(params.inputBWidth.W)))
-  val in_c  = Flipped(DecoupledIO(UInt(params.arrayInputCWidth.W)))
-  val out_d = DecoupledIO(UInt(params.arrayOutputDWidth.W))
+  val in_a            = Flipped(DecoupledIO(UInt(params.inputAWidth.W)))
+  val in_b            = Flipped(DecoupledIO(UInt(params.inputBWidth.W)))
+  val in_c            = Flipped(DecoupledIO(UInt(params.arrayInputCWidth.W)))
+  val out_d           = DecoupledIO(UInt(params.arrayOutputDWidth.W))
   val in_substraction = Flipped(DecoupledIO(UInt(params.configWidth.W)))
 }
 
 class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
   val spatialArrayCfg = Input(UInt(params.configWidth.W))
   val dataTypeCfg     = Input(UInt(params.configWidth.W))
-  
+  val accAddExtIn     = Input(Bool())
+  val accClear        = Input(Bool())
 }
 
 class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {
@@ -58,10 +59,10 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
         )
         // arrayInputCWidth should be enough to support the bandwidth bound
         require(
-          params.arrayInputCWidth             >= dim(0) * dim(2) * params.inputCElemWidth(i)
+          params.arrayInputCWidth        >= dim(0) * dim(2) * params.inputCElemWidth(i)
         )
         // arrayOutputDWidth should be enough to support the bandwidth bound
-        require(params.arrayOutputDWidth      >= dim(0) * dim(2) * params.outElemWidth(i))
+        require(params.arrayOutputDWidth >= dim(0) * dim(2) * params.outElemWidth(i))
 
         // adder tree should be power of 2
         require(isPow2(dim(1)))
@@ -99,19 +100,19 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     stride_Mu: Int,
     input:     UInt
   ) = {
-    val data = Wire(Vec(macNum, UInt(elemBits.W)))
+    val reshapedData = Wire(Vec(macNum, UInt(elemBits.W)))
     for (i <- 0 until macNum) {
       if (i < Mu * Nu * Ku) {
         val m     = i / (Nu * Ku)
         val n     = (i % (Nu * Ku)) / Ku
         val k     = (i % (Nu * Ku)) % Ku
         val index = k * stride_Ku + n * stride_Nu + m * stride_Mu
-        data(i) := input(index * elemBits + elemBits - 1, index * elemBits)
+        reshapedData(i) := input(index * elemBits + elemBits - 1, index * elemBits)
       } else {
-        data(i) := 0.U
+        reshapedData(i) := 0.U
       }
     }
-    data
+    reshapedData
   }
 
   val inputA = params.arrayDim.zipWithIndex.map { case (dims, i) =>
@@ -210,20 +211,69 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   // accumulator
 
-  // output data
+  val accumulators = (0 until params.opType.length).map(i =>
+    Module(
+      new Accumulator(
+        params.opType(i),
+        params.outElemWidth(i),
+        params.outElemWidth(i),
+        params.macNum(i)
+      )
+    )
+  )
+  accumulators.zipWithIndex.foreach { case (acc, dataTypeIdx) =>
+    acc.io.in1.bits := adderTree(dataTypeIdx).io.out
+    acc.io.in2.bits := MuxLookup(
+      io.ctrl.spatialArrayCfg,
+      inputC(dataTypeIdx)(0)
+    )(
+      (0 until params.arrayDim(dataTypeIdx).length).map(j => j.U -> inputC(dataTypeIdx)(j))
+    )
+  }
+  accumulators.foreach(_.io.in1.valid := io.data.in_a.valid && io.data.in_b.valid)
+  accumulators.foreach(_.io.in2.valid := io.data.in_c.valid)
+  accumulators.foreach(_.io.accAddExtIn := io.ctrl.accAddExtIn)
+  accumulators.foreach(_.io.accClear := io.ctrl.accClear)
+  accumulators.foreach(_.io.out.ready := io.data.out_d.ready)
+  (0 until params.opType.length).foreach { i =>
+    accumulators(i).io.enable := io.ctrl.dataTypeCfg === i.U
+  }
+
+  // input ready signals
+  io.data.in_a.ready            := MuxLookup(
+    io.ctrl.dataTypeCfg,
+    accumulators(0).io.in1.ready
+  )(
+    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.in1.ready)
+  )
+  io.data.in_b.ready            := MuxLookup(
+    io.ctrl.dataTypeCfg,
+    accumulators(0).io.in1.ready
+  )(
+    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.in1.ready)
+  )
+  io.data.in_c.ready            := MuxLookup(
+    io.ctrl.dataTypeCfg,
+    accumulators(0).io.in2.ready
+  )(
+    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.in2.ready)
+  )
+  io.data.in_substraction.ready := io.data.in_a.ready && io.data.in_b.ready
+
+  // output data and valid signals
   io.data.out_d.bits := MuxLookup(
     io.ctrl.dataTypeCfg,
-    adderTree(0).io.out.asUInt
+    accumulators(0).io.out.asUInt
   )(
-    (0 until params.arrayDim.length).map(i => i.U -> adderTree(i).io.out.asUInt)
+    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.out.bits.asUInt)
   )
 
-  // ready/valid signals
-  io.data.in_a.ready  := false.B
-  io.data.in_b.ready  := false.B
-  io.data.in_c.ready  := false.B
-  io.data.out_d.valid := false.B
-  io.data.in_substraction.ready := false.B
+  io.data.out_d.valid := MuxLookup(
+    io.ctrl.dataTypeCfg,
+    accumulators(0).io.out.valid
+  )(
+    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.out.valid)
+  )
 }
 
 object SpatialArrayEmitter extends App {
@@ -233,19 +283,19 @@ object SpatialArrayEmitter extends App {
   )
 
   val params = SpatialArrayParam(
-    opType = Seq(OpType.UIntUIntOp),
-    macNum = Seq(1024),
-    inputAElemWidth = Seq(8),
-    inputBElemWidth = Seq(8),
-    inputCElemWidth = Seq(8),
-    mulElemWidth = Seq(16),
-    outElemWidth = Seq(32),
-    inputAWidth = 1024,
-    inputBWidth = 8192,
-    arrayInputCWidth = 4096,
+    opType            = Seq(OpType.UIntUIntOp),
+    macNum            = Seq(1024),
+    inputAElemWidth   = Seq(8),
+    inputBElemWidth   = Seq(8),
+    inputCElemWidth   = Seq(8),
+    mulElemWidth      = Seq(16),
+    outElemWidth      = Seq(32),
+    inputAWidth       = 1024,
+    inputBWidth       = 8192,
+    arrayInputCWidth  = 4096,
     arrayOutputDWidth = 4096,
     // Mu, Ku, Nu
-    arrayDim = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
+    arrayDim          = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
   )
   emitVerilog(
     new SpatialArray(params),
