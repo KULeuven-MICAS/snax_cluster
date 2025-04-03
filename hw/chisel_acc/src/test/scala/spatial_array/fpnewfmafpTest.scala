@@ -1,12 +1,12 @@
 package snax_acc.spatial_array
 
-import chisel3._
-import chiseltest._
-import org.scalatest.flatspec.AnyFlatSpec
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import chiseltest.simulator.VerilatorBackendAnnotation
 import scala.util.Random
+
+import chisel3._
+
+import chiseltest._
+import chiseltest.simulator.VerilatorBackendAnnotation
+import org.scalatest.flatspec.AnyFlatSpec
 
 class FPNewFMAFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
   behavior of "FPNewFMAFP"
@@ -44,7 +44,7 @@ class FPNewFMAFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils
         try {
             assert(reseult == expected_o)
         } catch {
-            case e: java.lang.AssertionError => {
+            case _: java.lang.AssertionError => {
             println(f"-----------Test id: $test_id Expected: 0x${expected_o.toString(16)}, Got: 0x${reseult.toString(16)}-----------")
             }
         }

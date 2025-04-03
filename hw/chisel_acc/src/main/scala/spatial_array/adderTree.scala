@@ -4,20 +4,18 @@ import chisel3._
 import chisel3.util._
 
 class AdderTree(
-    val opType: Int,
-    val inputElemWidth: Int,
-    val outputElemWidth: Int,
-    val numElements: Int,
-    val groupSizes: Seq[Int]
+  val opType:          Int,
+  val inputElemWidth:  Int,
+  val outputElemWidth: Int,
+  val numElements:     Int,
+  val groupSizes:      Seq[Int]
 ) extends Module
     with RequireAsyncReset {
   require(
     isPow2(numElements),
     "numElements must be a power of 2"
-  ) // Ensure valid size
-  groupSizes.foreach(size =>
-    require(isPow2(size), "groupSizes must be a power of 2")
-  ) // Ensure valid size
+  )                                                                                    // Ensure valid size
+  groupSizes.foreach(size => require(isPow2(size), "groupSizes must be a power of 2")) // Ensure valid size
   require(
     groupSizes.length < 32 && groupSizes.length >= 1,
     "groupSizes must be less than 32 and greater than 0"
@@ -28,14 +26,14 @@ class AdderTree(
   )
 
   val io = IO(new Bundle {
-    val in = Input(Vec(numElements, UInt(inputElemWidth.W)))
+    val in  = Input(Vec(numElements, UInt(inputElemWidth.W)))
     val out = Output(Vec(numElements, UInt(outputElemWidth.W)))
     val cfg = Input(UInt(log2Ceil(groupSizes.length + 1).W))
   })
 
   // adder tree initialization
   val maxGroupSize = groupSizes.max
-  val treeDepth = log2Ceil(maxGroupSize)
+  val treeDepth    = log2Ceil(maxGroupSize)
 
   val layers = Wire(
     Vec(treeDepth + 1, Vec(numElements, UInt(outputElemWidth.W)))
@@ -70,8 +68,8 @@ class AdderTree(
           outputElemWidth
         )
       )
-      adder.io.in_a := layers(d)(i)
-      adder.io.in_b := layers(d)(i + step)
+      adder.io.in_a        := layers(d)(i)
+      adder.io.in_b        := layers(d)(i + step)
       layers(d + 1)(i / 2) := adder.io.out_c
     }
   }
