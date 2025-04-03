@@ -1,10 +1,11 @@
 package snax_acc.spatial_array
 
+import scala.util.Random
+
 import chisel3._
-import chisel3.util._
+
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
-import scala.util.Random
 
 class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
@@ -97,8 +98,8 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
     outElemWidth = Seq(32),
     inputAWidth = 1024,
     inputBWidth = 8192,
-    inputCWidth = 4096,
-    outputDWidth = 4096,
+    arrayInputCWidth = 4096,
+    arrayOutputDWidth = 4096,
     arrayDim = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
   )
 
@@ -117,8 +118,8 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
     outElemWidth = Seq(32, 16),
     inputAWidth = 64,
     inputBWidth = 64,
-    inputCWidth = 256,
-    outputDWidth = 256,
+    arrayInputCWidth = 256,
+    arrayOutputDWidth = 256,
     arrayDim = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)),
       Seq(Seq(2, 4, 2), Seq(2, 1, 8))
     )

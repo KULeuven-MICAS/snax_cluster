@@ -5,17 +5,17 @@ import chisel3.util._
 
 // accumulator
 class Accumulator(
-    val opType: Int,
-    val inputElemWidth: Int,
-    val outputElemWidth: Int,
-    val numElements: Int
+  val opType:          Int,
+  val inputElemWidth:  Int,
+  val outputElemWidth: Int,
+  val numElements:     Int
 ) extends Module
     with RequireAsyncReset {
   val io = IO(new Bundle {
-    val in1 = Flipped(DecoupledIO(Vec(numElements, UInt(inputElemWidth.W))))
-    val in2 = Flipped(DecoupledIO(Vec(numElements, UInt(inputElemWidth.W))))
+    val in1        = Flipped(DecoupledIO(Vec(numElements, UInt(inputElemWidth.W))))
+    val in2        = Flipped(DecoupledIO(Vec(numElements, UInt(inputElemWidth.W))))
     val add_ext_in = Input(Bool())
-    val out = Output(Vec(numElements, UInt(outputElemWidth.W)))
+    val out        = Output(Vec(numElements, UInt(outputElemWidth.W)))
   })
 
   require(opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp)
@@ -29,24 +29,24 @@ class Accumulator(
   )
 
   // Create the adders once outside the when block
-  val adders = Seq.fill(numElements) (
-    Module(new Adder(opType, inputElemWidth, inputElemWidth, outputElemWidth)).io
+  val adders = Seq.fill(numElements)(
+    Module(
+      new Adder(opType, inputElemWidth, inputElemWidth, outputElemWidth)
+    ).io
   )
 
   when(io.in1.fire && io.in2.fire) {
     when(io.add_ext_in) {
-      accumulator_reg := adders.zip(io.in1.bits.zip(io.in2.bits)).map {
-        case (adder, (a, b)) =>
-          adder.in_a := a
-          adder.in_b := b
-          adder.out_c
+      accumulator_reg := adders.zip(io.in1.bits.zip(io.in2.bits)).map { case (adder, (a, b)) =>
+        adder.in_a := a
+        adder.in_b := b
+        adder.out_c
       }
     }.otherwise {
-      accumulator_reg := adders.zip(io.in1.bits.zip(accumulator_reg)).map {
-        case (adder, (a, acc)) =>
-          adder.in_a := a
-          adder.in_b := acc
-          adder.out_c
+      accumulator_reg := adders.zip(io.in1.bits.zip(accumulator_reg)).map { case (adder, (a, acc)) =>
+        adder.in_a := a
+        adder.in_b := acc
+        adder.out_c
       }
     }
   }.otherwise {
@@ -61,7 +61,7 @@ class Accumulator(
 
   io.in1.ready := true.B
   io.in2.ready := true.B
-  io.out := accumulator_reg
+  io.out       := accumulator_reg
 }
 
 object AccumulatorEmitterUInt extends App {
