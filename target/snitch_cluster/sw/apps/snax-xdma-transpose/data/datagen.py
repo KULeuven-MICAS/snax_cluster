@@ -19,9 +19,6 @@ sys.path.append(os.path.join(os.path.dirname(
     __file__), "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
 
-# # Add golden model path
-# from snax_utils import data_reshuffler_golden_model, max_pooling, im2col  # noqa E402
-
 np.random.seed(320)
 
 # Add stdint.h header
