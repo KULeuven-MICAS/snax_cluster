@@ -35,8 +35,11 @@ def emit_header_file(**kwargs):
 
 def emit_transposer_data(**kwargs):
     emit_str = []
-    matrix_data = np.random.randint(low=0, high=255, size=(
-        kwargs["M"], kwargs["N"]), dtype=np.uint8)
+    padded_M = (kwargs["M"] + 7) // 8 * 8
+    padded_N = (kwargs["N"] + 7) // 8 * 8
+    matrix_data = np.zeros((padded_M, padded_N), dtype=np.uint8)
+    matrix_data[:kwargs["M"], :kwargs["N"]] = np.random.randint(
+        low=0, high=255, size=(kwargs["M"], kwargs["N"]), dtype=np.uint8)
     input_matrix = matrix_data
     if kwargs["input_layout"] == "MN":
         input_matrix = input_matrix.ravel()
@@ -161,15 +164,15 @@ def emit_transposer_data(**kwargs):
     output_layout_tile_m = None
     output_layout_tile_n = None
     if kwargs["input_layout"] == "MN":
-        input_layout_tile_m = kwargs["M"]
-        input_layout_tile_n = kwargs["N"]
+        input_layout_tile_m = matrix_data.shape[0]
+        input_layout_tile_n = matrix_data.shape[1]
     else:
         match = re.search(r'MNM(\d+)N(\d+)', kwargs["input_layout"])
         input_layout_tile_m, input_layout_tile_n = match.groups()
         input_layout_tile_m, input_layout_tile_n = int(input_layout_tile_m), int(input_layout_tile_n)
     if kwargs["output_layout"] == "MN":
-        output_layout_tile_m = kwargs["M"]
-        output_layout_tile_n = kwargs["N"]
+        output_layout_tile_m = matrix_data.shape[0]
+        output_layout_tile_n = matrix_data.shape[1]
     else:
         match = re.search(r'MNM(\d+)N(\d+)', kwargs["output_layout"])
         output_layout_tile_m, output_layout_tile_n = match.groups()
@@ -191,31 +194,31 @@ def emit_transposer_data(**kwargs):
                                           "repeat_idma",
                                           min_layout_tile_m)]
     emit_str += [format_scalar_define("total_iterations_idma",
-                                          kwargs["M"] * kwargs["N"] // min_layout_tile_m // min_layout_tile_n)]
+                                          matrix_data.shape[0] * matrix_data.shape[1] // min_layout_tile_m // min_layout_tile_n)]
     emit_str += [format_vector_definition("uint32_t",
                                           "sw_src_bound_idma",
                                           [input_layout_tile_n // min_layout_tile_n,
-                                           kwargs["N"] // input_layout_tile_n,
+                                           matrix_data.shape[1] // input_layout_tile_n,
                                            input_layout_tile_m // min_layout_tile_m, 
-                                           kwargs["M"] // input_layout_tile_m])]
+                                           matrix_data.shape[0] // input_layout_tile_m])]
     emit_str += [format_vector_definition("uint32_t",
                                           "sw_dst_bound_idma",
                                             [output_layout_tile_n // min_layout_tile_n,
-                                             kwargs["N"] // output_layout_tile_n,
+                                             matrix_data.shape[1] // output_layout_tile_n,
                                              output_layout_tile_m // min_layout_tile_m,
-                                             kwargs["M"] // output_layout_tile_m])]
+                                             matrix_data.shape[0] // output_layout_tile_m])]
     emit_str += [format_vector_definition("uint32_t",
                                           "sw_src_stride_idma",
                                           [min_layout_tile_n,
                                            input_layout_tile_m * input_layout_tile_n,
                                            min_layout_tile_m * input_layout_tile_n,
-                                           input_layout_tile_m * kwargs["N"]])]
+                                           input_layout_tile_m * matrix_data.shape[1]])]
     emit_str += [format_vector_definition("uint32_t",
                                           "sw_dst_stride_idma",
                                           [min_layout_tile_n,
                                            output_layout_tile_m * output_layout_tile_n,
                                            min_layout_tile_m * output_layout_tile_n,
-                                           output_layout_tile_m * kwargs["N"]])]
+                                           output_layout_tile_m * matrix_data.shape[1]])]
     
     return emit_str
 

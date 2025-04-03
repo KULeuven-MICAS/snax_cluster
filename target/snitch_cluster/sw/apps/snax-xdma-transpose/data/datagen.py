@@ -35,8 +35,11 @@ def emit_header_file(**kwargs):
 
 def emit_transposer_data(**kwargs):
     emit_str = []
-    matrix_data = np.random.randint(low=0, high=255, size=(
-        kwargs["M"], kwargs["N"]), dtype=np.uint8)
+    padded_M = (kwargs["M"] + 7) // 8 * 8
+    padded_N = (kwargs["N"] + 7) // 8 * 8
+    matrix_data = np.zeros((padded_M, padded_N), dtype=np.uint8)
+    matrix_data[:kwargs["M"], :kwargs["N"]] = np.random.randint(
+        low=0, high=255, size=(kwargs["M"], kwargs["N"]), dtype=np.uint8)
     input_matrix = matrix_data
     if kwargs["input_layout"] == "MN":
         input_matrix = input_matrix.ravel()
