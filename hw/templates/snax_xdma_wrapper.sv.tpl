@@ -163,8 +163,10 @@ import xdma_pkg::*;
   xdma_pkg::addr_t                   xdma_from_remote_data_accompany_cfg_dst_addr;
   xdma_pkg::len_t                    xdma_from_remote_data_accompany_cfg_dma_length;
   logic                              xdma_from_remote_data_accompany_cfg_ready_to_transfer;
-
-
+  ///---------------------
+  /// FINISH
+  ///---------------------
+  logic                              xdma_finish;
   ///---------------------------------------------------------------
   // Assign Signals
   ///---------------------------------------------------------------
@@ -248,25 +250,25 @@ import xdma_pkg::*;
     //-----------------------------
 
     // RemoteTask finished Pin
-    .io_remoteTaskFinished('0),
+    .io_remoteTaskFinished                                     (xdma_finish                ),
 
     // fromRemote data
     .io_remoteXDMAData_fromRemote_valid                        (xdma_from_remote_data_valid),
     .io_remoteXDMAData_fromRemote_ready                        (xdma_from_remote_data_ready),
-    .io_remoteXDMAData_fromRemote_bits                         (xdma_from_remote_data),
+    .io_remoteXDMAData_fromRemote_bits                         (xdma_from_remote_data      ),
 
     // fromRemote Accompanied Cfg
     // readyToTransfer = 0 -> 1: XDMA is ready for the next task
     .io_remoteXDMAData_fromRemoteAccompaniedCfg_readyToTransfer(xdma_from_remote_data_accompany_cfg_ready_to_transfer),
     // taskID: 8 bit signal to track each tasks
-    .io_remoteXDMAData_fromRemoteAccompaniedCfg_taskID         (xdma_from_remote_data_accompany_cfg_dma_id),
+    .io_remoteXDMAData_fromRemoteAccompaniedCfg_taskID         (xdma_from_remote_data_accompany_cfg_dma_id           ),
     // length: 19 bit signal to indicate the total number of beats in this task
-    .io_remoteXDMAData_fromRemoteAccompaniedCfg_length         (xdma_from_remote_data_accompany_cfg_dma_length),
+    .io_remoteXDMAData_fromRemoteAccompaniedCfg_length         (xdma_from_remote_data_accompany_cfg_dma_length       ),
     // taskType: 1 is Local Write, Remote Read; 0 is Local Read, Remote Write
-    .io_remoteXDMAData_fromRemoteAccompaniedCfg_taskType       (xdma_from_remote_data_accompany_cfg_dma_type),
+    .io_remoteXDMAData_fromRemoteAccompaniedCfg_taskType       (xdma_from_remote_data_accompany_cfg_dma_type         ),
     // Addresses: 48 bit signal to indicate the src and dst of the task
-    .io_remoteXDMAData_fromRemoteAccompaniedCfg_src            (xdma_from_remote_data_accompany_cfg_src_addr),
-    .io_remoteXDMAData_fromRemoteAccompaniedCfg_dst            (xdma_from_remote_data_accompany_cfg_dst_addr),
+    .io_remoteXDMAData_fromRemoteAccompaniedCfg_src            (xdma_from_remote_data_accompany_cfg_src_addr         ),
+    .io_remoteXDMAData_fromRemoteAccompaniedCfg_dst            (xdma_from_remote_data_accompany_cfg_dst_addr         ),
 
     // toRemote data
     .io_remoteXDMAData_toRemote_ready                          (xdma_to_remote_data_ready),
@@ -322,34 +324,36 @@ import xdma_pkg::*;
     ) i_xdma_axi_adapter (
         .clk_i                           (clk_i),
         .rst_ni                          (rst_ni),
-        .cluster_base_addr_i             (cluster_base_addr_i),
+        .cluster_base_addr_i             (cluster_base_addr_i                ),
         // To remote cfg
-        .to_remote_cfg_i                 (xdma_to_remote_cfg),
-        .to_remote_cfg_valid_i           (xdma_to_remote_cfg_valid),
-        .to_remote_cfg_ready_o           (xdma_to_remote_cfg_ready),
+        .to_remote_cfg_i                 (xdma_to_remote_cfg                 ),
+        .to_remote_cfg_valid_i           (xdma_to_remote_cfg_valid           ),
+        .to_remote_cfg_ready_o           (xdma_to_remote_cfg_ready           ),
         // to remote data
-        .to_remote_data_i                (xdma_to_remote_data),
-        .to_remote_data_valid_i          (xdma_to_remote_data_valid),
-        .to_remote_data_ready_o          (xdma_to_remote_data_ready),
+        .to_remote_data_i                (xdma_to_remote_data                ),
+        .to_remote_data_valid_i          (xdma_to_remote_data_valid          ),
+        .to_remote_data_ready_o          (xdma_to_remote_data_ready          ),
         // to remote data accompany cfg
-        .to_remote_data_accompany_cfg_i  (xdma_to_remote_data_accompany_cfg),
+        .to_remote_data_accompany_cfg_i  (xdma_to_remote_data_accompany_cfg  ),
         // from remote cfg
-        .from_remote_cfg_o               (xdma_from_remote_cfg),
-        .from_remote_cfg_last_o          (xdma_from_remote_cfg_last),
-        .from_remote_cfg_valid_o         (xdma_from_remote_cfg_valid),
-        .from_remote_cfg_ready_i         (xdma_from_remote_cfg_ready),
+        .from_remote_cfg_o               (xdma_from_remote_cfg               ),
+        .from_remote_cfg_last_o          (xdma_from_remote_cfg_last          ),
+        .from_remote_cfg_valid_o         (xdma_from_remote_cfg_valid         ),
+        .from_remote_cfg_ready_i         (xdma_from_remote_cfg_ready         ),
         // from remote data
-        .from_remote_data_o              (xdma_from_remote_data),
-        .from_remote_data_last_o         (xdma_from_remote_data_last),
-        .from_remote_data_valid_o        (xdma_from_remote_data_valid),
-        .from_remote_data_ready_i        (xdma_from_remote_data_ready),
+        .from_remote_data_o              (xdma_from_remote_data              ),
+        .from_remote_data_last_o         (xdma_from_remote_data_last         ),
+        .from_remote_data_valid_o        (xdma_from_remote_data_valid        ),
+        .from_remote_data_ready_i        (xdma_from_remote_data_ready        ),
         // from remote data accompany cfg
         .from_remote_data_accompany_cfg_i(xdma_from_remote_data_accompany_cfg),
+        // finish
+        .xdma_finish_o                   (xdma_finish                        ),
         // AXI interface
-        .axi_xdma_wide_out_req_o         (xdma_wide_out_req_o ),
-        .axi_xdma_wide_out_resp_i        (xdma_wide_out_resp_i),
-        .axi_xdma_wide_in_req_i          (xdma_wide_in_req_i  ),
-        .axi_xdma_wide_in_resp_o         (xdma_wide_in_resp_o )
+        .axi_xdma_wide_out_req_o         (xdma_wide_out_req_o                ),
+        .axi_xdma_wide_out_resp_i        (xdma_wide_out_resp_i               ),
+        .axi_xdma_wide_in_req_i          (xdma_wide_in_req_i                 ),
+        .axi_xdma_wide_in_resp_o         (xdma_wide_in_resp_o                )
     );
 
 
