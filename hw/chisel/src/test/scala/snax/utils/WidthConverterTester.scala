@@ -66,3 +66,10 @@ class WidthConverterTester extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 }
+
+object WidthUpConverterEmitter   extends App {
+  println(emitVerilog(new WidthUpConverter(UInt(8.W), 2)))
+}
+object WidthDownConverterEmitter extends App {
+  println(emitVerilog(new WidthDownConverter(UInt(8.W), 2)))
+}

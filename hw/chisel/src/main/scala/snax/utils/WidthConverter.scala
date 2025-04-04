@@ -61,10 +61,3 @@ class WidthDownConverter[T <: Data](gen: T, ratio: Int) extends Module with Requ
     io.in.ready  := false.B
   }
 }
-
-object WidthUpConverterEmitter   extends App {
-  println(emitVerilog(new WidthUpConverter(UInt(8.W), 2)))
-}
-object WidthDownConverterEmitter extends App {
-  println(emitVerilog(new WidthDownConverter(UInt(8.W), 2)))
-}
