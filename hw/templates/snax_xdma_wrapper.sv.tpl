@@ -147,12 +147,10 @@ import xdma_pkg::*;
   ///---------------------
   // from remote cfg
   xdma_pkg::xdma_inter_cluster_cfg_t xdma_from_remote_cfg;
-  logic                              xdma_from_remote_cfg_last;
   logic                              xdma_from_remote_cfg_valid;
   logic                              xdma_from_remote_cfg_ready;
   // from remote data
   xdma_pkg::xdma_from_remote_data_t  xdma_from_remote_data;
-  logic                              xdma_from_remote_data_last;
   logic                              xdma_from_remote_data_valid;
   logic                              xdma_from_remote_data_ready;
   // from remote data accompany cfg
@@ -337,12 +335,10 @@ import xdma_pkg::*;
         .to_remote_data_accompany_cfg_i  (xdma_to_remote_data_accompany_cfg  ),
         // from remote cfg
         .from_remote_cfg_o               (xdma_from_remote_cfg               ),
-        .from_remote_cfg_last_o          (xdma_from_remote_cfg_last          ),
         .from_remote_cfg_valid_o         (xdma_from_remote_cfg_valid         ),
         .from_remote_cfg_ready_i         (xdma_from_remote_cfg_ready         ),
         // from remote data
         .from_remote_data_o              (xdma_from_remote_data              ),
-        .from_remote_data_last_o         (xdma_from_remote_data_last         ),
         .from_remote_data_valid_o        (xdma_from_remote_data_valid        ),
         .from_remote_data_ready_i        (xdma_from_remote_data_ready        ),
         // from remote data accompany cfg
