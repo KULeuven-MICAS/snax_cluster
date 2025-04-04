@@ -15,9 +15,9 @@ static inline uint32_t snrt_cls_base_addr() {
     return l1_end_addr - cdata_size - cbss_size;
 }
 #endif
-    // In the future we will remove the idma in the cluster
-    // Hence we remove the init code that using DMA to init
-    // We use the CPU to init 
+// In the future we will remove the idma in the cluster
+// Hence we remove the init code that using DMA to init
+// We use the CPU to init
 #ifdef SNRT_INIT_TLS
 static inline void snrt_init_tls() {
     extern volatile uint32_t __tdata_start, __tdata_end;
@@ -34,16 +34,16 @@ static inline void snrt_init_tls() {
         asm volatile("mv %0, tp" : "=r"(tls_ptr) : :);
         uint8_t* tls_dst = (uint8_t*)tls_ptr;
         for (size_t i = 0; i < size; i++) {
-            tls_dst[i] = tdata_src[i];  
+            tls_dst[i] = tdata_src[i];
         }
         // Then initialize all other cores' .tdata sections from the DM
         // core's. The offset between the TLS section of successive cores
         // is defined in start.S
         size_t tls_offset = (1 << SNRT_LOG2_STACK_SIZE) + 8;
-        for (int i = 1; i < snrt_cluster_core_num(); i++) { 
+        for (int i = 1; i < snrt_cluster_core_num(); i++) {
             uint8_t* dst = (uint8_t*)(tls_ptr + i * tls_offset);
             for (size_t j = 0; j < size; j++) {
-                dst[j] = tls_dst[j];  
+                dst[j] = tls_dst[j];
             }
         }
         // Initialize all cores' .tbss sections
@@ -54,7 +54,7 @@ static inline void snrt_init_tls() {
         for (int i = 0; i < snrt_cluster_core_num(); i++) {
             uint8_t* tbss_dst = tls_tbss_base + i * tls_offset;
             for (size_t j = 0; j < tbss_size; j++) {
-                tbss_dst[j] = 0; 
+                tbss_dst[j] = 0;
             }
         }
     }
@@ -75,7 +75,7 @@ static inline void snrt_init_bss() {
         volatile uint8_t* bss_end = (volatile uint8_t*)&__bss_end;
         size_t size = bss_end - bss_start;
         for (volatile uint8_t* p = bss_start; p < bss_end; p++) {
-            *p = 0U; 
+            *p = 0U;
         }
     }
 }
@@ -86,7 +86,7 @@ static inline void snrt_init_cls() {
     extern volatile uint32_t __cdata_start, __cdata_end;
     extern volatile uint32_t __cbss_start, __cbss_end;
 
-    _cls_ptr = (cls_t *)snrt_cls_base_addr();
+    _cls_ptr = (cls_t*)snrt_cls_base_addr();
     if (snrt_is_dm_core()) {
         volatile uint8_t* tcdm_base = (volatile uint8_t*)snrt_cls_base_addr();
         size_t size;
@@ -94,11 +94,11 @@ static inline void snrt_init_cls() {
         volatile uint8_t* cdata_src = (volatile uint8_t*)&__cdata_start;
         volatile uint8_t* cdata_end = (volatile uint8_t*)&__cdata_end;
         size = cdata_end - cdata_src;
-    
+
         for (size_t i = 0; i < size; i++) {
             tcdm_base[i] = cdata_src[i];
         }
-    
+
         volatile uint8_t* cbss_start = (volatile uint8_t*)&__cbss_start;
         volatile uint8_t* cbss_end = (volatile uint8_t*)&__cbss_end;
         size_t cbss_size = cbss_end - cbss_start;
@@ -107,7 +107,6 @@ static inline void snrt_init_cls() {
         for (size_t i = 0; i < cbss_size; i++) {
             cbss_dst[i] = 0U;
         }
-
     }
 }
 #endif
