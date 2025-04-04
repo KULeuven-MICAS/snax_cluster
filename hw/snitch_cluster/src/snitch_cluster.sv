@@ -47,7 +47,7 @@ module snitch_cluster
   /// Cluster peripheral address region size (in kB).
   parameter int unsigned ClusterPeriphSize  = 64,
   /// Cluster MMIO address region size (in kB).
-  parameter int unsigned ClusterMMIOSize    = 12,
+  parameter int unsigned ClusterMMIOSize    = 16,
   /// Cluster Addr Space (in KB)
   parameter int unsigned ClusterAddrSpace   = 1024,
   /// Number of TCDM Banks. It is recommended to have twice the number of banks

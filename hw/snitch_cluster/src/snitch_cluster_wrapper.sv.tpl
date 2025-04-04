@@ -555,6 +555,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     .NrCores (${cfg['nr_cores']}),
     .TCDMDepth (${cfg['pkg_name']}::TCDMDepth),
     .ClusterPeriphSize (${cfg['cluster_periph_size']}),
+    .ClusterMMIOSize(${cfg['mmio_size']}),
     .ClusterAddrSpace (${cfg['cluster_base_offset']/1024}),
     .NrBanks (${cfg['pkg_name']}::NrBanks),
     .DMAAxiReqFifoDepth (${cfg['dma_axi_req_fifo_depth']}),
