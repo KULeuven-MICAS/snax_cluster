@@ -82,14 +82,18 @@ class TransposerUnit(row: Int, col: Int, ioWidth: Int, elementWidth: Int) extend
     // Connect the upperConverter to matrixInput
     for (i <- 0 until row) {
       for (j <- 0 until col) {
-        matrixInput(i)(j) := upConverter.io.out.bits(col / transferPerTranspose)(i)(col % j)
+        matrixInput(i)(j) := upConverter.io.out.bits(j / (col / transferPerTranspose))(i)(
+          j % (col / transferPerTranspose)
+        )
       }
     }
 
     // Connect the lowerConverter to matrixOutput
     for (i <- 0 until transposedRow) {
       for (j <- 0 until transposedCol) {
-        downConverter.io.in.bits(transposedCol / transferPerTranspose)(i)(j) := matrixOutput(i)(transposedCol % j)
+        downConverter.io.in.bits(j / (transposedCol / transferPerTranspose))(i)(
+          j % (transposedCol / transferPerTranspose)
+        ) := matrixOutput(i)(j)
       }
     }
   }
