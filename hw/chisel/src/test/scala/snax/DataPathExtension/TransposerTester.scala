@@ -12,7 +12,7 @@ class TransposerTester extends DataPathExtensionTester {
   val inputData  = collection.mutable.Buffer[BigInt]()
   val outputData = collection.mutable.Buffer[BigInt]()
 
-  for (i <- 0 until 128) {
+  for (_ <- 0 until 128) {
     val inputMatrix: Array[Array[Int]] = Array.fill(8, 8)(Random.nextInt(1 << 16))
     val leftInputMatrix  = inputMatrix.map(row => row.slice(0, 4))
     val rightInputMatrix = inputMatrix.map(row => row.slice(4, 8))
