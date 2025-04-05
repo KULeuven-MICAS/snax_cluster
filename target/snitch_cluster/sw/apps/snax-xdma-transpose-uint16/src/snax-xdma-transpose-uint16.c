@@ -16,15 +16,15 @@ int main() {
     uint32_t dma_load_input_end;
     uint32_t tcdm_baseaddress = snrt_cluster_base_addrl();
     // Put the input at the starting of tcdm
-    uint8_t *tcdm_in = (uint8_t *)tcdm_baseaddress;
+    uint16_t *tcdm_in = (uint16_t *)tcdm_baseaddress;
     // Put the output at the middle of tcdm
-    uint8_t *tcdm_out =
-        (uint8_t *)(tcdm_baseaddress +
-                    (matrix_size * sizeof(uint8_t) * 8 + 7) / 8);
+    uint16_t *tcdm_out =
+        (uint16_t *)(tcdm_baseaddress +
+                     (matrix_size * sizeof(uint16_t) * 8 + 7) / 8);
 
     if (snrt_is_dm_core()) {
         // First we need to transfer the input data from L3->TCDM
-        snrt_dma_start_1d(tcdm_in, input_matrix, matrix_size * sizeof(uint8_t));
+        snrt_dma_start_1d(tcdm_in, input_matrix, matrix_size * sizeof(uint16_t));
         snrt_dma_wait_all();
 
         // --------------------- Configure the Ext --------------------- //
@@ -32,30 +32,22 @@ int main() {
         if (xdma_disable_dst_ext(0) != 0) {
             printf("Error in disabling xdma extension 0\n");
             err++;
-        } else {
-            printf("The xdma extension 0 is disabled\n");
         }
 
         if (xdma_disable_dst_ext(1) != 0) {
             printf("Error in disabling xdma extension 1\n");
             err++;
-        } else {
-            printf("The xdma extension 1 is disabled\n");
         }
 
         if (enable_transpose) {
-            if (xdma_enable_dst_ext(2, (uint32_t *)NULL) != 0) {
+            if (xdma_enable_dst_ext(2, (uint32_t *)transposer_param) != 0) {
                 printf("Error in enabling xdma extension 2\n");
                 err++;
-            } else {
-                printf("The xdma extension 2 is enabled\n");
             }
         } else {
             if (xdma_disable_dst_ext(2) != 0) {
-                printf("Error in disabling xdma extension 1\n");
+                printf("Error in disabling xdma extension 2\n");
                 err++;
-            } else {
-                printf("The xdma extension 2 is disabled\n");
             }
         }
 
@@ -65,8 +57,17 @@ int main() {
                        temporal_strides_src, temporal_bounds_src,
                        temporal_dimension_dst, temporal_strides_dst,
                        temporal_bounds_dst, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+
+        uint32_t start_time;
+        uint32_t end_time;
+
+        __asm__ volatile("fence" ::: "memory");
+        __asm__ volatile("csrr %0, mcycle;" : "=r"(start_time));
         int task_id = xdma_start();
         xdma_local_wait(task_id);
+        __asm__ volatile("csrr %0, mcycle;" : "=r"(end_time));
+        printf("The XDMA copy is finished in %d cycles\r\n",
+               end_time - start_time);
 
         // --------------------- Checking the Results --------------------- //
         for (int i = 0; i < matrix_size; i++) {

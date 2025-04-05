@@ -34,9 +34,10 @@ def emit_transposer_data(**kwargs):
     emit_str = []
     padded_M = (kwargs["M"] + 7) // 8 * 8
     padded_N = (kwargs["N"] + 7) // 8 * 8
-    matrix_data = np.zeros((padded_M, padded_N), dtype=np.uint8)
+
+    matrix_data = np.zeros((padded_M, padded_N), dtype=np.uint16)
     matrix_data[:kwargs["M"], :kwargs["N"]] = np.random.randint(
-        low=0, high=255, size=(kwargs["M"], kwargs["N"]), dtype=np.uint8)
+        low=0, high=65535, size=(kwargs["M"], kwargs["N"]), dtype=np.uint16)
     input_matrix = matrix_data
     if kwargs["input_layout"] == "MN":
         input_matrix = input_matrix.ravel()
@@ -61,7 +62,7 @@ def emit_transposer_data(**kwargs):
             "uint32_t",
             "matrix_size",
             matrix_data.size)]
-    emit_str += [format_vector_definition("uint8_t",
+    emit_str += [format_vector_definition("uint16_t",
                                           "input_matrix", input_matrix)]
 
     # Emit output matrix
@@ -85,7 +86,7 @@ def emit_transposer_data(**kwargs):
         else:
             raise ValueError(
                 f"Invalid output layout: {kwargs['output_layout']}")
-    emit_str += [format_vector_definition("uint8_t",
+    emit_str += [format_vector_definition("uint16_t",
                                           "golden_output_matrix",
                                           output_matrix)]
 
@@ -98,52 +99,54 @@ def emit_transposer_data(**kwargs):
     temporal_bounds_dst = []
 
     if kwargs["input_layout"] == "MN":
-        spatial_stride_src = matrix_data.shape[1]
-        temporal_bounds_src = [matrix_data.shape[1] //
+        spatial_stride_src = matrix_data.shape[1] * 2
+        temporal_bounds_src = [2, matrix_data.shape[1] //
                                8, matrix_data.shape[0] // 8]
-        temporal_strides_src = [8, matrix_data.shape[1] * 8]
+        temporal_strides_src = [8, 8 * 2, matrix_data.shape[1] * 8 * 2]
     else:
         match = re.search(r'MNM(\d+)N(\d+)', kwargs["input_layout"])
         m, n = match.groups()
         m, n = int(m), int(n)
-        spatial_stride_src = n
-        temporal_bounds_src = [n // 8, matrix_data.shape[1] // n, m // 8,
+        spatial_stride_src = n * 2
+        temporal_bounds_src = [2, n // 8, matrix_data.shape[1] // n, m // 8,
                                matrix_data.shape[0] // m]
-        temporal_strides_src = [8, m * n, n * 8, matrix_data.shape[1] * m]
+        temporal_strides_src = [8, 8 * 2, m * n * 2, n * 8 * 2, matrix_data.shape[1] * m * 2]
     if kwargs["enable_transpose"] is True:
         if kwargs["output_layout"] == "MN":
-            spatial_stride_dst = matrix_data.shape[0]
+            spatial_stride_dst = matrix_data.shape[0] * 2
             temporal_bounds_dst = [
-                matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
-            temporal_strides_dst = [matrix_data.shape[0] * 8, 8]
+                2, matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
+            temporal_strides_dst = [8, matrix_data.shape[0] * 8 * 2, 8 * 2]
         else:
             match = re.search(r'MNM(\d+)N(\d+)', kwargs["output_layout"])
             m, n = match.groups()
             m, n = int(m), int(n)
-            spatial_stride_dst = n
+            spatial_stride_dst = n * 2
             temporal_bounds_dst = [
+                2,
                 m // 8,
                 matrix_data.shape[1] // m,
                 n // 8,
                 matrix_data.shape[0] // n]
-            temporal_strides_dst = [n * 8, m * matrix_data.shape[0], 8, m * n]
+            temporal_strides_dst = [8, n * 8 * 2, m * matrix_data.shape[0] * 2, 8 * 2, m * n * 2]
     else:
         if kwargs["output_layout"] == "MN":
-            spatial_stride_dst = matrix_data.shape[1]
+            spatial_stride_dst = matrix_data.shape[1] * 2
             temporal_bounds_dst = [
-                matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
-            temporal_strides_dst = [8, matrix_data.shape[1] * 8]
+                2, matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
+            temporal_strides_dst = [8, 8 * 2, matrix_data.shape[1] * 8 * 2]
         else:
             match = re.search(r'MNM(\d+)N(\d+)', kwargs["output_layout"])
             m, n = match.groups()
             m, n = int(m), int(n)
-            spatial_stride_dst = n
+            spatial_stride_dst = n * 2
             temporal_bounds_dst = [
+                2,
                 n // 8,
                 matrix_data.shape[1] // n,
                 m // 8,
                 matrix_data.shape[0] // m]
-            temporal_strides_dst = [8, m * n, n * 8, matrix_data.shape[1] * m]
+            temporal_strides_dst = [8, 8 * 2, m * n * 2, n * 8 * 2, matrix_data.shape[1] * m * 2]
 
     emit_str += [
         format_scalar_definition(
@@ -178,6 +181,9 @@ def emit_transposer_data(**kwargs):
                                           "enable_transpose",
                                           1 if kwargs["enable_transpose"]
                                           else 0)]
+    emit_str += [format_vector_definition("uint32_t",
+                                          "transposer_param",
+                                          [1])]
     return emit_str
 
 
