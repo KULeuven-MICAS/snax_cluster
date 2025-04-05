@@ -7,7 +7,7 @@ import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 
-class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
+class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestUtils{
 
   "SpatialArray" should "correctly compute output with different array dimensions" in {
 
@@ -16,17 +16,17 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
       test(new SpatialArray(params)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
           val rand = new Random()
 
-          (0 until params.opType.length).map{idx =>
+          (0 until params.opType.length).map{dataTypeIdx =>
 
-            (0 until params.arrayDim(idx).length).map{fgIdx =>
+            (0 until params.arrayDim(dataTypeIdx).length).map{arrayShapeIdx =>
             // Get the parameters for the current configuration
-            val inputAElemWidth = params.inputAElemWidth(idx)
-            val inputBElemWidth = params.inputBElemWidth(idx)
-            val outElemWidth = params.outElemWidth(idx)
+            val inputAElemWidth = params.inputAElemWidth(dataTypeIdx)
+            val inputBElemWidth = params.inputBElemWidth(dataTypeIdx)
+            val outElemWidth = params.outElemWidth(dataTypeIdx)
 
-            val Mu = params.arrayDim(idx)(fgIdx)(0)
-            val Ku = params.arrayDim(idx)(fgIdx)(1)
-            val Nu = params.arrayDim(idx)(fgIdx)(2)
+            val Mu = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(0)
+            val Ku = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(1)
+            val Nu = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(2)
 
             // Generate random values for 'a' and 'b'
             val aValues = Array.fill(Mu * Ku)(rand.nextInt(math.pow(2, inputAElemWidth).toInt))
@@ -40,19 +40,11 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
             val a = aValues.zipWithIndex.map { case (v, i) => BigInt(v) << (i * inputAElemWidth) }.sum
             val b = bValues.zipWithIndex.map { case (v, i) => BigInt(v) << (i * inputBElemWidth) }.sum
 
-            // Function to convert UInt to SInt manually
-            def toSInt(value: Int, bitWidth: Int, ifTrans: Boolean): Int = {
-              if (!ifTrans) return value // No conversion needed
-              val signBit = 1 << (bitWidth - 1) // 2^(N-1)
-              if (value >= signBit) value - (1 << bitWidth) // Convert to signed
-              else value // Keep as is
-            }
-
             // Compute dot product treating aValues and bValues as SInt
-            val expectedResult1 = Array.tabulate(Mu, Nu) { (i, j) =>
+            val expectedResult = Array.tabulate(Mu, Nu) { (i, j) =>
               (0 until Ku).map { k =>
-                val aSInt = toSInt(aValues(i * Ku + k), inputAElemWidth, params.opType(idx) == OpType.SIntSIntOp) // Convert UInt to SInt
-                val bSInt = toSInt(bValues(k + j * Ku), inputBElemWidth, params.opType(idx) == OpType.SIntSIntOp) // Convert UInt to SInt
+                val aSInt = toSInt(aValues(i * Ku + k), inputAElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp) // Convert UInt to SInt
+                val bSInt = toSInt(bValues(k + j * Ku), inputBElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp) // Convert UInt to SInt
                 aSInt * bSInt
               }.sum
             }
@@ -69,8 +61,8 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
             c.io.data.in_substraction.valid.poke(false.B)
             c.io.data.out_d.ready.poke(true.B)
 
-            c.io.ctrl.spatialArrayCfg.poke(fgIdx.U)
-            c.io.ctrl.dataTypeCfg.poke(idx.U)
+            c.io.ctrl.arrayShapeCfg.poke(arrayShapeIdx.U)
+            c.io.ctrl.dataTypeCfg.poke(dataTypeIdx.U)
             c.io.ctrl.accAddExtIn.poke(false.B)
             c.io.ctrl.accClear.poke(false.B)
 
@@ -83,8 +75,8 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
               ((out_d >> (i * outElemWidth)) & (math.pow(2, outElemWidth).toLong - 1)).toInt
             }
 
-          println(s"Checking opType${idx + 1} res_cfg${fgIdx + 1}...")
-          var expected = expectedResult1.flatten
+          println(s"Checking opType${dataTypeIdx + 1} res_cfg${arrayShapeIdx + 1}...")
+          var expected = expectedResult.flatten
           for (i <- expected.indices) {
             val actual = extractedOutputs(i)
             // println(s"  Output[$i]: $actual (Expected: ${expected(i)})")

@@ -78,7 +78,7 @@ class Accumulator(
       }
     }
 
-  val inputDataFire  = RegNext(io.in1.fire && io.in2.fire)
+  val inputDataFire  = (RegNext(io.in1.fire && !io.accAddExtIn) || RegNext(io.in1.fire && io.in2.fire && io.accAddExtIn)) && io.enable
   val keepOutput     = RegInit(false.B)
   val keepOutputNext = io.out.valid && !io.out.ready
   keepOutput := keepOutputNext

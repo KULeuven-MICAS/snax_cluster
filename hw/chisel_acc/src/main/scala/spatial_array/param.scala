@@ -20,9 +20,9 @@ class SpatialArrayParam(
   val arrayInputCWidth:       Int,
   val arrayOutputDWidth:      Int,
   val arrayDim:               Seq[Seq[Seq[Int]]],
-  val configWidth:            Int = 32,
   val inputCSerialDataWidth:  Int = 512,
-  val outputDSerialDataWidth: Int = 512
+  val outputDSerialDataWidth: Int = 512,
+  val configWidth:            Int = 32
 )
 
 object SpatialArrayParam {
@@ -48,31 +48,35 @@ object SpatialArrayParam {
     )
 
   def apply(
-    opType:            Seq[Int],
-    macNum:            Seq[Int],
-    inputAElemWidth:   Seq[Int],
-    inputBElemWidth:   Seq[Int],
-    inputCElemWidth:   Seq[Int],
-    mulElemWidth:      Seq[Int],
-    outElemWidth:      Seq[Int],
-    inputAWidth:       Int,
-    inputBWidth:       Int,
-    arrayInputCWidth:  Int,
-    arrayOutputDWidth: Int,
-    arrayDim:          Seq[Seq[Seq[Int]]]
+    opType:                 Seq[Int],
+    macNum:                 Seq[Int],
+    inputAElemWidth:        Seq[Int],
+    inputBElemWidth:        Seq[Int],
+    inputCElemWidth:        Seq[Int],
+    mulElemWidth:           Seq[Int],
+    outElemWidth:           Seq[Int],
+    inputAWidth:            Int,
+    inputBWidth:            Int,
+    arrayInputCWidth:       Int,
+    arrayOutputDWidth:      Int,
+    arrayDim:               Seq[Seq[Seq[Int]]],
+    inputCSerialDataWidth:  Int = 512,
+    outputDSerialDataWidth: Int = 512
   ): SpatialArrayParam =
     new SpatialArrayParam(
-      opType            = opType,
-      macNum            = macNum,
-      inputAElemWidth   = inputAElemWidth,
-      inputBElemWidth   = inputBElemWidth,
-      inputCElemWidth   = inputCElemWidth,
-      mulElemWidth      = mulElemWidth,
-      outElemWidth      = outElemWidth,
-      inputAWidth       = inputAWidth,
-      inputBWidth       = inputBWidth,
-      arrayInputCWidth  = arrayInputCWidth,
-      arrayOutputDWidth = arrayOutputDWidth,
-      arrayDim          = arrayDim
+      opType                 = opType,
+      macNum                 = macNum,
+      inputAElemWidth        = inputAElemWidth,
+      inputBElemWidth        = inputBElemWidth,
+      inputCElemWidth        = inputCElemWidth,
+      mulElemWidth           = mulElemWidth,
+      outElemWidth           = outElemWidth,
+      inputAWidth            = inputAWidth,
+      inputBWidth            = inputBWidth,
+      arrayInputCWidth       = arrayInputCWidth,
+      arrayOutputDWidth      = arrayOutputDWidth,
+      arrayDim               = arrayDim,
+      inputCSerialDataWidth  = inputCSerialDataWidth,
+      outputDSerialDataWidth = outputDSerialDataWidth
     )
 }
