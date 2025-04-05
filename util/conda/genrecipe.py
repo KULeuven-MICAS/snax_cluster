@@ -29,11 +29,11 @@ PREAMBLE = r"""
 
 context:
   git_repo_url: "https://github.com/kuleuven-micas/snax_cluster"
-  version: 0.2.12.micro_v10_fifo4
+  version: 0.2.12.micro_v10_fifo5
 
 source:
   git: https://github.com/KULeuven-MICAS/snax_cluster
-  tag: v0.2.12.micro_v10_fifo4
+  tag: v0.2.12.micro_v10_fifo5
 
 about:
   homepage: https://github.com/KULeuven-MICAS/snax_cluster
