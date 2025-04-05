@@ -12,7 +12,7 @@ class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
 }
 
 class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
-  val spatialArrayCfg = Input(UInt(params.configWidth.W))
+  val arrayShapeCfg = Input(UInt(params.configWidth.W))
   val dataTypeCfg     = Input(UInt(params.configWidth.W))
   val accAddExtIn     = Input(Bool())
   val accClear        = Input(Bool())
@@ -173,13 +173,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   (0 until params.opType.length).foreach(i =>
     multipliers(i).zipWithIndex.foreach { case (mul, mulIdx) =>
       mul.io.in_a := MuxLookup(
-        io.ctrl.spatialArrayCfg,
+        io.ctrl.arrayShapeCfg,
         inputA(i)(0)(mulIdx)
       )(
         (0 until params.arrayDim(i).length).map(j => j.U -> inputA(i)(j)(mulIdx))
       )
       mul.io.in_b := MuxLookup(
-        io.ctrl.spatialArrayCfg,
+        io.ctrl.arrayShapeCfg,
         inputB(i)(0)(mulIdx)
       )(
         (0 until params.arrayDim(i).length).map(j => j.U -> inputB(i)(j)(mulIdx))
@@ -207,7 +207,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     }
   }
 
-  adderTree.foreach(_.io.cfg := io.ctrl.spatialArrayCfg)
+  adderTree.foreach(_.io.cfg := io.ctrl.arrayShapeCfg)
 
   // accumulator
 
@@ -224,7 +224,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   accumulators.zipWithIndex.foreach { case (acc, dataTypeIdx) =>
     acc.io.in1.bits := adderTree(dataTypeIdx).io.out
     acc.io.in2.bits := MuxLookup(
-      io.ctrl.spatialArrayCfg,
+      io.ctrl.arrayShapeCfg,
       inputC(dataTypeIdx)(0)
     )(
       (0 until params.arrayDim(dataTypeIdx).length).map(j => j.U -> inputC(dataTypeIdx)(j))
@@ -239,25 +239,23 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     accumulators(i).io.enable := io.ctrl.dataTypeCfg === i.U
   }
 
-  // input ready signals
-  io.data.in_a.ready            := MuxLookup(
+  // input fire signals
+  val acc_in1_fire = MuxLookup(
     io.ctrl.dataTypeCfg,
-    accumulators(0).io.in1.ready
+    accumulators(0).io.in1.fire
   )(
-    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.in1.ready)
+    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.in1.fire)
   )
-  io.data.in_b.ready            := MuxLookup(
+  val acc_in2_fire = MuxLookup(
     io.ctrl.dataTypeCfg,
-    accumulators(0).io.in1.ready
+    accumulators(0).io.in2.fire
   )(
-    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.in1.ready)
+    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.in2.fire)
   )
-  io.data.in_c.ready            := MuxLookup(
-    io.ctrl.dataTypeCfg,
-    accumulators(0).io.in2.ready
-  )(
-    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.in2.ready)
-  )
+  io.data.in_a.ready            := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
+  io.data.in_b.ready            := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
+  io.data.in_c.ready            := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, false.B)
+
   io.data.in_substraction.ready := io.data.in_a.ready && io.data.in_b.ready
 
   // output data and valid signals

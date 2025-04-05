@@ -3,8 +3,8 @@ package snax_acc.spatial_array
 import chisel3._
 import chisel3.util._
 
-import snax_acc.utils._
 import snax_acc.utils.DecoupledCut._
+import snax_acc.utils._
 
 // arrayTop with the fsm controller and array
 class ArrayTopCfg(params: SpatialArrayParam) extends Bundle {
@@ -16,7 +16,7 @@ class ArrayTopCfg(params: SpatialArrayParam) extends Bundle {
   }
 
   val arrayCfg = new Bundle {
-    val spatialArrayCfg = UInt(params.configWidth.W)
+    val arrayShapeCfg = UInt(params.configWidth.W)
     val dataTypeCfg     = UInt(params.configWidth.W)
   }
 }
@@ -68,7 +68,6 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
       }.otherwise {
         nstate := sIDLE
       }
-
     }
     is(sBUSY) {
       when(computation_finish) {
@@ -79,17 +78,17 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     }
   }
 
-  config_valid  := io.ctrl.fire && !zeroLoopBoundCase
+  config_valid  := io.ctrl.fire && !zeroLoopBoundCase && cstate === sIDLE
   io.ctrl.ready := cstate === sIDLE
 
   val dOutputCounter = Module(new BasicCounter(params.configWidth))
   dOutputCounter.io.ceil  := csrReg.fsmCfg.M_i * csrReg.fsmCfg.N_i
   dOutputCounter.io.tick  := io.data.out_d.fire && cstate === sBUSY
-  dOutputCounter.io.reset := cstate === sBUSY   && nstate === sIDLE
+  dOutputCounter.io.reset := computation_finish
   computation_finish      := dOutputCounter.io.lastVal
 
   // Store the configurations when config valid
-  when(config_valid && cstate === sIDLE) {
+  when(config_valid) {
     when(!zeroLoopBoundCase) {
       csrReg.fsmCfg.M_i := io.ctrl.bits.fsmCfg.M_i
       csrReg.fsmCfg.N_i := io.ctrl.bits.fsmCfg.N_i
@@ -101,6 +100,8 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
       )
     }
     csrReg.fsmCfg.subtraction_constant_i := io.ctrl.bits.fsmCfg.subtraction_constant_i
+    csrReg.arrayCfg.arrayShapeCfg := io.ctrl.bits.arrayCfg.arrayShapeCfg
+    csrReg.arrayCfg.dataTypeCfg     := io.ctrl.bits.arrayCfg.dataTypeCfg
   }
 
   // -----------------------------------
@@ -117,7 +118,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     Decoupled(UInt((params.inputAWidth + params.inputBWidth + params.configWidth).W))
   )
 
-  val a_b_sub_cut = Module(
+  val combined_decoupled_a_b_sub = Module(
     new DecoupledCatNto1(
       Seq(
         params.inputAWidth,
@@ -127,15 +128,15 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     )
   )
 
-  a_b_sub_cut.io.in(0) <> io.data.in_a
-  a_b_sub_cut.io.in(1) <> io.data.in_b
+  combined_decoupled_a_b_sub.io.in(0) <> io.data.in_a
+  combined_decoupled_a_b_sub.io.in(1) <> io.data.in_b
 
   val decoupled_sub = Wire(Decoupled(UInt(params.configWidth.W)))
   decoupled_sub.bits  := io.ctrl.bits.fsmCfg.subtraction_constant_i
   decoupled_sub.valid := cstate === sBUSY
-  a_b_sub_cut.io.in(2) <> decoupled_sub
+  combined_decoupled_a_b_sub.io.in(2) <> decoupled_sub
 
-  a_b_sub_cut.io.out <> cut_combined_decoupled_a_b_sub_in
+  combined_decoupled_a_b_sub.io.out <> cut_combined_decoupled_a_b_sub_in
 
   cut_combined_decoupled_a_b_sub_in -\> cut_combined_decoupled_a_b_sub_out
 
@@ -145,12 +146,12 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
 
   a_after_cut.bits  := cut_combined_decoupled_a_b_sub_out.bits(
     params.inputAWidth + params.inputBWidth + params.configWidth - 1,
-    params.inputAWidth + params.inputBWidth
+    params.inputBWidth + params.configWidth
   )
   a_after_cut.valid := cut_combined_decoupled_a_b_sub_out.valid
 
   b_after_cut.bits  := cut_combined_decoupled_a_b_sub_out.bits(
-    params.inputAWidth + params.inputBWidth - 1,
+    params.inputBWidth + params.configWidth - 1,
     params.configWidth
   )
   b_after_cut.valid := cut_combined_decoupled_a_b_sub_out.valid
@@ -205,23 +206,24 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
 
   // array accAddExtIn control signal
 
+  val array = Module(new SpatialArray(params))
+
   val accAddExtIn        = WireInit(0.B)
   val computeFireCounter = Module(new BasicCounter(params.configWidth))
   computeFireCounter.io.ceil := csrReg.fsmCfg.K_i
-  val addCFire  = (a_after_cut.fire && b_after_cut.fire && C_s2p.io.out.fire && computeFireCounter.io.value === 0.U)
+  val addCFire =
+    (a_after_cut.fire && b_after_cut.fire && array.io.data.in_c.fire && computeFireCounter.io.value === 0.U)
   val mulABFire = (a_after_cut.fire && b_after_cut.fire && computeFireCounter.io.value =/= 0.U)
   computeFireCounter.io.tick  := (addCFire || mulABFire) && cstate === sBUSY
-  computeFireCounter.io.reset := cstate === sBUSY        && nstate === sIDLE
+  computeFireCounter.io.reset := computation_finish
 
   accAddExtIn := computeFireCounter.io.value === 0.U && cstate === sBUSY
 
-  val array = Module(new SpatialArray(params))
-
   // ctrl signals
-  array.io.ctrl.spatialArrayCfg := csrReg.arrayCfg.spatialArrayCfg
+  array.io.ctrl.arrayShapeCfg := csrReg.arrayCfg.arrayShapeCfg
   array.io.ctrl.dataTypeCfg     := csrReg.arrayCfg.dataTypeCfg
   array.io.ctrl.accAddExtIn     := accAddExtIn
-  array.io.ctrl.accClear        := cstate === sBUSY && nstate === sIDLE
+  array.io.ctrl.accClear        := computation_finish
 
   // data signals
   array.io.data.in_a <> a_after_cut
@@ -238,7 +240,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   val dOutputValidCounter = Module(new BasicCounter(params.configWidth))
   dOutputValidCounter.io.ceil  := csrReg.fsmCfg.K_i
   dOutputValidCounter.io.tick  := array.io.data.out_d.fire && cstate === sBUSY
-  dOutputValidCounter.io.reset := cstate === sBUSY         && nstate === sIDLE
+  dOutputValidCounter.io.reset := computation_finish
 
   D_p2s.io.in.bits := array.io.data.out_d.bits
   D_p2s.io.in.valid := array.io.data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.K_i - 1.U)
