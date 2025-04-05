@@ -24,7 +24,8 @@ int main() {
 
     if (snrt_is_dm_core()) {
         // First we need to transfer the input data from L3->TCDM
-        snrt_dma_start_1d(tcdm_in, input_matrix, matrix_size * sizeof(uint16_t));
+        snrt_dma_start_1d(tcdm_in, input_matrix,
+                          matrix_size * sizeof(uint16_t));
         snrt_dma_wait_all();
 
         // --------------------- Configure the Ext --------------------- //
