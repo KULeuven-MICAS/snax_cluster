@@ -10,10 +10,15 @@ class HasTransposer(row: Seq[Int], col: Seq[Int], elementWidth: Seq[Int], dataWi
   require(row.length == col.length && col.length == elementWidth.length)
 
   val realDataWidth = dataWidth match {
-    case 0 => row.zip(col).zip(elementWidth).map { case ((r, c), e) =>
-      r * c * e
-    }.min
-      // row.head * col.head * elementWidth.head
+    case 0 =>
+      row
+        .zip(col)
+        .zip(elementWidth)
+        .map { case ((r, c), e) =>
+          r * c * e
+        }
+        .min
+    // row.head * col.head * elementWidth.head
     case _ => dataWidth
   }
 
