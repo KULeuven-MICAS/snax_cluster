@@ -45,7 +45,8 @@ endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster.hjson)
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-maxpool
-SUBDIRS += snax-xdma-transpose
+SUBDIRS += snax-xdma-transpose-uint8
+SUBDIRS += snax-xdma-transpose-uint16
 SUBDIRS += snax-xdma-reshape-comparison
 endif
 SUBDIRS += snax-multi-cluster-playground
