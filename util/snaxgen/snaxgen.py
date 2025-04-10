@@ -550,37 +550,38 @@ def main():
         rtl_target_path = args.gen_path + acc_cfgs[i]["snax_acc_name"] + "/"
 
         if acc_cfgs[i]["snax_acc_name"] == "snax_streamer_gemmX":
-            if not (
-                "snax_gemmx_tile_size" in acc_cfgs[i]
-                and "snax_gemmx_mesh_row" in acc_cfgs[i]
-                and "snax_gemmx_mesh_col" in acc_cfgs[i]
-                and "snax_gemmx_serial_c32_d32_width" in acc_cfgs[i]
-                and "snax_gemmx_serial_d8_width" in acc_cfgs[i]
-                and "with_pipeline" in acc_cfgs[i]
-            ):
-                raise ValueError(
-                    "Missing gemmX configuration. \n"
-                    "Please set snax_gemmx_mesh_row, snax_gemmx_mesh_col, "
-                    "snax_gemmx_tile_size, snax_gemmx_serial_c32_d32_width, "
-                    "snax_gemmx_serial_d8_width, with_pipeline"
-                )
-            gen_chisel_file(
-                chisel_path=chisel_acc_path,
-                chisel_param="snax_acc.gemmx.BlockGemmRescaleSIMDGen "
-                + " --meshRow "
-                + str(acc_cfgs[i]["snax_gemmx_mesh_row"])
-                + " --meshCol "
-                + str(acc_cfgs[i]["snax_gemmx_mesh_col"])
-                + " --tileSize "
-                + str(acc_cfgs[i]["snax_gemmx_tile_size"])
-                + " --serialC32D32Width "
-                + str(acc_cfgs[i]["snax_gemmx_serial_c32_d32_width"])
-                + " --serialD8Width "
-                + str(acc_cfgs[i]["snax_gemmx_serial_d8_width"])
-                + " --withPipeline "
-                + str(acc_cfgs[i]["with_pipeline"]),
-                gen_path=rtl_target_path,
-            )
+            # if not (
+            #     "snax_gemmx_tile_size" in acc_cfgs[i]
+            #     and "snax_gemmx_mesh_row" in acc_cfgs[i]
+            #     and "snax_gemmx_mesh_col" in acc_cfgs[i]
+            #     and "snax_gemmx_serial_c32_d32_width" in acc_cfgs[i]
+            #     and "snax_gemmx_serial_d8_width" in acc_cfgs[i]
+            #     and "with_pipeline" in acc_cfgs[i]
+            # ):
+            #     raise ValueError(
+            #         "Missing gemmX configuration. \n"
+            #         "Please set snax_gemmx_mesh_row, snax_gemmx_mesh_col, "
+            #         "snax_gemmx_tile_size, snax_gemmx_serial_c32_d32_width, "
+            #         "snax_gemmx_serial_d8_width, with_pipeline"
+            #     )
+            # gen_chisel_file(
+            #     chisel_path=chisel_acc_path,
+            #     chisel_param="snax_acc.gemmx.BlockGemmRescaleSIMDGen "
+            #     + " --meshRow "
+            #     + str(acc_cfgs[i]["snax_gemmx_mesh_row"])
+            #     + " --meshCol "
+            #     + str(acc_cfgs[i]["snax_gemmx_mesh_col"])
+            #     + " --tileSize "
+            #     + str(acc_cfgs[i]["snax_gemmx_tile_size"])
+            #     + " --serialC32D32Width "
+            #     + str(acc_cfgs[i]["snax_gemmx_serial_c32_d32_width"])
+            #     + " --serialD8Width "
+            #     + str(acc_cfgs[i]["snax_gemmx_serial_d8_width"])
+            #     + " --withPipeline "
+            #     + str(acc_cfgs[i]["with_pipeline"]),
+            #     gen_path=rtl_target_path,
+            # )
+            pass
         elif acc_cfgs[i]["snax_acc_name"] == "snax_data_reshuffler":
             gen_chisel_file(
                 chisel_path=chisel_acc_path,

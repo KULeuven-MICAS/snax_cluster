@@ -82,7 +82,12 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   io.ctrl.ready := cstate === sIDLE
 
   val dOutputCounter = Module(new BasicCounter(params.configWidth))
-  dOutputCounter.io.ceil  := csrReg.fsmCfg.M_i * csrReg.fsmCfg.N_i
+  val output_serial_factor = 
+    if (params.arrayOutputDWidth <= params.outputDSerialDataWidth) 1
+    else params.arrayOutputDWidth / params.outputDSerialDataWidth
+
+  dOutputCounter.io.ceil  := csrReg.fsmCfg.M_i * csrReg.fsmCfg.N_i * output_serial_factor.U
+
   dOutputCounter.io.tick  := io.data.out_d.fire && cstate === sBUSY
   dOutputCounter.io.reset := computation_finish
   computation_finish      := dOutputCounter.io.lastVal

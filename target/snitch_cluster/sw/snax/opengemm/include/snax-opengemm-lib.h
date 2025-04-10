@@ -1,4 +1,4 @@
-// Copyright 2024 KU Leuven.
+// Copyright 2025 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -21,10 +21,10 @@
 #define SUBTRACTIONS (T_BOUND_M + 1)
 
 #define ARRAY_SHAPE_CFG (SUBTRACTIONS + 1)
-#define DATA_TYPE_CFG   (ARRAY_SHAPE_CFG + 1)
+#define DATA_TYPE_CFG (ARRAY_SHAPE_CFG + 1)
 
 // GEMMX CSR
-#define GEMMX_START     (DATA_TYPE_CFG + 1)
+#define GEMMX_START (DATA_TYPE_CFG + 1)
 
 // GeMMX read-only CSR
 #define GEMMX_BUSY (GEMMX_START + 1)
@@ -34,30 +34,30 @@
 int32_t gen_subtraction_config(int8_t subtraction_a, int8_t subtraction_b);
 
 // Set STREAMER configuration CSR
-void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
-                            int32_t* Atlstride, int32_t set_addr_remap_index_A,
+void set_gemmx_streamer_csr(
+    int32_t delta_local_a, int32_t* Aslstride, int32_t* Atlbound,
+    int32_t* Atlstride, int32_t set_addr_remap_index_A, int32_t transpose_A,
+    int32_t* channel_en_A,
 
-                            int32_t* Bslstride, int32_t* Btlbound,
-                            int32_t* Btlstride, int32_t set_addr_remap_index_B,
+    int32_t delta_local_b, int32_t* Bslstride, int32_t* Btlbound,
+    int32_t* Btlstride, int32_t set_addr_remap_index_B, int32_t transpose_B,
+    int32_t* channel_en_B,
 
-                            int32_t* Cslstride, int32_t* Ctlbound,
-                            int32_t* Ctlstride, int32_t set_addr_remap_index_C,
+    int32_t delta_local_c, int32_t* Cslstride, int32_t* Ctlbound,
+    int32_t* Ctlstride, int32_t set_addr_remap_index_C, int32_t* channel_en_C,
+    int32_t broadcast_C,
 
-                            int32_t* D32slstride, int32_t* D32tlbound,
-                            int32_t* D32tlstride,
-                            int32_t set_addr_remap_index_D32,
-
-                            int32_t delta_local_a, int32_t delta_local_b,
-                            int32_t delta_local_c, int32_t delta_local_d32, int32_t bypassSIMD,
-                            int32_t transpose_A, int32_t transpose_B,
-                            int32_t* channel_en_C, int32_t broadcast_C);
+    int32_t delta_local_d32, int32_t* D32slstride, int32_t* D32tlbound,
+    int32_t* D32tlstride, int32_t set_addr_remap_index_D32,
+    int32_t* channel_en_D);
 
 // Set CSR to start STREAMER
 inline void set_gemmx_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }
 
 // Set GEMM configuration CSR
 void set_gemmx_csr(uint32_t tempLoop0, uint32_t tempLoop1, uint32_t tempLoop2,
-    uint32_t subtractions, uint32_t array_shape, uint32_t data_type);
+                   uint32_t subtractions, uint32_t array_shape,
+                   uint32_t data_type);
 
 // Set CSR to start GEMM
 inline void set_gemmx_start() { csrw_ss(GEMMX_START, 1); }
@@ -72,6 +72,5 @@ uint32_t read_gemmx_streamer_perf_counter();
 uint32_t read_gemmx_perf_counter();
 
 // Check the result of GEMMX
-uint32_t check_gemmx_result_D32(int32_t* output, int32_t* output_golden,
-                                int32_t Batch, int32_t M, int32_t N,
-                                bool banked_data_layout);
+uint32_t check_gemmx_result_D32(int8_t* output, int8_t* output_golden,
+                                int32_t data_length, bool banked_data_layout);
