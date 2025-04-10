@@ -556,7 +556,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     .TCDMDepth (${cfg['pkg_name']}::TCDMDepth),
     .ClusterPeriphSize (${cfg['cluster_periph_size']}),
     .ClusterMMIOSize(${cfg['mmio_size']}),
-    .ClusterAddrSpace (${cfg['cluster_base_offset']/1024}),
+    .ClusterAddrSpace (${int(cfg['cluster_base_offset']/1024)}),
     .NrBanks (${cfg['pkg_name']}::NrBanks),
     .DMAAxiReqFifoDepth (${cfg['dma_axi_req_fifo_depth']}),
     .DMAReqFifoDepth (${cfg['dma_req_fifo_depth']}),
@@ -941,7 +941,10 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     .wide_out_req_t   ( ${cfg['pkg_name']}::wide_in_req_t ),
     .wide_out_resp_t  ( ${cfg['pkg_name']}::wide_in_resp_t),
     .wide_in_req_t    ( ${cfg['pkg_name']}::wide_out_req_t  ),
-    .wide_in_resp_t   ( ${cfg['pkg_name']}::wide_out_resp_t )
+    .wide_in_resp_t   ( ${cfg['pkg_name']}::wide_out_resp_t ),
+    .ClusterBaseAddr  ( ${cfg['pkg_name']}::ClusterBaseAddr),
+    .ClusterAddressSpace(${to_sv_hex(cfg['cluster_base_offset'], cfg['addr_width'])}),
+    .MMIOSize(${cfg['mmio_size']})
   ) ${jdx_key}  (
     //-----------------------------
     // Clock and reset

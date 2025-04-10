@@ -30,7 +30,13 @@ import xdma_pkg::*;
   // Parameters related to TCDM
   parameter int unsigned TCDMDataWidth     = ${cfg["data_width"]},
   parameter int unsigned TCDMNumPorts      = ${num_tcdm_ports},
-  parameter int unsigned TCDMAddrWidth     = ${tcdm_addr_width}
+  parameter int unsigned TCDMAddrWidth     = ${tcdm_addr_width},
+  // Cluster Addr
+  parameter logic [PhysicalAddrWidth-1:0]  ClusterBaseAddr = 48'h1000_0000,
+  parameter logic [PhysicalAddrWidth-1:0]  ClusterAddressSpace = 48'h0010_0000,
+  parameter logic [PhysicalAddrWidth-1:0]  MainMemBaseAddr = 48'h8000_0000,
+  parameter logic [PhysicalAddrWidth-1:0]  MainMemEndAddr = 48'h1_0000_0000,
+  parameter int                            MMIOSize = 16
 )(
   //-----------------------------
   // Clocks and reset
@@ -318,7 +324,12 @@ import xdma_pkg::*;
         .xdma_from_remote_grant_t             (xdma_pkg::xdma_from_remote_grant_t),
         .xdma_from_remote_cfg_t               (xdma_pkg::xdma_inter_cluster_cfg_t),
         .xdma_from_remote_data_t              (xdma_pkg::xdma_from_remote_data_t ),
-        .xdma_from_remote_data_accompany_cfg_t(xdma_pkg::xdma_accompany_cfg_t    )
+        .xdma_from_remote_data_accompany_cfg_t(xdma_pkg::xdma_accompany_cfg_t    ),
+        .ClusterBaseAddr                      (ClusterBaseAddr),
+        .ClusterAddressSpace                  (ClusterAddressSpace),
+        .MainMemBaseAddr                      (MainMemBaseAddr),
+        .MainMemEndAddr                       (MainMemEndAddr)
+        .MMIOSize                             (MMIOSize)
     ) i_xdma_axi_adapter (
         .clk_i                           (clk_i),
         .rst_ni                          (rst_ni),
