@@ -84,7 +84,8 @@ def emit_transposer_data(**kwargs):
             m, n = int(m), int(n)
             if m % tile_width != 0 or n % tile_width != 0:
                 raise ValueError(
-                    f"Invalid input layout: {kwargs['input_layout']}. The tile size should be a multiple of {tile_width}.")
+                    f"Invalid input layout: {kwargs['input_layout']}. \
+                        The tile size should be a multiple of {tile_width}.")
             input_matrix = input_matrix.reshape(
                 input_matrix.shape[0] // m,
                 m,
@@ -117,7 +118,8 @@ def emit_transposer_data(**kwargs):
             m, n = int(m), int(n)
             if m % tile_width != 0 or n % tile_width != 0:
                 raise ValueError(
-                    f"Invalid output layout: {kwargs['output_layout']}. The tile size should be a multiple of {tile_width}.")
+                    f"Invalid output layout: {kwargs['output_layout']}. \
+                        The tile size should be a multiple of {tile_width}.")
             output_matrix = output_matrix.reshape(
                 output_matrix.shape[0] // m,
                 m,
