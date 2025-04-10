@@ -28,7 +28,8 @@ int main() {
     eu_init();
     if (snrt_cluster_core_idx() == 0) {
         while (eu_get_workers_in_wfi() !=
-               (snrt_cluster_compute_core_num() - 1));
+               (snrt_cluster_compute_core_num() - 1)) {
+        }
     } else if (snrt_is_dm_core()) {
         // Park DM core
         return 0;
