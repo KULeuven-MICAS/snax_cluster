@@ -216,7 +216,7 @@ class ArrayTopTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestU
       macNum = Seq(8, 16),
       inputAElemWidth = Seq(8, 4),
       inputBElemWidth = Seq(8, 4),
-      inputCElemWidth = Seq(8, 4),
+      inputCElemWidth = Seq(32, 16),
       mulElemWidth = Seq(16, 8),
       outElemWidth = Seq(32, 16),
       inputAWidth = 64,
