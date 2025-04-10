@@ -328,7 +328,7 @@ import xdma_pkg::*;
         .ClusterBaseAddr                      (ClusterBaseAddr),
         .ClusterAddressSpace                  (ClusterAddressSpace),
         .MainMemBaseAddr                      (MainMemBaseAddr),
-        .MainMemEndAddr                       (MainMemEndAddr)
+        .MainMemEndAddr                       (MainMemEndAddr),
         .MMIOSize                             (MMIOSize)
     ) i_xdma_axi_adapter (
         .clk_i                           (clk_i),
