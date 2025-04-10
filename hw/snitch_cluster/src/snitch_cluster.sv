@@ -510,7 +510,7 @@ module snitch_cluster
   // The MMIO is at the end of each cluster
   addr_t xdma_mmio_start_address, xdma_mmio_end_address;
   assign xdma_mmio_start_address = cluster_base_addr_i + ClusterAddrSpace * 1024  -
-                                   ClusterPeriphSize * 1024;
+                                   ClusterMMIOSize * 1024;
   assign xdma_mmio_end_address = cluster_base_addr_i + ClusterAddrSpace * 1024;
 
   // ----------------
