@@ -56,8 +56,20 @@ def emit_transposer_data(**kwargs):
             f"Invalid BIT_WIDTH: {element_width}, only 8 and 16 are supported")
 
     emit_str = []
-    padded_M = (kwargs["M"] + tile_width - 1) // tile_width * tile_width
-    padded_N = (kwargs["N"] + tile_width - 1) // tile_width * tile_width
+    padded_M = None
+    padded_N = None
+    if kwargs["input_layout"] == "MN":
+        padded_M = (kwargs["M"] + tile_width - 1) // tile_width * tile_width
+        padded_N = (kwargs["N"] + tile_width - 1) // tile_width * tile_width
+    else:
+        match = re.search(r'MNM(\d+)N(\d+)', kwargs["input_layout"])
+        if match:
+            m, n = match.groups()
+            m, n = int(m), int(n)
+            padded_M = (kwargs["M"] + m - 1) // m * m
+            padded_N = (kwargs["N"] + n - 1) // n * n
+        else:
+            raise ValueError(f"Invalid input layout: {kwargs['input_layout']}")
 
     matrix_data = np.zeros((padded_M, padded_N), dtype=np.uint64)
     matrix_data[:kwargs["M"], :kwargs["N"]] = np.random.randint(
