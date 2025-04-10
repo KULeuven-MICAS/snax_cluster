@@ -20,7 +20,7 @@ int main() {
     // Put the output at the middle of tcdm
     void *tcdm_out =
         (void *)(tcdm_baseaddress +
-                     (matrix_size * sizeof(input_matrix[0]) * 8 + 7) / 8);
+                 (matrix_size * sizeof(input_matrix[0]) * 8 + 7) / 8);
 
     if (snrt_is_dm_core()) {
         // First we need to transfer the input data from L3->TCDM
@@ -73,7 +73,7 @@ int main() {
         // --------------------- Checking the Results --------------------- //
         uint32_t *golden_result = (uint32_t *)golden_output_matrix;
         uint32_t *tcdm_result = (uint32_t *)tcdm_out;
-        
+
         for (int i = 0; i < matrix_size * sizeof(input_matrix[0]) / 4; i++) {
             if (tcdm_result[i] != golden_result[i]) {
                 printf("The transpose is incorrect at byte %d! \n", i << 2);

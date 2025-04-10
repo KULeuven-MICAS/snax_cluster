@@ -61,7 +61,7 @@ def emit_transposer_data(**kwargs):
 
     matrix_data = np.zeros((padded_M, padded_N), dtype=np.uint64)
     matrix_data[:kwargs["M"], :kwargs["N"]] = np.random.randint(
-        low=0, high=1<<element_width, size=(kwargs["M"], kwargs["N"]), dtype=np.uint64)
+        low=0, high=1 << element_width, size=(kwargs["M"], kwargs["N"]), dtype=np.uint64)
     input_matrix = matrix_data
     if kwargs["input_layout"] == "MN":
         input_matrix = input_matrix.ravel()
@@ -133,23 +133,61 @@ def emit_transposer_data(**kwargs):
         spatial_stride_src = matrix_data.shape[1] * element_width // 8
         temporal_bounds_src = [transfer_per_transpose, matrix_data.shape[1] //
                                tile_width, matrix_data.shape[0] // tile_width]
-        temporal_strides_src = [8, tile_width * element_width // 8, matrix_data.shape[1] * tile_width * element_width // 8]
+        temporal_strides_src = [
+            8,
+            tile_width *
+            element_width //
+            8,
+            matrix_data.shape[1] *
+            tile_width *
+            element_width //
+            8]
     else:
         match = re.search(r'MNM(\d+)N(\d+)', kwargs["input_layout"])
         m, n = match.groups()
         m, n = int(m), int(n)
         spatial_stride_src = n * element_width // 8
-        temporal_bounds_src = [transfer_per_transpose, n // tile_width, matrix_data.shape[1] // n, m // tile_width,
-                               matrix_data.shape[0] // m]
-        temporal_strides_src = [8, tile_width * element_width // 8, m * n * element_width // 8, n * tile_width * element_width // 8, matrix_data.shape[1] * m * element_width // 8]
+        temporal_bounds_src = [
+            transfer_per_transpose,
+            n // tile_width,
+            matrix_data.shape[1] // n,
+            m // tile_width,
+            matrix_data.shape[0] // m]
+        temporal_strides_src = [
+            8,
+            tile_width *
+            element_width //
+            8,
+            m *
+            n *
+            element_width //
+            8,
+            n *
+            tile_width *
+            element_width //
+            8,
+            matrix_data.shape[1] *
+            m *
+            element_width //
+            8]
 
     # Output Side (Writer)
     if kwargs["enable_transpose"] is True:
         if kwargs["output_layout"] == "MN":
             spatial_stride_dst = matrix_data.shape[0] * element_width // 8
             temporal_bounds_dst = [
-                transfer_per_transpose, matrix_data.shape[1] // tile_width, matrix_data.shape[0] // tile_width]
-            temporal_strides_dst = [8, matrix_data.shape[0] * tile_width * element_width // 8, tile_width * element_width // 8]
+                transfer_per_transpose,
+                matrix_data.shape[1] // tile_width,
+                matrix_data.shape[0] // tile_width]
+            temporal_strides_dst = [
+                8,
+                matrix_data.shape[0] *
+                tile_width *
+                element_width //
+                8,
+                tile_width *
+                element_width //
+                8]
         else:
             match = re.search(r'MNM(\d+)N(\d+)', kwargs["output_layout"])
             m, n = match.groups()
@@ -161,13 +199,28 @@ def emit_transposer_data(**kwargs):
                 matrix_data.shape[1] // m,
                 n // tile_width,
                 matrix_data.shape[0] // n]
-            temporal_strides_dst = [8, n * tile_width * element_width // 8, m * matrix_data.shape[0] * element_width // 8, tile_width * element_width // 8, m * n * element_width // 8]
+            temporal_strides_dst = [
+                8,
+                n * tile_width * element_width // 8,
+                m * matrix_data.shape[0] * element_width // 8,
+                tile_width * element_width // 8,
+                m * n * element_width // 8]
     else:
         if kwargs["output_layout"] == "MN":
             spatial_stride_dst = matrix_data.shape[1] * element_width // 8
             temporal_bounds_dst = [
-                transfer_per_transpose, matrix_data.shape[1] // tile_width, matrix_data.shape[0] // tile_width]
-            temporal_strides_dst = [8, tile_width * element_width // 8, matrix_data.shape[1] * tile_width * element_width // 8]
+                transfer_per_transpose,
+                matrix_data.shape[1] // tile_width,
+                matrix_data.shape[0] // tile_width]
+            temporal_strides_dst = [
+                8,
+                tile_width *
+                element_width //
+                8,
+                matrix_data.shape[1] *
+                tile_width *
+                element_width //
+                8]
         else:
             match = re.search(r'MNM(\d+)N(\d+)', kwargs["output_layout"])
             m, n = match.groups()
@@ -179,7 +232,12 @@ def emit_transposer_data(**kwargs):
                 matrix_data.shape[1] // n,
                 m // tile_width,
                 matrix_data.shape[0] // m]
-            temporal_strides_dst = [8, tile_width * element_width // 8, m * n * element_width // 8, n * tile_width * element_width // 8, matrix_data.shape[1] * m * element_width // 8]
+            temporal_strides_dst = [
+                8,
+                tile_width * element_width // 8,
+                m * n * element_width // 8,
+                n * tile_width * element_width // 8,
+                matrix_data.shape[1] * m * element_width // 8]
 
     emit_str += [
         format_scalar_definition(
