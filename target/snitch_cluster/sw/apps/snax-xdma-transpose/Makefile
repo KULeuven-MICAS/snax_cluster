@@ -4,8 +4,8 @@
 #
 # Yunhao Deng <yunhao.deng@kuleuven.be>
 
-APP     = snax-xdma-transpose-uint16
-SRCS    = src/snax-xdma-transpose-uint16.c
+APP     = snax-xdma-transpose
+SRCS    = src/snax-xdma-transpose.c
 INCDIRS = data
 INCDIRS += ../../snax/xdma/include
 

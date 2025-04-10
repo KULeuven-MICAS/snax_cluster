@@ -31,13 +31,37 @@ def emit_header_file(**kwargs):
 
 
 def emit_transposer_data(**kwargs):
-    emit_str = []
-    padded_M = (kwargs["M"] + 7) // 8 * 8
-    padded_N = (kwargs["N"] + 7) // 8 * 8
+    tile_width = None
+    element_width = kwargs["BIT_WIDTH"]
+    if element_width == 8 or element_width == 16:
+        tile_width = 8
+    else:
+        raise ValueError(
+            f"Invalid BIT_WIDTH: {element_width}, only 8 and 16 are supported")
+    data_type = None
+    if element_width == 8:
+        data_type = "uint8_t"
+    elif element_width == 16:
+        data_type = "uint16_t"
+    else:
+        raise ValueError(
+            f"Invalid BIT_WIDTH: {element_width}, only 8 and 16 are supported")
+    transfer_per_transpose = None
+    if element_width == 8:
+        transfer_per_transpose = 1
+    elif element_width == 16:
+        transfer_per_transpose = 2
+    else:
+        raise ValueError(
+            f"Invalid BIT_WIDTH: {element_width}, only 8 and 16 are supported")
 
-    matrix_data = np.zeros((padded_M, padded_N), dtype=np.uint16)
+    emit_str = []
+    padded_M = (kwargs["M"] + tile_width - 1) // tile_width * tile_width
+    padded_N = (kwargs["N"] + tile_width - 1) // tile_width * tile_width
+
+    matrix_data = np.zeros((padded_M, padded_N), dtype=np.uint64)
     matrix_data[:kwargs["M"], :kwargs["N"]] = np.random.randint(
-        low=0, high=65535, size=(kwargs["M"], kwargs["N"]), dtype=np.uint16)
+        low=0, high=1<<element_width, size=(kwargs["M"], kwargs["N"]), dtype=np.uint64)
     input_matrix = matrix_data
     if kwargs["input_layout"] == "MN":
         input_matrix = input_matrix.ravel()
@@ -46,6 +70,9 @@ def emit_transposer_data(**kwargs):
         if match:
             m, n = match.groups()
             m, n = int(m), int(n)
+            if m % tile_width != 0 or n % tile_width != 0:
+                raise ValueError(
+                    f"Invalid input layout: {kwargs['input_layout']}. The tile size should be a multiple of {tile_width}.")
             input_matrix = input_matrix.reshape(
                 input_matrix.shape[0] // m,
                 m,
@@ -62,7 +89,7 @@ def emit_transposer_data(**kwargs):
             "uint32_t",
             "matrix_size",
             matrix_data.size)]
-    emit_str += [format_vector_definition("uint16_t",
+    emit_str += [format_vector_definition(data_type,
                                           "input_matrix", input_matrix)]
 
     # Emit output matrix
@@ -76,6 +103,9 @@ def emit_transposer_data(**kwargs):
         if match:
             m, n = match.groups()
             m, n = int(m), int(n)
+            if m % tile_width != 0 or n % tile_width != 0:
+                raise ValueError(
+                    f"Invalid output layout: {kwargs['output_layout']}. The tile size should be a multiple of {tile_width}.")
             output_matrix = output_matrix.reshape(
                 output_matrix.shape[0] // m,
                 m,
@@ -86,7 +116,7 @@ def emit_transposer_data(**kwargs):
         else:
             raise ValueError(
                 f"Invalid output layout: {kwargs['output_layout']}")
-    emit_str += [format_vector_definition("uint16_t",
+    emit_str += [format_vector_definition(data_type,
                                           "golden_output_matrix",
                                           output_matrix)]
 
@@ -98,55 +128,58 @@ def emit_transposer_data(**kwargs):
     temporal_bounds_src = []
     temporal_bounds_dst = []
 
+    # Input Side (Reader)
     if kwargs["input_layout"] == "MN":
-        spatial_stride_src = matrix_data.shape[1] * 2
-        temporal_bounds_src = [2, matrix_data.shape[1] //
-                               8, matrix_data.shape[0] // 8]
-        temporal_strides_src = [8, 8 * 2, matrix_data.shape[1] * 8 * 2]
+        spatial_stride_src = matrix_data.shape[1] * element_width // 8
+        temporal_bounds_src = [transfer_per_transpose, matrix_data.shape[1] //
+                               tile_width, matrix_data.shape[0] // tile_width]
+        temporal_strides_src = [8, tile_width * element_width // 8, matrix_data.shape[1] * tile_width * element_width // 8]
     else:
         match = re.search(r'MNM(\d+)N(\d+)', kwargs["input_layout"])
         m, n = match.groups()
         m, n = int(m), int(n)
-        spatial_stride_src = n * 2
-        temporal_bounds_src = [2, n // 8, matrix_data.shape[1] // n, m // 8,
+        spatial_stride_src = n * element_width // 8
+        temporal_bounds_src = [transfer_per_transpose, n // tile_width, matrix_data.shape[1] // n, m // tile_width,
                                matrix_data.shape[0] // m]
-        temporal_strides_src = [8, 8 * 2, m * n * 2, n * 8 * 2, matrix_data.shape[1] * m * 2]
+        temporal_strides_src = [8, tile_width * element_width // 8, m * n * element_width // 8, n * tile_width * element_width // 8, matrix_data.shape[1] * m * element_width // 8]
+
+    # Output Side (Writer)
     if kwargs["enable_transpose"] is True:
         if kwargs["output_layout"] == "MN":
-            spatial_stride_dst = matrix_data.shape[0] * 2
+            spatial_stride_dst = matrix_data.shape[0] * element_width // 8
             temporal_bounds_dst = [
-                2, matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
-            temporal_strides_dst = [8, matrix_data.shape[0] * 8 * 2, 8 * 2]
+                transfer_per_transpose, matrix_data.shape[1] // tile_width, matrix_data.shape[0] // tile_width]
+            temporal_strides_dst = [8, matrix_data.shape[0] * tile_width * element_width // 8, tile_width * element_width // 8]
         else:
             match = re.search(r'MNM(\d+)N(\d+)', kwargs["output_layout"])
             m, n = match.groups()
             m, n = int(m), int(n)
-            spatial_stride_dst = n * 2
+            spatial_stride_dst = n * element_width // 8
             temporal_bounds_dst = [
-                2,
-                m // 8,
+                transfer_per_transpose,
+                m // tile_width,
                 matrix_data.shape[1] // m,
-                n // 8,
+                n // tile_width,
                 matrix_data.shape[0] // n]
-            temporal_strides_dst = [8, n * 8 * 2, m * matrix_data.shape[0] * 2, 8 * 2, m * n * 2]
+            temporal_strides_dst = [8, n * tile_width * element_width // 8, m * matrix_data.shape[0] * element_width // 8, tile_width * element_width // 8, m * n * element_width // 8]
     else:
         if kwargs["output_layout"] == "MN":
-            spatial_stride_dst = matrix_data.shape[1] * 2
+            spatial_stride_dst = matrix_data.shape[1] * element_width // 8
             temporal_bounds_dst = [
-                2, matrix_data.shape[1] // 8, matrix_data.shape[0] // 8]
-            temporal_strides_dst = [8, 8 * 2, matrix_data.shape[1] * 8 * 2]
+                transfer_per_transpose, matrix_data.shape[1] // tile_width, matrix_data.shape[0] // tile_width]
+            temporal_strides_dst = [8, tile_width * element_width // 8, matrix_data.shape[1] * tile_width * element_width // 8]
         else:
             match = re.search(r'MNM(\d+)N(\d+)', kwargs["output_layout"])
             m, n = match.groups()
             m, n = int(m), int(n)
-            spatial_stride_dst = n * 2
+            spatial_stride_dst = n * element_width // 8
             temporal_bounds_dst = [
-                2,
-                n // 8,
+                transfer_per_transpose,
+                n // tile_width,
                 matrix_data.shape[1] // n,
-                m // 8,
+                m // tile_width,
                 matrix_data.shape[0] // m]
-            temporal_strides_dst = [8, 8 * 2, m * n * 2, n * 8 * 2, matrix_data.shape[1] * m * 2]
+            temporal_strides_dst = [8, tile_width * element_width // 8, m * n * element_width // 8, n * tile_width * element_width // 8, matrix_data.shape[1] * m * element_width // 8]
 
     emit_str += [
         format_scalar_definition(
@@ -183,7 +216,7 @@ def emit_transposer_data(**kwargs):
                                           else 0)]
     emit_str += [format_vector_definition("uint32_t",
                                           "transposer_param",
-                                          [1])]
+                                          [0 if element_width == 8 else 1])]
     return emit_str
 
 
