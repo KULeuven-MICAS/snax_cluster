@@ -22,7 +22,8 @@ class SpatialArrayParam(
   val arrayDim:               Seq[Seq[Seq[Int]]],
   val inputCSerialDataWidth:  Int = 512,
   val outputDSerialDataWidth: Int = 512,
-  val configWidth:            Int = 32
+  val configWidth:            Int = 32,
+  val csrNum : Int = 7
 )
 
 object SpatialArrayParam {
