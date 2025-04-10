@@ -415,7 +415,7 @@ sources:
   - target: snax_KUL_cluster
     files:
       - target/snitch_cluster/generated/snax_KUL_cluster_wrapper.sv
-  
+
   #---------------------------
   # Test harness declaration
   #---------------------------
