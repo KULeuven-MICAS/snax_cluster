@@ -43,21 +43,21 @@ int main() {
     arg = 10;
     n_workers = snrt_cluster_compute_core_num();
     err |= run_and_verify_task(&arg, n_workers) << 0;
-
+    __asm__ volatile("fence.i" :::"memory");
     // Dispatch a task on 4 harts and wait for its completion
     printf("-- Test 2\n");
     sum = 0;
     arg = 20;
     n_workers = 4;
     err |= run_and_verify_task(&arg, n_workers) << 1;
-
+    __asm__ volatile("fence.i" :::"memory");
     // Dispatch a task on 1 hart and wait for its completion
     printf("-- Test 3\n");
     sum = 0;
     arg = 30;
     n_workers = 1;
     err |= run_and_verify_task(&arg, n_workers) << 2;
-
+    __asm__ volatile("fence.i" :::"memory");
     // exit
     eu_exit(snrt_cluster_core_idx());
     return err;
