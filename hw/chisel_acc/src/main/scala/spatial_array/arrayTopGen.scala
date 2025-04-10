@@ -10,7 +10,7 @@ object ArrayTopGen {
         macNum = Seq(1024),
         inputAElemWidth = Seq(8),
         inputBElemWidth = Seq(8),
-        inputCElemWidth = Seq(8),
+        inputCElemWidth = Seq(32),
         mulElemWidth = Seq(16),
         outElemWidth = Seq(32),
         inputAWidth = 1024,
