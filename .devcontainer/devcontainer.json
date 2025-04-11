@@ -1,13 +1,11 @@
 {
   "name": "pixi-devcontainer",
   "build": {
-    "dockerfile": "../util/container/Dockerfile"
-		"context": ".."
+    "dockerfile": "Dockerfile"
   },
   "settings": {
     "terminal.integrated.defaultProfile.linux": "bash"
   },
-  "postCreateCommand": "echo 'source /pixi/shell-hook' >> /etc/bash.bashrc",
   "remoteUser": "root"
 }
 
