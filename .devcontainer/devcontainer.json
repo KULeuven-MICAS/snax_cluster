@@ -1,7 +1,8 @@
 {
   "name": "pixi-devcontainer",
   "build": {
-    "dockerfile": "util/container/Dockerfile"
+    "dockerfile": "../util/container/Dockerfile"
+		"context": ".."
   },
   "settings": {
     "terminal.integrated.defaultProfile.linux": "bash"
