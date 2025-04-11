@@ -188,7 +188,7 @@ import xdma_pkg::*;
     dma_length:        xdma_to_remote_data_accompany_cfg_dma_length,
     ready_to_transfer: xdma_to_remote_data_accompany_cfg_ready_to_transfer,
     is_first_cw:       xdma_to_remote_data_accompany_cfg_is_first_cw,
-    is_last_cw:        xdma_from_remote_data_accompany_cfg_is_last_cw
+    is_last_cw:        xdma_to_remote_data_accompany_cfg_is_last_cw
   };
   assign xdma_from_remote_data_accompany_cfg = xdma_pkg::xdma_accompany_cfg_t'{
     dma_id:            xdma_from_remote_data_accompany_cfg_dma_id,
