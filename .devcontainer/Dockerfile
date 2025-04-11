@@ -16,5 +16,5 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
 # Setup shell environment
-RUN echo 'source /pixi/shell-hook' >> /etc/bash.bashrc
+RUN echo 'source /pixi/entrypoint.sh' >> /etc/bash.bashrc
 CMD ["bash"]
