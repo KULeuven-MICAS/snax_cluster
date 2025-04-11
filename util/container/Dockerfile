@@ -33,5 +33,16 @@ RUN chmod +x /pixi/entrypoint.sh
 COPY --from=gcc-download /tools/riscv /tools/riscv
 ENV RISCV_GCC_BINROOT="/tools/riscv/bin"
 
+# Install base tools and locales
+RUN apt-get update && \
+    apt-get install -y bash curl git locales && \
+    locale-gen en_US.UTF-8 && \
+    update-locale LANG=en_US.UTF-8 && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
 ENTRYPOINT [ "/pixi/entrypoint.sh" ]
 CMD ["/bin/bash"]

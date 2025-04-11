@@ -1,14 +1,12 @@
 {
-  "image": "ghcr.io/kuleuven-micas/snax:main",
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "chipsalliance.verible",
-        "wavetrace.wavetrace",
-        "mshr-h.veriloghdl",
-        "ms-python.python",
-        "ms-vscode.cpptools"
-      ]
-    }
-  }
+  "name": "pixi-devcontainer",
+  "build": {
+    "dockerfile": "util/container/Dockerfile"
+  },
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash"
+  },
+  "postCreateCommand": "echo 'source /pixi/shell-hook' >> /etc/bash.bashrc",
+  "remoteUser": "root"
 }
+
