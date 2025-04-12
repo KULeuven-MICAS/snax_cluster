@@ -3,7 +3,6 @@ package snax_acc.spatial_array
 import chisel3._
 import chisel3.util._
 
-import snax_acc.utils.DecoupledCut._
 import snax_acc.utils._
 
 // arrayTop with the fsm controller and array
@@ -143,7 +142,15 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
 
   combined_decoupled_a_b_sub.io.out <> cut_combined_decoupled_a_b_sub_in
 
-  cut_combined_decoupled_a_b_sub_in -\> cut_combined_decoupled_a_b_sub_out
+  val cut_buffer = Module(
+    new DataCut(chiselTypeOf(cut_combined_decoupled_a_b_sub_in.bits), delay = params.adderTreeDelay) {
+      override val desiredName =
+        s"DataCut${params.adderTreeDelay}_W_" + cut_combined_decoupled_a_b_sub_in.bits.getWidth.toString + "_T_" + cut_combined_decoupled_a_b_sub_in.bits.getClass.getSimpleName
+    }
+  )
+  cut_buffer.suggestName(cut_combined_decoupled_a_b_sub_in.circuitName + s"_dataCut${params.adderTreeDelay}")
+  cut_combined_decoupled_a_b_sub_in <> cut_buffer.io.in
+  cut_buffer.io.out <> cut_combined_decoupled_a_b_sub_out
 
   val a_after_cut   = Wire(Decoupled(UInt(params.inputAWidth.W)))
   val b_after_cut   = Wire(Decoupled(UInt(params.inputBWidth.W)))
