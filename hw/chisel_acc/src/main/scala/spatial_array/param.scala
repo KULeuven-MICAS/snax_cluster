@@ -23,7 +23,8 @@ class SpatialArrayParam(
   val inputCSerialDataWidth:  Int = 512,
   val outputDSerialDataWidth: Int = 512,
   val configWidth:            Int = 32,
-  val csrNum : Int = 7
+  val csrNum : Int = 7,
+  val adderTreeDelay: Int = 0
 )
 
 object SpatialArrayParam {
@@ -34,7 +35,7 @@ object SpatialArrayParam {
       macNum            = Seq(1024, 2048),
       inputAElemWidth   = Seq(8, 4),
       inputBElemWidth   = Seq(8, 4),
-      inputCElemWidth   = Seq(8, 4),
+      inputCElemWidth   = Seq(32, 16),
       mulElemWidth      = Seq(16, 8),
       outElemWidth      = Seq(32, 16),
       inputAWidth       = 512,
