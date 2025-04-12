@@ -1,11 +1,10 @@
 package snax_acc.spatial_array
 
 import chisel3._
-import chisel3.util._
 
 object ArrayTopGen {
   def main(args: Array[String]): Unit = {
-    var params = SpatialArrayParam(
+    val params = SpatialArrayParam(
         opType = Seq(OpType.SIntSIntOp),
         macNum = Seq(1024),
         inputAElemWidth = Seq(8),
