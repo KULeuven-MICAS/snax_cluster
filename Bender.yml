@@ -352,10 +352,23 @@ sources:
       - hw/chisel_acc/src/snax_data_reshuffler_shell_wrapper.sv
       - target/snitch_cluster/generated/snax_data_reshuffler/snax_data_reshuffler_wrapper.sv
 
-  - target: snax_gemmX
+  - target: snax_opengemm
     files:
       # Level 0
       - hw/chisel_acc/generated/SpatialArray/ArrayTop.sv
+      - hw/chisel_acc/src/snax_opengemm_shell_wrapper.sv
+      - target/snitch_cluster/generated/snax_opengemm/snax_opengemm_csrman_CsrManager.sv
+      - target/snitch_cluster/generated/snax_opengemm/snax_opengemm_Streamer.sv
+      # Level 1
+      - target/snitch_cluster/generated/snax_opengemm/snax_opengemm_csrman_wrapper.sv
+      - target/snitch_cluster/generated/snax_opengemm/snax_opengemm_streamer_wrapper.sv
+      # Level 2
+      - target/snitch_cluster/generated/snax_opengemm/snax_opengemm_wrapper.sv
+
+  - target: snax_gemmX
+    files:
+      # Level 0
+      - hw/chisel_acc/generated/gemmx/BlockGemmRescaleSIMD.sv
       - hw/chisel_acc/src/snax_streamer_gemmX_shell_wrapper.sv
       - target/snitch_cluster/generated/snax_streamer_gemmX/snax_streamer_gemmX_csrman_CsrManager.sv
       - target/snitch_cluster/generated/snax_streamer_gemmX/snax_streamer_gemmX_Streamer.sv
