@@ -51,7 +51,7 @@ SUBDIRS += snax-xdma-maxpool
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-reshape-comparison
 endif
-ifeq ($(CFG_OVERRIDE), cfg/snax_open_gemm.hjson)
+ifeq ($(CFG_OVERRIDE), cfg/snax_opengemm.hjson)
 SUBDIRS += snax-opengemm-matmul
 endif
 SUBDIRS += snax-multi-cluster-playground

@@ -20,8 +20,8 @@
         data_width: 64,
         user_width: 3,
         tcdm: {
-            size: 128,
-            banks: 64,
+            size: 512,
+            banks: 128,
         },
         cluster_periph_size: 64, // kB
         zero_mem_size: 64, // kB
@@ -49,10 +49,10 @@
         },
         snax_custom_tcdm_assign: {
             snax_enable_assign_tcdm_idx: true,
-            snax_narrow_assign_start_idx: [152],
-            snax_narrow_assign_end_idx: [167],
+            snax_narrow_assign_start_idx: [40],
+            snax_narrow_assign_end_idx: [55],
             snax_wide_assign_start_idx: [0],
-            snax_wide_assign_end_idx: [151],
+            snax_wide_assign_end_idx: [39],
         },
         // AXI bandwidth switcher
         use_ax_bw_converter: true,
@@ -88,7 +88,7 @@
                     cacheline: 256 // word size in bits
                 },
                 cores: [
-                    { $ref: "#/snax_streamer_gemmX_core_template" },
+                    { $ref: "#/snax_opengemm_core_template" },
                     { $ref: "#/dma_core_template" },
                 ]
             }
@@ -109,7 +109,7 @@
         },
     },
     // Templates.
-    snax_streamer_gemmX_core_template: {
+    snax_opengemm_core_template: {
         isa: "rv32ima",
         xssr: false,
         xfrep: false,
@@ -121,20 +121,20 @@
         xfdotp: false,
         xfvec: false,
         snax_acc_cfg: {
-            snax_acc_name: "snax_streamer_gemmX",
-            bender_target: ["snax_gemmX"],
+            snax_acc_name: "snax_opengemm",
+            bender_target: ["snax_opengemm"],
             snax_narrow_tcdm_ports: 0,
-            snax_wide_tcdm_ports: 152,
+            snax_wide_tcdm_ports: 40,
             snax_num_rw_csr: 7,
             snax_num_ro_csr: 2,
-            snax_gemmx_mesh_row: [16, 1],
-            snax_gemmx_tile_size: [8, 32],
-            snax_gemmx_mesh_col: [8, 32],
-            snax_gemmx_array_a_width: 1024,
-            snax_gemmx_array_b_width: 8192,
-            snax_gemmx_array_c_d_width: 4096,
-            snax_gemmx_serial_c_d_width: 512,
-            snax_streamer_cfg: {$ref: "#/snax_streamer_gemmX_streamer_template" }
+            snax_opengemm_mesh_row: [128],
+            snax_opengemm_tile_size: [1],
+            snax_opengemm_mesh_col: [128],
+            snax_opengemm_array_a_width: 1024,
+            snax_opengemm_array_b_width: 1024,
+            snax_opengemm_array_c_d_width: 524288,
+            snax_opengemm_serial_c_d_width: 512,
+            snax_streamer_cfg: {$ref: "#/snax_opengemm_streamer_template" }
         },
         snax_use_custom_ports: false,
         num_int_outstanding_loads: 1,
@@ -186,13 +186,13 @@
         num_itlb_entries: 1,
     },
     // SNAX Streamer Templates
-    snax_streamer_gemmX_streamer_template :{
+    snax_opengemm_streamer_template :{
 
         data_reader_params: {
-            spatial_bounds: [[16], [128]],
+            spatial_bounds: [[16], [16]],
             temporal_dim: [6, 3],
-            num_channel: [16, 128],
-            fifo_depth: [2, 2],
+            num_channel: [16, 16],
+            fifo_depth: [3, 3],
             configurable_channel: [1, 1],
             tcdm_logic_word_size: [[256, 128, 64], [256, 128, 64]],
             // datapath_extensions: [{HasTransposer: {row:[16], col:[8], elementWidth:[8]}, {row:[1], col:[32], elementWidth:[8]}}, {HasTransposer: {row:[8], col:[8], elementWidth:[8]}, {row:[32], col:[32], elementWidth:[8]}}]
