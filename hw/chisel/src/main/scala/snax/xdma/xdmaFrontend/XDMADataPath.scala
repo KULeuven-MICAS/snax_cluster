@@ -208,8 +208,9 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
 
   val stateIdle :: stateChainedWrite :: stateChainedWriteWait :: Nil = Enum(3)
 
-  val nextState    = WireInit(stateIdle)
+  val nextState    = Wire(chiselTypeOf(stateIdle))
   val currentState = RegNext(nextState, stateIdle)
+  nextState := currentState
 
   switch(currentState) {
     is(stateIdle) {
