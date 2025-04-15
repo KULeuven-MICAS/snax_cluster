@@ -29,40 +29,40 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   val io = IO(new SpatialArrayIO(params))
 
   // different type of 1D multipliers
-  val multipliers = (0 until params.opType.length).map(i =>
-    Seq.fill(params.macNum(i))(
+  val multipliers = (0 until params.opType.length).map(dataTypeIdx =>
+    Seq.fill(params.macNum(dataTypeIdx))(
       Module(
         new Multiplier(
-          params.opType(i),
-          params.inputAElemWidth(i),
-          params.inputBElemWidth(i),
-          params.mulElemWidth(i)
+          params.opType(dataTypeIdx),
+          params.inputAElemWidth(dataTypeIdx),
+          params.inputBElemWidth(dataTypeIdx),
+          params.mulElemWidth(dataTypeIdx)
         )
       )
     )
   )
 
   // constraints, regardless of the computation bound or bandwidth bound array
-  params.arrayDim.zipWithIndex.foreach { case (dims, i) =>
+  params.arrayDim.zipWithIndex.foreach { case (dims, dataTypeIdx) =>
     dims.foreach { dim =>
       {
         require(dim.length == 3)
         // mac number should be enough to support the computation bound
-        require(dim(0) * dim(1) * dim(2) <= params.macNum(i))
+        require(dim(0) * dim(1) * dim(2) <= params.macNum(dataTypeIdx))
         // inputAWidth should be enough to support the bandwidth bound
         require(
-          params.inputAWidth             >= dim(0) * dim(1) * params.inputAElemWidth(i)
+          params.inputAWidth             >= dim(0) * dim(1) * params.inputAElemWidth(dataTypeIdx)
         )
         // inputBWidth should be enough to support the bandwidth bound
         require(
-          params.inputBWidth             >= dim(1) * dim(2) * params.inputBElemWidth(i)
+          params.inputBWidth             >= dim(1) * dim(2) * params.inputBElemWidth(dataTypeIdx)
         )
         // arrayInputCWidth should be enough to support the bandwidth bound
         require(
-          params.arrayInputCWidth        >= dim(0) * dim(2) * params.inputCElemWidth(i)
+          params.arrayInputCWidth        >= dim(0) * dim(2) * params.inputCElemWidth(dataTypeIdx)
         )
         // arrayOutputDWidth should be enough to support the bandwidth bound
-        require(params.arrayOutputDWidth >= dim(0) * dim(2) * params.outElemWidth(i))
+        require(params.arrayOutputDWidth >= dim(0) * dim(2) * params.outElemWidth(dataTypeIdx))
 
         // adder tree should be power of 2
         require(isPow2(dim(1)))
@@ -115,11 +115,11 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     reshapedData
   }
 
-  val inputA = params.arrayDim.zipWithIndex.map { case (dims, i) =>
+  val inputA = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
       dataForward(
-        params.macNum(i),
-        params.inputAElemWidth(i),
+        params.macNum(dataTypeIdx),
+        params.inputAElemWidth(dataTypeIdx),
         // Mu, Ku, Nu
         dim(0),
         dim(1),
@@ -133,11 +133,11 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     })
   }
 
-  val inputB = params.arrayDim.zipWithIndex.map { case (dims, i) =>
+  val inputB = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
       dataForward(
-        params.macNum(i),
-        params.inputBElemWidth(i),
+        params.macNum(dataTypeIdx),
+        params.inputBElemWidth(dataTypeIdx),
         // Mu, Ku, Nu
         dim(0),
         dim(1),
@@ -151,11 +151,11 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     })
   }
 
-  val inputC = params.arrayDim.zipWithIndex.map { case (dims, i) =>
+  val inputC = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
       dataForward(
-        params.macNum(i),
-        params.inputCElemWidth(i),
+        params.macNum(dataTypeIdx),
+        params.inputCElemWidth(dataTypeIdx),
         // Mu, Ku = 1, Nu, only two dimensions
         dim(0),
         1,
@@ -170,32 +170,32 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   }
 
   // multipliers
-  (0 until params.opType.length).foreach(i =>
-    multipliers(i).zipWithIndex.foreach { case (mul, mulIdx) =>
+  (0 until params.opType.length).foreach(dataTypeIdx =>
+    multipliers(dataTypeIdx).zipWithIndex.foreach { case (mul, mulIdx) =>
       mul.io.in_a := MuxLookup(
         io.ctrl.arrayShapeCfg,
-        inputA(i)(0)(mulIdx)
+        inputA(dataTypeIdx)(0)(mulIdx)
       )(
-        (0 until params.arrayDim(i).length).map(j => j.U -> inputA(i)(j)(mulIdx))
+        (0 until params.arrayDim(dataTypeIdx).length).map(j => j.U -> inputA(dataTypeIdx)(j)(mulIdx))
       )
       mul.io.in_b := MuxLookup(
         io.ctrl.arrayShapeCfg,
-        inputB(i)(0)(mulIdx)
+        inputB(dataTypeIdx)(0)(mulIdx)
       )(
-        (0 until params.arrayDim(i).length).map(j => j.U -> inputB(i)(j)(mulIdx))
+        (0 until params.arrayDim(dataTypeIdx).length).map(j => j.U -> inputB(dataTypeIdx)(j)(mulIdx))
       )
     }
   )
 
   // adder tree
-  val adderTree = (0 until params.opType.length).map(i =>
+  val adderTree = (0 until params.opType.length).map(dataTypeIdx =>
     Module(
       new AdderTree(
-        params.opType(i),
-        params.mulElemWidth(i),
-        params.outElemWidth(i),
-        params.macNum(i),
-        params.arrayDim(i).map(_(1))
+        params.opType(dataTypeIdx),
+        params.mulElemWidth(dataTypeIdx),
+        params.outElemWidth(dataTypeIdx),
+        params.macNum(dataTypeIdx),
+        params.arrayDim(dataTypeIdx).map(_(1))
       )
     )
   )
@@ -211,13 +211,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   // accumulator
 
-  val accumulators = (0 until params.opType.length).map(i =>
+  val accumulators = (0 until params.opType.length).map(dataTypeIdx =>
     Module(
       new Accumulator(
-        params.opType(i),
-        params.outElemWidth(i),
-        params.outElemWidth(i),
-        params.macNum(i)
+        params.opType(dataTypeIdx),
+        params.outElemWidth(dataTypeIdx),
+        params.outElemWidth(dataTypeIdx),
+        params.macNum(dataTypeIdx)
       )
     )
   )
@@ -235,8 +235,8 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   accumulators.foreach(_.io.accAddExtIn := io.ctrl.accAddExtIn)
   accumulators.foreach(_.io.accClear := io.ctrl.accClear)
   accumulators.foreach(_.io.out.ready := io.data.out_d.ready)
-  (0 until params.opType.length).foreach { i =>
-    accumulators(i).io.enable := io.ctrl.dataTypeCfg === i.U
+  (0 until params.opType.length).foreach { dataTypeIdx =>
+    accumulators(dataTypeIdx).io.enable := io.ctrl.dataTypeCfg === dataTypeIdx.U
   }
 
   // input fire signals
@@ -244,13 +244,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     io.ctrl.dataTypeCfg,
     accumulators(0).io.in1.fire
   )(
-    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.in1.fire)
+    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.in1.fire)
   )
   val acc_in2_fire = MuxLookup(
     io.ctrl.dataTypeCfg,
     accumulators(0).io.in2.fire
   )(
-    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.in2.fire)
+    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.in2.fire)
   )
   io.data.in_a.ready            := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
   io.data.in_b.ready            := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
@@ -263,14 +263,14 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     io.ctrl.dataTypeCfg,
     accumulators(0).io.out.asUInt
   )(
-    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.out.bits.asUInt)
+    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.out.bits.asUInt)
   )
 
   io.data.out_d.valid := MuxLookup(
     io.ctrl.dataTypeCfg,
     accumulators(0).io.out.valid
   )(
-    (0 until params.arrayDim.length).map(i => i.U -> accumulators(i).io.out.valid)
+    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.out.valid)
   )
 }
 
