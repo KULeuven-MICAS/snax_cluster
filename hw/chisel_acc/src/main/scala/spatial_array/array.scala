@@ -210,7 +210,6 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   adderTree.foreach(_.io.cfg := io.ctrl.arrayShapeCfg)
 
   // accumulator
-
   val accumulators = (0 until params.opType.length).map(dataTypeIdx =>
     Module(
       new Accumulator(
