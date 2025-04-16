@@ -11,8 +11,8 @@ import chisel3.util._
   *   The width of each output serial chunk, must divide parallelWidth evenly.
   */
 case class ParallelToSerialParams(
-  parallelWidth: Int,
-  serialWidth:   Int,
+  parallelWidth:  Int,
+  serialWidth:    Int,
   earlyTerminate: Boolean = false
 ) {
   if (parallelWidth > serialWidth) {
@@ -28,17 +28,21 @@ case class ParallelToSerialParams(
   */
 class ParallelToSerial(val p: ParallelToSerialParams) extends Module {
   val io = IO(new Bundle {
-    val in  = Flipped(Decoupled(UInt(p.parallelWidth.W)))
-    val terminate_factor = if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
-    val out = Decoupled(UInt(p.serialWidth.W))
+    val in               = Flipped(Decoupled(UInt(p.parallelWidth.W)))
+    val terminate_factor =
+      if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
+    val out              = Decoupled(UInt(p.serialWidth.W))
   })
 
   if (p.parallelWidth > p.serialWidth) {
     // Calculate how many serial chunks form one parallel word.
     val factor = p.parallelWidth / p.serialWidth
 
-    if(p.earlyTerminate) {
-      assert(io.terminate_factor.getOrElse(factor.U) <= factor.U, "terminate_factor must be less than or equal to the number of chunks.")
+    if (p.earlyTerminate) {
+      assert(
+        io.terminate_factor.getOrElse(factor.U) <= factor.U,
+        "terminate_factor must be less than or equal to the number of chunks."
+      )
     }
 
     // Shift register to hold the parallel data while serializing.
@@ -94,7 +98,7 @@ class ParallelToSerial(val p: ParallelToSerialParams) extends Module {
 
     // On handshake, shift to the next chunk and decrement count.
     when(io.in.fire) {
-      if(p.earlyTerminate) {
+      if (p.earlyTerminate) {
         count := io.terminate_factor.getOrElse(factor.U)
       } else {
         count := factor.U
@@ -123,8 +127,8 @@ class ParallelToSerial(val p: ParallelToSerialParams) extends Module {
   *   The total width of the parallel output data. Must be a multiple of serialWidth.
   */
 case class SerialToParallelParams(
-  serialWidth:   Int,
-  parallelWidth: Int,
+  serialWidth:    Int,
+  parallelWidth:  Int,
   earlyTerminate: Boolean = false
 ) {
   if (parallelWidth > serialWidth) {
@@ -143,9 +147,10 @@ case class SerialToParallelParams(
   */
 class SerialToParallel(val p: SerialToParallelParams) extends Module {
   val io = IO(new Bundle {
-    val in  = Flipped(Decoupled(UInt(p.serialWidth.W)))
-    val terminate_factor = if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
-    val out = Decoupled(UInt(p.parallelWidth.W))
+    val in               = Flipped(Decoupled(UInt(p.serialWidth.W)))
+    val terminate_factor =
+      if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
+    val out              = Decoupled(UInt(p.parallelWidth.W))
   })
 
   if (p.parallelWidth > p.serialWidth) {
@@ -153,7 +158,10 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
     val factor: Int = p.parallelWidth / p.serialWidth
 
     if (p.earlyTerminate) {
-      assert(io.terminate_factor.getOrElse(factor.U) <= factor.U, "terminate_factor must be less than or equal to the number of chunks.")
+      assert(
+        io.terminate_factor.getOrElse(factor.U) <= factor.U,
+        "terminate_factor must be less than or equal to the number of chunks."
+      )
     }
 
     // Registers to track incoming data and chunk count
@@ -161,9 +169,9 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
     val shiftReg = RegInit(VecInit(Seq.fill(numRegs)(0.U(2048.W))))
     val count    = RegInit(0.U(log2Ceil(factor + 1).W))
 
-    if (p.earlyTerminate){
+    if (p.earlyTerminate) {
       io.in.ready := count =/= io.terminate_factor.getOrElse(factor.U)
-    }else{
+    } else {
       io.in.ready := count =/= factor.U
     }
 
@@ -196,9 +204,9 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
       count := count + 1.U
     }
 
-    if(p.earlyTerminate){
+    if (p.earlyTerminate) {
       io.out.valid := count === io.terminate_factor.getOrElse(factor.U)
-    }else{
+    } else {
       io.out.valid := count === factor.U
     }
 

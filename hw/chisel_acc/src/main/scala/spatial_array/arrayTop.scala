@@ -16,7 +16,7 @@ class ArrayTopCfg(params: SpatialArrayParam) extends Bundle {
 
   val arrayCfg = new Bundle {
     val arrayShapeCfg = UInt(params.configWidth.W)
-    val dataTypeCfg     = UInt(params.configWidth.W)
+    val dataTypeCfg   = UInt(params.configWidth.W)
   }
 }
 
@@ -87,23 +87,28 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   })
 
   val inputCElemWidthRom = VecInit(params.inputCElemWidth.map(_.U(params.configWidth.W)))
-  val outPutWidthRom = VecInit(params.outElemWidth.map(_.U(params.configWidth.W)))
+  val outPutWidthRom     = VecInit(params.outElemWidth.map(_.U(params.configWidth.W)))
 
-  def realBandWidth (
-    dataTypeIdx: UInt,
-    dimIdx:      UInt,
+  def realBandWidth(
+    dataTypeIdx:  UInt,
+    dimIdx:       UInt,
     elemWidthSeq: Vec[UInt]
   ) = {
     val dim = dimRom(dataTypeIdx)(dimIdx)
     dim(0) * dim(2) * elemWidthSeq(dataTypeIdx)
   }
 
-  val dOutputCounter = Module(new BasicCounter(params.configWidth))
-  val output_serial_factor = 
+  val dOutputCounter       = Module(new BasicCounter(params.configWidth))
+  val output_serial_factor =
     if (params.arrayOutputDWidth <= params.outputDSerialDataWidth) 1.U
-    else (realBandWidth (csrReg.arrayCfg.dataTypeCfg, csrReg.arrayCfg.arrayShapeCfg, outPutWidthRom) / params.outputDSerialDataWidth.U)
+    else
+      (realBandWidth(
+        csrReg.arrayCfg.dataTypeCfg,
+        csrReg.arrayCfg.arrayShapeCfg,
+        outPutWidthRom
+      ) / params.outputDSerialDataWidth.U)
 
-  dOutputCounter.io.ceil  := csrReg.fsmCfg.M_i * csrReg.fsmCfg.N_i * output_serial_factor
+  dOutputCounter.io.ceil := csrReg.fsmCfg.M_i * csrReg.fsmCfg.N_i * output_serial_factor
 
   dOutputCounter.io.tick  := io.data.out_d.fire && cstate === sBUSY
   dOutputCounter.io.reset := computation_finish
@@ -122,8 +127,8 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
       )
     }
     csrReg.fsmCfg.subtraction_constant_i := io.ctrl.bits.fsmCfg.subtraction_constant_i
-    csrReg.arrayCfg.arrayShapeCfg := io.ctrl.bits.arrayCfg.arrayShapeCfg
-    csrReg.arrayCfg.dataTypeCfg     := io.ctrl.bits.arrayCfg.dataTypeCfg
+    csrReg.arrayCfg.arrayShapeCfg        := io.ctrl.bits.arrayCfg.arrayShapeCfg
+    csrReg.arrayCfg.dataTypeCfg          := io.ctrl.bits.arrayCfg.dataTypeCfg
   }
 
   // -----------------------------------
@@ -206,8 +211,8 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   val C_s2p = Module(
     new SerialToParallel(
       SerialToParallelParams(
-        parallelWidth = params.arrayInputCWidth,
-        serialWidth   = params.inputCSerialDataWidth,
+        parallelWidth  = params.arrayInputCWidth,
+        serialWidth    = params.inputCSerialDataWidth,
         earlyTerminate = true
       )
     )
@@ -217,8 +222,8 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   val D_p2s = Module(
     new ParallelToSerial(
       ParallelToSerialParams(
-        parallelWidth = params.arrayOutputDWidth,
-        serialWidth   = params.outputDSerialDataWidth,
+        parallelWidth  = params.arrayOutputDWidth,
+        serialWidth    = params.outputDSerialDataWidth,
         earlyTerminate = true
       )
     )
@@ -229,17 +234,21 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   // Design-time check to ensure real bandwidth is divisible by serialization width
   params.arrayDim.zipWithIndex.foreach { case (shapes, dataTypeIdx) =>
     shapes.zipWithIndex.foreach { case (dim, dimIdx) =>
-      val outElemWidth = params.outElemWidth(dataTypeIdx)
+      val outElemWidth  = params.outElemWidth(dataTypeIdx)
       val realBandwidth = dim(0) * dim(2) * outElemWidth
       require(
         realBandwidth % params.outputDSerialDataWidth == 0,
         s"Invalid config: real bandwidth ($realBandwidth) not divisible by outputDSerialDataWidth (${params.outputDSerialDataWidth}) " +
-        s"at dataTypeIdx=$dataTypeIdx, dimIdx=$dimIdx"
+          s"at dataTypeIdx=$dataTypeIdx, dimIdx=$dimIdx"
       )
     }
   }
 
-  C_s2p.io.terminate_factor.get := realBandWidth (csrReg.arrayCfg.dataTypeCfg, csrReg.arrayCfg.arrayShapeCfg, inputCElemWidthRom) / params.inputCSerialDataWidth.U
+  C_s2p.io.terminate_factor.get := realBandWidth(
+    csrReg.arrayCfg.dataTypeCfg,
+    csrReg.arrayCfg.arrayShapeCfg,
+    inputCElemWidthRom
+  ) / params.inputCSerialDataWidth.U
 
   D_p2s.io.terminate_factor.get := output_serial_factor
 
@@ -271,9 +280,9 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
 
   // ctrl signals
   array.io.ctrl.arrayShapeCfg := csrReg.arrayCfg.arrayShapeCfg
-  array.io.ctrl.dataTypeCfg     := csrReg.arrayCfg.dataTypeCfg
-  array.io.ctrl.accAddExtIn     := accAddExtIn
-  array.io.ctrl.accClear        := computation_finish
+  array.io.ctrl.dataTypeCfg   := csrReg.arrayCfg.dataTypeCfg
+  array.io.ctrl.accAddExtIn   := accAddExtIn
+  array.io.ctrl.accClear      := computation_finish
 
   // data signals
   array.io.data.in_a <> a_after_cut

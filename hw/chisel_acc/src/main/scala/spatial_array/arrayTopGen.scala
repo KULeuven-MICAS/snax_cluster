@@ -2,17 +2,18 @@ package snax_acc.spatial_array
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import sys.process._
+
+import scala.sys.process._
 
 object ArrayTopGen {
   def main(args: Array[String]): Unit = {
-  // Current time with default format
-  var currentTime = LocalDateTime.now()
-  println(s"Current time (default): $currentTime")
+    // Current time with default format
+    var currentTime = LocalDateTime.now()
+    println(s"Current time (default): $currentTime")
 
-  // Formatted output (e.g., "2024-01-23 14:30:15")
-  var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-  println(s"Formatted time: ${currentTime.format(formatter)}")
+    // Formatted output (e.g., "2024-01-23 14:30:15")
+    var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    println(s"Formatted time: ${currentTime.format(formatter)}")
 
     // 16x8x8, 1x32x32 ISSCC reproduce
     // generation time: ~1sec
@@ -104,20 +105,30 @@ object ArrayTopGen {
     // Bitwave like reproduce
     // 7 dfs
     val params = SpatialArrayParam(
-        opType = Seq(OpType.SIntSIntOp),
-        macNum = Seq(4096),
-        inputAElemWidth = Seq(8),
-        inputBElemWidth = Seq(8),
-        inputCElemWidth = Seq(32),
-        mulElemWidth = Seq(16),
-        outElemWidth = Seq(32),
-        inputAWidth = 1024,
-        inputBWidth = 8192,
-        arrayInputCWidth = 16384,
-        arrayOutputDWidth = 16384,
-        arrayDim = Seq(Seq(Seq(16, 8, 32), Seq(8, 16, 32), Seq(4, 32, 32), Seq(1, 8, 128), Seq(1, 16, 64), Seq(1, 32, 32), Seq(2, 1, 64)))
+      opType            = Seq(OpType.SIntSIntOp),
+      macNum            = Seq(4096),
+      inputAElemWidth   = Seq(8),
+      inputBElemWidth   = Seq(8),
+      inputCElemWidth   = Seq(32),
+      mulElemWidth      = Seq(16),
+      outElemWidth      = Seq(32),
+      inputAWidth       = 1024,
+      inputBWidth       = 8192,
+      arrayInputCWidth  = 16384,
+      arrayOutputDWidth = 16384,
+      arrayDim          = Seq(
+        Seq(
+          Seq(16, 8, 32),
+          Seq(8, 16, 32),
+          Seq(4, 32, 32),
+          Seq(1, 8, 128),
+          Seq(1, 16, 64),
+          Seq(1, 32, 32),
+          Seq(2, 1, 64)
+        )
+      )
     )
-    val tag = "BitWave"
+    val tag    = "BitWave"
 
     println("arayDim: " + params.arrayDim.toString())
 
@@ -125,8 +136,9 @@ object ArrayTopGen {
     _root_.circt.stage.ChiselStage.emitSystemVerilogFile(
       new ArrayTop(params),
       Array(
-        "--target-dir", "generated/SpatialArray",
-      ),
+        "--target-dir",
+        "generated/SpatialArray"
+      )
       // Array(
       //   "--split-verilog",
       //   s"-o=generated/SpatialArray/ArrayTop_${tag}"
@@ -137,7 +149,7 @@ object ArrayTopGen {
 
     currentTime = LocalDateTime.now()
     println(s"Current time (default): $currentTime")
-    formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    formatter   = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     println(s"Formatted time: ${currentTime.format(formatter)}")
 
     // generate sv wrapper file
@@ -158,7 +170,7 @@ object ArrayTopGen {
     val DataWidthA     = params.inputAWidth
     val DataWidthB     = params.inputBWidth
     val DataWidthC     = params.inputCSerialDataWidth
-    val DataWidthD   = params.outputDSerialDataWidth
+    val DataWidthD     = params.outputDSerialDataWidth
 
     macro_template = header + s"""
 module snax_opengemm_shell_wrapper #(
