@@ -6,17 +6,17 @@ import chisel3.util._
 class AccumulatorBlock(
   val opType:          Int,
   val inputElemWidth:  Int,
-  val outputElemWidth: Int,
-) extends Module with RequireAsyncReset{
+  val outputElemWidth: Int
+) extends Module
+    with RequireAsyncReset {
   val io = IO(new Bundle {
-    val in1 = Input(UInt(inputElemWidth.W))
-    val in2 = Input(UInt(inputElemWidth.W))
+    val in1         = Input(UInt(inputElemWidth.W))
+    val in2         = Input(UInt(inputElemWidth.W))
     val accAddExtIn = Input(Bool())
-    val enable = Input(Bool())
-    val accClear = Input(Bool())
-    val out = Output(UInt(outputElemWidth.W))
-  }
-  )
+    val enable      = Input(Bool())
+    val accClear    = Input(Bool())
+    val out         = Output(UInt(outputElemWidth.W))
+  })
 
   require(opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp)
   require(
@@ -25,16 +25,16 @@ class AccumulatorBlock(
   )
 
   val accumulatorReg = RegInit(0.U(outputElemWidth.W))
-  val adder = Module(
+  val adder          = Module(
     new Adder(opType, inputElemWidth, inputElemWidth, outputElemWidth)
   ).io
-  
+
   adder.in_a := io.in1
   adder.in_b := Mux(io.accAddExtIn, io.in2, accumulatorReg)
 
   val nextAcc = Wire(UInt(outputElemWidth.W))
   nextAcc := Mux(io.accClear, 0.U, Mux(io.enable, adder.out_c, accumulatorReg))
-  
+
   val accUpdate = io.enable || io.accClear
   accumulatorReg := Mux(accUpdate, nextAcc, accumulatorReg)
 
@@ -71,11 +71,11 @@ class Accumulator(
   val accUpdate = (io.in1.fire && io.enable && (!io.accAddExtIn || (io.in2.fire && io.accAddExtIn)))
 
   for (i <- 0 until numElements) {
-    accumulater_blocks(i).io.in1 := io.in1.bits(i)
-    accumulater_blocks(i).io.in2 := io.in2.bits(i)
+    accumulater_blocks(i).io.in1         := io.in1.bits(i)
+    accumulater_blocks(i).io.in2         := io.in2.bits(i)
     accumulater_blocks(i).io.accAddExtIn := io.accAddExtIn
-    accumulater_blocks(i).io.enable := accUpdate
-    accumulater_blocks(i).io.accClear := io.accClear
+    accumulater_blocks(i).io.enable      := accUpdate
+    accumulater_blocks(i).io.accClear    := io.accClear
   }
 
   val inputDataFire  = RegNext(accUpdate)

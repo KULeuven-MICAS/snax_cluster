@@ -13,9 +13,9 @@ class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
 
 class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
   val arrayShapeCfg = Input(UInt(params.configWidth.W))
-  val dataTypeCfg     = Input(UInt(params.configWidth.W))
-  val accAddExtIn     = Input(Bool())
-  val accClear        = Input(Bool())
+  val dataTypeCfg   = Input(UInt(params.configWidth.W))
+  val accAddExtIn   = Input(Bool())
+  val accClear      = Input(Bool())
 }
 
 class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {
@@ -251,9 +251,9 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   )(
     (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.in2.fire)
   )
-  io.data.in_a.ready            := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
-  io.data.in_b.ready            := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
-  io.data.in_c.ready            := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, false.B)
+  io.data.in_a.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
+  io.data.in_b.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
+  io.data.in_c.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, false.B)
 
   io.data.in_substraction.ready := io.data.in_a.ready && io.data.in_b.ready
 

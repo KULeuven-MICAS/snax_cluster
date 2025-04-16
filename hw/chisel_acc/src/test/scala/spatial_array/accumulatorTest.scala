@@ -12,10 +12,10 @@ class AccumulatorTest extends AnyFunSuite with ChiselScalatestTester {
     test(new Accumulator(OpType.UIntUIntOp, 8, 16, numElements)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
       // Helper function to run tests with different configurations
       def testConfig(
-          in1Values: Seq[Int],
-          in2Values: Seq[Int],
-          accAddExtIn: Boolean,
-          expectedOutput: Seq[Int]
+        in1Values:      Seq[Int],
+        in2Values:      Seq[Int],
+        accAddExtIn:    Boolean,
+        expectedOutput: Seq[Int]
       ): Unit = {
         // Set input values
         in1Values.zipWithIndex.foreach { case (value, idx) =>
@@ -44,40 +44,40 @@ class AccumulatorTest extends AnyFunSuite with ChiselScalatestTester {
 
       // Test case 1: Element-wise addition when accAddExtIn is true
       testConfig(
-        in1Values = Seq(1, 2, 3, 4),
-        in2Values = Seq(4, 3, 2, 1),
-        accAddExtIn = true,
+        in1Values      = Seq(1, 2, 3, 4),
+        in2Values      = Seq(4, 3, 2, 1),
+        accAddExtIn    = true,
         expectedOutput = Seq(5, 5, 5, 5) // [1+4, 2+3, 3+2, 4+1]
       )
 
       // Test case 2: Accumulate in1 values when accAddExtIn is false
       testConfig(
-        in1Values = Seq(1, 2, 3, 4),
-        in2Values = Seq(0, 0, 0, 0), // Unused
-        accAddExtIn = false,
-        expectedOutput = Seq(6, 7, 8, 9) // Initial accumulation
+        in1Values      = Seq(1, 2, 3, 4),
+        in2Values      = Seq(0, 0, 0, 0),  // Unused
+        accAddExtIn    = false,
+        expectedOutput = Seq(6, 7, 8, 9)   // Initial accumulation
       )
       testConfig(
-        in1Values = Seq(1, 2, 3, 4),
-        in2Values = Seq(0, 0, 0, 0), // Unused
-        accAddExtIn = false,
+        in1Values      = Seq(1, 2, 3, 4),
+        in2Values      = Seq(0, 0, 0, 0),  // Unused
+        accAddExtIn    = false,
         expectedOutput = Seq(7, 9, 11, 13) // Initial accumulation
       )
 
       // Test case 3: clear accumulator
       testConfig(
-        in1Values = Seq(0, 0, 0, 0), // Unused
-        in2Values = Seq(0, 0, 0, 0), // Unused
-        accAddExtIn = true,
-        expectedOutput = Seq(0, 0, 0, 0) // Initial accumulation
+        in1Values      = Seq(0, 0, 0, 0), // Unused
+        in2Values      = Seq(0, 0, 0, 0), // Unused
+        accAddExtIn    = true,
+        expectedOutput = Seq(0, 0, 0, 0)  // Initial accumulation
       )
 
       // Continue accumulating
       testConfig(
-        in1Values = Seq(2, 3, 4, 5),
-        in2Values = Seq(0, 0, 0, 0), // Unused
-        accAddExtIn = false,
-        expectedOutput = Seq(2, 3, 4, 5) // 
+        in1Values      = Seq(2, 3, 4, 5),
+        in2Values      = Seq(0, 0, 0, 0), // Unused
+        accAddExtIn    = false,
+        expectedOutput = Seq(2, 3, 4, 5)  //
       )
     }
   }
