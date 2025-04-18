@@ -236,7 +236,7 @@ object XDMATopGen extends App {
   // Thus, the generation function does not need to be modified by the extension developers.
   // Extension developers only need to 1) Add the Extension source code 2) Add Has...: #priority in hjson configuration file
 
-  val toolbox                = currentMirror.mkToolBox()
+  val toolbox = currentMirror.mkToolBox()
 
   // Writer Side
   val writerDatapathExtensionParam = (parsedXdmaCfg \ "writer_extensions").as[JsObject] match {
