@@ -355,8 +355,8 @@ sources:
   - target: snax_opengemm
     files:
       # Level 0
-      - hw/chisel_acc/generated/SpatialArray/ArrayTop.sv
-      - hw/chisel_acc/src/snax_opengemm_shell_wrapper.sv
+      - target/snitch_cluster/generated/snax_opengemm/ArrayTop.sv
+      - target/snitch_cluster/generated/snax_opengemm/snax_opengemm_shell_wrapper.sv
       - target/snitch_cluster/generated/snax_opengemm/snax_opengemm_csrman_CsrManager.sv
       - target/snitch_cluster/generated/snax_opengemm/snax_opengemm_Streamer.sv
       # Level 1

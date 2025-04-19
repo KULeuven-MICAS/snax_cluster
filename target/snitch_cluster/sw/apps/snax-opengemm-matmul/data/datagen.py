@@ -62,32 +62,32 @@ def emit_matmul_data(**kwargs):
 
     array_shape = kwargs["array_shape"]
     data_str += [format_scalar_definition("uint32_t", "array_shape", array_shape)]
-    data_str += [format_scalar_definition("uint32_t", "data_type", kwargs["data_type"])]
+    data_type = kwargs["data_type"]
+    data_str += [format_scalar_definition("uint32_t", "data_type", data_type)]
 
     # -------------------------------------------------------------
     # -----------------------hardware parameters--------------------
     # --------------------------------------------------------------
 
     meshRow = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
-        "snax_opengemm_mesh_row"
-    ][array_shape]
-    tileSize = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
-        "snax_opengemm_tile_size"
-    ][array_shape]
+        "snax_opengemm_spatial_unrolling"
+    ][data_type][array_shape][0]
+    tileSize = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"]["snax_opengemm_spatial_unrolling"][data_type][array_shape][1]
     meshCol = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
-        "snax_opengemm_mesh_col"
-    ][array_shape]
+        "snax_opengemm_spatial_unrolling"][data_type][array_shape][2]
 
     a_array_width = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
-        "snax_opengemm_array_a_width"
+        "snax_opengemm_array_input_a_width"
     ]
     b_array_width = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
-        "snax_opengemm_array_b_width"
+        "snax_opengemm_array_input_b_width"
     ]
     c_array_width = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
-        "snax_opengemm_array_c_d_width"
+        "snax_opengemm_array_input_c_width"
     ]
-    d_array_width = c_array_width
+    d_array_width = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"]["snax_opengemm_array_output_width"]
+    assert (
+        c_array_width == d_array_width), "C and D array width must be the same"
     snax_opengemm_serial_c_d_width = kwargs["snax_opengemm_core_template"][
         "snax_acc_cfg"
     ]["snax_opengemm_serial_c_d_width"]
@@ -130,6 +130,9 @@ def emit_matmul_data(**kwargs):
 
     A_enabled_channel_CSR_num = int(math.ceil(a_array_width / bankWidth / 32))
     channel_en_A = [0] * A_enabled_channel_CSR_num
+    # related to if this is a wide channel or not
+    # if wide, must be divisible by 8
+    # if narrow, must be divisible by 1
     channel_en_A_bits = max(8, int(
         (meshRow * tileSize * input_data_width / bankWidth + 7) // 8 * 8
     ))
@@ -195,16 +198,20 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
     # spatial settings
     data_str += [format_scalar_definition("int32_t", "Cslstride0", bankWidth / 8)]
-    c_spatial_bound_0 = snax_opengemm_serial_c_d_width / bankWidth
+    if meshCol * meshRow * output_data_width >= snax_opengemm_serial_c_d_width:
+        c_spatial_bound_0 = snax_opengemm_serial_c_d_width / bankWidth
+    else:
+        c_spatial_bound_0 = meshCol * meshRow * output_data_width / bankWidth
     # temporal settings
     # serial input for C
     data_str += [
         format_scalar_definition(
             "int32_t",
             "Ctlbound0",
-            meshCol * meshRow * output_data_width / snax_opengemm_serial_c_d_width,
+            max(1, meshCol * meshRow * output_data_width / snax_opengemm_serial_c_d_width),
         )
     ]
+    # assert(meshCol * meshRow * output_data_width >= snax_opengemm_serial_c_d_width)
     data_str += [
         format_scalar_definition(
             "int32_t", "Ctlstride0", c_spatial_bound_0 * (bankWidth / 8)
@@ -272,16 +279,19 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
     # spatial settings
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
-    d_spatial_bound_0 = snax_opengemm_serial_c_d_width / bankWidth
+    if meshCol * meshRow * output_data_width >= snax_opengemm_serial_c_d_width:
+        d_spatial_bound_0 = snax_opengemm_serial_c_d_width / bankWidth
+    else:
+        d_spatial_bound_0 = meshCol * meshRow * output_data_width / bankWidth
     # temporal settings
     data_str += [
         format_scalar_definition(
             "int32_t",
             "D32tlbound0",
-            meshCol * meshRow * output_data_width / snax_opengemm_serial_c_d_width,
+            max(1, meshCol * meshRow * output_data_width / snax_opengemm_serial_c_d_width),
         )
     ]
-    assert(meshCol * meshRow * output_data_width >= snax_opengemm_serial_c_d_width)
+    # assert(meshCol * meshRow * output_data_width >= snax_opengemm_serial_c_d_width)
     data_str += [
         format_scalar_definition(
             "int32_t", "D32tlstride0", d_spatial_bound_0 * (bankWidth / 8)

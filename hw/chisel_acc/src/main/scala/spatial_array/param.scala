@@ -5,6 +5,13 @@ object OpType {
   def SIntSIntOp       = 2
   def Float16IntOp     = 3
   def Float16Float16Op = 4
+
+  def fromString(str: String): Int = str match {
+    case "SIntSInt" => SIntSIntOp
+    case "UIntUInt" => UIntUIntOp
+    case _ => throw new IllegalArgumentException(s"Unsupported OpType: $str")
+  }
+  
 }
 
 class SpatialArrayParam(
@@ -14,14 +21,14 @@ class SpatialArrayParam(
   val inputBElemWidth:        Seq[Int],
   val inputCElemWidth:        Seq[Int],
   val mulElemWidth:           Seq[Int],
-  val outElemWidth:           Seq[Int],
-  val inputAWidth:            Int,
-  val inputBWidth:            Int,
+  val outputDElemWidth:       Seq[Int],
+  val arrayInputAWidth:       Int,
+  val arrayInputBWidth:       Int,
   val arrayInputCWidth:       Int,
   val arrayOutputDWidth:      Int,
   val arrayDim:               Seq[Seq[Seq[Int]]],
-  val inputCSerialDataWidth:  Int = 512,
-  val outputDSerialDataWidth: Int = 512,
+  val serialInputCDataWidth:  Int = 512,
+  val serialOutputDDataWidth: Int = 512,
   val configWidth:            Int = 32,
   val csrNum:                 Int = 7,
   val adderTreeDelay:         Int = 0
@@ -37,9 +44,9 @@ object SpatialArrayParam {
       inputBElemWidth   = Seq(8, 4),
       inputCElemWidth   = Seq(32, 16),
       mulElemWidth      = Seq(16, 8),
-      outElemWidth      = Seq(32, 16),
-      inputAWidth       = 512,
-      inputBWidth       = 512,
+      outputDElemWidth  = Seq(32, 16),
+      arrayInputAWidth  = 512,
+      arrayInputBWidth  = 512,
       arrayInputCWidth  = 16384,
       arrayOutputDWidth = 16384,
       // Seq(Mu, Ku, Nu)
@@ -56,14 +63,14 @@ object SpatialArrayParam {
     inputBElemWidth:        Seq[Int],
     inputCElemWidth:        Seq[Int],
     mulElemWidth:           Seq[Int],
-    outElemWidth:           Seq[Int],
-    inputAWidth:            Int,
-    inputBWidth:            Int,
+    outputDElemWidth:       Seq[Int],
+    arrayInputAWidth:       Int,
+    arrayInputBWidth:       Int,
     arrayInputCWidth:       Int,
     arrayOutputDWidth:      Int,
     arrayDim:               Seq[Seq[Seq[Int]]],
-    inputCSerialDataWidth:  Int = 512,
-    outputDSerialDataWidth: Int = 512
+    serialInputCDataWidth:  Int = 512,
+    serialOutputDDataWidth: Int = 512
   ): SpatialArrayParam =
     new SpatialArrayParam(
       opType                 = opType,
@@ -72,13 +79,13 @@ object SpatialArrayParam {
       inputBElemWidth        = inputBElemWidth,
       inputCElemWidth        = inputCElemWidth,
       mulElemWidth           = mulElemWidth,
-      outElemWidth           = outElemWidth,
-      inputAWidth            = inputAWidth,
-      inputBWidth            = inputBWidth,
+      outputDElemWidth       = outputDElemWidth,
+      arrayInputAWidth       = arrayInputAWidth,
+      arrayInputBWidth       = arrayInputBWidth,
       arrayInputCWidth       = arrayInputCWidth,
       arrayOutputDWidth      = arrayOutputDWidth,
       arrayDim               = arrayDim,
-      inputCSerialDataWidth  = inputCSerialDataWidth,
-      outputDSerialDataWidth = outputDSerialDataWidth
+      serialInputCDataWidth  = serialInputCDataWidth,
+      serialOutputDDataWidth = serialOutputDDataWidth
     )
 }
