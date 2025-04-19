@@ -1,19 +1,43 @@
 package snax_acc.spatial_array
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
-import scala.sys.process._
+object SpatialArrayParamParser {
+  def parseFromHjsonString(hjsonStr: String): SpatialArrayParam = {
+    val cfg = ujson.read(hjsonStr)
+
+    def getSeqInt(key: String): Seq[Int] =
+      cfg(key).arr.map(_.num.toInt).toSeq
+
+    
+
+    def get3DSeq(key: String): Seq[Seq[Seq[Int]]] = cfg(key).arr.map(_.arr.map(_.arr.map(_.num.toInt).toSeq).toSeq).toSeq
+
+    require(
+      cfg.obj.get("snax_num_rw_csr").map(_.num.toInt) == Some(7),
+      "snax_num_rw_csr should be 7 for OpenGeMM"
+    )
+
+    SpatialArrayParam(
+      opType                 = cfg("snax_opengemm_op_type").arr.map(v => OpType.fromString(v.str)).toSeq,
+      macNum                 = getSeqInt("snax_opengemm_mac_num"),
+      inputAElemWidth        = getSeqInt("snax_opengemm_input_a_element_width"),
+      inputBElemWidth        = getSeqInt("snax_opengemm_input_b_element_width"),
+      inputCElemWidth        = getSeqInt("snax_opengemm_output_element_width"), // you can adjust if different
+      mulElemWidth           = getSeqInt("snax_opengemm_multiply_element_width"),
+      outputDElemWidth       = getSeqInt("snax_opengemm_output_element_width"),
+      arrayInputAWidth       = cfg("snax_opengemm_array_input_a_width").num.toInt,
+      arrayInputBWidth       = cfg("snax_opengemm_array_input_b_width").num.toInt,
+      arrayInputCWidth       = cfg("snax_opengemm_array_input_c_width").num.toInt,
+      arrayOutputDWidth      = cfg("snax_opengemm_array_output_width").num.toInt,
+      arrayDim               = get3DSeq("snax_opengemm_spatial_unrolling"),
+      serialInputCDataWidth  = cfg.obj.get("snax_opengemm_serial_c_d_width").map(_.num.toInt).getOrElse(512),
+      serialOutputDDataWidth = cfg.obj.get("snax_opengemm_serial_c_d_width").map(_.num.toInt).getOrElse(512),
+    )
+  }
+}
 
 object ArrayTopGen {
   def main(args: Array[String]): Unit = {
-    // Current time with default format
-    var currentTime = LocalDateTime.now()
-    println(s"Current time (default): $currentTime")
-
-    // Formatted output (e.g., "2024-01-23 14:30:15")
-    var formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    println(s"Formatted time: ${currentTime.format(formatter)}")
 
     // 16x8x8, 1x32x32 ISSCC reproduce
     // generation time: ~1sec
@@ -24,9 +48,9 @@ object ArrayTopGen {
     //     inputBElemWidth = Seq(8),
     //     inputCElemWidth = Seq(32),
     //     mulElemWidth = Seq(16),
-    //     outElemWidth = Seq(32),
-    //     inputAWidth = 1024,
-    //     inputBWidth = 8192,
+    //     outputDElemWidth = Seq(32),
+    //     arrayInputAWidth = 1024,
+    //     arrayInputBWidth = 8192,
     //     arrayInputCWidth = 4096,
     //     arrayOutputDWidth = 4096,
     //     arrayDim = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
@@ -44,9 +68,9 @@ object ArrayTopGen {
     //     inputBElemWidth = Seq(8),
     //     inputCElemWidth = Seq(32),
     //     mulElemWidth = Seq(16),
-    //     outElemWidth = Seq(32),
-    //     inputAWidth = 2048,
-    //     inputBWidth = 2048,
+    //     outputDElemWidth = Seq(32),
+    //     arrayInputAWidth = 2048,
+    //     arrayInputBWidth = 2048,
     //     arrayInputCWidth = 2097152,
     //     arrayOutputDWidth = 2097152,
     //     arrayDim = Seq(Seq(Seq(256, 1, 256)))
@@ -60,9 +84,9 @@ object ArrayTopGen {
     //     inputBElemWidth = Seq(8),
     //     inputCElemWidth = Seq(32),
     //     mulElemWidth = Seq(16),
-    //     outElemWidth = Seq(32),
-    //     inputAWidth = 1024,
-    //     inputBWidth = 1024,
+    //     outputDElemWidth = Seq(32),
+    //     arrayInputAWidth = 1024,
+    //     arrayInputBWidth = 1024,
     //     arrayInputCWidth = 524288,
     //     arrayOutputDWidth = 524288,
     //     arrayDim = Seq(Seq(Seq(128, 1, 128)))
@@ -77,9 +101,9 @@ object ArrayTopGen {
     //     inputBElemWidth = Seq(8),
     //     inputCElemWidth = Seq(32),
     //     mulElemWidth = Seq(16),
-    //     outElemWidth = Seq(32),
-    //     inputAWidth = 512,
-    //     inputBWidth = 1024,
+    //     outputDElemWidth = Seq(32),
+    //     arrayInputAWidth = 512,
+    //     arrayInputBWidth = 1024,
     //     arrayInputCWidth = 262144,
     //     arrayOutputDWidth = 262144,
     //     arrayDim = Seq(Seq(Seq(64, 1, 128)))
@@ -94,9 +118,9 @@ object ArrayTopGen {
     //     inputBElemWidth = Seq(8),
     //     inputCElemWidth = Seq(32),
     //     mulElemWidth = Seq(16),
-    //     outElemWidth = Seq(32),
-    //     inputAWidth = 512,
-    //     inputBWidth = 512,
+    //     outputDElemWidth = Seq(32),
+    //     arrayInputAWidth = 512,
+    //     arrayInputBWidth = 512,
     //     arrayInputCWidth = 131072,
     //     arrayOutputDWidth = 131072,
     //     arrayDim = Seq(Seq(Seq(64, 1, 64)))
@@ -104,57 +128,97 @@ object ArrayTopGen {
 
     // Bitwave like reproduce
     // 7 dfs
-    val params = SpatialArrayParam(
-      opType            = Seq(OpType.SIntSIntOp),
-      macNum            = Seq(4096),
-      inputAElemWidth   = Seq(8),
-      inputBElemWidth   = Seq(8),
-      inputCElemWidth   = Seq(32),
-      mulElemWidth      = Seq(16),
-      outElemWidth      = Seq(32),
-      inputAWidth       = 1024,
-      inputBWidth       = 8192,
-      arrayInputCWidth  = 16384,
-      arrayOutputDWidth = 16384,
-      arrayDim          = Seq(
-        Seq(
-          Seq(16, 8, 32),
-          Seq(8, 16, 32),
-          Seq(4, 32, 32),
-          Seq(1, 8, 128),
-          Seq(1, 16, 64),
-          Seq(1, 32, 32),
-          Seq(2, 1, 64)
-        )
-      )
-    )
-    val tag    = "BitWave"
+    // val params = SpatialArrayParam(
+    //   opType            = Seq(OpType.SIntSIntOp),
+    //   macNum            = Seq(4096),
+    //   inputAElemWidth   = Seq(8),
+    //   inputBElemWidth   = Seq(8),
+    //   inputCElemWidth   = Seq(32),
+    //   mulElemWidth      = Seq(16),
+    //   outputDElemWidth      = Seq(32),
+    //   arrayInputAWidth       = 1024,
+    //   arrayInputBWidth       = 8192,
+    //   arrayInputCWidth  = 16384,
+    //   arrayOutputDWidth = 16384,
+    //   arrayDim          = Seq(
+    //     Seq(
+    //       Seq(16, 8, 32),
+    //       Seq(8, 16, 32),
+    //       Seq(4, 32, 32),
+    //       Seq(1, 8, 128),
+    //       Seq(1, 16, 64),
+    //       Seq(1, 32, 32),
+    //       Seq(2, 1, 64)
+    //     )
+    //   )
+    // )
+    // val tag    = "BitWave"
 
-    println("arayDim: " + params.arrayDim.toString())
+    // opengemm
+    // 8x8x8
+    // val params = SpatialArrayParam(
+    //   opType            = Seq(OpType.SIntSIntOp),
+    //   macNum            = Seq(512),
+    //   inputAElemWidth   = Seq(8),
+    //   inputBElemWidth   = Seq(8),
+    //   inputCElemWidth   = Seq(32),
+    //   mulElemWidth      = Seq(16),
+    //   outputDElemWidth  = Seq(32),
+    //   arrayInputAWidth  = 512,
+    //   arrayInputBWidth  = 512,
+    //   arrayInputCWidth  = 2048,
+    //   arrayOutputDWidth = 2048,
+    //   arrayDim          = Seq(
+    //     Seq(
+    //       Seq(8, 8, 8)
+    //     )
+    //   )
+    // )
+    // val tag    = "OpenGeMM"
+
+    // parameters parser
+    // Helper function to parse command-line arguments into a Map
+    def parseArgs(args: Array[String]): Map[String, String] = {
+      val parsed_args = args
+        .sliding(2, 2)
+        .collect {
+          case Array(key, value) if key.startsWith("--") => key.drop(2) -> value
+        }
+        .toMap
+      if (parsed_args.size != 6) {
+        
+      }
+      parsed_args
+    }
+
+    // Parse the command-line arguments
+    val parsedArgs = parseArgs(args)
+
+    val outPath = parsedArgs.getOrElse(
+      "hw-target-dir",
+      "generated/SpatialArray"
+    )
+
+    val openGeMMCfg       = parsedArgs.find(_._1 == "openGeMMCfg").get._2
+
+    val params = SpatialArrayParamParser.parseFromHjsonString(openGeMMCfg)
+    parsedArgs.getOrElse(
+      "tag",
+      "default"
+    )
 
     // generate verilog file
     _root_.circt.stage.ChiselStage.emitSystemVerilogFile(
       new ArrayTop(params),
       Array(
         "--target-dir",
-        "generated/SpatialArray"
+        outPath
       )
-      // Array(
-      //   "--split-verilog",
-      //   s"-o=generated/SpatialArray/ArrayTop_${tag}"
-      // )
     )
-
-    s"cp generated/SpatialArray/ArrayTop.sv generated/SpatialArray/ArrayTop_${tag}.sv".!
-
-    currentTime = LocalDateTime.now()
-    println(s"Current time (default): $currentTime")
-    formatter   = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    println(s"Formatted time: ${currentTime.format(formatter)}")
 
     // generate sv wrapper file
     var macro_template = ""
-    val macro_dir      = "./src/snax_opengemm_shell_wrapper.sv"
+    val macro_dir      = s"$outPath/snax_opengemm_shell_wrapper.sv"
     val header         = s"""// Copyright 2025 KU Leuven.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
@@ -167,10 +231,10 @@ object ArrayTopGen {
 // Accelerator wrapper
 //-------------------------------
 """
-    val DataWidthA     = params.inputAWidth
-    val DataWidthB     = params.inputBWidth
-    val DataWidthC     = params.inputCSerialDataWidth
-    val DataWidthD     = params.outputDSerialDataWidth
+    val DataWidthA     = params.arrayInputAWidth
+    val DataWidthB     = params.arrayInputBWidth
+    val DataWidthC     = params.serialInputCDataWidth
+    val DataWidthD     = params.serialOutputDDataWidth
 
     macro_template = header + s"""
 module snax_opengemm_shell_wrapper #(

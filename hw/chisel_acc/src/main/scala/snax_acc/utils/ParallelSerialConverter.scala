@@ -211,12 +211,27 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
     }
 
     // Concatenate the shift register contents to form the parallel output
-    if (p.parallelWidth <= 2048) {
-      io.out.bits := shiftReg(0)(2047, 2047 - p.parallelWidth + 1)
-    } else {
-      io.out.bits := Cat(shiftReg.reverse)
+    val effectiveBits = io.terminate_factor.getOrElse(factor.U) * p.serialWidth.U
+    val totalBits     = numRegs.U * 2048.U
+    if (p.earlyTerminate) {
+      if (p.parallelWidth <= 2048) {
+        val outMask = (1.U << effectiveBits) - 1.U
+        val shifted = shiftReg(0) >> (2048.U - effectiveBits)
+        io.out.bits := shifted & outMask
+      } else {
+        val fullData = Cat(shiftReg.reverse)
+        val outMask = (1.U << effectiveBits) - 1.U
+        val shifted = fullData >> (totalBits - effectiveBits)
+        io.out.bits := shifted & outMask
+      }
     }
-
+    else{
+      if (p.parallelWidth <= 2048) {
+        io.out.bits := shiftReg(0)(2047, 2047 - p.parallelWidth + 1)
+      } else {
+        io.out.bits := Cat(shiftReg.reverse)
+      }
+    }
   } else {
     io.out.valid := io.in.valid
     io.out.bits  := io.in.bits

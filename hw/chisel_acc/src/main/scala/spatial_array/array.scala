@@ -4,8 +4,8 @@ import chisel3._
 import chisel3.util._
 
 class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
-  val in_a            = Flipped(DecoupledIO(UInt(params.inputAWidth.W)))
-  val in_b            = Flipped(DecoupledIO(UInt(params.inputBWidth.W)))
+  val in_a            = Flipped(DecoupledIO(UInt(params.arrayInputAWidth.W)))
+  val in_b            = Flipped(DecoupledIO(UInt(params.arrayInputBWidth.W)))
   val in_c            = Flipped(DecoupledIO(UInt(params.arrayInputCWidth.W)))
   val out_d           = DecoupledIO(UInt(params.arrayOutputDWidth.W))
   val in_substraction = Flipped(DecoupledIO(UInt(params.configWidth.W)))
@@ -49,20 +49,20 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
         require(dim.length == 3)
         // mac number should be enough to support the computation bound
         require(dim(0) * dim(1) * dim(2) <= params.macNum(dataTypeIdx))
-        // inputAWidth should be enough to support the bandwidth bound
+        // arrayInputAWidth should be enough to support the bandwidth bound
         require(
-          params.inputAWidth             >= dim(0) * dim(1) * params.inputAElemWidth(dataTypeIdx)
+          params.arrayInputAWidth        >= dim(0) * dim(1) * params.inputAElemWidth(dataTypeIdx)
         )
-        // inputBWidth should be enough to support the bandwidth bound
+        // arrayInputBWidth should be enough to support the bandwidth bound
         require(
-          params.inputBWidth             >= dim(1) * dim(2) * params.inputBElemWidth(dataTypeIdx)
+          params.arrayInputBWidth        >= dim(1) * dim(2) * params.inputBElemWidth(dataTypeIdx)
         )
         // arrayInputCWidth should be enough to support the bandwidth bound
         require(
           params.arrayInputCWidth        >= dim(0) * dim(2) * params.inputCElemWidth(dataTypeIdx)
         )
         // arrayOutputDWidth should be enough to support the bandwidth bound
-        require(params.arrayOutputDWidth >= dim(0) * dim(2) * params.outElemWidth(dataTypeIdx))
+        require(params.arrayOutputDWidth >= dim(0) * dim(2) * params.outputDElemWidth(dataTypeIdx))
 
         // adder tree should be power of 2
         require(isPow2(dim(1)))
@@ -78,12 +78,12 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   )
 
   require(
-    params.opType.length == params.macNum.length            &&
-      params.inputAElemWidth.length == params.macNum.length &&
-      params.inputBElemWidth.length == params.macNum.length &&
-      params.inputCElemWidth.length == params.macNum.length &&
-      params.mulElemWidth.length == params.macNum.length    &&
-      params.outElemWidth.length == params.macNum.length    &&
+    params.opType.length == params.macNum.length             &&
+      params.inputAElemWidth.length == params.macNum.length  &&
+      params.inputBElemWidth.length == params.macNum.length  &&
+      params.inputCElemWidth.length == params.macNum.length  &&
+      params.mulElemWidth.length == params.macNum.length     &&
+      params.outputDElemWidth.length == params.macNum.length &&
       params.arrayDim.length == params.macNum.length,
     "All data type related parameters should have the same length"
   )
@@ -193,7 +193,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
       new AdderTree(
         params.opType(dataTypeIdx),
         params.mulElemWidth(dataTypeIdx),
-        params.outElemWidth(dataTypeIdx),
+        params.outputDElemWidth(dataTypeIdx),
         params.macNum(dataTypeIdx),
         params.arrayDim(dataTypeIdx).map(_(1))
       )
@@ -214,8 +214,8 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     Module(
       new Accumulator(
         params.opType(dataTypeIdx),
-        params.outElemWidth(dataTypeIdx),
-        params.outElemWidth(dataTypeIdx),
+        params.outputDElemWidth(dataTypeIdx),
+        params.outputDElemWidth(dataTypeIdx),
         params.macNum(dataTypeIdx)
       )
     )
@@ -286,9 +286,9 @@ object SpatialArrayEmitter extends App {
     inputBElemWidth   = Seq(8),
     inputCElemWidth   = Seq(8),
     mulElemWidth      = Seq(16),
-    outElemWidth      = Seq(32),
-    inputAWidth       = 1024,
-    inputBWidth       = 8192,
+    outputDElemWidth  = Seq(32),
+    arrayInputAWidth  = 1024,
+    arrayInputBWidth  = 8192,
     arrayInputCWidth  = 4096,
     arrayOutputDWidth = 4096,
     // Mu, Ku, Nu

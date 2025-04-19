@@ -20,9 +20,9 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMT
 
           (0 until params.arrayDim(dataTypeIdx).length).map { arrayShapeIdx =>
             // Get the parameters for the current configuration
-            val inputAElemWidth = params.inputAElemWidth(dataTypeIdx)
-            val inputBElemWidth = params.inputBElemWidth(dataTypeIdx)
-            val outElemWidth    = params.outElemWidth(dataTypeIdx)
+            val inputAElemWidth  = params.inputAElemWidth(dataTypeIdx)
+            val inputBElemWidth  = params.inputBElemWidth(dataTypeIdx)
+            val outputDElemWidth = params.outputDElemWidth(dataTypeIdx)
 
             val Mu = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(0)
             val Ku = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(1)
@@ -80,7 +80,7 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMT
             c.io.data.out_d.valid.expect(true.B)
             val out_d            = c.io.data.out_d.bits.peek().litValue
             val extractedOutputs = (0 until (Mu * Nu)).map { i =>
-              ((out_d >> (i * outElemWidth)) & (math.pow(2, outElemWidth).toLong - 1)).toInt
+              ((out_d >> (i * outputDElemWidth)) & (math.pow(2, outputDElemWidth).toLong - 1)).toInt
             }
 
             println(s"Checking opType${dataTypeIdx + 1} res_cfg${arrayShapeIdx + 1}...")
@@ -107,9 +107,9 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMT
       inputBElemWidth   = Seq(8),
       inputCElemWidth   = Seq(32),
       mulElemWidth      = Seq(16),
-      outElemWidth      = Seq(32),
-      inputAWidth       = 1024,
-      inputBWidth       = 8192,
+      outputDElemWidth  = Seq(32),
+      arrayInputAWidth  = 1024,
+      arrayInputBWidth  = 8192,
       arrayInputCWidth  = 4096,
       arrayOutputDWidth = 4096,
       arrayDim          = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
@@ -127,9 +127,9 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMT
       inputBElemWidth   = Seq(8, 4),
       inputCElemWidth   = Seq(32, 16),
       mulElemWidth      = Seq(16, 8),
-      outElemWidth      = Seq(32, 16),
-      inputAWidth       = 64,
-      inputBWidth       = 64,
+      outputDElemWidth  = Seq(32, 16),
+      arrayInputAWidth  = 64,
+      arrayInputBWidth  = 64,
       arrayInputCWidth  = 256,
       arrayOutputDWidth = 256,
       arrayDim          = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8)))

@@ -22,10 +22,10 @@ class ArrayTopCfg(params: SpatialArrayParam) extends Bundle {
 
 class ArrayTopIO(params: SpatialArrayParam) extends Bundle {
   val data = new Bundle {
-    val in_a  = Flipped(DecoupledIO(UInt(params.inputAWidth.W)))
-    val in_b  = Flipped(DecoupledIO(UInt(params.inputBWidth.W)))
-    val in_c  = Flipped(DecoupledIO(UInt(params.inputCSerialDataWidth.W)))
-    val out_d = DecoupledIO(UInt(params.outputDSerialDataWidth.W))
+    val in_a  = Flipped(DecoupledIO(UInt(params.arrayInputAWidth.W)))
+    val in_b  = Flipped(DecoupledIO(UInt(params.arrayInputBWidth.W)))
+    val in_c  = Flipped(DecoupledIO(UInt(params.serialInputCDataWidth.W)))
+    val out_d = DecoupledIO(UInt(params.serialOutputDDataWidth.W))
   }
 
   val ctrl = Flipped(DecoupledIO(new ArrayTopCfg(params)))
@@ -87,7 +87,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   })
 
   val inputCElemWidthRom = VecInit(params.inputCElemWidth.map(_.U(params.configWidth.W)))
-  val outPutWidthRom     = VecInit(params.outElemWidth.map(_.U(params.configWidth.W)))
+  val outPutDWidthRom     = VecInit(params.outputDElemWidth.map(_.U(params.configWidth.W)))
 
   def realBandWidth(
     dataTypeIdx:  UInt,
@@ -98,15 +98,25 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     dim(0) * dim(2) * elemWidthSeq(dataTypeIdx)
   }
 
-  val dOutputCounter       = Module(new BasicCounter(params.configWidth))
-  val output_serial_factor =
-    if (params.arrayOutputDWidth <= params.outputDSerialDataWidth) 1.U
-    else
-      (realBandWidth(
-        csrReg.arrayCfg.dataTypeCfg,
-        csrReg.arrayCfg.arrayShapeCfg,
-        outPutWidthRom
-      ) / params.outputDSerialDataWidth.U)
+  val dOutputCounter               = Module(new BasicCounter(params.configWidth))
+
+  val runTimeOutputBandWidthFactor = (realBandWidth(
+    csrReg.arrayCfg.dataTypeCfg,
+    csrReg.arrayCfg.arrayShapeCfg,
+    outPutDWidthRom
+  ) / params.serialOutputDDataWidth.U)
+  
+  val output_serial_factor         =
+    Mux(
+      params.arrayOutputDWidth.U <= params.serialOutputDDataWidth.U,
+      1.U,
+      Mux(
+        runTimeOutputBandWidthFactor
+          === 0.U,
+        1.U,
+        runTimeOutputBandWidthFactor
+      )
+    )
 
   dOutputCounter.io.ceil := csrReg.fsmCfg.M_i * csrReg.fsmCfg.N_i * output_serial_factor
 
@@ -139,17 +149,17 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   // insert resgisters for data cut starts
   // -----------------------------------
   val cut_combined_decoupled_a_b_sub_in  = Wire(
-    Decoupled(UInt((params.inputAWidth + params.inputBWidth + params.configWidth).W))
+    Decoupled(UInt((params.arrayInputAWidth + params.arrayInputBWidth + params.configWidth).W))
   )
   val cut_combined_decoupled_a_b_sub_out = Wire(
-    Decoupled(UInt((params.inputAWidth + params.inputBWidth + params.configWidth).W))
+    Decoupled(UInt((params.arrayInputAWidth + params.arrayInputBWidth + params.configWidth).W))
   )
 
   val combined_decoupled_a_b_sub = Module(
     new DecoupledCatNto1(
       Seq(
-        params.inputAWidth,
-        params.inputBWidth,
+        params.arrayInputAWidth,
+        params.arrayInputBWidth,
         params.configWidth
       )
     )
@@ -175,18 +185,18 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   cut_combined_decoupled_a_b_sub_in <> cut_buffer.io.in
   cut_buffer.io.out <> cut_combined_decoupled_a_b_sub_out
 
-  val a_after_cut   = Wire(Decoupled(UInt(params.inputAWidth.W)))
-  val b_after_cut   = Wire(Decoupled(UInt(params.inputBWidth.W)))
+  val a_after_cut   = Wire(Decoupled(UInt(params.arrayInputAWidth.W)))
+  val b_after_cut   = Wire(Decoupled(UInt(params.arrayInputBWidth.W)))
   val sub_after_cut = Wire(Decoupled(UInt(params.configWidth.W)))
 
   a_after_cut.bits  := cut_combined_decoupled_a_b_sub_out.bits(
-    params.inputAWidth + params.inputBWidth + params.configWidth - 1,
-    params.inputBWidth + params.configWidth
+    params.arrayInputAWidth + params.arrayInputBWidth + params.configWidth - 1,
+    params.arrayInputBWidth + params.configWidth
   )
   a_after_cut.valid := cut_combined_decoupled_a_b_sub_out.valid
 
   b_after_cut.bits  := cut_combined_decoupled_a_b_sub_out.bits(
-    params.inputBWidth + params.configWidth - 1,
+    params.arrayInputBWidth + params.configWidth - 1,
     params.configWidth
   )
   b_after_cut.valid := cut_combined_decoupled_a_b_sub_out.valid
@@ -212,7 +222,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     new SerialToParallel(
       SerialToParallelParams(
         parallelWidth  = params.arrayInputCWidth,
-        serialWidth    = params.inputCSerialDataWidth,
+        serialWidth    = params.serialInputCDataWidth,
         earlyTerminate = true
       )
     )
@@ -223,32 +233,45 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     new ParallelToSerial(
       ParallelToSerialParams(
         parallelWidth  = params.arrayOutputDWidth,
-        serialWidth    = params.outputDSerialDataWidth,
+        serialWidth    = params.serialOutputDDataWidth,
         earlyTerminate = true
       )
     )
   )
-  require(params.inputCSerialDataWidth == params.outputDSerialDataWidth)
+  require(params.serialInputCDataWidth == params.serialOutputDDataWidth)
   require(params.arrayInputCWidth == params.arrayOutputDWidth)
 
   // Design-time check to ensure real bandwidth is divisible by serialization width
   params.arrayDim.zipWithIndex.foreach { case (shapes, dataTypeIdx) =>
     shapes.zipWithIndex.foreach { case (dim, dimIdx) =>
-      val outElemWidth  = params.outElemWidth(dataTypeIdx)
-      val realBandwidth = dim(0) * dim(2) * outElemWidth
+      val outputDElemWidth = params.outputDElemWidth(dataTypeIdx)
+      val realBandwidth    = dim(0) * dim(2) * outputDElemWidth
       require(
-        realBandwidth % params.outputDSerialDataWidth == 0,
-        s"Invalid config: real bandwidth ($realBandwidth) not divisible by outputDSerialDataWidth (${params.outputDSerialDataWidth}) " +
+        if (realBandwidth > params.serialOutputDDataWidth) realBandwidth % params.serialOutputDDataWidth == 0 else true,
+        s"Invalid config: real bandwidth ($realBandwidth) not divisible by serialOutputDDataWidth (${params.serialOutputDDataWidth}) " +
           s"at dataTypeIdx=$dataTypeIdx, dimIdx=$dimIdx"
       )
     }
   }
 
-  C_s2p.io.terminate_factor.get := realBandWidth(
+  val runTimeInputCBandWidthFactor = (realBandWidth(
     csrReg.arrayCfg.dataTypeCfg,
     csrReg.arrayCfg.arrayShapeCfg,
     inputCElemWidthRom
-  ) / params.inputCSerialDataWidth.U
+  ) / params.serialInputCDataWidth.U)
+
+  val input_serial_factor = 
+    Mux(
+      params.arrayInputCWidth.U <= params.serialInputCDataWidth.U,
+      1.U,
+      Mux(
+        runTimeInputCBandWidthFactor === 0.U,
+        1.U,
+        runTimeInputCBandWidthFactor
+      )
+    )
+
+  C_s2p.io.terminate_factor.get := input_serial_factor
 
   D_p2s.io.terminate_factor.get := output_serial_factor
 
