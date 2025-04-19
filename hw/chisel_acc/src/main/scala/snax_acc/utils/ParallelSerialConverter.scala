@@ -220,12 +220,11 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
         io.out.bits := shifted & outMask
       } else {
         val fullData = Cat(shiftReg.reverse)
-        val outMask = (1.U << effectiveBits) - 1.U
-        val shifted = fullData >> (totalBits - effectiveBits)
+        val outMask  = (1.U << effectiveBits) - 1.U
+        val shifted  = fullData >> (totalBits - effectiveBits)
         io.out.bits := shifted & outMask
       }
-    }
-    else{
+    } else {
       if (p.parallelWidth <= 2048) {
         io.out.bits := shiftReg(0)(2047, 2047 - p.parallelWidth + 1)
       } else {

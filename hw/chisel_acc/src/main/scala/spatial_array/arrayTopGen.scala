@@ -1,16 +1,13 @@
 package snax_acc.spatial_array
 
-
 object SpatialArrayParamParser {
   def parseFromHjsonString(hjsonStr: String): SpatialArrayParam = {
     val cfg = ujson.read(hjsonStr)
 
-    def getSeqInt(key: String): Seq[Int] =
-      cfg(key).arr.map(_.num.toInt).toSeq
+    def getSeqInt(key: String): Seq[Int] = cfg(key).arr.map(_.num.toInt).toSeq
 
-    
-
-    def get3DSeq(key: String): Seq[Seq[Seq[Int]]] = cfg(key).arr.map(_.arr.map(_.arr.map(_.num.toInt).toSeq).toSeq).toSeq
+    def get3DSeq(key: String): Seq[Seq[Seq[Int]]] =
+      cfg(key).arr.map(_.arr.map(_.arr.map(_.num.toInt).toSeq).toSeq).toSeq
 
     require(
       cfg.obj.get("snax_num_rw_csr").map(_.num.toInt) == Some(7),
@@ -31,7 +28,7 @@ object SpatialArrayParamParser {
       arrayOutputDWidth      = cfg("snax_opengemm_array_output_width").num.toInt,
       arrayDim               = get3DSeq("snax_opengemm_spatial_unrolling"),
       serialInputCDataWidth  = cfg.obj.get("snax_opengemm_serial_c_d_width").map(_.num.toInt).getOrElse(512),
-      serialOutputDDataWidth = cfg.obj.get("snax_opengemm_serial_c_d_width").map(_.num.toInt).getOrElse(512),
+      serialOutputDDataWidth = cfg.obj.get("snax_opengemm_serial_c_d_width").map(_.num.toInt).getOrElse(512)
     )
   }
 }
@@ -185,8 +182,11 @@ object ArrayTopGen {
           case Array(key, value) if key.startsWith("--") => key.drop(2) -> value
         }
         .toMap
-      if (parsed_args.size != 6) {
-        
+      if (parsed_args.size != 2) {
+        println(
+          "Usage: --openGeMMCfg <hjson string> --hw-target-dir <output dir>"
+        )
+        sys.exit(1)
       }
       parsed_args
     }
@@ -199,7 +199,7 @@ object ArrayTopGen {
       "generated/SpatialArray"
     )
 
-    val openGeMMCfg       = parsedArgs.find(_._1 == "openGeMMCfg").get._2
+    val openGeMMCfg = parsedArgs.find(_._1 == "openGeMMCfg").get._2
 
     val params = SpatialArrayParamParser.parseFromHjsonString(openGeMMCfg)
     parsedArgs.getOrElse(
