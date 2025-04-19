@@ -94,7 +94,7 @@ module snax_xilinx (
   `AXI_FLATTEN_SLAVE(xilinx, xilinx_s_req_i, xilinx_s_rsp_o)
 
 
-  snax_KUL_xdma_cluster_wrapper snax_cluster (
+  snax_KUL_cluster_wrapper snax_cluster (
       .clk_i(clk_i),
       .rst_ni(rst_ni),
       .obs_o(obs_o),
