@@ -48,67 +48,69 @@ class ArrayTopTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestU
             val M         = rand.nextInt(sizeRange) + 1
             val N         = rand.nextInt(sizeRange) + 1
             val K         = rand.nextInt(sizeRange) + 1
-            // val K = 2
 
             // Generate random values for 'a', 'b' and 'c'
-
-            val aValues = Array.fill(Mu * Ku * M * K)(rand.nextInt(1))
-            val bValues = Array.fill(Ku * Nu * N * K)(rand.nextInt(1))
-            val cValues = Array.fill(Mu * Nu * M * N)(rand.nextInt(1))
+            val aValues = Array.fill(Mu * Ku * M * K)(rand.nextInt(math.pow(2, inputAElemWidth).toInt))
+            val bValues = Array.fill(Ku * Nu * N * K)(rand.nextInt(math.pow(2, inputBElemWidth).toInt))
+            val cValues = Array.fill(Mu * Nu * M * N)(rand.nextInt(math.pow(2, inputCElemWidth).toInt))
             // println(s"Generated aValues: ${aValues.mkString(", ")}")
             // println(s"Generated bValues: ${bValues.mkString(", ")}")
             // println(s"Generated cValues: ${cValues.mkString(", ")}")
 
-            // Print the generated values in 0x format
-            println(s"Generated aValues: ${aValues.map(v => f"0x$v%X").mkString(", ")}")
-            println(s"Generated bValues: ${bValues.map(v => f"0x$v%X").mkString(", ")}")
-            println(s"Generated cValues: ${cValues.map(v => f"0x$v%X").mkString(", ")}")
+            // // Print the generated values in 0x format
+            // println(s"Generated aValues: ${aValues.map(v => f"0x$v%X").mkString(", ")}")
+            // println(s"Generated bValues: ${bValues.map(v => f"0x$v%X").mkString(", ")}")
+            // println(s"Generated cValues: ${cValues.map(v => f"0x$v%X").mkString(", ")}")
 
             val expectedResult = Array.tabulate(M, N) { (m2, n2) =>
-              {
-                // multiply a and b and sum up along K dimension
-                val mul_res = (0 until K).map { k2 =>
-                  {
-                    Array.tabulate(Mu, Nu) { (m1, n1) =>
-                      (0 until Ku).map { k1 =>
-                        val aSInt = toSInt(
-                          aValues(m2 * K * Mu * Ku + k2 * Mu * Ku + k1 + m1 * Ku),
-                          inputAElemWidth,
-                          params.opType(dataTypeIdx) == OpType.SIntSIntOp
-                        ) // Convert UInt to SInt
-                        val bSInt = toSInt(
-                          bValues(n2 * K * Nu * Ku + k2 * Nu * Ku + k1 + n1 * Ku),
-                          inputBElemWidth,
-                          params.opType(dataTypeIdx) == OpType.SIntSIntOp
-                        ) // Convert UInt to SInt
-                        aSInt * bSInt
-                      }.sum
+              val acc = Array.fill(Mu, Nu)(0)
+              // Multiply A and B
+              for (k2 <- 0 until K) {
+                for (m1 <- 0 until Mu) {
+                  for (n1 <- 0 until Nu) {
+                    var sum = 0
+                    for (k1 <- 0 until Ku) {
+                      val aIdx = m2 * K * Mu * Ku + k2 * Mu * Ku + m1 * Ku + k1
+                      val bIdx = n2 * K * Nu * Ku + k2 * Nu * Ku + n1 * Ku + k1
+
+                      val aSInt = toSInt(
+                        aValues(aIdx),
+                        inputAElemWidth,
+                        params.opType(dataTypeIdx) == OpType.SIntSIntOp
+                      )
+                      val bSInt = toSInt(
+                        bValues(bIdx),
+                        inputBElemWidth,
+                        params.opType(dataTypeIdx) == OpType.SIntSIntOp
+                      )
+
+                      sum += aSInt * bSInt
                     }
-                  }
-                }.reduce { (a, b) =>
-                  a.zip(b).map { case (rowA, rowB) =>
-                    rowA.zip(rowB).map { case (x, y) => x + y }
+                    acc(m1)(n1) += sum
                   }
                 }
-
-                val acc_res = Array.tabulate(Mu, Nu) { (m, n) =>
-                  val mul  = mul_res(m)(n)
-                  val cIdx = m2 * N * Mu * Nu + n2 * Mu * Nu + m * Nu + n
-                  val cVal = toSInt(cValues(cIdx), inputCElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
-                  mul + cVal
-                }
-
-                acc_res
               }
+
+              // Add cValues
+              for {
+                m1 <- 0 until Mu
+                n1 <- 0 until Nu
+              } {
+                val cIdx = m2 * N * Mu * Nu + n2 * Mu * Nu + m1 * Nu + n1
+                val cVal = toSInt(cValues(cIdx), inputCElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
+                acc(m1)(n1) += cVal
+              }
+
+              acc
             }
 
             println(s"Checking dataTypeIdx${dataTypeIdx + 1} arrayShapeIdx_cfg${arrayShapeIdx + 1}...")
             print(s"M = $M, N = $N, K = $K\n")
-            expectedResult.zipWithIndex.foreach { case (rowBlocks, m) =>
-              rowBlocks.zipWithIndex.foreach { case (block, n) =>
-                println(s"Block ($m, $n):\n" + block.map(_.mkString(" ")).mkString("\n") + "\n")
-              }
-            }
+            // expectedResult.zipWithIndex.foreach { case (rowBlocks, m) =>
+            //   rowBlocks.zipWithIndex.foreach { case (block, n) =>
+            //     println(s"Block ($m, $n):\n" + block.map(_.mkString(" ")).mkString("\n") + "\n")
+            //   }
+            // }
 
             // Set up configuration
             dut.clock.step(5)
@@ -123,6 +125,7 @@ class ArrayTopTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestU
             dut.clock.step(1)
             dut.io.ctrl.valid.poke(false.B)
 
+            // concurrent simulation
             var concurrent_threads = new chiseltest.internal.TesterThreadList(Seq())
 
             // A Input injector
@@ -137,7 +140,7 @@ class ArrayTopTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestU
                   .map { case (v, i) => BigInt(v) << (i * inputAElemWidth) }
                   .sum
 
-                // dut.clock.step(Random.between(1, 5))
+                dut.clock.step(Random.between(1, 5))
                 dut.io.data.in_a.bits.poke(aValues_cur.U)
                 dut.io.data.in_a.valid.poke(true.B)
                 WaitOrTimeout(dut.io.data.in_a.ready, dut.clock)
@@ -160,7 +163,7 @@ class ArrayTopTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestU
                   .zipWithIndex
                   .map { case (v, i) => BigInt(v) << (i * inputBElemWidth) }
                   .sum
-                // dut.clock.step(Random.between(1, 5))
+                dut.clock.step(Random.between(1, 5))
                 dut.io.data.in_b.bits.poke(bValues_cur.U)
                 dut.io.data.in_b.valid.poke(true.B)
                 WaitOrTimeout(dut.io.data.in_b.ready, dut.clock)
@@ -183,7 +186,7 @@ class ArrayTopTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestU
                   .map { case (v, i) => BigInt(v) << (i * inputCElemWidth) }
                   .sum
 
-                // dut.clock.step(Random.between(1, 5))
+                dut.clock.step(Random.between(1, 5))
                 dut.io.data.in_c.bits.poke(cValues_cur.U)
                 dut.io.data.in_c.valid.poke(true.B)
                 WaitOrTimeout(dut.io.data.in_c.ready, dut.clock)
@@ -206,20 +209,18 @@ class ArrayTopTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestU
                 val output   = (0 until (Mu * Nu)).map { i =>
                   ((out_d >> (i * outputDElemWidth)) & (math.pow(2, outputDElemWidth).toLong - 1)).toInt
                 }
-                // println(s"Expected: ${expected.mkString(", ")}")
-                // println(s"Output: ${output.mkString(", ")}")
+
                 for (i <- output.indices) {
-                  // println(s"output: ${output(i)} (expected: ${expected(i)})")
                   assert(
                     output(i) == expected(i),
                     f"Mismatch at index $i: got 0x${output(i)}%X, expected 0x${expected(i)}%X"
                   )
                 }
-
-                // dut.clock.step(Random.between(1, 5))
+                dut.clock.step(Random.between(1, 5))
                 dut.io.data.out_d.ready.poke(true.B)
                 dut.clock.step(1)
                 dut.io.data.out_d.ready.poke(false.B)
+
               }
             }
 
@@ -231,35 +232,16 @@ class ArrayTopTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestU
       }
     }
 
-    // Test with custom parameters
-    // params = SpatialArrayParam(
-    //   opType                 = Seq(OpType.SIntSIntOp, OpType.UIntUIntOp),
-    //   // opType                 = Seq(OpType.UIntUIntOp, OpType.UIntUIntOp),
-    //   macNum                 = Seq(512, 1024),
-    //   inputAElemWidth        = Seq(8, 4),
-    //   inputBElemWidth        = Seq(8, 4),
-    //   inputCElemWidth        = Seq(32, 16),
-    //   mulElemWidth           = Seq(16, 8),
-    //   outputDElemWidth       = Seq(32, 16),
-    //   arrayInputAWidth       = 512,
-    //   arrayInputBWidth       = 4096,
-    //   arrayInputCWidth       = 2048,
-    //   arrayOutputDWidth      = 2048,
-    //   arrayDim               = Seq(Seq(Seq(8, 8, 8), Seq(1, 32, 16)), Seq(Seq(8, 16, 8), Seq(1, 64, 16))),
-    //   serialInputCDataWidth  = 2048,
-    //   serialOutputDDataWidth = 2048
-    // )
-
     val params = SpatialArrayParam(
-      opType = Seq(OpType.SIntSIntOp, OpType.UIntUIntOp),
+      opType                 = Seq(OpType.SIntSIntOp, OpType.UIntUIntOp),
       macNum                 = Seq(8, 16),
       inputAElemWidth        = Seq(8, 4),
       inputBElemWidth        = Seq(8, 4),
       inputCElemWidth        = Seq(32, 16),
       mulElemWidth           = Seq(16, 8),
-      outputDElemWidth           = Seq(32, 16),
-      arrayInputAWidth            = 64,
-      arrayInputBWidth            = 64,
+      outputDElemWidth       = Seq(32, 16),
+      arrayInputAWidth       = 64,
+      arrayInputBWidth       = 64,
       arrayInputCWidth       = 256,
       arrayOutputDWidth      = 256,
       arrayDim               = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8))),
@@ -267,7 +249,7 @@ class ArrayTopTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestU
       serialOutputDDataWidth = 256
     )
 
-    val repeat_times = 2
+    val repeat_times = 10
     (0 until repeat_times).foreach { _ =>
       testArrayTop(params)
     }
