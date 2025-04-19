@@ -8,10 +8,12 @@ trait GeMMTestUtils {
 
   // Function to convert UInt to SInt manually
   def toSInt(value: Int, bitWidth: Int, ifTrans: Boolean): Int = {
-    if (!ifTrans) return value // No conversion needed
-    val signBit = 1 << (bitWidth - 1) // 2^(N-1)
-    if (value >= signBit) value - (1 << bitWidth) // Convert to signed
-    else value // Keep as is
+    if (!ifTrans) return value
+    val mask     = (1L << bitWidth) - 1
+    val unsigned = value.toLong & mask
+    val signBit  = 1L << (bitWidth - 1)
+    if ((unsigned & signBit) != 0) (unsigned - (1L << bitWidth)).toInt
+    else unsigned.toInt
   }
 
   def WaitOrTimeout(signalToAssert: Bool, clock: Clock, timeout: Int = 100) = {
