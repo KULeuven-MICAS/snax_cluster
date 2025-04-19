@@ -581,6 +581,12 @@ def main():
                 + str(acc_cfgs[i]["with_pipeline"]),
                 gen_path=rtl_target_path,
             )
+        if acc_cfgs[i]["snax_acc_name"] == "snax_opengemm":
+            gen_chisel_file(
+                chisel_path=chisel_acc_path,
+                chisel_param="snax_acc.spatial_array.ArrayTopGen",
+                gen_path=rtl_target_path,
+            )
         elif acc_cfgs[i]["snax_acc_name"] == "snax_data_reshuffler":
             gen_chisel_file(
                 chisel_path=chisel_acc_path,
