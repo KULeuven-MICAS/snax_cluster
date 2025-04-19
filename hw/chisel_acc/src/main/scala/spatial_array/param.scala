@@ -6,12 +6,13 @@ object OpType {
   def Float16IntOp     = 3
   def Float16Float16Op = 4
 
-  def fromString(str: String): Int = str match {
-    case "SIntSInt" => SIntSIntOp
-    case "UIntUInt" => UIntUIntOp
-    case _ => throw new IllegalArgumentException(s"Unsupported OpType: $str")
-  }
-  
+  def fromString(str: String): Int =
+    str match {
+      case "SIntSInt" => SIntSIntOp
+      case "UIntUInt" => UIntUIntOp
+      case _          => throw new IllegalArgumentException(s"Unsupported OpType: $str")
+    }
+
 }
 
 class SpatialArrayParam(

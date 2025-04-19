@@ -87,7 +87,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   })
 
   val inputCElemWidthRom = VecInit(params.inputCElemWidth.map(_.U(params.configWidth.W)))
-  val outPutDWidthRom     = VecInit(params.outputDElemWidth.map(_.U(params.configWidth.W)))
+  val outPutDWidthRom    = VecInit(params.outputDElemWidth.map(_.U(params.configWidth.W)))
 
   def realBandWidth(
     dataTypeIdx:  UInt,
@@ -98,15 +98,15 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     dim(0) * dim(2) * elemWidthSeq(dataTypeIdx)
   }
 
-  val dOutputCounter               = Module(new BasicCounter(params.configWidth))
+  val dOutputCounter = Module(new BasicCounter(params.configWidth))
 
   val runTimeOutputBandWidthFactor = (realBandWidth(
     csrReg.arrayCfg.dataTypeCfg,
     csrReg.arrayCfg.arrayShapeCfg,
     outPutDWidthRom
   ) / params.serialOutputDDataWidth.U)
-  
-  val output_serial_factor         =
+
+  val output_serial_factor =
     Mux(
       params.arrayOutputDWidth.U <= params.serialOutputDDataWidth.U,
       1.U,
@@ -260,7 +260,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     inputCElemWidthRom
   ) / params.serialInputCDataWidth.U)
 
-  val input_serial_factor = 
+  val input_serial_factor =
     Mux(
       params.arrayInputCWidth.U <= params.serialInputCDataWidth.U,
       1.U,

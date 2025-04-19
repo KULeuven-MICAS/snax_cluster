@@ -1,9 +1,7 @@
 package snax_acc.spatial_array
 
 import scala.util.Random
-
 import chisel3._
-
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import snax_acc.utils.DecoupledCut._
@@ -22,237 +20,226 @@ class ArrayTopHarness(params: SpatialArrayParam) extends Module with RequireAsyn
   io.performance_counter := dut.io.performance_counter
 }
 
-class ArrayTopTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestUtils {
+trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester with GeMMTestUtils {
+  // Define the function to test a single configuration
+  def testSingleConfig(params: SpatialArrayParam, dataTypeIdx: Int, arrayShapeIdx: Int): Unit = {
+    test(new ArrayTopHarness(params)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+      println(s"Testing dataTypeIdx${dataTypeIdx + 1} arrayShapeIdx_cfg${arrayShapeIdx + 1}...")
+
+      // Get the current configuration parameters
+      val inputAElemWidth  = params.inputAElemWidth(dataTypeIdx)
+      val inputBElemWidth  = params.inputBElemWidth(dataTypeIdx)
+      val inputCElemWidth  = params.inputCElemWidth(dataTypeIdx)
+      val outputDElemWidth = params.outputDElemWidth(dataTypeIdx)
+
+      val Mu = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(0)
+      val Ku = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(1)
+      val Nu = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(2)
+
+      val sizeRange = 5
+      val rand      = new Random()
+      val M         = rand.nextInt(sizeRange) + 1
+      val N         = rand.nextInt(sizeRange) + 1
+      val K         = rand.nextInt(sizeRange) + 1
+
+      println(s"Parameters: M=$M, N=$N, K=$K, Mu=$Mu, Ku=$Ku, Nu=$Nu")
+
+      // Generate test data
+      val aValues = Array.fill(Mu * Ku * M * K)(rand.nextInt(math.pow(2, inputAElemWidth).toInt))
+      val bValues = Array.fill(Ku * Nu * N * K)(rand.nextInt(math.pow(2, inputBElemWidth).toInt))
+      val cValues = Array.fill(Mu * Nu * M * N)(rand.nextInt(math.pow(2, inputCElemWidth).toInt))
+
+      // Compute the expected result
+      val expectedResult = Array.tabulate(M, N) { (m2, n2) =>
+        val acc = Array.fill(Mu, Nu)(0)
+
+        // Matrix multiplication part
+        for (k2 <- 0 until K) {
+          for (m1 <- 0 until Mu) {
+            for (n1 <- 0 until Nu) {
+              var sum = 0
+              for (k1 <- 0 until Ku) {
+                val aIdx = m2 * K * Mu * Ku + k2 * Mu * Ku + m1 * Ku + k1
+                val bIdx = n2 * K * Nu * Ku + k2 * Nu * Ku + n1 * Ku + k1
+
+                val aSInt = toSInt(
+                  aValues(aIdx),
+                  inputAElemWidth,
+                  params.opType(dataTypeIdx) == OpType.SIntSIntOp
+                )
+                val bSInt = toSInt(
+                  bValues(bIdx),
+                  inputBElemWidth,
+                  params.opType(dataTypeIdx) == OpType.SIntSIntOp
+                )
+
+                sum += aSInt * bSInt
+              }
+              acc(m1)(n1) += sum
+            }
+          }
+        }
+
+        // Add the C matrix
+        for {
+          m1 <- 0 until Mu
+          n1 <- 0 until Nu
+        } {
+          val cIdx = m2 * N * Mu * Nu + n2 * Mu * Nu + m1 * Nu + n1
+          val cVal = toSInt(cValues(cIdx), inputCElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
+          acc(m1)(n1) += cVal
+          acc(m1)(n1) = (acc(m1)(n1) & ((1L << outputDElemWidth) - 1)).toInt
+        }
+
+        acc
+      }
+
+      // Configure hardware
+      dut.clock.step(5)
+      dut.io.ctrl.bits.fsmCfg.K_i.poke(K.U)
+      dut.io.ctrl.bits.fsmCfg.N_i.poke(N.U)
+      dut.io.ctrl.bits.fsmCfg.M_i.poke(M.U)
+      dut.io.ctrl.bits.fsmCfg.subtraction_constant_i.poke(0.U)
+      dut.io.ctrl.bits.arrayCfg.arrayShapeCfg.poke(arrayShapeIdx.U)
+      dut.io.ctrl.bits.arrayCfg.dataTypeCfg.poke(dataTypeIdx.U)
+      dut.io.ctrl.valid.poke(true.B)
+      WaitOrTimeout(dut.io.ctrl.ready, dut.clock)
+      dut.clock.step(1)
+      dut.io.ctrl.valid.poke(false.B)
+
+      // Concurrent thread management
+      var concurrent_threads = new chiseltest.internal.TesterThreadList(Seq())
+
+      // A input injection thread
+      concurrent_threads = concurrent_threads.fork {
+        for (temporalIndexInput <- 0 until M * K * N) {
+          val (indexA, indexB) = temporalToSpatialIndicesAB(temporalIndexInput, K = K, N = N)
+          val aValues_cur      = aValues
+            .slice(indexA * Mu * Ku, indexA * Mu * Ku + Mu * Ku)
+            .zipWithIndex
+            .map { case (v, i) => BigInt(v) << (i * inputAElemWidth) }
+            .sum
+
+          dut.clock.step(Random.between(1, 5))
+          dut.io.data.in_a.bits.poke(aValues_cur.U)
+          dut.io.data.in_a.valid.poke(true.B)
+          WaitOrTimeout(dut.io.data.in_a.ready, dut.clock)
+          assert(dut.io.data.in_a.ready.peekBoolean())
+
+          dut.clock.step(1)
+          dut.io.data.in_a.valid.poke(false.B)
+        }
+      }
+
+      // B input injection thread
+      concurrent_threads = concurrent_threads.fork {
+        for (temporalIndexInput <- 0 until M * K * N) {
+          val (indexA, indexB) = temporalToSpatialIndicesAB(temporalIndexInput, K = K, N = N)
+          val bValues_cur      = bValues
+            .slice(indexB * Nu * Ku, indexB * Nu * Ku + Nu * Ku)
+            .zipWithIndex
+            .map { case (v, i) => BigInt(v) << (i * inputBElemWidth) }
+            .sum
+
+          dut.clock.step(Random.between(1, 5))
+          dut.io.data.in_b.bits.poke(bValues_cur.U)
+          dut.io.data.in_b.valid.poke(true.B)
+          WaitOrTimeout(dut.io.data.in_b.ready, dut.clock)
+          assert(dut.io.data.in_b.ready.peekBoolean())
+
+          dut.clock.step(1)
+          dut.io.data.in_b.valid.poke(false.B)
+        }
+      }
+
+      // C input injection thread
+      concurrent_threads = concurrent_threads.fork {
+        for (temporalIndex <- 0 until M * N) {
+          val cValues_cur = cValues
+            .slice(temporalIndex * Mu * Nu, temporalIndex * Mu * Nu + Mu * Nu)
+            .zipWithIndex
+            .map { case (v, i) => BigInt(v) << (i * inputCElemWidth) }
+            .sum
+
+          dut.clock.step(Random.between(1, 5))
+          dut.io.data.in_c.bits.poke(cValues_cur.U)
+          dut.io.data.in_c.valid.poke(true.B)
+          WaitOrTimeout(dut.io.data.in_c.ready, dut.clock)
+
+          dut.clock.step(1)
+          dut.io.data.in_c.valid.poke(false.B)
+        }
+      }
+
+      // Output checking thread
+      concurrent_threads = concurrent_threads.fork {
+        for (outputTemporalIndex <- 0 until M * N) {
+          WaitOrTimeout(dut.io.data.out_d.valid, dut.clock)
+
+          val expected = expectedResult.flatten.flatten.flatten
+            .slice(outputTemporalIndex * Mu * Nu, (outputTemporalIndex + 1) * Mu * Nu)
+          val out_d    = dut.io.data.out_d.bits.peek().litValue
+          val output   = (0 until (Mu * Nu)).map { i =>
+            ((out_d >> (i * outputDElemWidth)) & (math.pow(2, outputDElemWidth).toLong - 1)).toInt
+          }
+
+          for (i <- output.indices) {
+            assert(
+              output(i) == expected(i),
+              f"Mismatch at index $i: got 0x${output(i)}%X, expected 0x${expected(i)}%X"
+            )
+          }
+          dut.clock.step(Random.between(1, 5))
+          dut.io.data.out_d.ready.poke(true.B)
+          dut.clock.step(1)
+          dut.io.data.out_d.ready.poke(false.B)
+        }
+      }
+
+      // Wait for all threads to finish
+      concurrent_threads.join()
+
+      // check busy_o
+      dut.clock.step(10)
+      dut.io.busy_o.expect(false.B)
+      dut.clock.step(1)
+    }
+  }
+
+}
+
+class ArrayTopTest extends ArrayTopTestHelper {
 
   behavior of "ArrayTop"
-
   it should "correctly process configuration and data" in {
 
-    def testArrayTop(params: SpatialArrayParam): Unit = {
-      test(new ArrayTopHarness(params)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-        val rand = new Random()
-        (0 until params.opType.length).map { dataTypeIdx =>
+    // Define the test parameters
+    val paramsList = Seq(
+      SpatialArrayParam(
+        opType                 = Seq(OpType.SIntSIntOp, OpType.SIntSIntOp),
+        macNum                 = Seq(8, 16),
+        inputAElemWidth        = Seq(8, 4),
+        inputBElemWidth        = Seq(8, 4),
+        inputCElemWidth        = Seq(32, 16),
+        mulElemWidth           = Seq(16, 8),
+        outputDElemWidth       = Seq(32, 16),
+        arrayInputAWidth       = 64,
+        arrayInputBWidth       = 64,
+        arrayInputCWidth       = 256,
+        arrayOutputDWidth      = 256,
+        arrayDim               = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8))),
+        serialInputCDataWidth  = 256,
+        serialOutputDDataWidth = 256
+      ),
+    )
 
-          (0 until params.arrayDim(dataTypeIdx).length).map { arrayShapeIdx =>
-            // Get the parameters for the current configuration
-            val inputAElemWidth  = params.inputAElemWidth(dataTypeIdx)
-            val inputBElemWidth  = params.inputBElemWidth(dataTypeIdx)
-            val inputCElemWidth  = params.inputCElemWidth(dataTypeIdx)
-            val outputDElemWidth = params.outputDElemWidth(dataTypeIdx)
-
-            val Mu = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(0)
-            val Ku = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(1)
-            val Nu = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(2)
-
-            val sizeRange = 1
-            val M         = rand.nextInt(sizeRange) + 1
-            val N         = rand.nextInt(sizeRange) + 1
-            val K         = rand.nextInt(sizeRange) + 1
-
-            // Generate random values for 'a', 'b' and 'c'
-            val aValues = Array.fill(Mu * Ku * M * K)(rand.nextInt(math.pow(2, inputAElemWidth).toInt))
-            val bValues = Array.fill(Ku * Nu * N * K)(rand.nextInt(math.pow(2, inputBElemWidth).toInt))
-            val cValues = Array.fill(Mu * Nu * M * N)(rand.nextInt(math.pow(2, inputCElemWidth).toInt))
-            // println(s"Generated aValues: ${aValues.mkString(", ")}")
-            // println(s"Generated bValues: ${bValues.mkString(", ")}")
-            // println(s"Generated cValues: ${cValues.mkString(", ")}")
-
-            // // Print the generated values in 0x format
-            // println(s"Generated aValues: ${aValues.map(v => f"0x$v%X").mkString(", ")}")
-            // println(s"Generated bValues: ${bValues.map(v => f"0x$v%X").mkString(", ")}")
-            // println(s"Generated cValues: ${cValues.map(v => f"0x$v%X").mkString(", ")}")
-
-            val expectedResult = Array.tabulate(M, N) { (m2, n2) =>
-              val acc = Array.fill(Mu, Nu)(0)
-              // Multiply A and B
-              for (k2 <- 0 until K) {
-                for (m1 <- 0 until Mu) {
-                  for (n1 <- 0 until Nu) {
-                    var sum = 0
-                    for (k1 <- 0 until Ku) {
-                      val aIdx = m2 * K * Mu * Ku + k2 * Mu * Ku + m1 * Ku + k1
-                      val bIdx = n2 * K * Nu * Ku + k2 * Nu * Ku + n1 * Ku + k1
-
-                      val aSInt = toSInt(
-                        aValues(aIdx),
-                        inputAElemWidth,
-                        params.opType(dataTypeIdx) == OpType.SIntSIntOp
-                      )
-                      val bSInt = toSInt(
-                        bValues(bIdx),
-                        inputBElemWidth,
-                        params.opType(dataTypeIdx) == OpType.SIntSIntOp
-                      )
-
-                      sum += aSInt * bSInt
-                    }
-                    acc(m1)(n1) += sum
-                  }
-                }
-              }
-
-              // Add cValues
-              for {
-                m1 <- 0 until Mu
-                n1 <- 0 until Nu
-              } {
-                val cIdx = m2 * N * Mu * Nu + n2 * Mu * Nu + m1 * Nu + n1
-                val cVal = toSInt(cValues(cIdx), inputCElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
-                acc(m1)(n1) += cVal
-              }
-
-              acc
-            }
-
-            println(s"Checking dataTypeIdx${dataTypeIdx + 1} arrayShapeIdx_cfg${arrayShapeIdx + 1}...")
-            print(s"M = $M, N = $N, K = $K\n")
-            // expectedResult.zipWithIndex.foreach { case (rowBlocks, m) =>
-            //   rowBlocks.zipWithIndex.foreach { case (block, n) =>
-            //     println(s"Block ($m, $n):\n" + block.map(_.mkString(" ")).mkString("\n") + "\n")
-            //   }
-            // }
-
-            // Set up configuration
-            dut.clock.step(5)
-            dut.io.ctrl.bits.fsmCfg.K_i.poke(K.U)
-            dut.io.ctrl.bits.fsmCfg.N_i.poke(N.U)
-            dut.io.ctrl.bits.fsmCfg.M_i.poke(M.U)
-            dut.io.ctrl.bits.fsmCfg.subtraction_constant_i.poke(0.U)
-            dut.io.ctrl.bits.arrayCfg.arrayShapeCfg.poke(arrayShapeIdx.U)
-            dut.io.ctrl.bits.arrayCfg.dataTypeCfg.poke(dataTypeIdx.U)
-            dut.io.ctrl.valid.poke(true.B)
-            WaitOrTimeout(dut.io.ctrl.ready, dut.clock)
-            dut.clock.step(1)
-            dut.io.ctrl.valid.poke(false.B)
-
-            // concurrent simulation
-            var concurrent_threads = new chiseltest.internal.TesterThreadList(Seq())
-
-            // A Input injector
-            concurrent_threads = concurrent_threads.fork {
-
-              for (temporalIndexInput <- 0 until M * K * N) {
-                val (indexA, indexB) = temporalToSpatialIndicesAB(temporalIndexInput, K = K, N = N)
-                // A
-                val aValues_cur      = aValues
-                  .slice(indexA * Mu * Ku, indexA * Mu * Ku + Mu * Ku)
-                  .zipWithIndex
-                  .map { case (v, i) => BigInt(v) << (i * inputAElemWidth) }
-                  .sum
-
-                dut.clock.step(Random.between(1, 5))
-                dut.io.data.in_a.bits.poke(aValues_cur.U)
-                dut.io.data.in_a.valid.poke(true.B)
-                WaitOrTimeout(dut.io.data.in_a.ready, dut.clock)
-                assert(dut.io.data.in_a.ready.peekBoolean())
-
-                dut.clock.step(1) // Valid needs to be asserted for 1 cycle
-
-                dut.io.data.in_a.valid.poke(false.B)
-              }
-            }
-
-            // B Input injector
-            concurrent_threads = concurrent_threads.fork {
-
-              for (temporalIndexInput <- 0 until M * K * N) {
-                val (indexA, indexB) = temporalToSpatialIndicesAB(temporalIndexInput, K = K, N = N)
-                // B
-                val bValues_cur      = bValues
-                  .slice(indexB * Nu * Ku, indexB * Nu * Ku + Nu * Ku)
-                  .zipWithIndex
-                  .map { case (v, i) => BigInt(v) << (i * inputBElemWidth) }
-                  .sum
-                dut.clock.step(Random.between(1, 5))
-                dut.io.data.in_b.bits.poke(bValues_cur.U)
-                dut.io.data.in_b.valid.poke(true.B)
-                WaitOrTimeout(dut.io.data.in_b.ready, dut.clock)
-                assert(dut.io.data.in_b.ready.peekBoolean())
-
-                dut.clock.step(1) // Valid needs to be asserted for 1 cycle
-
-                dut.io.data.in_b.valid.poke(false.B)
-
-              }
-            }
-
-            // C injector
-            concurrent_threads = concurrent_threads.fork {
-
-              for (temporalIndex <- 0 until M * N) {
-                val cValues_cur = cValues
-                  .slice(temporalIndex * Mu * Nu, temporalIndex * Mu * Nu + Mu * Nu)
-                  .zipWithIndex
-                  .map { case (v, i) => BigInt(v) << (i * inputCElemWidth) }
-                  .sum
-
-                dut.clock.step(Random.between(1, 5))
-                dut.io.data.in_c.bits.poke(cValues_cur.U)
-                dut.io.data.in_c.valid.poke(true.B)
-                WaitOrTimeout(dut.io.data.in_c.ready, dut.clock)
-
-                dut.clock.step(1) // Valid needs to be asserted for 1 cycle
-
-                dut.io.data.in_c.valid.poke(false.B)
-              }
-            }
-
-            // Output checker
-            concurrent_threads = concurrent_threads.fork {
-              for (outputTemporalIndex <- 0 until M * N) {
-                WaitOrTimeout(dut.io.data.out_d.valid, dut.clock)
-
-                // Check the output
-                val expected = expectedResult.flatten.flatten.flatten
-                  .slice(outputTemporalIndex * Mu * Nu, (outputTemporalIndex + 1) * Mu * Nu)
-                val out_d    = dut.io.data.out_d.bits.peek().litValue
-                val output   = (0 until (Mu * Nu)).map { i =>
-                  ((out_d >> (i * outputDElemWidth)) & (math.pow(2, outputDElemWidth).toLong - 1)).toInt
-                }
-
-                for (i <- output.indices) {
-                  assert(
-                    output(i) == expected(i),
-                    f"Mismatch at index $i: got 0x${output(i)}%X, expected 0x${expected(i)}%X"
-                  )
-                }
-                dut.clock.step(Random.between(1, 5))
-                dut.io.data.out_d.ready.poke(true.B)
-                dut.clock.step(1)
-                dut.io.data.out_d.ready.poke(false.B)
-
-              }
-            }
-
-            // Wait for all threads to finish
-            concurrent_threads.join()
-
-          }
+    // Run the tests
+    for (params <- paramsList) {
+      for (dataTypeIdx <- params.opType.indices) {
+        for (arrayShapeIdx <- params.arrayDim(dataTypeIdx).indices) {
+          testSingleConfig(params, dataTypeIdx, arrayShapeIdx)
         }
       }
     }
-
-    val params = SpatialArrayParam(
-      opType                 = Seq(OpType.SIntSIntOp, OpType.UIntUIntOp),
-      macNum                 = Seq(8, 16),
-      inputAElemWidth        = Seq(8, 4),
-      inputBElemWidth        = Seq(8, 4),
-      inputCElemWidth        = Seq(32, 16),
-      mulElemWidth           = Seq(16, 8),
-      outputDElemWidth       = Seq(32, 16),
-      arrayInputAWidth       = 64,
-      arrayInputBWidth       = 64,
-      arrayInputCWidth       = 256,
-      arrayOutputDWidth      = 256,
-      arrayDim               = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8))),
-      serialInputCDataWidth  = 256,
-      serialOutputDDataWidth = 256
-    )
-
-    val repeat_times = 10
-    (0 until repeat_times).foreach { _ =>
-      testArrayTop(params)
-    }
-
   }
 }
