@@ -1,7 +1,9 @@
 package snax_acc.spatial_array
 
 import scala.util.Random
+
 import chisel3._
+
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import snax_acc.utils.DecoupledCut._
@@ -230,7 +232,7 @@ class ArrayTopTest extends ArrayTopTestHelper {
         arrayDim               = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8))),
         serialInputCDataWidth  = 256,
         serialOutputDDataWidth = 256
-      ),
+      )
     )
 
     // Run the tests

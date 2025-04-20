@@ -72,9 +72,12 @@ def emit_matmul_data(**kwargs):
     meshRow = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
         "snax_opengemm_spatial_unrolling"
     ][data_type][array_shape][0]
-    tileSize = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"]["snax_opengemm_spatial_unrolling"][data_type][array_shape][1]
+    tileSize = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
+        "snax_opengemm_spatial_unrolling"
+    ][data_type][array_shape][1]
     meshCol = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
-        "snax_opengemm_spatial_unrolling"][data_type][array_shape][2]
+        "snax_opengemm_spatial_unrolling"
+    ][data_type][array_shape][2]
 
     a_array_width = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
         "snax_opengemm_array_input_a_width"
@@ -85,9 +88,10 @@ def emit_matmul_data(**kwargs):
     c_array_width = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
         "snax_opengemm_array_input_c_width"
     ]
-    d_array_width = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"]["snax_opengemm_array_output_width"]
-    assert (
-        c_array_width == d_array_width), "C and D array width must be the same"
+    d_array_width = kwargs["snax_opengemm_core_template"]["snax_acc_cfg"][
+        "snax_opengemm_array_output_width"
+    ]
+    assert c_array_width == d_array_width, "C and D array width must be the same"
     snax_opengemm_serial_c_d_width = kwargs["snax_opengemm_core_template"][
         "snax_acc_cfg"
     ]["snax_opengemm_serial_c_d_width"]
@@ -133,9 +137,9 @@ def emit_matmul_data(**kwargs):
     # related to if this is a wide channel or not
     # if wide, must be divisible by 8
     # if narrow, must be divisible by 1
-    channel_en_A_bits = max(8, int(
-        (meshRow * tileSize * input_data_width / bankWidth + 7) // 8 * 8
-    ))
+    channel_en_A_bits = max(
+        8, int((meshRow * tileSize * input_data_width / bankWidth + 7) // 8 * 8)
+    )
     channel_en_A = gen_channel_enable_CSR(
         channel_en_A,
         channel_en_A_bits,
@@ -175,9 +179,9 @@ def emit_matmul_data(**kwargs):
 
     B_enabled_channel_CSR_num = int(math.ceil(b_array_width / bankWidth / 32))
     channel_en_B = [0] * B_enabled_channel_CSR_num
-    channel_en_B_bits = max(8, int(
-        (meshCol * tileSize * input_data_width / bankWidth + 7) // 8 * 8
-    ))
+    channel_en_B_bits = max(
+        8, int((meshCol * tileSize * input_data_width / bankWidth + 7) // 8 * 8)
+    )
     channel_en_B = gen_channel_enable_CSR(
         channel_en_B,
         channel_en_B_bits,
@@ -208,7 +212,10 @@ def emit_matmul_data(**kwargs):
         format_scalar_definition(
             "int32_t",
             "Ctlbound0",
-            max(1, meshCol * meshRow * output_data_width / snax_opengemm_serial_c_d_width),
+            max(
+                1,
+                meshCol * meshRow * output_data_width / snax_opengemm_serial_c_d_width,
+            ),
         )
     ]
     # assert(meshCol * meshRow * output_data_width >= snax_opengemm_serial_c_d_width)
@@ -240,7 +247,9 @@ def emit_matmul_data(**kwargs):
 
     assert broadcast_C or disable_C or enable_full_C, "Invalid C settings"
 
-    C_enabled_channel_CSR_num = int(math.ceil(snax_opengemm_serial_c_d_width / bankWidth / 32))
+    C_enabled_channel_CSR_num = int(
+        math.ceil(snax_opengemm_serial_c_d_width / bankWidth / 32)
+    )
     channel_en_C = [0] * C_enabled_channel_CSR_num
 
     if broadcast_C == 1:
@@ -288,7 +297,10 @@ def emit_matmul_data(**kwargs):
         format_scalar_definition(
             "int32_t",
             "D32tlbound0",
-            max(1, meshCol * meshRow * output_data_width / snax_opengemm_serial_c_d_width),
+            max(
+                1,
+                meshCol * meshRow * output_data_width / snax_opengemm_serial_c_d_width,
+            ),
         )
     ]
     # assert(meshCol * meshRow * output_data_width >= snax_opengemm_serial_c_d_width)
