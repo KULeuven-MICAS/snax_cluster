@@ -98,7 +98,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     dim(0) * dim(2) * elemWidthSeq(dataTypeIdx)
   }
 
-  val dOutputCounter = Module(new BasicCounter(params.configWidth))
+  val dOutputCounter = Module(new BasicCounter(params.configWidth, nameTag = "dOutputCounter"))
 
   val runTimeOutputBandWidthFactor = (realBandWidth(
     csrReg.arrayCfg.dataTypeCfg,
@@ -291,7 +291,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   val array = Module(new SpatialArray(params))
 
   val accAddExtIn        = WireInit(0.B)
-  val computeFireCounter = Module(new BasicCounter(params.configWidth))
+  val computeFireCounter = Module(new BasicCounter(params.configWidth, nameTag = "computeFireCounter"))
   computeFireCounter.io.ceil := csrReg.fsmCfg.K_i
   val addCFire =
     (a_after_cut.fire && b_after_cut.fire && array.io.data.in_c.fire && computeFireCounter.io.value === 0.U)
@@ -319,7 +319,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   array.io.data.in_substraction <> sub_after_cut
 
   // array d_ready considering output stationary
-  val dOutputValidCounter = Module(new BasicCounter(params.configWidth))
+  val dOutputValidCounter = Module(new BasicCounter(params.configWidth, nameTag = "dOutputValidCounter"))
   dOutputValidCounter.io.ceil  := csrReg.fsmCfg.K_i
   dOutputValidCounter.io.tick  := array.io.data.out_d.fire && cstate === sBUSY
   dOutputValidCounter.io.reset := computation_finish

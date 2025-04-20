@@ -30,7 +30,7 @@ ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster.hjson)
 SUBDIRS += snax/xdma
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_opengemm.hjson)
-SUBDIRS += snax/opengemm
+SUBDIRS += snax/opengemm snax/xdma
 endif
 ifeq (${CFG_OVERRIDE}, cfg/snax_alu_cluster.hjson)
 SUBDIRS += snax/snax-alu

@@ -2,7 +2,9 @@ package snax_acc.spatial_array
 
 import chisel3._
 
-class BasicCounter(width: Int, hasCeil: Boolean = true) extends Module with RequireAsyncReset {
+class BasicCounter(width: Int, hasCeil: Boolean = true, nameTag: String = "Default")
+    extends Module
+    with RequireAsyncReset {
   val io        = IO(new Bundle {
     val tick  = Input(Bool())
     val reset = Input(Bool())
@@ -11,6 +13,7 @@ class BasicCounter(width: Int, hasCeil: Boolean = true) extends Module with Requ
     val value   = Output(UInt(width.W))
     val lastVal = Output(Bool())
   })
+  override def desiredName: String = "BasicCounter_" + nameTag + "_" + width.toString + "_" + hasCeil.toString
   // 32.W should be enough to count any loops
   val nextValue = Wire(UInt(width.W))
   val value     = RegNext(nextValue, 0.U)

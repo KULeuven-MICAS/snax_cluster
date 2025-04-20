@@ -53,6 +53,10 @@ SUBDIRS += snax-xdma-reshape-comparison
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_opengemm.hjson)
 SUBDIRS += snax-opengemm-matmul
+SUBDIRS += snax-xdma-memset
+SUBDIRS += snax-xdma-maxpool
+SUBDIRS += snax-xdma-transpose
+SUBDIRS += snax-xdma-reshape-comparison
 endif
 SUBDIRS += snax-multi-cluster-playground
 ifeq ($(CFG_OVERRIDE), cfg/snax_hypercorex_cluster.hjson)
