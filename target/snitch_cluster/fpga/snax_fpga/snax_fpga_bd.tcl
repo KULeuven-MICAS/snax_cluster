@@ -226,7 +226,7 @@ proc create_root_design { parentCell } {
       PMC_CRP_HSM1_REF_CTRL_FREQMHZ {133.333} \
       PMC_CRP_LSBUS_REF_CTRL_FREQMHZ {100} \
       PMC_CRP_NOC_REF_CTRL_FREQMHZ {960} \
-      PMC_CRP_PL0_REF_CTRL_FREQMHZ {125} \
+      PMC_CRP_PL0_REF_CTRL_FREQMHZ {100} \
       PMC_CRP_PL1_REF_CTRL_FREQMHZ {334} \
       PMC_CRP_PL5_REF_CTRL_FREQMHZ {400} \
       PMC_HSM0_CLK_ENABLE {1} \
@@ -252,6 +252,7 @@ proc create_root_design { parentCell } {
       PS_USE_PMCPL_CLK0 {1} \
       PS_USE_PMCPL_CLK1 {0} \
       PS_USE_PMCPL_IRO_CLK {0} \
+      PS_USE_S_AXI_FPD {0} \
       SMON_ALARMS {Set_Alarms_On} \
       SMON_ENABLE_TEMP_AVERAGING {0} \
       SMON_MEAS126 {{ALARM_ENABLE 1} {ALARM_LOWER 0.00} {ALARM_UPPER 2.00} {AVERAGE_EN 0} {ENABLE 1} {MODE {2 V unipolar}} {NAME VCCAUX} {SUPPLY_NUM 0}} \

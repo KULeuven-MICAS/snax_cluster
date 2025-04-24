@@ -9,8 +9,8 @@
 # Crossing Clock Domains
 ################################################################################
 
-create_clock -period 8 -name clk_core [get_pins snax_top_i/versal_cips_0/pl0_ref_clk]
-create_clock -period 16 -name clk_snitch [get_pins snax_top_i/snax_xilinx_0/i_cluster/snitch_clkdiv2/clk_o]
+create_clock -period 10 -name clk_core [get_pins snax_top_i/versal_cips_0/pl0_ref_clk]
+create_clock -period 20 -name clk_snitch [get_pins snax_top_i/snax_xilinx_0/i_cluster/snitch_clkdiv2/clk_o]
 
 # CDC 2phase clearable of DM: i_cdc_resp/i_cdc_req
 # CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through the paths async_req, async_ack, async_data.
