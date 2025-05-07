@@ -46,13 +46,13 @@ quantized_output_data_width = 8
 
 def emit_matmul_data(**kwargs):
 
-    meshRow = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][
+    meshRow = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0][
         "snax_gemmx_mesh_row"
     ]
-    tileSize = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][
+    tileSize = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0][
         "snax_gemmx_tile_size"
     ]
-    meshCol = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][
+    meshCol = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0][
         "snax_gemmx_mesh_col"
     ]
     snax_gemmx_serial_c32_d32_width = kwargs["snax_streamer_gemmX_core_template"][
@@ -385,7 +385,7 @@ def emit_gemmx_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "bypassSIMD", bypassSIMD)]
 
     # Generating random constant values
-    group_num = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][
+    group_num = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0][
         "snax_gemmx_mesh_col"
     ]
     input_zp_i = np.random.randint(MIN, MAX)
