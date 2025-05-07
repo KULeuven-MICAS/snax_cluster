@@ -336,6 +336,9 @@ module ${cfg['name']}_wrapper (
 );
 
 <%
+
+
+
 # Just some working variables
 tcdm_offset_start = 0
 tcdm_offset_stop = -1
@@ -368,37 +371,32 @@ for i in range(len(cfg['cores'])):
   # If an accelerator setting exists
   # Layout all possible accelerator configurations
   # Per snitch cluster core
-  if ('snax_acc_cfg' in cfg['cores'][i]):
+  if (cfg['cores'][i]['snax_acc_cfg'][0]):
     snax_acc_flag = True
 
     # Note that the order is from last core to the first core
-    snax_narrow_tcdm_ports_list.append(cfg['cores'][i]['snax_acc_cfg']['snax_narrow_tcdm_ports'])
-    snax_wide_tcdm_ports_list.append(cfg['cores'][i]['snax_acc_cfg']['snax_wide_tcdm_ports'])
-
-    if(cfg['cores'][i]['snax_acc_cfg']['snax_num_acc'] > 1):
-      snax_acc_multi_flag = True
-      snax_num_rw_csr = cfg['cores'][i]['snax_acc_cfg'].get('snax_num_rw_csr', 0)
-      snax_num_ro_csr = cfg['cores'][i]['snax_acc_cfg'].get('snax_num_ro_csr', 0)
-      snax_total_num_csr = snax_num_rw_csr + snax_num_ro_csr
-      snax_num_acc = cfg['cores'][i]['snax_acc_cfg']['snax_num_acc']
+    snax_narrow_tcdm_ports_list.append(cfg['cores'][i]['snax_acc_cfg'][0]['snax_narrow_tcdm_ports'])
+    snax_wide_tcdm_ports_list.append(cfg['cores'][i]['snax_acc_cfg'][0]['snax_wide_tcdm_ports'])
 
     snax_use_custom_ports = cfg['cores'][i]['snax_use_custom_ports']
 
-    for j in range(cfg['cores'][i]['snax_acc_cfg']['snax_num_acc']):
+    
+    for j in range(len(cfg['cores'][i]['snax_acc_cfg'])):
 
+      
       # Prepare accelerator tags
       curr_snax_acc = ''
-      curr_snax_acc = "i_snax_core_" + str(i) + "_acc_" + str(prefix_snax_count) + "_" + cfg['cores'][i]['snax_acc_cfg']['snax_acc_name']
+      curr_snax_acc = "i_snax_core_" + str(i) + "_acc_" + str(prefix_snax_count) + "_" + cfg['cores'][i]['snax_acc_cfg'][0]['snax_acc_name']
 
       # Set tcdm offset ports
-      snax_narrow_tcdm_ports = cfg['cores'][i]['snax_acc_cfg']['snax_narrow_tcdm_ports']
-      snax_wide_tcdm_ports = cfg['cores'][i]['snax_acc_cfg']['snax_wide_tcdm_ports']
+      snax_narrow_tcdm_ports = cfg['cores'][i]['snax_acc_cfg'][0]['snax_narrow_tcdm_ports']
+      snax_wide_tcdm_ports = cfg['cores'][i]['snax_acc_cfg'][0]['snax_wide_tcdm_ports']
       snax_tcdm_ports = snax_narrow_tcdm_ports + snax_wide_tcdm_ports
       tcdm_offset_stop += snax_tcdm_ports
 
       # Save settings in the dictionary
       snax_acc_dict[curr_snax_acc] = {
-            'snax_acc_name': cfg['cores'][i]['snax_acc_cfg']['snax_acc_name'],
+            'snax_acc_name': cfg['cores'][i]['snax_acc_cfg'][0]['snax_acc_name'],
             'snax_tcdm_ports': snax_tcdm_ports,
             'snax_tcdm_offset_start': tcdm_offset_start,
             'snax_tcdm_offset_stop': tcdm_offset_stop
