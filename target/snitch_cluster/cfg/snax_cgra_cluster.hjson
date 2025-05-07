@@ -115,6 +115,7 @@
             snax_acc_name: "snax_cgra",
             bender_target: ["cgra"],
             snax_narrow_tcdm_ports: 16,
+            snax_wide_tcdm_ports: 0,
             snax_num_rw_csr: 38,
             snax_num_ro_csr: 11,
             snax_streamer_cfg: {$ref: "#/snax_cgra_streamer_template" }

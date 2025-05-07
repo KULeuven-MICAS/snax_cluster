@@ -163,6 +163,7 @@
             snax_acc_name: "snax_data_reshuffler",
             bender_target: ["snax_data_reshuffler"],
             snax_narrow_tcdm_ports: 16,
+            snax_wide_tcdm_ports: 0,
             snax_num_rw_csr: 2,
             snax_num_ro_csr: 2,
             snax_streamer_cfg: {$ref: "#/snax_data_reshuffler_streamer_template" }

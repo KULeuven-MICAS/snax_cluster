@@ -114,6 +114,7 @@
             snax_acc_name: "snax_mac",
             bender_target: ["snax_mac"],
             snax_narrow_tcdm_ports: 4,
+            snax_wide_tcdm_ports: 0,
         }],
         snax_use_custom_ports: true,
         num_int_outstanding_loads: 1,
