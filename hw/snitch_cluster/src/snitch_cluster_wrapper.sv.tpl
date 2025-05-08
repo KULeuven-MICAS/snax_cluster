@@ -791,8 +791,8 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     //------------------------
     // Main Snitch Port
     //------------------------
-    .csr_req_addr_i       ( snax_csr_req_data [${idx}] ),
-    .csr_req_data_i       ( snax_csr_req_addr [${idx}] ),
+    .csr_req_addr_i       ( snax_csr_req_addr [${idx}] ),
+    .csr_req_data_i       ( snax_csr_req_data [${idx}] ),
     .csr_req_wen_i        ( snax_csr_req_write[${idx}] ),
     .csr_req_valid_i      ( snax_csr_req_valid[${idx}] ),
     .csr_req_ready_o      ( snax_csr_req_ready[${idx}] ),
@@ -850,8 +850,8 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     // CSR  format control ports
     //-----------------------------
     // Request
-    .snax_req_data_i  ( snax_core_${idx}_split_csr_req_addr[${jdx}]  ),
-    .snax_req_addr_i  ( snax_core_${idx}_split_csr_req_data[${jdx}]  ),
+    .snax_req_data_i  ( snax_core_${idx}_split_csr_req_data[${jdx}] ),
+    .snax_req_addr_i  ( snax_core_${idx}_split_csr_req_addr[${jdx}]  ),
     .snax_req_write_i ( snax_core_${idx}_split_csr_req_wen[${jdx}]   ),
     .snax_req_valid_i ( snax_core_${idx}_split_csr_req_valid[${jdx}] ),
     .snax_req_ready_o ( snax_core_${idx}_split_csr_req_ready[${jdx}] ),

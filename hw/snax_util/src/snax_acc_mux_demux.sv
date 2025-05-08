@@ -55,10 +55,6 @@ module snax_acc_mux_demux #(
   //------------------------------------------
   logic [AccNumBitWidth-1:0] snax_req_sel;
 
-  logic [31:0] internal_addr_sel;
-
-  assign internal_addr_sel = csr_req_addr_i - 32'd960;
-
   // Pre-compute static addresses
   int BaseCsrAddress [NumAcc+1];
   
@@ -71,9 +67,11 @@ module snax_acc_mux_demux #(
 
   always_comb begin
     for ( int i = 0; i < NumAcc; i ++ ) begin
+      // TODO: This will end up being a latch.
+      // To make decoding easier, let's use the register controlled muxing
       // This one is for setting the control signals for the demuxer
-      if((internal_addr_sel >= BaseCsrAddress[i]) &&
-         (internal_addr_sel < BaseCsrAddress[i] + CsrWidthList[i]- 1)) begin
+      if((csr_req_addr_i >= BaseCsrAddress[i]) &&
+         (csr_req_addr_i < BaseCsrAddress[i] + CsrWidthList[i]- 1)) begin
         snax_req_sel = i;
       end
       
@@ -88,7 +86,7 @@ module snax_acc_mux_demux #(
     .N_OUP        ( NumAcc              )
   ) i_stream_demux_offload (
     .inp_valid_i  ( csr_req_valid_i     ),
-    .inp_ready_o  ( csr_req_valid_o     ),
+    .inp_ready_o  ( csr_req_ready_o     ),
     .oup_sel_i    ( snax_req_sel        ),
     .oup_valid_o  ( acc_csr_req_valid_o ),
     .oup_ready_i  ( acc_csr_req_ready_i )
