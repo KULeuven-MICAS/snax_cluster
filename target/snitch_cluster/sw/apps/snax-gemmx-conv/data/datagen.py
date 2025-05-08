@@ -60,10 +60,10 @@ def emit_conv_data(**kwargs):
     ]
     snax_gemmx_serial_c32_d32_width = kwargs["snax_streamer_gemmX_core_template"][
         "snax_acc_cfg"
-    ]["snax_gemmx_serial_c32_d32_width"]
+    ][0]["snax_gemmx_serial_c32_d32_width"]
     snax_gemmx_serial_d8_width = kwargs["snax_streamer_gemmX_core_template"][
         "snax_acc_cfg"
-    ]["snax_gemmx_serial_d8_width"]
+    ][0]["snax_gemmx_serial_d8_width"]
 
     # size extraction
     Cin = kwargs["Cin"]
