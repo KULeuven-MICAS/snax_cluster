@@ -15,6 +15,12 @@ import re
 import logging as log
 from pathlib import Path
 
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                "../snaxgen"))
+from snaxgen import streamer_csr_num  # noqa: E402
+
 
 # Fill in default values for config values which
 # do not have a user-defined value.
@@ -179,6 +185,7 @@ class SnitchCluster(Generator):
 
         self.parse_pma_cfg(pma_cfg)
         self.parse_cores()
+        self.parse_streamer_csr()
 
     def l1_region(self):
         """Return L1 Region as tuple. Base and length."""
@@ -348,6 +355,24 @@ class SnitchCluster(Generator):
         self.cfg['nr_cores'] = len(cores)
         self.cfg['num_ssrs_max'] = max(len(core['ssrs']) for core in cores)
         self.cfg['cores'] = cores
+
+    # Returns a 2D list of CSR sets per accelerator
+    def parse_streamer_csr(self):
+        # Streamer CSR number list
+        streamer_csr_num_list = []
+        # Cycle through all cores
+        for core_id in range(len(self.cfg['cores'])):
+            # Check if the configuration list is empty or not
+            streamer_csr_acc_num_list = []
+            if (self.cfg['cores'][core_id]['snax_acc_cfg'][0]):
+                # Cycle through the accelerators list
+                for acc_id in range(len(self.cfg['cores'][core_id]['snax_acc_cfg'])):
+                    streamer_csr_test = streamer_csr_num(self.cfg['cores'][core_id]['snax_acc_cfg'][acc_id])
+                    streamer_csr_acc_num_list.append(streamer_csr_test)
+            # Append the set into the global list
+            streamer_csr_num_list.append(streamer_csr_acc_num_list)
+        # Set as config file for tpl to process
+        self.cfg['streamer_csr_num_list'] = streamer_csr_num_list
 
     def cfg_validate(self):
         failed = True
