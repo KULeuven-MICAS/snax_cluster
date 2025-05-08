@@ -33,9 +33,7 @@ static void write_csr_multi_acc_mux(uint32_t value) {
     return;
 }
 
-static uint32_t read_csr_multi_acc_mux(void) {
-    return read_csr(1990);
-}
+static uint32_t read_csr_multi_acc_mux(void) { return read_csr(1990); }
 
 static uint32_t csrr_ss(uint32_t csr_address) {
     uint32_t value;
