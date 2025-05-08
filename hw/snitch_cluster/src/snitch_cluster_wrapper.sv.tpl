@@ -361,7 +361,6 @@ for core_id in range(len(cfg['cores'])):
   snax_use_custom_ports = False
   snax_num_acc = None
   snax_acc_csr_list = []
-  snax_streamer_csr_num_list = None
   prefix_snax_nonacc_count = 0
   prefix_snax_count = 0
   snax_tcdm_ports = 0
@@ -376,7 +375,6 @@ for core_id in range(len(cfg['cores'])):
     if(len(cfg['cores'][core_id]['snax_acc_cfg']) > 1):
       snax_acc_multi_flag = True
       snax_num_acc = len(cfg['cores'][core_id]['snax_acc_cfg'])
-      snax_streamer_csr_num_list = cfg['streamer_csr_num_list'][core_id]
 
     # Note that the order is from last core to the first core
     snax_narrow_tcdm_ports_list.append(cfg['cores'][core_id]['snax_acc_cfg'][0]['snax_narrow_tcdm_ports'])
@@ -393,7 +391,7 @@ for core_id in range(len(cfg['cores'])):
       if(snax_acc_multi_flag):
         snax_num_rw_csr = cfg['cores'][core_id]['snax_acc_cfg'][j].get('snax_num_rw_csr', 0)
         snax_num_ro_csr = cfg['cores'][core_id]['snax_acc_cfg'][j].get('snax_num_ro_csr', 0)
-        snax_acc_csr_list.append(snax_num_rw_csr+snax_num_ro_csr)
+        snax_acc_csr_list.append(snax_num_rw_csr+snax_num_ro_csr+cfg['streamer_csr_num_list'][core_id][j])
 
       # Prepare accelerator tags
       curr_snax_acc = ''
@@ -467,7 +465,6 @@ for core_id in range(len(cfg['cores'])):
     'snax_acc_multi_flag':snax_acc_multi_flag,
     'snax_use_custom_ports': snax_use_custom_ports,
     'snax_acc_csr_list': snax_acc_csr_list,
-    'snax_streamer_csr_num_list': snax_streamer_csr_num_list,
     'snax_num_acc': snax_num_acc,
     'snax_acc_dict':snax_acc_dict
   }
@@ -773,6 +770,8 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
   logic [${snax_core_acc[idx_key]['snax_num_acc']-1}:0]        snax_core_${idx}_split_csr_rsp_valid;
   logic [${snax_core_acc[idx_key]['snax_num_acc']-1}:0]        snax_core_${idx}_split_csr_rsp_ready;
 
+  logic [${snax_core_acc[idx_key]['snax_num_acc']-1}:0] snax_core_${idx}_split_barrier;
+
   // This is a combined barrier for all barriers
   // Controlled by 1 Snitch core. It's an OR of all barriers.
   assign snax_barrier[${idx}] = |snax_core_${idx}_split_barrier;
@@ -780,7 +779,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
   // MUX-DEMUX declaration
   snax_acc_mux_demux #(
     .NumAcc               ( ${snax_core_acc[idx_key]['snax_num_acc']} ),
-    .CsrWidthList         ( '{${acc_cfg(snax_core_acc[idx_key]['snax_streamer_csr_num_list'])}} ),
+    .CsrWidthList         ( '{${acc_cfg(snax_core_acc[idx_key]['snax_acc_csr_list'])}} ),
     .RegDataWidth         ( 32 ),
     .RegAddrWidth         ( 32 )
   ) i_snax_acc_mux_demux_core_${idx} (
@@ -851,15 +850,15 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     // CSR  format control ports
     //-----------------------------
     // Request
-    .snax_req_data_i  ( snax_core_${idx}_split_csr_req_addr  ),
-    .snax_req_addr_i  ( snax_core_${idx}_split_csr_req_data  ),
-    .snax_req_write_i ( snax_core_${idx}_split_csr_req_wen   ),
-    .snax_req_valid_i ( snax_core_${idx}_split_csr_req_valid ),
-    .snax_req_ready_o ( snax_core_${idx}_split_csr_req_ready ),
+    .snax_req_data_i  ( snax_core_${idx}_split_csr_req_addr[${jdx}]  ),
+    .snax_req_addr_i  ( snax_core_${idx}_split_csr_req_data[${jdx}]  ),
+    .snax_req_write_i ( snax_core_${idx}_split_csr_req_wen[${jdx}]   ),
+    .snax_req_valid_i ( snax_core_${idx}_split_csr_req_valid[${jdx}] ),
+    .snax_req_ready_o ( snax_core_${idx}_split_csr_req_ready[${jdx}] ),
     // Response
-    .snax_rsp_data_o  ( snax_core_${idx}_split_csr_rsp_data  ),
-    .snax_rsp_valid_o ( snax_core_${idx}_split_csr_rsp_valid ),
-    .snax_rsp_ready_i ( snax_core_${idx}_split_csr_rsp_ready ),
+    .snax_rsp_data_o  ( snax_core_${idx}_split_csr_rsp_data[${jdx}]  ),
+    .snax_rsp_valid_o ( snax_core_${idx}_split_csr_rsp_valid[${jdx}] ),
+    .snax_rsp_ready_i ( snax_core_${idx}_split_csr_rsp_ready[${jdx}] ),
       %endif
     .snax_barrier_o  ( snax_core_${idx}_split_barrier[${jdx}] ),
     .snax_tcdm_req_o ( snax_tcdm_req[${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_stop']}:${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_start']}] ),
