@@ -399,10 +399,14 @@ class SnitchCluster(Generator):
             if self.cfg["cores"][core_id]["snax_acc_cfg"][0]:
                 # Cycle through the accelerators list
                 for acc_id in range(len(self.cfg["cores"][core_id]["snax_acc_cfg"])):
-                    streamer_csr_test = streamer_csr_num(
-                        self.cfg["cores"][core_id]["snax_acc_cfg"][acc_id]
-                    )
-                    streamer_csr_acc_num_list.append(streamer_csr_test)
+                    if (
+                        "snax_streamer_cfg"
+                        in self.cfg["cores"][core_id]["snax_acc_cfg"][acc_id]
+                    ):
+                        streamer_csr_test = streamer_csr_num(
+                            self.cfg["cores"][core_id]["snax_acc_cfg"][acc_id]
+                        )
+                        streamer_csr_acc_num_list.append(streamer_csr_test)
             # Append the set into the global list
             streamer_csr_num_list.append(streamer_csr_acc_num_list)
         # Set as config file for tpl to process
