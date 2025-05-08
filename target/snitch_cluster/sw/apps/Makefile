@@ -28,6 +28,7 @@ ifeq ($(CFG_OVERRIDE), cfg/snax_alu_cluster.hjson)
 SUBDIRS += snax-alu
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_multi_alu_cluster.hjson)
+SUBDIRS += snax-alu
 SUBDIRS += snax-multi-alu
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_dse_cluster_3D.hjson)
