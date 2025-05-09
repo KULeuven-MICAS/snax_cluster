@@ -101,18 +101,20 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMT
     }
 
     var params = SpatialArrayParam(
-      opType            = Seq(OpType.UIntUIntOp),
-      macNum            = Seq(1024),
-      inputAElemWidth   = Seq(8),
-      inputBElemWidth   = Seq(8),
-      inputCElemWidth   = Seq(32),
-      mulElemWidth      = Seq(16),
-      outputDElemWidth  = Seq(32),
-      arrayInputAWidth  = 1024,
-      arrayInputBWidth  = 8192,
-      arrayInputCWidth  = 4096,
-      arrayOutputDWidth = 4096,
-      arrayDim          = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
+      opType                 = Seq(OpType.UIntUIntOp),
+      macNum                 = Seq(1024),
+      inputAElemWidth        = Seq(8),
+      inputBElemWidth        = Seq(8),
+      inputCElemWidth        = Seq(32),
+      mulElemWidth           = Seq(16),
+      outputDElemWidth       = Seq(32),
+      arrayInputAWidth       = 1024,
+      arrayInputBWidth       = 8192,
+      arrayInputCWidth       = 4096,
+      arrayOutputDWidth      = 4096,
+      serialInputCDataWidth  = 512,
+      serialOutputDDataWidth = 512,
+      arrayDim               = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
     )
 
     // Test for each configuration
@@ -120,19 +122,21 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMT
 
     // Test for a different configuration
     params = SpatialArrayParam(
-      opType            = Seq(OpType.SIntSIntOp, OpType.UIntUIntOp),
+      opType                 = Seq(OpType.SIntSIntOp, OpType.UIntUIntOp),
       // opType = Seq(OpType.UIntUIntOp, OpType.UIntUIntOp),
-      macNum            = Seq(8, 16),
-      inputAElemWidth   = Seq(8, 4),
-      inputBElemWidth   = Seq(8, 4),
-      inputCElemWidth   = Seq(32, 16),
-      mulElemWidth      = Seq(16, 8),
-      outputDElemWidth  = Seq(32, 16),
-      arrayInputAWidth  = 64,
-      arrayInputBWidth  = 64,
-      arrayInputCWidth  = 256,
-      arrayOutputDWidth = 256,
-      arrayDim          = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8)))
+      macNum                 = Seq(8, 16),
+      inputAElemWidth        = Seq(8, 4),
+      inputBElemWidth        = Seq(8, 4),
+      inputCElemWidth        = Seq(32, 16),
+      mulElemWidth           = Seq(16, 8),
+      outputDElemWidth       = Seq(32, 16),
+      arrayInputAWidth       = 64,
+      arrayInputBWidth       = 64,
+      arrayInputCWidth       = 256,
+      arrayOutputDWidth      = 256,
+      serialInputCDataWidth  = 512,
+      serialOutputDDataWidth = 512,
+      arrayDim               = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8)))
     )
 
     testArray(params)
