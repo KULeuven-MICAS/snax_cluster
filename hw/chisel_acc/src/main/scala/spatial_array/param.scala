@@ -28,30 +28,32 @@ class SpatialArrayParam(
   val arrayInputCWidth:       Int,
   val arrayOutputDWidth:      Int,
   val arrayDim:               Seq[Seq[Seq[Int]]],
-  val serialInputCDataWidth:  Int = 512,
-  val serialOutputDDataWidth: Int = 512,
+  val serialInputCDataWidth:  Int,
+  val serialOutputDDataWidth: Int,
+  val adderTreeDelay:         Int = 0,
   val configWidth:            Int = 32,
-  val csrNum:                 Int = 7,
-  val adderTreeDelay:         Int = 0
+  val csrNum:                 Int = 7
 )
 
 object SpatialArrayParam {
   // test config
   def apply(): SpatialArrayParam =
     apply(
-      opType            = Seq(OpType.UIntUIntOp, OpType.SIntSIntOp),
-      macNum            = Seq(1024, 2048),
-      inputAElemWidth   = Seq(8, 4),
-      inputBElemWidth   = Seq(8, 4),
-      inputCElemWidth   = Seq(32, 16),
-      mulElemWidth      = Seq(16, 8),
-      outputDElemWidth  = Seq(32, 16),
-      arrayInputAWidth  = 512,
-      arrayInputBWidth  = 512,
-      arrayInputCWidth  = 16384,
-      arrayOutputDWidth = 16384,
+      opType                 = Seq(OpType.UIntUIntOp, OpType.SIntSIntOp),
+      macNum                 = Seq(1024, 2048),
+      inputAElemWidth        = Seq(8, 4),
+      inputBElemWidth        = Seq(8, 4),
+      inputCElemWidth        = Seq(32, 16),
+      mulElemWidth           = Seq(16, 8),
+      outputDElemWidth       = Seq(32, 16),
+      arrayInputAWidth       = 512,
+      arrayInputBWidth       = 512,
+      arrayInputCWidth       = 16384,
+      arrayOutputDWidth      = 16384,
+      serialInputCDataWidth  = 512,
+      serialOutputDDataWidth = 512,
       // Seq(Mu, Ku, Nu)
-      arrayDim          = Seq(
+      arrayDim               = Seq(
         Seq(Seq(8, 8, 8), Seq(32, 1, 16), Seq(32, 2, 16)),
         Seq(Seq(8, 16, 8), Seq(32, 1, 32), Seq(32, 1, 16))
       )
@@ -70,8 +72,9 @@ object SpatialArrayParam {
     arrayInputCWidth:       Int,
     arrayOutputDWidth:      Int,
     arrayDim:               Seq[Seq[Seq[Int]]],
-    serialInputCDataWidth:  Int = 512,
-    serialOutputDDataWidth: Int = 512
+    serialInputCDataWidth:  Int,
+    serialOutputDDataWidth: Int,
+    adderTreeDelay:         Int = 0
   ): SpatialArrayParam =
     new SpatialArrayParam(
       opType                 = opType,
@@ -87,6 +90,7 @@ object SpatialArrayParam {
       arrayOutputDWidth      = arrayOutputDWidth,
       arrayDim               = arrayDim,
       serialInputCDataWidth  = serialInputCDataWidth,
-      serialOutputDDataWidth = serialOutputDDataWidth
+      serialOutputDDataWidth = serialOutputDDataWidth,
+      adderTreeDelay         = adderTreeDelay
     )
 }

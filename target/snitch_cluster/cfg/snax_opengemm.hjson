@@ -120,7 +120,7 @@
         xf8alt: false,
         xfdotp: false,
         xfvec: false,
-        snax_acc_cfg: {
+        snax_acc_cfg: [{
             snax_acc_name: "snax_opengemm",
             bender_target: ["snax_opengemm"],
             snax_narrow_tcdm_ports: 16,
@@ -139,8 +139,9 @@
             snax_opengemm_array_output_width: 2048,
             snax_opengemm_serial_c_d_width: 512,
             snax_opengemm_spatial_unrolling: [[[8, 8, 8], [1, 16, 4]], [[8, 16, 8], [1, 32, 4]]],
+            snax_opengemm_adder_tree_delay: 0,
             snax_streamer_cfg: {$ref: "#/snax_opengemm_streamer_template" }
-        },
+        }],
         snax_use_custom_ports: false,
         num_int_outstanding_loads: 1,
         num_int_outstanding_mem: 4,

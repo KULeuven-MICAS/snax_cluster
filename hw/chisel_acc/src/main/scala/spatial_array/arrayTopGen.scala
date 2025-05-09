@@ -27,8 +27,9 @@ object SpatialArrayParamParser {
       arrayInputCWidth       = cfg("snax_opengemm_array_input_c_width").num.toInt,
       arrayOutputDWidth      = cfg("snax_opengemm_array_output_width").num.toInt,
       arrayDim               = get3DSeq("snax_opengemm_spatial_unrolling"),
-      serialInputCDataWidth  = cfg.obj.get("snax_opengemm_serial_c_d_width").map(_.num.toInt).getOrElse(512),
-      serialOutputDDataWidth = cfg.obj.get("snax_opengemm_serial_c_d_width").map(_.num.toInt).getOrElse(512)
+      serialInputCDataWidth  = cfg("snax_opengemm_serial_c_d_width").num.toInt,
+      serialOutputDDataWidth = cfg("snax_opengemm_serial_c_d_width").num.toInt,
+      adderTreeDelay         = cfg("snax_opengemm_adder_tree_delay").num.toInt
     )
   }
 }

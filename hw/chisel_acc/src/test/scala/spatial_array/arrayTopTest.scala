@@ -229,9 +229,9 @@ class ArrayTopTest extends ArrayTopTestHelper {
         arrayInputBWidth       = 64,
         arrayInputCWidth       = 256,
         arrayOutputDWidth      = 256,
-        arrayDim               = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8))),
         serialInputCDataWidth  = 256,
-        serialOutputDDataWidth = 256
+        serialOutputDDataWidth = 256,
+        arrayDim               = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8)))
       )
     )
 

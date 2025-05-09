@@ -280,19 +280,21 @@ object SpatialArrayEmitter extends App {
   )
 
   val params = SpatialArrayParam(
-    opType            = Seq(OpType.UIntUIntOp),
-    macNum            = Seq(1024),
-    inputAElemWidth   = Seq(8),
-    inputBElemWidth   = Seq(8),
-    inputCElemWidth   = Seq(8),
-    mulElemWidth      = Seq(16),
-    outputDElemWidth  = Seq(32),
-    arrayInputAWidth  = 1024,
-    arrayInputBWidth  = 8192,
-    arrayInputCWidth  = 4096,
-    arrayOutputDWidth = 4096,
+    opType                 = Seq(OpType.UIntUIntOp),
+    macNum                 = Seq(1024),
+    inputAElemWidth        = Seq(8),
+    inputBElemWidth        = Seq(8),
+    inputCElemWidth        = Seq(8),
+    mulElemWidth           = Seq(16),
+    outputDElemWidth       = Seq(32),
+    arrayInputAWidth       = 1024,
+    arrayInputBWidth       = 8192,
+    arrayInputCWidth       = 4096,
+    arrayOutputDWidth      = 4096,
+    serialInputCDataWidth  = 512,
+    serialOutputDDataWidth = 512,
     // Mu, Ku, Nu
-    arrayDim          = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
+    arrayDim               = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
   )
   emitVerilog(
     new SpatialArray(params),
