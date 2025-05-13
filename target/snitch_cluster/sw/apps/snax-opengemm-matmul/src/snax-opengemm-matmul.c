@@ -33,6 +33,7 @@ int main() {
 
     // Wait for DMA to finish
     snrt_cluster_hw_barrier();
+
     if (snrt_is_dm_core()) {
         snrt_dma_start_1d(local_c, C, c_data_length);
         snrt_dma_wait_all();
@@ -79,7 +80,14 @@ int main() {
         uint32_t subtraction_setting =
             gen_subtraction_config(subtraction_a, subtraction_b);
 
-        set_gemmx_csr(K, N, M, subtraction_setting, array_shape, data_type);
+        if (stationary == 0) {
+            // Set CSR for output-stationary
+            set_gemmx_csr(K, N, M, subtraction_setting, array_shape, data_type);
+        } else {
+            // Set CSR for weight-stationary
+            set_gemmx_csr(1, N * K, M, subtraction_setting, array_shape,
+                          data_type);
+        }
 
         // Set CSR to start Streamer
         set_gemmx_streamer_start();
@@ -90,12 +98,24 @@ int main() {
         // Poll until Streamer and GEMM accelerator finish
         wait_gemmx_and_streamer();
 
+        printf("SNAX GEMM Matmul done.\n");
+
         // Result check
         err += check_gemmx_result_D32((int8_t *)local_d, (int8_t *)D,
                                       d_data_length, false);
 
-        printf("SNAX GEMM Matmul: %s, Error: %d.\n", err ? "FAIL" : "PASS",
-               err);
+        printf(
+            "Array shape: %d, meshRow %d, tileSize %d, meshCol %d, stationary: "
+            "%d, SNAX GEMM Matmul: %s, Error: %d.\n",
+            array_shape, meshRow, tileSize, meshCol, stationary,
+            err ? "FAIL" : "PASS", err);
+
+        int32_t gemmx_cycles = read_gemmx_perf_counter();
+        int32_t gemmx_streamer_cycles = read_gemmx_streamer_perf_counter();
+        printf("Workload size: M = %d, N = %d, K = %d\n", M, N, K);
+        printf("SNAX GEMM Ideal cycles: %d\n", M * K * N);
+        printf("SNAX GEMM cycles: %d\n", gemmx_cycles);
+        printf("SNAX GEMM Streamer cycles: %d\n", gemmx_streamer_cycles);
     };
 
     return err;

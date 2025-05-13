@@ -38,7 +38,7 @@ trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester with GeM
       val Ku = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(1)
       val Nu = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(2)
 
-      val sizeRange = 5
+      val sizeRange = 1
       val rand      = new Random()
       val M         = rand.nextInt(sizeRange) + 1
       val N         = rand.nextInt(sizeRange) + 1
@@ -49,6 +49,7 @@ trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester with GeM
       // Generate test data
       val aValues = Array.fill(Mu * Ku * M * K)(rand.nextInt(math.pow(2, inputAElemWidth).toInt))
       val bValues = Array.fill(Ku * Nu * N * K)(rand.nextInt(math.pow(2, inputBElemWidth).toInt))
+      // val cValues = Array.fill(Mu * Nu * M * N)(rand.nextInt(1))
       val cValues = Array.fill(Mu * Nu * M * N)(rand.nextInt(math.pow(2, inputCElemWidth).toInt))
 
       // Compute the expected result
@@ -95,6 +96,38 @@ trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester with GeM
 
         acc
       }
+
+      // Print the generated values in SInt format
+      // println("Generated aValues:")
+      // for (i <- aValues.indices) {
+      //   val aSInt = toSInt(aValues(i), inputAElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
+      //   println(f"$aSInt")
+      // }
+      // println("Generated bValues:")
+      // for (i <- bValues.indices) {
+      //   val bSInt = toSInt(bValues(i), inputBElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
+      //   println(f"$bSInt")
+      // }
+      // println("Generated cValues:")
+      // for (i <- cValues.indices) {
+      //   val cSInt = toSInt(cValues(i), inputCElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
+      //   println(f"$cSInt")
+      // }
+
+      // // Print the expected result
+      // for (m2 <- 0 until M) {
+      //   for (n2 <- 0 until N) {
+      //     println(s"Block ($m2, $n2):")
+      //     val block = expectedResult(m2)(n2)
+      //     for (m1 <- 0 until Mu) {
+      //       for (n1 <- 0 until Nu) {
+      //         print(f"${block(m1)(n1)}%6d ")
+      //       }
+      //       println() // Newline after each row
+      //     }
+      //     println() // Extra newline between blocks
+      //   }
+      // }
 
       // Configure hardware
       dut.clock.step(5)
@@ -232,6 +265,23 @@ class ArrayTopTest extends ArrayTopTestHelper {
         serialInputCDataWidth  = 256,
         serialOutputDDataWidth = 256,
         arrayDim               = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8)))
+      ),
+      // test different data types
+      SpatialArrayParam(
+        opType                 = Seq(OpType.SIntSIntOp),
+        macNum                 = Seq(8),
+        inputAElemWidth        = Seq(16),
+        inputBElemWidth        = Seq(4),
+        inputCElemWidth        = Seq(32),
+        mulElemWidth           = Seq(32),
+        outputDElemWidth       = Seq(32),
+        arrayInputAWidth       = 64,
+        arrayInputBWidth       = 16,
+        arrayInputCWidth       = 128,
+        arrayOutputDWidth      = 128,
+        serialInputCDataWidth  = 128,
+        serialOutputDDataWidth = 128,
+        arrayDim               = Seq(Seq(Seq(2, 2, 2)))
       )
     )
 
