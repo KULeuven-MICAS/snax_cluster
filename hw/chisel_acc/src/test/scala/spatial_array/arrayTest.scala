@@ -141,5 +141,25 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMT
 
     testArray(params)
 
+    // Test for a different configuration
+
+    params = SpatialArrayParam(
+      opType                 = Seq(OpType.SIntSIntOp),
+      macNum                 = Seq(8),
+      inputAElemWidth        = Seq(16),
+      inputBElemWidth        = Seq(4),
+      inputCElemWidth        = Seq(32),
+      mulElemWidth           = Seq(32),
+      outputDElemWidth       = Seq(32),
+      arrayInputAWidth       = 64,
+      arrayInputBWidth       = 16,
+      arrayInputCWidth       = 128,
+      arrayOutputDWidth      = 128,
+      serialInputCDataWidth  = 128,
+      serialOutputDDataWidth = 128,
+      arrayDim               = Seq(Seq(Seq(2, 2, 2)))
+    )
+
+    testArray(params)
   }
 }
