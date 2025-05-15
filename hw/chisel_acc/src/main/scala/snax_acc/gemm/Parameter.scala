@@ -39,16 +39,16 @@ trait HasGemmParams {
 object GemmConstant {
 
   lazy val dataWidthA     = 8
-  lazy val dataWidthB     = dataWidthA
-  lazy val dataWidthMul   = dataWidthA * 4
-  lazy val dataWidthC     = dataWidthA * 4
-  lazy val dataWidthAccum = dataWidthA * 4
+  lazy val dataWidthB     = 2
+  lazy val dataWidthMul   = 18
+  lazy val dataWidthC     = 18
+  lazy val dataWidthAccum = 18
 
   lazy val subtractionCfgWidth = 32
 
-  lazy val meshRow  = 8
-  lazy val tileSize = 8
-  lazy val meshCol  = 8
+  lazy val meshRow  = 1
+  lazy val tileSize = 32
+  lazy val meshCol  = 32
 
   lazy val addrWidth       = 32
   lazy val sizeConfigWidth = 32
