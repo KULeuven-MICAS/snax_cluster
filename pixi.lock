@@ -49,6 +49,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/icu-75.1-he02047a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/importlib-metadata-8.5.0-pyha770c72_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/importlib_resources-6.5.2-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/iverilog-11.0-hd56c0c9_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/noarch/jsonref-1.1.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/jsonschema-4.23.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/jsonschema-specifications-2024.10.1-pyhd8ed1ab_1.conda
@@ -681,6 +682,18 @@ packages:
   - pkg:pypi/importlib-resources?source=hash-mapping
   size: 33781
   timestamp: 1736252433366
+- conda: https://conda.anaconda.org/conda-forge/linux-64/iverilog-11.0-hd56c0c9_0.tar.bz2
+  sha256: 019b18fff3ab885db7480d42e626e32b6025caf2e15bef0f574fcb36640cd545
+  md5: 851bf62aab4c227cc5194ddfc768847a
+  depends:
+  - libgcc-ng >=9.4.0
+  - libstdcxx-ng >=9.4.0
+  - libzlib >=1.2.11,<2.0.0a0
+  - readline >=8.1,<9.0a0
+  license: GPL-2.0-only
+  license_family: GPL
+  size: 2585121
+  timestamp: 1636233221739
 - conda: https://conda.anaconda.org/conda-forge/noarch/jsonref-1.1.0-pyhd8ed1ab_0.conda
   sha256: c6a7f1ea46f952e8194e63aee08e921fc10c47a3f387c8719bb3ca981f4858f8
   md5: 1fa51c8b8cbf2fa2c40c6e9f92e49a9d
