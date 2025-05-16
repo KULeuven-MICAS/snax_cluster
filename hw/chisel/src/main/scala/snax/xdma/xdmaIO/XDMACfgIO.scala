@@ -236,98 +236,6 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
     xdmaCfg.origination                    := xdmaCfg.originationIsFromRemote.B
     xdmaCfg
   }
-
-  def serialize: UInt =
-    enabledByte ## enabledChannel ## temporalStrides.reverse.reduce(
-      _ ## _
-    ) ## temporalBounds.reverse.reduce(
-      _ ## _
-    ) ## spatialStride ## axiTransferBeatSize ## writerPtr.reverse.reduce(
-      _ ## _
-    ) ## readerPtr ## isWriterSide.asUInt ## taskID
-
-  def deserialize(data: UInt): Unit = {
-    var remainingData = data
-    taskID := remainingData(
-      taskID.getWidth - 1,
-      0
-    )
-    remainingData = remainingData(remainingData.getWidth - 1, taskID.getWidth)
-    isWriterSide := remainingData(0)
-    remainingData = remainingData(remainingData.getWidth - 1, 1)
-    readerPtr := remainingData(
-      readerParam.crossClusterParam.AxiAddressWidth - 1,
-      0
-    )
-    remainingData = remainingData(
-      remainingData.getWidth - 1,
-      readerParam.crossClusterParam.AxiAddressWidth
-    )
-    writerPtr.foreach { i =>
-      i := remainingData(
-        readerParam.crossClusterParam.AxiAddressWidth - 1,
-        0
-      )
-      remainingData = remainingData(
-        remainingData.getWidth - 1,
-        readerParam.crossClusterParam.AxiAddressWidth
-      )
-    }
-
-    axiTransferBeatSize := remainingData(
-      readerParam.crossClusterParam.tcdmAddressWidth - 1,
-      0
-    )
-    remainingData = remainingData(
-      remainingData.getWidth - 1,
-      readerParam.crossClusterParam.tcdmAddressWidth
-    )
-
-    spatialStride := remainingData(
-      readerParam.crossClusterParam.tcdmAddressWidth - 1,
-      0
-    )
-    remainingData = remainingData(
-      remainingData.getWidth - 1,
-      readerParam.crossClusterParam.tcdmAddressWidth
-    )
-
-    temporalBounds.foreach { i =>
-      i := remainingData(
-        readerParam.crossClusterParam.tcdmAddressWidth - 1,
-        0
-      )
-      remainingData = remainingData(
-        remainingData.getWidth - 1,
-        readerParam.crossClusterParam.tcdmAddressWidth
-      )
-    }
-
-    temporalStrides.foreach { i =>
-      i := remainingData(
-        readerParam.crossClusterParam.tcdmAddressWidth - 1,
-        0
-      )
-      remainingData = remainingData(
-        remainingData.getWidth - 1,
-        readerParam.crossClusterParam.tcdmAddressWidth
-      )
-    }
-
-    enabledChannel := remainingData(
-      readerParam.crossClusterParam.channelNum - 1,
-      0
-    )
-    remainingData = remainingData(
-      remainingData.getWidth - 1,
-      readerParam.crossClusterParam.channelNum
-    )
-
-    enabledByte := remainingData(
-      readerParam.crossClusterParam.wordlineWidth / 8 - 1,
-      0
-    )
-  }
 }
 
 // Frame head 1:
@@ -411,18 +319,14 @@ class XDMAInterClusterCfgIODeserializer(readerwriterParam: XDMAParam, isWriterSi
     val cfgOut = Decoupled(new XDMAInterClusterCfgIO(readerwriterParam, readerwriterParam))
   })
 
-  val frameNum =
-    (io.cfgOut.bits.getWidth + readerwriterParam.axiParam.dataWidth - 1) / readerwriterParam.axiParam.dataWidth
-
   val frameBodyLength = readerwriterParam.axiParam.dataWidth - 5
+  val frameNum        = (io.cfgOut.bits.getWidth + frameBodyLength - 1) / frameBodyLength
   val frameBody       = RegInit(VecInit(Seq.fill(frameNum)(0.U(frameBodyLength.W))))
 
-  val frameIndex = RegInit(2.U(4.W))
-
+  val frameIndex   = RegInit(2.U(4.W))
   val frameCounter = Module(new BasicCounter(width = 4, hasCeil = true))
 
   // The FSM to control multi-frame cfg transfer
-
   // States
   val sIdle :: sReceiveMoreFrames :: sSendCfg :: Nil = Enum(3)
   val nextState                                      = Wire(chiselTypeOf(sIdle))
@@ -566,10 +470,13 @@ class XDMAInterClusterCfgIODeserializer(readerwriterParam: XDMAParam, isWriterSi
       readerwriterParam.crossClusterParam.AxiAddressWidth - 1,
       0
     )
-    cfgSerialized = cfgSerialized(
-      cfgSerialized.getWidth - 1,
-      readerwriterParam.crossClusterParam.AxiAddressWidth
-    )
+    if (cfgSerialized.getWidth > readerwriterParam.crossClusterParam.AxiAddressWidth)
+      cfgSerialized = cfgSerialized(
+        cfgSerialized.getWidth - 1,
+        readerwriterParam.crossClusterParam.AxiAddressWidth
+      )
+    else
+      cfgSerialized = 0.U(0.W)
   }
 }
 
