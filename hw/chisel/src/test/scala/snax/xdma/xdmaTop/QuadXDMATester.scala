@@ -55,15 +55,20 @@ class QuadXDMA(readerParam: XDMAParam, writerParam: XDMAParam) extends Module wi
   xdma3.io.clusterBaseAddress := (0x10000000 + (2 << 20)).U
   xdma4.io.clusterBaseAddress := (0x10000000 + (3 << 20)).U
 
+  xdma1.io.remoteXDMACfg.fromRemote.valid := false.B
+  xdma1.io.remoteXDMACfg.fromRemote.bits  := 0.U
   xdma1.io.remoteXDMACfg.toRemote -||> xdma2.io.remoteXDMACfg.fromRemote
   xdma2.io.remoteXDMACfg.toRemote -||> xdma3.io.remoteXDMACfg.fromRemote
   xdma3.io.remoteXDMACfg.toRemote -||> xdma4.io.remoteXDMACfg.fromRemote
-  xdma4.io.remoteXDMACfg.toRemote -||> xdma1.io.remoteXDMACfg.fromRemote
+  xdma4.io.remoteXDMACfg.toRemote.ready   := false.B
 
+  xdma1.io.remoteXDMAData.fromRemote.valid := false.B
+  xdma1.io.remoteXDMAData.fromRemote.bits  := 0.U
   xdma1.io.remoteXDMAData.toRemote -||> xdma2.io.remoteXDMAData.fromRemote
   xdma2.io.remoteXDMAData.toRemote -||> xdma3.io.remoteXDMAData.fromRemote
   xdma3.io.remoteXDMAData.toRemote -||> xdma4.io.remoteXDMAData.fromRemote
-  xdma4.io.remoteXDMAData.toRemote -||> xdma1.io.remoteXDMAData.fromRemote
+  xdma4.io.remoteXDMAData.toRemote.ready   := false.B
+  // xdma4.io.remoteXDMAData.toRemote -||> xdma1.io.remoteXDMAData.fromRemote
 
   val io = IO(new Bundle {
     val instance1 = new Bundle {
@@ -756,31 +761,31 @@ class QuadXDMATester extends AnyFreeSpec with ChiselScalatestTester {
       while (dut.io.instance4.writerBusy.peekBoolean() == true) {
         dut.clock.step(1)
       }
-
-      dut.clock.step(64)
-
-      // Check the data in the TCDM
-      if (tcdmMem_1 != tcdmMem_2)
-        throw new Exception(
-          "[TEST Failed] TCDM 1 is not equal to TCDM 2 after the copy operation"
-        )
-      else if (tcdmMem_2 != tcdmMem_3)
-        throw new Exception(
-          "[TEST Failed] TCDM 2 is not equal to TCDM 3 after the copy operation"
-        )
-      else if (tcdmMem_3 != tcdmMem_4)
-        throw new Exception(
-          "[TEST Failed] TCDM 3 is not equal to TCDM 4 after the copy operation"
-        )
-      else
-        println(
-          "[TEST Passed] Use XDMA 1 as a host to copy the data from TCDM 1 to TCDM 2"
-        )
-
-      println("All tests pass. All test threads are about to be terminated. ")
       testTerminated = true
+      dut.clock.step(128)
     }
 
     concurrent_threads.joinAndStep()
+
+    // Check the data in the TCDM
+    if (tcdmMem_1 != tcdmMem_2)
+      throw new Exception(
+        "[TEST Failed] TCDM 1 is not equal to TCDM 2 after the copy operation"
+      )
+    else if (tcdmMem_2 != tcdmMem_3)
+      throw new Exception(
+        "[TEST Failed] TCDM 2 is not equal to TCDM 3 after the copy operation"
+      )
+    else if (tcdmMem_3 != tcdmMem_4)
+      throw new Exception(
+        "[TEST Failed] TCDM 3 is not equal to TCDM 4 after the copy operation"
+      )
+    else
+      println(
+        "[TEST Passed] Use XDMA 1 as a host to copy the data from TCDM 1 to TCDM 2"
+      )
+
+    println("All tests pass. All test threads are about to be terminated. ")
+
   }
 }
