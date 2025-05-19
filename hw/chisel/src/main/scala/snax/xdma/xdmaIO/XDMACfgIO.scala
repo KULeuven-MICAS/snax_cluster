@@ -264,14 +264,17 @@ class XDMAInterClusterCfgIOSerializer(readerwriterParam: XDMAParam) extends Modu
   })
 
   // Serialize the entire cfg to one vector
-  var cfgSerialized =
-    io.cfgIn.bits.writerPtr.tail.reverse.reduce(
-      _ ## _
-    ) ## io.cfgIn.bits.enabledByte ## io.cfgIn.bits.enabledChannel ## io.cfgIn.bits.temporalStrides.reverse.reduce(
-      _ ## _
-    ) ## io.cfgIn.bits.temporalBounds.reverse.reduce(
-      _ ## _
-    ) ## io.cfgIn.bits.spatialStride ## io.cfgIn.bits.axiTransferBeatSize ## io.cfgIn.bits.writerPtr.head ## io.cfgIn.bits.readerPtr ## io.cfgIn.bits.taskID
+  var cfgSerialized = {
+    if (io.cfgIn.bits.writerPtr.length > 1)
+      io.cfgIn.bits.writerPtr.tail.reverse.reduce(
+        _ ## _
+      )
+    else WireInit(0.U(0.W))
+  } ## io.cfgIn.bits.enabledByte ## io.cfgIn.bits.enabledChannel ## io.cfgIn.bits.temporalStrides.reverse.reduce(
+    _ ## _
+  ) ## io.cfgIn.bits.temporalBounds.reverse.reduce(
+    _ ## _
+  ) ## io.cfgIn.bits.spatialStride ## io.cfgIn.bits.axiTransferBeatSize ## io.cfgIn.bits.writerPtr.head ## io.cfgIn.bits.readerPtr ## io.cfgIn.bits.taskID
 
   val frameBodyLength = readerwriterParam.axiParam.dataWidth - 5
   val frameNum        = (cfgSerialized.getWidth + frameBodyLength - 1) / frameBodyLength
