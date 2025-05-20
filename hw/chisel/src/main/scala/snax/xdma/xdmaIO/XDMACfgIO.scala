@@ -181,28 +181,28 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
     writerSide: Boolean,
     cfg:        XDMACfgIO
   ): Unit = {
-    taskID              := cfg.taskID
-    isWriterSide        := writerSide.B
-    readerPtr           := cfg.readerPtr
-    writerPtr(0)        := cfg.writerPtr(0)
-    if (writerPtr.length > 1) writerPtr(1) := cfg.writerPtr(1)
-    else writerPtr(1) := 0.U(0.W)
-    axiTransferBeatSize := cfg.axiTransferBeatSize
-    spatialStride       := cfg.aguCfg
+    taskID                   := cfg.taskID
+    isWriterSide             := writerSide.B
+    readerPtr                := cfg.readerPtr
+    writerPtr(0)             := cfg.writerPtr(0)
+    if (writerPtr.length > 1 && cfg.writerPtr.length > 1) writerPtr(1) := cfg.writerPtr(1)
+    else writerPtr(1)        := 0.U(0.W)
+    axiTransferBeatSize      := cfg.axiTransferBeatSize
+    spatialStride            := cfg.aguCfg
       .spatialStrides(0)
       .apply(
         cfg.aguCfg.spatialStrides(0).getWidth - 1,
         log2Ceil(readerParam.crossClusterParam.wordlineWidth / 8)
       )
-    temporalStrides     := cfg.aguCfg.temporalStrides.map(
+    temporalStrides          := cfg.aguCfg.temporalStrides.map(
       _.apply(
         cfg.aguCfg.temporalStrides(0).getWidth - 1,
         log2Ceil(readerParam.crossClusterParam.wordlineWidth / 8)
       )
     )
-    temporalBounds      := cfg.aguCfg.temporalBounds
-    enabledChannel      := cfg.readerwriterCfg.enabledChannel
-    enabledByte         := cfg.readerwriterCfg.enabledByte
+    temporalBounds           := cfg.aguCfg.temporalBounds
+    enabledChannel           := cfg.readerwriterCfg.enabledChannel
+    enabledByte              := cfg.readerwriterCfg.enabledByte
   }
 
   def convertToXDMACfgIO(readerSide: Boolean): XDMACfgIO = {
@@ -352,7 +352,7 @@ class XDMAInterClusterCfgIODeserializer(readerwriterParam: XDMAParam) extends Mo
     is(sIdle) {
       when(io.cfgIn.valid) {
         io.cfgIn.ready := true.B
-        isWriterSide := io.cfgIn.bits(0)
+        isWriterSide   := io.cfgIn.bits(0)
         frameBody(0)   := io.cfgIn.bits(readerwriterParam.axiParam.dataWidth - 1, 5)
         when(io.cfgIn.bits(4, 1) === 1.U) {
           // There is only one frame
