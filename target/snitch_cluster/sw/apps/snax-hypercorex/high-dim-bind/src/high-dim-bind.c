@@ -40,8 +40,8 @@ int main() {
     // Output will be in the next 8 banks
     qhv_start = local_data_1 + num_cut_in_wide_elem;
 
-    size_t chunk_size = num_cut_in_wide_elem*sizeof(uint32_t);
-    size_t dst_stride = 4*chunk_size;
+    size_t chunk_size = num_cut_in_wide_elem * sizeof(uint32_t);
+    size_t dst_stride = 4 * chunk_size;
 
     // First load the data accordingly
     if (snrt_is_dm_core()) {
@@ -55,8 +55,7 @@ int main() {
             // Destination stride, source stride
             dst_stride, chunk_size,
             // Number of times to do
-            target_num_data
-        );
+            target_num_data);
 
         snrt_dma_start_2d(
             // Destination address, source address
@@ -66,8 +65,7 @@ int main() {
             // Destination stride, source stride
             dst_stride, chunk_size,
             // Number of times to do
-            target_num_data
-        );
+            target_num_data);
 
         // Ensure that all DMA tasks finish
         snrt_dma_wait_all();
@@ -143,7 +141,7 @@ int main() {
 
         // Write control registers
         csrw_ss(HYPERCOREX_CORE_SET_REG_ADDR, 0x00000030);
-        
+
         uint32_t core_config_end = snrt_mcycle();
         printf("Core config time: %d\n", core_config_end - core_config_start);
 
@@ -166,7 +164,7 @@ int main() {
         // Check if prediction results are correct
         for (uint32_t i = 0; i < target_num_data; i++) {
             for (uint32_t j = 0; j < num_cut_in_wide_elem; j++) {
-                if ((uint32_t) * (qhv_start + i * 64 + j) !=
+                if ((uint32_t)*(qhv_start + i * 64 + j) !=
                     golden_list_data[i * num_cut_in_wide_elem + j]) {
                     err = 1;
                 };
