@@ -53,7 +53,7 @@ object MatrixLibBase {
     */
   def MatrixArray2BigBus(nRow: Int, nCol: Int, A: Array[Int], nbBits: Int) = {
     require(A.length == nRow * nCol)
-    require(nbBits % 4 == 0, "nbBits must be a multiple of 4")
+    // require(nbBits % 4 == 0, "nbBits must be a multiple of 4")
     val nbHexSymbols    = nbBits / 4
     var flattenedUInt_A = ""
 
