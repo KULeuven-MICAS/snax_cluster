@@ -34,7 +34,7 @@ object MatrixLibBase {
     *   The number of hex symbols
     */
   def int2hex(width: Int, intValue: Int): String = {
-    require(abs(intValue) <= (BigInt(1) << (4 * width - 1)))
+    // require(abs(intValue) <= (BigInt(1) << (4 * width - 1)))
 
     val paddingChar = if (intValue >= 0) '0' else 'f'
     val baseString  = f"$intValue%x".reverse
@@ -54,7 +54,7 @@ object MatrixLibBase {
   def MatrixArray2BigBus(nRow: Int, nCol: Int, A: Array[Int], nbBits: Int) = {
     require(A.length == nRow * nCol)
     // require(nbBits % 4 == 0, "nbBits must be a multiple of 4")
-    val nbHexSymbols    = nbBits / 4
+    val nbHexSymbols    = math.ceil(nbBits / 4.0).toInt
     var flattenedUInt_A = ""
 
     for (i <- 0 until nRow) {
@@ -63,7 +63,7 @@ object MatrixLibBase {
       }
     }
 
-    BigInt(flattenedUInt_A, 16)
+    BigInt(flattenedUInt_A, 16) % (BigInt(1) << (nbBits * nRow * nCol))
   }
 
   /** Translate matrix to big bus for inputting to Chisel module The data type is Array[Byte] */
