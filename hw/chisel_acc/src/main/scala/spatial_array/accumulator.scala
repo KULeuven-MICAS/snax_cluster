@@ -18,7 +18,10 @@ class AccumulatorBlock(
     val out         = Output(UInt(outputElemWidth.W))
   })
 
-  require(opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp)
+  require(
+    opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp ||
+      opType == OpType.Float16Int4Op || opType == OpType.Float16Float16Op
+  )
   require(
     inputElemWidth > 0 && outputElemWidth > 0,
     "Element widths must be greater than 0"
@@ -58,7 +61,10 @@ class Accumulator(
     val out         = DecoupledIO(Vec(numElements, UInt(outputElemWidth.W)))
   })
 
-  require(opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp)
+  require(
+    opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp ||
+      opType == OpType.Float16Int4Op || opType == OpType.Float16Float16Op
+  )
   require(
     inputElemWidth > 0 && outputElemWidth > 0 && numElements > 0,
     "Element widths and number of elements must be greater than 0"

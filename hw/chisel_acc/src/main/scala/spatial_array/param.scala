@@ -3,7 +3,7 @@ package snax_acc.spatial_array
 object OpType {
   def UIntUIntOp       = 1
   def SIntSIntOp       = 2
-  def Float16IntOp     = 3
+  def Float16Int4Op    = 3
   def Float16Float16Op = 4
 
   def fromString(str: String): Int =

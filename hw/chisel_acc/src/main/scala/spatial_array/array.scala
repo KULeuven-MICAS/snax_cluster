@@ -89,7 +89,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   )
 
   // data feeding network
-  def dataForward(
+  def dataForward3(
     macNum:    Int,
     elemBits:  Int,
     Mu:        Int,
@@ -115,9 +115,52 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     reshapedData
   }
 
+  def dataForwardN(
+    macNum:   Int,
+    elemBits: Int,
+    dims:     Seq[Int], // e.g., Seq(Mu, Nu, Ku)
+    strides:  Seq[Int], // e.g., Seq(stride_Mu, stride_Nu, stride_Ku)
+    input:    UInt
+  ): Vec[UInt] = {
+    require(dims.length == strides.length)
+    dims.length
+
+    val reshapedData = Wire(Vec(macNum, UInt(elemBits.W)))
+
+    for (i <- 0 until macNum) {
+      // Compute multi-dimensional index: idx = [d0, d1, ..., dn]
+      def computeMultiIndex(flatIdx: Int, dims: Seq[Int]): Seq[Int] = {
+        var remainder = flatIdx
+        dims.reverse.map { dim =>
+          val idx = remainder % dim
+          remainder = remainder / dim
+          idx
+        }.reverse
+      }
+
+      if (i < dims.product) {
+        val indices = computeMultiIndex(i, dims) // e.g., [m, n, k]
+
+        // Calculate 1D input index using strides
+        val indexExpr = indices
+          .zip(strides)
+          .map { case (idx, stride) =>
+            idx * stride
+          }
+          .reduce(_ + _) // index = Σ (idx_i * stride_i)
+
+        reshapedData(i) := input(indexExpr * elemBits + elemBits - 1, indexExpr * elemBits)
+      } else {
+        reshapedData(i) := 0.U
+      }
+    }
+
+    reshapedData
+  }
+
   val inputA = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
-      dataForward(
+      dataForward3(
         params.macNum(dataTypeIdx),
         params.inputAElemWidth(dataTypeIdx),
         // Mu, Ku, Nu
@@ -135,7 +178,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   val inputB = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
-      dataForward(
+      dataForward3(
         params.macNum(dataTypeIdx),
         params.inputBElemWidth(dataTypeIdx),
         // Mu, Ku, Nu
@@ -153,7 +196,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   val inputC = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
-      dataForward(
+      dataForward3(
         params.macNum(dataTypeIdx),
         params.inputCElemWidth(dataTypeIdx),
         // Mu, Ku = 1, Nu, only two dimensions
@@ -300,4 +343,5 @@ object SpatialArrayEmitter extends App {
     new SpatialArray(params),
     Array("--target-dir", "generated/SpatialArray")
   )
+
 }

@@ -21,8 +21,9 @@ class AdderTree(
     "groupSizes must be less than 32 and greater than 0"
   )
   require(
-    opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp,
-    "Currenty we only support UIntUIntOp or SIntSIntOp"
+    opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp ||
+      opType == OpType.Float16Int4Op || opType == OpType.Float16Float16Op,
+    "Currently we only support UIntUIntOp or SIntSIntOp or Float16Int4Op or Float16Float16Op"
   )
 
   val io = IO(new Bundle {

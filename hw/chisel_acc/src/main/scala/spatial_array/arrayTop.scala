@@ -352,3 +352,49 @@ object ArrayTopEmitter extends App {
     Array("--target-dir", "generated/SpatialArray")
   )
 }
+
+object ArrayTopEmitterFloat16Int4 extends App {
+  val FP16Int4Array_Param = SpatialArrayParam(
+    opType                 = Seq(OpType.Float16Int4Op),
+    macNum                 = Seq(8),
+    inputAElemWidth        = Seq(16),
+    inputBElemWidth        = Seq(4),
+    inputCElemWidth        = Seq(32),
+    mulElemWidth           = Seq(32),
+    outputDElemWidth       = Seq(32),
+    arrayInputAWidth       = 64,
+    arrayInputBWidth       = 16,
+    arrayInputCWidth       = 128,
+    arrayOutputDWidth      = 128,
+    serialInputCDataWidth  = 128,
+    serialOutputDDataWidth = 128,
+    arrayDim               = Seq(Seq(Seq(2, 2, 2)))
+  )
+  emitVerilog(
+    new ArrayTop(FP16Int4Array_Param),
+    Array("--target-dir", "generated/SpatialArray")
+  )
+}
+
+object ArrayTopEmitterFloat16Float16 extends App {
+  val FP16Float16Array_Param = SpatialArrayParam(
+    opType                 = Seq(OpType.Float16Float16Op),
+    macNum                 = Seq(8),
+    inputAElemWidth        = Seq(16),
+    inputBElemWidth        = Seq(16),
+    inputCElemWidth        = Seq(32),
+    mulElemWidth           = Seq(32),
+    outputDElemWidth       = Seq(32),
+    arrayInputAWidth       = 64,
+    arrayInputBWidth       = 64,
+    arrayInputCWidth       = 128,
+    arrayOutputDWidth      = 128,
+    serialInputCDataWidth  = 128,
+    serialOutputDDataWidth = 128,
+    arrayDim               = Seq(Seq(Seq(2, 2, 2)))
+  )
+  emitVerilog(
+    new ArrayTop(FP16Float16Array_Param),
+    Array("--target-dir", "generated/SpatialArray")
+  )
+}
