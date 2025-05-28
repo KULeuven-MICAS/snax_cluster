@@ -334,6 +334,8 @@ object SpatialArrayEmitter extends App {
     arrayInputBWidth       = 8192,
     arrayInputCWidth       = 4096,
     arrayOutputDWidth      = 4096,
+    serialInputADataWidth  = 1024,
+    serialInputBDataWidth  = 8192,
     serialInputCDataWidth  = 512,
     serialOutputDDataWidth = 512,
     // Mu, Ku, Nu

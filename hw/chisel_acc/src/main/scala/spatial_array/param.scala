@@ -28,11 +28,14 @@ class SpatialArrayParam(
   val arrayInputCWidth:       Int,
   val arrayOutputDWidth:      Int,
   val arrayDim:               Seq[Seq[Seq[Int]]],
+  val serialInputADataWidth:  Int,
+  val serialInputBDataWidth:  Int,
   val serialInputCDataWidth:  Int,
   val serialOutputDDataWidth: Int,
   val adderTreeDelay:         Int = 0,
   val configWidth:            Int = 32,
-  val csrNum:                 Int = 7
+  val csrNum:                 Int = 7,
+  val dataflow: Seq[String] = Seq("output_stationary", "input_stationary", "weight_stationary")
 )
 
 object SpatialArrayParam {
@@ -50,6 +53,8 @@ object SpatialArrayParam {
       arrayInputBWidth       = 512,
       arrayInputCWidth       = 16384,
       arrayOutputDWidth      = 16384,
+      serialInputADataWidth  = 512,
+      serialInputBDataWidth  = 512,
       serialInputCDataWidth  = 512,
       serialOutputDDataWidth = 512,
       // Seq(Mu, Ku, Nu)
@@ -72,6 +77,8 @@ object SpatialArrayParam {
     arrayInputCWidth:       Int,
     arrayOutputDWidth:      Int,
     arrayDim:               Seq[Seq[Seq[Int]]],
+    serialInputADataWidth:  Int,
+    serialInputBDataWidth:  Int,
     serialInputCDataWidth:  Int,
     serialOutputDDataWidth: Int,
     adderTreeDelay:         Int = 0
@@ -89,6 +96,8 @@ object SpatialArrayParam {
       arrayInputCWidth       = arrayInputCWidth,
       arrayOutputDWidth      = arrayOutputDWidth,
       arrayDim               = arrayDim,
+      serialInputADataWidth  = serialInputADataWidth,
+      serialInputBDataWidth  = serialInputBDataWidth,
       serialInputCDataWidth  = serialInputCDataWidth,
       serialOutputDDataWidth = serialOutputDDataWidth,
       adderTreeDelay         = adderTreeDelay

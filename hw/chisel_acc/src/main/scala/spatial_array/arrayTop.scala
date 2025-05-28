@@ -89,7 +89,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   val inputCElemWidthRom = VecInit(params.inputCElemWidth.map(_.U(params.configWidth.W)))
   val outPutDWidthRom    = VecInit(params.outputDElemWidth.map(_.U(params.configWidth.W)))
 
-  def realBandWidth(
+  def realCDBandWidth(
     dataTypeIdx:  UInt,
     dimIdx:       UInt,
     elemWidthSeq: Vec[UInt]
@@ -100,13 +100,13 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
 
   val dOutputCounter = Module(new BasicCounter(params.configWidth, nameTag = "dOutputCounter"))
 
-  val runTimeOutputBandWidthFactor = (realBandWidth(
+  val runTimeOutputBandWidthFactor = (realCDBandWidth(
     csrReg.arrayCfg.dataTypeCfg,
     csrReg.arrayCfg.arrayShapeCfg,
     outPutDWidthRom
   ) / params.serialOutputDDataWidth.U)
 
-  val output_serial_factor =
+  val output_d_serial_factor =
     Mux(
       params.arrayOutputDWidth.U <= params.serialOutputDDataWidth.U,
       1.U,
@@ -118,7 +118,7 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
       )
     )
 
-  dOutputCounter.io.ceil := csrReg.fsmCfg.M_i * csrReg.fsmCfg.N_i * output_serial_factor
+  dOutputCounter.io.ceil := csrReg.fsmCfg.M_i * csrReg.fsmCfg.N_i * output_d_serial_factor
 
   dOutputCounter.io.tick  := io.data.out_d.fire && cstate === sBUSY
   dOutputCounter.io.reset := computation_finish
@@ -165,8 +165,101 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     )
   )
 
-  combined_decoupled_a_b_sub.io.in(0) <> io.data.in_a
-  combined_decoupled_a_b_sub.io.in(1) <> io.data.in_b
+  if (params.dataflow.length > 1) {
+    require(
+      params.arrayInputAWidth == params.serialInputADataWidth && params.arrayInputBWidth == params.serialInputBDataWidth && params.arrayInputCWidth == params.serialInputCDataWidth &&
+      params.arrayOutputDWidth == params.serialOutputDDataWidth,
+      "For multi-dataflow, the array input/output widths must match the serial input/output data widths."
+    )
+  }
+
+  val A_s2p = Module(
+      new SerialToParallel(
+        SerialToParallelParams(
+          parallelWidth  = params.arrayInputAWidth,
+          serialWidth    = params.serialInputADataWidth,
+          earlyTerminate = true
+        )
+      )
+    )
+
+  val B_s2p = Module(
+    new SerialToParallel(
+      SerialToParallelParams(
+        parallelWidth  = params.arrayInputBWidth,
+        serialWidth    = params.serialInputBDataWidth,
+        earlyTerminate = true
+      )
+    )
+  )
+
+  // other conditions are not tested, but should be valid
+  require(params.serialInputADataWidth == params.arrayInputAWidth)
+  require(params.serialInputBDataWidth == params.arrayInputBWidth)
+
+  A_s2p.io.in <> io.data.in_a
+  B_s2p.io.in <> io.data.in_b
+
+  def realABandWidth(
+    dataTypeIdx:  UInt,
+    dimIdx:       UInt,
+    elemWidthSeq: Vec[UInt]
+  ) = {
+    val dim = dimRom(dataTypeIdx)(dimIdx)
+    dim(0) * dim(1) * elemWidthSeq(dataTypeIdx)
+  }
+
+  val inputAElemWidthRom = VecInit(params.inputAElemWidth.map(_.U(params.configWidth.W)))
+
+  val runTimeInputABandWidthFactor = (realABandWidth(
+    csrReg.arrayCfg.dataTypeCfg,
+    csrReg.arrayCfg.arrayShapeCfg,
+    inputAElemWidthRom
+  ) / params.serialInputADataWidth.U)
+
+  val input_a_serial_factor =
+    Mux(
+      params.arrayInputAWidth.U <= params.serialInputADataWidth.U,
+      1.U,
+      Mux(
+        runTimeInputABandWidthFactor === 0.U,
+        1.U,
+        runTimeInputABandWidthFactor
+      )
+    )
+  A_s2p.io.terminate_factor.get := input_a_serial_factor
+  
+  def realBBandWidth(
+    dataTypeIdx:  UInt,
+    dimIdx:       UInt,
+    elemWidthSeq: Vec[UInt]
+  ) = {
+    val dim = dimRom(dataTypeIdx)(dimIdx)
+    dim(1) * dim(2) * elemWidthSeq(dataTypeIdx)
+  }
+
+    val inputBElemWidthRom = VecInit(params.inputBElemWidth.map(_.U(params.configWidth.W)))
+
+  val runTimeInputBBandWidthFactor = (realBBandWidth(
+    csrReg.arrayCfg.dataTypeCfg,
+    csrReg.arrayCfg.arrayShapeCfg,
+    inputBElemWidthRom
+  ) / params.serialInputBDataWidth.U)
+
+  val input_b_serial_factor =
+    Mux(
+      params.arrayInputBWidth.U <= params.serialInputBDataWidth.U,
+      1.U,
+      Mux(
+        runTimeInputBBandWidthFactor === 0.U,
+        1.U,
+        runTimeInputBBandWidthFactor
+      )
+    )
+  B_s2p.io.terminate_factor.get := input_b_serial_factor
+
+  combined_decoupled_a_b_sub.io.in(0) <> A_s2p.io.out
+  combined_decoupled_a_b_sub.io.in(1) <> B_s2p.io.out
 
   val decoupled_sub = Wire(Decoupled(UInt(params.configWidth.W)))
   decoupled_sub.bits  := io.ctrl.bits.fsmCfg.subtraction_constant_i
@@ -254,13 +347,13 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     }
   }
 
-  val runTimeInputCBandWidthFactor = (realBandWidth(
+  val runTimeInputCBandWidthFactor = (realCDBandWidth(
     csrReg.arrayCfg.dataTypeCfg,
     csrReg.arrayCfg.arrayShapeCfg,
     inputCElemWidthRom
   ) / params.serialInputCDataWidth.U)
 
-  val input_serial_factor =
+  val input_c_serial_factor =
     Mux(
       params.arrayInputCWidth.U <= params.serialInputCDataWidth.U,
       1.U,
@@ -271,9 +364,9 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
       )
     )
 
-  C_s2p.io.terminate_factor.get := input_serial_factor
+  C_s2p.io.terminate_factor.get := input_c_serial_factor
 
-  D_p2s.io.terminate_factor.get := output_serial_factor
+  D_p2s.io.terminate_factor.get := output_d_serial_factor
 
   io.data.in_c <> C_s2p.io.in
   io.data.out_d <> D_p2s.io.out
@@ -366,6 +459,8 @@ object ArrayTopEmitterFloat16Int4 extends App {
     arrayInputBWidth       = 16,
     arrayInputCWidth       = 128,
     arrayOutputDWidth      = 128,
+    serialInputADataWidth  = 64,
+    serialInputBDataWidth  = 16,
     serialInputCDataWidth  = 128,
     serialOutputDDataWidth = 128,
     arrayDim               = Seq(Seq(Seq(2, 2, 2)))
@@ -389,6 +484,8 @@ object ArrayTopEmitterFloat16Float16 extends App {
     arrayInputBWidth       = 64,
     arrayInputCWidth       = 128,
     arrayOutputDWidth      = 128,
+    serialInputADataWidth  = 64,
+    serialInputBDataWidth  = 64,
     serialInputCDataWidth  = 128,
     serialOutputDDataWidth = 128,
     arrayDim               = Seq(Seq(Seq(2, 2, 2)))

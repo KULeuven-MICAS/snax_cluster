@@ -262,6 +262,8 @@ class ArrayTopTest extends ArrayTopTestHelper {
         arrayInputBWidth       = 64,
         arrayInputCWidth       = 256,
         arrayOutputDWidth      = 256,
+        serialInputADataWidth  = 64,
+        serialInputBDataWidth  = 64,
         serialInputCDataWidth  = 256,
         serialOutputDDataWidth = 256,
         arrayDim               = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8)))
@@ -279,6 +281,8 @@ class ArrayTopTest extends ArrayTopTestHelper {
         arrayInputBWidth       = 16,
         arrayInputCWidth       = 128,
         arrayOutputDWidth      = 128,
+        serialInputADataWidth  = 64,
+        serialInputBDataWidth  = 16,
         serialInputCDataWidth  = 128,
         serialOutputDDataWidth = 128,
         arrayDim               = Seq(Seq(Seq(2, 2, 2)))

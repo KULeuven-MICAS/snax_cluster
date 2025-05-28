@@ -112,6 +112,8 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMT
       arrayInputBWidth       = 8192,
       arrayInputCWidth       = 4096,
       arrayOutputDWidth      = 4096,
+      serialInputADataWidth  = 1024,
+      serialInputBDataWidth  = 8192,
       serialInputCDataWidth  = 512,
       serialOutputDDataWidth = 512,
       arrayDim               = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
@@ -134,6 +136,8 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMT
       arrayInputBWidth       = 64,
       arrayInputCWidth       = 256,
       arrayOutputDWidth      = 256,
+      serialInputADataWidth  = 64,
+      serialInputBDataWidth  = 64,
       serialInputCDataWidth  = 512,
       serialOutputDDataWidth = 512,
       arrayDim               = Seq(Seq(Seq(2, 2, 2), Seq(2, 1, 4)), Seq(Seq(2, 4, 2), Seq(2, 1, 8)))
@@ -155,6 +159,8 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMT
       arrayInputBWidth       = 16,
       arrayInputCWidth       = 128,
       arrayOutputDWidth      = 128,
+      serialInputADataWidth  = 64,
+      serialInputBDataWidth  = 16,
       serialInputCDataWidth  = 128,
       serialOutputDDataWidth = 128,
       arrayDim               = Seq(Seq(Seq(2, 2, 2)))
