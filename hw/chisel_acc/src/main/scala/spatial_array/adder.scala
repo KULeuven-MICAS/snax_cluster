@@ -38,7 +38,7 @@ class Adder(
     // For Float16Int4Op and Float16Float16Op, we use a black box for floating-point addition
     // now only support fp32+fp32=fp32, as the system verilog module's parameter is fixed
     val fpAddfp = Module(
-      new FPAddFPBlackBox("fp_add_fp", inputAElemWidth, inputBElemWidth, outputCElemWidth)
+      new FPAddFPBlackBox("fp_add", inputAElemWidth, inputBElemWidth, outputCElemWidth)
     )
     fpAddfp.io.operand_a_i  := io.in_a
     fpAddfp.io.operand_b_i  := io.in_b
@@ -74,4 +74,57 @@ object AdderEmitterFloat16Float16 extends App {
     new Adder(OpType.Float16Float16Op, 32, 32, 32),
     Array("--target-dir", "generated/SpatialArray")
   )
+}
+
+object AdderEmitters {
+  def emitInt4_Int4_Int8(): Unit = {
+    val tag = "int4_int4_int8"
+    emitVerilog(
+      new Adder(OpType.SIntSIntOp, 4, 4, 8),
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/adders/$tag")
+    )
+  }
+  def emitInt8_Int8_Int16(): Unit = {
+    val tag = "int8_int8_int16"
+    emitVerilog(
+      new Adder(OpType.SIntSIntOp, 8, 8, 16),
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/adders/$tag")
+    )
+  }
+  
+  def emitInt16_Int16_Int32(): Unit = {
+    val tag = "int16_int16_int32"
+    emitVerilog(
+      new Adder(OpType.SIntSIntOp, 16, 16, 32),
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/adders/$tag")
+    )
+  }
+
+  def emitInt32_Int32_Int64(): Unit = {
+    val tag = "int32_int32_int64"
+    emitVerilog(
+      new Adder(OpType.SIntSIntOp, 32, 32, 64),
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/adders/$tag")
+    )
+  }
+
+  def emitFloat32_Float32_Float32(): Unit = {
+    val tag = "float32_float32_float32"
+    emitVerilog(
+      new Adder(OpType.Float16Float16Op, 32, 32, 32),
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/adders/$tag")
+    )
+  }
+}
+
+object RunAllAdderEmitters extends App{
+  import AdderEmitters._
+
+  emitInt4_Int4_Int8()
+  emitInt8_Int8_Int16()
+  emitInt16_Int16_Int32()
+  emitInt32_Int32_Int64()
+  
+  emitFloat32_Float32_Float32()
+
 }

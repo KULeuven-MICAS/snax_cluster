@@ -18,7 +18,7 @@ class FPAddFPBlackBox(
   })
   override def desiredName: String = topmodule
 
-  addResource("src_fp_add/fpnew_pkg.sv")
+  addResource("src_fp_add/c.sv")
   addResource("src_fp_add/fpnew_classifier.sv")
   addResource("src_fp_add/fpnew_rounding.sv")
   addResource("src_fp_add/lzc.sv")
@@ -53,7 +53,7 @@ class FPAddFP(
 object FPAddFPEmitter extends App {
   emitVerilog(
     new FPAddFP(
-      topmodule = "fp_mul",
+      topmodule = "fp_add",
       widthA    = 16,
       widthB    = 16,
       widthC    = 32
