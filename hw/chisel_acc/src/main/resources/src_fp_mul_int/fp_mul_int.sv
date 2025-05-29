@@ -28,9 +28,8 @@ parameter int unsigned rnd_mode    = RndMode  // do not change, we fix the round
   // Input Handshake
   //input  logic                         in_valid_i,
   // Input signals
-  input logic [WIDTH_a-1:0]         operand_a_i, // 3 operands
-  input logic [WIDTH_B-1:0]         operand_b_i, // 3 operands
-  input logic [WIDTH_b-1:0]         operand_c_i, // 3 operands
+  input logic [WIDTH_a-1:0]         operand_a_i, // 2 operands
+  input logic [WIDTH_B-1:0]         operand_b_i, // 2 operands
   // Output signals
   output logic [WIDTH_out-1:0]         result_o
   // Output Handshake

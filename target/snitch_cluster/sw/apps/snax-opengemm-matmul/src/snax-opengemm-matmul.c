@@ -84,7 +84,7 @@ int main() {
             // Set CSR for output-stationary
             set_gemmx_csr(K, N, M, subtraction_setting, array_shape, data_type);
         } else {
-            // Set CSR for weight-stationary
+            // Set CSR for weight-stationary or input-stationary
             set_gemmx_csr(1, N * K, M, subtraction_setting, array_shape,
                           data_type);
         }

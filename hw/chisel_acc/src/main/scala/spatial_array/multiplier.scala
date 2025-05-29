@@ -40,7 +40,6 @@ class Multiplier(
     )
     fpMulInt.io.operand_a_i := io.in_a
     fpMulInt.io.operand_b_i := io.in_b
-    fpMulInt.io.operand_c_i := 0.U // Assuming no third operand for now
     io.out_c                := fpMulInt.io.result_o
     // assert(
     //   inputAElemWidth == 16 && inputBElemWidth == 4 && outputCElemWidth == 32,
@@ -52,7 +51,6 @@ class Multiplier(
     )
     fpMulfp.io.operand_a_i  := io.in_a
     fpMulfp.io.operand_b_i  := io.in_b
-    fpMulfp.io.operand_c_i  := 0.U // Assuming no third operand for now
     io.out_c                := fpMulfp.io.result_o
     assert(
       inputAElemWidth == 16 && inputBElemWidth == 16 && outputCElemWidth == 32,
@@ -196,16 +194,16 @@ object RunAllMultiplierEmitters extends App {
   // emitInt2_Int2_Int4()
   // emitInt4_Int4_Int8()
   // emitInt8_Int8_Int16()
-  emitInt16_Int4_Int32()
+  // emitInt16_Int4_Int32()
   // emitInt16_Int16_Int32()
   // emitInt32_Int32_Int64()
 
-  // emitFloat16_Int1_Float32()
-  // emitFloat16_Int2_Float32()
-  // emitFloat16_Int3_Float32()
-  // emitFloat16_Int4_Float32()
-  
-  // emitFloat16_Float16_Float32()
+  emitFloat16_Int1_Float32()
+  emitFloat16_Int2_Float32()
+  emitFloat16_Int3_Float32()
+  emitFloat16_Int4_Float32()
+
+  emitFloat16_Float16_Float32()
 
   println("All multiplier emitters completed.")
 }

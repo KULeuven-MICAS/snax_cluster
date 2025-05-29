@@ -154,9 +154,10 @@ def emit_matmul_data(**kwargs):
 
     stationary = kwargs["stationary"]
     data_str += [format_scalar_definition("uint32_t", "stationary", stationary)]
-    assert stationary == 0 or stationary == 1, "Invalid stationary setting"
+    assert stationary == 0 or stationary == 1 or stationary == 2, "Invalid stationary setting"
     output_stationary = 0
     weight_stationary = 1
+    input_stationary = 2
     # -------------------------------------------------------------
     # -----------------------A streamer setting-------------------------------
     # --------------------------------------------------------------
@@ -198,6 +199,29 @@ def emit_matmul_data(**kwargs):
         ]
         data_str += [format_scalar_definition("int32_t", "Atlbound2", N)]
         data_str += [format_scalar_definition("int32_t", "Atlstride2", 0)]
+    elif stationary == input_stationary:
+        data_str += [format_scalar_definition("int32_t", "Atlbound0", N)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t", "Atlstride0", 0
+            )
+        ]
+        data_str += [format_scalar_definition("int32_t", "Atlbound1", K)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t",
+                "Atlstride1",
+                a_len * tileSize * meshRow / 8,
+            )
+        ]
+        data_str += [format_scalar_definition("int32_t", "Atlbound2", M)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t",
+                "Atlstride2",
+                K * a_len * tileSize * meshRow / 8,
+            )
+        ]
 
     data_str += [format_scalar_definition("int32_t", "Atlbound3", 1)]
     data_str += [format_scalar_definition("int32_t", "Atlstride3", 0)]
@@ -269,6 +293,29 @@ def emit_matmul_data(**kwargs):
         data_str += [
             format_scalar_definition(
                 "int32_t", "Btlstride2", K * b_len * tileSize * meshCol / 8
+            )
+        ]
+    elif stationary == input_stationary:
+        data_str += [format_scalar_definition("int32_t", "Btlbound0", N)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t", "Btlstride0", K * b_len * tileSize * meshCol / 8
+            )
+        ]
+        data_str += [format_scalar_definition("int32_t", "Btlbound1", K)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t",
+                "Btlstride1",
+                b_len * tileSize * meshCol / 8,
+            )
+        ]
+        data_str += [format_scalar_definition("int32_t", "Btlbound2", M)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t",
+                "Btlstride2",
+                0,
             )
         ]
 
@@ -353,12 +400,30 @@ def emit_matmul_data(**kwargs):
                 0,
             )
         ]
-
         #
         data_str += [format_scalar_definition("int32_t", "Ctlbound3", N)]
         data_str += [
             format_scalar_definition(
                 "int32_t", "Ctlstride3", c_len * meshRow * meshCol / 8
+            )
+        ]
+    elif stationary == input_stationary:
+        data_str += [format_scalar_definition("int32_t", "Ctlbound1", N)]
+        data_str += [
+            format_scalar_definition("int32_t", "Ctlstride1", c_len * meshRow * meshCol / 8)
+        ]
+        data_str += [format_scalar_definition("int32_t", "Ctlbound2", K)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t", "Ctlstride2", 0
+            )
+        ]
+        data_str += [format_scalar_definition("int32_t", "Ctlbound3", M)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t",
+                "Ctlstride3",
+                N * c_len * meshRow * meshCol / 8,
             )
         ]
 
@@ -472,6 +537,26 @@ def emit_matmul_data(**kwargs):
             )
         ]
 
+    elif stationary == input_stationary:
+        data_str += [format_scalar_definition("int32_t", "D32tlbound1", N)]
+        data_str += [
+            format_scalar_definition("int32_t", "D32tlstride1", c_len * meshRow * meshCol / 8)
+        ]
+        data_str += [format_scalar_definition("int32_t", "D32tlbound2", K)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t", "D32tlstride2", 0
+            )
+        ]
+        data_str += [format_scalar_definition("int32_t", "D32tlbound3", M)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t",
+                "D32tlstride3",
+                N * c_len * meshRow * meshCol / 8,
+            )
+        ]
+
     D_enabled_channel_CSR_num = int(
         math.ceil(snax_opengemm_serial_c_d_width / bankWidth / 32)
     )
@@ -506,6 +591,9 @@ def emit_matmul_data(**kwargs):
         delta_local_d = align_wide_addr(delta_local_d)
     elif stationary == weight_stationary:
         delta_local_d = delta_local_c
+    elif stationary == input_stationary:
+        delta_local_d = delta_local_c
+        delta_local_d = align_wide_addr(delta_local_d)
 
     data_str += [format_scalar_definition("int32_t", "delta_local_a", delta_local_a)]
     data_str += [format_scalar_definition("int32_t", "delta_local_b", delta_local_b)]

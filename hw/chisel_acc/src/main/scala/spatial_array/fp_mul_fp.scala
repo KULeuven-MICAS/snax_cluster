@@ -14,7 +14,6 @@ class FPMULFPBlackBox(
   val io = IO(new Bundle {
     val operand_a_i = Input(UInt(widthA.W))
     val operand_b_i = Input(UInt(widthB.W))
-    val operand_c_i = Input(UInt(widthC.W))
     val result_o    = Output(UInt(widthC.W))
   })
   override def desiredName: String = topmodule
@@ -38,7 +37,6 @@ class FPMULFP(
   val io = IO(new Bundle {
     val operand_a_i = Input(UInt(widthA.W))
     val operand_b_i = Input(UInt(widthB.W))
-    val operand_c_i = Input(UInt(widthC.W))
     val result_o    = Output(UInt(widthC.W))
   })
 
@@ -49,7 +47,6 @@ class FPMULFP(
   io.result_o              := sv_module.io.result_o
   sv_module.io.operand_a_i := io.operand_a_i
   sv_module.io.operand_b_i := io.operand_b_i
-  sv_module.io.operand_c_i := io.operand_c_i
 
 }
 
