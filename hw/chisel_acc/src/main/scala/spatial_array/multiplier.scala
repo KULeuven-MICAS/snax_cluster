@@ -93,12 +93,12 @@ object MultiplierEmitterFloat16Float16 extends App {
 
 object MultiplierEmitters {
 
-// int multipliers for evaluation
+// int Multiplier for evaluation
   def emitInt2_Int2_Int4(): Unit = {
     val tag = "Int2_Int2_Int4_eva"
     emitVerilog(
       new Multiplier(OpType.SIntSIntOp, 2, 2, 4),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 
@@ -106,7 +106,7 @@ object MultiplierEmitters {
     val tag = "Int4_Int4_Int8_eva"
     emitVerilog(
       new Multiplier(OpType.SIntSIntOp, 4, 4, 8),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 
@@ -114,7 +114,7 @@ object MultiplierEmitters {
     val tag = "Int8_Int8_Int16_eva"
     emitVerilog(
       new Multiplier(OpType.SIntSIntOp, 8, 8, 16),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 
@@ -122,7 +122,7 @@ object MultiplierEmitters {
     val tag = "Int16_Int4_Int32_eva"
     emitVerilog(
       new Multiplier(OpType.SIntSIntOp, 16, 4, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 
@@ -130,7 +130,7 @@ object MultiplierEmitters {
     val tag = "Int16_Int16_Int32_eva"
     emitVerilog(
       new Multiplier(OpType.SIntSIntOp, 16, 16, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 
@@ -138,16 +138,16 @@ object MultiplierEmitters {
     val tag = "Int32_Int32_Int64_eva"
     emitVerilog(
       new Multiplier(OpType.SIntSIntOp, 32, 32, 64),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 
-// fp-int multipliers for evaluation
+// fp-int Multiplier for evaluation
   def emitFloat16_Int1_Float32(): Unit = {
     val tag = "Float16_Int1_Float32_eva"
     emitVerilog(
       new Multiplier(OpType.Float16Int4Op, 16, 1, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 
@@ -155,7 +155,7 @@ object MultiplierEmitters {
     val tag = "Float16_Int2_Float32_eva"
     emitVerilog(
       new Multiplier(OpType.Float16Int4Op, 16, 2, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 
@@ -163,7 +163,7 @@ object MultiplierEmitters {
     val tag = "Float16_Int3_Float32_eva"
     emitVerilog(
       new Multiplier(OpType.Float16Int4Op, 16, 3, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 
@@ -171,16 +171,16 @@ object MultiplierEmitters {
     val tag = "Float16_Int4_Float32_eva"
     emitVerilog(
       new Multiplier(OpType.Float16Int4Op, 16, 4, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 
-// fp-fp multipliers for evaluation
+// fp-fp Multiplier for evaluation
   def emitFloat16_Float16_Float32(): Unit = {
     val tag = "Float16_Float16_Float32_eva"
     emitVerilog(
       new Multiplier(OpType.Float16Float16Op, 16, 16, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/multipliers/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag")
     )
   }
 

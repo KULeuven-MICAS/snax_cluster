@@ -51,7 +51,6 @@ class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
         )
         dut.io.operand_a_i.poke(stimulus_a_i.U)
         dut.io.operand_b_i.poke(stimulus_b_i.U)
-        dut.io.operand_c_i.poke(stimulus_c_i.U)
 
         dut.clock.step()
         dut.clock.step()
@@ -66,7 +65,7 @@ class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
         } catch {
           case _: java.lang.AssertionError => {
             println(
-              f"-----------Test id: $test_id Expected: 0x${expected_o.toString(16)}, Got: 0x${reseult.toString(16)}-----------"
+              f"----Error!!!!------------------Test id: $test_id Expected: 0x${expected_o.toString(16)}, Got: 0x${reseult.toString(16)}-----------"
             )
           }
         }

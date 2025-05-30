@@ -81,14 +81,14 @@ object AdderEmitters {
     val tag = "int4_int4_int8"
     emitVerilog(
       new Adder(OpType.SIntSIntOp, 4, 4, 8),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/adders/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Adder/$tag")
     )
   }
   def emitInt8_Int8_Int16(): Unit = {
     val tag = "int8_int8_int16"
     emitVerilog(
       new Adder(OpType.SIntSIntOp, 8, 8, 16),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/adders/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Adder/$tag")
     )
   }
   
@@ -96,7 +96,7 @@ object AdderEmitters {
     val tag = "int16_int16_int32"
     emitVerilog(
       new Adder(OpType.SIntSIntOp, 16, 16, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/adders/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Adder/$tag")
     )
   }
 
@@ -104,7 +104,7 @@ object AdderEmitters {
     val tag = "int32_int32_int64"
     emitVerilog(
       new Adder(OpType.SIntSIntOp, 32, 32, 64),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/adders/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Adder/$tag")
     )
   }
 
@@ -112,7 +112,7 @@ object AdderEmitters {
     val tag = "float32_float32_float32"
     emitVerilog(
       new Adder(OpType.Float16Float16Op, 32, 32, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/adders/$tag")
+      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Adder/$tag")
     )
   }
 }

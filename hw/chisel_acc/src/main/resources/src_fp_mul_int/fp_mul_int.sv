@@ -317,7 +317,7 @@ fpnew_rounding #(
   .abs_value_i             ( pre_round_abs ),
   .sign_i                  ( pre_round_sign ),
   .round_sticky_bits_i     ( round_sticky_bits ),
-  .rnd_mode_i              ( rnd_mode ),
+  .rnd_mode_i              ( fpnew_pkg::RNE ),
   .effective_subtraction_i ( 1'b0 ), // pure mul, no subtraction
   .abs_rounded_o           ( rounded_abs ),
   .sign_o                  ( rounded_sign ),

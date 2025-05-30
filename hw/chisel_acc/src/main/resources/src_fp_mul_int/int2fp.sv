@@ -22,7 +22,7 @@ module intN_to_fp16 #(
             // Sign and absolute value
             
             if (INT_WIDTH!=1) begin
-               abs_val = (sign==1) ? (~(intN_in[INT_WIDTH-2:0]-1)) : intN_in;
+               abs_val = (sign==1) ? (~(intN_in[0]-1)) : intN_in;
                sign    = intN_in[INT_WIDTH-1];
             end else begin
                abs_val = intN_in;
