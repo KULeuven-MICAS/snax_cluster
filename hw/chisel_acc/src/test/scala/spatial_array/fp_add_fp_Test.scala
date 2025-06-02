@@ -55,13 +55,14 @@ class FP32AddFP32Test extends AnyFlatSpec with ChiselScalatestTester with fpUtil
         println(f"Expected: 0x${expected_o.toString(16)}, Got: 0x${result.toString(16)}")
         println(f"Float expected: ${gold_O}, Result float: ${uintToFloat(fp32.expWidth, fp32.sigWidth, result)}")
 
-        try {
+        // try {
+        //   assert(result == expected_o)
+        // } catch {
+        //   case _: java.lang.AssertionError => {
+        //     println(f"----Error!!!!------- Assertion failed on test $test_id")
+        //   }
+        // }
           assert(result == expected_o)
-        } catch {
-          case _: java.lang.AssertionError => {
-            println(f"----Error!!!!------- Assertion failed on test $test_id")
-          }
-        }
 
         dut.clock.step()
         dut.clock.step()

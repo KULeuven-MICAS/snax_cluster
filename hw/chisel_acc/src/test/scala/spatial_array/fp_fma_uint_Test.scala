@@ -56,7 +56,7 @@ class FPNewFMAUInt4Test extends AnyFlatSpec with ChiselScalatestTester with fpUt
 
   behavior of "FPNewFMAUInt4"
 
-  it should "perform fused fp6-int4 multiply-add correctly" in {
+  it should "perform fused fp16-int4 multiply-add correctly" in {
     test(
       new FPNewFMAUInt(
         topmodule = "fpnew_fma_uint",
@@ -114,7 +114,7 @@ class FPNewFMAUInt4Test extends AnyFlatSpec with ChiselScalatestTester with fpUt
 
 class FPNewFMAUInt3Test extends AnyFlatSpec with ChiselScalatestTester with fpUtils with FPNewFMAUIntTestUtils {
 
-  it should "perform fused fp6-int3 multiply-add correctly" in {
+  it should "perform fused fp16-int3 multiply-add correctly" in {
     test(
       new FPNewFMAUInt(
         topmodule = "fpnew_fma_uint",
@@ -171,7 +171,7 @@ class FPNewFMAUInt3Test extends AnyFlatSpec with ChiselScalatestTester with fpUt
 
 class FPNewFMAUInt2Test extends AnyFlatSpec with ChiselScalatestTester with fpUtils with FPNewFMAUIntTestUtils {
 
-  it should "perform fused fp6-int2 multiply-add correctly" in {
+  it should "perform fused fp16-int2 multiply-add correctly" in {
     test(
       new FPNewFMAUInt(
         topmodule = "fpnew_fma_uint",
@@ -228,7 +228,7 @@ class FPNewFMAUInt2Test extends AnyFlatSpec with ChiselScalatestTester with fpUt
 
 class FPNewFMAUInt1Test extends AnyFlatSpec with ChiselScalatestTester with fpUtils with FPNewFMAUIntTestUtils {
 
-  it should "perform fused fp6-int1 multiply-add correctly" in {
+  it should "perform fused fp16-int1 multiply-add correctly" in {
     test(
       new FPNewFMAUInt(
         topmodule = "fpnew_fma_uint",

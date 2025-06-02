@@ -60,15 +60,16 @@ class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
         println(
           f"-----------Test id: $test_id, Expected: 0x${expected_o.toString(16)} , 0x${reseult.toString(16)}------------"
         )
-        try {
+        // try {
+        //   assert(reseult == expected_o)
+        // } catch {
+        //   case _: java.lang.AssertionError => {
+        //     println(
+        //       f"----Error!!!!------------------Test id: $test_id Expected: 0x${expected_o.toString(16)}, Got: 0x${reseult.toString(16)}-----------"
+        //     )
+        //   }
+        // }
           assert(reseult == expected_o)
-        } catch {
-          case _: java.lang.AssertionError => {
-            println(
-              f"----Error!!!!------------------Test id: $test_id Expected: 0x${expected_o.toString(16)}, Got: 0x${reseult.toString(16)}-----------"
-            )
-          }
-        }
 
         dut.clock.step()
         dut.clock.step()

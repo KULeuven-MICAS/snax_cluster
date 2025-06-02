@@ -198,10 +198,10 @@ object RunAllMultiplierEmitters extends App {
   // emitInt16_Int16_Int32()
   // emitInt32_Int32_Int64()
 
-  emitFloat16_Int1_Float32()
-  emitFloat16_Int2_Float32()
-  emitFloat16_Int3_Float32()
-  emitFloat16_Int4_Float32()
+  // emitFloat16_Int1_Float32()
+  // emitFloat16_Int2_Float32()
+  // emitFloat16_Int3_Float32()
+  // emitFloat16_Int4_Float32()
 
   emitFloat16_Float16_Float32()
 

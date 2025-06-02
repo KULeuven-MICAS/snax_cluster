@@ -16,7 +16,18 @@ trait FPMULIntTestUtils extends fpUtils {
       fp16.sigWidth,
       floatToUInt(fp16.expWidth, fp16.sigWidth, A)
     ) // Convert to 16-bit representation
-    val gold_O = A_fp16 * B // Expected result
+    
+    var gold_O = 0.0f // Initialize expected output
+    
+    if (Bwidth == 1 && B == 0) {
+       gold_O = A_fp16 * (-1) // Expected result
+    }
+    else if (Bwidth == 1 && B == 1) {
+       gold_O = A_fp16 // Expected result
+    }
+    else {
+       gold_O = A_fp16 * B // Expected result
+    }
 
     println(
       f"-----------Test id: $test_id, A_fp16: ${A_fp16} , B: ${B},  gold_O: ${gold_O}-----------"
@@ -39,15 +50,16 @@ trait FPMULIntTestUtils extends fpUtils {
       f"-----------Test id: $test_id Expected: 0x${expected_o.toString(16)}, Got: 0x${reseult.toString(16)}-----------"
     )
 
-    try {
+    // try {
+    //   assert(reseult == expected_o)
+    // } catch {
+    //   case _: java.lang.AssertionError => {
+    //     println(
+    //       f"----Error!!!!-------Test id: $test_id Expected: 0x${expected_o.toString(16)}, Got: 0x${reseult.toString(16)}-----------"
+    //     )
+    //   }
+    // }
       assert(reseult == expected_o)
-    } catch {
-      case _: java.lang.AssertionError => {
-        println(
-          f"----Error!!!!-------Test id: $test_id Expected: 0x${expected_o.toString(16)}, Got: 0x${reseult.toString(16)}-----------"
-        )
-      }
-    }
 
     dut.clock.step()
     dut.clock.step()

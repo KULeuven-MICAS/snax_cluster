@@ -587,7 +587,7 @@ def emit_matmul_data(**kwargs):
     delta_local_c = align_wide_addr(delta_local_c)
 
     if stationary == output_stationary:
-        delta_local_d = delta_local_c + M * N * (meshRow * meshCol * c_len / 8)
+        delta_local_d = delta_local_c
         delta_local_d = align_wide_addr(delta_local_d)
     elif stationary == weight_stationary:
         delta_local_d = delta_local_c

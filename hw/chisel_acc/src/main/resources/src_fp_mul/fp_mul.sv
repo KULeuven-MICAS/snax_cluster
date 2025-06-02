@@ -228,7 +228,7 @@ parameter int unsigned rnd_mode    = RndMode  // do not change, we fix the round
 
   logic signed [EXP_WIDTH-1:0] final_exponent;
 
-  assign sum_lower = product_shifted[LOWER_SUM_WIDTH-1:0];
+  assign sum_lower = product_shifted[PRECISION_BITS_C:0];
 
   // Leading zero counter for cancellations
   lzc #(
