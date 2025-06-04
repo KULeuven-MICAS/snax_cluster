@@ -25,10 +25,10 @@ class FPMULFPBlackBox(
   })
   override def desiredName: String = topmodule
 
-  addResource("src_fp_mul/fpnew_pkg.sv")
-  addResource("src_fp_mul/fpnew_classifier.sv")
-  addResource("src_fp_mul/fpnew_rounding.sv")
-  addResource("src_fp_mul/lzc.sv")
+  addResource("common_block/fpnew_pkg.sv")
+  addResource("common_block/fpnew_classifier.sv")
+  addResource("common_block/fpnew_rounding.sv")
+  addResource("common_block/lzc.sv")
   addResource("src_fp_mul/fp_mul.sv")
 
 }

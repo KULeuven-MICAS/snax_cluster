@@ -38,7 +38,8 @@ object SpatialArrayParamParser {
       serialInputBDataWidth  = cfg("snax_opengemm_serial_b_width").num.toInt,
       serialInputCDataWidth  = cfg("snax_opengemm_serial_c_d_width").num.toInt,
       serialOutputDDataWidth = cfg("snax_opengemm_serial_c_d_width").num.toInt,
-      adderTreeDelay         = cfg("snax_opengemm_adder_tree_delay").num.toInt
+      adderTreeDelay         = cfg("snax_opengemm_adder_tree_delay").num.toInt,
+      dataflow              = cfg("snax_opengemm_temporal_unrolling").arr.map(_.str).toSeq,
     )
   }
 }
