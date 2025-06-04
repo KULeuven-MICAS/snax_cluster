@@ -32,6 +32,7 @@ class ParallelToSerial(val p: ParallelToSerialParams) extends Module {
     val terminate_factor =
       if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
     val out              = Decoupled(UInt(p.serialWidth.W))
+    val enable           = Input(Bool())
   })
 
   if (p.parallelWidth > p.serialWidth) {
@@ -61,7 +62,7 @@ class ParallelToSerial(val p: ParallelToSerialParams) extends Module {
     val count = RegInit(0.U(log2Ceil(factor + 1).W))
 
     // Accept a new parallel word only if we have nothing left to send.
-    io.in.ready := (count === 0.U)
+    io.in.ready := (count === 0.U) && io.enable
 
     // Once we get a new parallel word, store it and prepare to send.
     // store in the vector of regs
@@ -114,7 +115,7 @@ class ParallelToSerial(val p: ParallelToSerialParams) extends Module {
   } else {
     io.out.valid := io.in.valid
     io.out.bits  := io.in.bits
-    io.in.ready  := io.out.ready
+    io.in.ready  := io.out.ready && io.enable
   }
 
 }
@@ -151,6 +152,7 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
     val terminate_factor =
       if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
     val out              = Decoupled(UInt(p.parallelWidth.W))
+    val enable           = Input(Bool())
   })
 
   if (p.parallelWidth > p.serialWidth) {
@@ -170,9 +172,9 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
     val count    = RegInit(0.U(log2Ceil(factor + 1).W))
 
     if (p.earlyTerminate) {
-      io.in.ready := count =/= io.terminate_factor.getOrElse(factor.U)
+      io.in.ready := count =/= io.terminate_factor.getOrElse(factor.U) && io.enable
     } else {
-      io.in.ready := count =/= factor.U
+      io.in.ready := count =/= factor.U && io.enable
     }
 
     when(io.in.fire && count === 0.U) {
@@ -234,6 +236,6 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
   } else {
     io.out.valid := io.in.valid
     io.out.bits  := io.in.bits
-    io.in.ready  := io.out.ready
+    io.in.ready  := io.out.ready && io.enable
   }
 }

@@ -2,6 +2,7 @@ package snax_acc.spatial_array
 
 import chisel3._
 import chisel3.util._
+import chisel3.dontTouch
 
 import snax_acc.utils._
 
@@ -165,13 +166,13 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     )
   )
 
-  if (params.dataflow.length > 1) {
-    require(
-      params.arrayInputAWidth == params.serialInputADataWidth && params.arrayInputBWidth == params.serialInputBDataWidth && params.arrayInputCWidth == params.serialInputCDataWidth &&
-      params.arrayOutputDWidth == params.serialOutputDDataWidth,
-      "For multi-dataflow, the array input/output widths must match the serial input/output data widths."
-    )
-  }
+  // if (params.dataflow.length > 1) {
+  //   require(
+  //     params.arrayInputAWidth == params.serialInputADataWidth && params.arrayInputBWidth == params.serialInputBDataWidth && params.arrayInputCWidth == params.serialInputCDataWidth &&
+  //     params.arrayOutputDWidth == params.serialOutputDDataWidth,
+  //     "For multi-dataflow, the array input/output widths must match the serial input/output data widths."
+  //   )
+  // }
 
   val A_s2p = Module(
       new SerialToParallel(
@@ -198,7 +199,10 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
   require(params.serialInputBDataWidth == params.arrayInputBWidth)
 
   A_s2p.io.in <> io.data.in_a
+  A_s2p.io.enable := cstate === sBUSY
+
   B_s2p.io.in <> io.data.in_b
+  B_s2p.io.enable := cstate === sBUSY
 
   def realABandWidth(
     dataTypeIdx:  UInt,
@@ -365,8 +369,10 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
     )
 
   C_s2p.io.terminate_factor.get := input_c_serial_factor
+  C_s2p.io.enable := cstate === sBUSY
 
   D_p2s.io.terminate_factor.get := output_d_serial_factor
+  D_p2s.io.enable := cstate === sBUSY
 
   io.data.in_c <> C_s2p.io.in
   io.data.out_d <> D_p2s.io.out
