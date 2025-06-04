@@ -1,10 +1,10 @@
-package snax_acc.spatial_array
+package snax_acc.utils
 
 import chisel3._
 
 import chiseltest._
 
-trait GeMMTestUtils {
+object CommonTestUtils {
 
   // Function to convert UInt to SInt manually
   def toSInt(value: Int, bitWidth: Int, ifTrans: Boolean): Int = {
@@ -16,6 +16,12 @@ trait GeMMTestUtils {
     else unsigned.toInt
   }
 
+  /** Step the clock until the given signal asserts, or stop after timeout
+    * @param signal
+    *   Signal to wait for until it is asserted
+    * @param timeout
+    *   Assert after this number of cycles
+    */
   def WaitOrTimeout(signalToAssert: Bool, clock: Clock, timeout: Int = 100) = {
     var waitCnt = 0
     while (!signalToAssert.peekBoolean()) {
@@ -28,31 +34,9 @@ trait GeMMTestUtils {
     }
   }
 
-  /** Translate the temporal index (i.e. the cycle) to spatial index (i.e. the matrix index).
-    *   - The temporal index ranges from 0 to (M*K*N - 1).
-    *   - Matrix A (size MxK) needs to be read in row major order, and is stored in row major order. (The testbench only
-    *     sees a 1D array of size M*K.)
-    *   - Matrix B (size KxN) needs to be read in column major order, and is stored in column major order.
-    *   - The temporal index follows the following loop ordering:
-    *     - for (m = 0 to M - 1);
-    *       - for (n = 0 to N - 1);
-    *         - for (k = 0 to K - 1);
-    *           - (do operation)
-    */
-  def temporalToSpatialIndicesAB(temporalIndex: Int, K: Int, N: Int): (Int, Int) = {
-    val m = temporalIndex / (K * N) // Row index of D
-    val n = (temporalIndex / K) % N // Column index of D
-    val k = temporalIndex       % K // Shared dimension index
-
-    val indexA = m * K + k
-    val indexB = n * K + k
-
-    (indexA, indexB)
-  }
-
 }
 
-trait fpUtils {
+object fpUtils {
 
   object fp16 {
     val expWidth = 5

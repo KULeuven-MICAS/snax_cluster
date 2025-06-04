@@ -1,14 +1,21 @@
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
 package snax_acc.spatial_array
 
 import chisel3._
 import chisel3.util._
 
-class FPAddFPBlackBox(
+class FPMULFPBlackBox(
   topmodule: String,
   widthA:    Int,
   widthB:    Int,
   widthC:    Int
 ) extends BlackBox
+    // only works for FP16 for a and b, FP32 for result as it is hardcoded in the blackbox for now.
     with HasBlackBoxResource {
 
   val io = IO(new Bundle {
@@ -18,15 +25,15 @@ class FPAddFPBlackBox(
   })
   override def desiredName: String = topmodule
 
-  addResource("src_fp_add/fpnew_pkg.sv")
-  addResource("src_fp_add/fpnew_classifier.sv")
-  addResource("src_fp_add/fpnew_rounding.sv")
-  addResource("src_fp_add/lzc.sv")
-  addResource("src_fp_add/fp_add.sv")
+  addResource("src_fp_mul/fpnew_pkg.sv")
+  addResource("src_fp_mul/fpnew_classifier.sv")
+  addResource("src_fp_mul/fpnew_rounding.sv")
+  addResource("src_fp_mul/lzc.sv")
+  addResource("src_fp_mul/fp_mul.sv")
 
 }
 
-class FPAddFP(
+class FPMULFP(
   topmodule:  String,
   val widthA: Int,
   val widthB: Int,
@@ -41,7 +48,7 @@ class FPAddFP(
   })
 
   val sv_module = Module(
-    new FPAddFPBlackBox(topmodule, widthA, widthB, widthC)
+    new FPMULFPBlackBox(topmodule, widthA, widthB, widthC)
   )
 
   io.result_o              := sv_module.io.result_o
@@ -50,10 +57,10 @@ class FPAddFP(
 
 }
 
-object FPAddFPEmitter extends App {
+object FPMULFPEmitter extends App {
   emitVerilog(
-    new FPAddFP(
-      topmodule = "fp_add",
+    new FPMULFP(
+      topmodule = "fp_mul",
       widthA    = 16,
       widthB    = 16,
       widthC    = 32

@@ -1,3 +1,8 @@
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
 package snax_acc.spatial_array
 
 import scala.util.Random
@@ -7,8 +12,9 @@ import chisel3._
 import chiseltest._
 import chiseltest.simulator.VerilatorBackendAnnotation
 import org.scalatest.flatspec.AnyFlatSpec
+import snax_acc.utils.fpUtils._
 
-class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
+class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "FPMULFP"
 
   it should "perform fp16 multiply fp16 correctly" in {
@@ -21,7 +27,7 @@ class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
       )
     ).withAnnotations(Seq(VerilatorBackendAnnotation, WriteVcdAnnotation)) { dut =>
 
-      def test_fp_mul_fp(test_id: Int, A: Float, B: Float, C: Float) = {
+      def test_fp_mul_fp(test_id: Int, A: Float, B: Float) = {
         val A_fp16 = uintToFloat(
           fp16.expWidth,
           fp16.sigWidth,
@@ -32,11 +38,7 @@ class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
           fp16.sigWidth,
           floatToUInt(fp16.expWidth, fp16.sigWidth, B)
         ) // Convert to 16-bit representation
-        uintToFloat(
-          fp32.expWidth,
-          fp32.sigWidth,
-          floatToUInt(fp32.expWidth, fp32.sigWidth, C)
-        ) // Convert to 32-bit representation
+
         val gold_O = A_fp16 * B_fp16 // Expected result
 
         println(
@@ -44,7 +46,6 @@ class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
         )
         val stimulus_a_i = floatToUInt(fp16.expWidth, fp16.sigWidth, A)      // Convert to 16-bit representation
         val stimulus_b_i = floatToUInt(fp16.expWidth, fp16.sigWidth, B)      // Direct 4-bit integer
-        val stimulus_c_i = floatToUInt(fp32.expWidth, fp32.sigWidth, C)      // Convert to 32-bit representation
         val expected_o   = floatToUInt(fp32.expWidth, fp32.sigWidth, gold_O) // Expected output as UInt
         println(
           f"-----------Test id: $test_id, stimulus_a_i: 0x${stimulus_a_i} , stimulus_b_i: 0x${stimulus_b_i},  gold_O: 0x${gold_O}-----------"
@@ -69,7 +70,7 @@ class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
         //     )
         //   }
         // }
-          assert(reseult == expected_o)
+        assert(reseult == expected_o)
 
         dut.clock.step()
         dut.clock.step()
@@ -77,22 +78,20 @@ class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
 
       var A = -1.0101f // float16
       var B = 0.1245f  // float16
-      var C = 0.0f     // float32
 
-      test_fp_mul_fp(1, A, B, C)
+      test_fp_mul_fp(1, A, B)
 
       // Generate 10 random test cases
       val test_num  = 10
       val testCases = Seq.fill(test_num)(
         (
-          Random.nextFloat() * 20 - 10, // Random float between -10 and 10
-          Random.nextFloat() * 20 - 10,
-          Random.nextFloat() * 20 - 10
+          Random.nextFloat() * 200 - 100, // Random float between -100 and 100
+          Random.nextFloat() * 200 - 100  // Random float between -100 and 100
         )
       )
 
-      testCases.zipWithIndex.foreach { case ((a, b, c), index) =>
-        test_fp_mul_fp(index + 1, a, b, c)
+      testCases.zipWithIndex.foreach { case ((a, b), index) =>
+        test_fp_mul_fp(index + 1, a, b)
       }
 
     }

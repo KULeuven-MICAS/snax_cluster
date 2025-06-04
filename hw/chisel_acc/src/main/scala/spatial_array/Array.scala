@@ -1,8 +1,15 @@
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
 package snax_acc.spatial_array
 
 import chisel3._
 import chisel3.util._
 
+// data io
 class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
   val in_a            = Flipped(DecoupledIO(UInt(params.arrayInputAWidth.W)))
   val in_b            = Flipped(DecoupledIO(UInt(params.arrayInputBWidth.W)))
@@ -11,6 +18,7 @@ class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
   val in_substraction = Flipped(DecoupledIO(UInt(params.configWidth.W)))
 }
 
+// control io
 class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
   val arrayShapeCfg = Input(UInt(params.configWidth.W))
   val dataTypeCfg   = Input(UInt(params.configWidth.W))
@@ -23,24 +31,14 @@ class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {
   val ctrl = new SpatialArrayCtrlIO(params)
 }
 
+/** SpatialArray is a module that implements a spatial array for parallel computation.
+  *
+  * @param params
+  */
 class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncReset {
 
   // io instantiation
   val io = IO(new SpatialArrayIO(params))
-
-  // different type of 1D multipliers
-  val multipliers = (0 until params.opType.length).map(dataTypeIdx =>
-    Seq.fill(params.macNum(dataTypeIdx))(
-      Module(
-        new Multiplier(
-          params.opType(dataTypeIdx),
-          params.inputAElemWidth(dataTypeIdx),
-          params.inputBElemWidth(dataTypeIdx),
-          params.mulElemWidth(dataTypeIdx)
-        )
-      )
-    )
-  )
 
   // constraints, regardless of the computation bound or bandwidth bound array
   params.arrayDim.zipWithIndex.foreach { case (dims, dataTypeIdx) =>
@@ -71,6 +69,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     }
   }
 
+  // constraints for the number of spatial array dimensions
   require(
     params.arrayDim.map(_.length).sum < 32 && params.arrayDim
       .map(_.length)
@@ -88,38 +87,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     "All data type related parameters should have the same length"
   )
 
-  // data feeding network
-  def dataForward3(
-    macNum:    Int,
-    elemBits:  Int,
-    Mu:        Int,
-    Ku:        Int,
-    Nu:        Int,
-    stride_Ku: Int,
-    stride_Nu: Int,
-    stride_Mu: Int,
-    input:     UInt
-  ) = {
-    val reshapedData = Wire(Vec(macNum, UInt(elemBits.W)))
-    for (i <- 0 until macNum) {
-      if (i < Mu * Nu * Ku) {
-        val m     = i / (Nu * Ku)
-        val n     = (i % (Nu * Ku)) / Ku
-        val k     = (i % (Nu * Ku)) % Ku
-        val index = k * stride_Ku + n * stride_Nu + m * stride_Mu
-        reshapedData(i) := input(index * elemBits + elemBits - 1, index * elemBits)
-      } else {
-        reshapedData(i) := 0.U
-      }
-    }
-    reshapedData
-  }
-
+  // N-D data feeding network, spatial loop bounds are specified by `dims` and data reuse strides by `strides`, idx 0 is the outermost dimension
+  // e.g., for 3D data, dims = Seq(Mu, Nu, Ku) and strides = Seq(stride_Ku, stride_Nu, stride_Mu)
   def dataForwardN(
     macNum:   Int,
     elemBits: Int,
-    dims:     Seq[Int], // e.g., Seq(Mu, Nu, Ku)
-    strides:  Seq[Int], // e.g., Seq(stride_Mu, stride_Nu, stride_Ku)
+    dims:     Seq[Int],
+    strides:  Seq[Int],
     input:    UInt
   ): Vec[UInt] = {
     require(dims.length == strides.length)
@@ -160,17 +134,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   val inputA = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
-      dataForward3(
+      dataForwardN(
         params.macNum(dataTypeIdx),
         params.inputAElemWidth(dataTypeIdx),
-        // Mu, Ku, Nu
-        dim(0),
-        dim(1),
-        dim(2),
-        // stride_Ku, stride_Nu, stride_Mu
-        1,
-        0,
-        dim(1),
+        // Mu, Nu, Ku
+        Seq(dim(0), dim(2), dim(1)),
+        // stride_Mu, stride_Nu, stride_Ku
+        Seq(dim(1), 0, 1),
         io.data.in_a.bits
       )
     })
@@ -178,17 +148,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   val inputB = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
-      dataForward3(
+      dataForwardN(
         params.macNum(dataTypeIdx),
         params.inputBElemWidth(dataTypeIdx),
-        // Mu, Ku, Nu
-        dim(0),
-        dim(1),
-        dim(2),
-        // stride_Ku, stride_Nu, stride_Mu
-        1,
-        dim(1),
-        0,
+        // Mu, Nu, Ku
+        Seq(dim(0), dim(2), dim(1)),
+        // stride_Mu, stride_Nu, stride_Ku
+        Seq(0, dim(1), 1),
         io.data.in_b.bits
       )
     })
@@ -196,23 +162,33 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   val inputC = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
-      dataForward3(
+      dataForwardN(
         params.macNum(dataTypeIdx),
         params.inputCElemWidth(dataTypeIdx),
-        // Mu, Ku = 1, Nu, only two dimensions
-        dim(0),
-        1,
-        dim(2),
-        // stride_Ku, stride_Nu, stride_Mu
-        0,
-        1,
-        dim(2),
+        // Mu, Nu, 1
+        Seq(dim(0), dim(2), 1),
+        // stride_Mu, stride_Nu, stride_Ku
+        Seq(dim(2), 1, 0),
         io.data.in_c.bits
       )
     })
   }
 
-  // multipliers
+  // instantiate a bunch of multipliers with different data type
+  val multipliers = (0 until params.opType.length).map(dataTypeIdx =>
+    Seq.fill(params.macNum(dataTypeIdx))(
+      Module(
+        new Multiplier(
+          params.opType(dataTypeIdx),
+          params.inputAElemWidth(dataTypeIdx),
+          params.inputBElemWidth(dataTypeIdx),
+          params.mulElemWidth(dataTypeIdx)
+        )
+      )
+    )
+  )
+
+  // multipliers connection with the output from data feeding network
   (0 until params.opType.length).foreach(dataTypeIdx =>
     multipliers(dataTypeIdx).zipWithIndex.foreach { case (mul, mulIdx) =>
       mul.io.in_a := MuxLookup(
@@ -230,7 +206,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     }
   )
 
-  // adder tree
+  // instantiate adder tree
   val adderTree = (0 until params.opType.length).map(dataTypeIdx =>
     Module(
       new AdderTree(
@@ -238,21 +214,23 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
         params.mulElemWidth(dataTypeIdx),
         params.outputDElemWidth(dataTypeIdx),
         params.macNum(dataTypeIdx),
+        // adderGroupSizes = params.arrayDim(dataTypeIdx).map(_(1)), which describes the spatial reduction dimension
         params.arrayDim(dataTypeIdx).map(_(1))
       )
     )
   )
 
-  // connect multipliers to adder tree
+  // connect output of the multipliers to adder tree
   multipliers.zipWithIndex.foreach { case (muls, dataTypeIdx) =>
     muls.zipWithIndex.foreach { case (mul, mulIdx) =>
       adderTree(dataTypeIdx).io.in(mulIdx) := mul.io.out_c
     }
   }
 
+  // adder tree runtime configuration
   adderTree.foreach(_.io.cfg := io.ctrl.arrayShapeCfg)
 
-  // accumulator
+  // instantiate accumulators
   val accumulators = (0 until params.opType.length).map(dataTypeIdx =>
     Module(
       new Accumulator(
@@ -263,6 +241,9 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
       )
     )
   )
+
+  // connect adder tree output to accumulators
+  // and inputC to accumulators
   accumulators.zipWithIndex.foreach { case (acc, dataTypeIdx) =>
     acc.io.in1.bits := adderTree(dataTypeIdx).io.out
     acc.io.in2.bits := MuxLookup(
@@ -272,6 +253,8 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
       (0 until params.arrayDim(dataTypeIdx).length).map(j => j.U -> inputC(dataTypeIdx)(j))
     )
   }
+
+  // handle the control signals for accumulators
   accumulators.foreach(_.io.in1.valid := io.data.in_a.valid && io.data.in_b.valid)
   accumulators.foreach(_.io.in2.valid := io.data.in_c.valid)
   accumulators.foreach(_.io.accAddExtIn := io.ctrl.accAddExtIn)

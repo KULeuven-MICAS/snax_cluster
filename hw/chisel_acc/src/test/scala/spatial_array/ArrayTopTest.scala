@@ -1,3 +1,9 @@
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
 package snax_acc.spatial_array
 
 import scala.util.Random
@@ -6,7 +12,10 @@ import chisel3._
 
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
+import snax_acc.utils.CommonTestUtils.WaitOrTimeout
+import snax_acc.utils.CommonTestUtils.toSInt
 import snax_acc.utils.DecoupledCut._
+import snax_acc.utils.MatrixLibBlock.temporalToSpatialIndicesAB
 
 class ArrayTopHarness(params: SpatialArrayParam) extends Module with RequireAsyncReset {
   val dut = Module(new ArrayTop(params))
@@ -22,7 +31,7 @@ class ArrayTopHarness(params: SpatialArrayParam) extends Module with RequireAsyn
   io.performance_counter := dut.io.performance_counter
 }
 
-trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester with GeMMTestUtils {
+trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester {
   // Define the function to test a single configuration
   def testSingleConfig(params: SpatialArrayParam, dataTypeIdx: Int, arrayShapeIdx: Int): Unit = {
     test(new ArrayTopHarness(params)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>

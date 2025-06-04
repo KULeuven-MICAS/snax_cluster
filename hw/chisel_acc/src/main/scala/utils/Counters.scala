@@ -1,4 +1,10 @@
-package snax_acc.spatial_array
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
+package snax_acc.utils
 
 import chisel3._
 

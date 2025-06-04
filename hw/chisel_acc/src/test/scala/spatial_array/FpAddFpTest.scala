@@ -1,3 +1,9 @@
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
 package snax_acc.spatial_array
 
 import scala.util.Random
@@ -7,8 +13,9 @@ import chisel3._
 import chiseltest._
 import chiseltest.simulator.VerilatorBackendAnnotation
 import org.scalatest.flatspec.AnyFlatSpec
+import snax_acc.utils.fpUtils._
 
-class FP32AddFP32Test extends AnyFlatSpec with ChiselScalatestTester with fpUtils {
+class FP32AddFP32Test extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "FPAddFP"
 
   it should "perform fp32 add fp32 correctly" in {
@@ -21,7 +28,7 @@ class FP32AddFP32Test extends AnyFlatSpec with ChiselScalatestTester with fpUtil
       )
     ).withAnnotations(Seq(VerilatorBackendAnnotation, WriteVcdAnnotation)) { dut =>
 
-      def test_fp_add_fp(test_id: Int, A: Float, B: Float, C: Float) = {
+      def test_fp_add_fp(test_id: Int, A: Float, B: Float) = {
         val A_fp32 = uintToFloat(
           fp32.expWidth,
           fp32.sigWidth,
@@ -32,17 +39,13 @@ class FP32AddFP32Test extends AnyFlatSpec with ChiselScalatestTester with fpUtil
           fp32.sigWidth,
           floatToUInt(fp32.expWidth, fp32.sigWidth, B)
         )
-        uintToFloat(
-          fp32.expWidth,
-          fp32.sigWidth,
-          floatToUInt(fp32.expWidth, fp32.sigWidth, C)
-        )
+
         val gold_O = A_fp32 + B_fp32 // Expected result
 
         val stimulus_a_i = floatToUInt(fp32.expWidth, fp32.sigWidth, A)
         val stimulus_b_i = floatToUInt(fp32.expWidth, fp32.sigWidth, B)
-        floatToUInt(fp32.expWidth, fp32.sigWidth, C)
-        val expected_o   = floatToUInt(fp32.expWidth, fp32.sigWidth, gold_O)
+
+        val expected_o = floatToUInt(fp32.expWidth, fp32.sigWidth, gold_O)
 
         dut.io.operand_a_i.poke(stimulus_a_i.U)
         dut.io.operand_b_i.poke(stimulus_b_i.U)
@@ -62,7 +65,7 @@ class FP32AddFP32Test extends AnyFlatSpec with ChiselScalatestTester with fpUtil
         //     println(f"----Error!!!!------- Assertion failed on test $test_id")
         //   }
         // }
-          assert(result == expected_o)
+        assert(result == expected_o)
 
         dut.clock.step()
         dut.clock.step()
@@ -70,22 +73,20 @@ class FP32AddFP32Test extends AnyFlatSpec with ChiselScalatestTester with fpUtil
 
       var A = -1f
       var B = 4.5f
-      var C = 0.0f
 
-      test_fp_add_fp(1, A, B, C)
+      test_fp_add_fp(1, A, B)
 
       // Generate random test cases
-      val test_num  = 10
+      val test_num  = 100
       val testCases = Seq.fill(test_num)(
         (
-          Random.nextFloat() * 1000 - 10,
-          Random.nextFloat() * 1000 - 10,
-          Random.nextFloat() * 1000 - 10
+          Random.nextFloat() * 1000 - 1000,
+          Random.nextFloat() * 1000 - 1000
         )
       )
 
-      testCases.zipWithIndex.foreach { case ((a, b, c), index) =>
-        test_fp_add_fp(index + 2, a, b, c)
+      testCases.zipWithIndex.foreach { case ((a, b), index) =>
+        test_fp_add_fp(index + 2, a, b)
       }
 
     }

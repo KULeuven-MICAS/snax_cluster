@@ -1,4 +1,4 @@
-package snax_acc.spatial_array
+package snax_acc.utils
 
 import scala.util.Random
 

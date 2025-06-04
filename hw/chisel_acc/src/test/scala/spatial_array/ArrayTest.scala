@@ -1,3 +1,9 @@
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
 package snax_acc.spatial_array
 
 import scala.util.Random
@@ -6,8 +12,9 @@ import chisel3._
 
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
+import snax_acc.utils.CommonTestUtils.toSInt
 
-class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester with GeMMTestUtils {
+class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
   "SpatialArray" should "correctly compute output with different array dimensions" in {
 

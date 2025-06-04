@@ -1,9 +1,15 @@
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
 package snax_acc.spatial_array
 
 object OpType {
   def UIntUIntOp       = 1
   def SIntSIntOp       = 2
-  def Float16Int4Op    = 3
+  def Float16IntOp     = 3
   def Float16Float16Op = 4
 
   def fromString(str: String): Int =
@@ -32,10 +38,10 @@ class SpatialArrayParam(
   val serialInputBDataWidth:  Int,
   val serialInputCDataWidth:  Int,
   val serialOutputDDataWidth: Int,
-  val adderTreeDelay:         Int = 0,
-  val configWidth:            Int = 32,
-  val csrNum:                 Int = 7,
-  val dataflow: Seq[String] = Seq("output_stationary", "input_stationary", "weight_stationary")
+  val adderTreeDelay:         Int         = 0,
+  val configWidth:            Int         = 32,
+  val csrNum:                 Int         = 7,
+  val dataflow:               Seq[String] = Seq("output_stationary", "input_stationary", "weight_stationary")
 )
 
 object SpatialArrayParam {

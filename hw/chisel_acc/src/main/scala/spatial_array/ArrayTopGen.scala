@@ -1,5 +1,12 @@
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
 package snax_acc.spatial_array
 
+// hjson configuration parser, from hjson to SpatialArrayParam
 object SpatialArrayParamParser {
   def parseFromHjsonString(hjsonStr: String): SpatialArrayParam = {
     val cfg = ujson.read(hjsonStr)
@@ -36,145 +43,9 @@ object SpatialArrayParamParser {
   }
 }
 
+// main object to generate the ArrayTop module and the wrapper
 object ArrayTopGen {
   def main(args: Array[String]): Unit = {
-
-    // 16x8x8, 1x32x32 ISSCC reproduce
-    // generation time: ~1sec
-    // val params = SpatialArrayParam(
-    //     opType = Seq(OpType.SIntSIntOp),
-    //     macNum = Seq(1024),
-    //     inputAElemWidth = Seq(8),
-    //     inputBElemWidth = Seq(8),
-    //     inputCElemWidth = Seq(32),
-    //     mulElemWidth = Seq(16),
-    //     outputDElemWidth = Seq(32),
-    //     arrayInputAWidth = 1024,
-    //     arrayInputBWidth = 8192,
-    //     arrayInputCWidth = 4096,
-    //     arrayOutputDWidth = 4096,
-    //     arrayDim = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
-    // )
-    // val tag = "ISSCC"
-
-    // ----------------------------------------------
-    // scalability test
-    // ----------------------------------------------
-    // 256x256 TPU like reproduce
-    // val params = SpatialArrayParam(
-    //     opType = Seq(OpType.SIntSIntOp),
-    //     macNum = Seq(65536),
-    //     inputAElemWidth = Seq(8),
-    //     inputBElemWidth = Seq(8),
-    //     inputCElemWidth = Seq(32),
-    //     mulElemWidth = Seq(16),
-    //     outputDElemWidth = Seq(32),
-    //     arrayInputAWidth = 2048,
-    //     arrayInputBWidth = 2048,
-    //     arrayInputCWidth = 2097152,
-    //     arrayOutputDWidth = 2097152,
-    //     arrayDim = Seq(Seq(Seq(256, 1, 256)))
-    // )
-
-    // // 128x128 TPU like reproduce
-    // val params = SpatialArrayParam(
-    //     opType = Seq(OpType.SIntSIntOp),
-    //     macNum = Seq(16384),
-    //     inputAElemWidth = Seq(8),
-    //     inputBElemWidth = Seq(8),
-    //     inputCElemWidth = Seq(32),
-    //     mulElemWidth = Seq(16),
-    //     outputDElemWidth = Seq(32),
-    //     arrayInputAWidth = 1024,
-    //     arrayInputBWidth = 1024,
-    //     arrayInputCWidth = 524288,
-    //     arrayOutputDWidth = 524288,
-    //     arrayDim = Seq(Seq(Seq(128, 1, 128)))
-    // )
-
-    // 64x128 TPU like reproduce
-    // generation time: ~40mins
-    // val params = SpatialArrayParam(
-    //     opType = Seq(OpType.SIntSIntOp),
-    //     macNum = Seq(8192),
-    //     inputAElemWidth = Seq(8),
-    //     inputBElemWidth = Seq(8),
-    //     inputCElemWidth = Seq(32),
-    //     mulElemWidth = Seq(16),
-    //     outputDElemWidth = Seq(32),
-    //     arrayInputAWidth = 512,
-    //     arrayInputBWidth = 1024,
-    //     arrayInputCWidth = 262144,
-    //     arrayOutputDWidth = 262144,
-    //     arrayDim = Seq(Seq(Seq(64, 1, 128)))
-    // )
-
-    // 64x64 TPU like reproduce
-    // generation time: ~4mins
-    // val params = SpatialArrayParam(
-    //     opType = Seq(OpType.SIntSIntOp),
-    //     macNum = Seq(4096),
-    //     inputAElemWidth = Seq(8),
-    //     inputBElemWidth = Seq(8),
-    //     inputCElemWidth = Seq(32),
-    //     mulElemWidth = Seq(16),
-    //     outputDElemWidth = Seq(32),
-    //     arrayInputAWidth = 512,
-    //     arrayInputBWidth = 512,
-    //     arrayInputCWidth = 131072,
-    //     arrayOutputDWidth = 131072,
-    //     arrayDim = Seq(Seq(Seq(64, 1, 64)))
-    // )
-
-    // Bitwave like reproduce
-    // 7 dfs
-    // val params = SpatialArrayParam(
-    //   opType            = Seq(OpType.SIntSIntOp),
-    //   macNum            = Seq(4096),
-    //   inputAElemWidth   = Seq(8),
-    //   inputBElemWidth   = Seq(8),
-    //   inputCElemWidth   = Seq(32),
-    //   mulElemWidth      = Seq(16),
-    //   outputDElemWidth      = Seq(32),
-    //   arrayInputAWidth       = 1024,
-    //   arrayInputBWidth       = 8192,
-    //   arrayInputCWidth  = 16384,
-    //   arrayOutputDWidth = 16384,
-    //   arrayDim          = Seq(
-    //     Seq(
-    //       Seq(16, 8, 32),
-    //       Seq(8, 16, 32),
-    //       Seq(4, 32, 32),
-    //       Seq(1, 8, 128),
-    //       Seq(1, 16, 64),
-    //       Seq(1, 32, 32),
-    //       Seq(2, 1, 64)
-    //     )
-    //   )
-    // )
-    // val tag    = "BitWave"
-
-    // opengemm
-    // 8x8x8
-    // val params = SpatialArrayParam(
-    //   opType            = Seq(OpType.SIntSIntOp),
-    //   macNum            = Seq(512),
-    //   inputAElemWidth   = Seq(8),
-    //   inputBElemWidth   = Seq(8),
-    //   inputCElemWidth   = Seq(32),
-    //   mulElemWidth      = Seq(16),
-    //   outputDElemWidth  = Seq(32),
-    //   arrayInputAWidth  = 512,
-    //   arrayInputBWidth  = 512,
-    //   arrayInputCWidth  = 2048,
-    //   arrayOutputDWidth = 2048,
-    //   arrayDim          = Seq(
-    //     Seq(
-    //       Seq(8, 8, 8)
-    //     )
-    //   )
-    // )
-    // val tag    = "OpenGeMM"
 
     // parameters parser
     // Helper function to parse command-line arguments into a Map

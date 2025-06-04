@@ -1,3 +1,9 @@
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
 package snax_acc.spatial_array
 
 import chisel3._
@@ -9,7 +15,7 @@ class FPMULIntBlackBox(
   widthB:    Int,
   widthC:    Int
 ) extends BlackBox(
-      // only works for FP16 for a, FP32 for result, c is useless
+      // only works for FP16 for a, FP32 for result
       // data width of b is configurable
       Map(
         "WIDTH_B" -> widthB

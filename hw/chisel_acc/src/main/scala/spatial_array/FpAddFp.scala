@@ -1,34 +1,39 @@
+// Copyright 2025 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
 package snax_acc.spatial_array
 
 import chisel3._
 import chisel3.util._
 
-class FPNewFMAFPBlackBox(
+class FPAddFPBlackBox(
   topmodule: String,
   widthA:    Int,
   widthB:    Int,
   widthC:    Int
 ) extends BlackBox
+    // no chisel parameters, only works for FP32 for a, FP32 for b, FP32 for result as it is hardcoded in the blackbox
     with HasBlackBoxResource {
 
   val io = IO(new Bundle {
     val operand_a_i = Input(UInt(widthA.W))
     val operand_b_i = Input(UInt(widthB.W))
-    val operand_c_i = Input(UInt(widthC.W))
     val result_o    = Output(UInt(widthC.W))
   })
   override def desiredName: String = topmodule
 
-  addResource("baseline_fp16_fp16_fp32_fma/fpnew_pkg.sv")
-  addResource("baseline_fp16_fp16_fp32_fma/cf_math_pkg.sv")
-  addResource("baseline_fp16_fp16_fp32_fma/fpnew_classifier.sv")
-  addResource("baseline_fp16_fp16_fp32_fma/fpnew_rounding.sv")
-  addResource("baseline_fp16_fp16_fp32_fma/lzc.sv")
-  addResource("baseline_fp16_fp16_fp32_fma/fpnew_fma_mixed.sv")
+  addResource("src_fp_add/fpnew_pkg.sv")
+  addResource("src_fp_add/fpnew_classifier.sv")
+  addResource("src_fp_add/fpnew_rounding.sv")
+  addResource("src_fp_add/lzc.sv")
+  addResource("src_fp_add/fp_add.sv")
 
 }
 
-class FPNewFMAFP(
+class FPAddFP(
   topmodule:  String,
   val widthA: Int,
   val widthB: Int,
@@ -39,25 +44,23 @@ class FPNewFMAFP(
   val io = IO(new Bundle {
     val operand_a_i = Input(UInt(widthA.W))
     val operand_b_i = Input(UInt(widthB.W))
-    val operand_c_i = Input(UInt(widthC.W))
     val result_o    = Output(UInt(widthC.W))
   })
 
   val sv_module = Module(
-    new FPNewFMAFPBlackBox(topmodule, widthA, widthB, widthC)
+    new FPAddFPBlackBox(topmodule, widthA, widthB, widthC)
   )
 
   io.result_o              := sv_module.io.result_o
   sv_module.io.operand_a_i := io.operand_a_i
   sv_module.io.operand_b_i := io.operand_b_i
-  sv_module.io.operand_c_i := io.operand_c_i
 
 }
 
-object FPNewFMAFPEmitter extends App {
+object FPAddFPEmitter extends App {
   emitVerilog(
-    new FPNewFMAFP(
-      topmodule = "fpnew_fma_mixed",
+    new FPAddFP(
+      topmodule = "fp_add",
       widthA    = 16,
       widthB    = 16,
       widthC    = 32
