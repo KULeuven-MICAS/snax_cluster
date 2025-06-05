@@ -33,24 +33,6 @@
 // Pack two subtraction values to one CSR
 int32_t gen_subtraction_config(int8_t subtraction_a, int8_t subtraction_b);
 
-// Set STREAMER configuration CSR
-void set_gemmx_streamer_csr_shared_c_d(
-    int32_t delta_local_a, int32_t* Aslstride, int32_t* Atlbound,
-    int32_t* Atlstride, int32_t set_addr_remap_index_A, int32_t transpose_A,
-    int32_t* channel_en_A,
-
-    int32_t delta_local_b, int32_t* Bslstride, int32_t* Btlbound,
-    int32_t* Btlstride, int32_t set_addr_remap_index_B, int32_t transpose_B,
-    int32_t* channel_en_B,
-
-    int32_t delta_local_c, int32_t* Cslstride, int32_t* Ctlbound,
-    int32_t* Ctlstride, int32_t set_addr_remap_index_C, int32_t* channel_en_C,
-    int32_t broadcast_C,
-
-    int32_t delta_local_d32, int32_t* D32slstride, int32_t* D32tlbound,
-    int32_t* D32tlstride, int32_t set_addr_remap_index_D32,
-    int32_t* channel_en_D);
-
 void set_gemmx_streamer_csr(
     int32_t delta_local_a, int32_t* Aslstride, int32_t* Atlbound,
     int32_t* Atlstride, int32_t set_addr_remap_index_A, int32_t transpose_A,

@@ -87,7 +87,7 @@ object SpatialArrayParam {
     serialInputBDataWidth:  Int,
     serialInputCDataWidth:  Int,
     serialOutputDDataWidth: Int,
-    adderTreeDelay:         Int = 0,
+    adderTreeDelay:         Int         = 0,
     dataflow:               Seq[String] = Seq("output_stationary", "input_stationary", "weight_stationary")
   ): SpatialArrayParam =
     new SpatialArrayParam(

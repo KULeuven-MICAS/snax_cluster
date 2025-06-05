@@ -6,6 +6,10 @@
 
 package snax_acc.spatial_array
 
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+
 // hjson configuration parser, from hjson to SpatialArrayParam
 object SpatialArrayParamParser {
   def parseFromHjsonString(hjsonStr: String): SpatialArrayParam = {
@@ -39,7 +43,7 @@ object SpatialArrayParamParser {
       serialInputCDataWidth  = cfg("snax_opengemm_serial_c_d_width").num.toInt,
       serialOutputDDataWidth = cfg("snax_opengemm_serial_c_d_width").num.toInt,
       adderTreeDelay         = cfg("snax_opengemm_adder_tree_delay").num.toInt,
-      dataflow              = cfg("snax_opengemm_temporal_unrolling").arr.map(_.str).toSeq,
+      dataflow               = cfg("snax_opengemm_temporal_unrolling").arr.map(_.str).toSeq
     )
   }
 }
@@ -207,6 +211,39 @@ endmodule
     )
 
     println(s"Generated macro file: $macro_dir")
+
+    // generate the c lib header file
+    val headerFile = s"$outPath/../../sw/snax/opengemm/include/snax_opengemm_stationarity.h"
+
+    var headerContent =
+      s"""// Copyright 2024 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
+"""
+
+    if (params.dataflow.contains("output_stationary") && params.dataflow.length == 1) {
+      headerContent += s"""
+#define SNAX_OPENGEMM_OUTPUT_STATIONARY_ONLY
+"""
+    } else {
+      headerContent += s"""#define SNAX_OPENGEMM_MULTI_STATIONARY
+"""
+    }
+
+    val path: Path = Paths.get(headerFile)
+    val parentDir = path.getParent
+    if (parentDir != null && !Files.exists(parentDir)) {
+      Files.createDirectories(parentDir)
+    }
+
+    java.nio.file.Files.write(
+      java.nio.file.Paths.get(headerFile),
+      headerContent.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+    )
+
+    println(s"Generated header file: $headerFile")
 
   }
 }

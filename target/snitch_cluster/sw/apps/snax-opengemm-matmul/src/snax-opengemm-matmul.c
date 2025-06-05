@@ -27,7 +27,7 @@ int main() {
     if (snrt_is_dm_core()) {
         snrt_dma_start_1d(local_a, A, a_data_length);
         snrt_dma_start_1d(local_b, B, b_data_length);
-
+        printf("DMA transfer for A and B done.\n");
         snrt_dma_wait_all();
     }
 
@@ -37,6 +37,7 @@ int main() {
     if (snrt_is_dm_core()) {
         snrt_dma_start_1d(local_c, C, c_data_length);
         snrt_dma_wait_all();
+        printf("DMA transfer for C done.\n");
     }
 
     snrt_cluster_hw_barrier();
@@ -98,8 +99,6 @@ int main() {
         // Poll until Streamer and GEMM accelerator finish
         wait_gemmx_and_streamer();
 
-        printf("SNAX GEMM Matmul done.\n");
-
         // Result check
         err += check_gemmx_result_D32((int8_t *)local_d, (int8_t *)D,
                                       d_data_length, false);
@@ -109,13 +108,6 @@ int main() {
             "%d, SNAX GEMM Matmul: %s, Error: %d.\n",
             array_shape, meshRow, tileSize, meshCol, stationary,
             err ? "FAIL" : "PASS", err);
-
-        int32_t gemmx_cycles = read_gemmx_perf_counter();
-        int32_t gemmx_streamer_cycles = read_gemmx_streamer_perf_counter();
-        printf("Workload size: M = %d, N = %d, K = %d\n", M, N, K);
-        printf("SNAX GEMM Ideal cycles: %d\n", M * K * N);
-        printf("SNAX GEMM cycles: %d\n", gemmx_cycles);
-        printf("SNAX GEMM Streamer cycles: %d\n", gemmx_streamer_cycles);
     };
 
     return err;
