@@ -34,7 +34,7 @@ class NestCounterTest extends AnyFlatSpec with ChiselScalatestTester {
 
         // Update expected values
         var carry = true
-        for (_ <- 0 until loopNum if carry) {
+        for (i <- 0 until loopNum if carry) {
           if (expectedValues(i) == ceilValues(i) - 1) {
             expectedValues(i) = 0 // Reset and propagate carry
           } else {
