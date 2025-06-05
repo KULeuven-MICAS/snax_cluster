@@ -585,7 +585,7 @@ def main():
             snax_opengemm_cfg = acc_cfgs[i]
             gen_chisel_file(
                 chisel_path=chisel_acc_path,
-                chisel_param="snax_acc.spatial_array.ArrayTopGen"
+                chisel_param="snax_acc.versacore.ArrayTopGen"
                 + " --openGeMMCfg "
                 + hjson.dumpsJSON(obj=snax_opengemm_cfg, separators=(",", ":")).replace(
                     " ", ""

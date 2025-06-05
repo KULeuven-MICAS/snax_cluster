@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: SHL-0.51
 
 // Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
-package snax_acc.spatial_array
+package snax_acc.versacore
 
 import scala.util.Random
 

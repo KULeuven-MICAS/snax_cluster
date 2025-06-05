@@ -27,7 +27,6 @@ int main() {
     if (snrt_is_dm_core()) {
         snrt_dma_start_1d(local_a, A, a_data_length);
         snrt_dma_start_1d(local_b, B, b_data_length);
-        printf("DMA transfer for A and B done.\n");
         snrt_dma_wait_all();
     }
 
@@ -37,7 +36,6 @@ int main() {
     if (snrt_is_dm_core()) {
         snrt_dma_start_1d(local_c, C, c_data_length);
         snrt_dma_wait_all();
-        printf("DMA transfer for C done.\n");
     }
 
     snrt_cluster_hw_barrier();

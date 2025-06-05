@@ -4,7 +4,7 @@
 
 // Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
 
-package snax_acc.spatial_array
+package snax_acc.versacore
 
 object OpType {
   def UIntUIntOp       = 1

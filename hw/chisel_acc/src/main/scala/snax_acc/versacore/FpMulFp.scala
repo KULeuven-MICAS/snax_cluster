@@ -4,23 +4,18 @@
 
 // Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
 
-package snax_acc.spatial_array
+package snax_acc.versacore
 
 import chisel3._
 import chisel3.util._
 
-class FPMULIntBlackBox(
+class FPMULFPBlackBox(
   topmodule: String,
   widthA:    Int,
   widthB:    Int,
   widthC:    Int
-) extends BlackBox(
-      // only works for FP16 for a, FP32 for result
-      // data width of b is configurable
-      Map(
-        "WIDTH_B" -> widthB
-      )
-    )
+) extends BlackBox
+    // only works for FP16 for a and b, FP32 for result as it is hardcoded in the blackbox for now.
     with HasBlackBoxResource {
 
   val io = IO(new Bundle {
@@ -34,20 +29,17 @@ class FPMULIntBlackBox(
   addResource("common_block/fpnew_classifier.sv")
   addResource("common_block/fpnew_rounding.sv")
   addResource("common_block/lzc.sv")
-  addResource("src_fp_mul_int/int2fp.sv")
-  addResource("src_fp_mul_int/fp_mul_int.sv")
+  addResource("src_fp_mul/fp_mul.sv")
 
 }
 
-class FPMULInt(
+class FPMULFP(
   topmodule:  String,
   val widthA: Int,
   val widthB: Int,
   val widthC: Int
 ) extends Module
     with RequireAsyncReset {
-
-  override def desiredName: String = "FPMULInt_" + topmodule
 
   val io = IO(new Bundle {
     val operand_a_i = Input(UInt(widthA.W))
@@ -56,7 +48,7 @@ class FPMULInt(
   })
 
   val sv_module = Module(
-    new FPMULIntBlackBox(topmodule, widthA, widthB, widthC)
+    new FPMULFPBlackBox(topmodule, widthA, widthB, widthC)
   )
 
   io.result_o              := sv_module.io.result_o
@@ -65,10 +57,10 @@ class FPMULInt(
 
 }
 
-object FPMULIntEmitter extends App {
+object FPMULFPEmitter extends App {
   emitVerilog(
-    new FPMULInt(
-      topmodule = "fp_mul_int",
+    new FPMULFP(
+      topmodule = "fp_mul",
       widthA    = 16,
       widthB    = 16,
       widthC    = 32

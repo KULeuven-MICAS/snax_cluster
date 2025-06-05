@@ -4,7 +4,7 @@
 
 // Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
 
-package snax_acc.spatial_array
+package snax_acc.versacore
 
 import chisel3._
 import chisel3.util._
