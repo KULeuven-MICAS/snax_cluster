@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
@@ -481,13 +481,13 @@ class ArrayTop(params: SpatialArrayParam) extends Module with RequireAsyncReset 
 object ArrayTopEmitter extends App {
   emitVerilog(
     new ArrayTop(SpatialArrayParam()),
-    Array("--target-dir", "generated/SpatialArray")
+    Array("--target-dir", "generated/versacore")
   )
 }
 
 object ArrayTopEmitterFloat16Int4 extends App {
   val FP16Int4Array_Param = SpatialArrayParam(
-    opType                 = Seq(OpType.Float16IntOp),
+    opType                 = Seq(Float16IntOp),
     macNum                 = Seq(8),
     inputAElemWidth        = Seq(16),
     inputBElemWidth        = Seq(4),
@@ -506,13 +506,13 @@ object ArrayTopEmitterFloat16Int4 extends App {
   )
   emitVerilog(
     new ArrayTop(FP16Int4Array_Param),
-    Array("--target-dir", "generated/SpatialArray")
+    Array("--target-dir", "generated/versacore")
   )
 }
 
 object ArrayTopEmitterFloat16Float16 extends App {
   val FP16Float16Array_Param = SpatialArrayParam(
-    opType                 = Seq(OpType.Float16Float16Op),
+    opType                 = Seq(Float16Float16Op),
     macNum                 = Seq(8),
     inputAElemWidth        = Seq(16),
     inputBElemWidth        = Seq(16),
@@ -531,6 +531,6 @@ object ArrayTopEmitterFloat16Float16 extends App {
   )
   emitVerilog(
     new ArrayTop(FP16Float16Array_Param),
-    Array("--target-dir", "generated/SpatialArray")
+    Array("--target-dir", "generated/versacore")
   )
 }

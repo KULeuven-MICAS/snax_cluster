@@ -2,20 +2,16 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
 import chisel3._
 import chisel3.util._
 
-/** AccumulatorBlock is a single accumulator block that performs accumulation on two input values.
-  * @param opType
-  * @param inputElemWidth
-  * @param outputElemWidth
-  */
+/** AccumulatorBlock is a single accumulator block that performs accumulation on two input values. */
 class AccumulatorBlock(
-  val opType:          Int,
+  val opType:          OpType,
   val inputElemWidth:  Int,
   val outputElemWidth: Int
 ) extends Module
@@ -35,8 +31,8 @@ class AccumulatorBlock(
   })
 
   require(
-    opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp ||
-      opType == OpType.Float16IntOp || opType == OpType.Float16Float16Op,
+    opType == UIntUIntOp || opType == SIntSIntOp ||
+      opType == Float16IntOp || opType == Float16Float16Op,
     "Unsupported operation type for AccumulatorBlock"
   )
   require(
@@ -67,13 +63,9 @@ class AccumulatorBlock(
 
 /** Accumulator is a module that contains multiple AccumulatorBlock instances. It manages the accumulation of multiple
   * elements and provides a ready/valid interface.
-  * @param opType
-  * @param inputElemWidth
-  * @param outputElemWidth
-  * @param numElements
   */
 class Accumulator(
-  val opType:          Int,
+  val opType:          OpType,
   val inputElemWidth:  Int,
   val outputElemWidth: Int,
   val numElements:     Int
@@ -89,8 +81,8 @@ class Accumulator(
   })
 
   require(
-    opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp ||
-      opType == OpType.Float16IntOp || opType == OpType.Float16Float16Op,
+    opType == UIntUIntOp || opType == SIntSIntOp ||
+      opType == Float16IntOp || opType == Float16Float16Op,
     "Unsupported operation type for Accumulator"
   )
   require(
@@ -101,7 +93,7 @@ class Accumulator(
   // Create an array of AccumulatorBlock instances
   // Each block will handle one element of the input vectors
   // and produce one element of the output vector
-  val accumulater_blocks = Seq.fill(numElements) {
+  val accumulator_blocks = Seq.fill(numElements) {
     Module(new AccumulatorBlock(opType, inputElemWidth, outputElemWidth))
   }
 
@@ -110,11 +102,11 @@ class Accumulator(
 
   // Connect the inputs of each AccumulatorBlock
   for (i <- 0 until numElements) {
-    accumulater_blocks(i).io.in1         := io.in1.bits(i)
-    accumulater_blocks(i).io.in2         := io.in2.bits(i)
-    accumulater_blocks(i).io.accAddExtIn := io.accAddExtIn
-    accumulater_blocks(i).io.enable      := accUpdate
-    accumulater_blocks(i).io.accClear    := io.accClear
+    accumulator_blocks(i).io.in1         := io.in1.bits(i)
+    accumulator_blocks(i).io.in2         := io.in2.bits(i)
+    accumulator_blocks(i).io.accAddExtIn := io.accAddExtIn
+    accumulator_blocks(i).io.enable      := accUpdate
+    accumulator_blocks(i).io.accClear    := io.accClear
   }
 
   val inputDataFire  = RegNext(accUpdate)
@@ -127,17 +119,17 @@ class Accumulator(
   io.in2.ready := (!keepOutput) && (!keepOutputNext)
 
   // Connect the outputs of each AccumulatorBlock to the output interface
-  io.out.bits  := accumulater_blocks.map(_.io.out)
+  io.out.bits  := accumulator_blocks.map(_.io.out)
   io.out.valid := inputDataFire || keepOutput
 }
 
 object AccumulatorEmitterUInt extends App {
   _root_.circt.stage.ChiselStage.emitSystemVerilogFile(
-    new Accumulator(OpType.UIntUIntOp, 8, 16, 4096),
-    Array("--target-dir", "generated/SpatialArray"),
+    new Accumulator(UIntUIntOp, 8, 16, 4096),
+    Array("--target-dir", "generated/versacore"),
     Array(
       "--split-verilog",
-      s"-o=generated/SpatialArray/Accumulator"
+      s"-o=generated/versacore/Accumulator"
     )
   )
 }

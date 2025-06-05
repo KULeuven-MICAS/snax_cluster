@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
@@ -77,12 +77,12 @@ trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester {
                 val aSInt = toSInt(
                   aValues(aIdx),
                   inputAElemWidth,
-                  params.opType(dataTypeIdx) == OpType.SIntSIntOp
+                  params.opType(dataTypeIdx) == SIntSIntOp
                 )
                 val bSInt = toSInt(
                   bValues(bIdx),
                   inputBElemWidth,
-                  params.opType(dataTypeIdx) == OpType.SIntSIntOp
+                  params.opType(dataTypeIdx) == SIntSIntOp
                 )
 
                 sum += aSInt * bSInt
@@ -98,7 +98,7 @@ trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester {
           n1 <- 0 until Nu
         } {
           val cIdx = m2 * N * Mu * Nu + n2 * Mu * Nu + m1 * Nu + n1
-          val cVal = toSInt(cValues(cIdx), inputCElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
+          val cVal = toSInt(cValues(cIdx), inputCElemWidth, params.opType(dataTypeIdx) == SIntSIntOp)
           acc(m1)(n1) += cVal
           acc(m1)(n1) = (acc(m1)(n1) & ((1L << outputDElemWidth) - 1)).toInt
         }
@@ -109,17 +109,17 @@ trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester {
       // Print the generated values in SInt format
       // println("Generated aValues:")
       // for (i <- aValues.indices) {
-      //   val aSInt = toSInt(aValues(i), inputAElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
+      //   val aSInt = toSInt(aValues(i), inputAElemWidth, params.opType(dataTypeIdx) == SIntSIntOp)
       //   println(f"$aSInt")
       // }
       // println("Generated bValues:")
       // for (i <- bValues.indices) {
-      //   val bSInt = toSInt(bValues(i), inputBElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
+      //   val bSInt = toSInt(bValues(i), inputBElemWidth, params.opType(dataTypeIdx) == SIntSIntOp)
       //   println(f"$bSInt")
       // }
       // println("Generated cValues:")
       // for (i <- cValues.indices) {
-      //   val cSInt = toSInt(cValues(i), inputCElemWidth, params.opType(dataTypeIdx) == OpType.SIntSIntOp)
+      //   val cSInt = toSInt(cValues(i), inputCElemWidth, params.opType(dataTypeIdx) == SIntSIntOp)
       //   println(f"$cSInt")
       // }
 
@@ -157,8 +157,8 @@ trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester {
       // A input injection thread
       concurrent_threads = concurrent_threads.fork {
         for (temporalIndexInput <- 0 until M * K * N) {
-          val (indexA, indexB) = temporalToSpatialIndicesAB(temporalIndexInput, K = K, N = N)
-          val aValues_cur      = aValues
+          val (indexA, _) = temporalToSpatialIndicesAB(temporalIndexInput, K = K, N = N)
+          val aValues_cur = aValues
             .slice(indexA * Mu * Ku, indexA * Mu * Ku + Mu * Ku)
             .zipWithIndex
             .map { case (v, i) => BigInt(v) << (i * inputAElemWidth) }
@@ -178,8 +178,8 @@ trait ArrayTopTestHelper extends AnyFlatSpec with ChiselScalatestTester {
       // B input injection thread
       concurrent_threads = concurrent_threads.fork {
         for (temporalIndexInput <- 0 until M * K * N) {
-          val (indexA, indexB) = temporalToSpatialIndicesAB(temporalIndexInput, K = K, N = N)
-          val bValues_cur      = bValues
+          val (_, indexB) = temporalToSpatialIndicesAB(temporalIndexInput, K = K, N = N)
+          val bValues_cur = bValues
             .slice(indexB * Nu * Ku, indexB * Nu * Ku + Nu * Ku)
             .zipWithIndex
             .map { case (v, i) => BigInt(v) << (i * inputBElemWidth) }
@@ -260,7 +260,7 @@ class ArrayTopTest extends ArrayTopTestHelper {
     // Define the test parameters
     val paramsList = Seq(
       SpatialArrayParam(
-        opType                 = Seq(OpType.SIntSIntOp, OpType.SIntSIntOp),
+        opType                 = Seq(SIntSIntOp, SIntSIntOp),
         macNum                 = Seq(8, 16),
         inputAElemWidth        = Seq(8, 4),
         inputBElemWidth        = Seq(8, 4),
@@ -279,7 +279,7 @@ class ArrayTopTest extends ArrayTopTestHelper {
       ),
       // test different data types
       SpatialArrayParam(
-        opType                 = Seq(OpType.SIntSIntOp),
+        opType                 = Seq(SIntSIntOp),
         macNum                 = Seq(8),
         inputAElemWidth        = Seq(16),
         inputBElemWidth        = Seq(4),

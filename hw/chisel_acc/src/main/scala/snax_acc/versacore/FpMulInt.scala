@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
@@ -17,9 +17,7 @@ class FPMULIntBlackBox(
 ) extends BlackBox(
       // only works for FP16 for a, FP32 for result
       // data width of b is configurable
-      Map(
-        "WIDTH_B" -> widthB
-      )
+      Map("WIDTH_B" -> widthB)
     )
     with HasBlackBoxResource {
 
@@ -73,6 +71,6 @@ object FPMULIntEmitter extends App {
       widthB    = 16,
       widthC    = 32
     ),
-    Array("--target-dir", "generated/SpatialArray")
+    Array("--target-dir", "generated/versacore")
   )
 }

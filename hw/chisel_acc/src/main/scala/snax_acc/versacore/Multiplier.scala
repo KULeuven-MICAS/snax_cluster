@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
@@ -18,15 +18,9 @@ class MultiplierIO(
   val out_c = Output(UInt(outputCElemWidth.W))
 }
 
-/** Multiplier module that supports different operation types
-  *
-  * @param opType
-  * @param inputAElemWidth
-  * @param inputBElemWidth
-  * @param outputCElemWidth
-  */
+/** Multiplier module that supports different operation types */
 class Multiplier(
-  opType:           Int,
+  opType:           OpType,
   inputAElemWidth:  Int,
   inputBElemWidth:  Int,
   outputCElemWidth: Int
@@ -34,28 +28,28 @@ class Multiplier(
     with RequireAsyncReset {
   val io = IO(new MultiplierIO(inputAElemWidth, inputBElemWidth, outputCElemWidth))
   require(
-    opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp ||
-      opType == OpType.Float16IntOp || opType == OpType.Float16Float16Op,
+    opType == UIntUIntOp || opType == SIntSIntOp ||
+      opType == Float16IntOp || opType == Float16Float16Op,
     s"Unsupported operation type: $opType. Supported types are UIntUIntOp, SIntSIntOp, Float16IntOp, Float16Float16Op."
   )
   require(
     inputAElemWidth > 0 && inputBElemWidth > 0 && outputCElemWidth > 0,
     "Element widths must be greater than 0"
   )
-  if (opType == OpType.UIntUIntOp) {
+  if (opType == UIntUIntOp) {
     io.out_c := io.in_a * io.in_b
-  } else if (opType == OpType.SIntSIntOp) {
+  } else if (opType == SIntSIntOp) {
     io.out_c := (io.in_a.asTypeOf(SInt(outputCElemWidth.W)) * io.in_b.asTypeOf(
       SInt(outputCElemWidth.W)
     )).asUInt
-  } else if (opType == OpType.Float16IntOp) {
+  } else if (opType == Float16IntOp) {
     val fpMulInt = Module(
       new FPMULIntBlackBox("fp_mul_int", inputAElemWidth, inputBElemWidth, outputCElemWidth)
     )
     fpMulInt.io.operand_a_i := io.in_a
     fpMulInt.io.operand_b_i := io.in_b
     io.out_c                := fpMulInt.io.result_o
-  } else if (opType == OpType.Float16Float16Op) {
+  } else if (opType == Float16Float16Op) {
     val fpMulfp = Module(
       new FPMULFP("fp_mul", inputAElemWidth, inputBElemWidth, outputCElemWidth)
     )
@@ -75,29 +69,29 @@ class Multiplier(
 
 object MultiplierEmitterUInt extends App {
   emitVerilog(
-    new Multiplier(OpType.UIntUIntOp, 8, 4, 16),
-    Array("--target-dir", "generated/SpatialArray")
+    new Multiplier(UIntUIntOp, 8, 4, 16),
+    Array("--target-dir", "generated/versacore")
   )
 }
 
 object MultiplierEmitterSInt extends App {
   emitVerilog(
-    new Multiplier(OpType.SIntSIntOp, 8, 4, 16),
-    Array("--target-dir", "generated/SpatialArray")
+    new Multiplier(SIntSIntOp, 8, 4, 16),
+    Array("--target-dir", "generated/versacore")
   )
 }
 
 object MultiplierEmitterFloat16Int4 extends App {
   emitVerilog(
-    new Multiplier(OpType.Float16IntOp, 16, 4, 32),
-    Array("--target-dir", "generated/SpatialArray")
+    new Multiplier(Float16IntOp, 16, 4, 32),
+    Array("--target-dir", "generated/versacore")
   )
 }
 
 object MultiplierEmitterFloat16Float16 extends App {
   emitVerilog(
-    new Multiplier(OpType.Float16Float16Op, 16, 16, 32),
-    Array("--target-dir", "generated/SpatialArray")
+    new Multiplier(Float16Float16Op, 16, 16, 32),
+    Array("--target-dir", "generated/versacore")
   )
 }
 
@@ -107,7 +101,7 @@ object MultiplierEmitters {
   def emitInt2_Int2_Int4(): Unit = {
     val tag = "Int2_Int2_Int4_eva"
     emitVerilog(
-      new Multiplier(OpType.SIntSIntOp, 2, 2, 4),
+      new Multiplier(SIntSIntOp, 2, 2, 4),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"
@@ -118,7 +112,7 @@ object MultiplierEmitters {
   def emitInt4_Int4_Int8(): Unit = {
     val tag = "Int4_Int4_Int8_eva"
     emitVerilog(
-      new Multiplier(OpType.SIntSIntOp, 4, 4, 8),
+      new Multiplier(SIntSIntOp, 4, 4, 8),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"
@@ -129,7 +123,7 @@ object MultiplierEmitters {
   def emitInt8_Int8_Int16(): Unit = {
     val tag = "Int8_Int8_Int16_eva"
     emitVerilog(
-      new Multiplier(OpType.SIntSIntOp, 8, 8, 16),
+      new Multiplier(SIntSIntOp, 8, 8, 16),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"
@@ -140,7 +134,7 @@ object MultiplierEmitters {
   def emitInt16_Int4_Int32(): Unit = {
     val tag = "Int16_Int4_Int32_eva"
     emitVerilog(
-      new Multiplier(OpType.SIntSIntOp, 16, 4, 32),
+      new Multiplier(SIntSIntOp, 16, 4, 32),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"
@@ -151,7 +145,7 @@ object MultiplierEmitters {
   def emitInt16_Int16_Int32(): Unit = {
     val tag = "Int16_Int16_Int32_eva"
     emitVerilog(
-      new Multiplier(OpType.SIntSIntOp, 16, 16, 32),
+      new Multiplier(SIntSIntOp, 16, 16, 32),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"
@@ -162,7 +156,7 @@ object MultiplierEmitters {
   def emitInt32_Int32_Int64(): Unit = {
     val tag = "Int32_Int32_Int64_eva"
     emitVerilog(
-      new Multiplier(OpType.SIntSIntOp, 32, 32, 64),
+      new Multiplier(SIntSIntOp, 32, 32, 64),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"
@@ -174,7 +168,7 @@ object MultiplierEmitters {
   def emitFloat16_Int1_Float32(): Unit = {
     val tag = "Float16_Int1_Float32_eva"
     emitVerilog(
-      new Multiplier(OpType.Float16IntOp, 16, 1, 32),
+      new Multiplier(Float16IntOp, 16, 1, 32),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"
@@ -185,7 +179,7 @@ object MultiplierEmitters {
   def emitFloat16_Int2_Float32(): Unit = {
     val tag = "Float16_Int2_Float32_eva"
     emitVerilog(
-      new Multiplier(OpType.Float16IntOp, 16, 2, 32),
+      new Multiplier(Float16IntOp, 16, 2, 32),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"
@@ -196,7 +190,7 @@ object MultiplierEmitters {
   def emitFloat16_Int3_Float32(): Unit = {
     val tag = "Float16_Int3_Float32_eva"
     emitVerilog(
-      new Multiplier(OpType.Float16IntOp, 16, 3, 32),
+      new Multiplier(Float16IntOp, 16, 3, 32),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"
@@ -207,7 +201,7 @@ object MultiplierEmitters {
   def emitFloat16_Int4_Float32(): Unit = {
     val tag = "Float16_Int4_Float32_eva"
     emitVerilog(
-      new Multiplier(OpType.Float16IntOp, 16, 4, 32),
+      new Multiplier(Float16IntOp, 16, 4, 32),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"
@@ -219,7 +213,7 @@ object MultiplierEmitters {
   def emitFloat16_Float16_Float32(): Unit = {
     val tag = "Float16_Float16_Float32_eva"
     emitVerilog(
-      new Multiplier(OpType.Float16Float16Op, 16, 16, 32),
+      new Multiplier(Float16Float16Op, 16, 16, 32),
       Array(
         "--target-dir",
         s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Multiplier/$tag"

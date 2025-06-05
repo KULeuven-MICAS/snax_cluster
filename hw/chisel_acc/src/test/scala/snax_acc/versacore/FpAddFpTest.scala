@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
@@ -71,8 +71,8 @@ class FP32AddFP32Test extends AnyFlatSpec with ChiselScalatestTester {
         dut.clock.step()
       }
 
-      var A = -1f
-      var B = 4.5f
+      val A = -1f
+      val B = 4.5f
 
       test_fp_add_fp(1, A, B)
 

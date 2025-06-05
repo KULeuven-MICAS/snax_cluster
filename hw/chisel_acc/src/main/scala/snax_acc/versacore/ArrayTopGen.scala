@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
@@ -75,7 +75,7 @@ object ArrayTopGen {
 
     val outPath = parsedArgs.getOrElse(
       "hw-target-dir",
-      "generated/SpatialArray"
+      "generated/versacore"
     )
 
     val openGeMMCfg = parsedArgs.find(_._1 == "openGeMMCfg").get._2

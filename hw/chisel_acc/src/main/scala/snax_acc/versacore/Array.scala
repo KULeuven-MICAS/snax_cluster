@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
@@ -302,11 +302,11 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 object SpatialArrayEmitter extends App {
   emitVerilog(
     new SpatialArray(SpatialArrayParam()),
-    Array("--target-dir", "generated/SpatialArray")
+    Array("--target-dir", "generated/versacore")
   )
 
   val params = SpatialArrayParam(
-    opType                 = Seq(OpType.UIntUIntOp),
+    opType                 = Seq(UIntUIntOp),
     macNum                 = Seq(1024),
     inputAElemWidth        = Seq(8),
     inputBElemWidth        = Seq(8),
@@ -326,7 +326,7 @@ object SpatialArrayEmitter extends App {
   )
   emitVerilog(
     new SpatialArray(params),
-    Array("--target-dir", "generated/SpatialArray")
+    Array("--target-dir", "generated/versacore")
   )
 
 }

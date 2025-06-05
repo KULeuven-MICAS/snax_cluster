@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
@@ -23,7 +23,7 @@ import chisel3.util._
   *   A sequence of group sizes for the adder tree.
   */
 class AdderTree(
-  val opType:          Int,
+  val opType:          OpType,
   val inputElemWidth:  Int,
   val outputElemWidth: Int,
   val numElements:     Int,
@@ -48,8 +48,8 @@ class AdderTree(
     "groupSizes number must be less than 32 and greater than 0"
   )
   require(
-    opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp ||
-      opType == OpType.Float16IntOp || opType == OpType.Float16Float16Op,
+    opType == UIntUIntOp || opType == SIntSIntOp ||
+      opType == Float16IntOp || opType == Float16Float16Op,
     "Currently we only support UIntUIntOp or SIntSIntOp or Float16IntOp or Float16Float16Op"
   )
 
@@ -65,7 +65,7 @@ class AdderTree(
   // For SIntSIntOp, we need to use SInt for the output
   // For UIntUIntOp, we can use UInt for the output
   // Other types will be handled in the black box adder module as we use UInt for inputs and outputs
-  val outputType = if (opType == OpType.SIntSIntOp) {
+  val outputType = if (opType == SIntSIntOp) {
     SInt(outputElemWidth.W)
   } else {
     UInt(outputElemWidth.W)
@@ -84,12 +84,7 @@ class AdderTree(
     for (i <- 0 until numElements by (2 * step)) {
       // Create adders for the current layer
       val adder = Module(
-        new Adder(
-          opType,
-          outputElemWidth,
-          outputElemWidth,
-          outputElemWidth
-        )
+        new Adder(opType, outputElemWidth, outputElemWidth, outputElemWidth)
       )
       // Connect the inputs of the adder
       // The adder takes two inputs from the current layer
@@ -112,14 +107,14 @@ class AdderTree(
 
 object AdderTreeEmitterUInt extends App {
   emitVerilog(
-    new AdderTree(OpType.UIntUIntOp, 8, 9, 8, Seq(1, 2, 4)),
-    Array("--target-dir", "generated/SpatialArray")
+    new AdderTree(UIntUIntOp, 8, 9, 8, Seq(1, 2, 4)),
+    Array("--target-dir", "generated/versacore")
   )
 }
 
 object AdderTreeEmitterSInt extends App {
   emitVerilog(
-    new AdderTree(OpType.SIntSIntOp, 16, 32, 1024, Seq(1, 2, 8)),
-    Array("--target-dir", "generated/SpatialArray")
+    new AdderTree(SIntSIntOp, 16, 32, 1024, Seq(1, 2, 8)),
+    Array("--target-dir", "generated/versacore")
   )
 }

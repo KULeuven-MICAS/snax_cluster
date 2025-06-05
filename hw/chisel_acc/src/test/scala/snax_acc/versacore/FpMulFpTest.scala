@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 package snax_acc.versacore
 
 import scala.util.Random
@@ -76,8 +76,8 @@ class FPMULFPTest extends AnyFlatSpec with ChiselScalatestTester {
         dut.clock.step()
       }
 
-      var A = -1.0101f // float16
-      var B = 0.1245f  // float16
+      val A = -1.0101f // float16
+      val B = 0.1245f  // float16
 
       test_fp_mul_fp(1, A, B)
 

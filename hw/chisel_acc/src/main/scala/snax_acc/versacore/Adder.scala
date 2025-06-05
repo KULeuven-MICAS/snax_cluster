@@ -2,18 +2,13 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
 import chisel3._
 
-/** AdderIO defines the input and output interfaces for the Adder module.
-  *
-  * @param inputAElemWidth
-  * @param inputBElemWidth
-  * @param outputCElemWidth
-  */
+/** AdderIO defines the input and output interfaces for the Adder module. */
 class AdderIO(
   inputAElemWidth:  Int,
   inputBElemWidth:  Int,
@@ -24,15 +19,9 @@ class AdderIO(
   val out_c = Output(UInt(outputCElemWidth.W))
 }
 
-/** Adder is a module that performs addition on two inputs based on the specified operation type.
-  *
-  * @param opType
-  * @param inputAElemWidth
-  * @param inputBElemWidth
-  * @param outputCElemWidth
-  */
+/** Adder is a module that performs addition on two inputs based on the specified operation type. */
 class Adder(
-  opType:           Int,
+  opType:           OpType,
   inputAElemWidth:  Int,
   inputBElemWidth:  Int,
   outputCElemWidth: Int
@@ -41,8 +30,8 @@ class Adder(
 
   val io = IO(new AdderIO(inputAElemWidth, inputBElemWidth, outputCElemWidth))
   require(
-    opType == OpType.UIntUIntOp || opType == OpType.SIntSIntOp ||
-      opType == OpType.Float16IntOp || opType == OpType.Float16Float16Op,
+    opType == UIntUIntOp || opType == SIntSIntOp ||
+      opType == Float16IntOp || opType == Float16Float16Op,
     "Unsupported operation type for Adder"
   )
   require(
@@ -51,13 +40,13 @@ class Adder(
   )
 
   // instantiating the adder based on the operation type
-  if (opType == OpType.UIntUIntOp) {
+  if (opType == UIntUIntOp) {
     io.out_c := io.in_a + io.in_b
-  } else if (opType == OpType.SIntSIntOp) {
+  } else if (opType == SIntSIntOp) {
     io.out_c := (io.in_a.asTypeOf(SInt(outputCElemWidth.W)) + io.in_b.asTypeOf(
       SInt(outputCElemWidth.W)
     )).asUInt
-  } else if (opType == OpType.Float16IntOp || opType == OpType.Float16Float16Op) {
+  } else if (opType == Float16IntOp || opType == Float16Float16Op) {
     // For Float16IntOp and Float16Float16Op, we use a black box for floating-point addition
     // Now only support fp32+fp32=fp32, as the system verilog module's parameter is fixed
     val fpAddfp = Module(
@@ -81,22 +70,22 @@ class Adder(
 // Below are the emitters for different adder configurations for testing and evaluation purposes.
 object AdderEmitterUInt extends App {
   emitVerilog(
-    new Adder(OpType.UIntUIntOp, 8, 4, 16),
-    Array("--target-dir", "generated/SpatialArray")
+    new Adder(UIntUIntOp, 8, 4, 16),
+    Array("--target-dir", "generated/versacore")
   )
 }
 
 object AdderEmitterSInt extends App {
   emitVerilog(
-    new Adder(OpType.SIntSIntOp, 8, 4, 16),
-    Array("--target-dir", "generated/SpatialArray")
+    new Adder(SIntSIntOp, 8, 4, 16),
+    Array("--target-dir", "generated/versacore/adder")
   )
 }
 
 object AdderEmitterFloat16Float16 extends App {
   emitVerilog(
-    new Adder(OpType.Float16Float16Op, 32, 32, 32),
-    Array("--target-dir", "generated/SpatialArray")
+    new Adder(Float16Float16Op, 32, 32, 32),
+    Array("--target-dir", "generated/versacore/adder")
   )
 }
 
@@ -104,39 +93,39 @@ object AdderEmitters {
   def emitInt4_Int4_Int8():  Unit = {
     val tag = "int4_int4_int8"
     emitVerilog(
-      new Adder(OpType.SIntSIntOp, 4, 4, 8),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Adder/$tag")
+      new Adder(SIntSIntOp, 4, 4, 8),
+      Array("--target-dir", s"/generated/versacore/adder/$tag")
     )
   }
   def emitInt8_Int8_Int16(): Unit = {
     val tag = "int8_int8_int16"
     emitVerilog(
-      new Adder(OpType.SIntSIntOp, 8, 8, 16),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Adder/$tag")
+      new Adder(SIntSIntOp, 8, 8, 16),
+      Array("--target-dir", s"/generated/versacore/adder/$tag")
     )
   }
 
   def emitInt16_Int16_Int32(): Unit = {
     val tag = "int16_int16_int32"
     emitVerilog(
-      new Adder(OpType.SIntSIntOp, 16, 16, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Adder/$tag")
+      new Adder(SIntSIntOp, 16, 16, 32),
+      Array("--target-dir", s"generated/versacore/adder/$tag")
     )
   }
 
   def emitInt32_Int32_Int64(): Unit = {
     val tag = "int32_int32_int64"
     emitVerilog(
-      new Adder(OpType.SIntSIntOp, 32, 32, 64),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Adder/$tag")
+      new Adder(SIntSIntOp, 32, 32, 64),
+      Array("--target-dir", s"generated/versacore/adder/$tag")
     )
   }
 
   def emitFloat32_Float32_Float32(): Unit = {
     val tag = "float32_float32_float32"
     emitVerilog(
-      new Adder(OpType.Float16Float16Op, 32, 32, 32),
-      Array("--target-dir", s"/users/micas/xyi/no_backup/opengemm_journal_exp/pe_syn_scripts/rtl_src_code/Adder/$tag")
+      new Adder(Float16Float16Op, 32, 32, 32),
+      Array("--target-dir", s"generated/versacore/adder/$tag")
     )
   }
 }
@@ -148,7 +137,6 @@ object RunAllAdderEmitters extends App {
   emitInt8_Int8_Int16()
   emitInt16_Int16_Int32()
   emitInt32_Int32_Int64()
-
   emitFloat32_Float32_Float32()
 
 }

@@ -28,13 +28,13 @@ class NestCounterTest extends AnyFlatSpec with ChiselScalatestTester {
       val expectedValues = Array.fill(loopNum)(0)
 
       // Apply tick signal and test counter incrementing
-      for (tickCount <- 1 to ceilValues.reduce(_ * _)) { // Run enough cycles to test nested behavior
+      for (_ <- 1 to ceilValues.reduce(_ * _)) { // Run enough cycles to test nested behavior
         c.io.tick.poke(true.B)
         c.clock.step(1) // Step to simulate one cycle of the clock
 
         // Update expected values
         var carry = true
-        for (i <- 0 until loopNum if carry) {
+        for (_ <- 0 until loopNum if carry) {
           if (expectedValues(i) == ceilValues(i) - 1) {
             expectedValues(i) = 0 // Reset and propagate carry
           } else {

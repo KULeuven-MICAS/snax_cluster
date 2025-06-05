@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
@@ -53,12 +53,12 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
                 val aSInt = toSInt(
                   aValues(i * Ku + k),
                   inputAElemWidth,
-                  params.opType(dataTypeIdx) == OpType.SIntSIntOp
+                  params.opType(dataTypeIdx) == SIntSIntOp
                 ) // Convert UInt to SInt
                 val bSInt = toSInt(
                   bValues(k + j * Ku),
                   inputBElemWidth,
-                  params.opType(dataTypeIdx) == OpType.SIntSIntOp
+                  params.opType(dataTypeIdx) == SIntSIntOp
                 ) // Convert UInt to SInt
                 aSInt * bSInt
               }.sum
@@ -91,7 +91,7 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
             }
 
             println(s"Checking opType${dataTypeIdx + 1} res_cfg${arrayShapeIdx + 1}...")
-            var expected = expectedResult.flatten
+            val expected = expectedResult.flatten
             for (i <- expected.indices) {
               val actual = extractedOutputs(i)
               // println(s"  Output[$i]: $actual (Expected: ${expected(i)})")
@@ -108,7 +108,7 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
     }
 
     var params = SpatialArrayParam(
-      opType                 = Seq(OpType.UIntUIntOp),
+      opType                 = Seq(UIntUIntOp),
       macNum                 = Seq(1024),
       inputAElemWidth        = Seq(8),
       inputBElemWidth        = Seq(8),
@@ -131,8 +131,8 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
     // Test for a different configuration
     params = SpatialArrayParam(
-      opType                 = Seq(OpType.SIntSIntOp, OpType.UIntUIntOp),
-      // opType = Seq(OpType.UIntUIntOp, OpType.UIntUIntOp),
+      opType                 = Seq(SIntSIntOp, UIntUIntOp),
+      // opType = Seq(UIntUIntOp, UIntUIntOp),
       macNum                 = Seq(8, 16),
       inputAElemWidth        = Seq(8, 4),
       inputBElemWidth        = Seq(8, 4),
@@ -155,7 +155,7 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
     // Test for a different configuration
 
     params = SpatialArrayParam(
-      opType                 = Seq(OpType.SIntSIntOp),
+      opType                 = Seq(SIntSIntOp),
       macNum                 = Seq(8),
       inputAElemWidth        = Seq(16),
       inputBElemWidth        = Seq(4),

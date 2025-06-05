@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
@@ -16,7 +16,7 @@ class AdderTreeTest extends AnyFunSuite with ChiselScalatestTester {
     val numElements = 8
     val groupSizes  = Seq(1, 2, 4) // Possible grouping sizes
 
-    test(new AdderTree(OpType.UIntUIntOp, 8, 8, numElements, groupSizes)) { dut =>
+    test(new AdderTree(UIntUIntOp, 8, 8, numElements, groupSizes)) { dut =>
       // Helper function to run tests for different group sizes
       def testConfig(cfg: Int, inputValues: Seq[Int], expectedOutput: Seq[Int]): Unit = {
         // Set input values

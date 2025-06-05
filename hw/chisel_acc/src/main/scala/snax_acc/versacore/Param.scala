@@ -2,27 +2,28 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Xiaoling Yi <xiaoling.yi@kuleuven.be>
 
 package snax_acc.versacore
 
-object OpType {
-  def UIntUIntOp       = 1
-  def SIntSIntOp       = 2
-  def Float16IntOp     = 3
-  def Float16Float16Op = 4
+abstract class OpType
 
-  def fromString(str: String): Int =
+object OpType {
+  def fromString(str: String): OpType =
     str match {
       case "SIntSInt" => SIntSIntOp
       case "UIntUInt" => UIntUIntOp
       case _          => throw new IllegalArgumentException(s"Unsupported OpType: $str")
     }
-
 }
 
+object UIntUIntOp       extends OpType
+object SIntSIntOp       extends OpType
+object Float16IntOp     extends OpType
+object Float16Float16Op extends OpType
+
 class SpatialArrayParam(
-  val opType:                 Seq[Int],
+  val opType:                 Seq[OpType],
   val macNum:                 Seq[Int],
   val inputAElemWidth:        Seq[Int],
   val inputBElemWidth:        Seq[Int],
@@ -48,7 +49,7 @@ object SpatialArrayParam {
   // test config
   def apply(): SpatialArrayParam =
     apply(
-      opType                 = Seq(OpType.UIntUIntOp, OpType.SIntSIntOp),
+      opType                 = Seq(UIntUIntOp, SIntSIntOp),
       macNum                 = Seq(1024, 2048),
       inputAElemWidth        = Seq(8, 4),
       inputBElemWidth        = Seq(8, 4),
@@ -71,7 +72,7 @@ object SpatialArrayParam {
     )
 
   def apply(
-    opType:                 Seq[Int],
+    opType:                 Seq[OpType],
     macNum:                 Seq[Int],
     inputAElemWidth:        Seq[Int],
     inputBElemWidth:        Seq[Int],
