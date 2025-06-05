@@ -1,3 +1,12 @@
+// Copyright 2025 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Floating-Point Adder
+// Based on fpnew_fma modified for fp addition
+// Author: Man Shi <man.shi@kuleuven.be>
+// Xiaoling Yi (xiaoling.yi@kuleuven.be)
+
 module intN_to_fp16 #(
     parameter INT_WIDTH = 4  // Set to 1, 2, 3, or 4
 )(

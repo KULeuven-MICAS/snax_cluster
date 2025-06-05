@@ -1,16 +1,10 @@
-// Copyright 2019 ETH Zurich and University of Bologna.
-//
-// Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the "License"); you may not use this file except in
-// compliance with the License. You may obtain a copy of the License at
-// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
-// or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-// CONDITIONS OF ANY KIND, either express or implied. See the License for the
-// specific language governing permissions and limitations under the License.
+// Copyright 2025 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 
-// Author: Stefan Mach <smach@iis.ee.ethz.ch>
-// Function description: fp*fp multiplication, input operands can have different precision
+// Floating-Point Adder
+// Based on fpnew_fma modified for fp addition
+// Author: Man Shi <man.shi@kuleuven.be>
 
 module fp_mul_int #(
   parameter fpnew_pkg::fp_format_e   FpFormat_a         = fpnew_pkg::fp_format_e'(2), //FP16 

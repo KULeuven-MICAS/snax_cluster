@@ -1,6 +1,10 @@
+// Copyright 2025 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Floating-Point Adder
 // Based on fpnew_fma modified for fp addition
-// Author: Man Shi
+// Author: Man Shi <man.shi@kuleuven.be>
 
 
 module fp_add #(
