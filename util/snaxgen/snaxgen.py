@@ -581,6 +581,17 @@ def main():
                 + str(acc_cfgs[i]["with_pipeline"]),
                 gen_path=rtl_target_path,
             )
+        elif acc_cfgs[i]["snax_acc_name"] == "snax_opengemm":
+            snax_opengemm_cfg = acc_cfgs[i]
+            gen_chisel_file(
+                chisel_path=chisel_acc_path,
+                chisel_param="snax_acc.versacore.ArrayTopGen"
+                + " --openGeMMCfg "
+                + hjson.dumpsJSON(obj=snax_opengemm_cfg, separators=(",", ":")).replace(
+                    " ", ""
+                ),
+                gen_path=" --hw-target-dir " + rtl_target_path,
+            )
         elif acc_cfgs[i]["snax_acc_name"] == "snax_data_reshuffler":
             gen_chisel_file(
                 chisel_path=chisel_acc_path,
