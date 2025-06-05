@@ -6,7 +6,7 @@
 
 #include "data.h"
 
-#include "snax-opengemm-lib.h"
+#include "snax-versacore-lib.h"
 
 int main() {
     // Set err value for checking
@@ -62,7 +62,7 @@ int main() {
     // Call compute core
     if (snrt_global_core_idx() == 0) {
         // Set Streamer configuration CSR
-        set_gemmx_streamer_csr(
+        set_versacore_streamer_csr(
             delta_local_a, Aslstride, Atlbound, Atlstride,
             set_addr_remap_index_A, transposed_A, channel_en_A,
 
@@ -81,24 +81,24 @@ int main() {
 
         if (stationary == 0) {
             // Set CSR for output-stationary
-            set_gemmx_csr(K, N, M, subtraction_setting, array_shape, data_type);
+            set_versacore_csr(K, N, M, subtraction_setting, array_shape, data_type);
         } else {
             // Set CSR for weight-stationary or input-stationary
-            set_gemmx_csr(1, N * K, M, subtraction_setting, array_shape,
+            set_versacore_csr(1, N * K, M, subtraction_setting, array_shape,
                           data_type);
         }
 
         // Set CSR to start Streamer
-        set_gemmx_streamer_start();
+        set_versacore_streamer_start();
 
         // Set CSR to start GEMM
-        set_gemmx_start();
+        set_versacore_start();
 
         // Poll until Streamer and GEMM accelerator finish
-        wait_gemmx_and_streamer();
+        wait_versacore_and_streamer();
 
         // Result check
-        err += check_gemmx_result_D32((int8_t *)local_d, (int8_t *)D,
+        err += check_versacore_result_D32((int8_t *)local_d, (int8_t *)D,
                                       d_data_length, false);
 
         printf(

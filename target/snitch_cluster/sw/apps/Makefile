@@ -51,8 +51,8 @@ SUBDIRS += snax-xdma-maxpool
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-reshape-comparison
 endif
-ifeq ($(CFG_OVERRIDE), cfg/snax_opengemm.hjson)
-SUBDIRS += snax-opengemm-matmul
+ifeq ($(CFG_OVERRIDE), cfg/snax_versacore.hjson)
+SUBDIRS += snax-versacore-matmul
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-maxpool
 SUBDIRS += snax-xdma-transpose

@@ -26,24 +26,24 @@ object SpatialArrayParamParser {
     )
 
     SpatialArrayParam(
-      opType                 = cfg("snax_opengemm_op_type").arr.map(v => OpType.fromString(v.str)).toSeq,
-      macNum                 = getSeqInt("snax_opengemm_mac_num"),
-      inputAElemWidth        = getSeqInt("snax_opengemm_input_a_element_width"),
-      inputBElemWidth        = getSeqInt("snax_opengemm_input_b_element_width"),
-      inputCElemWidth        = getSeqInt("snax_opengemm_output_element_width"), // you can adjust if different
-      mulElemWidth           = getSeqInt("snax_opengemm_multiply_element_width"),
-      outputDElemWidth       = getSeqInt("snax_opengemm_output_element_width"),
-      arrayInputAWidth       = cfg("snax_opengemm_array_input_a_width").num.toInt,
-      arrayInputBWidth       = cfg("snax_opengemm_array_input_b_width").num.toInt,
-      arrayInputCWidth       = cfg("snax_opengemm_array_input_c_width").num.toInt,
-      arrayOutputDWidth      = cfg("snax_opengemm_array_output_width").num.toInt,
-      arrayDim               = get3DSeq("snax_opengemm_spatial_unrolling"),
-      serialInputADataWidth  = cfg("snax_opengemm_serial_a_width").num.toInt,
-      serialInputBDataWidth  = cfg("snax_opengemm_serial_b_width").num.toInt,
-      serialInputCDataWidth  = cfg("snax_opengemm_serial_c_d_width").num.toInt,
-      serialOutputDDataWidth = cfg("snax_opengemm_serial_c_d_width").num.toInt,
-      adderTreeDelay         = cfg("snax_opengemm_adder_tree_delay").num.toInt,
-      dataflow               = cfg("snax_opengemm_temporal_unrolling").arr.map(_.str).toSeq
+      opType                 = cfg("snax_versacore_op_type").arr.map(v => OpType.fromString(v.str)).toSeq,
+      macNum                 = getSeqInt("snax_versacore_mac_num"),
+      inputAElemWidth        = getSeqInt("snax_versacore_input_a_element_width"),
+      inputBElemWidth        = getSeqInt("snax_versacore_input_b_element_width"),
+      inputCElemWidth        = getSeqInt("snax_versacore_output_element_width"), // you can adjust if different
+      mulElemWidth           = getSeqInt("snax_versacore_multiply_element_width"),
+      outputDElemWidth       = getSeqInt("snax_versacore_output_element_width"),
+      arrayInputAWidth       = cfg("snax_versacore_array_input_a_width").num.toInt,
+      arrayInputBWidth       = cfg("snax_versacore_array_input_b_width").num.toInt,
+      arrayInputCWidth       = cfg("snax_versacore_array_input_c_width").num.toInt,
+      arrayOutputDWidth      = cfg("snax_versacore_array_output_width").num.toInt,
+      arrayDim               = get3DSeq("snax_versacore_spatial_unrolling"),
+      serialInputADataWidth  = cfg("snax_versacore_serial_a_width").num.toInt,
+      serialInputBDataWidth  = cfg("snax_versacore_serial_b_width").num.toInt,
+      serialInputCDataWidth  = cfg("snax_versacore_serial_c_d_width").num.toInt,
+      serialOutputDDataWidth = cfg("snax_versacore_serial_c_d_width").num.toInt,
+      adderTreeDelay         = cfg("snax_versacore_adder_tree_delay").num.toInt,
+      dataflow               = cfg("snax_versacore_temporal_unrolling").arr.map(_.str).toSeq
     )
   }
 }
@@ -97,7 +97,7 @@ object ArrayTopGen {
 
     // generate sv wrapper file
     var macro_template = ""
-    val macro_dir      = s"$outPath/snax_opengemm_shell_wrapper.sv"
+    val macro_dir      = s"$outPath/snax_versacore_shell_wrapper.sv"
     val header         = s"""// Copyright 2025 KU Leuven.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
@@ -116,7 +116,7 @@ object ArrayTopGen {
     val DataWidthD     = params.serialOutputDDataWidth
 
     macro_template = header + s"""
-module snax_opengemm_shell_wrapper #(
+module snax_versacore_shell_wrapper #(
     // Custom parameters. As much as possible,
     // these parameters should not be taken from outside
     parameter int unsigned RegRWCount   = ${params.csrNum},
@@ -213,10 +213,9 @@ endmodule
     println(s"Generated macro file: $macro_dir")
 
     // generate the c lib header file
-    val headerFile = s"$outPath/../../sw/snax/opengemm/include/snax_opengemm_stationarity.h"
+    val headerFile = s"$outPath/../../sw/snax/versacore/include/snax_versacore_stationarity.h"
 
-    var headerContent =
-      s"""// Copyright 2024 KU Leuven.
+    var headerContent = s"""// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -225,10 +224,10 @@ endmodule
 
     if (params.dataflow.contains("output_stationary") && params.dataflow.length == 1) {
       headerContent += s"""
-#define SNAX_OPENGEMM_OUTPUT_STATIONARY_ONLY
+#define SNAX_VERSACORE_OUTPUT_STATIONARY_ONLY
 """
     } else {
-      headerContent += s"""#define SNAX_OPENGEMM_MULTI_STATIONARY
+      headerContent += s"""#define SNAX_VERSACORE_MULTI_STATIONARY
 """
     }
 

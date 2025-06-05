@@ -33,7 +33,7 @@
 // Pack two subtraction values to one CSR
 int32_t gen_subtraction_config(int8_t subtraction_a, int8_t subtraction_b);
 
-void set_gemmx_streamer_csr(
+void set_versacore_streamer_csr(
     int32_t delta_local_a, int32_t* Aslstride, int32_t* Atlbound,
     int32_t* Atlstride, int32_t set_addr_remap_index_A, int32_t transpose_A,
     int32_t* channel_en_A,
@@ -51,27 +51,27 @@ void set_gemmx_streamer_csr(
     int32_t* channel_en_D);
 
 // Set CSR to start STREAMER
-inline void set_gemmx_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }
+inline void set_versacore_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }
 
 // Set GEMM configuration CSR
-void set_gemmx_csr(uint32_t tempLoop0, uint32_t tempLoop1, uint32_t tempLoop2,
+void set_versacore_csr(uint32_t tempLoop0, uint32_t tempLoop1, uint32_t tempLoop2,
                    uint32_t subtractions, uint32_t array_shape,
                    uint32_t data_type);
 
 // Set CSR to start GEMM
-inline void set_gemmx_start() { csrw_ss(GEMMX_START, 1); }
+inline void set_versacore_start() { csrw_ss(GEMMX_START, 1); }
 
 // Poll until Streamer and GEMM accelerator finish
-void wait_gemmx_and_streamer();
+void wait_versacore_and_streamer();
 
-void wait_gemmx();
+void wait_versacore();
 
 // Read performance counter of the Streamer, a read-only CSR
-uint32_t read_gemmx_streamer_perf_counter();
+uint32_t read_versacore_streamer_perf_counter();
 
 // Read performance counter of GEMM, a read-only CSR
-uint32_t read_gemmx_perf_counter();
+uint32_t read_versacore_perf_counter();
 
 // Check the result of GEMMX
-uint32_t check_gemmx_result_D32(int8_t* output, int8_t* output_golden,
+uint32_t check_versacore_result_D32(int8_t* output, int8_t* output_golden,
                                 int32_t data_length, bool banked_data_layout);

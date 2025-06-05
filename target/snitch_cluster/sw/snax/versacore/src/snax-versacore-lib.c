@@ -4,7 +4,7 @@
 //
 // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
-#include "snax-opengemm-lib.h"
+#include "snax-versacore-lib.h"
 #include <stdbool.h>
 #include "snrt.h"
 #include "stdint.h"
@@ -14,7 +14,7 @@ int32_t gen_subtraction_config(int8_t subtraction_a, int8_t subtraction_b) {
     return ((uint8_t)subtraction_b << 8) | (uint8_t)subtraction_a;
 }
 
-void set_gemmx_streamer_csr(
+void set_versacore_streamer_csr(
     int32_t delta_local_a, int32_t* Aslstride, int32_t* Atlbound,
     int32_t* Atlstride, int32_t set_addr_remap_index_A, int32_t transpose_A,
     int32_t* channel_en_A,
@@ -340,7 +340,7 @@ void set_gemmx_streamer_csr(
 }
 
 // Set GEMM configuration CSR
-void set_gemmx_csr(uint32_t tempLoop0, uint32_t tempLoop1, uint32_t tempLoop2,
+void set_versacore_csr(uint32_t tempLoop0, uint32_t tempLoop1, uint32_t tempLoop2,
                    uint32_t subtractions, uint32_t array_shape,
                    uint32_t data_type) {
     // set loop bounds, from innermost to outermost, aka from K to N to M
@@ -358,7 +358,7 @@ void set_gemmx_csr(uint32_t tempLoop0, uint32_t tempLoop1, uint32_t tempLoop2,
 }
 
 // Stall until Streamer and GEMM accelerator finish
-void wait_gemmx_and_streamer() {
+void wait_versacore_and_streamer() {
     csrw_ss(STREAMER_START_CSR, 0);
     csrw_ss(STREAMER_START_CSR, 0);
     csrw_ss(GEMMX_START, 0);
@@ -368,7 +368,7 @@ void wait_gemmx_and_streamer() {
     }
 }
 
-void wait_gemmx() {
+void wait_versacore() {
     csrw_ss(GEMMX_START, 0);
     csrw_ss(GEMMX_START, 0);
     while (csrr_ss(GEMMX_BUSY)) {
@@ -376,18 +376,18 @@ void wait_gemmx() {
 }
 
 // Read performance counter of the Streamer, a read-only CSR
-uint32_t read_gemmx_streamer_perf_counter() {
+uint32_t read_versacore_streamer_perf_counter() {
     uint32_t perf_counter = csrr_ss(STREAMER_PERFORMANCE_COUNTER_CSR);
     return perf_counter;
 }
 
 // Read performance counter of GEMM, a read-only CSR
-uint32_t read_gemmx_perf_counter() {
+uint32_t read_versacore_perf_counter() {
     uint32_t perf_counter = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
     return perf_counter;
 }
 
-uint32_t check_gemmx_result_D32(int8_t* output, int8_t* output_golden,
+uint32_t check_versacore_result_D32(int8_t* output, int8_t* output_golden,
                                 int32_t data_length, bool banked_data_layout) {
     uint32_t err = 0;
 

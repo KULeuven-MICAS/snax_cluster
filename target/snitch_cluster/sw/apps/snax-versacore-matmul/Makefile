@@ -4,15 +4,15 @@
 #
 # Xiaoling Yi < xiaoling.yi @esat.kuleuven.be>
 
-APP = snax-opengemm-matmul
+APP = snax-versacore-matmul
 
 INCDIRS = data \
-          ../../snax/opengemm/include
+          ../../snax/versacore/include
 
 # Include this binary in the final build
-RISCV_LDFLAGS += ../../snax/opengemm/build/snax-opengemm-lib.o
+RISCV_LDFLAGS += ../../snax/versacore/build/snax-versacore-lib.o
 
-SRCS = src/snax-opengemm-matmul.c
+SRCS = src/snax-versacore-matmul.c
 
 include ../common.mk
 include ./data/Makefile

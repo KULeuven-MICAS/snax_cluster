@@ -102,7 +102,7 @@
                 cores:
                 [
                     {
-                        $ref: "#/snax_opengemm_core_template"
+                        $ref: "#/snax_versacore_core_template"
                     }
                     {
                         $ref: "#/dma_core_template"
@@ -124,7 +124,7 @@
             length: 4096
         }
     }
-    snax_opengemm_core_template:
+    snax_versacore_core_template:
     {
         isa: rv32ima
         xssr: false
@@ -139,48 +139,48 @@
         snax_acc_cfg:
         [
             {
-                snax_acc_name: snax_opengemm
+                snax_acc_name: snax_versacore
                 bender_target:
                 [
-                    snax_opengemm
+                    snax_versacore
                 ]
                 snax_narrow_tcdm_ports: 0
                 snax_wide_tcdm_ports: 272
                 snax_num_rw_csr: 7
                 snax_num_ro_csr: 2
-                snax_opengemm_op_type:
+                snax_versacore_op_type:
                 [
                     SIntSInt
                 ]
-                snax_opengemm_mac_num:
+                snax_versacore_mac_num:
                 [
                     1024
                 ]
-                snax_opengemm_input_a_element_width:
+                snax_versacore_input_a_element_width:
                 [
                     8
                 ]
-                snax_opengemm_input_b_element_width:
+                snax_versacore_input_b_element_width:
                 [
                     8
                 ]
-                snax_opengemm_multiply_element_width:
+                snax_versacore_multiply_element_width:
                 [
                     32
                 ]
-                snax_opengemm_output_element_width:
+                snax_versacore_output_element_width:
                 [
                     32
                 ]
-                snax_opengemm_array_input_a_width: 1024
-                snax_opengemm_array_input_b_width: 8192
-                snax_opengemm_array_input_c_width: 4096
-                snax_opengemm_array_output_width: 4096
-                snax_opengemm_serial_a_width: 1024
-                snax_opengemm_serial_b_width: 8192
-                snax_opengemm_serial_c_d_width: 4096
-                snax_opengemm_adder_tree_delay: 1
-                snax_opengemm_spatial_unrolling:
+                snax_versacore_array_input_a_width: 1024
+                snax_versacore_array_input_b_width: 8192
+                snax_versacore_array_input_c_width: 4096
+                snax_versacore_array_output_width: 4096
+                snax_versacore_serial_a_width: 1024
+                snax_versacore_serial_b_width: 8192
+                snax_versacore_serial_c_d_width: 4096
+                snax_versacore_adder_tree_delay: 1
+                snax_versacore_spatial_unrolling:
                 [
                     [
                         [
@@ -195,7 +195,7 @@
                         ]
                     ]
                 ]
-                snax_opengemm_temporal_unrolling:
+                snax_versacore_temporal_unrolling:
                 [
                     "output_stationary",
                     "weight_stationary",
@@ -203,7 +203,7 @@
                 ]
                 snax_streamer_cfg:
                 {
-                    $ref: "#/snax_opengemm_streamer_template"
+                    $ref: "#/snax_versacore_streamer_template"
                 }
             }
         ]
@@ -276,7 +276,7 @@
         num_dtlb_entries: 1
         num_itlb_entries: 1
     }
-    snax_opengemm_streamer_template:
+    snax_versacore_streamer_template:
     {
         data_reader_params:
         {
@@ -342,6 +342,6 @@
                 1
             ]
         }
-        snax_library_name: opengemm
+        snax_library_name: versacore
     }
 }
