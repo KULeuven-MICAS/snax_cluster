@@ -54,9 +54,9 @@ void set_versacore_streamer_csr(
 inline void set_versacore_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }
 
 // Set GEMM configuration CSR
-void set_versacore_csr(uint32_t tempLoop0, uint32_t tempLoop1, uint32_t tempLoop2,
-                   uint32_t subtractions, uint32_t array_shape,
-                   uint32_t data_type);
+void set_versacore_csr(uint32_t tempLoop0, uint32_t tempLoop1,
+                       uint32_t tempLoop2, uint32_t subtractions,
+                       uint32_t array_shape, uint32_t data_type);
 
 // Set CSR to start GEMM
 inline void set_versacore_start() { csrw_ss(GEMMX_START, 1); }
@@ -74,4 +74,5 @@ uint32_t read_versacore_perf_counter();
 
 // Check the result of GEMMX
 uint32_t check_versacore_result_D32(int8_t* output, int8_t* output_golden,
-                                int32_t data_length, bool banked_data_layout);
+                                    int32_t data_length,
+                                    bool banked_data_layout);

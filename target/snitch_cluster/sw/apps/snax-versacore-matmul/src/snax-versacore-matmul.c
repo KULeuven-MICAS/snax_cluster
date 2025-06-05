@@ -81,11 +81,12 @@ int main() {
 
         if (stationary == 0) {
             // Set CSR for output-stationary
-            set_versacore_csr(K, N, M, subtraction_setting, array_shape, data_type);
+            set_versacore_csr(K, N, M, subtraction_setting, array_shape,
+                              data_type);
         } else {
             // Set CSR for weight-stationary or input-stationary
             set_versacore_csr(1, N * K, M, subtraction_setting, array_shape,
-                          data_type);
+                              data_type);
         }
 
         // Set CSR to start Streamer
@@ -99,7 +100,7 @@ int main() {
 
         // Result check
         err += check_versacore_result_D32((int8_t *)local_d, (int8_t *)D,
-                                      d_data_length, false);
+                                          d_data_length, false);
 
         printf(
             "Array shape: %d, meshRow %d, tileSize %d, meshCol %d, stationary: "

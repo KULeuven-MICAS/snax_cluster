@@ -354,7 +354,7 @@ jobs:
           sw/snax-xdma-run.yaml -j
 
   snax-VersaCore-cluster-vlt-generic:
-    name: Simulate SW on OpenGeMM cluster w/ Verilator (Generic LLVM)
+    name: Simulate SW on VersaCore cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2

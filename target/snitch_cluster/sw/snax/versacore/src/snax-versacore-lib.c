@@ -340,9 +340,9 @@ void set_versacore_streamer_csr(
 }
 
 // Set GEMM configuration CSR
-void set_versacore_csr(uint32_t tempLoop0, uint32_t tempLoop1, uint32_t tempLoop2,
-                   uint32_t subtractions, uint32_t array_shape,
-                   uint32_t data_type) {
+void set_versacore_csr(uint32_t tempLoop0, uint32_t tempLoop1,
+                       uint32_t tempLoop2, uint32_t subtractions,
+                       uint32_t array_shape, uint32_t data_type) {
     // set loop bounds, from innermost to outermost, aka from K to N to M
     csrw_ss(T_BOUND_K, tempLoop0);
     csrw_ss(T_BOUND_N, tempLoop1);
@@ -388,7 +388,8 @@ uint32_t read_versacore_perf_counter() {
 }
 
 uint32_t check_versacore_result_D32(int8_t* output, int8_t* output_golden,
-                                int32_t data_length, bool banked_data_layout) {
+                                    int32_t data_length,
+                                    bool banked_data_layout) {
     uint32_t err = 0;
 
     if (banked_data_layout) {
