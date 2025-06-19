@@ -162,7 +162,7 @@ int main() {
 
         // Check if prediction results are correct
         for (uint32_t i = 0; i < 10; i++) {
-            if (i != (uint32_t) * (predict_start + i * 64)) {   
+            if (i != (uint32_t) * (predict_start + i * 64)) {
                 err++;
             }
         };
