@@ -97,9 +97,10 @@ int main() {
                     sub8b = 0;
                     // Iterate through each bit
                     for (uint32_t bit_count = 0; bit_count < 8; bit_count++) {
-                        if ((int32_t)*(vec_data_start + src_base_addr +
-                                       sub32_hv_count + byte_count +
-                                       bit_count) >= 0) {
+                        if ((int32_t) *
+                                (vec_data_start + src_base_addr +
+                                sub32_hv_count + byte_count + bit_count) >=
+                            0) {
                             sub8b = (sub8b << 1) | 0x01;
                         } else {
                             sub8b = sub8b << 1;
@@ -126,7 +127,7 @@ int main() {
         for (uint32_t i = 0; i < num_vectors; i++) {
             for (uint32_t j = 0; j < 16; j++) {
                 if (binarized_vec_list[src_counter] !=
-                    (int32_t)*(hv_data_start + i * 16 + j)) {
+                    (int32_t) * (hv_data_start + i * 16 + j)) {
                     err++;
                 }
                 src_counter++;
