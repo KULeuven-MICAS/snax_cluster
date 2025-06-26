@@ -46,6 +46,7 @@ am_search_asm_path = current_directory + "/am_search.txt"
 # Some useful functions
 # -----------------------
 
+
 # Convert from list to binary value
 def hvlist2num(hv_list):
     # Bring back into an integer itself!
@@ -55,6 +56,7 @@ def hvlist2num(hv_list):
     hv_num = int(hv_num, 2)
 
     return hv_num
+
 
 def reorder_list(input_list, reorder_chunk_size, num_iterations):
     new_list = []
@@ -66,6 +68,7 @@ def reorder_list(input_list, reorder_chunk_size, num_iterations):
         # Append the reversed sublist to the new list
         new_list.extend(sub_list_reversed)
     return new_list
+
 
 # Main function to generate data
 def main():
@@ -99,7 +102,8 @@ def main():
 
     binarized_vec_list = []
     for i in range(len(binarized_vec_reshape)):
-        binarized_vec_list.append(hvlist2num(np.array(binarized_vec_reshape[i])))
+        binarized_vec_list.append(
+            hvlist2num(np.array(binarized_vec_reshape[i])))
 
     binarized_vec_list = reorder_list(binarized_vec_list, 16, VEC_ROWS)
 
