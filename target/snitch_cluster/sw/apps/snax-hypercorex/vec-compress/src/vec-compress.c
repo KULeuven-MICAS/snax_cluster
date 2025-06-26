@@ -99,7 +99,7 @@ int main() {
                     for (uint32_t bit_count = 0; bit_count < 8; bit_count++) {
                         if ((int32_t) *
                                 (vec_data_start + src_base_addr +
-                                sub32_hv_count + byte_count + bit_count) >=
+                                 sub32_hv_count + byte_count + bit_count) >=
                             0) {
                             sub8b = (sub8b << 1) | 0x01;
                         } else {
