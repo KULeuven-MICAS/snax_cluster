@@ -7,10 +7,8 @@
 //================================================================================
 
 volatile uint32_t _snrt_mutex __attribute__((section(".data"))) = 0;
-volatile snrt_barrier_t _snrt_barrier __attribute__((section(".data"))) = {
-    .cnt       = 0,
-    .iteration = 0
-};
+volatile snrt_barrier_t _snrt_barrier
+    __attribute__((section(".data"))) = {.cnt = 0, .iteration = 0};
 volatile uint32_t _reduction_result __attribute__((section(".data"))) = 0;
 
 //================================================================================
