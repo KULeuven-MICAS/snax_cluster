@@ -78,7 +78,6 @@ static inline void snrt_init_bss() {
             *p = 0U;
         }
     }
-    snrt_global_barrier();
 }
 #endif
 
