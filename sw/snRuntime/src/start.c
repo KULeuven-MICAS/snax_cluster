@@ -78,6 +78,7 @@ static inline void snrt_init_bss() {
             *p = 0U;
         }
     }
+    snrt_global_barrier();
 }
 #endif
 
@@ -155,11 +156,6 @@ void snrt_main() {
 
 #ifdef SNRT_INIT_CLS
     snrt_init_cls();
-#endif
-
-#if defined(SNRT_INIT_BSS) || defined(SNRT_INIT_CLS)
-    // Single DMA wait call for both snrt_init_bss() and snrt_init_cls()
-    if (snrt_is_dm_core()) snrt_dma_wait_all();
 #endif
 
 #ifdef SNRT_CRT0_CALLBACK3
