@@ -137,7 +137,7 @@ def main():
     test_samples_fp = \
         hypercorex_path + "/hemaia/test_samples/hypx_ucihar_test.txt"
     test_samples = load_dataset(test_samples_fp)
-    
+
     # Need to synthethically add 2 more samples
     test_samples.append(test_samples[1])
     test_samples.append(test_samples[2])
