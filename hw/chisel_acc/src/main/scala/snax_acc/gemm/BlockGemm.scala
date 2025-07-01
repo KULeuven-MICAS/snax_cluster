@@ -13,11 +13,15 @@ class BlockGemmCtrlIO(val params: GemmParams) extends Bundle with HasGemmParams 
   val M_i                    = (UInt(sizeConfigWidth.W))
   val subtraction_constant_i = (UInt(subtractionCfgWidth.W))
 
-  assert(sizeConfigWidth == subtractionCfgWidth && sizeConfigWidth == 32, "CSR width is 32")
+  assert(
+    sizeConfigWidth == subtractionCfgWidth && sizeConfigWidth == 32,
+    "CSR width is 32"
+  )
 
 }
 
-/** The BlockGemm's data port declaration. Decoupled interface connected to the streamer */
+/** The BlockGemm's data port declaration. Decoupled interface connected to the streamer
+  */
 class BlockGemmDataIO(val params: GemmParams) extends Bundle with HasGemmParams {
   val a_i = Flipped(DecoupledIO(UInt((meshRow * tileSize * dataWidthA).W)))
   val b_i = Flipped(DecoupledIO(UInt((tileSize * meshCol * dataWidthB).W)))
@@ -25,7 +29,8 @@ class BlockGemmDataIO(val params: GemmParams) extends Bundle with HasGemmParams 
   val d_o = DecoupledIO(UInt((meshRow * meshCol * dataWidthC).W))
 }
 
-/** BlockGemmIO declaration, including control and data as well as two extra output signal */
+/** BlockGemmIO declaration, including control and data as well as two extra output signal
+  */
 class BlockGemmIO(params: GemmParams) extends Bundle {
   val ctrl                = Flipped(DecoupledIO(new BlockGemmCtrlIO(params)))
   val data                = new BlockGemmDataIO(params)
@@ -123,7 +128,10 @@ class BlockGemm(val params: GemmParams) extends Module with RequireAsyncReset wi
       )
     }
 
-    require(subtractionCfgWidth == 32, "TODO slicing is hardcoded yet the width is a parameter") // TODO
+    require(
+      subtractionCfgWidth == 32,
+      "TODO slicing is hardcoded yet the width is a parameter"
+    ) // TODO
     subtraction_a := io.ctrl.bits.subtraction_constant_i(7, 0)
     subtraction_b := io.ctrl.bits.subtraction_constant_i(15, 8)
   }
@@ -146,8 +154,12 @@ class BlockGemm(val params: GemmParams) extends Module with RequireAsyncReset wi
   // register insert start
   // -----------------------------------
 
-  val combined_decoupled_a_b_in  = Wire(Decoupled(new CutBundle(a_bits_len, b_bits_len, sa_bits_len, sb_bits_len)))
-  val combined_decoupled_a_b_out = Wire(Decoupled(new CutBundle(a_bits_len, b_bits_len, sa_bits_len, sb_bits_len)))
+  val combined_decoupled_a_b_in  = Wire(
+    Decoupled(new CutBundle(a_bits_len, b_bits_len, sa_bits_len, sb_bits_len))
+  )
+  val combined_decoupled_a_b_out = Wire(
+    Decoupled(new CutBundle(a_bits_len, b_bits_len, sa_bits_len, sb_bits_len))
+  )
   val a_split_out                = Wire(UInt(a_bits_len.W))
   val b_split_out                = Wire(UInt(b_bits_len.W))
   val subtraction_a_split_out    = Wire(UInt(sa_bits_len.W))
@@ -156,7 +168,9 @@ class BlockGemm(val params: GemmParams) extends Module with RequireAsyncReset wi
   val decoupled_subtraction_a = Wire(Decoupled(UInt(sa_bits_len.W)))
   val decoupled_subtraction_b = Wire(Decoupled(UInt(sb_bits_len.W)))
 
-  val a_b_sa_sb_cat = Module(new DecoupledCat4to1(a_bits_len, b_bits_len, sa_bits_len, sb_bits_len))
+  val a_b_sa_sb_cat = Module(
+    new DecoupledCat4to1(a_bits_len, b_bits_len, sa_bits_len, sb_bits_len)
+  )
 
   // cat several decoupled signals into one for synchronization
   a_b_sa_sb_cat.io.in1 <> io.data.a_i
@@ -204,9 +218,13 @@ class BlockGemm(val params: GemmParams) extends Module with RequireAsyncReset wi
   when(K === 1.U) {
     compute_fire_counter := 0.U
   }.otherwise {
-    when(compute_fire && compute_fire_counter =/= (K - 1.U) && cstate =/= sIDLE) {
+    when(
+      compute_fire && compute_fire_counter =/= (K - 1.U) && cstate =/= sIDLE
+    ) {
       compute_fire_counter := compute_fire_counter + 1.U
-    }.elsewhen(compute_fire && compute_fire_counter === (K - 1.U) && cstate =/= sIDLE) {
+    }.elsewhen(
+      compute_fire && compute_fire_counter === (K - 1.U) && cstate =/= sIDLE
+    ) {
       compute_fire_counter := 0.U
     }.elsewhen(cstate === sIDLE) {
       compute_fire_counter := 0.U
@@ -228,9 +246,13 @@ class BlockGemm(val params: GemmParams) extends Module with RequireAsyncReset wi
   when(K === 1.U) {
     d_output_ifvalid_counter := 0.U
   }.otherwise {
-    when(gemm_output_fire && d_output_ifvalid_counter =/= (K - 1.U) && cstate =/= sIDLE) {
+    when(
+      gemm_output_fire && d_output_ifvalid_counter =/= (K - 1.U) && cstate =/= sIDLE
+    ) {
       d_output_ifvalid_counter := d_output_ifvalid_counter + 1.U
-    }.elsewhen(gemm_output_fire && d_output_ifvalid_counter === (K - 1.U) && cstate =/= sIDLE) {
+    }.elsewhen(
+      gemm_output_fire && d_output_ifvalid_counter === (K - 1.U) && cstate =/= sIDLE
+    ) {
       d_output_ifvalid_counter := 0.U
     }.elsewhen(cstate === sIDLE) {
       d_output_ifvalid_counter := 0.U

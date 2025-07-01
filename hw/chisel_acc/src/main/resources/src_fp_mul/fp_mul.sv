@@ -211,7 +211,10 @@ module fp_mul #(
 
   logic [SUM_SHIFTED_WIDTH-1:0] sum_shifted;
   logic [PRECISION_BITS_C:0] final_mantissa;
+  /* verilator lint_off ASCRANGE */
+  // When STICKY_BIT_WIDTH < 0, the range will be inverted, triggering an error, but the vector will not used
   logic [STICKY_BIT_WIDTH-1:0] sum_sticky_bits;
+    /* verilator lint_on ASCRANGE */
   logic sticky_after_norm;
 
   logic signed [EXP_WIDTH-1:0] final_exponent;
