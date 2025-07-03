@@ -26,9 +26,7 @@ object CommonTestUtils {
     var waitCnt = 0
     while (!signalToAssert.peekBoolean()) {
       if (waitCnt > timeout) {
-        println(
-          s"Timeout at cycle ${clock.getStepCount} for signal ${signalToAssert}"
-        )
+        println(s"Timeout at cycle ${clock.getStepCount} for signal ${signalToAssert}")
         assert(false)
       }
       clock.step(1)
