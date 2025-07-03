@@ -94,19 +94,17 @@ int main() {
         }
         __asm__ volatile("fence" ::: "memory");
 
-        uint32_t start_time;
-        uint32_t end_time;
-
-        __asm__ volatile("csrr %0, mcycle;" : "=r"(start_time));
+        snrt_start_perf_counter(SNRT_PERF_CNT0, SNRT_PERF_CNT_DMA_BUSY,
+                                snrt_hartid());
         for (int i = 0; i < TOTAL_ITERATIONS_IDMA; i++) {
             snrt_dma_start_2d(dst_addr[i], src_addr[i], size_idma,
                               dst_stride_idma, src_stride_idma, repeat_idma);
         }
         snrt_dma_wait_all();
-        __asm__ volatile("csrr %0, mcycle;" : "=r"(end_time));
-        printf("The IDMA copy is finished in %d cycles\r\n",
-               end_time - start_time);
 
+        printf("The IDMA copy is finished in %d cycles\r\n",
+               snrt_get_perf_counter(SNRT_PERF_CNT0));
+        snrt_reset_perf_counter(SNRT_PERF_CNT0);
         // --------------------- Checking the Results --------------------- //
         for (int i = 0; i < matrix_size; i++) {
             if (tcdm_out[i] != golden_output_matrix[i]) {

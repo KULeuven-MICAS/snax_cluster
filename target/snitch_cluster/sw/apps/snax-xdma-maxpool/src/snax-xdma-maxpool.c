@@ -46,8 +46,13 @@ int main() {
         tbound_dst[2] = tempLoop2_out;
 
         // First we need to transfer the input data from L3->TCDM
+        snrt_start_perf_counter(SNRT_PERF_CNT0, SNRT_PERF_CNT_DMA_BUSY,
+                                snrt_hartid());
         snrt_dma_start_1d(tcdm_in, DataIn, input_data_len * sizeof(int8_t));
         snrt_dma_wait_all();
+        printf("IDMA load input is done in %d cycles\n",
+               snrt_get_perf_counter(SNRT_PERF_CNT0));
+        snrt_reset_perf_counter(SNRT_PERF_CNT0);
 
         // --------------------- Configure the Ext --------------------- //
         uint32_t ext_param_maxpool_size[1] = {reduceLen};
