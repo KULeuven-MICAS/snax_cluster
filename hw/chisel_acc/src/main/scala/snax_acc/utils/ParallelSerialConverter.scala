@@ -30,9 +30,7 @@ class ParallelToSerial(val p: ParallelToSerialParams) extends Module {
   val io = IO(new Bundle {
     val in               = Flipped(Decoupled(UInt(p.parallelWidth.W)))
     val terminate_factor =
-      if (p.earlyTerminate)
-        Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W)))
-      else None
+      if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
     val out              = Decoupled(UInt(p.serialWidth.W))
     val enable           = Input(Bool())
   })
@@ -152,9 +150,7 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
   val io = IO(new Bundle {
     val in               = Flipped(Decoupled(UInt(p.serialWidth.W)))
     val terminate_factor =
-      if (p.earlyTerminate)
-        Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W)))
-      else None
+      if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
     val out              = Decoupled(UInt(p.parallelWidth.W))
     val enable           = Input(Bool())
   })
@@ -176,9 +172,7 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
     val count    = RegInit(0.U(log2Ceil(factor + 1).W))
 
     if (p.earlyTerminate) {
-      io.in.ready := count =/= io.terminate_factor.getOrElse(
-        factor.U
-      )           && io.enable
+      io.in.ready := count =/= io.terminate_factor.getOrElse(factor.U) && io.enable
     } else {
       io.in.ready := count =/= factor.U && io.enable
     }
@@ -219,8 +213,7 @@ class SerialToParallel(val p: SerialToParallelParams) extends Module {
     }
 
     // Concatenate the shift register contents to form the parallel output
-    val effectiveBits =
-      io.terminate_factor.getOrElse(factor.U) * p.serialWidth.U
+    val effectiveBits = io.terminate_factor.getOrElse(factor.U) * p.serialWidth.U
     val totalBits     = numRegs.U * 2048.U
     if (p.earlyTerminate) {
       if (p.parallelWidth <= 2048) {
