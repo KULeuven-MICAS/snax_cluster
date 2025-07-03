@@ -78,6 +78,8 @@ int main() {
                        0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         int task_id = xdma_start();
         xdma_local_wait(task_id);
+        printf("xdma task %d is done in %d cycles\n", task_id,
+               xdma_last_task_cycle());
 
         // --------------------- Checking the Results --------------------- //
         for (int i = 0; i < output_data_len; i++) {

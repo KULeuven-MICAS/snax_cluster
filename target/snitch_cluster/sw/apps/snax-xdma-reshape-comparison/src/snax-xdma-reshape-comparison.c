@@ -51,17 +51,10 @@ int main() {
                        temporal_bounds_dst_xdma, 0xFFFFFFFF, 0xFFFFFFFF,
                        0xFFFFFFFF);
 
-        uint32_t start_time;
-        uint32_t end_time;
-
-        __asm__ volatile("fence" ::: "memory");
-        __asm__ volatile("csrr %0, mcycle;" : "=r"(start_time));
         int task_id = xdma_start();
         xdma_local_wait(task_id);
-        __asm__ volatile("csrr %0, mcycle;" : "=r"(end_time));
-        printf("The XDMA copy is finished in %d cycles\r\n",
-               end_time - start_time);
-
+        printf("xdma task %d is done in %d cycles\n", task_id,
+               xdma_last_task_cycle());
         // --------------------- Checking the Results --------------------- //
         // for (int i = 0; i < matrix_size; i++) {
         //     if (tcdm_out[i] != golden_output_matrix[i]) {
@@ -100,6 +93,10 @@ int main() {
                              sw_dst_stride_idma[3]);
         }
         __asm__ volatile("fence" ::: "memory");
+
+        uint32_t start_time;
+        uint32_t end_time;
+
         __asm__ volatile("csrr %0, mcycle;" : "=r"(start_time));
         for (int i = 0; i < TOTAL_ITERATIONS_IDMA; i++) {
             snrt_dma_start_2d(dst_addr[i], src_addr[i], size_idma,
