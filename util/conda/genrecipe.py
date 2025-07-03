@@ -57,15 +57,15 @@ if __name__ == "__main__":
         pixiconfig = tomllib.load(pixitoml)["dependencies"]
         print(PREAMBLE.format(clean_version=tag[1:], tag=tag))
         # Prebuilt package -> all deps are build deps, build.sh prebuilds
-        # print(PACKAGE_DEF.format("snax-cluster-prebuilt", "build"))
-        # add_dependency("git", "")
-        # add_dependency("wget", "")
-        # print_conda_deps_as_yaml(pixiconfig)
-        # print(PACKAGE_BUILD.format("build.sh"))
+        print(PACKAGE_DEF.format("snax-cluster-prebuilt", "build"))
+        add_dependency("git", "")
+        add_dependency("wget", "")
+        print_conda_deps_as_yaml(pixiconfig)
+        print(PACKAGE_BUILD.format("build.sh"))
         # Dev package -> all deps are run deps, build-dev.sh does nothing
         print(PACKAGE_DEF.format("snax-cluster-dev", "run"))
         # Add prebuilt package to dev package
-        # pin = '${{ pin_subpackage("snax-cluster-prebuilt", exact=True) }}'
-        # add_dependency(pin, "")
+        pin = '${{ pin_subpackage("snax-cluster-prebuilt", exact=True) }}'
+        add_dependency(pin, "")
         print_conda_deps_as_yaml(pixiconfig)
         print(PACKAGE_BUILD.format("build-dev.sh"))
