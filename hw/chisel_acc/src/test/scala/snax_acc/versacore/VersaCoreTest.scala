@@ -76,13 +76,11 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
 
                 val aSInt = toSInt(
                   aValues(aIdx),
-                  inputTypeA.width,
-                  params.inputTypeA(dataTypeIdx) == SInt
+                  inputTypeA.width
                 )
                 val bSInt = toSInt(
                   bValues(bIdx),
-                  inputTypeB.width,
-                  params.inputTypeB(dataTypeIdx) == SInt
+                  inputTypeB.width
                 )
 
                 sum += aSInt * bSInt
@@ -98,7 +96,7 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
           n1 <- 0 until Nu
         } {
           val cIdx = m2 * N * Mu * Nu + n2 * Mu * Nu + m1 * Nu + n1
-          val cVal = toSInt(cValues(cIdx), inputTypeC.width, params.inputTypeC(dataTypeIdx) == SInt)
+          val cVal = toSInt(cValues(cIdx), inputTypeC.width)
           acc(m1)(n1) += cVal
           acc(m1)(n1) = (acc(m1)(n1) & ((1L << outputTypeD.width) - 1)).toInt
         }
@@ -109,17 +107,17 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
       // Print the generated values in SInt format
       // println("Generated aValues:")
       // for (i <- aValues.indices) {
-      //   val aSInt = toSInt(aValues(i), inputTypeA.width, params.inputTypeA(dataTypeIdx) == SInt)
+      //   val aSInt = toSInt(aValues(i), inputTypeA.width)
       //   println(f"$aSInt")
       // }
       // println("Generated bValues:")
       // for (i <- bValues.indices) {
-      //   val bSInt = toSInt(bValues(i), inputTypeB.width, params.inputTypeB(dataTypeIdx) == SInt)
+      //   val bSInt = toSInt(bValues(i), inputTypeB.width)
       //   println(f"$bSInt")
       // }
       // println("Generated cValues:")
       // for (i <- cValues.indices) {
-      //   val cSInt = toSInt(cValues(i), inputTypeC.width, params.inputTypeC(dataTypeIdx) == SInt)
+      //   val cSInt = toSInt(cValues(i), inputTypeC.width)
       //   println(f"$cSInt")
       // }
 

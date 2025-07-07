@@ -52,13 +52,11 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
               (0 until Ku).map { k =>
                 val aSInt = toSInt(
                   aValues(i * Ku + k),
-                  inputTypeA.width,
-                  params.inputTypeA(dataTypeIdx) == SInt
+                  inputTypeA.width
                 ) // Convert UInt to SInt
                 val bSInt = toSInt(
                   bValues(k + j * Ku),
-                  inputTypeB.width,
-                  params.inputTypeB(dataTypeIdx) == SInt
+                  inputTypeB.width
                 ) // Convert UInt to SInt
                 aSInt * bSInt
               }.sum
