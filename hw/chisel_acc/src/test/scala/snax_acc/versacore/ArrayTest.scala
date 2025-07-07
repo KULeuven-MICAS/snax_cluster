@@ -90,10 +90,14 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
             println(s"Checking inputTypeA${dataTypeIdx + 1} res_cfg${arrayShapeIdx + 1}...")
             val expected = expectedResult.flatten
+            val mask     = (1L << outputTypeD.width).toLong - 1
             for (i <- expected.indices) {
               val actual = extractedOutputs(i)
-              // println(s"  Output[$i]: $actual (Expected: ${expected(i)})")
-              assert(actual == expected(i), f"Mismatch at index $i: got 0x$actual%X, expected 0x${expected(i)}%X")
+
+              // Cut outputTypeD.width-bit result
+              val expected_cut = (expected(i) & mask).toInt
+
+              assert(actual == expected_cut, f"Mismatch at index $i: got 0x$actual%X, expected 0x${expected_cut}%X")
             }
 
             c.io.ctrl.accClear.poke(true.B)
@@ -117,8 +121,8 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
       arrayOutputDWidth      = 4096,
       serialInputADataWidth  = 1024,
       serialInputBDataWidth  = 8192,
-      serialInputCDataWidth  = 512,
-      serialOutputDDataWidth = 512,
+      serialInputCDataWidth  = 4096,
+      serialOutputDDataWidth = 4096,
       arrayDim               = Seq(Seq(Seq(16, 8, 8), Seq(1, 32, 32)))
     )
 
