@@ -39,9 +39,9 @@ object SpatialArrayParamParser {
     /** Convert input widths to corresponding types */
     def widthToType(width: Int, dataTypeStr: String): DataType = {
       dataTypeStr match {
-        case "SInt" => new IntType(width)
-        case "Float"         => widthToFpType(width)
-        case _               => throw new NotImplementedError()
+        case "SInt"  => new IntType(width)
+        case "Float" => widthToFpType(width)
+        case _       => throw new NotImplementedError()
       }
     }
 
@@ -51,10 +51,22 @@ object SpatialArrayParamParser {
 
     SpatialArrayParam(
       macNum                 = getSeqInt("snax_versacore_mac_num"),
-      inputTypeA             = widthSeqToTypeSeq(getSeqInt("snax_versacore_input_a_element_width"), cfg("snax_versacore_input_a_data_type").arr.map(_.str).toSeq),
-      inputTypeB             = widthSeqToTypeSeq(getSeqInt("snax_versacore_input_b_element_width"),cfg("snax_versacore_input_b_data_type").arr.map(_.str).toSeq),
-      inputTypeC             = widthSeqToTypeSeq(getSeqInt("snax_versacore_input_c_element_width"),cfg("snax_versacore_input_c_data_type").arr.map(_.str).toSeq),
-      outputTypeD            = widthSeqToTypeSeq(getSeqInt("snax_versacore_output_d_element_width"),cfg("snax_versacore_output_d_data_type").arr.map(_.str).toSeq),
+      inputTypeA             = widthSeqToTypeSeq(
+        getSeqInt("snax_versacore_input_a_element_width"),
+        cfg("snax_versacore_input_a_data_type").arr.map(_.str).toSeq
+      ),
+      inputTypeB             = widthSeqToTypeSeq(
+        getSeqInt("snax_versacore_input_b_element_width"),
+        cfg("snax_versacore_input_b_data_type").arr.map(_.str).toSeq
+      ),
+      inputTypeC             = widthSeqToTypeSeq(
+        getSeqInt("snax_versacore_input_c_element_width"),
+        cfg("snax_versacore_input_c_data_type").arr.map(_.str).toSeq
+      ),
+      outputTypeD            = widthSeqToTypeSeq(
+        getSeqInt("snax_versacore_output_d_element_width"),
+        cfg("snax_versacore_output_d_data_type").arr.map(_.str).toSeq
+      ),
       arrayInputAWidth       = cfg("snax_versacore_array_input_a_width").num.toInt,
       arrayInputBWidth       = cfg("snax_versacore_array_input_b_width").num.toInt,
       arrayInputCWidth       = cfg("snax_versacore_array_input_c_width").num.toInt,

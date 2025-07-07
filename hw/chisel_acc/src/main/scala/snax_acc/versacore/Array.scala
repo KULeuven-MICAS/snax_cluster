@@ -75,7 +75,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   )
 
   require(
-      params.inputTypeA.length == params.macNum.length  &&
+    params.inputTypeA.length == params.macNum.length    &&
       params.inputTypeB.length == params.macNum.length  &&
       params.inputTypeC.length == params.macNum.length  &&
       params.inputTypeC.length == params.macNum.length  &&
