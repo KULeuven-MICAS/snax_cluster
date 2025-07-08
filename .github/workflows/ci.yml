@@ -322,7 +322,7 @@ jobs:
           sw/runtime.yaml \
           sw/snax-xdma-run.yaml -j
 
-  snax-VersaCore-cluster-vlt-generic:
+  snax-versaCore-cluster-vlt-generic:
     name: Simulate SW on VersaCore cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     steps:
@@ -338,15 +338,15 @@ jobs:
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
-          CFG_OVERRIDE=cfg/snax_versacore.hjson
+          CFG_OVERRIDE=cfg/snax_versacore_cluster.hjson
       - name: Build Hardware
         run: |
-          make CFG_OVERRIDE=cfg/snax_versacore.hjson \
+          make CFG_OVERRIDE=cfg/snax_versacore_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \
-          CFG_OVERRIDE=cfg/snax_versacore.hjson
+          CFG_OVERRIDE=cfg/snax_versacore_cluster.hjson
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
