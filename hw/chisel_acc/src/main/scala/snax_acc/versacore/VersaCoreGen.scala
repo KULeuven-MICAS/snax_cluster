@@ -140,12 +140,12 @@ object VersaCoreGen {
     val lines: Array[String] = sv_string.split("\n")
 
     // Find package block range
-    val startIdx = lines.indexWhere(_.contains("package fpnew_pkg_versacore"))
+    val startIdx = lines.indexWhere(_.contains("package fpnew_pkg_snax"))
 
     if (startIdx != -1) {
       val endIdx = lines.indexWhere(_.trim == "endpackage", startIdx)
       if (endIdx != -1 && endIdx > startIdx) {
-        val pkgBlock = lines.slice(startIdx, endIdx + 1)
+        val pkgBlock       = lines.slice(startIdx, endIdx + 1)
         val remainingLines = lines.take(startIdx) ++ lines.drop(endIdx + 1)
         sv_string = (pkgBlock ++ remainingLines).mkString("\n")
       }
