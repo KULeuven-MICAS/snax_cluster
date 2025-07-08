@@ -230,7 +230,7 @@ module fp_mul #(
     if ((exponent_product - leading_zero_count_sgn + 1 > 0) && !lzc_zeroes) begin
       normalized_exponent = exponent_product - leading_zero_count_sgn + 1;  // Account for LZC shift
       // Account for 1 bit wider result. Cancel out leading zeros. Mantissa's hidden bit will now be at MSB
-      product_shifted = product << (leading_zero_count + 2);
+      product_shifted = product << (leading_zero_count + 1);
     end else begin
       // Subnormal result. Exponent is 0
       normalized_exponent = 0;
