@@ -141,17 +141,14 @@ object VersaCoreGen {
 
     // Find package block range
     val startIdx = lines.indexWhere(_.contains("package fpnew_pkg_versacore"))
-    val endIdx   = lines.indexWhere(_.trim == "endpackage", startIdx)
 
-    if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
-      // Extract package block
-      val pkgBlock = lines.slice(startIdx, endIdx + 1)
-
-      //  Remove package block from original lines
-      val remainingLines = lines.take(startIdx) ++ lines.drop(endIdx + 1)
-
-      // Prepend package block to the remaining lines
-      sv_string = (pkgBlock ++ remainingLines).mkString("\n")
+    if (startIdx != -1) {
+      val endIdx = lines.indexWhere(_.trim == "endpackage", startIdx)
+      if (endIdx != -1 && endIdx > startIdx) {
+        val pkgBlock = lines.slice(startIdx, endIdx + 1)
+        val remainingLines = lines.take(startIdx) ++ lines.drop(endIdx + 1)
+        sv_string = (pkgBlock ++ remainingLines).mkString("\n")
+      }
     }
 
     // Step 4: Write to file
