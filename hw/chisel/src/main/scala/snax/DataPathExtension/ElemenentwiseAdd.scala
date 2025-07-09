@@ -68,9 +68,6 @@ class ElementwiseAdd(
         regs(i) := 0.U
       }
     } otherwise {
-        // Read the input data
-      
-
       // Add the input data to the corresponding register
       for (i <- 0 until extensionParam.dataWidth / elementWidth) {
         regs(i) := regs(i) + input_data(i)
@@ -78,9 +75,7 @@ class ElementwiseAdd(
     }
   }
 
-  ext_data_o.bits := Cat(ext_data_o_bits) //CHECK IF REVERSE IS CORRECT
-ext_data_i.ready := (counter.io.value =/= (ext_csr_i(0) - 1.U)(7, 0))
-ext_data_i.ready := (counter.io.value =/= (ext_csr_i(0) - 1.U)(7, 0)) //CHECK IF CORRECT, 
-
-io.data_o <> ext_data_o //CHECK IF CORRECT,
+ext_data_o.bits := Cat(ext_data_o_bits.reverse) 
+ext_data_o.valid := (counter.io.value === (ext_csr_i(0) - 1.U)(7, 0))
+ext_data_i.ready := ext_data_o.ready
 }

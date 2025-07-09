@@ -62,10 +62,15 @@ abstract class DataPathExtension(implicit extensionParam: DataPathExtensionParam
 
   // Signals under user's namespace
   val ext_data_i  = Wire(Decoupled(UInt(extensionParam.dataWidth.W)))
+  dontTouch(ext_data_i) // Do not touch this signal, it is used to connect with the extension's input
   val ext_data_o  = Wire(Decoupled(UInt(extensionParam.dataWidth.W)))
+  dontTouch(ext_data_o) // Do not touch this signal, it is used to connect with the extension's output
   val ext_csr_i   = io.csr_i
+  dontTouch(ext_csr_i) // Do not touch this signal, it is used to connect with the extension's CSR
   val ext_start_i = io.start_i
+  dontTouch(ext_start_i) // Do not touch this signal, it is used to connect with the extension's start signal
   val ext_busy_o  = Wire(Bool())
+  dontTouch(ext_busy_o) // Do not touch this signal, it is used to connect with the extension's busy signal
   io.busy_o := ext_busy_o || ext_data_i.valid
 
   // Structure to bypass extension: Demux

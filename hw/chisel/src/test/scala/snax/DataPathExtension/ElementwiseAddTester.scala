@@ -13,7 +13,7 @@ class ElementwiseAddTester extends DataPathExtensionTester {
   val inputData  = collection.mutable.Buffer[BigInt]()
   val outputData = collection.mutable.Buffer[BigInt]()
 
-  for (_ <- 0 until 3) {
+  for (i <- 0 until 128) {
     val inputMatrix1: Array[Array[Int]] = Array.fill(8, 8)(Random.nextInt(1 << 15))
     val inputMatrix2: Array[Array[Int]] = Array.fill(8, 8)(Random.nextInt(1 << 15))
     val leftInputMatrix1  = inputMatrix1.map(row => row.slice(0, 4))
@@ -29,7 +29,9 @@ class ElementwiseAddTester extends DataPathExtensionTester {
     val rightOutputMatrix = rightInputMatrix1.zip(rightInputMatrix2).map { case (a, b) => a.zip(b).map { case (x, y) => x + y } }
     outputData.append(BigInt(leftOutputMatrix.flatten.map { i => f"$i%04X" }.reverse.reduce(_ + _), 16))
     outputData.append(BigInt(rightOutputMatrix.flatten.map { i => f"$i%04X" }.reverse.reduce(_ + _), 16))
-    println(s"Output Matrix 1: ${leftOutputMatrix.map(_.mkString(" ")).mkString("\n")}")
+    println(s"Input Matrix $i: ${leftInputMatrix1.map(_.mkString(" ")).mkString("\n")}")
+    println(s"Input Matrix $i: ${leftInputMatrix2.map(_.mkString(" ")).mkString("\n")}")
+    println(s"Output Matrix $i: ${leftOutputMatrix.map(_.mkString(" ")).mkString("\n")}")
   }
 
   val input_data_vec = inputData.toSeq
