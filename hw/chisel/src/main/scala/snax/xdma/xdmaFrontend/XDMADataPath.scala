@@ -157,7 +157,7 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
   writerExtensions.io.data.out <> writer.io.data
   writerExtensions.io.connectCfgWithList(io.writerCfg.extCfg)
   writerExtensions.io.start := io.writerStart
-  io.writerBusy             := writer.io.busy | (~writer.io.bufferEmpty) | writerExtensions.io.busy
+  io.writerBusy := writer.io.busy | (~writer.io.bufferEmpty) | writerExtensions.io.busy | (~io.remoteXDMAData.fromRemote.valid)
 
   // The following muxes and demuxes are used to do the local loopback and remote loopback, the wires connected to the reader and writer are: readerDataAfterExtension and writerDataBeforeExtension. The wires between all the demuxes and muxes should not be cutted
   // LocalLoopbackDemux takes the data from the Reader side, and send it to either the remote cluster (0) or loopback to the writer side (1)
