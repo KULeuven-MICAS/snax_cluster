@@ -3,9 +3,9 @@ package snax.DataPathExtension
 import chisel3._
 import chisel3.util._
 
-class hasElementwiseAdd(
-  elementWidth: Int,
-  dataWidth: Int = 0
+class HasElementwiseAdd(
+  elementWidth: Int = 16,
+  dataWidth: Int = 512
 ) extends HasDataPathExtension {
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(

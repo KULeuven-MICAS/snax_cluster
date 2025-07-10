@@ -13,7 +13,7 @@ class ElementwiseAdd2Tester extends DataPathExtensionTester {
   val inputData  = collection.mutable.Buffer[BigInt]()
   val outputData = collection.mutable.Buffer[BigInt]()
 
-  for (i <- 0 until 128) {
+  for (_ <- 0 until 128) {
     val inputMatrix1: Array[Array[Int]] = Array.fill(8, 8)(Random.nextInt(1 << 15))
     val inputMatrix2: Array[Array[Int]] = Array.fill(8, 8)(Random.nextInt(1 << 15))
     val leftInputMatrix1  = inputMatrix1.map(row => row.slice(0, 4))
@@ -46,7 +46,7 @@ class ElementwiseAdd3Tester extends DataPathExtensionTester {
   val inputData  = collection.mutable.Buffer[BigInt]()
   val outputData = collection.mutable.Buffer[BigInt]()
 
-  for (i <- 0 until 128) {
+  for (_ <- 0 until 128) {
     val inputMatrix1: Array[Array[Int]] = Array.fill(8, 8)(Random.nextInt(1 << 14))
     val inputMatrix2: Array[Array[Int]] = Array.fill(8, 8)(Random.nextInt(1 << 14))
     val inputMatrix3: Array[Array[Int]] = Array.fill(8, 8)(Random.nextInt(1 << 14))
