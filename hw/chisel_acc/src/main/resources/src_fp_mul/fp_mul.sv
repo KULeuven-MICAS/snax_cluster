@@ -46,7 +46,7 @@ module fp_mul #(
   localparam int unsigned PRECISION_BITS_B = MAN_BITS_B + 1;
   localparam int unsigned PRECISION_BITS_C = MAN_BITS_C + 1;
 
-  localparam int unsigned MUL_WIDTH = PRECISION_BITS_A + PRECISION_BITS_B; // Same as LOWER_SUM_WIDTH in original
+  localparam int unsigned MUL_WIDTH = PRECISION_BITS_A + PRECISION_BITS_B;  // Same as LOWER_SUM_WIDTH in original
   localparam int unsigned LZC_RESULT_WIDTH = $clog2(MUL_WIDTH);
   localparam int unsigned EXP_WIDTH = unsigned'(fpnew_pkg_snax::maximum(
       EXP_BITS_C + 2, LZC_RESULT_WIDTH
@@ -270,12 +270,12 @@ module fp_mul #(
   logic [EXP_BITS_C+MAN_BITS_C-1:0] rounded_abs;  // absolute value of result after rounding
 
   // Classification before round. RISC-V mandates checking underflow AFTER rounding!
-  assign of_before_round = final_exponent >= 2**(EXP_BITS_C)-1; // infinity exponent is all ones
+  assign of_before_round = final_exponent >= 2 ** (EXP_BITS_C) - 1;  // infinity exponent is all ones
   assign uf_before_round = final_exponent == 0;  // exponent for subnormals capped to 0
 
   // Assemble result before rounding. In case of overflow, the largest normal value is set.
   assign pre_round_sign = result_sign;
-  assign pre_round_exponent = (of_before_round) ? 2**EXP_BITS_C-2 : unsigned'(final_exponent[EXP_BITS_C-1:0]);
+  assign pre_round_exponent = (of_before_round) ? 2 ** EXP_BITS_C - 2 : unsigned'(final_exponent[EXP_BITS_C-1:0]);
   // Discard implicit leading bit. Bit 0 is R bit
   assign pre_round_mantissa = (of_before_round) ? '1 : final_mantissa[MAN_BITS_C:1];
   assign pre_round_abs = {pre_round_exponent, pre_round_mantissa};

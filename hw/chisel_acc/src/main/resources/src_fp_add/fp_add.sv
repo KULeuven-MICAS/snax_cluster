@@ -41,6 +41,9 @@ module fp_add #(
   localparam int unsigned PRECISION_BITS_A = MAN_BITS_A + 1;
   localparam int unsigned PRECISION_BITS_B = MAN_BITS_B + 1;
   localparam int unsigned PRECISION_BITS_C = MAN_BITS_C + 1;
+  localparam int unsigned EXP_BITS_MAX = fpnew_pkg_snax::maximum(
+      EXP_BITS_A, fpnew_pkg_snax::maximum(EXP_BITS_B, EXP_BITS_C)
+  );
 
   localparam int unsigned LOWER_SUM_WIDTH = (PRECISION_BITS_A + PRECISION_BITS_B > PRECISION_BITS_C) 
                                                 ? (PRECISION_BITS_A + PRECISION_BITS_B) 
@@ -131,42 +134,32 @@ module fp_add #(
 
   always_comb begin : special_cases
     // Default assignments
-    special_result = '{
+    special_result = '{  // canonical qNaN
         sign: 1'b0,
         exponent: '1,
         mantissa: 2 ** (MAN_BITS_C - 1)
-    };  // canonical qNaN
+    };
     result_is_special = 1'b0;
     if (info_a.is_nan || info_b.is_nan) result_is_special = 1'b1;
-
-    // TODO this will not work if A or B have different format than out. Operand must be recasted to out format
-    // else if (info_a.is_zero || info_b.is_zero) begin
-    //   result_is_special = 1'b1;
-    //   if (info_a.is_zero && !info_b.is_zero) special_result = operand_b;
-    //   else if (!info_a.is_zero && info_b.is_zero) special_result = operand_a;
-    //   else if (info_a.is_zero && info_b.is_zero)  //missing code from fp16 to fp32 for special case
-    //     special_result = 0;
-    // end  //
-    //
     else if (info_a.is_zero && info_b.is_zero) begin
+      // The case where on of the operands is zero is handles as regular case
       result_is_special = 1'b1;
       special_result = 0;
-    end  //
-    else if (info_a.is_inf && info_b.is_inf && effective_subtraction) begin
+    end else if (info_a.is_inf && info_b.is_inf && effective_subtraction) begin
       result_is_special = 1'b1;
     end else if (info_a.is_inf) begin
       result_is_special = 1'b1;
-      special_result = '{
+      special_result = '{  //
           sign: operand_a.sign,
-          exponent: operand_a.exponent,
-          mantissa: operand_a.mantissa
+          exponent: '{default: 1'b1},
+          mantissa: 0
       };
     end else if (info_b.is_inf) begin
       result_is_special = 1'b1;
-      special_result = '{
+      special_result = '{  // 
           sign: operand_b.sign,
-          exponent: operand_b.exponent,
-          mantissa: operand_b.mantissa
+          exponent: '{default: 1'b1},
+          mantissa: 0
       };
     end
   end
@@ -175,16 +168,17 @@ module fp_add #(
   // ---------------------------
   // Initial exponent data path
   // ---------------------------
-  logic signed [EXP_BITS_A:0] exponent_a;
-  logic signed [EXP_BITS_B:0] exponent_b;
-  logic signed [EXP_BITS_C:0] exponent_difference;
-  logic signed [EXP_BITS_C:0] tentative_exponent;
+  logic signed [  EXP_BITS_A:0] exponent_a;
+  logic signed [  EXP_BITS_B:0] exponent_b;
+  logic signed [EXP_BITS_MAX:0] exponent_difference;
+  logic signed [EXP_BITS_MAX:0] tentative_exponent;
 
   assign exponent_a = signed'({1'b0, operand_a.exponent});
   assign exponent_b = signed'({1'b0, operand_b.exponent});
   // exponent a - b；
-  assign exponent_difference = (exponent_a -BIAS_A + BIAS_C + info_a.is_subnormal) - (exponent_b -BIAS_B + BIAS_C + info_b.is_subnormal);
-  assign tentative_exponent = (exponent_difference >= 0 && info_a.is_normal) ? (exponent_a -BIAS_A + BIAS_C) :  (exponent_b - BIAS_B + BIAS_C );
+  assign exponent_difference = (info_a.is_zero || info_b.is_zero) ? 0 : (exponent_a -BIAS_A + BIAS_C + info_a.is_subnormal) - (exponent_b -BIAS_B + BIAS_C + info_b.is_subnormal);
+  // Inf, NaN, and 0+0 cases are handled by special case, but single zero must be handled here
+  assign tentative_exponent = (exponent_difference < 0 || info_a.is_zero) ? (exponent_b - BIAS_B + BIAS_C ) :(exponent_a -BIAS_A + BIAS_C)  ;
 
   logic [SHIFT_AMOUNT_WIDTH-1:0] shamt_a, shamt_b;
 
@@ -256,9 +250,7 @@ module fp_add #(
                           (exponent_difference < 0) ? 1'b0 :
                           (mantissa_a_ext > mantissa_b_ext);
 
-  assign final_sign = (effective_subtraction) ?
-                    (operand_a_larger ? operand_a.sign : operand_b.sign) :
-                    tentative_sign;
+  assign final_sign = (effective_subtraction) ? (operand_a_larger ? operand_a.sign : operand_b.sign) : tentative_sign;
 
   // --------------
   // Normalization
@@ -318,7 +310,7 @@ module fp_add #(
   assign uf_before_round = (final_exponent == 0);
 
   assign pre_round_sign = final_sign;
-  assign pre_round_exponent = (of_before_round) ? 2**EXP_BITS_C-2 : unsigned'(final_exponent[EXP_BITS_C-1:0]);
+  assign pre_round_exponent = (of_before_round) ? 2 ** EXP_BITS_C - 2 : unsigned'(final_exponent[EXP_BITS_C-1:0]);
   assign pre_round_mantissa = (of_before_round) ? '1 : final_mantissa[MAN_BITS_C:1];
   assign pre_round_abs = {pre_round_exponent, pre_round_mantissa};
 
