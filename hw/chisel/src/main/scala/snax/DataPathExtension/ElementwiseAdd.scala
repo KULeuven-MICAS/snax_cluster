@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util._
 
 class HasElementwiseAdd(
-  elementWidth: Int = 16,
+  elementWidth: Int = 32,
   dataWidth: Int = 512
 ) extends HasDataPathExtension {
   implicit val extensionParam: DataPathExtensionParam =
