@@ -4,14 +4,14 @@ import chisel3._
 import chisel3.util._
 
 class HasElementwiseAdd(
-    elementWidth: Int = 32,
-    dataWidth: Int = 512
+  elementWidth: Int = 32,
+  dataWidth:    Int = 512
 ) extends HasDataPathExtension {
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
       moduleName = s"ElementwiseAddBit${elementWidth}",
       userCsrNum = 1,
-      dataWidth = dataWidth match {
+      dataWidth  = dataWidth match {
         case 0 => elementWidth
         case _ => dataWidth
       }
@@ -26,7 +26,7 @@ class HasElementwiseAdd(
 }
 
 class ElementwiseAdd(
-    elementWidth: Int
+  elementWidth: Int
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
   require(
@@ -40,8 +40,8 @@ class ElementwiseAdd(
   })
   counter.io.ceil := ext_csr_i(0)
   counter.io.reset := ext_start_i
-  counter.io.tick := ext_data_i.fire
-  ext_busy_o := counter.io.value =/= 0.U
+  counter.io.tick  := ext_data_i.fire
+  ext_busy_o       := counter.io.value =/= 0.U
 
   // The wire to connect the output result
   val ext_data_o_bits = Wire(
@@ -76,7 +76,7 @@ class ElementwiseAdd(
     }
   }
 
-  ext_data_o.bits := Cat(ext_data_o_bits.reverse)
+  ext_data_o.bits  := Cat(ext_data_o_bits.reverse)
   ext_data_o.valid := (counter.io.value === (ext_csr_i(0) - 1.U)(7, 0))
   ext_data_i.ready := ext_data_o.ready
 }
