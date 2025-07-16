@@ -38,7 +38,7 @@ abstract class DataPathExtensionTester extends AnyFlatSpec with ChiselScalatestT
 
   hasExtension.extensionParam.moduleName should "pass" in {
     test(new DataPathExtensionHarness(hasExtension))
-      .withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
         dut.io.csr_i.zip(csr_vec).foreach { case (csrPort, csrData) =>
           csrPort.poke(csrData)
         }
