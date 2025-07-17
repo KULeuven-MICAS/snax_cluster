@@ -7,5 +7,5 @@
 {
     M: 56, // Number of rows / height
     N: 33, // Number of columns / width
-    BIT_WIDTH: 16, // Bit width of the data type
+    BIT_WIDTH: 32, // Bit width of the data type
 }

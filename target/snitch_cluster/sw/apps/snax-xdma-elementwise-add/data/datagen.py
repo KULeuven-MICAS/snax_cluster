@@ -32,20 +32,22 @@ def emit_header_file(**kwargs):
 def emit_elementwise_add_data(**kwargs):
     tile_width = None
     element_width = kwargs["BIT_WIDTH"]
-    if element_width == 8 or element_width == 16:
+    if element_width == 8 or element_width == 16 or element_width == 32:
         tile_width = 8
     else:
         raise ValueError(
-            f"Invalid BIT_WIDTH: {element_width}, only 8 and 16 are supported"
+            f"Invalid BIT_WIDTH: {element_width}, only 8, 16 and 32  are supported"
         )
     data_type = None
     if element_width == 8:
         data_type = "uint8_t"
     elif element_width == 16:
         data_type = "uint16_t"
+    elif element_width == 32:
+        data_type = "uint32_t"
     else:
         raise ValueError(
-            f"Invalid BIT_WIDTH: {element_width}, only 8 and 16 are supported"
+            f"Invalid BIT_WIDTH: {element_width}, only 8, 16 and 32 are supported"
         )
 
     emit_str = []
