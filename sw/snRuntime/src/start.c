@@ -51,12 +51,12 @@ static inline void snrt_init_tls() {
         uint8_t* tbss_end = (uint8_t*)&__tbss_end;
         size_t tbss_size = tbss_end - tbss_start;
         uint8_t* tls_tbss_base = tls_dst + size;
-        for (int i = 0; i < snrt_cluster_core_num(); i++) {
-            uint8_t* tbss_dst = tls_tbss_base + i * tls_offset;
-            for (size_t j = 0; j < tbss_size; j++) {
-                tbss_dst[j] = 0;
-            }
-        }
+        // for (int i = 0; i < snrt_cluster_core_num(); i++) {
+        //     uint8_t* tbss_dst = tls_tbss_base + i * tls_offset;
+        //     for (size_t j = 0; j < tbss_size; j++) {
+        //         tbss_dst[j] = 0;
+        //     }
+        // }
     }
 
     snrt_cluster_hw_barrier();
