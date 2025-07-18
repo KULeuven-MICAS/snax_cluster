@@ -29,15 +29,15 @@ PREAMBLE = r"""
 # SPDX-License-Identifier: Apache-2.0
 
 context:
-  git_repo_url: "https://github.com/kuleuven-micas/snax_cluster"
+  git_repo_url: "https://github.com/jorendumoulin/snax_cluster"
   version: {clean_version}
 
 source:
-  git: https://github.com/KULeuven-MICAS/snax_cluster
+  git: https://github.com/jorendumoulin/snax_cluster
   tag: {tag}
 
 about:
-  homepage: https://github.com/KULeuven-MICAS/snax_cluster
+  homepage: https://github.com/jorendumoulin/snax_cluster
   summary: "A heterogeneous accelerator-centric compute cluster"
 
 outputs:"""

@@ -65,7 +65,5 @@ mkdir -p ${PREFIX}/bin
 cp spike-dasm ${PREFIX}/bin/spike-dasm
 mkdir -p ${PREFIX}/snax-utils
 cp util/trace/gen_trace.py ${PREFIX}/snax-utils
-build_snax_verilator cfg/snax_alu_cluster.hjson ${PREFIX}/snax-utils/snax-alu
-build_snax_verilator cfg/snax_KUL_cluster.hjson ${PREFIX}/snax-utils/snax-kul-cluster-mixed-narrow-wide
-build_snax_verilator cfg/snax_KUL_dse_cluster_2D.hjson ${PREFIX}/snax-utils/snax-kul-cluster-dse-2d
-build_snax_verilator cfg/snax_KUL_dse_cluster_3D.hjson ${PREFIX}/snax-utils/snax-kul-cluster-dse-3d
+build_snax_verilator cfg/asplos_matmul.hjson ${PREFIX}/snax-utils/asplos_matmul
+build_snax_verilator cfg/asplos_matvec.hjson ${PREFIX}/snax-utils/asplos_matvec
