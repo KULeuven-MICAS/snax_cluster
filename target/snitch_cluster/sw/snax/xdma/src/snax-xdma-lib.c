@@ -347,7 +347,7 @@ int32_t xdma_memset_1d(void* addr, uint32_t size, uint32_t val){
     }
     // Enable the dst ext with the set value
     // By default the 1st ext is the MEMSET Ext
-    uint32_t ext_csr_value[1] = {val}
+    uint32_t ext_csr_value[1] = {val};
     if (xdma_enable_dst_ext(0, ext_csr_value) != 0) {
         XDMA_DEBUG_PRINT("Error in enabling xdma writer extension 0\n");
         return -1;
