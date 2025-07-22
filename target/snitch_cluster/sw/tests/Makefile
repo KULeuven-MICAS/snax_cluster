@@ -61,7 +61,9 @@ INCDIRS += $(SNRT_DIR)/api/omp
 INCDIRS += $(SNRT_DIR)/src
 INCDIRS += $(SNRT_DIR)/src/omp
 INCDIRS += $(SNRT_DIR)/vendor/riscv-opcodes
-
+# XDMA
+INCDIRS += $(ROOT)/target/snitch_cluster/sw/snax/xdma/src
+INCDIRS += $(ROOT)/target/snitch_cluster/sw/snax/xdma/include
 # math.h needed by snRuntime
 
 INCDIRS += $(SNRT_DIR)/../math/arch/riscv64/

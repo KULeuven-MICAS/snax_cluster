@@ -41,6 +41,10 @@ INCDIRS += $(SNRT_DIR)/src
 INCDIRS += $(SNRT_DIR)/src/omp
 INCDIRS += $(ROOT)/sw/deps/riscv-opcodes
 INCDIRS += $(ROOT)/sw/math/include
+# XDMA
+INCDIRS += $(ROOT)/target/snitch_cluster/sw/snax/xdma/src
+INCDIRS += $(ROOT)/target/snitch_cluster/sw/snax/xdma/include
+
 
 LIBS  = $(MATH_DIR)/build/libmath.a
 LIBS += $(RUNTIME_DIR)/build/libsnRuntime.a

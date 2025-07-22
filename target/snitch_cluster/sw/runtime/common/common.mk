@@ -41,6 +41,11 @@ INCDIRS += $(SNRT_DIR)/../math/src/internal
 INCDIRS += $(SNRT_DIR)/../math/include/bits
 INCDIRS += $(SNRT_DIR)/../math/include
 
+# XDMA
+INCDIRS += $(ROOT)/target/snitch_cluster/sw/snax/xdma/src
+INCDIRS += $(ROOT)/target/snitch_cluster/sw/snax/xdma/include
+
+
 ###########
 # Outputs #
 ###########

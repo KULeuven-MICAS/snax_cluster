@@ -74,8 +74,31 @@ static inline void snrt_init_bss() {
         volatile uint8_t* bss_start = (volatile uint8_t*)&__bss_start;
         volatile uint8_t* bss_end = (volatile uint8_t*)&__bss_end;
         size_t size = bss_end - bss_start;
-        for (volatile uint8_t* p = bss_start; p < bss_end; p++) {
-            *p = 0U;
+        // If the data size is less than 1KB, we use the cpu to init
+        if (size < 1024) {
+            for (volatile uint8_t* p = bss_start; p < bss_end; p++) {
+                *p = 0U;
+            }
+        } else {
+            // Else we use the DMA to init the 64B-aligned addr and use the cpu
+            // to init the rest
+            // 1. Use cpu to init the beginning
+            uintptr_t start_ptr = (uintptr_t)bss_start;
+            uintptr_t aligned_start = (start_ptr + 63) & ~63;
+            for (volatile uint8_t* p = bss_start; p < (uint8_t*)aligned_start; p++) {
+                *p = 0U;
+            }
+            // 2. Use xdma to init the 64B-aligned address
+            volatile uint8_t* dma_start = (volatile uint8_t*)aligned_start;
+            size_t dma_size = (bss_end - dma_start) & ~63;
+            volatile uint8_t* dma_end = dma_start + dma_size;
+            xdma_memset_1d((void*)dma_start, dma_size, 0);
+            int task_id = xdma_start();
+            xdma_local_wait(task_id);
+            // 3. Use the cpu to init the end
+            for (volatile uint8_t* p = dma_end; p < bss_end; p++) {
+                *p = 0U;
+            }
         }
     }
 }

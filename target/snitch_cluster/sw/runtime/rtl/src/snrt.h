@@ -37,3 +37,5 @@
 #include "ssr.h"
 #include "sync.h"
 #include "team.h"
+#include "snax-xdma-csr-addr.h"
+#include "snax-xdma-lib.h"
