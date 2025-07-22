@@ -74,8 +74,10 @@ static inline void snrt_init_bss() {
     if (snrt_cluster_idx() == 0 && snrt_is_dm_core()) {
         volatile uint8_t* bss_start = (volatile uint8_t*)&__bss_start;
         volatile uint8_t* bss_end = (volatile uint8_t*)&__bss_end;
+
         // 1. Byte-level Init until the 4B boundary
-        volatile uint8_t* aligned_start = (volatile uint8_t*)((uintptr_t)(bss_start + 3) & ~(uintptr_t)3);
+        volatile uint8_t* aligned_start =
+            (volatile uint8_t*)((uintptr_t)(bss_start + 3) & ~(uintptr_t)3);
         for (volatile uint8_t* p = bss_start; p < aligned_start; p++) {
             *p = 0U;
         }
