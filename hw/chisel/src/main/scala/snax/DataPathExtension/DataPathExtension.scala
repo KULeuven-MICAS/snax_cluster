@@ -45,51 +45,32 @@ abstract class HasDataPathExtension {
   * 5) Connect Busy signal: ext_busy_o := userDefinedBusy. As the extension does not know the length of the stream, the
   * extension should pull down the signal when there is data under processing.
   */
-abstract class DataPathExtension(implicit
-  extensionParam: DataPathExtensionParam
-) extends Module
+abstract class DataPathExtension(implicit extensionParam: DataPathExtensionParam)
+  extends Module
     with RequireAsyncReset {
 
   val io = IO(new Bundle {
-    val csr_i = Input(
-      Vec(extensionParam.userCsrNum, UInt(32.W))
-    ) // CSR with the first one always byPass signal
-    val start_i = Input(
-      Bool()
-    ) // The start signal triggers the local register to buffer the csr information
-    val bypass_i = Input(
-      Bool()
-    ) // The signal controlling a pair of mux / demux to bypass the extension
+    val csr_i = Input(Vec(extensionParam.userCsrNum, UInt(32.W))) // CSR with the first one always byPass signal
+    val start_i = Input(Bool()) // The start signal triggers the local register to buffer the csr information
+    val bypass_i = Input(Bool()) // The signal controlling a pair of mux / demux to bypass the extension
     val data_i = Flipped(Decoupled(UInt(extensionParam.dataWidth.W)))
     val data_o = Decoupled(UInt(extensionParam.dataWidth.W))
     val busy_o = Output(Bool())
   })
 
-  private[this] val bypass_data = Wire(
-    Decoupled(UInt(extensionParam.dataWidth.W))
-  )
+  private[this] val bypass_data = Wire(Decoupled(UInt(extensionParam.dataWidth.W)))
 
   // Signals under user's namespace
   val ext_data_i = Wire(Decoupled(UInt(extensionParam.dataWidth.W)))
-  dontTouch(
-    ext_data_i
-  ) // Do not touch this signal, it is used to connect with the extension's input
+  dontTouch(ext_data_i) // Do not touch this signal, it is used to connect with the extension's input
   val ext_data_o = Wire(Decoupled(UInt(extensionParam.dataWidth.W)))
-  dontTouch(
-    ext_data_o
-  ) // Do not touch this signal, it is used to connect with the extension's output
+  dontTouch(ext_data_o) // Do not touch this signal, it is used to connect with the extension's output
   val ext_csr_i = io.csr_i
-  dontTouch(
-    ext_csr_i
-  ) // Do not touch this signal, it is used to connect with the extension's CSR
+  dontTouch(ext_csr_i) // Do not touch this signal, it is used to connect with the extension's CSR
   val ext_start_i = io.start_i
-  dontTouch(
-    ext_start_i
-  ) // Do not touch this signal, it is used to connect with the extension's start signal
+  dontTouch(ext_start_i) // Do not touch this signal, it is used to connect with the extension's start signal
   val ext_busy_o = Wire(Bool())
-  dontTouch(
-    ext_busy_o
-  ) // Do not touch this signal, it is used to connect with the extension's busy signal
+  dontTouch(ext_busy_o) // Do not touch this signal, it is used to connect with the extension's busy signal
   io.busy_o := ext_busy_o || ext_data_i.valid
 
   // Structure to bypass extension: Demux
@@ -106,8 +87,7 @@ abstract class DataPathExtension(implicit
   inputDemux.io.out(1) <> bypass_data
 
   // Structure to bypass extension: Mux
-  private[this] val outputMux = Module(
-    new MuxDecoupled(UInt(extensionParam.dataWidth.W), numInput = 2) {
+  private[this] val outputMux = Module(new MuxDecoupled(UInt(extensionParam.dataWidth.W), numInput = 2) {
       override def desiredName = "DataPathExtension_Mux_W" + extensionParam.dataWidth.toString
     }
   )
@@ -183,9 +163,7 @@ class SystemVerilogDataPathExtension(topmodule: String, filelist: Seq[String])(i
   extensionParam: DataPathExtensionParam
 ) extends DataPathExtension {
 
-  def this(topmodule: String, dir: String)(implicit
-    extensionParam: DataPathExtensionParam
-  ) =
+  def this(topmodule: String, dir: String)(implicit extensionParam: DataPathExtensionParam) =
     this(
       topmodule, {
         val folder   = new File(dir)
