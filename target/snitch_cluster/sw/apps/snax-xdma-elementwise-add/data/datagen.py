@@ -20,9 +20,8 @@ from data_utils import format_scalar_definition, format_vector_definition  # noq
 
 np.random.seed(320)
 
+
 # Add stdint.h header
-
-
 def emit_header_file(**kwargs):
     emit_str = ["#include <stdint.h>"]
     emit_str += emit_elementwise_add_data(**kwargs)
@@ -57,9 +56,9 @@ def emit_elementwise_add_data(**kwargs):
     padded_N = (kwargs["N"] + tile_width - 1) // tile_width * tile_width
 
     # First input matrix for elementwise add
-    matrix1_data = np.zeros((padded_M, padded_N), dtype=np.uint64)
+    matrix1_data = np.zeros((padded_M, padded_N), dtype=np.uint32)
     matrix1_data[: kwargs["M"], : kwargs["N"]] = np.random.randint(
-        low=0, high=1 << element_width, size=(kwargs["M"], kwargs["N"]), dtype=np.uint64
+        low=0, high=1 << element_width, size=(kwargs["M"], kwargs["N"]), dtype=np.uint32
     )
     input_matrix1 = matrix1_data
     input_matrix1 = input_matrix1.ravel()
@@ -71,9 +70,9 @@ def emit_elementwise_add_data(**kwargs):
     emit_str += [format_vector_definition(data_type, "input_matrix1", input_matrix1)]
 
     # Second input matrix for elementwise add
-    matrix2_data = np.zeros((padded_M, padded_N), dtype=np.uint64)
+    matrix2_data = np.zeros((padded_M, padded_N), dtype=np.uint32)
     matrix2_data[: kwargs["M"], : kwargs["N"]] = np.random.randint(
-        low=0, high=1 << element_width, size=(kwargs["M"], kwargs["N"]), dtype=np.uint64
+        low=0, high=1 << element_width, size=(kwargs["M"], kwargs["N"]), dtype=np.uint32
     )
     input_matrix2 = matrix2_data
     input_matrix2 = input_matrix2.ravel()

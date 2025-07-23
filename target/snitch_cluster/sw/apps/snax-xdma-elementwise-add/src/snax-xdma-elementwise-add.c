@@ -22,8 +22,6 @@ int main() {
         (void *)(tcdm_baseaddress +
                  (matrix1_size * sizeof(input_matrix1[0]) * 8 + 7) / 8);
 
-    printf("1 : tcdm_in1: %p, tcdm_in2: %p\n", tcdm_in1, tcdm_in2);
-
     // Put the output at the middle of tcdm
     void *tcdm_out =
         (void *)(tcdm_baseaddress +
@@ -64,7 +62,6 @@ int main() {
             printf("Error in disabling writer xdma extension 1\n");
             err++;
         }
-        printf("2 : tcdm_in1: %p, tcdm_in2: %p\n", tcdm_in1, tcdm_in2);
 
         // --------------------- Configure the AGU --------------------- //
         xdma_memcpy_nd(tcdm_in1, tcdm_out, spatial_stride_src,
@@ -78,23 +75,14 @@ int main() {
         xdma_local_wait(task_id);
         printf("xdma task %d is done in %d cycles\n", task_id,
                xdma_last_task_cycle());
-        printf("3 : tcdm_in1: %p, tcdm_in2: %p\n", tcdm_in1, tcdm_in2);
 
         // --------------------- Checking the Results --------------------- //
         uint16_t *golden_result = (uint16_t *)golden_output_matrix;
         uint16_t *tcdm_result = (uint16_t *)tcdm_out;
         uint16_t *tcdm_src1 = (uint16_t *)tcdm_in1;
         uint16_t *tcdm_src2 = (uint16_t *)tcdm_in2;
-        printf(
-            "tcdm_in1_pointer_val: %p, tcdm_in2_pointer_val: %p, "
-            "tcdm_out_pointer_val: %p\n",
-            tcdm_src1, tcdm_src2, tcdm_result);
 
         for (int i = 0; i < matrix1_size * sizeof(input_matrix1[0]) / 2; i++) {
-            printf("tcdm_src1[%d]=%d, tcdm_src2[%d]=%d\n", i, tcdm_src1[i], i,
-                   tcdm_src2[i]);
-            printf("tcdm_result[%d]=%d, golden_result[%d]=%d\n", i,
-                   tcdm_result[i], i, golden_result[i]);
             if (tcdm_result[i] != golden_result[i]) {
                 printf("The sum is incorrect at byte %d! \n", i << 2);
             }

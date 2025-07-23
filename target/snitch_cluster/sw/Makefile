@@ -29,6 +29,9 @@ endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster.hjson)
 SUBDIRS += snax/xdma
 endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
+SUBDIRS += snax/xdma
+endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore.hjson)
 SUBDIRS += snax/versacore snax/xdma
 endif
