@@ -6,9 +6,12 @@
 
 package snax_acc.versacore
 
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+
+import chisel3._
 
 // hjson configuration parser, from hjson to SpatialArrayParam
 object SpatialArrayParamParser {
@@ -25,12 +28,11 @@ object SpatialArrayParamParser {
       "snax_num_rw_csr should be 7 for VersaCore"
     )
 
-    /** Convert input widths to corresponding FP types TODO it is now impossible to instantiate BF16 types. Solutions:
-      * TODO * the json definition must make a distinction between types, rather than just the width (preferred by
-      * Robin) TODO * `OpType` operator must be defined for BF types
+    /** Convert input widths to corresponding FP types
       */
     def widthToFpType(width: Int) = {
       width match {
+        case 8  => FP8
         case 16 => FP16
         case 32 => FP32
         case _  => throw new NotImplementedError()
@@ -38,33 +40,40 @@ object SpatialArrayParamParser {
     }
 
     /** Convert input widths to corresponding types */
-    def widthToType(width: Int, opType: OpType, isInputB: Boolean): DataType = {
-      opType match {
-        case UIntUIntOp | SIntSIntOp => new IntType(width)
-        case Float16IntOp            => if (isInputB) new IntType(width) else widthToFpType(width)
-        case Float16Float16Op        => widthToFpType(width)
-        case _                       => throw new NotImplementedError()
+    def widthToType(width: Int, dataTypeStr: String): DataType = {
+      dataTypeStr match {
+        case "SInt"  => new IntType(width)
+        case "Float" => widthToFpType(width)
+        case _       => throw new NotImplementedError()
       }
     }
 
-    val opTypes = cfg("snax_versacore_op_type").arr.map(v => OpType.fromString(v.str)).toSeq
-
-    def widthSeqToTypeSeq(widthSeq: Seq[Int], isInputB: Boolean = false): Seq[DataType] =
-      widthSeq.zip(opTypes).map({ case (a, b) => widthToType(a, b, isInputB) })
+    /** Convert a sequence of widths and string to a sequence of DataTypes */
+    def widthSeqToTypeSeq(widthSeq: Seq[Int], dataTypeStr: Seq[String]): Seq[DataType] =
+      widthSeq.zip(dataTypeStr).map { case (a, b) => widthToType(a, b) }
 
     SpatialArrayParam(
-      opType                 = opTypes,
       macNum                 = getSeqInt("snax_versacore_mac_num"),
-      inputTypeA             = widthSeqToTypeSeq(getSeqInt("snax_versacore_input_a_element_width")),
-      inputTypeB             = widthSeqToTypeSeq(getSeqInt("snax_versacore_input_b_element_width"), isInputB = true),
-      // you can adjust if different
-      inputTypeC             = widthSeqToTypeSeq(getSeqInt("snax_versacore_output_element_width")),
-      mulElemWidth           = getSeqInt("snax_versacore_multiply_element_width"),
-      outputTypeD            = widthSeqToTypeSeq(getSeqInt("snax_versacore_output_element_width")),
+      inputTypeA             = widthSeqToTypeSeq(
+        getSeqInt("snax_versacore_input_a_element_width"),
+        cfg("snax_versacore_input_a_data_type").arr.map(_.str).toSeq
+      ),
+      inputTypeB             = widthSeqToTypeSeq(
+        getSeqInt("snax_versacore_input_b_element_width"),
+        cfg("snax_versacore_input_b_data_type").arr.map(_.str).toSeq
+      ),
+      inputTypeC             = widthSeqToTypeSeq(
+        getSeqInt("snax_versacore_input_c_element_width"),
+        cfg("snax_versacore_input_c_data_type").arr.map(_.str).toSeq
+      ),
+      outputTypeD            = widthSeqToTypeSeq(
+        getSeqInt("snax_versacore_output_d_element_width"),
+        cfg("snax_versacore_output_d_data_type").arr.map(_.str).toSeq
+      ),
       arrayInputAWidth       = cfg("snax_versacore_array_input_a_width").num.toInt,
       arrayInputBWidth       = cfg("snax_versacore_array_input_b_width").num.toInt,
       arrayInputCWidth       = cfg("snax_versacore_array_input_c_width").num.toInt,
-      arrayOutputDWidth      = cfg("snax_versacore_array_output_width").num.toInt,
+      arrayOutputDWidth      = cfg("snax_versacore_array_output_d_width").num.toInt,
       arrayDim               = get3DSeq("snax_versacore_spatial_unrolling"),
       serialInputADataWidth  = cfg("snax_versacore_serial_a_width").num.toInt,
       serialInputBDataWidth  = cfg("snax_versacore_serial_b_width").num.toInt,
@@ -114,14 +123,37 @@ object VersaCoreGen {
       "default"
     )
 
-    // generate verilog file
-    _root_.circt.stage.ChiselStage.emitSystemVerilogFile(
-      new VersaCore(params),
-      Array(
-        "--target-dir",
-        outPath
+    // Step 1: Get the SystemVerilog string
+    var sv_string = getVerilogString(new VersaCore(params))
+
+    // Step 2: Remove the FIRRTL file list footer
+    sv_string = sv_string
+      .split("\n")
+      .takeWhile(
+        !_.contains(
+          """// ----- 8< ----- FILE "firrtl_black_box_resource_files.f" ----- 8< -----"""
+        )
       )
-    )
+      .mkString("\n")
+
+    // Step 3: Reorder the package if needed
+    val lines: Array[String] = sv_string.split("\n")
+
+    // Find package block range
+    val startIdx = lines.indexWhere(_.contains("package fpnew_pkg_snax"))
+
+    if (startIdx != -1) {
+      val endIdx = lines.indexWhere(_.trim == "endpackage", startIdx)
+      if (endIdx != -1 && endIdx > startIdx) {
+        val pkgBlock       = lines.slice(startIdx, endIdx + 1)
+        val remainingLines = lines.take(startIdx) ++ lines.drop(endIdx + 1)
+        sv_string = (pkgBlock ++ remainingLines).mkString("\n")
+      }
+    }
+
+    // Step 4: Write to file
+    val outFile = Paths.get(s"$outPath/VersaCore.sv")
+    Files.write(outFile, sv_string.getBytes(StandardCharsets.UTF_8))
 
     // generate sv wrapper file
     var macro_template = ""
