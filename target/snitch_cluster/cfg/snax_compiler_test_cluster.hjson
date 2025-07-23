@@ -10,8 +10,11 @@
     },
 
     cluster: {
-        name: "snax_compiler_test_cluster",
-        bender_target: ["snax_compiler_test_cluster"],
+        name: snax_KUL_cluster
+        bender_target: 
+        [
+            snax_KUL_cluster
+        ],
         boot_addr: 4096, // 0x1000
         cluster_base_addr: 268435456, // 0x1000_0000
         cluster_base_offset: 4194304,  // 4MB
@@ -150,7 +153,7 @@
     dma_core_template: {
         isa: "rv32ima",
         snax_xdma_cfg: {
-            bender_target: ["snax_compiler_test_cluster_xdma"],
+            bender_target: ["snax_KUL_cluster_xdma"],
             // Cross Cluster Calling Cfg
             max_multicast: 25,
             max_dimension: 5,
