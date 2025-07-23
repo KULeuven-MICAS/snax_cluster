@@ -8,7 +8,7 @@ class ElementwiseAdd2Tester extends DataPathExtensionTester {
   def hasExtension = new HasElementwiseAdd(elementWidth = 32, dataWidth = 512)
 
   val amount_of_vectors = 2
-  val csr_vec = Seq(amount_of_vectors)
+  val csr_vec           = Seq(amount_of_vectors)
 
   val inputData  = collection.mutable.Buffer[BigInt]()
   val outputData = collection.mutable.Buffer[BigInt]()
@@ -25,8 +25,10 @@ class ElementwiseAdd2Tester extends DataPathExtensionTester {
     inputData.append(BigInt(rightInputMatrix1.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     inputData.append(BigInt(rightInputMatrix2.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
 
-    val leftOutputMatrix = leftInputMatrix1.zip(leftInputMatrix2).map { case (a, b) => a.zip(b).map { case (x, y) => x + y } }
-    val rightOutputMatrix = rightInputMatrix1.zip(rightInputMatrix2).map { case (a, b) => a.zip(b).map { case (x, y) => x + y } }
+    val leftOutputMatrix  =
+      leftInputMatrix1.zip(leftInputMatrix2).map { case (a, b) => a.zip(b).map { case (x, y) => x + y } }
+    val rightOutputMatrix =
+      rightInputMatrix1.zip(rightInputMatrix2).map { case (a, b) => a.zip(b).map { case (x, y) => x + y } }
     outputData.append(BigInt(leftOutputMatrix.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     outputData.append(BigInt(rightOutputMatrix.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
   }
@@ -41,7 +43,7 @@ class ElementwiseAdd3Tester extends DataPathExtensionTester {
   def hasExtension = new HasElementwiseAdd(elementWidth = 32, dataWidth = 512)
 
   val amount_of_vectors = 3
-  val csr_vec = Seq(amount_of_vectors)
+  val csr_vec           = Seq(amount_of_vectors)
 
   val inputData  = collection.mutable.Buffer[BigInt]()
   val outputData = collection.mutable.Buffer[BigInt]()
@@ -63,8 +65,12 @@ class ElementwiseAdd3Tester extends DataPathExtensionTester {
     inputData.append(BigInt(rightInputMatrix2.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     inputData.append(BigInt(rightInputMatrix3.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
 
-    val leftOutputMatrix = leftInputMatrix1.zip(leftInputMatrix2.zip(leftInputMatrix3)).map { case (a, (b,c)) => a.zip(b.zip(c)).map { case (x, (y, z)) => x + y + z } }
-    val rightOutputMatrix = rightInputMatrix1.zip(rightInputMatrix2.zip(rightInputMatrix3)).map { case (a, (b,c)) => a.zip(b.zip(c)).map { case (x, (y, z)) => x + y + z } }
+    val leftOutputMatrix  = leftInputMatrix1.zip(leftInputMatrix2.zip(leftInputMatrix3)).map { case (a, (b, c)) =>
+      a.zip(b.zip(c)).map { case (x, (y, z)) => x + y + z }
+    }
+    val rightOutputMatrix = rightInputMatrix1.zip(rightInputMatrix2.zip(rightInputMatrix3)).map { case (a, (b, c)) =>
+      a.zip(b.zip(c)).map { case (x, (y, z)) => x + y + z }
+    }
     outputData.append(BigInt(leftOutputMatrix.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     outputData.append(BigInt(rightOutputMatrix.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
   }
