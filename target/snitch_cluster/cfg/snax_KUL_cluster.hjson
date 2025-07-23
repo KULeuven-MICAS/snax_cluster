@@ -167,7 +167,6 @@
             },
             reader_extensions: {
                 HasMaxPool: {},
-                HasElementwiseAdd: {},
             }
         },
         // Xdiv_sqrt: true,
