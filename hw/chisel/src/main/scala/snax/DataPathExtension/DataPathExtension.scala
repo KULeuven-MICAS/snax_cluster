@@ -46,16 +46,16 @@ abstract class HasDataPathExtension {
   * extension should pull down the signal when there is data under processing.
   */
 abstract class DataPathExtension(implicit extensionParam: DataPathExtensionParam)
-  extends Module
+    extends Module
     with RequireAsyncReset {
 
   val io = IO(new Bundle {
     val csr_i = Input(Vec(extensionParam.userCsrNum, UInt(32.W))) // CSR with the first one always byPass signal
-    val start_i = Input(Bool()) // The start signal triggers the local register to buffer the csr information
+    val start_i  = Input(Bool()) // The start signal triggers the local register to buffer the csr information
     val bypass_i = Input(Bool()) // The signal controlling a pair of mux / demux to bypass the extension
-    val data_i = Flipped(Decoupled(UInt(extensionParam.dataWidth.W)))
-    val data_o = Decoupled(UInt(extensionParam.dataWidth.W))
-    val busy_o = Output(Bool())
+    val data_i   = Flipped(Decoupled(UInt(extensionParam.dataWidth.W)))
+    val data_o   = Decoupled(UInt(extensionParam.dataWidth.W))
+    val busy_o   = Output(Bool())
   })
 
   private[this] val bypass_data = Wire(Decoupled(UInt(extensionParam.dataWidth.W)))
@@ -88,9 +88,8 @@ abstract class DataPathExtension(implicit extensionParam: DataPathExtensionParam
 
   // Structure to bypass extension: Mux
   private[this] val outputMux = Module(new MuxDecoupled(UInt(extensionParam.dataWidth.W), numInput = 2) {
-      override def desiredName = "DataPathExtension_Mux_W" + extensionParam.dataWidth.toString
-    }
-  )
+    override def desiredName = "DataPathExtension_Mux_W" + extensionParam.dataWidth.toString
+  })
   outputMux.io.sel := io.bypass_i
   outputMux.io.out <> io.data_o
   // When bypass is 0, io.in(0) is connected with extension's output
