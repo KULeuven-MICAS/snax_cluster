@@ -37,7 +37,7 @@ int main() {
         int32_t output_zp_i = 0;
         uint32_t shift_i = 47;
 
-        uint32_t ext_param[1] = {xdma_csr_amount_of_tensors};
+        uint32_t ext_param[4] = {input_zp_i, multiplier_i, output_zp_i, shift_i};
         if (xdma_disable_src_ext(0) != 0) {
             printf("Error in disabling reader xdma extension 0\n");
             err++;
@@ -64,7 +64,7 @@ int main() {
         }
 
         // --------------------- Configure the AGU --------------------- //
-        xdma_memcpy_nd(tcdm_in1, tcdm_out, spatial_stride_src,
+        xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src,
                        spatial_stride_dst, temporal_dimension_src,
                        temporal_strides_src, temporal_bounds_src,
                        temporal_dimension_dst, temporal_strides_dst,
@@ -77,10 +77,10 @@ int main() {
                xdma_last_task_cycle());
 
         // --------------------- Checking the Results --------------------- //
-        uint16_t *golden_result = (uint16_t *)golden_output_matrix;
-        uint16_t *tcdm_result = (uint16_t *)tcdm_out;
+        uint8_t *golden_result = (uint8_t *)golden_output_matrix;
+        uint8_t *tcdm_result = (uint8_t *)tcdm_out;
 
-        for (int i = 0; i < matrix1_size * sizeof(input_matrix1[0]) / 2; i++) {
+        for (int i = 0; i < matrix_size * sizeof(input_matrix[0]) / 4; i++) {
             if (tcdm_result[i] != golden_result[i]) {
                 printf("The sum is incorrect at byte %d! \n", i << 2);
             }

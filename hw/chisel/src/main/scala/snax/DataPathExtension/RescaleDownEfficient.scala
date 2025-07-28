@@ -36,7 +36,7 @@ class RescaleDownEfficientPE (
 
   // add value for rounding
   val shifted_one = Wire(SInt(32.W))
-  shifted_one := (1.S << (io.post_shift - 1.U).asUInt).asSInt
+  shifted_one := (1.S << io.post_shift).asSInt
 
   val shifted_data_i = Wire(SInt(32.W))
   shifted_data_i := (multiplied_data_i + shifted_one)
@@ -117,11 +117,6 @@ class RescaleDownEfficient(
       counter.io.tick  := ext_data_i.fire
       ext_busy_o       := counter.io.value =/= ((in_elementWidth / out_elementWidth).U - 1.U)
 
-      val old_counter = RegInit(0.U(log2Ceil(in_elementWidth / out_elementWidth).W))
-      when(ext_data_i.fire){
-        old_counter := counter.io.value
-      }
-
       val input_zp = Wire(UInt(32.W))
       val multiplier = Wire(UInt(32.W))
       val output_zp = Wire(UInt(32.W))
@@ -132,11 +127,7 @@ class RescaleDownEfficient(
       output_zp := ext_csr_i(2).asUInt
       shift := ext_csr_i(3).asUInt
 
-      val regs = RegInit(
-        VecInit(
-          Seq.fill(extensionParam.dataWidth / out_elementWidth)(0.S(out_elementWidth.W))
-        )
-      )
+
 
       //Determine the pre-shifts and post-shifts for the multiplier and input data. 
       //Multiplier pre-shift is the same for all PEs, input data pre-shift is different for each PE.
@@ -167,6 +158,15 @@ class RescaleDownEfficient(
         double_rounding_account := 0.S
       }
 
+
+      val regs = RegInit(
+        VecInit(
+          Seq.fill((extensionParam.dataWidth / out_elementWidth) - (extensionParam.dataWidth / in_elementWidth))(0.S(out_elementWidth.W))
+        )
+      )
+
+      val out_wires = Wire(Vec(extensionParam.dataWidth / in_elementWidth, SInt(out_elementWidth.W)))
+
       val PEs = for (i <- 0 until extensionParam.dataWidth / in_elementWidth) yield {
         val PE = Module(new RescaleDownEfficientPE(in_elementWidth = in_elementWidth, out_elementWidth = out_elementWidth) {
           //override val desiredName = "RescaleDownEfficientPE"
@@ -185,11 +185,14 @@ class RescaleDownEfficient(
         PE.io.thirty_one_minus_shifts := thirty_one_minus_shifts.asSInt
 
         when (ext_data_i.fire){
-          regs(counter.io.value  * (extensionParam.dataWidth / in_elementWidth).U + i.U) := PE.io.data_o.asSInt
+          when(counter.io.value =/= ((in_elementWidth / out_elementWidth).U - 1.U)) {
+            regs(counter.io.value * (extensionParam.dataWidth / in_elementWidth).U + i.U) := PE.io.data_o.asSInt
+          }
         }
+        out_wires(i) := PE.io.data_o.asSInt 
       }
 
-      ext_data_o.bits := regs.asUInt
-      ext_data_o.valid := ext_data_i.fire && old_counter === ((in_elementWidth / out_elementWidth).U - 1.U)
+      ext_data_o.bits := VecInit(regs ++ out_wires).asTypeOf(ext_data_o.bits)
+      ext_data_o.valid := ext_data_i.fire && counter.io.value === ((in_elementWidth / out_elementWidth).U - 1.U)
       ext_data_i.ready := ext_data_o.ready //Check if this can be more efficient
 }

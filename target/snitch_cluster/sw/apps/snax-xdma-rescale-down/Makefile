@@ -4,8 +4,8 @@
 #
 # Yunhao Deng <yunhao.deng@kuleuven.be>
 
-APP     = snax-xdma-elementwise-add
-SRCS    = src/snax-xdma-elementwise-add.c
+APP     = snax-xdma-rescale-down
+SRCS    = src/snax-xdma-rescale-down.c
 INCDIRS = data
 INCDIRS += ../../snax/xdma/include
 
