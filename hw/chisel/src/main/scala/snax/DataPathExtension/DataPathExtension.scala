@@ -74,11 +74,9 @@ abstract class DataPathExtension(implicit extensionParam: DataPathExtensionParam
   io.busy_o := ext_busy_o || ext_data_i.valid
 
   // Structure to bypass extension: Demux
-  private[this] val inputDemux = Module(
-    new DemuxDecoupled(UInt(extensionParam.dataWidth.W), numOutput = 2) {
-      override def desiredName = "DataPathExtension_Demux_W" + extensionParam.dataWidth.toString
-    }
-  )
+  private[this] val inputDemux = Module(new DemuxDecoupled(UInt(extensionParam.dataWidth.W), numOutput = 2) {
+    override def desiredName = "DataPathExtension_Demux_W" + extensionParam.dataWidth.toString
+  })
   inputDemux.io.sel := io.bypass_i
   inputDemux.io.in <> io.data_i
   // When bypass is 0, io.out(0) is connected with extension's input
