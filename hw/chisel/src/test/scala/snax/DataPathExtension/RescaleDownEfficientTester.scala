@@ -1,5 +1,7 @@
-package snax.DataPathExtensionimport
-snax.DataPathExtension.HasRescaleDownEfficient
+package snax.DataPathExtension
+import scala.util.Random
+
+import snax.DataPathExtension.HasRescaleDownEfficient
 
 class RescaleDownEfficientTester extends DataPathExtensionTester {
 
@@ -18,8 +20,8 @@ class RescaleDownEfficientTester extends DataPathExtensionTester {
   val outputData = collection.mutable.Buffer[BigInt]()
 
   for (_ <- 0 until 128) {
-    val inputMatrix: Array[Int] = Array.fill(64)(1360653)
-    // val inputMatrix: Array[Int] = Array.fill(64)(Random.between(-2 << 22, 2 << 22))
+    // val inputMatrix: Array[Int] = Array.fill(64)(1360653)
+    val inputMatrix: Array[Int] = Array.fill(64)(Random.between(-2 << 22, 2 << 22))
     val inputMatrix1 = inputMatrix.slice(0, 16)
     val inputMatrix2 = inputMatrix.slice(16, 32)
     val inputMatrix3 = inputMatrix.slice(32, 48)
@@ -29,7 +31,7 @@ class RescaleDownEfficientTester extends DataPathExtensionTester {
     inputData.append(BigInt(inputMatrix3.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     inputData.append(BigInt(inputMatrix4.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
 
-    // val outputMatrix = inputMatrix.map( i => ((i - input_zp) * multiplier) >> shift + output_zp)
+    // Test does not work exact. only estimate! use sw application to verify correctness
     val outputMatrix = inputMatrix.map { i =>
       (((i.toLong - input_zp) * multiplier.toLong) >> shift) + output_zp
     }
