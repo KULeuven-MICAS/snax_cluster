@@ -6,11 +6,13 @@
 
 APP     = snax-xdma-maxpool
 SRCS    = src/snax-xdma-maxpool.c
-INCDIRS = data
-INCDIRS += ../../snax/xdma/include
+INCDIRS += data
+INCDIRS += ../../snax/xdma/include/
 
+# Add binary to final build
 RISCV_LDFLAGS += ../../snax/xdma/build/snax-xdma-lib.o
 
 include ../common.mk
 include ./data/Makefile
+
 $(DEP): $(DATA_H)
