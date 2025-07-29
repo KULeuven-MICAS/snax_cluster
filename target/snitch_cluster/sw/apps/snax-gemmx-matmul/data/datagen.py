@@ -61,23 +61,43 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int", "N", kwargs["N"])]
 
     data_str += [format_scalar_definition("int32_t", "Aslstride0", 1)]
-    data_str += [format_scalar_definition("int32_t", "Aslstride1", bankWidth / 8)]
+
     data_str += [format_scalar_definition("int32_t", "Atlbound0", kwargs["K"])]
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "Atlstride0", input_data_width * tileSize * meshRow / 8
-        )
-    ]
     data_str += [format_scalar_definition("int32_t", "Atlbound1", kwargs["N"])]
-    data_str += [format_scalar_definition("int32_t", "Atlstride1", 0)]
     data_str += [format_scalar_definition("int32_t", "Atlbound2", kwargs["M"])]
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "Atlstride2",
-            kwargs["K"] * input_data_width * tileSize * meshRow / 8,
-        )
-    ]
+
+    if kwargs['data_layout_A'] == 'blocked_row_major':
+        data_str += [format_scalar_definition("int32_t", "Aslstride1", bankWidth / 8)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t", "Atlstride0", input_data_width * tileSize * meshRow / 8
+            )
+        ]
+        data_str += [format_scalar_definition("int32_t", "Atlstride1", 0)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t",
+                "Atlstride2",
+                kwargs["K"] * input_data_width * tileSize * meshRow / 8,
+            )
+        ]
+    elif kwargs['data_layout_A'] == 'row_major':
+        data_str += [format_scalar_definition("int32_t", "Aslstride1", kwargs["K"] * tileSize * input_data_width / 8)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t", "Atlstride0", input_data_width * tileSize / 8
+            )
+        ]
+        data_str += [format_scalar_definition("int32_t", "Atlstride1", 0)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t",
+                "Atlstride2",
+                kwargs["K"] * input_data_width * tileSize * meshRow / 8,
+            )
+        ]
+    else:
+        raise ValueError("Unsupported data layout for A: {}".format(kwargs['data_layout_A']))
     data_str += [format_scalar_definition("int32_t", "Atlbound3", 1)]
     data_str += [format_scalar_definition("int32_t", "Atlstride3", 0)]
     data_str += [format_scalar_definition("int32_t", "Atlbound4", 1)]
@@ -86,23 +106,44 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "Atlstride5", 0)]
 
     data_str += [format_scalar_definition("int32_t", "Bslstride0", 1)]
-    data_str += [format_scalar_definition("int32_t", "Bslstride1", bankWidth / 8)]
+
     data_str += [format_scalar_definition("int32_t", "Btlbound0", kwargs["K"])]
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "Btlstride0", input_data_width * tileSize * meshCol / 8
-        )
-    ]
     data_str += [format_scalar_definition("int32_t", "Btlbound1", kwargs["N"])]
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "Btlstride1",
-            kwargs["K"] * input_data_width * tileSize * meshCol / 8,
-        )
-    ]
     data_str += [format_scalar_definition("int32_t", "Btlbound2", kwargs["M"])]
-    data_str += [format_scalar_definition("int32_t", "Btlstride2", 0)]
+
+    if kwargs['data_layout_B'] == 'blocked_col_major':
+        data_str += [format_scalar_definition("int32_t", "Bslstride1", bankWidth / 8)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t", "Btlstride0", input_data_width * tileSize * meshCol / 8
+            )
+        ]
+        data_str += [
+            format_scalar_definition(
+                "int32_t",
+                "Btlstride1",
+                kwargs["K"] * input_data_width * tileSize * meshCol / 8,
+            )
+        ]
+        data_str += [format_scalar_definition("int32_t", "Btlstride2", 0)]
+
+    elif kwargs['data_layout_B'] == 'col_major':
+        data_str += [format_scalar_definition("int32_t", "Bslstride1", kwargs["K"] * tileSize * input_data_width / 8)]
+        data_str += [
+            format_scalar_definition(
+                "int32_t", "Btlstride0", input_data_width * tileSize / 8
+            )
+        ]
+        data_str += [
+            format_scalar_definition(
+                "int32_t",
+                "Btlstride1",
+                kwargs["K"] * input_data_width * tileSize * meshCol / 8,
+            )
+        ]
+        data_str += [format_scalar_definition("int32_t", "Btlstride2", 0)]
+    else:
+        raise ValueError("Unsupported data layout for B: {}".format(kwargs['data_layout_B']))
 
     data_str += [format_scalar_definition("int32_t", "Cslstride0", bankWidth / 8)]
     c32_spatial_bound_0 = 8
@@ -231,6 +272,8 @@ def emit_matmul_data(**kwargs):
     enable_full_C = kwargs["broadcast_C"] == 0 and kwargs["channel_en_C"] == 1
 
     assert broadcast_C or disable_C or enable_full_C, "Invalid C settings"
+
+    assert kwargs["data_layout_C"] == 'blocked_row_major' if broadcast_C else True, "C should be in blocked row major layout if broadcast_C is enabled"
 
     if broadcast_C == 1:
         C = np.random.randint(MIN, MAX, size=(kwargs["M"], kwargs["N"], 1, meshCol))

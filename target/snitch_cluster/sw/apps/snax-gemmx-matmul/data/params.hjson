@@ -5,14 +5,23 @@
 // Cluster configuration for a matmul testbench system.
 {
   // gemm configurations
-  transposed_A: 1,
+  transposed_A: 0,
   transposed_B: 0,
-  K: 18,
-  N: 2,
-  M: 1,
+  K: 4,
+  N: 4,
+  M: 4,
   bypassSIMD: 0,
-  broadcast_C: 1,
-  channel_en_C: 1,
+  broadcast_C: 0,
+  channel_en_C: 0,
+
+  // data layout
+  // data_layout_A: 'blocked_row_major',
+  // data_layout_B: 'blocked_col_major',
+  // data_layout_C: 'blocked_row_major',
+
+  data_layout_A: 'row_major',
+  data_layout_B: 'col_major',
+  data_layout_C: 'blocked_row_major',
 
   // hardware parameters
   meshRow : 8,

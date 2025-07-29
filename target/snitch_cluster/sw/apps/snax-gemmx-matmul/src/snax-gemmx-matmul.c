@@ -104,6 +104,13 @@ int main() {
             err += check_gemmx_result_D32(local_d32, D32, Batch, M, N, false);
         }
 
+        int32_t gemmx_cycles = read_gemmx_perf_counter();
+        int32_t gemmx_streamer_cycles = read_gemmx_streamer_perf_counter();
+        printf("Workload size: M = %d, N = %d, K = %d\n", M, N, K);
+        printf("SNAX GEMM Ideal cycles: %d\n", M * K * N);
+        printf("SNAX GEMM cycles: %d\n", gemmx_cycles);
+        printf("SNAX GEMM Streamer cycles: %d\n", gemmx_streamer_cycles);
+
         printf("SNAX GEMM Matmul: %s, Error: %d . bypassSIMD = %d .\n",
                err ? "FAIL" : "PASS", err, bypassSIMD);
     };
