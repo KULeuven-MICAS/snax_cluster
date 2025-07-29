@@ -15,7 +15,8 @@ import hjson
 import numpy as np
 
 # Add data utility path
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                             "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
 from snax_utils import postprocessing_simd_golden_model_V3  # noqa E402
 
@@ -44,20 +45,26 @@ def emit_elementwise_add_data(**kwargs):
     # First input matrix for elementwise add
     matrix1_data = np.zeros((padded_M, padded_N), dtype=np.int32)
     matrix1_data[: kwargs["M"], : kwargs["N"]] = np.random.randint(
-        low=-kwargs["max_in_range"], high=kwargs["max_in_range"], size=(kwargs["M"], kwargs["N"]), dtype=np.int32
+        low=-kwargs["max_in_range"],
+        high=kwargs["max_in_range"],
+        size=(kwargs["M"], kwargs["N"]),
+        dtype=np.int32,
     )
     input_matrix1 = matrix1_data
     input_matrix1 = input_matrix1.ravel()
 
     # Emit input matrix
-    emit_str += [format_scalar_definition("uint32_t", "matrix_size", matrix1_data.size)]
-    emit_str += [format_vector_definition(data_type, "input_matrix", input_matrix1)]
+    emit_str += [format_scalar_definition("uint32_t", "matrix_size",
+                                          matrix1_data.size)]
+    emit_str += [format_vector_definition(data_type, "input_matrix",
+                                          input_matrix1)]
 
     # Emit output matrix
     output_matrix = []
     for data_element in input_matrix1:
         output_matrix.append(
-            #V3 Holds the approximation of the TOSA.Rescale operation. use V2 for the exact model
+            # V3 Holds the approximation of the TOSA.Rescale operation.
+            # use V2 for the exact model
             postprocessing_simd_golden_model_V3(
                 data_element,
                 kwargs["input_zp_i"],
@@ -67,13 +74,14 @@ def emit_elementwise_add_data(**kwargs):
                 kwargs["min_int_i"],
                 kwargs["double_round_i"],
                 kwargs["multiplier_i"],
+            )
         )
-    )
     output_matrix = np.array(output_matrix, dtype=np.int8)
 
     output_matrix = output_matrix.ravel()
     emit_str += [
-        format_vector_definition("int8_t", "golden_output_matrix", output_matrix)
+        format_vector_definition("int8_t", "golden_output_matrix",
+                                 output_matrix)
     ]
 
     # Emit the configuration for XDMA
@@ -104,16 +112,20 @@ def emit_elementwise_add_data(**kwargs):
     ]
 
     emit_str += [
-        format_scalar_definition("uint32_t", "spatial_stride_src", spatial_stride_src)
+        format_scalar_definition("uint32_t", "spatial_stride_src",
+                                 spatial_stride_src)
     ]
     emit_str += [
-        format_scalar_definition("uint32_t", "spatial_stride_dst", spatial_stride_dst)
+        format_scalar_definition("uint32_t", "spatial_stride_dst",
+                                 spatial_stride_dst)
     ]
     emit_str += [
-        format_vector_definition("uint32_t", "temporal_bounds_src", temporal_bounds_src)
+        format_vector_definition("uint32_t", "temporal_bounds_src",
+                                 temporal_bounds_src)
     ]
     emit_str += [
-        format_vector_definition("uint32_t", "temporal_bounds_dst", temporal_bounds_dst)
+        format_vector_definition("uint32_t", "temporal_bounds_dst",
+                                 temporal_bounds_dst)
     ]
     emit_str += [
         format_vector_definition(
