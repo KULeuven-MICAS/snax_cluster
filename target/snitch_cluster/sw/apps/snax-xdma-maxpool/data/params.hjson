@@ -6,8 +6,8 @@
 
 {
     ifMaxPool: false,
-    iftestIm2Col: true,
-    ifTestDataLayoutTransformation: false,
+    iftestIm2Col: false,
+    ifTestDataLayoutTransformation: true,
 
     // parameters for maxpool
     ifC8HW8datalayout: true, // can also be normal data layout in maxpool test, but only C8HW8 is supported in im2col
@@ -24,8 +24,8 @@
 
     // parameters for data layout reshuffling
     layout_transformation_op: 'rowmajor2tiledrowmajor',
-    tempLoop0: 8,
-    tempLoop1: 8,
+    tempLoop0: 16,
+    tempLoop1: 16,
 
     spatial_len_0: 8,
     spatial_len_1: 8

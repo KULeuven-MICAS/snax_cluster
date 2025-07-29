@@ -5,9 +5,6 @@
 // Yunhao Deng <yunhao.deng@kuleuven.be>
 
 #include "snax-xdma-lib.h"
-#include <stdbool.h>
-#include "snrt.h"
-#include "stdint.h"
 
 #define XDMA_DEBUG
 #ifdef XDMA_DEBUG
@@ -158,16 +155,6 @@ int32_t xdma_disable_dst_ext(uint8_t ext) {
     // Bypass the xdma extension -> set the corresponding CSR bit to 1
     csrw_ss(XDMA_DST_BYPASS_PTR, csrr_ss(XDMA_DST_BYPASS_PTR) | (1 << ext));
     return 0;
-}
-
-// Start xdma
-uint32_t xdma_start() {
-    int ret = csrr_ss(XDMA_COMMIT_TASK_PTR);
-    csrw_ss(XDMA_START_PTR, 1);
-    while (csrr_ss(XDMA_COMMIT_TASK_PTR) == ret) {
-        // Wait for xdma to start
-    }
-    return csrr_ss(XDMA_COMMIT_TASK_PTR);
 }
 
 // Check if xdma is finished

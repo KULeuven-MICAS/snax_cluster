@@ -144,8 +144,12 @@ int main() {
         xdma_memcpy_nd(tcdm_in, tcdm_out, sstride_src, sstride_dst, 5,
                        tstride_src, tbound_src, 3, tstride_dst, tbound_dst,
                        0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
-        int task_id = xdma_start();
-        xdma_wait(task_id);
+
+        xdma_start();
+        int start = snrt_mcycle();
+        xdma_wait(1);
+        int end = snrt_mcycle();
+        printf("xdma finished, task_id=%d, total cycles=%d\n", 1, end - start);
 
         // --------------------- Checking the Results ---------------------
         // //
