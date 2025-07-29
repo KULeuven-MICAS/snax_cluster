@@ -37,7 +37,8 @@ int main() {
         int32_t output_zp_i = 0;
         uint32_t shift_i = 47;
 
-        uint32_t ext_param[4] = {input_zp_i, multiplier_i, output_zp_i, shift_i};
+        uint32_t ext_param[4] = {input_zp_i, multiplier_i, output_zp_i,
+                                 shift_i};
         if (xdma_disable_src_ext(0) != 0) {
             printf("Error in disabling reader xdma extension 0\n");
             err++;
