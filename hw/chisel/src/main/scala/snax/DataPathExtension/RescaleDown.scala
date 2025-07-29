@@ -3,19 +3,19 @@ package snax.DataPathExtension
 import chisel3._
 import chisel3.util._
 
-class RescaleDownPE ( 
-  in_elementWidth: Int,
+class RescaleDownPE(
+  in_elementWidth:  Int,
   out_elementWidth: Int
 ) extends Module {
   require(in_elementWidth > out_elementWidth)
 
   val io = IO(new Bundle {
-    val data_i = Flipped(Valid(SInt(in_elementWidth.W)))
-    val data_o = Output(SInt(out_elementWidth.W))
-    val input_zp = Input(SInt(32.W)) // Zero point for input
+    val data_i     = Flipped(Valid(SInt(in_elementWidth.W)))
+    val data_o     = Output(SInt(out_elementWidth.W))
+    val input_zp   = Input(SInt(32.W)) // Zero point for input
     val multiplier = Input(UInt(32.W))
-    val output_zp = Input(SInt(32.W))
-    val shift = Input(UInt(8.W)) // shift can only be 8 bits
+    val output_zp  = Input(SInt(32.W))
+    val shift      = Input(UInt(8.W))  // shift can only be 8 bits
   })
 
   val zero_compensated_data_i = Wire(SInt(in_elementWidth.W))
@@ -37,7 +37,6 @@ class RescaleDownPE (
     scaled_32_data := shifted_data_i - (1.S << 30).asSInt
   }
 
-
   val correct_shift_value = Wire(SInt((in_elementWidth + 32).W))
   when(io.shift > 31.U) {
     correct_shift_value := scaled_32_data
@@ -55,8 +54,8 @@ class RescaleDownPE (
   zero_compensated_out := long_truncated_value + io.output_zp
 
   val intervalled_out = Wire(SInt(in_elementWidth.W))
-  
-  when(zero_compensated_out >= (1.S << (out_elementWidth - 1).U).asSInt) { 
+
+  when(zero_compensated_out >= (1.S << (out_elementWidth - 1).U).asSInt) {
     intervalled_out := ((1.S << (out_elementWidth - 1).U) - 1.S).asSInt
   }.elsewhen(zero_compensated_out < -(1.S << (out_elementWidth - 1).U).asSInt) {
     intervalled_out := -(1.S << (out_elementWidth - 1).U).asSInt
@@ -67,7 +66,6 @@ class RescaleDownPE (
   io.data_o := intervalled_out.asSInt
 }
 
-
 class HasRescaleDown(in_elementWidth: Int = 32, out_elementWidth: Int = 8) extends HasDataPathExtension {
   implicit val extensionParam:          DataPathExtensionParam =
     new DataPathExtensionParam(
@@ -75,7 +73,7 @@ class HasRescaleDown(in_elementWidth: Int = 32, out_elementWidth: Int = 8) exten
       userCsrNum = 4,
       dataWidth  = 512
     )
-  def instantiate(clusterName: String): RescaleDown                =
+  def instantiate(clusterName: String): RescaleDown            =
     Module(
       new RescaleDown(in_elementWidth, out_elementWidth) {
         override def desiredName = clusterName + namePostfix
@@ -84,65 +82,67 @@ class HasRescaleDown(in_elementWidth: Int = 32, out_elementWidth: Int = 8) exten
 }
 
 class RescaleDown(
-  in_elementWidth: Int = 32,
+  in_elementWidth:  Int = 32,
   out_elementWidth: Int = 8
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
 
-      require(
-        extensionParam.dataWidth % in_elementWidth == 0,
-        s"RescaleDown: dataWidth (${extensionParam.dataWidth}) must be a multiple of in_elementWidth ($in_elementWidth)"
-      ) 
+  require(
+    extensionParam.dataWidth % in_elementWidth == 0,
+    s"RescaleDown: dataWidth (${extensionParam.dataWidth}) must be a multiple of in_elementWidth ($in_elementWidth)"
+  )
 
-      require(
-        in_elementWidth % out_elementWidth == 0,
-        s"RescaleDown: in_elementWidth ($in_elementWidth) must be a multiple of out_elementWidth ($out_elementWidth)"
+  require(
+    in_elementWidth % out_elementWidth == 0,
+    s"RescaleDown: in_elementWidth ($in_elementWidth) must be a multiple of out_elementWidth ($out_elementWidth)"
+  )
+
+  val counter = Module(new snax.utils.BasicCounter(log2Ceil(in_elementWidth / out_elementWidth)) {
+    override val desiredName = "MaxPoolCounter"
+  })
+  counter.io.ceil := (in_elementWidth / out_elementWidth).asUInt
+  counter.io.reset := ext_start_i
+  counter.io.tick  := ext_data_i.fire
+  ext_busy_o       := counter.io.value =/= ((in_elementWidth / out_elementWidth).U - 1.U)
+
+  val old_counter = RegInit(0.U(log2Ceil(in_elementWidth / out_elementWidth).W))
+  when(ext_data_i.fire) {
+    old_counter := counter.io.value
+  }
+
+  val input_zp   = WireInit(ext_csr_i(0).asSInt)
+  val multiplier = WireInit(ext_csr_i(1).asUInt)
+  val output_zp  = WireInit(ext_csr_i(2).asSInt)
+  val shift      = WireInit(ext_csr_i(3).asUInt)
+
+  val regs = RegInit(
+    VecInit(
+      Seq.fill(extensionParam.dataWidth / out_elementWidth)(0.S(out_elementWidth.W))
+    )
+  )
+
+  val PEs = for (i <- 0 until extensionParam.dataWidth / in_elementWidth) yield {
+    val PE = Module(new RescaleDownPE(in_elementWidth = in_elementWidth, out_elementWidth = out_elementWidth) {
+      // override val desiredName = "RescaleDownPE"
+    })
+    PE.io.data_i.valid := ext_data_i.fire
+    PE.io.data_i.bits  := ext_data_i
+      .bits(
+        (i + 1) * in_elementWidth - 1,
+        i * in_elementWidth
       )
+      .asSInt
+    PE.io.input_zp     := input_zp.asSInt
+    PE.io.multiplier   := multiplier.asUInt
+    PE.io.output_zp    := output_zp.asSInt
+    PE.io.shift        := shift.asUInt
 
-      val counter = Module(new snax.utils.BasicCounter(log2Ceil(in_elementWidth / out_elementWidth)) { 
-      override val desiredName = "MaxPoolCounter"
-      })
-      counter.io.ceil := (in_elementWidth / out_elementWidth).asUInt
-      counter.io.reset := ext_start_i
-      counter.io.tick  := ext_data_i.fire
-      ext_busy_o       := counter.io.value =/= ((in_elementWidth / out_elementWidth).U - 1.U)
+    when(ext_data_i.fire) {
+      regs(counter.io.value * (extensionParam.dataWidth / in_elementWidth).U + i.U) := PE.io.data_o.asSInt
+    }
+  }
 
-      val old_counter = RegInit(0.U(log2Ceil(in_elementWidth / out_elementWidth).W))
-      when(ext_data_i.fire){
-        old_counter := counter.io.value
-      }
-
-      val input_zp = WireInit(ext_csr_i(0).asSInt)
-      val multiplier = WireInit(ext_csr_i(1).asUInt)
-      val output_zp = WireInit(ext_csr_i(2).asSInt)
-      val shift = WireInit(ext_csr_i(3).asUInt)
-
-      val regs = RegInit(
-        VecInit(
-          Seq.fill(extensionParam.dataWidth / out_elementWidth)(0.S(out_elementWidth.W))
-        )
-      )
-      
-      val PEs = for (i <- 0 until extensionParam.dataWidth / in_elementWidth) yield {
-        val PE = Module(new RescaleDownPE(in_elementWidth = in_elementWidth, out_elementWidth = out_elementWidth) {
-          //override val desiredName = "RescaleDownPE"
-        })
-        PE.io.data_i.valid := ext_data_i.fire
-        PE.io.data_i.bits := ext_data_i.bits(
-          (i + 1) * in_elementWidth - 1,
-          i * in_elementWidth
-        ).asSInt
-        PE.io.input_zp := input_zp.asSInt
-        PE.io.multiplier := multiplier.asUInt
-        PE.io.output_zp := output_zp.asSInt
-        PE.io.shift := shift.asUInt
-
-        when (ext_data_i.fire){
-          regs(counter.io.value  * (extensionParam.dataWidth / in_elementWidth).U + i.U) := PE.io.data_o.asSInt
-        }
-      }
-
-      ext_data_o.bits := regs.asUInt
-      ext_data_o.valid := ext_data_i.fire && old_counter === ((in_elementWidth / out_elementWidth).U - 1.U)
-      ext_data_i.ready := ext_data_o.ready //Check if this can be more efficient
+  ext_data_o.bits  := regs.asUInt
+  ext_data_o.valid := ext_data_i.fire && old_counter === ((in_elementWidth / out_elementWidth).U - 1.U)
+  ext_data_i.ready := ext_data_o.ready // Check if this can be more efficient
 }

@@ -5,38 +5,37 @@ import snax.DataPathExtension.HasRescaleDown
 
 class RescaleDownTester extends DataPathExtensionTester {
 
-  def hasExtension = new HasRescaleDown(
-    in_elementWidth = 32,
-    out_elementWidth = 8
-  )
-  val input_zp = 0
-  val multiplier = 1140768826
-  val output_zp = 0
-  val shift = 47
-  val csr_vec           = Seq(input_zp, multiplier, output_zp, shift)
+  def hasExtension =
+    new HasRescaleDown(
+      in_elementWidth  = 32,
+      out_elementWidth = 8
+    )
+  val input_zp     = 0
+  val multiplier   = 1140768826
+  val output_zp    = 0
+  val shift        = 47
+  val csr_vec      = Seq(input_zp, multiplier, output_zp, shift)
 
   val inputData  = collection.mutable.Buffer[BigInt]()
   val outputData = collection.mutable.Buffer[BigInt]()
 
   for (_ <- 0 until 128) {
-    //val inputMatrix: Array[Int] = Array.fill(64)(-5956158)
+    // val inputMatrix: Array[Int] = Array.fill(64)(-5956158)
     val inputMatrix: Array[Int] = Array.fill(64)(Random.nextInt(2 << 22))
-    val inputMatrix1 = inputMatrix.slice(0,16)
-    val inputMatrix2 = inputMatrix.slice(16,32)
-    val inputMatrix3 = inputMatrix.slice(32,48)
-    val inputMatrix4 = inputMatrix.slice(48,64)
+    val inputMatrix1 = inputMatrix.slice(0, 16)
+    val inputMatrix2 = inputMatrix.slice(16, 32)
+    val inputMatrix3 = inputMatrix.slice(32, 48)
+    val inputMatrix4 = inputMatrix.slice(48, 64)
     inputData.append(BigInt(inputMatrix1.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     inputData.append(BigInt(inputMatrix2.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     inputData.append(BigInt(inputMatrix3.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     inputData.append(BigInt(inputMatrix4.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
 
-
     val outputMatrix =
-      inputMatrix.map( i => ((i - input_zp) * multiplier) >>> shift + output_zp)
+      inputMatrix.map(i => ((i - input_zp) * multiplier) >>> shift + output_zp)
     outputData.append(BigInt(outputMatrix.map { i => f"$i%02X" }.reverse.reduce(_ + _), 16))
   }
   val input_data_vec = inputData.toSeq
 
   val output_data_vec = outputData.toSeq
 }
-
