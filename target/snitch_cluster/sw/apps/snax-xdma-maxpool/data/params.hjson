@@ -5,12 +5,12 @@
 // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
 {
-    ifMaxPool: true,
-    iftestIm2Col: false,
-    ifTestTransposer: false,
-    
+    ifMaxPool: false,
+    iftestIm2Col: true,
+    ifTestDataLayoutTransformation: false,
+
     // parameters for maxpool
-    ifC8HW8datalayout: true,
+    ifC8HW8datalayout: true, // can also be normal data layout in maxpool test, but only C8HW8 is supported in im2col
     Nbatch: 1,
     H: 16,
     W: 8,
@@ -23,17 +23,10 @@
     stride_w: 1,
 
     // parameters for data layout reshuffling
-    op: 'rowmajor2tiledrowmajor',
+    layout_transformation_op: 'rowmajor2tiledrowmajor',
     tempLoop0: 8,
     tempLoop1: 8,
-    spatialStride1_in: 64,
-    tempStride0_in: 8,
-    tempStride1_in: 512,
-    spatialStride1_out: 8,
-    tempStride0_out: 64,
-    tempStride1_out: 512,
-    delta_local_in: 0,
-    delta_local_out: 4096,
+
     spatial_len_0: 8,
     spatial_len_1: 8
 }

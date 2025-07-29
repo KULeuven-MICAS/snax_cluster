@@ -35,71 +35,121 @@ MIN = -128
 MAX = 127
 
 
+bankWidth = 64
+element_width = 8  # 8 bits per element
+
+
 def emit_data_reshuffler(**kwargs):
     data_str = []
 
     assert (
-        kwargs["ifMaxPool"] + kwargs["iftestIm2Col"] + kwargs["ifTestTransposer"] == 1
+        kwargs["ifMaxPool"]
+        + kwargs["iftestIm2Col"]
+        + kwargs["ifTestDataLayoutTransformation"]
+        == 1
     ), "Only one kernel can be tested at a time"
 
-    if kwargs["ifTestTransposer"] is True:
+    data_str += [
+        format_scalar_definition(
+            "int", "im2col_test", int(kwargs["iftestIm2Col"] == True)
+        )
+    ]
+    data_str += [
+        format_scalar_definition(
+            "int",
+            "data_layout_transform_test",
+            int(kwargs["ifTestDataLayoutTransformation"] == True),
+        )
+    ]
+
+    data_str += [
+        format_scalar_definition(
+            "int", "maxpool_test", int(kwargs["ifMaxPool"] == True)
+        )
+    ]
+
+    ##--------------------------------------------------------------------------------
+    # data layout reshuffler test, some case need transposer
+    ##--------------------------------------------------------------------------------
+    transpose = 0  # default no transpose
+    if kwargs["ifTestDataLayoutTransformation"] is True:
+
+        layout_transformation_op = kwargs["layout_transformation_op"]
+        assert layout_transformation_op in [
+            "rowmajor2tiledrowmajor",
+            "rowmajor2tiledcolmajor",
+            "tiledrowmajor2tiledcolmajor",
+        ], "only rowmajor2tiledrowmajor, rowmajor2tiledcolmajor, and tiledrowmajor2tiledcolmajor are supported for transposer testing"
+
+        spatial_len_0 = kwargs["spatial_len_0"]
+        spatial_len_1 = kwargs["spatial_len_1"]
+        tempLoop0 = kwargs["tempLoop0"]
+        tempLoop1 = kwargs["tempLoop1"]
         # Generating loop bounds settings
         data_str += [
-            format_scalar_definition("int32_t", "tempLoop0_in", kwargs["tempLoop0"]),
-            format_scalar_definition("int32_t", "tempLoop1_in", kwargs["tempLoop1"]),
+            format_scalar_definition("int32_t", "tempLoop0_in", tempLoop0),
+            format_scalar_definition("int32_t", "tempLoop1_in", tempLoop1),
             format_scalar_definition("int32_t", "tempLoop2_in", 1),
             format_scalar_definition("int32_t", "tempLoop3_in", 1),
             format_scalar_definition("int32_t", "tempLoop4_in", 1),
-            format_scalar_definition("int32_t", "tempLoop0_out", kwargs["tempLoop0"]),
-            format_scalar_definition("int32_t", "tempLoop1_out", kwargs["tempLoop1"]),
+            format_scalar_definition("int32_t", "tempLoop0_out", tempLoop0),
+            format_scalar_definition("int32_t", "tempLoop1_out", tempLoop1),
             format_scalar_definition("int32_t", "tempLoop2_out", 1),
             format_scalar_definition(
                 "int32_t",
                 "input_data_len",
-                kwargs["tempLoop0"] * kwargs["tempLoop1"] * 8 * 8,
+                tempLoop0 * tempLoop1 * spatial_len_0 * spatial_len_1,
             ),
             format_scalar_definition(
                 "int32_t",
                 "output_data_len",
-                kwargs["tempLoop0"] * kwargs["tempLoop1"] * 8 * 8,
+                tempLoop0 * tempLoop1 * spatial_len_0 * spatial_len_1,
             ),
         ]
 
         # Generating temporal strides settings
+
+        # data reshuffler input strides
+        if (
+            layout_transformation_op == "rowmajor2tiledrowmajor"
+            or kwargs["layout_transformation_op"] == "rowmajor2tiledcolmajor"
+        ):
+            spatialStride1_in = int(spatial_len_0 * tempLoop0 * element_width / 8)
+            tempStride0_in = int(spatial_len_0 * element_width / 8)
+            tempStride1_in = int(
+                spatial_len_0 * spatial_len_1 * tempLoop0 * element_width / 8
+            )
+
+        elif layout_transformation_op == "tiledrowmajor2tiledcolmajor":
+            spatialStride1_in = 8
+            tempStride0_in = int(spatial_len_0 * spatial_len_1 * element_width / 8)
+            tempStride1_in = int(
+                spatial_len_0 * spatial_len_1 * tempLoop0 * element_width / 8
+            )
+
         data_str += [
-            # data reshuffler input strides
-            format_scalar_definition(
-                "int32_t", "tempStride0_in", kwargs["tempStride0_in"]
-            ),
-            format_scalar_definition(
-                "int32_t", "tempStride1_in", kwargs["tempStride1_in"]
-            ),
+            format_scalar_definition("int32_t", "spatialStride1_in", spatialStride1_in),
+            format_scalar_definition("int32_t", "tempStride0_in", tempStride0_in),
+            format_scalar_definition("int32_t", "tempStride1_in", tempStride1_in),
             format_scalar_definition("int32_t", "tempStride2_in", 0),
             format_scalar_definition("int32_t", "tempStride3_in", 0),
             format_scalar_definition("int32_t", "tempStride4_in", 0),
-            format_scalar_definition(
-                "int32_t", "spatialStride1_in", kwargs["spatialStride1_in"]
-            ),
-            # data reshuffler output strides
+        ]
+
+        # data reshuffler output strides
+        data_str += [
+            format_scalar_definition("int32_t", "spatialStride1_out", 8),
             format_scalar_definition(
                 "int32_t",
                 "tempStride0_out",
-                kwargs["tempStride0_out"],
+                spatial_len_0 * spatial_len_1 * element_width / 8,
             ),
             format_scalar_definition(
-                "int32_t", "tempStride1_out", kwargs["tempStride1_out"]
+                "int32_t",
+                "tempStride1_out",
+                spatial_len_0 * spatial_len_1 * tempLoop0 * element_width / 8,
             ),
             format_scalar_definition("int32_t", "tempStride2_out", 0),
-            format_scalar_definition(
-                "int32_t", "spatialStride1_out", kwargs["spatialStride1_out"]
-            ),
-            # Generating base address pointers
-            format_scalar_definition(
-                "int32_t", "delta_local_in", kwargs["delta_local_in"]
-            ),
-            format_scalar_definition(
-                "int32_t", "delta_local_out", kwargs["delta_local_out"]
-            ),
         ]
 
         # Generating random input data vector
@@ -112,7 +162,13 @@ def emit_data_reshuffler(**kwargs):
 
         data_in = np.random.randint(MIN, MAX, length_in)
 
-        op = kwargs["op"]
+        # Generating base address pointers
+        data_str += [
+            format_scalar_definition("int32_t", "delta_local_in", 0),
+            format_scalar_definition(
+                "int32_t", "delta_local_out", length_in * element_width / 8
+            ),
+        ]
 
         # Generating golden data
         # NOTE: using 4 loops to iterate through the
@@ -120,69 +176,67 @@ def emit_data_reshuffler(**kwargs):
         # different from the hardware data reshuffler,
         # the golden model uses the pure strided layout mapping equation,
         # no 64 data granularity constraint, no need to transpose explicitly.
-        if op == "rowmajor2tiledrowmajor":
+        if layout_transformation_op == "rowmajor2tiledrowmajor":
             c_golden = data_reshuffler_golden_model(
-                kwargs["tempLoop0"],
-                kwargs["tempLoop1"],
-                kwargs["spatial_len_0"],
-                kwargs["spatial_len_1"],
-                kwargs["tempStride0_in"],
-                kwargs["tempStride1_in"],
+                tempLoop0,
+                tempLoop1,
+                spatial_len_0,
+                spatial_len_1,
+                tempStride0_in,
+                tempStride1_in,
                 1,
-                kwargs["spatialStride1_in"],
+                spatialStride1_in,
                 data_in,
             )
 
-        if op == "rowmajor2tiledcolmajor":
+        if layout_transformation_op == "rowmajor2tiledcolmajor":
             c_golden = data_reshuffler_golden_model(
-                kwargs["tempLoop0"],
-                kwargs["tempLoop1"],
-                kwargs["spatial_len_0"],
-                kwargs["spatial_len_1"],
-                kwargs["tempStride0_in"],
-                kwargs["tempStride1_in"],
-                kwargs["tempLoop0"] * 8,
+                tempLoop0,
+                tempLoop1,
+                spatial_len_0,
+                spatial_len_1,
+                tempStride0_in,
+                tempStride1_in,
+                tempLoop0 * 8,
                 1,
                 data_in,
             )
 
-        if op == "tiledrowmajor2tiledcolmajor":
+        if layout_transformation_op == "tiledrowmajor2tiledcolmajor":
             c_golden = data_reshuffler_golden_model(
-                kwargs["tempLoop0"],
-                kwargs["tempLoop1"],
-                kwargs["spatial_len_0"],
-                kwargs["spatial_len_1"],
-                kwargs["tempStride0_in"],
-                kwargs["tempStride1_in"],
+                tempLoop0,
+                tempLoop1,
+                spatial_len_0,
+                spatial_len_1,
+                tempStride0_in,
+                tempStride1_in,
                 8,
                 1,
                 data_in,
             )
 
         # Generating transpose flag for the data reshuffler hardware
-        if op == "rowmajor2tiledrowmajor":
+        if layout_transformation_op == "rowmajor2tiledrowmajor":
             transpose = 0
-        elif op == "rowmajor2tiledcolmajor":
+        elif layout_transformation_op == "rowmajor2tiledcolmajor":
             transpose = 1
-        elif op == "tiledrowmajor2tiledcolmajor":
+        elif layout_transformation_op == "tiledrowmajor2tiledcolmajor":
             transpose = 1
         else:
             print("Invalid operation")
 
         # set transpose or not
-        data_str += [
-            format_scalar_definition(
-                "int", "TloopLen", kwargs["tempLoop0"] * kwargs["tempLoop1"]
-            )
-        ]
         data_str += [format_scalar_definition("int", "reduceLen", 1)]
-        data_str += [format_scalar_definition("int", "opcode", transpose)]
 
         # Writing testing data and golden data into data.h
         data_str += [format_vector_definition("int8_t", "DataIn", data_in)]
         data_str += [format_vector_definition("int8_t", "C_golden", c_golden)]
 
+    ###--------------------------------------------------------------------------------
+    # explicit im2col test
+    ###--------------------------------------------------------------------------------
     elif kwargs["iftestIm2Col"] is True:
+
         assert (
             kwargs["ifC8HW8datalayout"] is True
         ), "Only C8HW8 data layout is supported for im2col testing"
@@ -285,19 +339,15 @@ def emit_data_reshuffler(**kwargs):
             format_vector_definition("int8_t", "C_golden", explicit_im2col.reshape(-1)),
         ]
 
-        TloopLen = (
-            tempLoop0_in * tempLoop1_in * tempLoop2_in * tempLoop3_in * tempLoop4_in
-        )
         reduceLen = 1
-        opcode = 0
 
         data_str += [
-            format_scalar_definition("int", "TloopLen", TloopLen),
             format_scalar_definition("int", "reduceLen", reduceLen),
-            format_scalar_definition("int", "opcode", opcode),
         ]
 
-    # max pooling then
+    ###--------------------------------------------------------------------------------
+    # max pooling, with C8HW8datalayout
+    ###--------------------------------------------------------------------------------
     elif kwargs["ifC8HW8datalayout"] is True:
         # data layout, C8HW8
         # Generating loop bounds settings
@@ -443,19 +493,8 @@ def emit_data_reshuffler(**kwargs):
         )
 
         # datapath setting
-        # set opcode
-        data_str += [format_scalar_definition("int", "opcode", 2)]
-        # set TloopLen and reduceLen
+        #  reduceLen
         data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "TloopLen",
-                padded_output_tensor_w
-                * padded_output_tensor_h
-                * kwargs["Cin"]
-                // 8
-                // 8,
-            ),
             format_scalar_definition(
                 "int32_t", "reduceLen", kwargs["Kw"] * kwargs["Kh"]
             ),
@@ -485,6 +524,9 @@ def emit_data_reshuffler(**kwargs):
             format_vector_definition("int8_t", "C_golden", c_golden.reshape(-1))
         ]
 
+    ###--------------------------------------------------------------------------------
+    # max pooling, with HWCin data layout
+    ###--------------------------------------------------------------------------------
     else:
         # data layout HWCin
         # Generating loop bounds settings
@@ -526,15 +568,6 @@ def emit_data_reshuffler(**kwargs):
             # data length setting
             format_scalar_definition("int32_t", "input_data_len", input_data_len),
             format_scalar_definition("int32_t", "output_data_len", output_data_len),
-            format_scalar_definition(
-                "int32_t",
-                "TloopLen",
-                padded_output_tensor_w
-                * padded_output_tensor_h
-                * kwargs["Cin"]
-                // 8
-                // 8,
-            ),
             format_scalar_definition(
                 "int32_t", "reduceLen", kwargs["Kw"] * kwargs["Kh"]
             ),
@@ -598,9 +631,6 @@ def emit_data_reshuffler(**kwargs):
             "constant",
         )
 
-        # set opcode
-        data_str += [format_scalar_definition("int", "opcode", 2)]
-
         # Writing testing data and golden data into data.h
         assert padded_data_in.shape == (
             1,
@@ -624,6 +654,8 @@ def emit_data_reshuffler(**kwargs):
         data_str += [
             format_vector_definition("int8_t", "C_golden", c_golden.reshape(-1))
         ]
+
+    data_str += [format_scalar_definition("int", "open_transpose_ext", transpose)]
 
     data_str = "\n\n".join(data_str)
 

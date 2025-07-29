@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Fanchen Kong <fanchen.kong@kuleuven.be>
+// Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
 #include "data.h"
 #include "snax-xdma-lib.h"
@@ -54,27 +54,90 @@ int main() {
         snrt_dma_wait_all();
 
         // --------------------- Configure the Ext --------------------- //
-
-        if (xdma_disable_dst_ext(0) != 0) {
-            printf("Error in disabling xdma extension 0\r\n");
-            err++;
-        } else {
-            printf("The xdma extension 0 is disabled\r\n");
-        }
-
         uint32_t ext_param_maxpool_size[1] = {reduceLen};
-        if (xdma_enable_dst_ext(1, ext_param_maxpool_size) != 0) {
-            printf("Error in enabling xdma extension 1\r\n");
-            err++;
-        } else {
-            printf("The xdma extension 1 is enabled\r\n");
-        }
 
-        if (xdma_disable_dst_ext(2) != 0) {
-            printf("Error in disabling xdma extension 2\r\n");
-            err++;
-        } else {
-            printf("The xdma extension 2 is disabled\r\n");
+        if (im2col_test == 1) {
+            // memset
+            if (xdma_disable_dst_ext(0) != 0) {
+                printf("Error in disabling xdma extension 0\r\n");
+                err++;
+            } else {
+                printf("The xdma extension 0 is disabled\r\n");
+            }
+
+            // maxpool
+            if (xdma_disable_dst_ext(1) != 0) {
+                printf("Error in disabling xdma extension 1\r\n");
+                err++;
+            } else {
+                printf("The xdma extension 1 is disabled\r\n");
+            }
+
+            // transpose
+            if (xdma_disable_dst_ext(2) != 0) {
+                printf("Error in disabling xdma extension 2\r\n");
+                err++;
+            } else {
+                printf("The xdma extension 2 is disabled\r\n");
+            }
+        } else if (data_layout_transform_test == 1) {
+            // memset
+            if (xdma_disable_dst_ext(0) != 0) {
+                printf("Error in disabling xdma extension 0\r\n");
+                err++;
+            } else {
+                printf("The xdma extension 0 is disabled\r\n");
+            }
+
+            // maxpool
+            if (xdma_disable_dst_ext(1) != 0) {
+                printf("Error in disabling xdma extension 1\r\n");
+                err++;
+            } else {
+                printf("The xdma extension 1 is disabled\r\n");
+            }
+
+            // transpose
+            if (open_transpose_ext) {
+                if (xdma_enable_dst_ext(2, NULL) != 0) {
+                    printf("Error in enabling xdma extension 2\r\n");
+                    err++;
+                } else {
+                    printf("The xdma extension 2 is enabled\r\n");
+                }
+            } else {
+                if (xdma_disable_dst_ext(2) != 0) {
+                    printf("Error in disabling xdma extension 2\r\n");
+                    err++;
+                } else {
+                    printf("The xdma extension 2 is disabled\r\n");
+                }
+            }
+        } else if (maxpool_test == 1) {
+            // memset
+            if (xdma_disable_dst_ext(0) != 0) {
+                printf("Error in disabling xdma extension 0\r\n");
+                err++;
+            } else {
+                printf("The xdma extension 0 is disabled\r\n");
+            }
+
+            // maxpool
+            uint32_t ext_param_maxpool_size[1] = {reduceLen};
+            if (xdma_enable_dst_ext(1, ext_param_maxpool_size) != 0) {
+                printf("Error in enabling xdma extension 1\r\n");
+                err++;
+            } else {
+                printf("The xdma extension 1 is enabled\r\n");
+            }
+
+            // transpose
+            if (xdma_disable_dst_ext(2) != 0) {
+                printf("Error in disabling xdma extension 2\r\n");
+                err++;
+            } else {
+                printf("The xdma extension 2 is disabled\r\n");
+            }
         }
 
         // --------------------- Configure the AGU --------------------- //
