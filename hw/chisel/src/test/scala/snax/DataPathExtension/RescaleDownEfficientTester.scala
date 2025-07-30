@@ -2,9 +2,11 @@ package snax.DataPathExtension
 import scala.math._
 import scala.util.Random
 
+import chiseltest._
+
 import snax.DataPathExtension.HasRescaleDownEfficient
 
-class RescaleDownEfficientTester extends DataPathExtensionTester {
+class RescaleDownEfficientTester extends DataPathExtensionTester (TreadleBackendAnnotation) {
 
   def GoldenModelEfficient(
     input:      Int,
