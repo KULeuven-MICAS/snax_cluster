@@ -1,5 +1,7 @@
 package snax.DataPathExtension
 import scala.util.Random
+import scala.math._
+
 
 import snax.DataPathExtension.HasRescaleDownEfficient
 
@@ -32,12 +34,80 @@ class RescaleDownEfficientTester extends DataPathExtensionTester {
     inputData.append(BigInt(inputMatrix4.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
 
     // Test does not work exact. only estimate! use sw application to verify correctness
-    val outputMatrix = inputMatrix.map { i =>
-      (((i.toLong - input_zp) * multiplier.toLong) >> shift) + output_zp
-    }
+    // val outputMatrix = inputMatrix.map { i =>
+    //   (((i.toLong - input_zp) * multiplier.toLong) >> shift) + output_zp
+    // }
+
+    val outputMatrix = inputMatrix.map { i => GoldenModel(i, input_zp, multiplier, output_zp, shift)}
     outputData.append(BigInt(outputMatrix.map { i => f"${i & 0xff}%02X" }.reverse.reduce(_ + _), 16))
   }
   val input_data_vec = inputData.toSeq
 
   val output_data_vec = outputData.toSeq
+
+  def GoldenModel(
+    input: Int,
+    input_zp: Int,
+    multiplier: Int,
+    output_zp: Int,
+    shift: Int
+  ): Byte = {
+    
+    // Default values for parameters not passed in (matching the test setup)
+    val max_int_i = 127       // Max value for signed byte
+    val min_int_i = -128      // Min value for signed byte
+    val double_round_i = true // Assuming double rounding is enabled
+    
+    // Step 1: Subtract input zero point
+    var var_1 = input - input_zp
+    
+    // Additional Step 1: Calculate dynamic shifts to avoid overflow
+    val bits_to_shift_input = math.max(
+      0, 9 + shift - math.ceil(math.log(multiplier) / math.log(2)).toInt - 16
+    )
+    // 8 can be adapted to be higher. higher will add more support for
+    // overflows, but will also reduce accuracy of the output.
+    val bits_to_shift_multiplier = math.max(0, math.ceil(math.log(multiplier) / math.log(2)).toInt - 16)
+    
+    var_1 = var_1 >> bits_to_shift_input
+    val multiplier_shifted = multiplier >> bits_to_shift_multiplier
+    val shift_adjusted = shift - bits_to_shift_input - bits_to_shift_multiplier
+    
+    // Step 2: Multiply with the multiplier avoiding overflow
+    val var_2 = var_1.toLong * multiplier_shifted.toLong
+    
+    // Step 3: Left shift one
+    val shifted_one = 1L << shift_adjusted
+    
+    // Step 4: Add shifted one
+    val var_3 = var_2 + shifted_one
+    
+    // Step 5: Double rounding
+    val var_4 = if (double_round_i) {
+      if (var_1 > 0) {
+        var_3 + (1L << (30 - bits_to_shift_multiplier - bits_to_shift_input))
+      } else {
+        var_3 - (1L << (30 - bits_to_shift_multiplier - bits_to_shift_input))
+      }
+    } else {
+      var_3
+    }
+    
+    val var_5 = if (shift_adjusted > 31 - bits_to_shift_multiplier - bits_to_shift_input) {
+      var_4
+    } else {
+      var_3
+    }
+    
+    // Step 6: Shift right
+    val var_6 = (var_5 >> shift_adjusted).toInt
+    
+    // Step 7: Add output zero point
+    val var_7 = var_6 + output_zp
+    
+    // Step 8: Clip the values to be within min and max integer range
+    val var_8 = math.max(min_int_i, math.min(max_int_i, var_7))
+    
+    var_8.toByte
+  }
 }
