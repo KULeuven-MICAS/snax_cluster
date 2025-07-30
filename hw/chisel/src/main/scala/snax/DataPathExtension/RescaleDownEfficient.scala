@@ -41,7 +41,7 @@ class RescaleDownEfficientPE(
   shifted_data_i := (multiplied_data_i + shifted_one)
 
   val scaled_32_data = Wire(SInt(32.W))
-  when(zero_compensated_data_i >= 0.S) {
+  when(zero_compensated_data_i > 0.S) {
     scaled_32_data := shifted_data_i + io.double_rounding_account
   }.otherwise {
     scaled_32_data := shifted_data_i - io.double_rounding_account
@@ -132,7 +132,7 @@ class RescaleDownEfficient(
   val bits_to_shift_input           = Wire(UInt(5.W))
   val full_bits_to_shift_multiplier = Wire(SInt(6.W))
   val bits_to_shift_multiplier      = Wire(UInt(5.W))
-  full_bits_to_shift_input := (8.S + Cat(0.U(1.W), shift).asSInt - Cat(0.U(1.W), used_bits_in_multiplier).asSInt - 16.S)
+  full_bits_to_shift_input := (9.S + Cat(0.U(1.W), shift).asSInt - Cat(0.U(1.W), used_bits_in_multiplier).asSInt - 16.S)
   bits_to_shift_input      := Mux(full_bits_to_shift_input < 0.S, 0.U, full_bits_to_shift_input.asUInt)
   full_bits_to_shift_multiplier := (used_bits_in_multiplier - 16.U).asSInt
   bits_to_shift_multiplier      := Mux(full_bits_to_shift_multiplier < 0.S, 0.U, full_bits_to_shift_multiplier.asUInt)

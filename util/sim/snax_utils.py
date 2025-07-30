@@ -503,7 +503,7 @@ def postprocessing_simd_golden_model_V3(
 
     # Additional Step 1:
     bits_to_shift_input = max(
-        0, 8 + shift_i - ceil(np.log2(multiplier_i)) - 16
+        0, 9 + shift_i - ceil(np.log2(multiplier_i)) - 16
     )
     # 8 can be adapted to be higher. higher will add more support for
     # overflows, but will also reduce accuracy of the output.
