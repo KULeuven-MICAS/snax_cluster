@@ -22,10 +22,10 @@ class RescaleDownPE(
   zero_compensated_data_i := io.data_i.bits - io.input_zp
 
   val multiplied_data_i = Wire(SInt((in_elementWidth + 32).W)) // Length of input data + multiplier
-  multiplied_data_i := zero_compensated_data_i * io.multiplier
+  multiplied_data_i := zero_compensated_data_i * Cat(0.U(1.W), io.multiplier)
 
   val shifted_one = Wire(SInt((in_elementWidth + 32).W))
-  shifted_one := (1.S << (io.shift - 1.U).asUInt).asSInt
+  shifted_one := (1.S << (io.shift).asUInt).asSInt
 
   val shifted_data_i = Wire(SInt((in_elementWidth + 32).W))
   shifted_data_i := (multiplied_data_i + shifted_one)
@@ -105,11 +105,6 @@ class RescaleDown(
   counter.io.tick  := ext_data_i.fire
   ext_busy_o       := counter.io.value =/= ((in_elementWidth / out_elementWidth).U - 1.U)
 
-  val old_counter = RegInit(0.U(log2Ceil(in_elementWidth / out_elementWidth).W))
-  when(ext_data_i.fire) {
-    old_counter := counter.io.value
-  }
-
   val input_zp   = WireInit(ext_csr_i(0).asSInt)
   val multiplier = WireInit(ext_csr_i(1).asUInt)
   val output_zp  = WireInit(ext_csr_i(2).asSInt)
@@ -117,9 +112,13 @@ class RescaleDown(
 
   val regs = RegInit(
     VecInit(
-      Seq.fill(extensionParam.dataWidth / out_elementWidth)(0.S(out_elementWidth.W))
+      Seq.fill((extensionParam.dataWidth / out_elementWidth) - (extensionParam.dataWidth / in_elementWidth))(
+        0.S(out_elementWidth.W)
+      )
     )
   )
+
+  val out_wires = Wire(Vec(extensionParam.dataWidth / in_elementWidth, SInt(out_elementWidth.W)))
 
   val PEs = for (i <- 0 until extensionParam.dataWidth / in_elementWidth) yield {
     val PE = Module(new RescaleDownPE(in_elementWidth = in_elementWidth, out_elementWidth = out_elementWidth) {
@@ -138,11 +137,14 @@ class RescaleDown(
     PE.io.shift        := shift.asUInt
 
     when(ext_data_i.fire) {
-      regs(counter.io.value * (extensionParam.dataWidth / in_elementWidth).U + i.U) := PE.io.data_o.asSInt
+      when(counter.io.value =/= ((in_elementWidth / out_elementWidth).U - 1.U)) {
+        regs(counter.io.value * (extensionParam.dataWidth / in_elementWidth).U + i.U) := PE.io.data_o.asSInt
+      }
     }
+    out_wires(i) := PE.io.data_o.asSInt
   }
 
-  ext_data_o.bits  := regs.asUInt
-  ext_data_o.valid := ext_data_i.fire && old_counter === ((in_elementWidth / out_elementWidth).U - 1.U)
+  ext_data_o.bits  := VecInit(regs ++ out_wires).asTypeOf(ext_data_o.bits)
+  ext_data_o.valid := ext_data_i.fire && counter.io.value === ((in_elementWidth / out_elementWidth).U - 1.U)
   ext_data_i.ready := ext_data_o.ready // Check if this can be more efficient
 }

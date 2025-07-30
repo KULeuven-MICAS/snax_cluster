@@ -33,11 +33,6 @@ class RescaleDownEfficientTester extends DataPathExtensionTester {
     inputData.append(BigInt(inputMatrix3.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     inputData.append(BigInt(inputMatrix4.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
 
-    // Test does not work exact. only estimate! use sw application to verify correctness
-    // val outputMatrix = inputMatrix.map { i =>
-    //   (((i.toLong - input_zp) * multiplier.toLong) >> shift) + output_zp
-    // }
-
     val outputMatrix = inputMatrix.map { i => GoldenModel(i, input_zp, multiplier, output_zp, shift)}
     outputData.append(BigInt(outputMatrix.map { i => f"${i & 0xff}%02X" }.reverse.reduce(_ + _), 16))
   }
