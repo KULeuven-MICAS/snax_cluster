@@ -1,9 +1,10 @@
 package snax.DataPathExtension
 import scala.util.Random
 
+import chiseltest._
 import snax.DataPathExtension.HasRescaleDown
 
-class RescaleDownTester extends DataPathExtensionTester {
+class RescaleDownTester extends DataPathExtensionTester(TreadleBackendAnnotation) {
 
   def GoldenModel(
     input:      Int,
@@ -72,6 +73,8 @@ class RescaleDownTester extends DataPathExtensionTester {
 
   val inputData  = collection.mutable.Buffer[BigInt]()
   val outputData = collection.mutable.Buffer[BigInt]()
+
+  Random.setSeed(1) // For reproducibility
 
   for (_ <- 0 until 128) {
     // val inputMatrix: Array[Int] = Array.fill(64)(-5956158)

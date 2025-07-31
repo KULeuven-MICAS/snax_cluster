@@ -30,7 +30,10 @@ class DataPathExtensionHarness(extension: HasDataPathExtension) extends Module w
   dut.io.data_o -||> io.data_o
 }
 
-abstract class DataPathExtensionTester (simBackEnd: chiseltest.simulator.SimulatorAnnotation = VerilatorBackendAnnotation) extends AnyFlatSpec with ChiselScalatestTester {
+abstract class DataPathExtensionTester(
+  simBackEnd: chiseltest.simulator.SimulatorAnnotation = VerilatorBackendAnnotation
+) extends AnyFlatSpec
+    with ChiselScalatestTester {
   val csr_vec:         Seq[Int]
   val input_data_vec:  Seq[BigInt]
   val output_data_vec: Seq[BigInt]
