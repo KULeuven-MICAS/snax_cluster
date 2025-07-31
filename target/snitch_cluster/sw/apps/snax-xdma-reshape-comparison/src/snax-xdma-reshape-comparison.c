@@ -43,7 +43,7 @@ int main() {
             printf("Error in disabling reader xdma extension 2\n");
             err++;
         }
-        
+
         if (xdma_disable_src_ext(0) != 0) {
             printf("Error in disabling xdma reader extension 0\r\n");
             err++;
