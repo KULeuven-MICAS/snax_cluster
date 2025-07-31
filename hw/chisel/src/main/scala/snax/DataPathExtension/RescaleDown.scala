@@ -103,7 +103,7 @@ class RescaleDown(
   counter.io.ceil := (in_elementWidth / out_elementWidth).asUInt
   counter.io.reset := ext_start_i
   counter.io.tick  := ext_data_i.fire
-  ext_busy_o       := counter.io.value =/= ((in_elementWidth / out_elementWidth).U - 1.U)
+  ext_busy_o       := counter.io.value =/= 0.U(1.W)
 
   val input_zp   = WireInit(ext_csr_i(0).asSInt)
   val multiplier = WireInit(ext_csr_i(1).asUInt)
