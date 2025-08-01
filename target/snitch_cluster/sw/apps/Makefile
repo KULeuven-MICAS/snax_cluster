@@ -63,13 +63,6 @@ SUBDIRS += snax-xdma-maxpool
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-elementwise-add
-endif
-ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
-SUBDIRS += snax-xdma-memset
-SUBDIRS += snax-xdma-maxpool
-SUBDIRS += snax-xdma-transpose
-SUBDIRS += snax-xdma-reshape-comparison
-SUBDIRS += snax-xdma-elementwise-add
 SUBDIRS += snax-xdma-rescale-down
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_cluster.hjson)

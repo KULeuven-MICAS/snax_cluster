@@ -453,7 +453,7 @@ def postprocessing_simd_golden_model_V2(
     var_2 = np.int64(var_1) * np.int64(multiplier_i)
 
     # Step 3: Left shift one
-    shifted_one = np.int64(1 << shift_i)
+    shifted_one = np.int64(1 << (shift_i - 1))
 
     # Step 4: Add shifted one
     var_3 = var_2 + shifted_one
@@ -517,7 +517,7 @@ def postprocessing_simd_golden_model_V3(
     var_2 = np.int32(var_1) * np.int32(multiplier_i)
 
     # Step 3: Left shift one
-    shifted_one = np.int32(1 << shift_i)
+    shifted_one = np.int32(1 << (shift_i - 1))
 
     # Step 4: Add shifted one
     var_3 = var_2 + shifted_one

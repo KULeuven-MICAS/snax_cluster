@@ -35,7 +35,7 @@ class RescaleDownEfficientPE(
 
   // add value for rounding
   val shifted_one = Wire(SInt(32.W))
-  shifted_one := (1.S << io.post_shift).asSInt
+  shifted_one := (1.S << (io.post_shift - 1.U)).asSInt
 
   val shifted_data_i = Wire(SInt(32.W))
   shifted_data_i := (multiplied_data_i + shifted_one)
@@ -94,7 +94,7 @@ class RescaleDownEfficient(
   out_elementWidth: Int = 8
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
-
+  // Efficient Version of RescaleDown with optimizations for area efficiency
   require(
     extensionParam.dataWidth % in_elementWidth == 0,
     s"RescaleDown: dataWidth (${extensionParam.dataWidth}) must be a multiple of in_elementWidth ($in_elementWidth)"
@@ -106,7 +106,7 @@ class RescaleDownEfficient(
   )
 
   val counter = Module(new snax.utils.BasicCounter(log2Ceil(in_elementWidth / out_elementWidth)) {
-    override val desiredName = "MaxPoolCounter"
+    override val desiredName = "RescaleDownCounter"
   })
   counter.io.ceil := (in_elementWidth / out_elementWidth).asUInt
   counter.io.reset := ext_start_i

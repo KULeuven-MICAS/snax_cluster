@@ -40,7 +40,7 @@ class RescaleDownEfficientTester extends DataPathExtensionTester(TreadleBackendA
     val var_2 = var_1.toLong * multiplier_shifted.toLong
 
     // Step 3: Left shift one
-    val shifted_one = 1L << shift_adjusted
+    val shifted_one = 1L << (shift_adjusted - 1)
 
     // Step 4: Add shifted one
     val var_3 = var_2 + shifted_one
