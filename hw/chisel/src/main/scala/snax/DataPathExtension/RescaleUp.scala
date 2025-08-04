@@ -2,13 +2,15 @@ package snax.DataPathExtension
 
 import chisel3._
 import chisel3.util._
-import org.w3c.dom.css.Counter
 
 class RescaleUpPE(
   in_elementWidth:  Int,
   out_elementWidth: Int
 ) extends Module {
-  require(out_elementWidth % in_elementWidth == 0, s"RescaleUpPE: out_elementWidth ($out_elementWidth) must be a multiple of in_elementWidth ($in_elementWidth)")
+  require(
+    out_elementWidth % in_elementWidth == 0,
+    s"RescaleUpPE: out_elementWidth ($out_elementWidth) must be a multiple of in_elementWidth ($in_elementWidth)"
+  )
 
   val io = IO(new Bundle {
     val data_i     = Flipped(Valid(SInt(in_elementWidth.W)))
@@ -53,139 +55,140 @@ class RescaleUpCtrl(
   in_elementWidth:  Int,
   out_elementWidth: Int
 ) extends Module {
-  import CtrlEnumObj.CtrlEnum
   import CtrlEnumObj.CtrlEnum._
-  require(out_elementWidth % in_elementWidth == 0, s"RescaleUpCtrl: out_elementWidth ($out_elementWidth) must be a multiple of in_elementWidth ($in_elementWidth)")
+  require(
+    out_elementWidth % in_elementWidth == 0,
+    s"RescaleUpCtrl: out_elementWidth ($out_elementWidth) must be a multiple of in_elementWidth ($in_elementWidth)"
+  )
 
   val io = IO(new Bundle {
-    val start = Input(Bool())
-    val next_ready = Input(Bool())
+    val start          = Input(Bool())
+    val next_ready     = Input(Bool())
     val previous_valid = Input(Bool())
-    val counter_out = Output(UInt(log2Ceil((out_elementWidth / in_elementWidth)).W))
-    val self_valid = Output(Bool())
-    val self_ready = Output(Bool())
-    val self_busy = Output(Bool())
+    val counter_out    = Output(UInt(log2Ceil((out_elementWidth / in_elementWidth)).W))
+    val self_valid     = Output(Bool())
+    val self_ready     = Output(Bool())
+    val self_busy      = Output(Bool())
   })
 
+  val state = RegInit(Idle)
 
-    val state = RegInit(Idle)
-
-    switch (state) {
-      is (Idle) {
-        when (io.start) {
-          when(io.previous_valid) {
-            state := Busy0
-          }.otherwise {
-            state := WaitingIdle
-          }
-        }.otherwise {
-          state := Idle
-        }
-      }
-      is (WaitingIdle) {
+  switch(state) {
+    is(Idle) {
+      when(io.start) {
         when(io.previous_valid) {
           state := Busy0
         }.otherwise {
           state := WaitingIdle
         }
+      }.otherwise {
+        state := Idle
       }
-      is (Busy0) {
-        when (io.next_ready) {
-          state := Busy1
-        }.otherwise {
-          state := Busy0
-        }
+    }
+    is(WaitingIdle) {
+      when(io.previous_valid) {
+        state := Busy0
+      }.otherwise {
+        state := WaitingIdle
       }
-      is (Busy1) {
-        when (io.next_ready) {
-          state := Busy2
-        }.otherwise {
-          state := Busy1
-        }
+    }
+    is(Busy0) {
+      when(io.next_ready) {
+        state := Busy1
+      }.otherwise {
+        state := Busy0
       }
-      is (Busy2) {
-        when (io.next_ready) {
-          state := Busy3
-        }.otherwise {
-          state := Busy2
-        }
+    }
+    is(Busy1) {
+      when(io.next_ready) {
+        state := Busy2
+      }.otherwise {
+        state := Busy1
       }
-      is (Busy3) {
-        when (io.next_ready) {
-          when (io.previous_valid) {
-            state := Busy0
-          }.otherwise {
-            state := Waiting
-          }
-        }.otherwise {
-          state := Busy3
-        }
+    }
+    is(Busy2) {
+      when(io.next_ready) {
+        state := Busy3
+      }.otherwise {
+        state := Busy2
       }
-      is (Waiting) {
-        when (io.previous_valid) {
+    }
+    is(Busy3) {
+      when(io.next_ready) {
+        when(io.previous_valid) {
           state := Busy0
         }.otherwise {
           state := Waiting
         }
-      }
-    } //TODO: make logic for when machine is done and should somehow return to initial state
-
-    io.counter_out := DontCare
-    io.self_valid := false.B
-    io.self_ready := false.B
-    io.self_busy := false.B
-
-    switch (state) {
-      is (Idle) {
-        io.counter_out := DontCare
-        io.self_valid := false.B
-        io.self_ready := false.B
-        io.self_busy := false.B
-      }
-      is (WaitingIdle) {
-        io.counter_out := DontCare
-        io.self_valid := false.B
-        io.self_ready := false.B
-        io.self_busy := true.B
-      }
-      is (Busy0) {
-        io.counter_out := 0.U
-        io.self_valid := true.B
-        io.self_ready := false.B
-        io.self_busy := true.B
-      }
-      is (Busy1) {
-        io.counter_out := 1.U
-        io.self_valid := true.B
-        io.self_ready := false.B
-        io.self_busy := true.B
-      }
-      is (Busy2) {
-        io.counter_out := 2.U
-        io.self_valid := true.B
-        io.self_ready := false.B
-        io.self_busy := true.B
-      }
-      is (Busy3) {
-        io.counter_out := 3.U
-        io.self_valid := true.B
-        io.self_busy := true.B
-        when (io.next_ready) {
-          io.self_ready := true.B
-        }.otherwise {
-          io.self_ready := false.B
-        }
-      }
-      is (Waiting) {
-        io.counter_out := DontCare
-        io.self_valid := false.B
-        io.self_ready := true.B
-        io.self_busy := false.B
+      }.otherwise {
+        state := Busy3
       }
     }
+    is(Waiting) {
+      when(io.previous_valid) {
+        state := Busy0
+      }.otherwise {
+        state := Waiting
+      }
+    }
+  } // TODO: make logic for when machine is done and should somehow return to initial state
 
-    dontTouch(state)
-    dontTouch(io.start)
+  io.counter_out := DontCare
+  io.self_valid  := false.B
+  io.self_ready  := false.B
+  io.self_busy   := false.B
+
+  switch(state) {
+    is(Idle) {
+      io.counter_out := DontCare
+      io.self_valid  := false.B
+      io.self_ready  := false.B
+      io.self_busy   := false.B
+    }
+    is(WaitingIdle) {
+      io.counter_out := DontCare
+      io.self_valid  := false.B
+      io.self_ready  := false.B
+      io.self_busy   := true.B
+    }
+    is(Busy0) {
+      io.counter_out := 0.U
+      io.self_valid  := true.B
+      io.self_ready  := false.B
+      io.self_busy   := true.B
+    }
+    is(Busy1) {
+      io.counter_out := 1.U
+      io.self_valid  := true.B
+      io.self_ready  := false.B
+      io.self_busy   := true.B
+    }
+    is(Busy2) {
+      io.counter_out := 2.U
+      io.self_valid  := true.B
+      io.self_ready  := false.B
+      io.self_busy   := true.B
+    }
+    is(Busy3) {
+      io.counter_out := 3.U
+      io.self_valid  := true.B
+      io.self_busy   := true.B
+      when(io.next_ready) {
+        io.self_ready := true.B
+      }.otherwise {
+        io.self_ready := false.B
+      }
+    }
+    is(Waiting) {
+      io.counter_out := DontCare
+      io.self_valid  := false.B
+      io.self_ready  := true.B
+      io.self_busy   := false.B
+    }
+  }
+
+  dontTouch(state)
+  dontTouch(io.start)
 
 }
 
@@ -196,7 +199,7 @@ class HasRescaleUp(in_elementWidth: Int = 8, out_elementWidth: Int = 32) extends
       userCsrNum = 4,
       dataWidth  = 512
     )
-  def instantiate(clusterName: String): RescaleUp            =
+  def instantiate(clusterName: String): RescaleUp              =
     Module(
       new RescaleUp(in_elementWidth, out_elementWidth) {
         override def desiredName = clusterName + namePostfix
@@ -222,12 +225,12 @@ class RescaleUp(
 
   // Control Logic
   val ctrl = Module(new RescaleUpCtrl(in_elementWidth, out_elementWidth))
-  ctrl.io.start := io.start_i
-  ctrl.io.next_ready := ext_data_o.ready
+  ctrl.io.start          := io.start_i
+  ctrl.io.next_ready     := ext_data_o.ready
   ctrl.io.previous_valid := ext_data_i.valid
   val counter_val = WireInit(ctrl.io.counter_out.asUInt)
   ext_data_o.valid := ctrl.io.self_valid
-  ext_busy_o := ctrl.io.self_busy
+  ext_busy_o       := ctrl.io.self_busy
   ext_data_i.ready := ctrl.io.self_ready
   dontTouch(ctrl.io.counter_out)
 
@@ -238,7 +241,9 @@ class RescaleUp(
   val shift      = WireInit(ext_csr_i(3).asUInt)
 
   // Data Logic
-  val input_vec = WireInit(ext_data_i.bits.asTypeOf(Vec(extensionParam.dataWidth / in_elementWidth, SInt(in_elementWidth.W))))
+  val input_vec  = WireInit(
+    ext_data_i.bits.asTypeOf(Vec(extensionParam.dataWidth / in_elementWidth, SInt(in_elementWidth.W)))
+  )
   val output_vec = Wire(Vec(extensionParam.dataWidth / out_elementWidth, SInt(out_elementWidth.W)))
 
   val PEs = for (i <- 0.until(extensionParam.dataWidth / out_elementWidth)) yield {

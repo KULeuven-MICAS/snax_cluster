@@ -2,25 +2,24 @@ package snax.DataPathExtension
 import scala.math._
 import scala.util.Random
 
-import chiseltest._
 import snax.DataPathExtension.HasRescaleUp
 
 class RescaleUpTester extends DataPathExtensionTester {
 
   def GoldenModelUp(
-    data_in: Int,
-    input_zp_i: Int,
-    output_zp_i: Int,
-    shift_i: Int,
-    max_int_i: Int,
-    min_int_i: Int,
+    data_in:      Int,
+    input_zp_i:   Int,
+    output_zp_i:  Int,
+    shift_i:      Int,
+    max_int_i:    Int,
+    min_int_i:    Int,
     multiplier_i: Int
   ): Int = {
-    /**
-     * This function performs SIMD postprocessing of data given approximate algorithm of TOSA.rescale,
-     * with dynamically scaled shifts.
-     */
-    
+
+    /** This function performs SIMD postprocessing of data given approximate algorithm of TOSA.rescale, with dynamically
+      * scaled shifts.
+      */
+
     // Step 1: Subtract input zero point
     val var_1 = data_in - input_zp_i
 
@@ -28,7 +27,7 @@ class RescaleUpTester extends DataPathExtensionTester {
     val var_2 = var_1.toLong * multiplier_i.toLong
 
     // Step 3: Left shift one
-    val shifted_one = 1L << (shift_i - 1)  // TODO: check if the minus one is actually correct
+    val shifted_one = 1L << (shift_i - 1) // TODO: check if the minus one is actually correct
 
     // Step 4: Add shifted one
     val var_3 = var_2 + shifted_one
@@ -61,15 +60,17 @@ class RescaleUpTester extends DataPathExtensionTester {
 
   Random.setSeed(1) // For reproducibility
 
-  val max_int_i = 1 << 31 - 1  // Max value for signed int
-  val min_int_i = -1 << 31 // Min value for signed int
+  val max_int_i = 1 << 31 - 1 // Max value for signed int
+  val min_int_i = -1 << 31    // Min value for signed int
 
   for (_ <- 0.until(128)) {
     // val inputMatrix: Array[Int] = Array.fill(64)(1360653)
     val inputMatrix: Array[Int] = Array.fill(64)(Random.between(-128, 127))
     inputData.append(BigInt(inputMatrix.map { i => f"${i & 0xff}%02X" }.reverse.reduce(_ + _), 16))
 
-    val outputMatrix: Array[Int] = inputMatrix.map { i => GoldenModelUp(i.toInt, input_zp, output_zp, shift, max_int_i, min_int_i, multiplier) }
+    val outputMatrix: Array[Int] = inputMatrix.map { i =>
+      GoldenModelUp(i.toInt, input_zp, output_zp, shift, max_int_i, min_int_i, multiplier)
+    }
     val outputMatrix1 = outputMatrix.slice(0, 16)
     val outputMatrix2 = outputMatrix.slice(16, 32)
     val outputMatrix3 = outputMatrix.slice(32, 48)

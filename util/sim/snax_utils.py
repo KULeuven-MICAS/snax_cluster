@@ -431,6 +431,7 @@ def postprocessing_simd_golden_model(
 
     return var
 
+
 def golden_model_rescale_up(
     data_in: int,
     input_zp_i: int,
@@ -441,7 +442,8 @@ def golden_model_rescale_up(
     multiplier_i: int,
 ) -> int:
     """
-    This function performs rescaling of data given exact algorithm of TOSA.rescale,
+    This function performs rescaling of data given
+    exact algorithm of TOSA.rescale,
     """
     # Step 1: Subtract input zero point
     var_1 = data_in - input_zp_i
@@ -467,124 +469,6 @@ def golden_model_rescale_up(
     var_8 = np.clip(var_7, min_int_i, max_int_i)
 
     return int(var_8)
-
-
-def postprocessing_simd_golden_model_V2(
-    data_in,
-    input_zp_i,
-    output_zp_i,
-    shift_i,
-    max_int_i,
-    min_int_i,
-    double_round_i,
-    multiplier_i,
-):
-    """
-    This function performs SIMD postprocessing of data given the exact
-    algorithm of TOSA.rescale.
-    """
-    # Step 1: Subtract input zero point
-    var_1 = data_in - input_zp_i
-
-    # Step 2: Multiply with the multiplier avoiding overflow
-    var_2 = np.int64(var_1) * np.int64(multiplier_i)
-
-    # Step 3: Left shift one
-    shifted_one = np.int64(1 << (shift_i - 1))
-
-    # Step 4: Add shifted one
-    var_3 = var_2 + shifted_one
-
-    # Step 5: Double rounding if necessary
-    if double_round_i:
-        if var_1 > 0:
-            var_4 = var_3 + np.int64(1 << 30)
-        else:
-            var_4 = var_3 - np.int64(1 << 30)
-    else:
-        var_4 = var_3
-
-    if shift_i > 31:
-        var_5 = var_4
-    else:
-        var_5 = var_3
-
-    # Step 6: Shift right
-    var_6 = np.int32(var_5 >> shift_i)
-
-    # Step 7: Add output zero point
-    var_7 = var_6 + output_zp_i
-
-    # Step 8: Clip the values to be within min and max integer range
-    var_8 = np.clip(var_7, min_int_i, max_int_i)
-
-    return var_8
-
-
-def postprocessing_simd_golden_model_V3(
-    data_in,
-    input_zp_i,
-    output_zp_i,
-    shift_i,
-    max_int_i,
-    min_int_i,
-    double_round_i,
-    multiplier_i,
-):
-    """
-    This function performs SIMD postprocessing of data given approximate
-    algorithm of TOSA.rescale, with dynamically scaled shifts.
-    """
-    # Step 1: Subtract input zero point
-    var_1 = data_in - input_zp_i
-
-    # Additional Step 1:
-    bits_to_shift_input = max(
-        0, 9 + shift_i - ceil(np.log2(multiplier_i)) - 16
-    )
-    # 8 can be adapted to be higher. higher will add more support for
-    # overflows, but will also reduce accuracy of the output.
-    bits_to_shift_multiplier = max(0, ceil(np.log2(multiplier_i)) - 16)
-
-    var_1 = var_1 >> bits_to_shift_input
-    multiplier_i = multiplier_i >> bits_to_shift_multiplier
-    shift_i = shift_i - bits_to_shift_input - bits_to_shift_multiplier
-
-    # Step 2: Multiply with the multiplier avoiding overflow
-    var_2 = np.int32(var_1) * np.int32(multiplier_i)
-
-    # Step 3: Left shift one
-    shifted_one = np.int32(1 << (shift_i - 1))
-
-    # Step 4: Add shifted one
-    var_3 = var_2 + shifted_one
-
-    # Step 5: Double rounding
-    if double_round_i:
-        if var_1 > 0:
-            var_4 = var_3 + np.int32(
-                1 << (30 - bits_to_shift_multiplier - bits_to_shift_input)
-            )
-        else:
-            var_4 = var_3 - np.int32(
-                1 << (30 - bits_to_shift_multiplier - bits_to_shift_input)
-            )
-
-    if shift_i > 31 - bits_to_shift_multiplier - bits_to_shift_input:
-        var_5 = var_4
-    else:
-        var_5 = var_3
-
-    # Step 6: Shift right
-    var_6 = np.int32(var_5 >> shift_i)
-
-    # Step 7: Add output zero point
-    var_7 = var_6 + output_zp_i
-
-    # Step 8: Clip the values to be within min and max integer range
-    var_8 = np.clip(var_7, min_int_i, max_int_i)
-
-    return var_8
 
 
 def postprocessing_simd_golden_model_V2(

@@ -69,8 +69,6 @@ int main() {
             err++;
         }
 
-
-
         // --------------------- Configure the AGU --------------------- //
         xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src,
                        spatial_stride_dst, temporal_dimension_src,
