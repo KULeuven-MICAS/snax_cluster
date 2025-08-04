@@ -41,7 +41,7 @@ class DataPathExtensionHost(
   tailCut:          Boolean = false,
   halfCut:          Boolean = false,
   moduleNamePrefix: String  = "unnamed_cluster"
-) extends Module {
+) extends Module with RequireAsyncReset {
   override def desiredName = s"${moduleNamePrefix}_DataPathExtensionHost"
   val io                   = IO(new DataPathExtensionHostIO(extensionList, dataWidth = dataWidth))
 

@@ -3,6 +3,17 @@ package snax_acc.simd
 import chisel3._
 import chisel3.util._
 
+case class RescaleSIMDParams(
+  inputType:                     Int,
+  outputType:                    Int,
+  constantType:                  Int,
+  constantMulType:               Int,
+  dataLen:                       Int,
+  laneLen:                       Int,
+  readWriteCsrNum:               Int,
+  sharedScaleFactorPerGroupSize: Int
+)
+
 // control signals for the basic processing element, related to the Rescale algorithm
 class RescalePECtrl(params: RescaleSIMDParams) extends Bundle {
 

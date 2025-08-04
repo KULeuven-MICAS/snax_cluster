@@ -196,3 +196,10 @@ class RescaleDownEfficient(
   ext_data_o.valid := ext_data_i.fire && counter.io.value === ((in_elementWidth / out_elementWidth).U - 1.U)
   ext_data_i.ready := ext_data_o.ready // Check if this can be more efficient
 }
+
+object RescaleDownEfficientEmitter extends App {
+  val svString = getVerilogString(new DataPathExtensionHost(
+    extensionList = Seq(new HasRescaleDownEfficient(32, 8))
+  ))
+  println(svString)
+}
