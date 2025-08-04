@@ -8,11 +8,7 @@
     M: 9, // Number of rows / height
     N: 9, // Number of columns / width
     max_in_range: 8388608
-    input_zp_i: 0, // Input zero point
-    output_zp_i: 0, // Output zero point
-    shift_i: 47, // shift
     max_int_i: 127, // Maximum value for input
     min_int_i: -128, // Minimum value for input
     double_round_i: true, // Double rounding
-    multiplier_i: 1140768826, // Multiplier for scaling
 }

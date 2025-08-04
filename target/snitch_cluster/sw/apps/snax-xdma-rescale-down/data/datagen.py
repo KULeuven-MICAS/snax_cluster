@@ -9,14 +9,14 @@
 import argparse
 import os
 import pathlib
+import random
 import sys
 
 import hjson
 import numpy as np
 
 # Add data utility path
-sys.path.append(os.path.join(os.path.dirname(__file__),
-                             "../../../../../../util/sim/"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
 from snax_utils import postprocessing_simd_golden_model_V3  # noqa E402
 
@@ -42,6 +42,13 @@ def emit_elementwise_add_data(**kwargs):
     padded_M = (kwargs["M"] + tile_width - 1) // tile_width * tile_width
     padded_N = (kwargs["N"] + tile_width - 1) // tile_width * tile_width
 
+    # Make random parameters for the TOSA.Rescale operation
+    shift_i = random.randint(24, 48)
+    multiplier = 1140768826 * 2 // (2 ** (48 - shift_i))
+    max_in_range = 8388608
+    input_zp_i = random.randint(-10000000, 10000000) // (2 ** (48 - shift_i))
+    output_zp_i = random.randint(-3, 3)
+
     # First input matrix for elementwise add
     matrix1_data = np.zeros((padded_M, padded_N), dtype=np.int32)
     matrix1_data[: kwargs["M"], : kwargs["N"]] = np.random.randint(
@@ -54,10 +61,8 @@ def emit_elementwise_add_data(**kwargs):
     input_matrix1 = input_matrix1.ravel()
 
     # Emit input matrix
-    emit_str += [format_scalar_definition("uint32_t", "matrix_size",
-                                          matrix1_data.size)]
-    emit_str += [format_vector_definition(data_type, "input_matrix",
-                                          input_matrix1)]
+    emit_str += [format_scalar_definition("uint32_t", "matrix_size", matrix1_data.size)]
+    emit_str += [format_vector_definition(data_type, "input_matrix", input_matrix1)]
 
     # Emit output matrix
     output_matrix = []
@@ -67,21 +72,20 @@ def emit_elementwise_add_data(**kwargs):
             # use V2 for the exact model
             postprocessing_simd_golden_model_V3(
                 data_element,
-                kwargs["input_zp_i"],
-                kwargs["output_zp_i"],
-                kwargs["shift_i"],
-                kwargs["max_int_i"],
-                kwargs["min_int_i"],
-                kwargs["double_round_i"],
-                kwargs["multiplier_i"],
+                input_zp_i,
+                output_zp_i,
+                shift_i,
+                max_in_range,
+                -max_in_range,
+                True,
+                multiplier,
             )
         )
     output_matrix = np.array(output_matrix, dtype=np.int8)
 
     output_matrix = output_matrix.ravel()
     emit_str += [
-        format_vector_definition("int8_t", "golden_output_matrix",
-                                 output_matrix)
+        format_vector_definition("int8_t", "golden_output_matrix", output_matrix)
     ]
 
     # Emit the configuration for XDMA
@@ -112,20 +116,16 @@ def emit_elementwise_add_data(**kwargs):
     ]
 
     emit_str += [
-        format_scalar_definition("uint32_t", "spatial_stride_src",
-                                 spatial_stride_src)
+        format_scalar_definition("uint32_t", "spatial_stride_src", spatial_stride_src)
     ]
     emit_str += [
-        format_scalar_definition("uint32_t", "spatial_stride_dst",
-                                 spatial_stride_dst)
+        format_scalar_definition("uint32_t", "spatial_stride_dst", spatial_stride_dst)
     ]
     emit_str += [
-        format_vector_definition("uint32_t", "temporal_bounds_src",
-                                 temporal_bounds_src)
+        format_vector_definition("uint32_t", "temporal_bounds_src", temporal_bounds_src)
     ]
     emit_str += [
-        format_vector_definition("uint32_t", "temporal_bounds_dst",
-                                 temporal_bounds_dst)
+        format_vector_definition("uint32_t", "temporal_bounds_dst", temporal_bounds_dst)
     ]
     emit_str += [
         format_vector_definition(
@@ -147,6 +147,11 @@ def emit_elementwise_add_data(**kwargs):
             "uint32_t", "temporal_dimension_dst", len(temporal_bounds_dst)
         )
     ]
+
+    emit_str += [format_scalar_definition("uint32_t", "shift_i", shift_i)]
+    emit_str += [format_scalar_definition("uint32_t", "multiplier_i", multiplier)]
+    emit_str += [format_scalar_definition("int32_t", "input_zp_i", input_zp_i)]
+    emit_str += [format_scalar_definition("int32_t", "output_zp_i", output_zp_i)]
 
     return emit_str
 

@@ -32,10 +32,6 @@ int main() {
         snrt_dma_wait_all();
 
         // --------------------- Configure the Ext --------------------- //
-        int32_t input_zp_i = 0;
-        uint32_t multiplier_i = 1140768826;
-        int32_t output_zp_i = 0;
-        uint32_t shift_i = 47;
 
         uint32_t ext_param[4] = {input_zp_i, multiplier_i, output_zp_i,
                                  shift_i};
