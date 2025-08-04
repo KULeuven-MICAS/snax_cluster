@@ -173,6 +173,7 @@
                 HasElementwiseAdd: {},
                 HasRescaleDownEfficient: {},
                 HasRescaleUp: {},
+
             }
         },
         // Xdiv_sqrt: true,
