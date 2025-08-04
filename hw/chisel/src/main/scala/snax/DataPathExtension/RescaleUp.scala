@@ -180,7 +180,7 @@ class RescaleUpCtrl(
         io.counter_out := DontCare
         io.self_valid := false.B
         io.self_ready := true.B
-        io.self_busy := true.B
+        io.self_busy := false.B
       }
     }
 
