@@ -149,7 +149,7 @@ class RescaleUpCtrl(
       io.counter_out := DontCare
       io.self_valid  := false.B
       io.self_ready  := false.B
-      io.self_busy   := true.B
+      io.self_busy   := false.B
     }
     is(Busy0) {
       io.counter_out := 0.U
