@@ -3,7 +3,6 @@ import scala.math._
 import scala.util.Random
 
 import chiseltest._
-
 import snax.DataPathExtension.HasRescaleUp
 
 class RescaleUpTester extends DataPathExtensionTester(TreadleBackendAnnotation) {

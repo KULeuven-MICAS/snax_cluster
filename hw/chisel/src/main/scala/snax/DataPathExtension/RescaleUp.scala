@@ -250,11 +250,11 @@ class RescaleUp(
     val PE = Module(new RescaleUpPE(in_elementWidth = in_elementWidth, out_elementWidth = out_elementWidth) {
       // override val desiredName = "RescaleUpPE"
     })
-    PE.io.data_i  := input_vec(counter_val * (extensionParam.dataWidth / out_elementWidth).U + i.U)
-    PE.io.input_zp     := input_zp.asSInt
-    PE.io.multiplier   := multiplier.asUInt
-    PE.io.output_zp    := output_zp.asSInt
-    PE.io.shift        := shift.asUInt
+    PE.io.data_i     := input_vec(counter_val * (extensionParam.dataWidth / out_elementWidth).U + i.U)
+    PE.io.input_zp   := input_zp.asSInt
+    PE.io.multiplier := multiplier.asUInt
+    PE.io.output_zp  := output_zp.asSInt
+    PE.io.shift      := shift.asUInt
 
     output_vec(i) := PE.io.data_o.asSInt
   }
