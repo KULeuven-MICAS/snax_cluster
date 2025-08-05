@@ -19,14 +19,21 @@ import xdma_pkg::*;
   // Address width
   parameter int unsigned PhysicalAddrWidth = ${cfg["addr_width"]},
   // TCDM typedefs
-  parameter type         tcdm_req_t        = logic,
-  parameter type         tcdm_rsp_t        = logic,
+  parameter type         tcdm_req_t          = logic,
+  parameter type         tcdm_rsp_t          = logic,
   // AXI type
-  parameter type         wide_slv_id_t     = logic,
-  parameter type         wide_out_req_t    = logic,
-  parameter type         wide_out_resp_t   = logic,
-  parameter type         wide_in_req_t     = logic,
-  parameter type         wide_in_resp_t    = logic,
+  // Wide
+  parameter type         wide_slv_id_t       = logic,
+  parameter type         wide_out_req_t      = logic,
+  parameter type         wide_out_resp_t     = logic,
+  parameter type         wide_in_req_t       = logic,
+  parameter type         wide_in_resp_t      = logic,
+  // Narrow
+  parameter type         narrow_slv_id_t     = logic,
+  parameter type         narrow_out_req_t    = logic,
+  parameter type         narrow_out_resp_t   = logic,
+  parameter type         narrow_in_req_t     = logic,
+  parameter type         narrow_in_resp_t    = logic,
   // Parameters related to TCDM
   parameter int unsigned TCDMDataWidth     = ${cfg["data_width"]},
   parameter int unsigned TCDMNumPorts      = ${num_tcdm_ports},
@@ -68,10 +75,16 @@ import xdma_pkg::*;
   //-----------------------------
   // XDMA Intercluster Ports
   //-----------------------------
+  // Wide for data
   output wide_out_req_t      xdma_wide_out_req_o,
   input  wide_out_resp_t     xdma_wide_out_resp_i,
   input  wide_in_req_t       xdma_wide_in_req_i,
-  output wide_in_resp_t      xdma_wide_in_resp_o
+  output wide_in_resp_t      xdma_wide_in_resp_o,
+  // Narrow for control
+  output narrow_out_req_t    xdma_narrow_out_req_o,
+  input  narrow_out_resp_t   xdma_narrow_out_resp_i,
+  input  narrow_in_req_t     xdma_narrow_in_req_i,
+  output narrow_in_resp_t    xdma_narrow_in_resp_o
 );
   
   //-----------------------------
@@ -307,11 +320,19 @@ import xdma_pkg::*;
 
 
     xdma_axi_adapter_top #(
-        .axi_id_t                             (wide_slv_id_t                     ),
-        .axi_out_req_t                        (wide_out_req_t                    ),
-        .axi_out_resp_t                       (wide_out_resp_t                   ),
-        .axi_in_req_t                         (wide_in_req_t                     ),
-        .axi_in_resp_t                        (wide_in_resp_t                    ),
+        // Wide AXI Types
+        .axi_wide_id_t                        (wide_slv_id_t                     ),
+        .axi_wide_out_req_t                   (wide_out_req_t                    ),
+        .axi_wide_out_resp_t                  (wide_out_resp_t                   ),
+        .axi_wide_in_req_t                    (wide_in_req_t                     ),
+        .axi_wide_in_resp_t                   (wide_in_resp_t                    ),
+        // Narrow AXI Types
+        .axi_narrow_id_t                      (narrow_slv_id_t                   ),
+        .axi_narrow_out_req_t                 (narrow_out_req_t                  ),
+        .axi_narrow_out_resp_t                (narrow_out_resp_t                 ),
+        .axi_narrow_in_req_t                  (narrow_in_req_t                   ),
+        .axi_narrow_in_resp_t                 (narrow_in_resp_t                  ),
+        // Reqrsp Types
         .reqrsp_req_t                         (xdma_pkg::reqrsp_req_t            ),
         .reqrsp_rsp_t                         (xdma_pkg::reqrsp_rsp_t            ),
         .data_t                               (xdma_pkg::data_t                  ),
@@ -360,10 +381,16 @@ import xdma_pkg::*;
         // finish
         .xdma_finish_o                   (xdma_finish                        ),
         // AXI interface
+        // Wide
         .axi_xdma_wide_out_req_o         (xdma_wide_out_req_o                ),
         .axi_xdma_wide_out_resp_i        (xdma_wide_out_resp_i               ),
         .axi_xdma_wide_in_req_i          (xdma_wide_in_req_i                 ),
-        .axi_xdma_wide_in_resp_o         (xdma_wide_in_resp_o                )
+        .axi_xdma_wide_in_resp_o         (xdma_wide_in_resp_o                ),
+        // Narrow
+        .axi_xdma_narrow_out_req_o       (xdma_narrow_out_req_o              ),
+        .axi_xdma_narrow_out_resp_i      (xdma_narrow_out_resp_i             ),
+        .axi_xdma_narrow_in_req_i        (xdma_narrow_in_req_i               ),
+        .axi_xdma_narrow_in_resp_o       (xdma_narrow_in_resp_o              )
     );
 
 
