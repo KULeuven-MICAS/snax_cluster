@@ -27,11 +27,6 @@ int main() {
     //-------------------------------
     // First load the data to be processed
     //-------------------------------
-    // uint32_t max_num_predictions = 52;
-    // uint32_t num_features = 617;
-    // uint32_t num_classes = 26;
-    // uint32_t num_rows = 507;
-
     uint32_t *am_start, *data_start_1, *data_start_2, *predict_start;
     uint32_t process_left_flag = 0;
     uint32_t pre_config_acc = 0;
@@ -253,7 +248,7 @@ int main() {
             //-------------------------------
             for (uint32_t i = 0; i < max_num_predictions; i++) {
                 if (golden_list_data[i] !=
-                    (uint32_t)*(predict_start + i * 64)) {
+                    (uint32_t) * (predict_start + i * 64)) {
                     err++;
                 }
             };
@@ -368,7 +363,7 @@ int main() {
         // Check results
         //-------------------------------
         for (uint32_t i = 0; i < final_predictions; i++) {
-            if (golden_list_data[i] != (uint32_t)*(predict_start + i * 64)) {
+            if (golden_list_data[i] != (uint32_t) * (predict_start + i * 64)) {
                 err++;
             }
         };
