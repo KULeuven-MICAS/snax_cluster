@@ -125,29 +125,30 @@ import xdma_pkg::*;
   ///---------------------------------------------------------------
   // XDMA Intercluster Signals
   ///---------------------------------------------------------------
-  xdma_pkg::data_t                   xdma_to_remote_cfg_bits;
-  xdma_pkg::data_t                   xdma_from_remote_cfg_bits;
+  xdma_pkg::wide_data_t                   xdma_to_remote_cfg_bits;
+  xdma_pkg::wide_data_t                   xdma_from_remote_cfg_bits;
   ///---------------------
   /// TO REMOTE
   ///---------------------
   // to remote cfg
-  xdma_pkg::xdma_inter_cluster_cfg_t xdma_to_remote_cfg;
-  logic                              xdma_to_remote_cfg_valid;
-  logic                              xdma_to_remote_cfg_ready;
+  xdma_pkg::xdma_inter_cluster_cfg_t   xdma_to_remote_cfg;
+  logic                                xdma_to_remote_cfg_valid;
+  logic                                xdma_to_remote_cfg_ready;
   // to remote data
-  xdma_pkg::xdma_to_remote_data_t    xdma_to_remote_data;
-  logic                              xdma_to_remote_data_valid;
-  logic                              xdma_to_remote_data_ready;
+  xdma_pkg::xdma_to_remote_data_t      xdma_to_remote_data;
+  logic                                xdma_to_remote_data_valid;
+  logic                                xdma_to_remote_data_ready;
   // to remote accompany cfg
-  xdma_pkg::xdma_accompany_cfg_t     xdma_to_remote_data_accompany_cfg;
-  xdma_pkg::id_t                     xdma_to_remote_data_accompany_cfg_dma_id;
-  logic                              xdma_to_remote_data_accompany_cfg_dma_type;
-  xdma_pkg::addr_t                   xdma_to_remote_data_accompany_cfg_src_addr;
-  xdma_pkg::addr_t                   xdma_to_remote_data_accompany_cfg_dst_addr;
-  xdma_pkg::len_t                    xdma_to_remote_data_accompany_cfg_dma_length;
-  logic                              xdma_to_remote_data_accompany_cfg_ready_to_transfer;
-  logic                              xdma_to_remote_data_accompany_cfg_is_first_cw;
-  logic                              xdma_to_remote_data_accompany_cfg_is_last_cw;
+  xdma_pkg::xdma_accompany_cfg_t       xdma_to_remote_data_accompany_cfg;
+  xdma_pkg::id_t                       xdma_to_remote_data_accompany_cfg_dma_id;
+  logic                                xdma_to_remote_data_accompany_cfg_dma_type;
+  xdma_pkg::addr_t                     xdma_to_remote_data_accompany_cfg_src_addr;
+  xdma_pkg::addr_t                     xdma_to_remote_data_accompany_cfg_dst_addr;
+  xdma_pkg::len_t                      xdma_to_remote_data_accompany_cfg_dma_length;
+  logic                                xdma_to_remote_data_accompany_cfg_ready_to_transfer;
+  logic                                xdma_to_remote_data_accompany_cfg_is_first_cw;
+  logic                                xdma_to_remote_data_accompany_cfg_is_last_cw;cw;
+  logic                                xdma_to_remote_data_accompany_cfg_is_last_cw;
   ///---------------------
   /// FROM REMOTE
   ///---------------------
@@ -177,7 +178,7 @@ import xdma_pkg::*;
   // Assign Signals
   ///---------------------------------------------------------------
   assign xdma_to_remote_cfg = xdma_pkg::xdma_inter_cluster_cfg_t'(xdma_to_remote_cfg_bits);
-  assign xdma_from_remote_cfg_bits = xdma_pkg::data_t'(xdma_from_remote_cfg);
+  assign xdma_from_remote_cfg_bits = xdma_pkg::wide_data_t'(xdma_from_remote_cfg);
   assign xdma_to_remote_data_accompany_cfg = xdma_pkg::xdma_accompany_cfg_t'{
     dma_id:            xdma_to_remote_data_accompany_cfg_dma_id,
     dma_type:          xdma_to_remote_data_accompany_cfg_dma_type,
@@ -333,10 +334,16 @@ import xdma_pkg::*;
         .axi_narrow_in_req_t                  (narrow_in_req_t                   ),
         .axi_narrow_in_resp_t                 (narrow_in_resp_t                  ),
         // Reqrsp Types
-        .reqrsp_req_t                         (xdma_pkg::reqrsp_req_t            ),
-        .reqrsp_rsp_t                         (xdma_pkg::reqrsp_rsp_t            ),
-        .data_t                               (xdma_pkg::data_t                  ),
-        .strb_t                               (xdma_pkg::strb_t                  ),
+        // Wide
+        .reqrsp_wide_req_t                    (xdma_pkg::reqrsp_wide_req_t       ),
+        .reqrsp_wide_rsp_t                    (xdma_pkg::reqrsp_wide_rsp_t       ),
+        // Narrow
+        .reqrsp_narrow_req_t                  (xdma_pkg::reqrsp_narrow_req_t     ),
+        .reqrsp_narrow_rsp_t                  (xdma_pkg::reqrsp_narrow_rsp_t     ),
+        .wide_data_t                          (xdma_pkg::wide_data_t             ),
+        .wide_strb_t                          (xdma_pkg::wide_strb_t             ),
+        .narrow_data_t                        (xdma_pkg::narrow_data_t           ),
+        .narrow_strb_t                        (xdma_pkg::narrow_strb_t           ),
         .addr_t                               (xdma_pkg::addr_t                  ),
         .len_t                                (xdma_pkg::len_t                   ),
         .xdma_to_remote_cfg_t                 (xdma_pkg::xdma_inter_cluster_cfg_t),
