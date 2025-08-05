@@ -534,7 +534,7 @@ module snitch_cluster
   // data mmio
   addr_t xdma_mmio_data_start_address, xdma_mmio_data_end_address;
   assign xdma_mmio_data_start_address = xdma_mmio_start_address;
-  assign xdma_mmio_data_end_address = xdma_mmio_data_start_address - (ClusterMMIOSize/4) * 1024;
+  assign xdma_mmio_data_end_address = xdma_mmio_data_start_address + (ClusterMMIOSize/4) * 1024;
   // control mmio
   addr_t xdma_mmio_ctrl_start_address, xdma_mmio_ctrl_end_address;
   assign xdma_mmio_ctrl_start_address = xdma_mmio_data_end_address;
