@@ -208,8 +208,8 @@ class HasRescaleUp(in_elementWidth: Int = 8, out_elementWidth: Int = 32) extends
 }
 
 class RescaleUp(
-  in_elementWidth:  Int = 32,
-  out_elementWidth: Int = 8
+  in_elementWidth:  Int = 8,
+  out_elementWidth: Int = 32
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
 
