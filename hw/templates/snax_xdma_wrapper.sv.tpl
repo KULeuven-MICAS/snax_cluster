@@ -147,7 +147,6 @@ import xdma_pkg::*;
   xdma_pkg::len_t                      xdma_to_remote_data_accompany_cfg_dma_length;
   logic                                xdma_to_remote_data_accompany_cfg_ready_to_transfer;
   logic                                xdma_to_remote_data_accompany_cfg_is_first_cw;
-  logic                                xdma_to_remote_data_accompany_cfg_is_last_cw;cw;
   logic                                xdma_to_remote_data_accompany_cfg_is_last_cw;
   ///---------------------
   /// FROM REMOTE
