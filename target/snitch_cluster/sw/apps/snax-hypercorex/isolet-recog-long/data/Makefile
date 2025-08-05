@@ -12,6 +12,9 @@ DATA_DIR := $(realpath $(MK_DIR))
 DATAGEN_PY = $(DATA_DIR)/datagen.py
 DATA_H = $(DATA_DIR)/data.h
 
+# INPUTS
+INPUT_MUL = 1
+
 .PHONY: clean clean-data
 
 clean-data:
@@ -21,4 +24,4 @@ clean: clean-data
 clean-sw: clean-data
 
 $(DATA_H): 
-	$(DATAGEN_PY) > $@
+	$(DATAGEN_PY) --input_mul=$(INPUT_MUL) > $@

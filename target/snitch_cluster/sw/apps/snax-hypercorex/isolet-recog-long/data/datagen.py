@@ -8,6 +8,7 @@
 
 import sys
 import numpy as np
+import argparse
 import os
 import subprocess
 
@@ -17,7 +18,7 @@ import subprocess
 sys.path.append(
     os.path.join(os.path.dirname(__file__), "../../../../../../../util/sim/")
 )
-from data_utils import format_vector_definition  # noqa: E402
+from data_utils import format_vector_definition, format_scalar_definition  # noqa: E402
 
 # -----------------------
 # Add hypercorex utility paths
@@ -62,8 +63,7 @@ def hvlist2num(hv_list):
 def reorder_list(input_list, reorder_chunk_size, num_iterations):
     new_list = []
     for i in range(num_iterations):
-        sub_list = \
-            input_list[i * reorder_chunk_size:(i + 1) * reorder_chunk_size]
+        sub_list = input_list[i * reorder_chunk_size : (i + 1) * reorder_chunk_size]
         # Reverse the sublist
         sub_list_reversed = sub_list[::-1]
         # Append the reversed sublist to the new list
@@ -110,6 +110,43 @@ CUT_WIDTH = 32
 
 # Main function to generate data
 def main():
+    # Extraction of some parameters
+    parser = argparse.ArgumentParser(description="Generate data for kernels")
+    parser.add_argument(
+        "--input_mul",
+        type=int,
+        default=1,
+        help="Set input multiplier",
+    )
+
+    input_mul = parser.parse_args().input_mul
+
+    # This is because the total data for isolet
+    # should be in multiples of 4 so that it aligns
+    # very well with the bank numbers
+    # note about max_num_input_mul = 13
+    base_num_pred = 4
+    base_num_rows = 39
+    num_predictions = base_num_pred * input_mul
+    num_rows = base_num_rows * input_mul
+
+    # Flags for multi-bank process
+    max_num_predictions = 52
+    max_num_rows = 507
+
+    # Get number of banks needed
+    if num_predictions <= max_num_predictions:
+        bank_num = 0
+        final_predictions = num_predictions
+        final_rows = num_rows
+    else:
+        bank_num = num_predictions // max_num_predictions
+        final_predictions = num_predictions % max_num_predictions
+        final_rows = num_rows % max_num_rows
+
+    # Top-level parameters
+    num_features = 617
+    num_classes = 26
 
     # Extract instructions for training and testing
     code_list, control_code_list = compile_hypercorex_asm(asm_path)
@@ -134,8 +171,7 @@ def main():
     am_list = reorder_list(am_list, 16, NUM_CLASSES)
 
     # Loading test samples
-    test_samples_fp = \
-        hypercorex_path + "/hemaia/test_samples/hypx_isolet_test.txt"
+    test_samples_fp = hypercorex_path + "/hemaia/test_samples/hypx_isolet_test.txt"
     test_samples = load_dataset(test_samples_fp)
 
     # Pack samples into 32 bits
@@ -147,7 +183,11 @@ def main():
         test_samples_compressed.append(compressed_sample)
 
     # Synthetically making 52 samples
-    test_long_samples = test_samples_compressed[0:24] + test_samples_compressed[0:24]  + test_samples_compressed[0:4]
+    test_long_samples = (
+        test_samples_compressed[0:24]
+        + test_samples_compressed[0:24]
+        + test_samples_compressed[0:4]
+    )
 
     # This one stitches all the test samples into 1 long list
     test_samples_list = []
@@ -159,7 +199,9 @@ def main():
     golden_list_data = list(range(NUM_CLASSES))
     golden_list_data[0] = 7
 
-    golden_long_list_data = golden_list_data[0:24] + golden_list_data[0:24] + golden_list_data[0:4]
+    golden_long_list_data = (
+        golden_list_data[0:24] + golden_list_data[0:24] + golden_list_data[0:4]
+    )
 
     code_str = format_vector_definition("uint32_t", "code", code_list)
     am_list_str = format_vector_definition("uint32_t", "am_list", am_list)
@@ -170,9 +212,39 @@ def main():
     golden_list_data_str = format_vector_definition(
         "uint32_t", "golden_list_data", golden_long_list_data
     )
+
+    # Scalar data
+    num_classes_str = format_scalar_definition("uint32_t", "num_classes", num_classes)
+    num_features_str = format_scalar_definition(
+        "uint32_t", "num_features", num_features
+    )
+
+    max_num_predictions_str = format_scalar_definition(
+        "uint32_t", "max_num_predictions", max_num_predictions
+    )
+
+    final_predictions_str = format_scalar_definition(
+        "uint32_t", "final_predictions", final_predictions
+    )
+
+    max_num_rows_str = format_scalar_definition(
+        "uint32_t", "max_num_rows", max_num_rows
+    )
+
+    final_rows_str = format_scalar_definition("uint32_t", "final_rows", final_rows)
+
+    bank_num_str = format_scalar_definition("uint32_t", "bank_num", bank_num)
+
     # Preparing string to load
     f_str = "\n\n".join(
         [
+            num_classes_str,
+            num_features_str,
+            max_num_predictions_str,
+            final_predictions_str,
+            max_num_rows_str,
+            final_rows_str,
+            bank_num_str,
             code_str,
             am_list_str,
             test_samples_str,
