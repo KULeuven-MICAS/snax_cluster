@@ -18,7 +18,11 @@ import subprocess
 sys.path.append(
     os.path.join(os.path.dirname(__file__), "../../../../../../../util/sim/")
 )
-from data_utils import format_vector_definition, format_scalar_definition  # noqa: E402
+
+from data_utils import (  # noqa: E402
+    format_vector_definition,
+    format_scalar_definition,
+)
 
 # -----------------------
 # Add hypercorex utility paths
@@ -63,7 +67,8 @@ def hvlist2num(hv_list):
 def reorder_list(input_list, reorder_chunk_size, num_iterations):
     new_list = []
     for i in range(num_iterations):
-        sub_list = input_list[i * reorder_chunk_size : (i + 1) * reorder_chunk_size]
+        sub_list = \
+            input_list[i * reorder_chunk_size:(i + 1) * reorder_chunk_size]
         # Reverse the sublist
         sub_list_reversed = sub_list[::-1]
         # Append the reversed sublist to the new list
@@ -171,7 +176,8 @@ def main():
     am_list = reorder_list(am_list, 16, NUM_CLASSES)
 
     # Loading test samples
-    test_samples_fp = hypercorex_path + "/hemaia/test_samples/hypx_isolet_test.txt"
+    test_samples_fp = hypercorex_path + \
+        "/hemaia/test_samples/hypx_isolet_test.txt"
     test_samples = load_dataset(test_samples_fp)
 
     # Pack samples into 32 bits
@@ -214,7 +220,9 @@ def main():
     )
 
     # Scalar data
-    num_classes_str = format_scalar_definition("uint32_t", "num_classes", num_classes)
+    num_classes_str = format_scalar_definition(
+        "uint32_t", "num_classes", num_classes
+    )
     num_features_str = format_scalar_definition(
         "uint32_t", "num_features", num_features
     )
@@ -231,7 +239,9 @@ def main():
         "uint32_t", "max_num_rows", max_num_rows
     )
 
-    final_rows_str = format_scalar_definition("uint32_t", "final_rows", final_rows)
+    final_rows_str = format_scalar_definition(
+        "uint32_t", "final_rows", final_rows
+    )
 
     bank_num_str = format_scalar_definition("uint32_t", "bank_num", bank_num)
 
