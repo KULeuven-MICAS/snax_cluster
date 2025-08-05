@@ -13,7 +13,7 @@ class RescaleUpPE(
   )
 
   val io = IO(new Bundle {
-    val data_i     = Flipped(Valid(SInt(in_elementWidth.W)))
+    val data_i     = Flipped(SInt(in_elementWidth.W))
     val data_o     = Output(SInt(out_elementWidth.W))
     val input_zp   = Input(SInt(32.W)) // Zero point for input
     val multiplier = Input(UInt(32.W))
@@ -22,7 +22,7 @@ class RescaleUpPE(
   })
 
   val zero_compensated_data_i = Wire(SInt((in_elementWidth + 1).W))
-  zero_compensated_data_i := io.data_i.bits - io.input_zp
+  zero_compensated_data_i := io.data_i - io.input_zp
 
   val multiplied_data_i = Wire(SInt((in_elementWidth + 32 + 1).W)) // Length of input data + multiplier
   multiplied_data_i := zero_compensated_data_i * Cat(0.U(1.W), io.multiplier)
@@ -250,8 +250,7 @@ class RescaleUp(
     val PE = Module(new RescaleUpPE(in_elementWidth = in_elementWidth, out_elementWidth = out_elementWidth) {
       // override val desiredName = "RescaleUpPE"
     })
-    PE.io.data_i.valid := 1.U(1.W)
-    PE.io.data_i.bits  := input_vec(counter_val * (extensionParam.dataWidth / out_elementWidth).U + i.U)
+    PE.io.data_i  := input_vec(counter_val * (extensionParam.dataWidth / out_elementWidth).U + i.U)
     PE.io.input_zp     := input_zp.asSInt
     PE.io.multiplier   := multiplier.asUInt
     PE.io.output_zp    := output_zp.asSInt

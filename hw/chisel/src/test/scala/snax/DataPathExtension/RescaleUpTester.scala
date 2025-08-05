@@ -2,9 +2,11 @@ package snax.DataPathExtension
 import scala.math._
 import scala.util.Random
 
+import chiseltest._
+
 import snax.DataPathExtension.HasRescaleUp
 
-class RescaleUpTester extends DataPathExtensionTester {
+class RescaleUpTester extends DataPathExtensionTester(TreadleBackendAnnotation) {
 
   def GoldenModelUp(
     data_in:      Int,
