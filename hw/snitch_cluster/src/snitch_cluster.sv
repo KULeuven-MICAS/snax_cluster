@@ -534,11 +534,11 @@ module snitch_cluster
   // data mmio
   addr_t xdma_mmio_data_start_address, xdma_mmio_data_end_address;
   assign xdma_mmio_data_start_address = xdma_mmio_start_address;
-  assign xdma_mmio_data_end_address = xdma_mmio_data_start_address + (ClusterMMIOSize/4) * 1024;
+  assign xdma_mmio_data_end_address   = xdma_mmio_data_start_address + (ClusterMMIOSize / 4) * 1024;
   // control mmio
   addr_t xdma_mmio_ctrl_start_address, xdma_mmio_ctrl_end_address;
   assign xdma_mmio_ctrl_start_address = xdma_mmio_data_end_address;
-  assign xdma_mmio_ctrl_end_address = xdma_mmio_end_address;
+  assign xdma_mmio_ctrl_end_address   = xdma_mmio_end_address;
   // ----------------
   // Wire Definitions
   // ----------------
@@ -656,7 +656,11 @@ module snitch_cluster
   assign dma_xbar_default_port = '{default: SoCDMAOut};
   assign dma_xbar_rule = '{
           '{idx: TCDMDMA, start_addr: tcdm_start_address, end_addr: tcdm_end_address},
-          '{idx: WideXDMAOut, start_addr: xdma_mmio_data_start_address, end_addr: xdma_mmio_data_end_address}
+          '{
+              idx: WideXDMAOut,
+              start_addr: xdma_mmio_data_start_address,
+              end_addr: xdma_mmio_data_end_address
+          }
       };
   localparam bit [DmaXbarCfg.NoSlvPorts-1:0] DMAEnableDefaultMstPort = '1;
   axi_xbar #(
@@ -1577,13 +1581,23 @@ module snitch_cluster
   assign xdma_narrow_in_resp_o = narrow_axi_mst_rsp[NarrowXDMAIn];
 
 
-  logic [ClusterXbarCfg.NoSlvPorts-1:0][$clog2(ClusterXbarCfg.NoMstPorts)-1:0] cluster_xbar_default_port;
+  logic [ClusterXbarCfg.NoSlvPorts-1:0][$clog2(
+ClusterXbarCfg.NoMstPorts
+)-1:0] cluster_xbar_default_port;
   xbar_rule_t [NrRules-1:0] cluster_xbar_rules;
 
   assign cluster_xbar_rules = '{
-          '{idx: TCDM,               start_addr: tcdm_start_address,           end_addr: tcdm_end_address},
-          '{idx: ClusterPeripherals, start_addr: cluster_periph_start_address, end_addr: cluster_periph_end_address},
-          '{idx: NarrowXDMAOut,      start_addr: xdma_mmio_ctrl_start_address, end_addr: xdma_mmio_ctrl_end_address}              
+          '{idx: TCDM, start_addr: tcdm_start_address, end_addr: tcdm_end_address},
+          '{
+              idx: ClusterPeripherals,
+              start_addr: cluster_periph_start_address,
+              end_addr: cluster_periph_end_address
+          },
+          '{
+              idx: NarrowXDMAOut,
+              start_addr: xdma_mmio_ctrl_start_address,
+              end_addr: xdma_mmio_ctrl_end_address
+          }
       };
 
   localparam bit [ClusterXbarCfg.NoSlvPorts-1:0] ClusterEnableDefaultMstPort = '1;
