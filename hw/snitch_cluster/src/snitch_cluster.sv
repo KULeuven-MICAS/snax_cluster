@@ -522,10 +522,10 @@ module snitch_cluster
   // We put the data(1) MMIO at the wide xbar
   // We put the control(2,3,4) MMIO at the narrow xbar
   // Low Addr      (cluster_base_addr_i+ClusterAddrSpace)-16KB <-xdma_mmio_start_address
-  // Data          (cluster_base_addr_i+ClusterAddrSpace)-16KB  - (cluster_base_addr_i+ClusterAddrSpace)-12kB
-  // CFG           (cluster_base_addr_i+ClusterAddrSpace)-12KB  - (cluster_base_addr_i+ClusterAddrSpace)-8kB
-  // Grant         (cluster_base_addr_i+ClusterAddrSpace)-8KB   - (cluster_base_addr_i+ClusterAddrSpace)-4kB
-  // Finish        (cluster_base_addr_i+ClusterAddrSpace)-4KB   - (cluster_base_addr_i+ClusterAddrSpace)-8kB
+  // Data          (cluster_base_addr_i+ClusterAddrSpace)-16KB  - (cluster_base_addr_i+ClusterAddrSpace)-12kB C000
+  // CFG           (cluster_base_addr_i+ClusterAddrSpace)-12KB  - (cluster_base_addr_i+ClusterAddrSpace)-8kB  D000
+  // Grant         (cluster_base_addr_i+ClusterAddrSpace)-8KB   - (cluster_base_addr_i+ClusterAddrSpace)-4kB  E000
+  // Finish        (cluster_base_addr_i+ClusterAddrSpace)-4KB   - (cluster_base_addr_i+ClusterAddrSpace)-8kB  F000
   // High address  (cluster_base_addr_i+ClusterAddrSpace)      <-xdma_mmio_end_address
   addr_t xdma_mmio_start_address, xdma_mmio_end_address;
   assign xdma_mmio_start_address = cluster_base_addr_i + ClusterAddrSpace * 1024  -
