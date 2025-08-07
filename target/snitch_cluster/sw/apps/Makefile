@@ -87,6 +87,7 @@ SUBDIRS += snax-hypercorex/digit-recog-long
 SUBDIRS += snax-hypercorex/dna-recog
 SUBDIRS += snax-hypercorex/dna-recog-long
 SUBDIRS += snax-hypercorex/lang-recog
+SUBDIRS += snax-hypercorex/lang-recog-long
 SUBDIRS += snax-hypercorex/vec-compress
 endif
 
