@@ -286,7 +286,7 @@ int main() {
             0,                   // Base pointer high
             8,                   // Spatial stride
             num_classes,         // Inner loop bound
-            final_predictions,     // Outer loop bound
+            final_predictions,   // Outer loop bound
             256,                 // Inner loop stride
             0                    // Outer loop stride
         );
@@ -295,7 +295,7 @@ int main() {
             (uint32_t)predict_start,  // Base pointer low
             0,                        // Base pointer high
             1,                        // Spatial stride
-            final_predictions,          // Inner loop bound
+            final_predictions,        // Inner loop bound
             1,                        // Outer loop bound
             256,                      // Inner loop stride
             0                         // Outer loop stride
