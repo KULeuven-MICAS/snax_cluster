@@ -34,7 +34,7 @@ int main() {
         // --------------------- Configure the Ext --------------------- //
         uint32_t ext_param_add[1] = {kernel_size};
         uint32_t ext_param_rescale[4] = {input_zp_i, multiplier_i, output_zp_i,
-                                 shift_i};
+                                         shift_i};
         if (xdma_disable_src_ext(0) != 0) {
             printf("Error in disabling reader xdma extension 0\n");
             err++;
@@ -89,7 +89,10 @@ int main() {
 
         for (int i = 0; i < output_matrix_size; i++) {
             if (tcdm_result[i] != golden_result[i]) {
-                printf("The sum is incorrect at byte %d: Golden: %d, Received: %d\n", i << 2, golden_result[i], tcdm_result[i]);
+                printf(
+                    "The sum is incorrect at byte %d: Golden: %d, Received: "
+                    "%d\n",
+                    i << 2, golden_result[i], tcdm_result[i]);
             }
         }
         printf("Checking is done. All values are right\n");
