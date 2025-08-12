@@ -362,6 +362,6 @@ class ElementwiseAddToLong(
   ext_data_o.valid                 := output_stage.io.self_valid
   intermediate_ready               := output_stage.io.self_ready
 
-  ext_busy_o := !accumulate_stage.io.self_ready 
+  ext_busy_o := !accumulate_stage.io.self_ready
 
 }
