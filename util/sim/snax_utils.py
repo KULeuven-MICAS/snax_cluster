@@ -666,11 +666,12 @@ def sumpool_golden(
     )
     # Iterate over each channel and apply max pooling
     for i in range(0, ((m - m_kernel) // m_stride + 1) * m_stride, m_stride):
-        for j in range(0, ((n - n_kernel) // n_stride + 1) * n_stride, n_stride):
+        for j in range(0, ((n - n_kernel) // n_stride + 1) * n_stride,
+                       n_stride):
             for c in range(channels):
                 # Extract the kernel region
-                kernel_region = a_vals[i : i + m_kernel, j : j + n_kernel, c]
+                kernel_region = a_vals[i: i + m_kernel, j: j + n_kernel, c]
                 # Compute the maximum value in the kernel region
-                sum_value = int(np.sum(kernel_region)) # Scale down to uint8 range
+                sum_value = int(np.sum(kernel_region))
                 output[i // m_stride, j // n_stride, c] = sum_value
     return output
