@@ -17,6 +17,8 @@ import numpy as np
 # Add data utility path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
+from snax_utils import postprocessing_simd_golden_model_V3, sumpool_golden  # noqa E402
+
 
 np.random.seed(320)
 
@@ -24,16 +26,14 @@ np.random.seed(320)
 # Add stdint.h header
 def emit_header_file(**kwargs):
     emit_str = ["#include <stdint.h>"]
-    emit_str += emit_elementwise_add_data(**kwargs)
+    emit_str += emit_avgpool_data(**kwargs)
     return "\n\n".join(emit_str)
 
 
-def emit_elementwise_add_data(**kwargs):
-    tile_width = None
-    element_width = kwargs["BIT_WIDTH"]
+def emit_avgpool_data(**kwargs):
     
-    data_in_type = "uint8_t"
-    data_out_type = "uint8_t"
+    data_in_type = "int8_t"
+    data_out_type = "int8_t"
 
     emit_str = []
     padded_M = kwargs["M"] 
@@ -45,21 +45,20 @@ def emit_elementwise_add_data(**kwargs):
     n_stride = kwargs["n_stride"]
 
     # First input matrix for elementwise add
-    matrix_data = np.zeros((padded_M, padded_N), dtype=np.uint8)
-    matrix_data[: kwargs["M"], : kwargs["N"]] = np.random.randint(
-        low=128, high=127 , size=(kwargs["M"], kwargs["N"], channel_count), dtype=np.uint8
+    matrix_data = np.random.randint(
+        low=-128, high=127 , size=(kwargs["M"], kwargs["N"], channel_count), dtype=np.int8
     )
     input_matrix = matrix_data
     input_matrix = input_matrix.flatten()
 
     # Emit input matrix
     emit_str += [
-        format_scalar_definition("uint8_t", "matrix_size", matrix_data.size)
+        format_scalar_definition("uint32_t", "matrix_size", matrix_data.size)
     ]
     emit_str += [format_vector_definition(data_in_type, "input_matrix", input_matrix)]
 
     # Emit output matrix
-    output_matrix = maxpool_golden(
+    output_matrix = sumpool_golden(
         a_vals=matrix_data,
         m=padded_M,
         n=padded_N,
@@ -69,8 +68,22 @@ def emit_elementwise_add_data(**kwargs):
         m_stride=m_stride,
         n_stride=n_stride,
     )
+    
 
     output_matrix = output_matrix.flatten()
+    
+    shift = 25
+    multiplier = (2**25) // (m_kernel * n_kernel)
+    
+    for i in range(len(output_matrix)):
+        output_matrix[i] = postprocessing_simd_golden_model_V3(
+            output_matrix[i], 0, 0, shift, 127, -128, True, multiplier
+        )
+    
+    emit_str += [
+        format_scalar_definition("uint32_t", "output_matrix_size", output_matrix.size)
+    ]
+    
     emit_str += [
         format_vector_definition(data_out_type, "golden_output_matrix", output_matrix)
     ]
@@ -134,42 +147,32 @@ def emit_elementwise_add_data(**kwargs):
             "uint32_t", "temporal_dimension_dst", len(temporal_bounds_dst)
         )
     ]
+    
+    
+    emit_str += [
+        format_scalar_definition("uint32_t", "shift_i", shift)
+    ]
+    
+    emit_str += [
+        format_scalar_definition("uint32_t", "multiplier_i", multiplier)
+    ]
+    
+    emit_str += [
+        format_scalar_definition("uint32_t", "input_zp_i", 0)
+    ]
+    
+    emit_str += [
+        format_scalar_definition("uint32_t", "output_zp_i", 0)
+    ]
+    
+    emit_str += [
+        format_scalar_definition("uint32_t", "kernel_size", m_kernel * n_kernel)
+    ]
 
     return emit_str
 
 
-def maxpool_golden(
-    a_vals: np.ndarray,
-    m: int,
-    n: int,
-    channels: int,
-    m_kernel: int,
-    n_kernel: int,
-    m_stride: int,
-    n_stride: int,
-) -> np.ndarray:
-    """
-    Compute the golden output for maxpool operation.
-    This function simulates the maxpool operation on the input tensor.
-    """
-    output = np.empty(
-        (
-            ((m - m_kernel) // m_stride + 1),
-            ((n - n_kernel) // n_stride + 1),
-            channels,
-        ),
-        dtype=np.int8,
-    )
-    # Iterate over each channel and apply max pooling
-    for i in range(0, ((m - m_kernel) // m_stride + 1) * m_stride, m_stride):
-        for j in range(0, ((n - n_kernel) // n_stride + 1) * n_stride, n_stride):
-            for c in range(channels):
-                # Extract the kernel region
-                kernel_region = a_vals[i : i + m_kernel, j : j + n_kernel, c]
-                # Compute the maximum value in the kernel region
-                max_value = (int(np.sum(kernel_region)) * 1242757) >> 25  # Scale down to uint8 range
-                output[i // m_stride, j // n_stride, c] = max_value
-    return output
+
 
 
 def main():
