@@ -677,6 +677,7 @@ def sumpool_golden(
                 output[i // m_stride, j // n_stride, c] = sum_value
     return output
 
+
 def find_max(array: np.ndarray):
     """Find the maximum value in an array."""
     max_value = array[0]
@@ -696,14 +697,26 @@ def subtract_max(array: np.ndarray, max_value: np.int32):
             new_array[i] = array[i] - max_value
     return new_array
 
-def integer_poly(x: np.int32, inverse_scaling_factor: int, a: float, b: float, c: float):
+
+def integer_poly(x: np.int32,
+                 inverse_scaling_factor: int,
+                 a: float,
+                 b: float,
+                 c: float
+                 ):
     a_scaled = int(a * inverse_scaling_factor)
     b_scaled = int(b * inverse_scaling_factor)
-    c_scaled = int(c * (inverse_scaling_factor ** 3)) >> math.floor(math.log2(inverse_scaling_factor) * 2)
+    c_scaled = int(c * (inverse_scaling_factor ** 3)) >> math.floor(
+        math.log2(inverse_scaling_factor) * 2
+        )
 
-    output = np.int32(((a_scaled * (int(x) + b_scaled) ** 2) >>  math.floor(math.log2(inverse_scaling_factor)  * 2)) + c_scaled)
+    output = np.int32(((a_scaled * (int(x) + b_scaled) ** 2) >> math.floor(
+        math.log2(inverse_scaling_factor) * 2
+        )) + c_scaled)
 
-    scaling_factor_out = (inverse_scaling_factor ** 3) >> math.floor(math.log2(inverse_scaling_factor) * 2)
+    scaling_factor_out = (inverse_scaling_factor ** 3) >> math.floor(
+        math.log2(inverse_scaling_factor) * 2
+        )
 
     return output, scaling_factor_out
 
@@ -716,14 +729,20 @@ def integer_exp(array: np.ndarray, inverse_scaling_factor: int):
     c = 0.344
     q_ln2 = int(math.log(2) * inverse_scaling_factor)
     for i in range(len(array)):
-        z = math.floor(-array[i] / q_ln2) #TODO: make this a multiplication
+        z = math.floor(-array[i] / q_ln2)
         q_p = array[i] + z * q_ln2
-        q_l, scaling_factor_exp = integer_poly(q_p, inverse_scaling_factor, a, b, c)
+        q_l, scaling_factor_exp = integer_poly(q_p,
+                                               inverse_scaling_factor,
+                                               a,
+                                               b,
+                                               c,
+                                               )
         if z < 16:
             exp_array[i] = int(int(q_l) >> z)
         else:
             exp_array[i] = 0
     return exp_array, scaling_factor_exp
+
 
 def integer_softmax(array: np.ndarray, scaling_factor_exp: int):
     max = find_max(array)
