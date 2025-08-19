@@ -33,7 +33,8 @@ int main() {
 
         // --------------------- Configure the Ext --------------------- //
 
-        uint32_t ext_param[6] = {scaled_ln2, scaled_A, scaled_B, scaled_C, shift, softmax_cycles};
+        uint32_t ext_param[6] = {scaled_ln2, scaled_A, scaled_B,
+                                 scaled_C,   shift,    softmax_cycles};
         if (xdma_disable_src_ext(0) != 0) {
             printf("Error in disabling reader xdma extension 0\n");
             err++;
