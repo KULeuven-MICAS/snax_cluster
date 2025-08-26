@@ -7,7 +7,7 @@ import snax.DataPathExtension.HasSoftMax
 
 class SoftMaxTester extends DataPathExtensionTester(TreadleBackendAnnotation) {
 
-  def GoldenModel(in_array: Array[Array[Int]], inverseScalingFactor: Int): Array[Array[Long]] = {
+  def GoldenModel(in_array: Array[Array[Int]], inverseScalingFactor: Array[Int]): Array[Array[Long]] = {
 
     def findMax(array: Array[Int]): Int = {
       array.max
@@ -27,6 +27,8 @@ class SoftMaxTester extends DataPathExtensionTester(TreadleBackendAnnotation) {
       val big_cScaled: BigInt = BigInt((c * math.pow(inverseScalingFactor, 3)).toLong)
       val cScaled = big_cScaled >> (logInverseScaling * 2)
 
+      println(s"aScaled: $aScaled, bScaled: $bScaled, cScaled: $cScaled, logInverseScaling: ${logInverseScaling * 2}")
+
       val temp:   BigInt = BigInt(x) + bScaled
       val output: Long   = (((aScaled * temp * temp) >> (logInverseScaling * 2)) + cScaled).toLong
       val scalingFactorOut = (math.pow(inverseScalingFactor, 3).toInt) >> (logInverseScaling * 2)
@@ -40,12 +42,15 @@ class SoftMaxTester extends DataPathExtensionTester(TreadleBackendAnnotation) {
       val c    = 0.344f
       val qLn2 = (math.log(2) * inverseScalingFactor).toInt
 
+      println(s"qLn2: $qLn2")
+
       var scalingFactorExp = 0
       val expArray         = array.map { value =>
         val z                   = math.floor(-value.toFloat / qLn2).toInt
         val qP                  = value + z * qLn2
         val (qL, scalingFactor) = integerPoly(qP, inverseScalingFactor, a, b, c)
         scalingFactorExp = scalingFactor
+        println(s"exp: ${if (z < 16) qL >> z else 0}, z: $z, exp_long: $qL, value: $value")
         if (z < 16) qL >> z else 0
       }
 
@@ -59,27 +64,30 @@ class SoftMaxTester extends DataPathExtensionTester(TreadleBackendAnnotation) {
       val sumExp          = expArray.map(_.toLong).sum
 
       val divider = 4294967295L / sumExp
+
+      println(s"sumExp: $sumExp, divider: $divider")
       // Convert to softmax probabilities and scale to byte range (0-255)
       expArray.map { value =>
+        println(s"softmax: ${value.toLong * divider}")
         value.toLong * divider
       }
     }
 
     // Process each row of the input array
-    in_array.transpose.map { column =>
-      integerSoftmax(column, inverseScalingFactor)
+    in_array.transpose.zip(inverseScalingFactor).map { case (column, factor) =>
+      integerSoftmax(column, factor)
     }.transpose
   }
 
   def hasExtension = new HasSoftMax()
 
-  val scaled_ln2     = 6931
-  val scaled_a       = 3585
-  val scaled_b       = 13530
-  val scaled_c       = 5125
+  val ln2     = math.log(2)
+  val scaled_a       = 0.3585f
+  val scaled_b       = 1.353f
+  val scaled_c       = 0.344f
   val shift          = 26
   val softmax_cycles = 8
-  val csr_vec        = Seq(scaled_ln2, scaled_a, scaled_b, scaled_c, shift, softmax_cycles)
+  val csr_vec        = Seq(softmax_cycles)
 
   val inputData  = collection.mutable.Buffer[BigInt]()
   val outputData = collection.mutable.Buffer[BigInt]()
@@ -98,14 +106,19 @@ class SoftMaxTester extends DataPathExtensionTester(TreadleBackendAnnotation) {
     val inputMatrix7 = inputMatrix(6)
     val inputMatrix8 = inputMatrix(7)
 
-    inputData.append(BigInt(inputMatrix1.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(inputMatrix2.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(inputMatrix3.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(inputMatrix4.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(inputMatrix5.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(inputMatrix6.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(inputMatrix7.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(inputMatrix8.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    val scaling_factor = Array.fill(16)(Random.between(5000, 15000))
+
+  val scaled_ln2_list = scaling_factor.map(x => (math.log(2) * x).toInt)
+  val scaled_a_list   = scaling_factor.map(x => (x * scaled_a).toInt)
+  val scaled_b_list   = scaling_factor.map(x => (x * scaled_b).toInt)
+  val scaled_c_list   = scaling_factor.map(x => ((math.pow(x, 3) * scaled_c).toLong) >> (math.floor(math.log(x) / math.log(2)).toInt * 2))
+  val scaled_shift_list = scaling_factor.map(x => math.floor(math.log(x) / math.log(2)).toInt * 2)
+
+    inputData.append(BigInt(scaled_ln2_list.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(scaled_a_list.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(scaled_b_list.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(scaled_c_list.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(scaled_shift_list.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
 
     inputData.append(BigInt(inputMatrix1.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     inputData.append(BigInt(inputMatrix2.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
@@ -125,7 +138,16 @@ class SoftMaxTester extends DataPathExtensionTester(TreadleBackendAnnotation) {
     inputData.append(BigInt(inputMatrix7.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
     inputData.append(BigInt(inputMatrix8.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
 
-    val outputMatrix  = GoldenModel(inputMatrix, 10000)
+    inputData.append(BigInt(inputMatrix1.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(inputMatrix2.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(inputMatrix3.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(inputMatrix4.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(inputMatrix5.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(inputMatrix6.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(inputMatrix7.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+    inputData.append(BigInt(inputMatrix8.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+
+  val outputMatrix  = GoldenModel(inputMatrix, scaling_factor)
     val outputMatrix1 = outputMatrix(0)
     val outputMatrix2 = outputMatrix(1)
     val outputMatrix3 = outputMatrix(2)
