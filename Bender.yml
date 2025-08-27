@@ -399,6 +399,27 @@ sources:
       # Level 1
       - target/snitch_cluster/generated/snax_xdma_cluster_xdma/snax_xdma_cluster_xdma_wrapper.sv
 
+  - target: snax_xdma_two_cluster_xdma
+    files:
+      # Level 0
+      - target/snitch_cluster/generated/snax_xdma_two_cluster_xdma/snax_xdma_two_cluster_xdma.sv
+      # Level 1
+      - target/snitch_cluster/generated/snax_xdma_two_cluster_xdma/snax_xdma_two_cluster_xdma_wrapper.sv
+
+  - target: snax_xdma_four_cluster_xdma
+    files:
+      # Level 0
+      - target/snitch_cluster/generated/snax_xdma_four_cluster_xdma/snax_xdma_four_cluster_xdma.sv
+      # Level 1
+      - target/snitch_cluster/generated/snax_xdma_four_cluster_xdma/snax_xdma_four_cluster_xdma_wrapper.sv
+
+  - target: snax_xdma_eight_cluster_xdma
+    files:
+      # Level 0
+      - target/snitch_cluster/generated/snax_xdma_eight_cluster_xdma/snax_xdma_eight_cluster_xdma.sv
+      # Level 1
+      - target/snitch_cluster/generated/snax_xdma_eight_cluster_xdma/snax_xdma_eight_cluster_xdma_wrapper.sv
+
   - target: test
     files:
       - hw/snitch_cluster/test/snitch_tcdm_interconnect_tb.sv
@@ -450,6 +471,19 @@ sources:
   - target: snax_xdma_cluster
     files:
       - target/snitch_cluster/generated/snax_xdma_cluster_wrapper.sv
+  
+  - target: snax_xdma_two_cluster
+    files:
+      - target/snitch_cluster/generated/snax_xdma_two_cluster_wrapper.sv
+
+  - target: snax_xdma_four_cluster
+    files:
+      - target/snitch_cluster/generated/snax_xdma_four_cluster_wrapper.sv
+
+  - target: snax_xdma_eight_cluster
+    files:
+      - target/snitch_cluster/generated/snax_xdma_eight_cluster_wrapper.sv
+
   #---------------------------
   # Test harness declaration
   #---------------------------
