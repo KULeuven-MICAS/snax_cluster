@@ -23,7 +23,7 @@ sys.path.append(
     )
 )
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
-from snax_utils import postprocessing_simd_golden_model_V3, integer_softmax  # noqa E402
+from snax_utils import integer_softmax  # noqa E402
 
 
 np.random.seed(320)
@@ -45,7 +45,33 @@ def emit_softmax_data(**kwargs):
     M = kwargs["M"]
     channel_count = kwargs["channels"]
 
-    # First input matrix for elementwise add
+
+    # Scaling Matrix for softmax
+    matrix_scaling = np.zeros((4, channel_count), dtype=np.int32)
+    for i in range(channel_count):
+        matrix_scaling[0, i] = math.log(2) * kwargs["inverse_scaling_factor"]
+        matrix_scaling[1, i] = 0.3585 * kwargs["inverse_scaling_factor"]
+        matrix_scaling[2, i] = 1.353 * kwargs["inverse_scaling_factor"]
+        matrix_scaling[3, i] = 0.344 * kwargs["inverse_scaling_factor"]
+    scaling_matrix = matrix_scaling.flatten()
+
+    emit_str += [
+        format_scalar_definition(
+            data_in_type,
+            "scaling_size",
+            scaling_matrix.size,
+        )
+    ]
+    emit_str += [
+        format_vector_definition(
+            data_in_type,
+            "scaling_matrix",
+            scaling_matrix,
+        )
+    ]
+
+
+    # Input Matrix for Softmax
     matrix_data = np.random.randint(
         low=-4 * kwargs["inverse_scaling_factor"],
         high=4 * kwargs["inverse_scaling_factor"],
@@ -96,6 +122,63 @@ def emit_softmax_data(**kwargs):
         )
     ]
 
+    # Emit the configuration for the scaling factors
+    scaling_spatial_stride_src = None
+    scaling_spatial_stride_dst = None
+    scaling_temporal_strides_src = []
+    scaling_temporal_strides_dst = []
+    scaling_temporal_bounds_src = []
+    scaling_temporal_bounds_dst = []
+
+    # Input Side (Reader)
+    scaling_spatial_stride_src = 8
+    scaling_temporal_bounds_src = [4, 1, 1, 1, 1]
+    scaling_temporal_strides_src = [4 * channel_count, 0, 0, 0, 0]
+
+    # Output Side (Writer)
+    scaling_spatial_stride_dst = 8
+    scaling_temporal_bounds_dst = [0]
+    scaling_temporal_strides_dst = [0]
+
+    emit_str += [
+        format_scalar_definition(
+            "uint32_t",
+            "spatial_stride_src_scaling",
+            scaling_spatial_stride_src,
+        )
+    ]
+    emit_str += [
+        format_scalar_definition(
+            "uint32_t",
+            "spatial_stride_dst_scaling",
+            scaling_spatial_stride_dst,
+        )
+    ]
+    emit_str += [
+        format_vector_definition(
+            "uint32_t",
+            "temporal_bounds_src_scaling",
+            scaling_temporal_bounds_src,
+        )
+    ]
+    emit_str += [
+        format_vector_definition(
+            "uint32_t",
+            "temporal_bounds_dst_scaling",
+            scaling_temporal_bounds_dst,
+        )
+    ]
+    emit_str += [
+        format_vector_definition(
+            "uint32_t", "temporal_strides_src_scaling", scaling_temporal_strides_src
+        )
+    ]
+    emit_str += [
+        format_vector_definition(
+            "uint32_t", "temporal_strides_dst_scaling", scaling_temporal_strides_dst
+        )
+    ]
+
     # Emit the configuration for XDMA
     spatial_stride_src = None
     spatial_stride_dst = None
@@ -106,14 +189,14 @@ def emit_softmax_data(**kwargs):
 
     # Input Side (Reader)
     spatial_stride_src = 8
-    temporal_bounds_src = [M, 3, channel_count // 16, 1, 1]
-    temporal_strides_src = [4 * channel_count, 0, 64, 0, 0]
+    temporal_bounds_src = [M, 3, 1, 1, 1]
+    temporal_strides_src = [4 * channel_count, 0, 0, 0, 0]
 
     # Output Side (Writer)
 
     spatial_stride_dst = 8
-    temporal_bounds_dst = [M, channel_count // 16]
-    temporal_strides_dst = [4 * channel_count, 64]
+    temporal_bounds_dst = [M]
+    temporal_strides_dst = [4 * channel_count]
 
     emit_str += [
         format_scalar_definition(
@@ -132,25 +215,25 @@ def emit_softmax_data(**kwargs):
     emit_str += [
         format_vector_definition(
             "uint32_t",
-            "temporal_bounds_src",
+            "temporal_bounds_src_data",
             temporal_bounds_src,
         )
     ]
     emit_str += [
         format_vector_definition(
             "uint32_t",
-            "temporal_bounds_dst",
+            "temporal_bounds_dst_data",
             temporal_bounds_dst,
         )
     ]
     emit_str += [
         format_vector_definition(
-            "uint32_t", "temporal_strides_src", temporal_strides_src
+            "uint32_t", "temporal_strides_src_data", temporal_strides_src
         )
     ]
     emit_str += [
         format_vector_definition(
-            "uint32_t", "temporal_strides_dst", temporal_strides_dst
+            "uint32_t", "temporal_strides_dst_data", temporal_strides_dst
         )
     ]
     emit_str += [
@@ -161,43 +244,6 @@ def emit_softmax_data(**kwargs):
     emit_str += [
         format_scalar_definition(
             "uint32_t", "temporal_dimension_dst", len(temporal_bounds_dst)
-        )
-    ]
-
-    emit_str += [
-        format_scalar_definition(
-            "uint32_t",
-            "scaled_ln2",
-            int(math.log(2) * kwargs["inverse_scaling_factor"]),
-        )
-    ]
-    emit_str += [
-        format_scalar_definition(
-            "uint32_t",
-            "scaled_A",
-            int(0.3585 * kwargs["inverse_scaling_factor"]),
-        )
-    ]
-    emit_str += [
-        format_scalar_definition(
-            "uint32_t",
-            "scaled_B",
-            int(1.353 * kwargs["inverse_scaling_factor"]),
-        )
-    ]
-    emit_str += [
-        format_scalar_definition(
-            "uint32_t",
-            "scaled_C",
-            int(0.344 * (kwargs["inverse_scaling_factor"] ** 3))
-            >> math.floor(math.log2(kwargs["inverse_scaling_factor"]) * 2),
-        )
-    ]
-    emit_str += [
-        format_scalar_definition(
-            "uint32_t",
-            "shift",
-            math.floor(math.log2(kwargs["inverse_scaling_factor"]) * 2),
         )
     ]
     emit_str += [

@@ -16,25 +16,30 @@ int main() {
     uint32_t dma_load_input_end;
     uint32_t tcdm_baseaddress = snrt_cluster_base_addrl();
     // Put the first input at the starting of tcdm
-    void *tcdm_in = (void *)tcdm_baseaddress;
+    void *tcdm_scaling = (void *)(tcdm_baseaddress);
+    void *tcdm_in = (void *)(tcdm_baseaddress + (scaling_size * sizeof(scaling_matrix[0]) * 8 + 7) / 8);
 
     // Put the output at the middle of tcdm
     void *tcdm_out =
         (void *)(tcdm_baseaddress +
-                 (matrix_size * sizeof(input_matrix[0]) * 8 + 7) / 8);
+                (scaling_size * sizeof(scaling_matrix[0]) * 8 + 7) / 8 +
+                (matrix_size * sizeof(input_matrix[0]) * 8 + 7) / 8);
 
     printf("tcdm_out: %p\n", tcdm_out);
 
     if (snrt_is_dm_core()) {
         // First we need to transfer the input data from L3->TCDM
+        snrt_dma_start_1d(tcdm_scaling, scaling_matrix,
+                          scaling_size * sizeof(scaling_matrix[0]));
+        snrt_dma_wait_all();
+        
         snrt_dma_start_1d(tcdm_in, input_matrix,
                           matrix_size * sizeof(input_matrix[0]));
         snrt_dma_wait_all();
 
         // --------------------- Configure the Ext --------------------- //
 
-        uint32_t ext_param[6] = {scaled_ln2, scaled_A, scaled_B,
-                                 scaled_C,   shift,    softmax_cycles};
+        uint32_t ext_param[1] = {softmax_cycles};
         if (xdma_disable_src_ext(0) != 0) {
             printf("Error in disabling reader xdma extension 0\n");
             err++;
@@ -76,17 +81,28 @@ int main() {
         }
 
         // --------------------- Configure the AGU --------------------- //
-        xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src,
-                       spatial_stride_dst, temporal_dimension_src,
-                       temporal_strides_src, temporal_bounds_src,
-                       temporal_dimension_dst, temporal_strides_dst,
-                       temporal_bounds_dst, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
-        printf("xdma_memcpy_nd done\n");
-        int task_id = xdma_start();
-        printf("got out of xdma_start, csr address: %d\n", task_id);
-        xdma_local_wait(task_id);
-        printf("xdma task %d is done in %d cycles\n", task_id,
-               xdma_last_task_cycle());
+        for (int i = 0; i < 4; i++) {
+            xdma_memcpy_nd(tcdm_scaling + (64 * i), tcdm_out + (64 * i), spatial_stride_src,
+                        spatial_stride_dst, temporal_dimension_src,
+                        temporal_strides_src_scaling, temporal_bounds_src_scaling,
+                        temporal_dimension_dst, temporal_strides_dst_scaling,
+                        temporal_bounds_dst_scaling, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            int scaling_task_id = xdma_start();
+            printf("scaling task id: %d\n", scaling_task_id);
+            xdma_local_wait(scaling_task_id);
+            printf("got out of scaling\n");
+            xdma_memcpy_nd(tcdm_in + (64 * i), tcdm_out + (64 * i), spatial_stride_src,
+                        spatial_stride_dst, temporal_dimension_src,
+                        temporal_strides_src_data, temporal_bounds_src_data,
+                        temporal_dimension_dst, temporal_strides_dst_data,
+                        temporal_bounds_dst_data, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            printf("xdma_memcpy_nd done\n");
+            int task_id = xdma_start();
+            printf("got out of xdma_start, csr address: %d\n", task_id);
+            xdma_local_wait(task_id);
+            printf("xdma task %d is done in %d cycles\n", task_id,
+                xdma_last_task_cycle());
+        }
 
         // --------------------- Checking the Results --------------------- //
         uint32_t *golden_result = (uint32_t *)golden_output_matrix;
