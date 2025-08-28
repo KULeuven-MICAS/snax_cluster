@@ -115,10 +115,16 @@ module snitch_cluster
     /// SNAX Number of Wide Index Assignments
     parameter int unsigned SnaxNumWideAssignIdx = 1,
     /// SNAX Narrow Custom Index Assignment
-    parameter int unsigned SnaxNarrowStartIdx[SnaxNumNarrowAssignIdx] = '{default: 0},
-    parameter int unsigned SnaxNarrowEndIdx[SnaxNumNarrowAssignIdx] = '{default: 0},
+    parameter int unsigned SnaxNarrowStartIdx[SnaxNumNarrowAssignIdx] = '{
+        default: 0
+    },
+    parameter int unsigned SnaxNarrowEndIdx[SnaxNumNarrowAssignIdx] = '{
+        default: 0
+    },
     /// SNAX Wide Custom Index Assignment
-    parameter int unsigned SnaxWideStartIdx[SnaxNumWideAssignIdx] = '{default: 0},
+    parameter int unsigned SnaxWideStartIdx[SnaxNumWideAssignIdx] = '{
+        default: 0
+    },
     parameter int unsigned SnaxWideEndIdx[SnaxNumWideAssignIdx] = '{default: 0},
     /// SNAX Use Custom Instruction Ports
     parameter bit [NrCores-1:0] SnaxUseCustomPorts = 0,
@@ -146,7 +152,9 @@ module snitch_cluster
     /// index of ssr max to avoid its underflow (Error reported in Synopsys VCS)
     parameter int SsrMaxIndex = (NumSsrsMax > 0) ? (NumSsrsMax - 1) : 0,
     /// Per-core internal parameters for each SSR.
-    parameter snitch_ssr_pkg::ssr_cfg_t [SsrMaxIndex:0] SsrCfgs[NrCores] = '{default: '0},
+    parameter snitch_ssr_pkg::ssr_cfg_t [SsrMaxIndex:0] SsrCfgs[NrCores] = '{
+        default: '0
+    },
     /// Per-core register indices for each SSR.
     parameter logic [SsrMaxIndex:0][4:0] SsrRegs[NrCores] = '{default: 0},
     /// Per-core amount of sequencer instructions for IPU and FPU if enabled.
@@ -342,14 +350,18 @@ module snitch_cluster
 
   // Core Requests, SoC Request, PTW, XDMA
   localparam int unsigned NrNarrowMasters = 4;
-  localparam int unsigned NarrowIdWidthOut = $clog2(NrNarrowMasters) + NarrowIdWidthIn;
+  localparam int unsigned NarrowIdWidthOut = $clog2(
+      NrNarrowMasters
+  ) + NarrowIdWidthIn;
 
   localparam int unsigned NrSlaves = 4;
   localparam int unsigned NrRules = NrSlaves - 1;
 
   // DMA, SoC Request, XDMA, `n` instruction caches.
   localparam int unsigned NrWideMasters = 3 + NrHives;
-  localparam int unsigned WideIdWidthOut = $clog2(NrWideMasters) + WideIdWidthIn;
+  localparam int unsigned WideIdWidthOut = $clog2(
+      NrWideMasters
+  ) + WideIdWidthIn;
   // DMA X-BAR configuration
   localparam int unsigned NrWideSlaves = 3;
   localparam int unsigned NrWideRules = NrWideSlaves - 1;
@@ -394,7 +406,8 @@ module snitch_cluster
     return n;
   endfunction
 
-  function automatic int unsigned get_core_position(int unsigned hive_id, int unsigned core_id);
+  function automatic int unsigned get_core_position(int unsigned hive_id,
+                                                    int unsigned core_id);
     automatic int n = 0;
     for (int i = 0; i < NrCores; i++) begin
       if (core_id == i) break;
@@ -429,8 +442,10 @@ module snitch_cluster
   // Regbus peripherals.
   `AXI_TYPEDEF_ALL(axi_mst, addr_t, id_mst_t, data_t, strb_t, user_t)
   `AXI_TYPEDEF_ALL(axi_slv, addr_t, id_slv_t, data_t, strb_t, user_t)
-  `AXI_TYPEDEF_ALL(axi_mst_dma, addr_t, id_dma_mst_t, data_dma_t, strb_dma_t, user_dma_t)
-  `AXI_TYPEDEF_ALL(axi_slv_dma, addr_t, id_dma_slv_t, data_dma_t, strb_dma_t, user_dma_t)
+  `AXI_TYPEDEF_ALL(axi_mst_dma, addr_t, id_dma_mst_t, data_dma_t, strb_dma_t,
+                   user_dma_t)
+  `AXI_TYPEDEF_ALL(axi_slv_dma, addr_t, id_dma_slv_t, data_dma_t, strb_dma_t,
+                   user_dma_t)
 
   `REQRSP_TYPEDEF_ALL(reqrsp, addr_t, data_t, strb_t)
 
@@ -657,7 +672,11 @@ DmaXbarCfg.NoMstPorts
 
   assign dma_xbar_default_port = '{default: SoCDMAOut};
   assign dma_xbar_rule = '{
-          '{idx: TCDMDMA, start_addr: tcdm_start_address, end_addr: tcdm_end_address},
+          '{
+              idx: TCDMDMA,
+              start_addr: tcdm_start_address,
+              end_addr: tcdm_end_address
+          },
           '{
               idx: WideXDMAOut,
               start_addr: xdma_mmio_data_start_address,
@@ -735,10 +754,10 @@ DmaXbarCfg.NoMstPorts
   // Split narrow and wide TCDM ports to solve the multi-driver issue
   // Use these ports for the total number and needs to be cute into multiple versions
   // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
-  localparam int unsigned TotalSnaxNarrowTcdmPortsWidth = (TotalSnaxNarrowTcdmPorts>0)? 
-                                                          TotalSnaxNarrowTcdmPorts : 1;
-  localparam int unsigned TotalSnaxWideTcdmPortsWidth   = (TotalSnaxWideTcdmPorts>0)?
-                                                          TotalSnaxWideTcdmPorts : 1;
+  localparam int unsigned TotalSnaxNarrowTcdmPortsWidth = (TotalSnaxNarrowTcdmPorts>0)?
+  TotalSnaxNarrowTcdmPorts : 1;
+  localparam int unsigned TotalSnaxWideTcdmPortsWidth   = (TotalSnaxWideTcdmPorts>0)? 
+  TotalSnaxWideTcdmPorts : 1;
   tcdm_req_t [TotalSnaxNarrowTcdmPortsWidth-1:0] snax_tcdm_req_narrow;
   tcdm_req_t [  TotalSnaxWideTcdmPortsWidth-1:0] snax_tcdm_req_wide;
 
@@ -826,7 +845,7 @@ DmaXbarCfg.NoMstPorts
           // Wide re-mapping
           for (int j = 0; j < curr_wide; j++) begin
             snax_tcdm_req_wide[j+wide_offset] = snax_tcdm_req_i[j+total_offset];
-            snax_tcdm_rsp_o[j+total_offset]   = snax_tcdm_rsp_wide[j+wide_offset];
+            snax_tcdm_rsp_o[j+total_offset] = snax_tcdm_rsp_wide[j+wide_offset];
           end
 
           // Narrow re-mapping
@@ -1592,7 +1611,11 @@ ClusterXbarCfg.NoMstPorts
   xbar_rule_t [NrRules-1:0] cluster_xbar_rules;
 
   assign cluster_xbar_rules = '{
-          '{idx: TCDM, start_addr: tcdm_start_address, end_addr: tcdm_end_address},
+          '{
+              idx: TCDM,
+              start_addr: tcdm_start_address,
+              end_addr: tcdm_end_address
+          },
           '{
               idx: ClusterPeripherals,
               start_addr: cluster_periph_start_address,
@@ -1750,7 +1773,8 @@ ClusterXbarCfg.NoMstPorts
   logic [NrTCDMPortsCores-1:0] flat_acc, flat_con;
   for (genvar i = 0; i < NrTCDMPortsCores; i++) begin : gen_event_counter
     `FFARN(flat_acc[i], tcdm_req[i].q_valid, '0, clk_i, rst_ni)
-    `FFARN(flat_con[i], tcdm_req[i].q_valid & ~tcdm_rsp[i].q_ready, '0, clk_i, rst_ni)
+    `FFARN(flat_con[i], tcdm_req[i].q_valid & ~tcdm_rsp[i].q_ready, '0, clk_i,
+           rst_ni)
   end
 
   popcount #(
