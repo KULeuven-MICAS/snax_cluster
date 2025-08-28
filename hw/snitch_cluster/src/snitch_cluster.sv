@@ -733,12 +733,13 @@ module snitch_cluster
   // Split narrow and wide TCDM ports to solve the multi-driver issue
   // Use these ports for the total number and needs to be cute into multiple versions
   // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
+  localparam int unsigned TotalSnaxNarrowTcdmPortsWidth = (TotalSnaxNarrowTcdmPorts>0)? TotalSnaxNarrowTcdmPorts : 1;
+  localparam int unsigned TotalSnaxWideTcdmPortsWidth = (TotalSnaxWideTcdmPorts>0)? TotalSnaxWideTcdmPorts : 1;
+  tcdm_req_t [TotalSnaxNarrowTcdmPortsWidth-1:0] snax_tcdm_req_narrow;
+  tcdm_req_t [  TotalSnaxWideTcdmPortsWidth-1:0] snax_tcdm_req_wide;
 
-  tcdm_req_t [TotalSnaxNarrowTcdmPorts-1:0] snax_tcdm_req_narrow;
-  tcdm_req_t [  TotalSnaxWideTcdmPorts-1:0] snax_tcdm_req_wide;
-
-  tcdm_rsp_t [TotalSnaxNarrowTcdmPorts-1:0] snax_tcdm_rsp_narrow;
-  tcdm_rsp_t [  TotalSnaxWideTcdmPorts-1:0] snax_tcdm_rsp_wide;
+  tcdm_rsp_t [TotalSnaxNarrowTcdmPortsWidth-1:0] snax_tcdm_rsp_narrow;
+  tcdm_rsp_t [  TotalSnaxWideTcdmPortsWidth-1:0] snax_tcdm_rsp_wide;
 
   localparam int unsigned NumSnaxWideTcdmPorts = TotalSnaxWideTcdmPorts / 8;
 
