@@ -222,93 +222,93 @@ module snitch_cluster
 ) (
     /// System clock. If `IsoCrossing` is enabled this port is the _fast_ clock.
     /// The slower, half-frequency clock, is derived internally.
-    input  logic                                            clk_i,
+    input logic clk_i,
     /// Asynchronous active high reset. This signal is assumed to be _async_.
-    input  logic                                            rst_ni,
+    input logic rst_ni,
     /// Observability register for the cluster. This register is assumed to be
     /// sticky and only useful for observing signals from the outside.
-    output logic             [          ObsWidth-1:0]       obs_o,
+    output logic [ObsWidth-1:0] obs_o,
     /// Multi accelerator MUXing control signal
-    output logic             [           NrCores-1:0][31:0] multi_acc_mux_o,
+    output logic [NrCores-1:0][31:0] multi_acc_mux_o,
     /// Per-core debug request signal. Asserting this signals puts the
     /// corresponding core into debug mode. This signal is assumed to be _async_.
-    input  logic             [           NrCores-1:0]       debug_req_i,
+    input logic [NrCores-1:0] debug_req_i,
     /// Machine external interrupt pending. Usually those interrupts come from a
     /// platform-level interrupt controller. This signal is assumed to be _async_.
-    input  logic             [           NrCores-1:0]       meip_i,
+    input logic [NrCores-1:0] meip_i,
     /// Machine timer interrupt pending. Usually those interrupts come from a
     /// core-local interrupt controller such as a timer/RTC. This signal is
     /// assumed to be _async_.
-    input  logic             [           NrCores-1:0]       mtip_i,
+    input logic [NrCores-1:0] mtip_i,
     /// Core software interrupt pending. Usually those interrupts come from
     /// another core to facilitate inter-processor-interrupts. This signal is
     /// assumed to be _async_.
-    input  logic             [           NrCores-1:0]       msip_i,
+    input logic [NrCores-1:0] msip_i,
     /// First hartid of the cluster. Cores of a cluster are monotonically
     /// increasing without a gap, i.e., a cluster with 8 cores and a
     /// `hart_base_id_i` of 5 get the hartids 5 - 12.
-    input  logic             [                   9:0]       hart_base_id_i,
+    input logic [9:0] hart_base_id_i,
     /// Base address of cluster. TCDM and cluster peripheral location are derived from
     /// it. This signal is pseudo-static.
-    input  logic             [ PhysicalAddrWidth-1:0]       cluster_base_addr_i,
+    input logic [PhysicalAddrWidth-1:0] cluster_base_addr_i,
     /// Boot address
-    input  logic             [                  31:0]       boot_addr_i,
+    input logic [31:0] boot_addr_i,
     /// Configuration inputs for the memory cuts used in implementation.
     /// These signals are pseudo-static.
-    input  sram_cfgs_t                                      sram_cfgs_i,
+    input sram_cfgs_t sram_cfgs_i,
     /// Bypass half-frequency clock. (`d2` = divide-by-two). This signal is
     /// pseudo-static.
-    input  logic                                            clk_d2_bypass_i,
+    input logic clk_d2_bypass_i,
     /// SNAX Custom Instruction Ports
     /// Request for custom instruction format
-    output acc_req_t         [           NrCores-1:0]       snax_req_o,
-    output logic             [           NrCores-1:0]       snax_qvalid_o,
-    input  logic             [           NrCores-1:0]       snax_qready_i,
+    output acc_req_t [NrCores-1:0] snax_req_o,
+    output logic [NrCores-1:0] snax_qvalid_o,
+    input logic [NrCores-1:0] snax_qready_i,
     /// Response for custom instruction format
-    input  acc_resp_t        [           NrCores-1:0]       snax_resp_i,
-    input  logic             [           NrCores-1:0]       snax_pvalid_i,
-    output logic             [           NrCores-1:0]       snax_pready_o,
+    input acc_resp_t [NrCores-1:0] snax_resp_i,
+    input logic [NrCores-1:0] snax_pvalid_i,
+    output logic [NrCores-1:0] snax_pready_o,
     /// SNAX CSR Ports
     /// Request for CSR format
-    output logic             [           NrCores-1:0][31:0] snax_csr_req_bits_data_o,
-    output logic             [           NrCores-1:0][31:0] snax_csr_req_bits_addr_o,
-    output logic             [           NrCores-1:0]       snax_csr_req_bits_write_o,
-    output logic             [           NrCores-1:0]       snax_csr_req_valid_o,
-    input  logic             [           NrCores-1:0]       snax_csr_req_ready_i,
+    output logic [NrCores-1:0][31:0] snax_csr_req_bits_data_o,
+    output logic [NrCores-1:0][31:0] snax_csr_req_bits_addr_o,
+    output logic [NrCores-1:0] snax_csr_req_bits_write_o,
+    output logic [NrCores-1:0] snax_csr_req_valid_o,
+    input logic [NrCores-1:0] snax_csr_req_ready_i,
     /// Response for CSR format
-    input  logic             [           NrCores-1:0][31:0] snax_csr_rsp_bits_data_i,
-    input  logic             [           NrCores-1:0]       snax_csr_rsp_valid_i,
-    output logic             [           NrCores-1:0]       snax_csr_rsp_ready_o,
+    input logic [NrCores-1:0][31:0] snax_csr_rsp_bits_data_i,
+    input logic [NrCores-1:0] snax_csr_rsp_valid_i,
+    output logic [NrCores-1:0] snax_csr_rsp_ready_o,
     /// SNAX barrier port
-    input  logic             [           NrCores-1:0]       snax_barrier_i,
+    input logic [NrCores-1:0] snax_barrier_i,
     /// SNAX TCDM ports
-    input  tcdm_req_t        [TotalSnaxTcdmPorts-1:0]       snax_tcdm_req_i,
-    output tcdm_rsp_t        [TotalSnaxTcdmPorts-1:0]       snax_tcdm_rsp_o,
+    input tcdm_req_t [TotalSnaxTcdmPorts-1:0] snax_tcdm_req_i,
+    output tcdm_rsp_t [TotalSnaxTcdmPorts-1:0] snax_tcdm_rsp_o,
     /// AXI Core cluster in-port.
-    input  narrow_in_req_t                                  narrow_in_req_i,
-    output narrow_in_resp_t                                 narrow_in_resp_o,
+    input narrow_in_req_t narrow_in_req_i,
+    output narrow_in_resp_t narrow_in_resp_o,
     /// AXI Core cluster out-port.
-    output narrow_out_req_t                                 narrow_out_req_o,
-    input  narrow_out_resp_t                                narrow_out_resp_i,
+    output narrow_out_req_t narrow_out_req_o,
+    input narrow_out_resp_t narrow_out_resp_i,
     /// XDMA Wide Out ports
-    output wide_out_req_t                                   xdma_wide_out_req_o,
-    input  wide_out_resp_t                                  xdma_wide_out_resp_i,
+    output wide_out_req_t xdma_wide_out_req_o,
+    input wide_out_resp_t xdma_wide_out_resp_i,
     /// XDMA Wide In ports
-    input  wide_in_req_t                                    xdma_wide_in_req_i,
-    output wide_in_resp_t                                   xdma_wide_in_resp_o,
+    input wide_in_req_t xdma_wide_in_req_i,
+    output wide_in_resp_t xdma_wide_in_resp_o,
     /// XDMA Narrow Out ports
-    output narrow_out_req_t                                 xdma_narrow_out_req_o,
-    input  narrow_out_resp_t                                xdma_narrow_out_resp_i,
+    output narrow_out_req_t xdma_narrow_out_req_o,
+    input narrow_out_resp_t xdma_narrow_out_resp_i,
     /// XDMA Narrow In ports
-    input  narrow_in_req_t                                  xdma_narrow_in_req_i,
-    output narrow_in_resp_t                                 xdma_narrow_in_resp_o,
+    input narrow_in_req_t xdma_narrow_in_req_i,
+    output narrow_in_resp_t xdma_narrow_in_resp_o,
     /// AXI DMA cluster out-port. Usually wider than the cluster ports so that the
     /// DMA engine can efficiently transfer bulk of data.
-    output wide_out_req_t                                   wide_out_req_o,
-    input  wide_out_resp_t                                  wide_out_resp_i,
+    output wide_out_req_t wide_out_req_o,
+    input wide_out_resp_t wide_out_resp_i,
     /// AXI DMA cluster in-port.
-    input  wide_in_req_t                                    wide_in_req_i,
-    output wide_in_resp_t                                   wide_in_resp_o
+    input wide_in_req_t wide_in_req_i,
+    output wide_in_resp_t wide_in_resp_o
 );
 
   //------------------
@@ -650,7 +650,9 @@ module snitch_cluster
   // -------------
   // DMA XBAR Rule
   // -------------
-  logic [DmaXbarCfg.NoSlvPorts-1:0][$clog2(DmaXbarCfg.NoMstPorts)-1:0] dma_xbar_default_port;
+  logic [DmaXbarCfg.NoSlvPorts-1:0][$clog2(
+DmaXbarCfg.NoMstPorts
+)-1:0] dma_xbar_default_port;
   xbar_rule_t [DmaXbarCfg.NoAddrRules-1:0] dma_xbar_rule;
 
   assign dma_xbar_default_port = '{default: SoCDMAOut};
@@ -733,8 +735,10 @@ module snitch_cluster
   // Split narrow and wide TCDM ports to solve the multi-driver issue
   // Use these ports for the total number and needs to be cute into multiple versions
   // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
-  localparam int unsigned TotalSnaxNarrowTcdmPortsWidth = (TotalSnaxNarrowTcdmPorts>0)? TotalSnaxNarrowTcdmPorts : 1;
-  localparam int unsigned TotalSnaxWideTcdmPortsWidth = (TotalSnaxWideTcdmPorts>0)? TotalSnaxWideTcdmPorts : 1;
+  localparam int unsigned TotalSnaxNarrowTcdmPortsWidth = (TotalSnaxNarrowTcdmPorts>0)? 
+                                                          TotalSnaxNarrowTcdmPorts : 1;
+  localparam int unsigned TotalSnaxWideTcdmPortsWidth   = (TotalSnaxWideTcdmPorts>0)?
+                                                          TotalSnaxWideTcdmPorts : 1;
   tcdm_req_t [TotalSnaxNarrowTcdmPortsWidth-1:0] snax_tcdm_req_narrow;
   tcdm_req_t [  TotalSnaxWideTcdmPortsWidth-1:0] snax_tcdm_req_wide;
 
