@@ -72,6 +72,11 @@ int main() {
             }
         }
 
+        if (xdma_disable_dst_ext(2) != 0) {
+            printf("Error in disabling writer xdma extension 2\n");
+            err++;
+        }
+
         // --------------------- Configure the AGU --------------------- //
         xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src,
                        spatial_stride_dst, temporal_dimension_src,
