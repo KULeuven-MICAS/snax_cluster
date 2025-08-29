@@ -3,7 +3,6 @@ import chisel3._
 import chisel3.util._
 import chisel3.experimental.requireIsChiselType
 
-
 /** The definition of -|> / -||> / -|||> connector for decoupled signal it connects leftward Decoupled signal (Decoupled
   * port) and rightward Decoupled signal (Flipped port); and insert one level of pipeline in between to avoid long
   * combinatorial datapath
@@ -50,23 +49,23 @@ class RegQueue[T <: Data](
   val pipe:           Boolean = false,
   val flow:           Boolean = false,
   val useSyncReadMem: Boolean = false,
-  val hasFlush:       Boolean = false)
-    extends Module() {
+  val hasFlush:       Boolean = false
+) extends Module() {
   require(entries > -1, "Queue must have non-negative number of entries")
   require(entries != 0, "Use companion object Queue.apply for zero entries")
   requireIsChiselType(gen)
 
-  val io = IO(new QueueIO(gen, entries, hasFlush))
-  val ram = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(gen))))
-  val enq_ptr = Counter(entries)
-  val deq_ptr = Counter(entries)
+  val io         = IO(new QueueIO(gen, entries, hasFlush))
+  val ram        = RegInit(VecInit(Seq.fill(entries)(0.U.asTypeOf(gen))))
+  val enq_ptr    = Counter(entries)
+  val deq_ptr    = Counter(entries)
   val maybe_full = RegInit(false.B)
-  val ptr_match = enq_ptr.value === deq_ptr.value
-  val empty = ptr_match && !maybe_full
-  val full = ptr_match && maybe_full
-  val do_enq = WireDefault(io.enq.fire)
-  val do_deq = WireDefault(io.deq.fire)
-  val flush = io.flush.getOrElse(false.B)
+  val ptr_match  = enq_ptr.value === deq_ptr.value
+  val empty      = ptr_match && !maybe_full
+  val full       = ptr_match && maybe_full
+  val do_enq     = WireDefault(io.enq.fire)
+  val do_deq     = WireDefault(io.deq.fire)
+  val flush      = io.flush.getOrElse(false.B)
 
   // when flush is high, empty the queue
   // Semantically, any enqueues happen before the flush.
@@ -95,7 +94,7 @@ class RegQueue[T <: Data](
     when(io.enq.valid) { io.deq.valid := true.B }
     when(empty) {
       io.deq.bits := io.enq.bits
-      do_deq := false.B
+      do_deq      := false.B
       when(io.deq.ready) { do_enq := false.B }
     }
   }
@@ -116,8 +115,7 @@ class RegQueue[T <: Data](
     )
   }
 
-  /** Give this Queue a default, stable desired name using the supplied `Data`
-    * generator's `typeName`
+  /** Give this Queue a default, stable desired name using the supplied `Data` generator's `typeName`
     */
   override def desiredName = s"Queue${entries}_${gen.typeName}"
 }
