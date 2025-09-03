@@ -23,6 +23,8 @@
 module snitch_cluster
   import snitch_pkg::*;
 #(
+    /// Width of the chip id.
+    parameter int unsigned ChipIdWidth = 8,
     /// Width of physical address.
     parameter int unsigned PhysicalAddrWidth = 48,
     /// Width of regular data bus.
@@ -233,6 +235,8 @@ module snitch_cluster
     input logic clk_i,
     /// Asynchronous active high reset. This signal is assumed to be _async_.
     input logic rst_ni,
+    /// Chip id input
+    input logic [ChipIdWidth-1:0] chip_id_i,
     /// Observability register for the cluster. This register is assumed to be
     /// sticky and only useful for observing signals from the outside.
     output logic [ObsWidth-1:0] obs_o,
@@ -1443,9 +1447,15 @@ DmaXbarCfg.NoMstPorts
       end
     end
     if (Xdma[i]) begin : gen_dma_connection
-      assign wide_axi_mst_req[SDMAMst] = axi_dma_req;
+      // For the chiplet system, we need to append the chip id to the aw/ar addr of axi requests
+      always_comb begin : dm_append_chip_id
+        wide_axi_mst_req[SDMAMst] = axi_dma_req;
+        wide_axi_mst_req[SDMAMst].ar.addr = {chip_id_i,axi_dma_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+        wide_axi_mst_req[SDMAMst].aw.addr = {chip_id_i,axi_dma_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+      end  
       assign axi_dma_res = wide_axi_mst_rsp[SDMAMst];
       assign dma_events = dma_core_events;
+    
     end
   end
 
@@ -1454,7 +1464,7 @@ DmaXbarCfg.NoMstPorts
 
     hive_req_t [HiveSize-1:0] hive_req_reshape;
     hive_rsp_t [HiveSize-1:0] hive_rsp_reshape;
-
+    axi_mst_dma_req_t  hive_axi_mst_req;
     snitch_icache_pkg::icache_l0_events_t [HiveSize-1:0] icache_events_reshape;
 
     for (genvar j = 0; j < NrCores; j++) begin : gen_hive_matrix
@@ -1493,12 +1503,18 @@ DmaXbarCfg.NoMstPorts
         .hive_rsp_o(hive_rsp_reshape),
         .ptw_data_req_o(ptw_req[i]),
         .ptw_data_rsp_i(ptw_rsp[i]),
-        .axi_req_o(wide_axi_mst_req[ICache+i]),
+        .axi_req_o(hive_axi_mst_req),
         .axi_rsp_i(wide_axi_mst_rsp[ICache+i]),
         .icache_prefetch_enable_i(icache_prefetch_enable),
         .icache_events_o(icache_events_reshape),
         .sram_cfgs_i
     );
+    // For the chiplet system, we need to append the chip id to the aw/ar addr of axi requests
+    always_comb begin : hive_append_chip_id
+      wide_axi_mst_req[ICache+i] = hive_axi_mst_req;
+      wide_axi_mst_req[ICache+i].ar.addr = {chip_id_i,hive_axi_mst_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+      wide_axi_mst_req[ICache+i].aw.addr = {chip_id_i,hive_axi_mst_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+    end
   end
 
   // --------
@@ -1506,7 +1522,7 @@ DmaXbarCfg.NoMstPorts
   // --------
   reqrsp_req_t ptw_to_axi_req;
   reqrsp_rsp_t ptw_to_axi_rsp;
-
+  axi_mst_req_t  ptw_axi_req;
   reqrsp_mux #(
       .NrPorts(NrHives),
       .AddrWidth(PhysicalAddrWidth),
@@ -1537,10 +1553,16 @@ DmaXbarCfg.NoMstPorts
       .user_i('0),
       .reqrsp_req_i(ptw_to_axi_req),
       .reqrsp_rsp_o(ptw_to_axi_rsp),
-      .axi_req_o(narrow_axi_mst_req[PTW]),
+      .axi_req_o(ptw_axi_req),
       .axi_rsp_i(narrow_axi_mst_rsp[PTW])
   );
 
+  // For the chiplet system, we need to append the chip id to the aw/ar addr of axi requests
+  always_comb begin : ptw_append_chip_id
+    narrow_axi_mst_req[PTW] = ptw_axi_req;
+    narrow_axi_mst_req[PTW].ar.addr = {chip_id_i,ptw_axi_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+    narrow_axi_mst_req[PTW].aw.addr = {chip_id_i,ptw_axi_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+  end
   // --------
   // Coes SoC
   // --------
@@ -1556,6 +1578,7 @@ DmaXbarCfg.NoMstPorts
 
   reqrsp_req_t core_to_axi_req;
   reqrsp_rsp_t core_to_axi_rsp;
+  axi_mst_req_t  core_axi_req;
   user_t cluster_user;
   // Atomic ID, needs to be unique ID of cluster
   // cluster_id + HartIdOffset + 1 (because 0 is for non-atomic masters)
@@ -1591,10 +1614,15 @@ DmaXbarCfg.NoMstPorts
       .user_i(cluster_user),
       .reqrsp_req_i(core_to_axi_req),
       .reqrsp_rsp_o(core_to_axi_rsp),
-      .axi_req_o(narrow_axi_mst_req[CoreReq]),
+      .axi_req_o(core_axi_req),
       .axi_rsp_i(narrow_axi_mst_rsp[CoreReq])
   );
-
+  // For the chiplet system, we need to append the chip id to the aw/ar addr of axi requests
+  always_comb begin : core_append_chip_id
+    narrow_axi_mst_req[CoreReq] = core_axi_req;
+    narrow_axi_mst_req[CoreReq].ar.addr = {chip_id_i,core_axi_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+    narrow_axi_mst_req[CoreReq].aw.addr = {chip_id_i,core_axi_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+  end
 
   // -----------------
   // XDMA Narrow Ports

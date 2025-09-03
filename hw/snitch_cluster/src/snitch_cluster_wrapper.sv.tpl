@@ -62,6 +62,7 @@ ${',' if not loop.last else ''}
 package ${cfg['name']}_pkg;
 
   // Addressing Parameters
+  localparam int unsigned ChipIdWidth = ${cfg['chip_id_width']};
   localparam logic [ 9:0] HartBaseID = ${to_sv_hex(cfg['cluster_base_hartid'], 10)};
   localparam logic [${cfg['addr_width']-1}:0] ClusterBaseAddr = ${to_sv_hex(cfg['cluster_base_addr'], cfg['addr_width'])};
   localparam logic [31:0] BootAddr = ${to_sv_hex(cfg['boot_addr'], 32)};
@@ -286,6 +287,7 @@ module ${cfg['name']}_wrapper (
   //-----------------------------
   input  logic                                   clk_i,
   input  logic                                   rst_ni,
+  input  logic [${cfg['pkg_name']}::ChipIdWidth-1:0] chip_id_i,
 % if cfg['observable_pin_width'] > 0:
   //-----------------------------
   // Observable pins
@@ -550,6 +552,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
 
   // Snitch cluster under test.
   snitch_cluster #(
+    .ChipIdWidth (${cfg['pkg_name']}::ChipIdWidth),
     .PhysicalAddrWidth (${cfg['addr_width']}),
     .NarrowDataWidth (${cfg['data_width']}),
     .WideDataWidth (${cfg['dma_data_width']}),
@@ -658,8 +661,9 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     //-----------------------------
     // Clock and reset
     //-----------------------------
-    .clk_i  ( clk_i  ),
-    .rst_ni ( rst_ni ),
+    .clk_i     ( clk_i  ),
+    .rst_ni    ( rst_ni ),
+    .chip_id_i ( chip_id_i ),
 % if cfg['observable_pin_width'] > 0:
     //-----------------------------
     // Observable pins

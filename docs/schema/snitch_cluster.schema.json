@@ -19,6 +19,11 @@
             "description": "Address from which all harts of the cluster start to boot. The default setting is `0x8000_0000`.",
             "default": 2147483648
         },
+        "chip_id_width": {
+            "type": "number",
+            "description": "Width of the chip id.",
+            "default": 8
+        },        
         "cluster_base_addr": {
             "type": "number",
             "description": "Base address of this cluster.",
