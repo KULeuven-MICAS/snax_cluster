@@ -90,7 +90,10 @@ class CsrManager(csrNumReadWrite: Int, csrNumReadOnly: Int, csrAddrWidth: Int, c
 
   // handle write req
   when(write_csr) {
-    csr(io.csr_config_in.req.bits.addr) := io.csr_config_in.req.bits.data
+    val mask = FillInterleaved(8, io.csr_config_in.req.bits.strb)
+    csr(io.csr_config_in.req.bits.addr) := (csr(
+      io.csr_config_in.req.bits.addr
+    ) & ~mask) | (io.csr_config_in.req.bits.data & mask)
   }
 
   // handle read requests: send the result directly. If the receiver

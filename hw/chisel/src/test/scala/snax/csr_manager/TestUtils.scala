@@ -11,6 +11,7 @@ trait HasCsrManagerTestUtils {
 
     // give the data and address to the right ports
     dut.io.csr_config_in.req.bits.write.poke(1.B)
+    dut.io.csr_config_in.req.bits.strb.poke("b1111".U)
     dut.io.csr_config_in.req.bits.data.poke(data.U)
     dut.io.csr_config_in.req.bits.addr.poke(addr.U)
     dut.io.csr_config_in.req.valid.poke(1.B)

@@ -26,6 +26,7 @@ object XDMATesterInfrastructure {
 
     // give the data and address to the right ports
     port.req.bits.write.poke(true.B)
+    port.req.bits.strb.poke("b1111".U)
 
     port.req.bits.data.poke(data.U)
     port.req.bits.addr.poke(addr.U)
