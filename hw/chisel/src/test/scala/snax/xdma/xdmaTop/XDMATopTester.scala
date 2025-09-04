@@ -345,7 +345,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
       // Test 5: Faulty copy test
       // Remove all the data in the memory
       tcdm_mem.clear()
-      println("[Faulty copy Test] Test Started")
+      println("[Zero-length copy Test] Test Started")
       readerAGUParam = new AGUParamTest(
         address         = Seq(0),
         spatialStrides  = Array(8),
@@ -396,7 +396,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
           addr = currentAddress
         ) != 5
       ) {}
-
+      println("[Zero-length copy Test] Test Finished")
       println("All tests pass. All test threads are about to be terminated. ")
       testTerminated = true
     }
