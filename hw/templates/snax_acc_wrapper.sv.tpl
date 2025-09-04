@@ -384,7 +384,6 @@ module ${cfg["tag_name"]}_wrapper # (
     .csr_req_bits_data_i   ( acc_csr_req_data [0] ),
     .csr_req_bits_addr_i   ( acc_csr_req_addr [0] ),
     .csr_req_bits_write_i  ( acc_csr_req_wen  [0] ),
-    .csr_req_bits_strb_i   ( '1                   ),
     .csr_req_valid_i       ( acc_csr_req_valid[0] ),
     .csr_req_ready_o       ( acc_csr_req_ready[0] ),
     // Response
