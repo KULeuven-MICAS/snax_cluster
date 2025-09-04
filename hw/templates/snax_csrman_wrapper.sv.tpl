@@ -51,6 +51,7 @@ module ${cfg["tag_name"]}_csrman_wrapper #(
     .io_csr_config_in_req_bits_data   ( csr_req_data_i      ),
     .io_csr_config_in_req_bits_addr   ( csr_req_addr_i      ),
     .io_csr_config_in_req_bits_write  ( csr_req_write_i     ),
+    .io_csr_config_in_req_bits_strb   ( '1                  ),
     .io_csr_config_in_req_valid       ( csr_req_valid_i     ),
     .io_csr_config_in_req_ready       ( csr_req_ready_o     ),
 
