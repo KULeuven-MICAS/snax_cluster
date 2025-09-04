@@ -97,6 +97,11 @@ int main() {
             printf("The xdma writer extension 1 is disabled\n");
         }
 
+        if (xdma_disable_dst_ext(2) != 0) {
+            printf("Error in disabling writer xdma extension 2\n");
+            err++;
+        }
+
         // --------------------- Configure the AGU --------------------- //
         xdma_memcpy_nd(tcdm_in, tcdm_out, spatialStride1_in, spatialStride1_out,
                        5, tstride_src, tbound_src, 3, tstride_dst, tbound_dst,
