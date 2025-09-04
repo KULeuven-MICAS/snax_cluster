@@ -22,19 +22,43 @@ trait HasCsrManagerTest extends HasCsrManagerTestUtils {
     write_csr(dut, 2, 20)
     write_csr(dut, 3, 30)
     write_csr(dut, 4, 40)
+    write_csr(dut, 5, 0xFFFFFFFFL, 0b0001)
+
 
     dut.clock.step(5)
 
     // ***********************************************************************
     // Read values of the CSRs (valid)
     // ***********************************************************************
-    assert(10 == read_csr(dut, 1).litValue)
-    assert(20 == read_csr(dut, 2).litValue)
-    assert(30 == read_csr(dut, 3).litValue)
-    assert(40 == read_csr(dut, 4).litValue)
+    assert(10 == read_csr(dut, 1))
+    assert(20 == read_csr(dut, 2))
+    assert(30 == read_csr(dut, 3))
+    assert(40 == read_csr(dut, 4))
+    assert(0x000000FF == read_csr(dut, 5))
 
     dut.clock.step(5)
 
+    // ***********************************************************************
+    // Write values to the CSRs with all strobes = 0 (valid)
+    // ***********************************************************************
+
+    write_csr(dut, 1, 10, 0x0)
+    write_csr(dut, 2, 20, 0x0)
+    write_csr(dut, 3, 30, 0x0)
+    write_csr(dut, 4, 40, 0x0)
+    write_csr(dut, 5, BigInt("FFFFFFFF", 16), 0b0001)
+
+    dut.clock.step(5)
+    // ***********************************************************************
+    // Read back the values, they should be unchanged
+    // ***********************************************************************
+    assert(10 == read_csr(dut, 1))
+    assert(20 == read_csr(dut, 2))
+    assert(30 == read_csr(dut, 3))
+    assert(40 == read_csr(dut, 4))
+    assert(0x000000FF == read_csr(dut, 5))
+
+    dut.clock.step(5)
     // ***********************************************************************
     // Write to the CSRs without asserting valid
     // ***********************************************************************
@@ -194,13 +218,13 @@ trait HasCsrManagerTest extends HasCsrManagerTestUtils {
       1 == read_csr(
         dut,
         0 + CsrManagerTestParameters.csrNumReadWrite
-      ).litValue
+      )
     )
     assert(
       2 == read_csr(
         dut,
         1 + CsrManagerTestParameters.csrNumReadWrite
-      ).litValue
+      )
     )
 
     // drive the read only csr
@@ -212,13 +236,13 @@ trait HasCsrManagerTest extends HasCsrManagerTestUtils {
       3 == read_csr(
         dut,
         0 + CsrManagerTestParameters.csrNumReadWrite
-      ).litValue
+      )
     )
     assert(
       4 == read_csr(
         dut,
         1 + CsrManagerTestParameters.csrNumReadWrite
-      ).litValue
+      )
     )
 
   }
