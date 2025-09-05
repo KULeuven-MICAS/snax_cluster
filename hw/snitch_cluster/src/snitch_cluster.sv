@@ -1450,12 +1450,15 @@ DmaXbarCfg.NoMstPorts
       // For the chiplet system, we need to append the chip id to the aw/ar addr of axi requests
       always_comb begin : dm_append_chip_id
         wide_axi_mst_req[SDMAMst] = axi_dma_req;
-        wide_axi_mst_req[SDMAMst].ar.addr = {chip_id_i,axi_dma_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
-        wide_axi_mst_req[SDMAMst].aw.addr = {chip_id_i,axi_dma_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
-      end  
+        wide_axi_mst_req[SDMAMst].ar.addr = {
+          chip_id_i, axi_dma_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]
+        };
+        wide_axi_mst_req[SDMAMst].aw.addr = {
+          chip_id_i, axi_dma_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]
+        };
+      end
       assign axi_dma_res = wide_axi_mst_rsp[SDMAMst];
-      assign dma_events = dma_core_events;
-    
+      assign dma_events  = dma_core_events;
     end
   end
 
@@ -1464,7 +1467,7 @@ DmaXbarCfg.NoMstPorts
 
     hive_req_t [HiveSize-1:0] hive_req_reshape;
     hive_rsp_t [HiveSize-1:0] hive_rsp_reshape;
-    axi_mst_dma_req_t  hive_axi_mst_req;
+    axi_mst_dma_req_t hive_axi_mst_req;
     snitch_icache_pkg::icache_l0_events_t [HiveSize-1:0] icache_events_reshape;
 
     for (genvar j = 0; j < NrCores; j++) begin : gen_hive_matrix
@@ -1512,17 +1515,21 @@ DmaXbarCfg.NoMstPorts
     // For the chiplet system, we need to append the chip id to the aw/ar addr of axi requests
     always_comb begin : hive_append_chip_id
       wide_axi_mst_req[ICache+i] = hive_axi_mst_req;
-      wide_axi_mst_req[ICache+i].ar.addr = {chip_id_i,hive_axi_mst_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
-      wide_axi_mst_req[ICache+i].aw.addr = {chip_id_i,hive_axi_mst_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+      wide_axi_mst_req[ICache+i].ar.addr = {
+        chip_id_i, hive_axi_mst_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]
+      };
+      wide_axi_mst_req[ICache+i].aw.addr = {
+        chip_id_i, hive_axi_mst_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]
+      };
     end
   end
 
   // --------
   // PTW Demux
   // --------
-  reqrsp_req_t ptw_to_axi_req;
-  reqrsp_rsp_t ptw_to_axi_rsp;
-  axi_mst_req_t  ptw_axi_req;
+  reqrsp_req_t  ptw_to_axi_req;
+  reqrsp_rsp_t  ptw_to_axi_rsp;
+  axi_mst_req_t ptw_axi_req;
   reqrsp_mux #(
       .NrPorts(NrHives),
       .AddrWidth(PhysicalAddrWidth),
@@ -1560,8 +1567,12 @@ DmaXbarCfg.NoMstPorts
   // For the chiplet system, we need to append the chip id to the aw/ar addr of axi requests
   always_comb begin : ptw_append_chip_id
     narrow_axi_mst_req[PTW] = ptw_axi_req;
-    narrow_axi_mst_req[PTW].ar.addr = {chip_id_i,ptw_axi_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
-    narrow_axi_mst_req[PTW].aw.addr = {chip_id_i,ptw_axi_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+    narrow_axi_mst_req[PTW].ar.addr = {
+      chip_id_i, ptw_axi_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]
+    };
+    narrow_axi_mst_req[PTW].aw.addr = {
+      chip_id_i, ptw_axi_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]
+    };
   end
   // --------
   // Coes SoC
@@ -1578,7 +1589,7 @@ DmaXbarCfg.NoMstPorts
 
   reqrsp_req_t core_to_axi_req;
   reqrsp_rsp_t core_to_axi_rsp;
-  axi_mst_req_t  core_axi_req;
+  axi_mst_req_t core_axi_req;
   user_t cluster_user;
   // Atomic ID, needs to be unique ID of cluster
   // cluster_id + HartIdOffset + 1 (because 0 is for non-atomic masters)
@@ -1620,8 +1631,12 @@ DmaXbarCfg.NoMstPorts
   // For the chiplet system, we need to append the chip id to the aw/ar addr of axi requests
   always_comb begin : core_append_chip_id
     narrow_axi_mst_req[CoreReq] = core_axi_req;
-    narrow_axi_mst_req[CoreReq].ar.addr = {chip_id_i,core_axi_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
-    narrow_axi_mst_req[CoreReq].aw.addr = {chip_id_i,core_axi_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]};
+    narrow_axi_mst_req[CoreReq].ar.addr = {
+      chip_id_i, core_axi_req.ar.addr[PhysicalAddrWidth-ChipIdWidth-1:0]
+    };
+    narrow_axi_mst_req[CoreReq].aw.addr = {
+      chip_id_i, core_axi_req.aw.addr[PhysicalAddrWidth-ChipIdWidth-1:0]
+    };
   end
 
   // -----------------
