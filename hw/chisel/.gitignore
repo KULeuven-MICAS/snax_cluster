@@ -6,5 +6,5 @@ target
 out
 
 # Files
-src/main/scala/snax/csr_manager/CsrManParamGen.scala
+src/main/scala/snax/reqrsp_manager/ReqRspManParamGen.scala
 src/main/scala/snax/streamer/StreamParamGen.scala

@@ -1,4 +1,4 @@
-package snax.csr_manager
+package snax.reqRspManager
 
 object CsrManagerTestParameters {
   def csrNumReadWrite  = 10
