@@ -27,6 +27,7 @@ module testharness import ${cfg["cluster"]["name"]}_pkg::*; (
   ${cfg["cluster"]["name"]}_wrapper i_${cfg["cluster"]["name"]} (
     .clk_i                ( clk_i           ),
     .rst_ni               ( rst_ni          ),
+    .chip_id_i            ( '0              ),
     .hart_base_id_i       ( HartBaseID      ),
     .cluster_base_addr_i  ( ClusterBaseAddr ),
     .boot_addr_i          ( BootAddr        ),
