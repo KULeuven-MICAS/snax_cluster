@@ -7,7 +7,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import snax.reqRspManager.ReqRspManager
 
-trait HasCsrManagerTest extends HasCsrManagerTestUtils {
+trait HasReqRspManagerTest extends HasCsrManagerTestUtils {
   def base_csr_manager_test[T <: ReqRspManager](dut: T) = {
     // ***********************************************************************
     // Write values to the CSRs (valid)
@@ -187,7 +187,7 @@ trait HasCsrManagerTest extends HasCsrManagerTestUtils {
     dut.io.reqRspIO.req.valid.poke(1.B)
     dut.io.reqRspIO.req.bits.data.poke(0.U)
     dut.io.reqRspIO.req.bits.addr
-      .poke((CsrManagerTestParameters.csrNumReadWrite - 1).U)
+      .poke((ReqRspManagerTestParameters.numReadWriteReg - 1).U)
     dut.io.reqRspIO.req.bits.write.poke(1.B)
     dut.clock.step(1)
 
@@ -218,13 +218,13 @@ trait HasCsrManagerTest extends HasCsrManagerTestUtils {
     assert(
       1 == read_csr(
         dut,
-        0 + CsrManagerTestParameters.csrNumReadWrite
+        0 + ReqRspManagerTestParameters.numReadWriteReg
       )
     )
     assert(
       2 == read_csr(
         dut,
-        1 + CsrManagerTestParameters.csrNumReadWrite
+        1 + ReqRspManagerTestParameters.numReadWriteReg
       )
     )
 
@@ -236,27 +236,27 @@ trait HasCsrManagerTest extends HasCsrManagerTestUtils {
     assert(
       3 == read_csr(
         dut,
-        0 + CsrManagerTestParameters.csrNumReadWrite
+        0 + ReqRspManagerTestParameters.numReadWriteReg
       )
     )
     assert(
       4 == read_csr(
         dut,
-        1 + CsrManagerTestParameters.csrNumReadWrite
+        1 + ReqRspManagerTestParameters.numReadWriteReg
       )
     )
 
   }
 }
 
-class CsrManagerTest extends AnyFlatSpec with ChiselScalatestTester with Matchers with HasCsrManagerTest {
+class ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with Matchers with HasReqRspManagerTest {
 
   "DUT" should "pass" in {
     test(
       new ReqRspManager(
-        CsrManagerTestParameters.csrNumReadWrite,
-        CsrManagerTestParameters.csrNumReadOnly,
-        CsrManagerTestParameters.csrAddrWidth
+        ReqRspManagerTestParameters.numReadWriteReg,
+        ReqRspManagerTestParameters.numReadOnlyReg,
+        ReqRspManagerTestParameters.addrWidth
       )
     ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
       base_csr_manager_test(dut)

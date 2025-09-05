@@ -5,15 +5,14 @@ import chisel3._
 import org.scalatest.flatspec.AnyFlatSpec
 import snax.reqRspManager.ReqRspManager
 
-class CsrManagerTopGenerate extends AnyFlatSpec {
+class ReqRspManagerTopGenerate extends AnyFlatSpec {
 
   emitVerilog(
     new ReqRspManager(
-      CsrManagerTestParameters.csrNumReadWrite,
-      CsrManagerTestParameters.csrNumReadOnly,
-      CsrManagerTestParameters.csrAddrWidth
+      ReqRspManagerTestParameters.numReadWriteReg,
+      ReqRspManagerTestParameters.numReadOnlyReg,
+      ReqRspManagerTestParameters.addrWidth
     ),
     Array("--target-dir", "generated/reqRspManager")
   )
-
 }
