@@ -7,8 +7,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import snax.reqRspManager.ReqRspManager
 
-trait HasReqRspManagerTest extends HasCsrManagerTestUtils {
-  def base_csr_manager_test[T <: ReqRspManager](dut: T) = {
+trait HasReqRspManagerTest extends HasRegRspManagerTestUtils {
+  def baseReqRspManagerTest[T <: ReqRspManager](dut: T) = {
     // ***********************************************************************
     // Write values to the CSRs (valid)
     // ***********************************************************************
@@ -19,11 +19,11 @@ trait HasReqRspManagerTest extends HasCsrManagerTestUtils {
     // 3. Write 30 to address 3
     // 4. Write 40 to address 4
 
-    write_csr(dut, 1, 10)
-    write_csr(dut, 2, 20)
-    write_csr(dut, 3, 30)
-    write_csr(dut, 4, 40)
-    write_csr(dut, 5, 0xFFFFFFFFL, 0b0001)
+    writeReg(dut, 1, 10)
+    writeReg(dut, 2, 20)
+    writeReg(dut, 3, 30)
+    writeReg(dut, 4, 40)
+    writeReg(dut, 5, 0xFFFFFFFFL, 0b0001)
 
 
     dut.clock.step(5)
@@ -31,11 +31,11 @@ trait HasReqRspManagerTest extends HasCsrManagerTestUtils {
     // ***********************************************************************
     // Read values of the CSRs (valid)
     // ***********************************************************************
-    assert(10 == read_csr(dut, 1))
-    assert(20 == read_csr(dut, 2))
-    assert(30 == read_csr(dut, 3))
-    assert(40 == read_csr(dut, 4))
-    assert(0x000000FF == read_csr(dut, 5))
+    assert(10 == readReg(dut, 1))
+    assert(20 == readReg(dut, 2))
+    assert(30 == readReg(dut, 3))
+    assert(40 == readReg(dut, 4))
+    assert(0x000000FF == readReg(dut, 5))
 
     dut.clock.step(5)
 
@@ -43,21 +43,21 @@ trait HasReqRspManagerTest extends HasCsrManagerTestUtils {
     // Write values to the CSRs with all strobes = 0 (valid)
     // ***********************************************************************
 
-    write_csr(dut, 1, 10, 0x0)
-    write_csr(dut, 2, 20, 0x0)
-    write_csr(dut, 3, 30, 0x0)
-    write_csr(dut, 4, 40, 0x0)
-    write_csr(dut, 5, BigInt("FFFFFFFF", 16), 0b0001)
+    writeReg(dut, 1, 10, 0x0)
+    writeReg(dut, 2, 20, 0x0)
+    writeReg(dut, 3, 30, 0x0)
+    writeReg(dut, 4, 40, 0x0)
+    writeReg(dut, 5, BigInt("FFFFFFFF", 16), 0b0001)
 
     dut.clock.step(5)
     // ***********************************************************************
     // Read back the values, they should be unchanged
     // ***********************************************************************
-    assert(10 == read_csr(dut, 1))
-    assert(20 == read_csr(dut, 2))
-    assert(30 == read_csr(dut, 3))
-    assert(40 == read_csr(dut, 4))
-    assert(0x000000FF == read_csr(dut, 5))
+    assert(10 == readReg(dut, 1))
+    assert(20 == readReg(dut, 2))
+    assert(30 == readReg(dut, 3))
+    assert(40 == readReg(dut, 4))
+    assert(0x000000FF == readReg(dut, 5))
 
     dut.clock.step(5)
     // ***********************************************************************
@@ -216,13 +216,13 @@ trait HasReqRspManagerTest extends HasCsrManagerTestUtils {
 
     // check the read value
     assert(
-      1 == read_csr(
+      1 == readReg(
         dut,
         0 + ReqRspManagerTestParameters.numReadWriteReg
       )
     )
     assert(
-      2 == read_csr(
+      2 == readReg(
         dut,
         1 + ReqRspManagerTestParameters.numReadWriteReg
       )
@@ -234,13 +234,13 @@ trait HasReqRspManagerTest extends HasCsrManagerTestUtils {
 
     // check the read value
     assert(
-      3 == read_csr(
+      3 == readReg(
         dut,
         0 + ReqRspManagerTestParameters.numReadWriteReg
       )
     )
     assert(
-      4 == read_csr(
+      4 == readReg(
         dut,
         1 + ReqRspManagerTestParameters.numReadWriteReg
       )
@@ -259,7 +259,7 @@ class ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with Matc
         ReqRspManagerTestParameters.addrWidth
       )
     ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-      base_csr_manager_test(dut)
+      baseReqRspManagerTest(dut)
     }
   }
 

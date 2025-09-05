@@ -5,10 +5,10 @@ import chisel3._
 import chiseltest._
 import snax.reqRspManager.ReqRspManager
 
-trait HasCsrManagerTestUtils {
+trait HasRegRspManagerTestUtils {
 
-  // write csr helper function without strobe
-  def write_csr[T <: ReqRspManager](dut: T, addr: Int, data: Int) = {
+  // writeReg helper function without strobe
+  def writeReg[T <: ReqRspManager](dut: T, addr: Int, data: Int) = {
 
     // give the data and address to the right ports
     dut.io.reqRspIO.req.bits.write.poke(1.B)
@@ -28,8 +28,8 @@ trait HasCsrManagerTestUtils {
 
   }
 
-  // write csr helper function with strobe
-  def write_csr[T <: ReqRspManager](dut: T, addr: BigInt, data: BigInt, strb: Int) = {
+  // writeReg helper function with strobe
+  def writeReg[T <: ReqRspManager](dut: T, addr: BigInt, data: BigInt, strb: Int) = {
 
     // give the data and address to the right ports
     dut.io.reqRspIO.req.bits.write.poke(1.B)
@@ -49,8 +49,8 @@ trait HasCsrManagerTestUtils {
 
   }
 
-  // read csr helper function
-  def read_csr[T <: ReqRspManager](dut: T, addr: Int) = {
+  // readReg helper function
+  def readReg[T <: ReqRspManager](dut: T, addr: Int) = {
     dut.clock.step(1)
 
     // give the data and address to the right ports
