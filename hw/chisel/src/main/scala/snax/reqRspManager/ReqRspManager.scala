@@ -20,8 +20,8 @@ class SnaxReqRspIO(addrWidth: Int) extends Bundle {
 /** This class represents the input and output ports of the CsrManager module. The input is connected to the SNAX CSR
   * port. The output is connected to the streamer configuration port.
   * @param numReadWriteReg
-  *   the number of read/write registers. These control registers are buffered and can only be written to by the
-  *   manager core.
+  *   the number of read/write registers. These control registers are buffered and can only be written to by the manager
+  *   core.
   * @param numReadOnlyReg
   *   the number of read only registers. These values are written to by the accelerator
   * @param addrWidth
@@ -29,7 +29,7 @@ class SnaxReqRspIO(addrWidth: Int) extends Bundle {
   */
 class ReqRspManagerIO(numReadWriteReg: Int, numReadOnlyReg: Int, addrWidth: Int) extends Bundle {
 
-  val reqRspIO  = new SnaxReqRspIO(addrWidth = addrWidth)
+  val reqRspIO       = new SnaxReqRspIO(addrWidth = addrWidth)
   val readWriteRegIO = Decoupled(Vec(numReadWriteReg, UInt(32.W)))
 
   // Add extra input ports from accelerator side for the read only registers
