@@ -185,7 +185,7 @@ trait HasReqRspManagerTest extends HasRegRspManagerTestUtils {
     dut.io.reqRspIO.req.valid.poke(1.B)
     dut.io.reqRspIO.req.bits.data.poke(0.U)
     dut.io.reqRspIO.req.bits.addr
-      .poke((W32ReqRspManagerTestParameters.numReadWriteReg - 1).U)
+      .poke((IO32R32ReqRspManagerTestParameters.numReadWriteReg - 1).U)
     dut.io.reqRspIO.req.bits.write.poke(1.B)
     dut.clock.step(1)
 
@@ -216,13 +216,13 @@ trait HasReqRspManagerTest extends HasRegRspManagerTestUtils {
     assert(
       1 == readReg(
         dut,
-        0 + W32ReqRspManagerTestParameters.numReadWriteReg
+        0 + IO32R32ReqRspManagerTestParameters.numReadWriteReg
       )
     )
     assert(
       2 == readReg(
         dut,
-        1 + W32ReqRspManagerTestParameters.numReadWriteReg
+        1 + IO32R32ReqRspManagerTestParameters.numReadWriteReg
       )
     )
 
@@ -234,27 +234,27 @@ trait HasReqRspManagerTest extends HasRegRspManagerTestUtils {
     assert(
       3 == readReg(
         dut,
-        0 + W32ReqRspManagerTestParameters.numReadWriteReg
+        0 + IO32R32ReqRspManagerTestParameters.numReadWriteReg
       )
     )
     assert(
       4 == readReg(
         dut,
-        1 + W32ReqRspManagerTestParameters.numReadWriteReg
+        1 + IO32R32ReqRspManagerTestParameters.numReadWriteReg
       )
     )
 
   }
 }
 
-class W32ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with Matchers with HasReqRspManagerTest {
+class IO32R32ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with Matchers with HasReqRspManagerTest {
 
   "DUT" should "pass" in {
     test(
       new ReqRspManager(
-        W32ReqRspManagerTestParameters.numReadWriteReg,
-        W32ReqRspManagerTestParameters.numReadOnlyReg,
-        W32ReqRspManagerTestParameters.addrWidth
+        IO32R32ReqRspManagerTestParameters.numReadWriteReg,
+        IO32R32ReqRspManagerTestParameters.numReadOnlyReg,
+        IO32R32ReqRspManagerTestParameters.addrWidth
       )
     ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
       baseReqRspManagerTest(dut)

@@ -6,7 +6,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import snax.reqRspManager.ReqRspManager
 
-class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with Matchers with HasReqRspManagerTest {
+class IO64R32ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with Matchers with HasReqRspManagerTest {
 
   "DUT" should "pass" in {
     test(
@@ -14,7 +14,8 @@ class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with M
         numReadWriteReg = 7,
         numReadOnlyReg  = 2,
         addrWidth       = 32,
-        dataWidth       = 64,
+        ioDataWidth     = 64,
+        regDataWidth    = 32,
         moduleTagName   = "Test"
       )
     ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
