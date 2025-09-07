@@ -11,8 +11,8 @@ import snax.utils._
   *   Registers address width
   */
 class SnaxReqRspIO(addrWidth: Int, dataWidth: Int) extends Bundle {
-  val req = Flipped(Decoupled(new RegReq(addrWidth = addrWidth, tcdmDataWidth = dataWidth)))
-  val rsp = Decoupled(new RegRsp(tcdmDataWidth = dataWidth))
+  val req = Flipped(Decoupled(new RegReq(addrWidth = addrWidth, dataWidth = dataWidth)))
+  val rsp = Decoupled(new RegRsp(dataWidth = dataWidth))
 }
 
 /** This class represents the input and output ports of the CsrManager module. The input is connected to the SNAX CSR
@@ -28,10 +28,10 @@ class SnaxReqRspIO(addrWidth: Int, dataWidth: Int) extends Bundle {
 class ReqRspManagerIO(numReadWriteReg: Int, numReadOnlyReg: Int, addrWidth: Int, dataWidth: Int = 32) extends Bundle {
 
   val reqRspIO       = new SnaxReqRspIO(addrWidth = addrWidth, dataWidth = dataWidth)
-  val readWriteRegIO = Decoupled(Vec(numReadWriteReg, UInt(dataWidth.W)))
+  val readWriteRegIO = Decoupled(Vec(numReadWriteReg, UInt(32.W)))
 
   // Add extra input ports from accelerator side for the read only registers
-  val readOnlyReg = Input(Vec(numReadOnlyReg, UInt(addrWidth.W)))
+  val readOnlyReg = Input(Vec(numReadOnlyReg, UInt(32.W)))
 
 }
 
@@ -153,7 +153,7 @@ class ReqRspManager(
   for (b <- 0 until numBeats) {
     val slice = (0 until wordsPerBeat).map { i =>
       val idx = b * wordsPerBeat + i
-      Mux(idx.U < all32.length.U, all32(idx), 0.U(32.W))
+      if (idx < all32.length) all32(idx) else 0.U(32.W)
     }
     allRegisters(b) := Cat(slice.reverse)
   }
@@ -164,15 +164,6 @@ class ReqRspManager(
       s"csr read address overflow! Max allowed address is ${(numReadWriteReg + numReadOnlyReg - 1) / wordsPerBeat}"
     )
     io.reqRspIO.rsp.bits.data   := allRegisters(io.reqRspIO.req.bits.addr)
-
-    when(io.reqRspIO.req.bits.addr < numReadWriteReg.U) {
-      io.reqRspIO.rsp.bits.data := csr(io.reqRspIO.req.bits.addr)
-      // add extra logic for read only CSR respond data
-    }.otherwise {
-      io.reqRspIO.rsp.bits.data := io.readOnlyReg(
-        io.reqRspIO.req.bits.addr - numReadWriteReg.U
-      )
-    }
     io.reqRspIO.rsp.valid := 1.B
   }.elsewhen(readRegBusy) {
     io.reqRspIO.rsp.bits.data := readRegBuffer
