@@ -35,14 +35,20 @@ class ReqRspManagerIO(numReadWriteReg: Int, numReadOnlyReg: Int, addrWidth: Int,
 
 }
 
-/** This class represents the CsrManager module. It contains the csr registers and the read and write control logic. It
-  * contains only one type of registers, eg. read and write CSR.
+/** This class represents the ReqRspManager module. It contains the csr registers and the read and write control logic.
+  * It contains only one type of registers, eg. read and write CSR.
   * @param numReadWriteReg
   *   the number of read and write csr registers
   * @param numReadOnlyReg
   *   the number of read only csr registers
   * @param addrWidth
   *   the width of the address
+  * @param ioDataWidth
+  *   the data width of the ReqRsp interface
+  * @param regDataWidth
+  *   the data width of the registers connected to accelerators, must be smaller or equal to ioDataWidth
+  * @param moduleTagName
+  *   the module tag name, used in the generated verilog file name
   */
 class ReqRspManager(
   numReadWriteReg: Int,

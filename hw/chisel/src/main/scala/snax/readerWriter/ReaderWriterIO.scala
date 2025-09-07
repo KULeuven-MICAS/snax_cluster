@@ -66,7 +66,7 @@ trait HasTCDMRequestor {
     param.tcdmParam.numChannel,
     Decoupled(
       new RegReq(
-        addrWidth     = param.tcdmParam.addrWidth,
+        addrWidth = param.tcdmParam.addrWidth,
         dataWidth = param.tcdmParam.dataWidth
       )
     )

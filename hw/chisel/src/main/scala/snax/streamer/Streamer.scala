@@ -147,11 +147,11 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
     new ReqRspManager(
       numReadWriteReg = csrNumReadWrite,
       // 2 ready only csr for every streamer
-      numReadOnlyReg = 2,
-      addrWidth = param.csrAddrWidth,
-      ioDataWidth = 32,
-      regDataWidth = 32,
-      moduleTagName = param.tagName
+      numReadOnlyReg  = 2,
+      addrWidth       = param.csrAddrWidth,
+      ioDataWidth     = 32,
+      regDataWidth    = 32,
+      moduleTagName   = param.tagName
     )
   )
 
