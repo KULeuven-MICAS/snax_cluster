@@ -1,5 +1,6 @@
 package snax.reqRspManager
 
+import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -11,15 +12,15 @@ class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with M
     test(
       new ReqRspManager(
         numReadWriteReg = 7,
-        numReadOnlyReg = 2,
-        addrWidth = 32,
-        dataWidth = 64,
-        moduleTagName = "Test"
+        numReadOnlyReg  = 2,
+        addrWidth       = 32,
+        dataWidth       = 64,
+        moduleTagName   = "Test"
       )
     ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
       // Strobe Moves step by step
-      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), 0b00000001)
-      dut.io.readWriteRegIO.bits(0).expect(0x000000FFL)
+      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("00000001", 2))
+      dut.io.readWriteRegIO.bits(0).expect(0x000000ffL)
       dut.io.readWriteRegIO.bits(1).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(2).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(3).expect(0x00000000L)
@@ -28,8 +29,8 @@ class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with M
       dut.io.readWriteRegIO.bits(6).expect(0x00000000L)
       if (readReg(dut, 0) != BigInt("00000000000000FF", 16)) throw new Exception("Value not written correctly")
 
-      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), 0b00000010)
-      dut.io.readWriteRegIO.bits(0).expect(0x0000FFFFL)
+      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("00000010", 2))
+      dut.io.readWriteRegIO.bits(0).expect(0x0000ffffL)
       dut.io.readWriteRegIO.bits(1).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(2).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(3).expect(0x00000000L)
@@ -38,8 +39,8 @@ class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with M
       dut.io.readWriteRegIO.bits(6).expect(0x00000000L)
       if (readReg(dut, 0) != BigInt("000000000000FFFF", 16)) throw new Exception("Value not written correctly")
 
-      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), 0b00000100)
-      dut.io.readWriteRegIO.bits(0).expect(0x00FFFFFFL)
+      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("00000100", 2))
+      dut.io.readWriteRegIO.bits(0).expect(0x00ffffffL)
       dut.io.readWriteRegIO.bits(1).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(2).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(3).expect(0x00000000L)
@@ -48,8 +49,8 @@ class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with M
       dut.io.readWriteRegIO.bits(6).expect(0x00000000L)
       if (readReg(dut, 0) != BigInt("0000000000FFFFFF", 16)) throw new Exception("Value not written correctly")
 
-      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), 0b00001000)
-      dut.io.readWriteRegIO.bits(0).expect(0xFFFFFFFFL)
+      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("00001000", 2))
+      dut.io.readWriteRegIO.bits(0).expect(0xffffffffL)
       dut.io.readWriteRegIO.bits(1).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(2).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(3).expect(0x00000000L)
@@ -58,9 +59,9 @@ class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with M
       dut.io.readWriteRegIO.bits(6).expect(0x00000000L)
       if (readReg(dut, 0) != BigInt("00000000FFFFFFFF", 16)) throw new Exception("Value not written correctly")
 
-      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), 0b00010000)
-      dut.io.readWriteRegIO.bits(0).expect(0xFFFFFFFFL)
-      dut.io.readWriteRegIO.bits(1).expect(0x000000FFL)
+      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("00010000", 2))
+      dut.io.readWriteRegIO.bits(0).expect(0xffffffffL)
+      dut.io.readWriteRegIO.bits(1).expect(0x000000ffL)
       dut.io.readWriteRegIO.bits(2).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(3).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(4).expect(0x00000000L)
@@ -68,9 +69,9 @@ class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with M
       dut.io.readWriteRegIO.bits(6).expect(0x00000000L)
       if (readReg(dut, 0) != BigInt("000000FFFFFFFFFF", 16)) throw new Exception("Value not written correctly")
 
-      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), 0b00100000)
-      dut.io.readWriteRegIO.bits(0).expect(0xFFFFFFFFL)
-      dut.io.readWriteRegIO.bits(1).expect(0x0000FFFFL)
+      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("00100000", 2))
+      dut.io.readWriteRegIO.bits(0).expect(0xffffffffL)
+      dut.io.readWriteRegIO.bits(1).expect(0x0000ffffL)
       dut.io.readWriteRegIO.bits(2).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(3).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(4).expect(0x00000000L)
@@ -78,9 +79,9 @@ class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with M
       dut.io.readWriteRegIO.bits(6).expect(0x00000000L)
       if (readReg(dut, 0) != BigInt("0000FFFFFFFFFFFF", 16)) throw new Exception("Value not written correctly")
 
-      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), 0b01000000)
-      dut.io.readWriteRegIO.bits(0).expect(0xFFFFFFFFL)
-      dut.io.readWriteRegIO.bits(1).expect(0x00FFFFFFL)
+      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("01000000", 2))
+      dut.io.readWriteRegIO.bits(0).expect(0xffffffffL)
+      dut.io.readWriteRegIO.bits(1).expect(0x00ffffffL)
       dut.io.readWriteRegIO.bits(2).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(3).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(4).expect(0x00000000L)
@@ -88,9 +89,9 @@ class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with M
       dut.io.readWriteRegIO.bits(6).expect(0x00000000L)
       if (readReg(dut, 0) != BigInt("00FFFFFFFFFFFFFF", 16)) throw new Exception("Value not written correctly")
 
-      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), 0b10000000)
-      dut.io.readWriteRegIO.bits(0).expect(0xFFFFFFFFL)
-      dut.io.readWriteRegIO.bits(1).expect(0xFFFFFFFFL)
+      writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("10000000", 2))
+      dut.io.readWriteRegIO.bits(0).expect(0xffffffffL)
+      dut.io.readWriteRegIO.bits(1).expect(0xffffffffL)
       dut.io.readWriteRegIO.bits(2).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(3).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(4).expect(0x00000000L)
@@ -98,16 +99,31 @@ class W64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with M
       dut.io.readWriteRegIO.bits(6).expect(0x00000000L)
       if (readReg(dut, 0) != BigInt("FFFFFFFFFFFFFFFF", 16)) throw new Exception("Value not written correctly")
 
-      writeReg(dut, 0, 0, 0b00000000)
-      dut.io.readWriteRegIO.bits(0).expect(0xFFFFFFFFL)
-      dut.io.readWriteRegIO.bits(1).expect(0xFFFFFFFFL)
+      // Write data with all strobes = 0 => no change
+      writeReg(dut, 0, 0, BigInt("00000000", 2))
+      dut.io.readWriteRegIO.bits(0).expect(0xffffffffL)
+      dut.io.readWriteRegIO.bits(1).expect(0xffffffffL)
       dut.io.readWriteRegIO.bits(2).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(3).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(4).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(5).expect(0x00000000L)
       dut.io.readWriteRegIO.bits(6).expect(0x00000000L)
       if (readReg(dut, 0) != BigInt("FFFFFFFFFFFFFFFF", 16)) throw new Exception("Value not written correctly")
+
+      // Write data to the last register's LSB => Ready interface should work
+      dut.io.reqRspIO.req.bits.write.poke(1.B)
+      dut.io.reqRspIO.req.bits.strb.poke(BigInt("00000001", 2).U)
+      dut.io.reqRspIO.req.bits.data.poke(BigInt("FFFFFFFFFFFFFFFF", 16).U)
+      dut.io.reqRspIO.req.bits.addr.poke(3.U)
+      dut.io.reqRspIO.req.valid.poke(1.B)
+      dut.clock.step(1)
+      dut.io.readWriteRegIO.valid.expect(true.B)
+      dut.io.reqRspIO.req.ready.expect(false.B)
+      dut.io.readWriteRegIO.ready.poke(true.B)
+      dut.clock.step(1)
+      dut.io.readWriteRegIO.ready.poke(false.B)
+      dut.clock.step(1)
+      dut.io.reqRspIO.req.valid.poke(false.B)
     }
   }
-
 }

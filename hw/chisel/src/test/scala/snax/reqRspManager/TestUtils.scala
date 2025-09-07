@@ -9,10 +9,10 @@ trait HasRegRspManagerTestUtils {
 
   // writeReg helper function without strobe
   def writeReg[T <: ReqRspManager](dut: T, addr: Int, data: Int) = {
-  
+
     // Dynamic write strobe: 4 bits per word
     val wpb        = dut.wordsPerBeat // words per beat
-    val strobeBits = wpb * 4                         // 4 bytes (bits) per word
+    val strobeBits = wpb * 4          // 4 bytes (bits) per word
     val mask       = (BigInt(1) << strobeBits) - 1
     dut.io.reqRspIO.req.bits.strb.poke(mask.U(strobeBits.W)) // e.g. wpb=1 -> 0xF, wpb=2 -> 0xFF
 
@@ -34,7 +34,7 @@ trait HasRegRspManagerTestUtils {
   }
 
   // writeReg helper function with strobe
-  def writeReg[T <: ReqRspManager](dut: T, addr: BigInt, data: BigInt, strb: Int) = {
+  def writeReg[T <: ReqRspManager](dut: T, addr: BigInt, data: BigInt, strb: BigInt) = {
 
     // give the data and address to the right ports
     dut.io.reqRspIO.req.bits.write.poke(1.B)

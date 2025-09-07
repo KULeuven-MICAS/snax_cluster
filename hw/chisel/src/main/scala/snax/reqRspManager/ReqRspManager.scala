@@ -61,15 +61,27 @@ class ReqRspManager(
   val wordsPerBeat = dataWidth / 32
 
   // generate a vector of registers to store the csr state
-  val csr = RegInit(VecInit(Seq.fill(numReadWriteReg)(0.U(32.W))))
+  val regs = RegInit(VecInit(Seq.fill(numReadWriteReg)(0.U(32.W))))
 
   // read write and start csr command
-  val readReg  = io.reqRspIO.req.fire  && !io.reqRspIO.req.bits.write
-  val writeReg = io.reqRspIO.req.fire  && io.reqRspIO.req.bits.write
+  val readReg  = io.reqRspIO.req.valid && !io.reqRspIO.req.bits.write
+  val writeReg = io.reqRspIO.req.valid && io.reqRspIO.req.bits.write
   val startReg = io.reqRspIO.req.valid && io.reqRspIO.req.bits.write &&
-    (io.reqRspIO.req.bits.addr === (numReadWriteReg - 1).U) && io.reqRspIO.req.bits.data === 1.U
+    // The last address in the ReqRspManager
+    (io.reqRspIO.req.bits.addr === ((numReadWriteReg - 1) / wordsPerBeat).U) &&
+    // The strobe of LSB is 1 (will write the valid bit)
+    (io.reqRspIO.req.bits
+      .strb((numReadWriteReg - 1) % wordsPerBeat * 4))                       &&
+    // The data is of LSB is non zero
+    io.reqRspIO.req.bits.data((numReadWriteReg - 1) % wordsPerBeat * 4 * 8)
   val check_acc_status = io.reqRspIO.req.valid && io.reqRspIO.req.bits.write &&
-    (io.reqRspIO.req.bits.addr === (numReadWriteReg - 1).U) && io.reqRspIO.req.bits.data === 0.U
+    // The last address in the ReqRspManager
+    (io.reqRspIO.req.bits.addr === ((numReadWriteReg - 1) / wordsPerBeat).U) &&
+    // The strobe of LSB is 1 (will write the valid bit)
+    (io.reqRspIO.req.bits
+      .strb((numReadWriteReg - 1) % wordsPerBeat * 4))                       &&
+    // The data is of LSB is non zero
+    io.reqRspIO.req.bits.data((numReadWriteReg - 1) % wordsPerBeat * 4 * 8)
 
   // def address_range_assert() = {
   //   // assert the csr address range is valid
@@ -123,7 +135,7 @@ class ReqRspManager(
     val BaseAddr = io.reqRspIO.req.bits.addr * wordsPerBeat.U
     masks.zipWithIndex.foreach { case (mask, i) =>
       when((BaseAddr + i.U) < numReadWriteReg.U) {
-        csr(BaseAddr + i.U) := (csr(BaseAddr + i.U) & ~mask) | (datas(i) & mask)
+        regs(BaseAddr + i.U) := (regs(BaseAddr + i.U) & ~mask) | (datas(i) & mask)
       } otherwise {
         assert(
           mask === 0.U,
@@ -145,7 +157,7 @@ class ReqRspManager(
   readRegBuffer := io.reqRspIO.rsp.bits.data
 
   // Combine RW and RO regs as 32-bit words (pad RO to 32 bits if needed)
-  val all32 = VecInit(csr ++ io.readOnlyReg.map(_.asUInt.pad(32)))
+  val all32 = VecInit(regs ++ io.readOnlyReg.map(_.asUInt.pad(32)))
 
   // Group into dataWidth-bit entries (list becomes shorter by wordsPerBeat)
   val numBeats     = ((numReadWriteReg + numReadOnlyReg) + wordsPerBeat - 1) / wordsPerBeat
@@ -164,7 +176,7 @@ class ReqRspManager(
       s"csr read address overflow! Max allowed address is ${(numReadWriteReg + numReadOnlyReg - 1) / wordsPerBeat}"
     )
     io.reqRspIO.rsp.bits.data   := allRegisters(io.reqRspIO.req.bits.addr)
-    io.reqRspIO.rsp.valid := 1.B
+    io.reqRspIO.rsp.valid       := 1.B
   }.elsewhen(readRegBusy) {
     io.reqRspIO.rsp.bits.data := readRegBuffer
     io.reqRspIO.rsp.valid     := 1.B
@@ -180,7 +192,7 @@ class ReqRspManager(
   io.readWriteRegIO.valid                                                    := writeReg &&
     // The last address in the ReqRspManager
     (io.reqRspIO.req.bits.addr === ((numReadWriteReg - 1) / wordsPerBeat).U) &&
-    // The strobe is 1 (will write the valid bit)
+    // The strobe of LSB is 1 (will write the valid bit)
     (io.reqRspIO.req.bits
       .strb((numReadWriteReg - 1) % wordsPerBeat * 4))                       &&
     // The data is of LSB is non zero
@@ -200,5 +212,5 @@ class ReqRspManager(
     io.reqRspIO.req.ready := 1.B
   }
   // signals connected to the output ports
-  io.readWriteRegIO.bits <> csr
+  io.readWriteRegIO.bits <> regs
 }
