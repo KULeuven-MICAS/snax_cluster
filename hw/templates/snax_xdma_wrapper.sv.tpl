@@ -66,9 +66,10 @@ import xdma_pkg::*;
   // CSR control ports
   //-----------------------------
   // Request
-  input  logic [${xdma_cfg_io_width-1}:0] csr_req_bits_data_i,
   input  logic [31:0] csr_req_bits_addr_i,
   input  logic        csr_req_bits_write_i,
+  input  logic [${xdma_cfg_io_width-1}:0] csr_req_bits_data_i,
+  input  logic [${xdma_cfg_io_width/8-1}:0] csr_req_bits_strb_i,
   input  logic        csr_req_valid_i,
   output logic        csr_req_ready_o,
   // Response
@@ -251,7 +252,7 @@ import xdma_pkg::*;
     .io_csrIO_req_bits_data             ( csr_req_bits_data_i  ),
     .io_csrIO_req_bits_addr             ( csr_req_bits_addr_i  ),
     .io_csrIO_req_bits_write            ( csr_req_bits_write_i ),
-    .io_csrIO_req_bits_strb             ( '1                   ),
+    .io_csrIO_req_bits_strb             ( csr_req_bits_strb_i  ),
     .io_csrIO_req_valid                 ( csr_req_valid_i      ),
     .io_csrIO_req_ready                 ( csr_req_ready_o      ),
 
