@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: SHL-0.51
 
 <%
-  num_tcdm_ports = 0
-
   num_tcdm_ports = round(cfg["dma_data_width"] / cfg["data_width"] * 2)
   ## Half of them are used for the reader, and half of them are used for writer
 
   tcdm_addr_width = cfg["tcdm"]["size"].bit_length() - 1 + 10
 
-  cfg_width = if xdma_cfg is defined then xdma_cfg["cfg_io_width"] else 32
+  try:
+    cfg_width = xdma_cfg["cfg_io_width"]
+  except Exception:
+    cfg_width = 32
 %>
 //-----------------------------
 // xdma wrapper
