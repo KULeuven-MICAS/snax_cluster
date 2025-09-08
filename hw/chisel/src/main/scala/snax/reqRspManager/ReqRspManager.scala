@@ -28,10 +28,10 @@ class SnaxReqRspIO(addrWidth: Int, dataWidth: Int) extends Bundle {
 class ReqRspManagerIO(numReadWriteReg: Int, numReadOnlyReg: Int, addrWidth: Int, dataWidth: Int = 32) extends Bundle {
 
   val reqRspIO       = new SnaxReqRspIO(addrWidth = addrWidth, dataWidth = dataWidth)
-  val readWriteRegIO = Decoupled(Vec(numReadWriteReg, UInt(32.W)))
+  val readWriteRegIO = Decoupled(Vec(numReadWriteReg, UInt(dataWidth.W)))
 
   // Add extra input ports from accelerator side for the read only registers
-  val readOnlyReg = Input(Vec(numReadOnlyReg, UInt(32.W)))
+  val readOnlyReg = Input(Vec(numReadOnlyReg, UInt(dataWidth.W)))
 
 }
 
