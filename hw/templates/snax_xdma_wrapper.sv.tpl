@@ -9,9 +9,9 @@
   tcdm_addr_width = cfg["tcdm"]["size"].bit_length() - 1 + 10
 
   try:
-    cfg_width = xdma_cfg["cfg_io_width"]
+    xdma_cfg_io_width = cfg["xdma_cfg_io_width"]
   except Exception:
-    cfg_width = 32
+    xdma_cfg_io_width = 32
 %>
 //-----------------------------
 // xdma wrapper
@@ -66,13 +66,13 @@ import xdma_pkg::*;
   // CSR control ports
   //-----------------------------
   // Request
-  input  logic [${cfg_width-1}:0] csr_req_bits_data_i,
+  input  logic [${xdma_cfg_io_width-1}:0] csr_req_bits_data_i,
   input  logic [31:0] csr_req_bits_addr_i,
   input  logic        csr_req_bits_write_i,
   input  logic        csr_req_valid_i,
   output logic        csr_req_ready_o,
   // Response
-  output logic [${cfg_width-1}:0] csr_rsp_bits_data_o,
+  output logic [${xdma_cfg_io_width-1}:0] csr_rsp_bits_data_o,
   output logic        csr_rsp_valid_o,
   input  logic        csr_rsp_ready_i,
   //-----------------------------
