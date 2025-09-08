@@ -73,8 +73,8 @@ class ReqRspManager(
   val regs = RegInit(VecInit(Seq.fill(numReadWriteReg)(0.U(regDataWidth.W))))
 
   // read write and start csr command
-  val readReg  = io.reqRspIO.req.valid && !io.reqRspIO.req.bits.write
-  val writeReg = io.reqRspIO.req.valid && io.reqRspIO.req.bits.write
+  val readReg  = io.reqRspIO.req.fire && !io.reqRspIO.req.bits.write
+  val writeReg = io.reqRspIO.req.fire && io.reqRspIO.req.bits.write
   val startReg = io.reqRspIO.req.valid && io.reqRspIO.req.bits.write &&
     // The last address in the ReqRspManager
     (io.reqRspIO.req.bits.addr === ((numReadWriteReg - 1) / wordsPerBeat).U) &&

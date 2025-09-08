@@ -183,7 +183,7 @@ trait HasReqRspManagerTest extends HasRegRspManagerTestUtils {
 
     // accesing status register
     dut.io.reqRspIO.req.valid.poke(1.B)
-    dut.io.reqRspIO.req.bits.data.poke(0.U)
+    dut.io.reqRspIO.req.bits.data.poke(1.U)
     dut.io.reqRspIO.req.bits.addr
       .poke((IO32R32ReqRspManagerTestParameters.numReadWriteReg - 1).U)
     dut.io.reqRspIO.req.bits.write.poke(1.B)

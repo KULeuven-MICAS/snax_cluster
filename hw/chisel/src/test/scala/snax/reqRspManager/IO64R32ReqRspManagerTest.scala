@@ -111,19 +111,25 @@ class IO64R32ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester wi
       dut.io.readWriteRegIO.bits(6).expect(0x00000000L)
       if (readReg(dut, 0) != BigInt("FFFFFFFFFFFFFFFF", 16)) throw new Exception("Value not written correctly")
 
+      dut.io.reqRspIO.req.valid.poke(false.B)
+      dut.clock.step(5)
+
       // Write data to the last register's LSB => Ready interface should work
       dut.io.reqRspIO.req.bits.write.poke(1.B)
       dut.io.reqRspIO.req.bits.strb.poke(BigInt("00000001", 2).U)
       dut.io.reqRspIO.req.bits.data.poke(BigInt("FFFFFFFFFFFFFFFF", 16).U)
       dut.io.reqRspIO.req.bits.addr.poke(3.U)
-      dut.io.reqRspIO.req.valid.poke(1.B)
-      dut.clock.step(1)
-      dut.io.readWriteRegIO.valid.expect(true.B)
+      dut.io.reqRspIO.req.valid.poke(true.B)
+      dut.clock.step(10)
+
+      // Acc side does not ready => Req side should also not be ready for the next transaction
+      dut.io.readWriteRegIO.valid.expect(false.B)
       dut.io.reqRspIO.req.ready.expect(false.B)
+      dut.clock.step(1)
       dut.io.readWriteRegIO.ready.poke(true.B)
+      dut.io.readWriteRegIO.valid.expect(true.B)
       dut.clock.step(1)
       dut.io.readWriteRegIO.ready.poke(false.B)
-      dut.clock.step(1)
       dut.io.reqRspIO.req.valid.poke(false.B)
     }
   }

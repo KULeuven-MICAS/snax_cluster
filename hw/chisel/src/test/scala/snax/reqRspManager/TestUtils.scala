@@ -63,6 +63,9 @@ trait HasRegRspManagerTestUtils {
     dut.io.reqRspIO.req.bits.addr.poke(addr.U)
     dut.io.reqRspIO.req.valid.poke(1.B)
 
+    // give read out ready signal
+    dut.io.reqRspIO.rsp.ready.poke(1.B)
+
     // wait for grant
     while (dut.io.reqRspIO.req.ready.peekBoolean() == false) {
       dut.clock.step(1)
@@ -80,8 +83,6 @@ trait HasRegRspManagerTestUtils {
 
     dut.io.reqRspIO.req.valid.poke(0.B)
 
-    // give read out ready signal
-    dut.io.reqRspIO.rsp.ready.poke(1.B)
 
     result
   }
