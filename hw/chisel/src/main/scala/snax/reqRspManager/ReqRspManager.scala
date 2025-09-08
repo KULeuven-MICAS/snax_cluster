@@ -25,13 +25,19 @@ class SnaxReqRspIO(addrWidth: Int, dataWidth: Int) extends Bundle {
   * @param addrWidth
   *   the width of the address
   */
-class ReqRspManagerIO(numReadWriteReg: Int, numReadOnlyReg: Int, addrWidth: Int, dataWidth: Int = 32) extends Bundle {
+class ReqRspManagerIO(
+  numReadWriteReg: Int,
+  numReadOnlyReg:  Int,
+  addrWidth:       Int,
+  ioDataWidth:     Int = 32,
+  regDataWidth:    Int = 32
+) extends Bundle {
 
-  val reqRspIO       = new SnaxReqRspIO(addrWidth = addrWidth, dataWidth = dataWidth)
-  val readWriteRegIO = Decoupled(Vec(numReadWriteReg, UInt(dataWidth.W)))
+  val reqRspIO       = new SnaxReqRspIO(addrWidth = addrWidth, dataWidth = ioDataWidth)
+  val readWriteRegIO = Decoupled(Vec(numReadWriteReg, UInt(regDataWidth.W)))
 
   // Add extra input ports from accelerator side for the read only registers
-  val readOnlyReg = Input(Vec(numReadOnlyReg, UInt(dataWidth.W)))
+  val readOnlyReg = Input(Vec(numReadOnlyReg, UInt(regDataWidth.W)))
 
 }
 
@@ -61,7 +67,7 @@ class ReqRspManager(
     with RequireAsyncReset {
   override val desiredName = moduleTagName + "ReqRspManager"
 
-  lazy val io = IO(new ReqRspManagerIO(numReadWriteReg, numReadOnlyReg, addrWidth, ioDataWidth))
+  lazy val io = IO(new ReqRspManagerIO(numReadWriteReg, numReadOnlyReg, addrWidth, ioDataWidth, regDataWidth))
   io.suggestName("io")
 
   // Concatenate regDataWidth-bit registers into ioDataWidth-bit words
