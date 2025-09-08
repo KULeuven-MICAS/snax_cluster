@@ -9,6 +9,8 @@
   ## Half of them are used for the reader, and half of them are used for writer
 
   tcdm_addr_width = cfg["tcdm"]["size"].bit_length() - 1 + 10
+
+  cfg_width = if xdma_cfg is defined then xdma_cfg["cfg_io_width"] else 32
 %>
 //-----------------------------
 // xdma wrapper
@@ -63,13 +65,13 @@ import xdma_pkg::*;
   // CSR control ports
   //-----------------------------
   // Request
-  input  logic [31:0] csr_req_bits_data_i,
+  input  logic [${cfg_width-1}:0] csr_req_bits_data_i,
   input  logic [31:0] csr_req_bits_addr_i,
   input  logic        csr_req_bits_write_i,
   input  logic        csr_req_valid_i,
   output logic        csr_req_ready_o,
   // Response
-  output logic [31:0] csr_rsp_bits_data_o,
+  output logic [${cfg_width-1}:0] csr_rsp_bits_data_o,
   output logic        csr_rsp_valid_o,
   input  logic        csr_rsp_ready_i,
   //-----------------------------
