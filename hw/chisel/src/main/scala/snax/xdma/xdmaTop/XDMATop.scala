@@ -333,9 +333,7 @@ return new ${i._1}(${i._2
   // Generation of the software #define macros
   val macro_dir = parsedArgs.getOrElse(
     "sw-target-dir",
-    "generated",
-    "include",
-    "xdma-addr.h"
+    "generated/include/xdma-addr.h"
   )
 
   var macro_template =
