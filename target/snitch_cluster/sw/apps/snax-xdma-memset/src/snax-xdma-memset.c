@@ -30,7 +30,7 @@ int main() {
         // Test 1: Setting the 0-16KB region to 0xFF
         printf("Core %d is xdma core. \n", snrt_cluster_core_idx());
         printf("Test 1: Setting the 0-16KB region to 0xFF\n");
-        if (xdma_memcpy_1d(tcdm_0, tcdm_0, 0x4000 * sizeof(uint8_t)) != 0) {
+        if (snax_xdma_memcpy_1d(tcdm_0, tcdm_0, 0x4000 * sizeof(uint8_t)) != 0) {
             printf("Error in xdma agu configuration\n");
             err++;
         } else {
@@ -39,7 +39,7 @@ int main() {
 
         uint32_t ext_param_t1[1] = {0xFFFFFFFF};
 #ifdef WRITER_EXT_VERILOGMEMSET
-        if (xdma_enable_dst_ext(WRITER_EXT_VERILOGMEMSET, ext_param_t1) != 0) {
+        if (snax_xdma_enable_dst_ext(WRITER_EXT_VERILOGMEMSET, ext_param_t1) != 0) {
             printf("Error in enabling WRITER_EXT_VERILOGMEMSET\n");
             err++;
         } else {
@@ -51,15 +51,15 @@ int main() {
             return err;
         }
 
-        int task_id = xdma_start();
+        int task_id = snax_xdma_start();
         printf(
             "The xdma is started, setting memory region to 0xFF. The task id "
             "is %d\n",
             task_id);
-        xdma_local_wait(task_id);
+        snax_xdma_local_wait(task_id);
 
         printf("xdma task %d is done in %d cycles\n", task_id,
-               xdma_last_task_cycle());
+               snax_xdma_last_task_cycle());
 
         // Check the data
         for (int i = 0; i < 0x4000; i++) {
@@ -80,7 +80,7 @@ int main() {
         uint32_t tbound_src_t2[1] = {128};
         uint32_t tbound_dst_t2[1] = {128};
 
-        if (xdma_memcpy_nd(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t), 0, 8, 1,
+        if (snax_xdma_memcpy_nd(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t), 0, 8, 1,
                            tstride_src_t2, tbound_src_t2, 1, tstride_dst_t2,
                            tbound_dst_t2, 0x0, 0xffffffff, 0xffffffff) != 0) {
             printf("Error in xdma agu configuration\n");
@@ -89,7 +89,7 @@ int main() {
             printf("The xdma agu is configured\n");
         }
 
-        if (xdma_disable_dst_ext(0) != 0) {
+        if (snax_xdma_disable_dst_ext(0) != 0) {
             printf("Error in enabling xdma extension 0\n");
             err++;
         } else {
@@ -100,15 +100,15 @@ int main() {
             return err;
         }
 
-        task_id = xdma_start();
+        task_id = snax_xdma_start();
         printf(
             "The xdma is started, setting memory region to 0x00. The task id "
             "is %d\n",
             task_id);
-        xdma_local_wait(task_id);
+        snax_xdma_local_wait(task_id);
 
         printf("xdma task %d is done in %d cycles\n", task_id,
-               xdma_last_task_cycle());
+               snax_xdma_last_task_cycle());
 
         // Check the data
         for (int i = 0; i < 0x1000; i++) {
@@ -141,7 +141,7 @@ int main() {
         uint32_t tstride_dst_t3[1] = {64};
         uint32_t tbound_src_t3[1] = {128};
         uint32_t tbound_dst_t3[1] = {128};
-        if (xdma_memcpy_nd(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t), 8, 8, 1,
+        if (snax_xdma_memcpy_nd(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t), 8, 8, 1,
                            tstride_src_t3, tbound_src_t3, 1, tstride_dst_t3,
                            tbound_dst_t3, 0xffffffff, 0xffffffff, 0x1) != 0) {
             printf("Error in xdma agu configuration\n");
@@ -151,7 +151,7 @@ int main() {
         }
 
         uint32_t ext_param_t3[1] = {0x1};
-        if (xdma_enable_dst_ext(0, ext_param_t3) != 0) {
+        if (snax_xdma_enable_dst_ext(0, ext_param_t3) != 0) {
             printf("Error in enabling xdma extension 0\n");
             err++;
         } else {
@@ -162,15 +162,15 @@ int main() {
             return err;
         }
 
-        task_id = xdma_start();
+        task_id = snax_xdma_start();
         printf(
             "The xdma is started, setting memory region to 0x0000000000000001 "
             "(uint64_t 1). The task id is %d\n",
             task_id);
-        xdma_local_wait(task_id);
+        snax_xdma_local_wait(task_id);
 
         printf("xdma task %d is done in %d cycles\n", task_id,
-               xdma_last_task_cycle());
+               snax_xdma_last_task_cycle());
 
         uint64_t *result_t3 = (uint64_t *)(tcdm_0 + 0x1000 * sizeof(uint8_t));
         for (int i = 0; i < 0x2000 / 8; i++) {

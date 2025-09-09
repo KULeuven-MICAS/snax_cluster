@@ -28,17 +28,17 @@ int main() {
         snrt_dma_wait_all();
 
         // --------------------- Configure the AGU --------------------- //
-        xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src_xdma,
+        snax_xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src_xdma,
                        spatial_stride_dst_xdma, temporal_dimension_src_xdma,
                        temporal_strides_src_xdma, temporal_bounds_src_xdma,
                        temporal_dimension_dst_xdma, temporal_strides_dst_xdma,
                        temporal_bounds_dst_xdma, 0xFFFFFFFF, 0xFFFFFFFF,
                        0xFFFFFFFF);
 
-        int task_id = xdma_start();
-        xdma_local_wait(task_id);
+        int task_id = snax_xdma_start();
+        snax_xdma_local_wait(task_id);
         printf("xdma task %d is done in %d cycles\n", task_id,
-               xdma_last_task_cycle());
+               snax_xdma_last_task_cycle());
         // --------------------- Checking the Results --------------------- //
         // for (int i = 0; i < matrix_size; i++) {
         //     if (tcdm_out[i] != golden_output_matrix[i]) {
