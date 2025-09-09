@@ -55,47 +55,15 @@ int main() {
         snrt_reset_perf_counter(SNRT_PERF_CNT0);
 
         // --------------------- Configure the Ext --------------------- //
+#ifdef READER_EXT_MAXPOOL
         uint32_t ext_param_maxpool_size[1] = {reduceLen};
-        if (xdma_enable_src_ext(0, ext_param_maxpool_size) != 0) {
-            printf("Error in enabling xdma reader extension 1\n");
+        if (xdma_enable_src_ext(READER_EXT_MAXPOOL, ext_param_maxpool_size) != 0) {
+            printf("Error in enabling READER_EXT_MAXPOOL\n");
             err++;
         } else {
-            printf("The xdma reader extension 0 is enabled\n");
+            printf("READER_EXT_MAXPOOL is enabled\n");
         }
-
-        if (xdma_disable_src_ext(1) != 0) {
-            printf("Error in disabling xdma reader extension 1\r\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(2) != 0) {
-            printf("Error in disabling reader xdma extension 2\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(3) != 0) {
-            printf("Error in disabling reader xdma extension 3\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(4) != 0) {
-            printf("Error in disabling reader xdma extension 4\n");
-            err++;
-        }
-
-        if (xdma_disable_dst_ext(0) != 0) {
-            printf("Error in disabling xdma writer extension 0\n");
-            err++;
-        } else {
-            printf("The xdma writer extension 0 is disabled\n");
-        }
-
-        if (xdma_disable_dst_ext(1) != 0) {
-            printf("Error in disabling writer xdma extension 1\n");
-            err++;
-        } else {
-            printf("The xdma writer extension 1 is disabled\n");
-        }
+#endif
 
         // --------------------- Configure the AGU --------------------- //
         xdma_memcpy_nd(tcdm_in, tcdm_out, spatialStride1_in, spatialStride1_out,

@@ -29,48 +29,19 @@ int main() {
         snrt_dma_wait_all();
 
         // --------------------- Configure the Ext --------------------- //
-
-        if (xdma_disable_src_ext(0) != 0) {
-            printf("Error in disabling reader xdma extension 0\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(1) != 0) {
-            printf("Error in disabling xdma reader extension 1\r\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(2) != 0) {
-            printf("Error in disabling reader xdma extension 2\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(3) != 0) {
-            printf("Error in disabling reader xdma extension 3\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(4) != 0) {
-            printf("Error in disabling reader xdma extension 4\n");
-            err++;
-        }
-
-        if (xdma_disable_dst_ext(0) != 0) {
-            printf("Error in disabling writer xdma extension 1\n");
-            err++;
-        }
-
+#ifdef READER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16
         if (enable_transpose) {
-            if (xdma_enable_dst_ext(1, (uint32_t *)transposer_param) != 0) {
+            if (xdma_enable_dst_ext(WRITER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16, (uint32_t *)transposer_param) != 0) {
                 printf("Error in enabling xdma writer extension 1\n");
                 err++;
             }
         } else {
-            if (xdma_disable_dst_ext(1) != 0) {
+            if (xdma_disable_dst_ext(WRITER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16) != 0) {
                 printf("Error in disabling xdma writer extension 1\n");
                 err++;
             }
         }
+#endif
 
         // --------------------- Configure the AGU --------------------- //
         xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src,

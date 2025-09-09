@@ -27,42 +27,6 @@ int main() {
         snrt_dma_start_1d(tcdm_in, input_matrix, matrix_size * sizeof(uint8_t));
         snrt_dma_wait_all();
 
-        // --------------------- Configure the Ext --------------------- //
-
-        if (xdma_disable_dst_ext(0) != 0) {
-            printf("Error in disabling xdma writer extension 0\r\n");
-            err++;
-        }
-
-        if (xdma_disable_dst_ext(1) != 0) {
-            printf("Error in disabling xdma writer extension 1\r\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(2) != 0) {
-            printf("Error in disabling reader xdma extension 2\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(3) != 0) {
-            printf("Error in disabling reader xdma extension 3\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(4) != 0) {
-            printf("Error in disabling reader xdma extension 4\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(0) != 0) {
-            printf("Error in disabling xdma reader extension 0\r\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(1) != 0) {
-            printf("Error in disabling xdma reader extension 1\r\n");
-            err++;
-        }
         // --------------------- Configure the AGU --------------------- //
         xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src_xdma,
                        spatial_stride_dst_xdma, temporal_dimension_src_xdma,

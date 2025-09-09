@@ -38,46 +38,14 @@ int main() {
         }
 
         uint32_t ext_param_t1[1] = {0xFFFFFFFF};
-        if (xdma_disable_src_ext(0) != 0) {
-            printf("Error in disabling xdma reader extension 0\n");
+#ifdef WRITER_EXT_VERILOGMEMSET
+        if (xdma_enable_dst_ext(WRITER_EXT_VERILOGMEMSET, ext_param_t1) != 0) {
+            printf("Error in enabling WRITER_EXT_VERILOGMEMSET\n");
             err++;
         } else {
-            printf("The xdma reader extension 0 is disabled\n");
+            printf("WRITER_EXT_VERILOGMEMSET is enabled\n");
         }
-
-        if (xdma_disable_src_ext(1) != 0) {
-            printf("Error in disabling xdma reader extension 1\r\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(2) != 0) {
-            printf("Error in disabling reader xdma extension 2\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(3) != 0) {
-            printf("Error in disabling reader xdma extension 3\n");
-            err++;
-        }
-
-        if (xdma_disable_src_ext(4) != 0) {
-            printf("Error in disabling reader xdma extension 4\n");
-            err++;
-        }
-
-        if (xdma_enable_dst_ext(0, ext_param_t1) != 0) {
-            printf("Error in enabling xdma writer extension 0\n");
-            err++;
-        } else {
-            printf("The xdma writer extension 0 is enabled\n");
-        }
-
-        if (xdma_disable_dst_ext(1) != 0) {
-            printf("Error in disabling xdma writer extension 1\n");
-            err++;
-        } else {
-            printf("The xdma writer extension 1 is disabled\n");
-        }
+#endif
 
         if (err != 0) {
             return err;
