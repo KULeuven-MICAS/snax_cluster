@@ -333,8 +333,10 @@ return new ${i._1}(${i._2
   // Generation of the software #define macros
   val macro_dir = parsedArgs.getOrElse(
     "sw-target-dir",
-    "generated"
-  ) + "/include/snax-xdma-csr-addr.h"
+    "generated",
+    "include",
+    "xdma-addr.h"
+  )
 
   var macro_template =
     s"""// Copyright 2024 KU Leuven.
@@ -406,7 +408,7 @@ return new ${i._1}(${i._2
 
   // Append CSR Extension Information in to Macro
   macro_template = macro_template + """
-  // Extension Information
+// Extension Information
   """
 
   for ((ext, i) <- readerExtensionParam.zipWithIndex) {
