@@ -90,10 +90,10 @@ abstract class DataPathExtension(implicit extensionParam: DataPathExtensionParam
   })
   outputMux.io.sel := io.enable_i
   outputMux.io.out <> io.data_o
-  // When bypass is 0, io.in(0) is connected with extension's output
-  outputMux.io.in(0) <> ext_data_o
-  // When bypass is 1, io.in(1) is connected to bypass signal
-  outputMux.io.in(1) <> bypass_data
+  // When enable is 1, io.in(1) is connected with extension's output
+  outputMux.io.in(1) <> ext_data_o
+  // When enable is 0, io.in(0) is connected to bypass signal
+  outputMux.io.in(0) <> bypass_data
 }
 
 /** The parent Class for the integration of DMA Extension written in SystemVerilog Before the integration of the custom
