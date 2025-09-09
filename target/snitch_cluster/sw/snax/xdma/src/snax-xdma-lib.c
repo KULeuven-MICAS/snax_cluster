@@ -292,9 +292,8 @@ int32_t xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value) {
         csr_offset += custom_csr_list[i];
     }
 
-    // Not bypass the xdma extension -> set the corresponding CSR bit to 0
-    write_xdma_cfg_reg(XDMA_SRC_BYPASS_PTR,
-                       read_xdma_cfg_reg(XDMA_SRC_BYPASS_PTR) & ~(1 << ext));
+    write_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR,
+                       read_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR) | (1 << ext));
 
     for (uint8_t i = 0; i < custom_csr_list[ext]; i++) {
         write_xdma_cfg_reg(csr_offset + i, csr_value[i]);
@@ -311,9 +310,8 @@ int32_t xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value) {
         csr_offset += custom_csr_list[i];
     }
 
-    // Not bypass the xdma extension -> set the corresponding CSR bit to 0
-    write_xdma_cfg_reg(XDMA_DST_BYPASS_PTR,
-                       read_xdma_cfg_reg(XDMA_DST_BYPASS_PTR) & ~(1 << ext));
+    write_xdma_cfg_reg(XDMA_DST_ENABLE_PTR,
+                       read_xdma_cfg_reg(XDMA_DST_ENABLE_PTR) | (1 << ext));
     for (uint8_t i = 0; i < custom_csr_list[ext]; i++) {
         write_xdma_cfg_reg(csr_offset + i, csr_value[i]);
     }
@@ -324,9 +322,9 @@ int32_t xdma_disable_src_ext(uint8_t ext) {
     if (ext >= XDMA_SRC_EXT_NUM) {
         return 0;
     }
-    // Bypass the xdma extension -> set the corresponding CSR bit to 1
-    write_xdma_cfg_reg(XDMA_SRC_BYPASS_PTR,
-                       read_xdma_cfg_reg(XDMA_SRC_BYPASS_PTR) | (1 << ext));
+    write_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR,
+                       read_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR) & ~(1 << ext));
+
     return 0;
 }
 
@@ -334,8 +332,8 @@ int32_t xdma_disable_dst_ext(uint8_t ext) {
     if (ext >= XDMA_DST_EXT_NUM) {
         return 0;
     }
-    // Bypass the xdma extension -> set the corresponding CSR bit to 1
-    write_xdma_cfg_reg(XDMA_DST_BYPASS_PTR,
-                       read_xdma_cfg_reg(XDMA_DST_BYPASS_PTR) | (1 << ext));
+    write_xdma_cfg_reg(XDMA_DST_ENABLE_PTR,
+                       read_xdma_cfg_reg(XDMA_DST_ENABLE_PTR) & ~(1 << ext));
+
     return 0;
 }

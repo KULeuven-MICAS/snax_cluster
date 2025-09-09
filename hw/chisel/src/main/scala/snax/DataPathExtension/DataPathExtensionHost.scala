@@ -50,7 +50,7 @@ class DataPathExtensionHost(
     io.busy := false.B
   } else {
     var remainingCSR  = io.cfg.userCsr.toIndexedSeq
-    var remaingBypass = io.cfg.bypass.asBools.toIndexedSeq
+    var remaingEnable = io.cfg.bypass.asBools.toIndexedSeq
 
     val extensions = extensionList.zipWithIndex.map {
       case (item, index) => {
@@ -66,9 +66,9 @@ class DataPathExtensionHost(
         // Connect Start signal
         extension.io.start_i := io.start
 
-        // Recursively connect the bypass signals
-        extension.io.bypass_i := remaingBypass.head
-        remaingBypass = remaingBypass.tail
+        // Recursively connect the enable signals
+        extension.io.enable_i := remaingEnable.head
+        remaingEnable = remaingEnable.tail
 
         // Recursively connect the CSR signals
         for (i <- extension.io.csr_i) {

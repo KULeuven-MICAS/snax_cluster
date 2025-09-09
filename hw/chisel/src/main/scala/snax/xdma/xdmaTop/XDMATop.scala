@@ -336,7 +336,7 @@ return new ${i._1}(${i._2
     "generated"
   ) + "/include/snax-xdma-csr-addr.h"
 
-  val macro_template =
+  var macro_template =
     s"""// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -364,10 +364,10 @@ return new ${i._1}(${i._2
 
 // The channel and strobe region of the reader of XDMA
 #define XDMA_SRC_ENABLED_CHAN_PTR XDMA_SRC_TEMP_STRIDE_PTR + XDMA_SRC_TEMP_DIM
-#define XDMA_SRC_BYPASS_PTR XDMA_SRC_ENABLED_CHAN_PTR + ${if (readerParam.configurableChannel) 1
+#define XDMA_SRC_ENABLE_PTR XDMA_SRC_ENABLED_CHAN_PTR + ${if (readerParam.configurableChannel) 1
       else 0}
 #define XDMA_SRC_EXT_NUM ${readerExtensionParam.length}
-#define XDMA_SRC_EXT_CSR_PTR XDMA_SRC_BYPASS_PTR + ${if (readerExtensionParam.length > 0) 1
+#define XDMA_SRC_EXT_CSR_PTR XDMA_SRC_ENABLE_PTR + ${if (readerExtensionParam.length > 0) 1
       else 0}
 #define XDMA_SRC_EXT_CSR_NUM ${readerExtensionParam
         .map(_.extensionParam.userCsrNum)
@@ -384,10 +384,10 @@ return new ${i._1}(${i._2
 #define XDMA_DST_ENABLED_CHAN_PTR XDMA_DST_TEMP_STRIDE_PTR + XDMA_DST_TEMP_DIM
 #define XDMA_DST_ENABLED_BYTE_PTR XDMA_DST_ENABLED_CHAN_PTR + ${if (writerParam.configurableChannel) 1
       else 0}
-#define XDMA_DST_BYPASS_PTR XDMA_DST_ENABLED_BYTE_PTR + ${if (writerParam.configurableByteMask) 1
+#define XDMA_DST_ENABLE_PTR XDMA_DST_ENABLED_BYTE_PTR + ${if (writerParam.configurableByteMask) 1
       else 0}
 #define XDMA_DST_EXT_NUM ${writerExtensionParam.length}
-#define XDMA_DST_EXT_CSR_PTR XDMA_DST_BYPASS_PTR + ${if (writerExtensionParam.length > 0) 1
+#define XDMA_DST_EXT_CSR_PTR XDMA_DST_ENABLE_PTR + ${if (writerExtensionParam.length > 0) 1
       else 0}
 #define XDMA_DST_EXT_CSR_NUM ${writerExtensionParam
         .map(_.extensionParam.userCsrNum)
@@ -403,6 +403,23 @@ return new ${i._1}(${i._2
 #define XDMA_PERF_CTR_READER XDMA_PERF_CTR_TASK + 1
 #define XDMA_PERF_CTR_WRITER XDMA_PERF_CTR_READER + 1
 """
+
+  // Append CSR Extension Information in to Macro
+  macro_template = macro_template + """
+  // Extension Information
+  """
+
+  for ((ext, i) <- readerExtensionParam.zipWithIndex) {
+    macro_template = macro_template +
+      s"""#define READER_EXT_${ext.extensionParam.moduleName.toUpperCase} ${i}
+"""
+  }
+
+  for ((ext, i) <- writerExtensionParam.zipWithIndex) {
+    macro_template = macro_template +
+      s"""#define WRITER_EXT_${ext.extensionParam.moduleName.toUpperCase} ${i}
+"""
+  }
 
   // Ensure the directory exists before writing the file
   val macro_dir_path   = java.nio.file.Paths.get(macro_dir)
