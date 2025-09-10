@@ -57,8 +57,8 @@ int main() {
         // --------------------- Configure the Ext --------------------- //
 #ifdef READER_EXT_MAXPOOL
         uint32_t ext_param_maxpool_size[1] = {reduceLen};
-        if (snax_xdma_xdma_enable_src_ext(READER_EXT_MAXPOOL,
-                                          ext_param_maxpool_size) != 0) {
+        if (snax_xdma_enable_src_ext(READER_EXT_MAXPOOL,
+                                     ext_param_maxpool_size) != 0) {
             printf("Error in enabling READER_EXT_MAXPOOL\n");
             err++;
         } else {

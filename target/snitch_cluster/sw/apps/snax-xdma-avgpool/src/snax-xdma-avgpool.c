@@ -45,12 +45,12 @@ int main() {
             err++;
         }
 
-        if (snax_xdma_xdma_enable_src_ext(2, ext_param_add) != 0) {
+        if (snax_xdma_enable_src_ext(2, ext_param_add) != 0) {
             printf("Error in enabling reader xdma extension 2\n");
             err++;
         }
 
-        if (snax_xdma_xdma_enable_src_ext(3, ext_param_rescale) != 0) {
+        if (snax_xdma_enable_src_ext(3, ext_param_rescale) != 0) {
             printf("Error in enabling reader xdma extension 3\n");
             err++;
         }

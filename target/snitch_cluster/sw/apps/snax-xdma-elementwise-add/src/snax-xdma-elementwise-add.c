@@ -48,7 +48,7 @@ int main() {
             err++;
         }
 
-        if (snax_xdma_xdma_enable_src_ext(1, ext_param) != 0) {
+        if (snax_xdma_enable_src_ext(1, ext_param) != 0) {
             printf("Error in enabling reader xdma extension 1\n");
             err++;
         }

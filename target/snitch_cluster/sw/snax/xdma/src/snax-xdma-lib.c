@@ -288,7 +288,7 @@ int32_t snax_xdma_multicast_1d(void* src, void** dst, uint32_t dst_num,
 }
 
 // xdma extension interface
-int32_t snax_xdma_xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value) {
+int32_t snax_xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value) {
     if (ext >= XDMA_SRC_EXT_NUM) {
         return -1;
     }

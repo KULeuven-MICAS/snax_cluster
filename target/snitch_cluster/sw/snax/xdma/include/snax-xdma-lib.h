@@ -67,7 +67,7 @@ int32_t snax_xdma_multicast_1d(void* src, void** dst, uint32_t dst_num,
                                uint32_t size);
 
 // Extension
-int32_t snax_xdma_xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value);
+int32_t snax_xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value);
 int32_t snax_xdma_disable_src_ext(uint8_t ext);
 int32_t snax_xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value);
 int32_t snax_xdma_disable_dst_ext(uint8_t ext);
@@ -75,7 +75,8 @@ int32_t snax_xdma_disable_dst_ext(uint8_t ext);
 // Start
 static inline uint32_t snax_xdma_start() {
     uint32_t local_task_id = snax_read_xdma_cfg_reg(XDMA_COMMIT_LOCAL_TASK_PTR);
-    uint32_t remote_task_id = snax_read_xdma_cfg_reg(XDMA_COMMIT_REMOTE_TASK_PTR);
+    uint32_t remote_task_id =
+        snax_read_xdma_cfg_reg(XDMA_COMMIT_REMOTE_TASK_PTR);
     snax_write_xdma_cfg_reg(XDMA_START_PTR, 1);
     while (1) {
         // Wait for xdma to start
