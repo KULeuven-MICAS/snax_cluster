@@ -30,7 +30,8 @@ int main() {
         // Test 1: Setting the 0-16KB region to 0xFF
         printf("Core %d is xdma core. \n", snrt_cluster_core_idx());
         printf("Test 1: Setting the 0-16KB region to 0xFF\n");
-        if (snax_xdma_memcpy_1d(tcdm_0, tcdm_0, 0x4000 * sizeof(uint8_t)) != 0) {
+        if (snax_xdma_memcpy_1d(tcdm_0, tcdm_0, 0x4000 * sizeof(uint8_t)) !=
+            0) {
             printf("Error in xdma agu configuration\n");
             err++;
         } else {
@@ -39,7 +40,8 @@ int main() {
 
         uint32_t ext_param_t1[1] = {0xFFFFFFFF};
 #ifdef WRITER_EXT_VERILOGMEMSET
-        if (snax_xdma_enable_dst_ext(WRITER_EXT_VERILOGMEMSET, ext_param_t1) != 0) {
+        if (snax_xdma_enable_dst_ext(WRITER_EXT_VERILOGMEMSET, ext_param_t1) !=
+            0) {
             printf("Error in enabling WRITER_EXT_VERILOGMEMSET\n");
             err++;
         } else {
@@ -80,9 +82,10 @@ int main() {
         uint32_t tbound_src_t2[1] = {128};
         uint32_t tbound_dst_t2[1] = {128};
 
-        if (snax_xdma_memcpy_nd(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t), 0, 8, 1,
-                           tstride_src_t2, tbound_src_t2, 1, tstride_dst_t2,
-                           tbound_dst_t2, 0x0, 0xffffffff, 0xffffffff) != 0) {
+        if (snax_xdma_memcpy_nd(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t), 0, 8,
+                                1, tstride_src_t2, tbound_src_t2, 1,
+                                tstride_dst_t2, tbound_dst_t2, 0x0, 0xffffffff,
+                                0xffffffff) != 0) {
             printf("Error in xdma agu configuration\n");
             err++;
         } else {
@@ -141,9 +144,10 @@ int main() {
         uint32_t tstride_dst_t3[1] = {64};
         uint32_t tbound_src_t3[1] = {128};
         uint32_t tbound_dst_t3[1] = {128};
-        if (snax_xdma_memcpy_nd(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t), 8, 8, 1,
-                           tstride_src_t3, tbound_src_t3, 1, tstride_dst_t3,
-                           tbound_dst_t3, 0xffffffff, 0xffffffff, 0x1) != 0) {
+        if (snax_xdma_memcpy_nd(tcdm_0, tcdm_0 + 0x1000 * sizeof(uint8_t), 8, 8,
+                                1, tstride_src_t3, tbound_src_t3, 1,
+                                tstride_dst_t3, tbound_dst_t3, 0xffffffff,
+                                0xffffffff, 0x1) != 0) {
             printf("Error in xdma agu configuration\n");
             err++;
         } else {

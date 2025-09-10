@@ -71,11 +71,11 @@ int main() {
         }
 
         // --------------------- Configure the AGU --------------------- //
-        snax_xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src,
-                       spatial_stride_dst, temporal_dimension_src,
-                       temporal_strides_src, temporal_bounds_src,
-                       temporal_dimension_dst, temporal_strides_dst,
-                       temporal_bounds_dst, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+        snax_xdma_memcpy_nd(
+            tcdm_in, tcdm_out, spatial_stride_src, spatial_stride_dst,
+            temporal_dimension_src, temporal_strides_src, temporal_bounds_src,
+            temporal_dimension_dst, temporal_strides_dst, temporal_bounds_dst,
+            0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
         printf("snax_xdma_memcpy_nd done\n");
         int task_id = snax_xdma_start();
         printf("got out of snax_xdma_start, csr address: %d\n", task_id);

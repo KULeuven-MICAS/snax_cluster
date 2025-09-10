@@ -65,7 +65,8 @@ int32_t snax_xdma_memcpy_nd_full_addr(
             return -4;
         }
         snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_BOUND_PTR + i, temp_bound_src[i]);
-        snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + i, temp_stride_src[i]);
+        snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + i,
+                                temp_stride_src[i]);
     }
     // Dimension n to MAX at src
     for (uint32_t i = temp_dim_src; i < XDMA_SRC_TEMP_DIM; i++) {
@@ -79,7 +80,8 @@ int32_t snax_xdma_memcpy_nd_full_addr(
             return -4;
         }
         snax_write_xdma_cfg_reg(XDMA_DST_TEMP_BOUND_PTR + i, temp_bound_dst[i]);
-        snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + i, temp_stride_dst[i]);
+        snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + i,
+                                temp_stride_dst[i]);
     }
     // Dimension n to MAX at dst
     for (uint32_t i = temp_dim_dst; i < XDMA_DST_TEMP_DIM; i++) {
@@ -96,11 +98,12 @@ int32_t snax_xdma_memcpy_nd_full_addr(
 }
 
 int32_t snax_xdma_memcpy_nd(void* src, void* dst, uint32_t spatial_stride_src,
-                       uint32_t spatial_stride_dst, uint32_t temp_dim_src,
-                       uint32_t* temp_stride_src, uint32_t* temp_bound_src,
-                       uint32_t temp_dim_dst, uint32_t* temp_stride_dst,
-                       uint32_t* temp_bound_dst, uint32_t enabled_chan_src,
-                       uint32_t enabled_chan_dst, uint32_t enabled_byte_dst) {
+                            uint32_t spatial_stride_dst, uint32_t temp_dim_src,
+                            uint32_t* temp_stride_src, uint32_t* temp_bound_src,
+                            uint32_t temp_dim_dst, uint32_t* temp_stride_dst,
+                            uint32_t* temp_bound_dst, uint32_t enabled_chan_src,
+                            uint32_t enabled_chan_dst,
+                            uint32_t enabled_byte_dst) {
     uint64_t cluster_base_address_h = snrt_cluster_base_addrh();
     cluster_base_address_h = cluster_base_address_h << 32;
     return snax_xdma_memcpy_nd_full_addr(
@@ -111,7 +114,8 @@ int32_t snax_xdma_memcpy_nd(void* src, void* dst, uint32_t spatial_stride_src,
         enabled_chan_dst, enabled_byte_dst);
 }
 
-int32_t snax_xdma_memcpy_1d_full_addr(uint64_t src, uint64_t dst, uint32_t size) {
+int32_t snax_xdma_memcpy_1d_full_addr(uint64_t src, uint64_t dst,
+                                      uint32_t size) {
     if (size % XDMA_WIDTH != 0) {
         XDMA_DEBUG_PRINT("Size is not multiple of XDMA_WIDTH\n");
         return -1;
@@ -131,10 +135,10 @@ int32_t snax_xdma_memcpy_1d(void* src, void* dst, uint32_t size) {
     }
     uint32_t temporal_stride[1] = {XDMA_WIDTH};
     uint32_t temporal_bound[1] = {size / XDMA_WIDTH};
-    return snax_xdma_memcpy_nd(src, dst, XDMA_WIDTH / XDMA_SPATIAL_CHAN,
-                          XDMA_WIDTH / XDMA_SPATIAL_CHAN, 1, temporal_stride,
-                          temporal_bound, 1, temporal_stride, temporal_bound,
-                          0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+    return snax_xdma_memcpy_nd(
+        src, dst, XDMA_WIDTH / XDMA_SPATIAL_CHAN,
+        XDMA_WIDTH / XDMA_SPATIAL_CHAN, 1, temporal_stride, temporal_bound, 1,
+        temporal_stride, temporal_bound, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
 }
 
 int32_t snax_xdma_multicast_nd_full_address(
@@ -153,9 +157,10 @@ int32_t snax_xdma_multicast_nd_full_address(
 
     // Set the destination address for each destination
     for (uint32_t i = 0; i < dst_num; i++) {
-        snax_write_xdma_cfg_reg(XDMA_DST_ADDR_PTR_LSB + i * 2, (uint32_t)dst[i]);
+        snax_write_xdma_cfg_reg(XDMA_DST_ADDR_PTR_LSB + i * 2,
+                                (uint32_t)dst[i]);
         snax_write_xdma_cfg_reg(XDMA_DST_ADDR_PTR_MSB + i * 2,
-                           (uint32_t)(dst[i] >> 32));
+                                (uint32_t)(dst[i] >> 32));
     }
 
     // The remaining is set to 0, and XDMA will stop the chained copy to the
@@ -197,7 +202,8 @@ int32_t snax_xdma_multicast_nd_full_address(
             return -4;
         }
         snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_BOUND_PTR + i, temp_bound_src[i]);
-        snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + i, temp_stride_src[i]);
+        snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + i,
+                                temp_stride_src[i]);
     }
     // Dimension n to MAX at src
     for (uint32_t i = temp_dim_src; i < XDMA_SRC_TEMP_DIM; i++) {
@@ -211,7 +217,8 @@ int32_t snax_xdma_multicast_nd_full_address(
             return -4;
         }
         snax_write_xdma_cfg_reg(XDMA_DST_TEMP_BOUND_PTR + i, temp_bound_dst[i]);
-        snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + i, temp_stride_dst[i]);
+        snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + i,
+                                temp_stride_dst[i]);
     }
     // Dimension n to MAX at dst
     for (uint32_t i = temp_dim_dst; i < XDMA_DST_TEMP_DIM; i++) {
@@ -227,14 +234,13 @@ int32_t snax_xdma_multicast_nd_full_address(
     return 0;
 }
 
-int32_t snax_xdma_multicast_nd(void* src, void** dst, uint32_t dst_num,
-                          uint32_t spatial_stride_src,
-                          uint32_t spatial_stride_dst, uint32_t temp_dim_src,
-                          uint32_t* temp_stride_src, uint32_t* temp_bound_src,
-                          uint32_t temp_dim_dst, uint32_t* temp_stride_dst,
-                          uint32_t* temp_bound_dst, uint32_t enabled_chan_src,
-                          uint32_t enabled_chan_dst,
-                          uint32_t enabled_byte_dst) {
+int32_t snax_xdma_multicast_nd(
+    void* src, void** dst, uint32_t dst_num, uint32_t spatial_stride_src,
+    uint32_t spatial_stride_dst, uint32_t temp_dim_src,
+    uint32_t* temp_stride_src, uint32_t* temp_bound_src, uint32_t temp_dim_dst,
+    uint32_t* temp_stride_dst, uint32_t* temp_bound_dst,
+    uint32_t enabled_chan_src, uint32_t enabled_chan_dst,
+    uint32_t enabled_byte_dst) {
     uint64_t cluster_base_address_h = snrt_cluster_base_addrh();
     cluster_base_address_h = cluster_base_address_h << 32;
 
@@ -254,7 +260,7 @@ int32_t snax_xdma_multicast_nd(void* src, void** dst, uint32_t dst_num,
 }
 
 int32_t snax_xdma_multicast_1d_full_address(uint64_t src, uint64_t* dst,
-                                       uint32_t dst_num, uint32_t size) {
+                                            uint32_t dst_num, uint32_t size) {
     if (size % XDMA_WIDTH != 0) {
         XDMA_DEBUG_PRINT("Size is not multiple of XDMA_WIDTH\n");
         return -1;
@@ -268,17 +274,17 @@ int32_t snax_xdma_multicast_1d_full_address(uint64_t src, uint64_t* dst,
 }
 
 int32_t snax_xdma_multicast_1d(void* src, void** dst, uint32_t dst_num,
-                          uint32_t size) {
+                               uint32_t size) {
     if (size % XDMA_WIDTH != 0) {
         XDMA_DEBUG_PRINT("Size is not multiple of XDMA_WIDTH\n");
         return -1;
     }
     uint32_t temporal_stride[1] = {XDMA_WIDTH};
     uint32_t temporal_bound[1] = {size / XDMA_WIDTH};
-    return snax_xdma_multicast_nd(src, dst, dst_num, XDMA_WIDTH / XDMA_SPATIAL_CHAN,
-                             XDMA_WIDTH / XDMA_SPATIAL_CHAN, 1, temporal_stride,
-                             temporal_bound, 1, temporal_stride, temporal_bound,
-                             0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+    return snax_xdma_multicast_nd(
+        src, dst, dst_num, XDMA_WIDTH / XDMA_SPATIAL_CHAN,
+        XDMA_WIDTH / XDMA_SPATIAL_CHAN, 1, temporal_stride, temporal_bound, 1,
+        temporal_stride, temporal_bound, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
 }
 
 // xdma extension interface
@@ -292,8 +298,9 @@ int32_t snax_xdma_xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value) {
         csr_offset += custom_csr_list[i];
     }
 
-    snax_write_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR,
-                       snax_read_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR) | (1 << ext));
+    snax_write_xdma_cfg_reg(
+        XDMA_SRC_ENABLE_PTR,
+        snax_read_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR) | (1 << ext));
 
     for (uint8_t i = 0; i < custom_csr_list[ext]; i++) {
         snax_write_xdma_cfg_reg(csr_offset + i, csr_value[i]);
@@ -310,8 +317,9 @@ int32_t snax_xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value) {
         csr_offset += custom_csr_list[i];
     }
 
-    snax_write_xdma_cfg_reg(XDMA_DST_ENABLE_PTR,
-                       snax_read_xdma_cfg_reg(XDMA_DST_ENABLE_PTR) | (1 << ext));
+    snax_write_xdma_cfg_reg(
+        XDMA_DST_ENABLE_PTR,
+        snax_read_xdma_cfg_reg(XDMA_DST_ENABLE_PTR) | (1 << ext));
     for (uint8_t i = 0; i < custom_csr_list[ext]; i++) {
         snax_write_xdma_cfg_reg(csr_offset + i, csr_value[i]);
     }
@@ -322,8 +330,9 @@ int32_t snax_xdma_disable_src_ext(uint8_t ext) {
     if (ext >= XDMA_SRC_EXT_NUM) {
         return 0;
     }
-    snax_write_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR,
-                       snax_read_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR) & ~(1 << ext));
+    snax_write_xdma_cfg_reg(
+        XDMA_SRC_ENABLE_PTR,
+        snax_read_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR) & ~(1 << ext));
 
     return 0;
 }
@@ -332,8 +341,9 @@ int32_t snax_xdma_disable_dst_ext(uint8_t ext) {
     if (ext >= XDMA_DST_EXT_NUM) {
         return 0;
     }
-    snax_write_xdma_cfg_reg(XDMA_DST_ENABLE_PTR,
-                       snax_read_xdma_cfg_reg(XDMA_DST_ENABLE_PTR) & ~(1 << ext));
+    snax_write_xdma_cfg_reg(
+        XDMA_DST_ENABLE_PTR,
+        snax_read_xdma_cfg_reg(XDMA_DST_ENABLE_PTR) & ~(1 << ext));
 
     return 0;
 }

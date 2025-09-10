@@ -28,12 +28,12 @@ int main() {
         snrt_dma_wait_all();
 
         // --------------------- Configure the AGU --------------------- //
-        snax_xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src_xdma,
-                       spatial_stride_dst_xdma, temporal_dimension_src_xdma,
-                       temporal_strides_src_xdma, temporal_bounds_src_xdma,
-                       temporal_dimension_dst_xdma, temporal_strides_dst_xdma,
-                       temporal_bounds_dst_xdma, 0xFFFFFFFF, 0xFFFFFFFF,
-                       0xFFFFFFFF);
+        snax_xdma_memcpy_nd(
+            tcdm_in, tcdm_out, spatial_stride_src_xdma, spatial_stride_dst_xdma,
+            temporal_dimension_src_xdma, temporal_strides_src_xdma,
+            temporal_bounds_src_xdma, temporal_dimension_dst_xdma,
+            temporal_strides_dst_xdma, temporal_bounds_dst_xdma, 0xFFFFFFFF,
+            0xFFFFFFFF, 0xFFFFFFFF);
 
         int task_id = snax_xdma_start();
         snax_xdma_local_wait(task_id);

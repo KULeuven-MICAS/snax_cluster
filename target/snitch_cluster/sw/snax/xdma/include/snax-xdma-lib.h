@@ -31,13 +31,15 @@ int32_t snax_xdma_memcpy_nd_full_addr(
     uint32_t enabled_byte_dst);
 
 int32_t snax_xdma_memcpy_nd(void* src, void* dst, uint32_t spatial_stride_src,
-                       uint32_t spatial_stride_dst, uint32_t temp_dim_src,
-                       uint32_t* temp_stride_src, uint32_t* temp_bound_src,
-                       uint32_t temp_dim_dst, uint32_t* temp_stride_dst,
-                       uint32_t* temp_bound_dst, uint32_t enabled_chan_src,
-                       uint32_t enabled_chan_dst, uint32_t enabled_byte_dst);
+                            uint32_t spatial_stride_dst, uint32_t temp_dim_src,
+                            uint32_t* temp_stride_src, uint32_t* temp_bound_src,
+                            uint32_t temp_dim_dst, uint32_t* temp_stride_dst,
+                            uint32_t* temp_bound_dst, uint32_t enabled_chan_src,
+                            uint32_t enabled_chan_dst,
+                            uint32_t enabled_byte_dst);
 
-int32_t snax_xdma_memcpy_1d_full_addr(uint64_t src, uint64_t dst, uint32_t size);
+int32_t snax_xdma_memcpy_1d_full_addr(uint64_t src, uint64_t dst,
+                                      uint32_t size);
 
 int32_t snax_xdma_memcpy_1d(void* src, void* dst, uint32_t size);
 
@@ -50,19 +52,19 @@ int32_t snax_xdma_multicast_nd_full_address(
     uint32_t enabled_chan_src, uint32_t enabled_chan_dst,
     uint32_t enabled_byte_dst);
 
-int32_t snax_xdma_multicast_nd(void* src, void** dst, uint32_t dst_num,
-                          uint32_t spatial_stride_src,
-                          uint32_t spatial_stride_dst, uint32_t temp_dim_src,
-                          uint32_t* temp_stride_src, uint32_t* temp_bound_src,
-                          uint32_t temp_dim_dst, uint32_t* temp_stride_dst,
-                          uint32_t* temp_bound_dst, uint32_t enabled_chan_src,
-                          uint32_t enabled_chan_dst, uint32_t enabled_byte_dst);
+int32_t snax_xdma_multicast_nd(
+    void* src, void** dst, uint32_t dst_num, uint32_t spatial_stride_src,
+    uint32_t spatial_stride_dst, uint32_t temp_dim_src,
+    uint32_t* temp_stride_src, uint32_t* temp_bound_src, uint32_t temp_dim_dst,
+    uint32_t* temp_stride_dst, uint32_t* temp_bound_dst,
+    uint32_t enabled_chan_src, uint32_t enabled_chan_dst,
+    uint32_t enabled_byte_dst);
 
 int32_t snax_xdma_multicast_1d_full_address(uint64_t src, uint64_t* dst,
-                                       uint32_t dst_num, uint32_t size);
+                                            uint32_t dst_num, uint32_t size);
 
 int32_t snax_xdma_multicast_1d(void* src, void** dst, uint32_t dst_num,
-                          uint32_t size);
+                               uint32_t size);
 
 // Extension
 int32_t snax_xdma_xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value);
@@ -77,10 +79,12 @@ static inline uint32_t snax_xdma_start() {
     snax_write_xdma_cfg_reg(XDMA_START_PTR, 1);
     while (1) {
         // Wait for xdma to start
-        if (snax_read_xdma_cfg_reg(XDMA_COMMIT_LOCAL_TASK_PTR) != local_task_id) {
+        if (snax_read_xdma_cfg_reg(XDMA_COMMIT_LOCAL_TASK_PTR) !=
+            local_task_id) {
             return snax_read_xdma_cfg_reg(XDMA_COMMIT_LOCAL_TASK_PTR);
         }
-        if (snax_read_xdma_cfg_reg(XDMA_COMMIT_REMOTE_TASK_PTR) != remote_task_id) {
+        if (snax_read_xdma_cfg_reg(XDMA_COMMIT_REMOTE_TASK_PTR) !=
+            remote_task_id) {
             return snax_read_xdma_cfg_reg(XDMA_COMMIT_REMOTE_TASK_PTR);
         }
     }

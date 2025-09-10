@@ -31,8 +31,9 @@ int main() {
         // --------------------- Configure the Ext --------------------- //
 #ifdef READER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16
         if (enable_transpose) {
-            if (snax_xdma_enable_dst_ext(WRITER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16,
-                                    (uint32_t *)transposer_param) != 0) {
+            if (snax_xdma_enable_dst_ext(
+                    WRITER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16,
+                    (uint32_t *)transposer_param) != 0) {
                 printf("Error in enabling xdma writer extension 1\n");
                 err++;
             }
@@ -46,11 +47,11 @@ int main() {
 #endif
 
         // --------------------- Configure the AGU --------------------- //
-        snax_xdma_memcpy_nd(tcdm_in, tcdm_out, spatial_stride_src,
-                       spatial_stride_dst, temporal_dimension_src,
-                       temporal_strides_src, temporal_bounds_src,
-                       temporal_dimension_dst, temporal_strides_dst,
-                       temporal_bounds_dst, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+        snax_xdma_memcpy_nd(
+            tcdm_in, tcdm_out, spatial_stride_src, spatial_stride_dst,
+            temporal_dimension_src, temporal_strides_src, temporal_bounds_src,
+            temporal_dimension_dst, temporal_strides_dst, temporal_bounds_dst,
+            0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
 
         int task_id = snax_xdma_start();
         snax_xdma_local_wait(task_id);
