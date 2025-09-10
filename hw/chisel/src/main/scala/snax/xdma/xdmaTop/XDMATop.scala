@@ -407,7 +407,7 @@ return new ${i._1}(${i._2
   // Append CSR Extension Information in to Macro
   macro_template = macro_template + """
 // Extension Information
-  """
+"""
 
   for ((ext, i) <- readerExtensionParam.zipWithIndex) {
     macro_template = macro_template +
