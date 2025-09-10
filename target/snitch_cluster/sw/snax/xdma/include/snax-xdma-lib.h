@@ -74,8 +74,8 @@ int32_t snax_xdma_disable_dst_ext(uint8_t ext);
 
 // Start
 static inline uint32_t snax_xdma_start() {
-    int local_task_id = snax_read_xdma_cfg_reg(XDMA_COMMIT_LOCAL_TASK_PTR);
-    int remote_task_id = snax_read_xdma_cfg_reg(XDMA_COMMIT_REMOTE_TASK_PTR);
+    uint32_t local_task_id = snax_read_xdma_cfg_reg(XDMA_COMMIT_LOCAL_TASK_PTR);
+    uint32_t remote_task_id = snax_read_xdma_cfg_reg(XDMA_COMMIT_REMOTE_TASK_PTR);
     snax_write_xdma_cfg_reg(XDMA_START_PTR, 1);
     while (1) {
         // Wait for xdma to start
