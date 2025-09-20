@@ -63,9 +63,7 @@ def conv2d(
                         conv_kernel = kernel[oc, :, :, :]
 
                         # Perform the convolution calculation
-                        output_data[b, oh, ow, oc] = np.sum(
-                            input_region * conv_kernel
-                        )
+                        output_data[b, oh, ow, oc] = np.sum(input_region * conv_kernel)
     else:
         batch_size, _, in_height, in_width, _ = input_data.shape
         CoutTemp, _, kernel_height, kernel_width, meshCol, _ = kernel.shape
@@ -185,9 +183,7 @@ def im2col(input_data, kernel, stride=(1, 1), padding=(0, 0), mode="NC8HW8"):
                                 b, ic, ih_start:ih_end, iw_start:iw_end, ic8
                             ]
 
-                            im2col_matrix[
-                                b, oh, ow, ic, :, :, ow8, ic8
-                            ] = input_region
+                            im2col_matrix[b, oh, ow, ic, :, :, ow8, ic8] = input_region
 
     im2col_kernel = kernel.reshape(out_channels, -1).T
 
@@ -228,6 +224,45 @@ def block_gemm_golden_model(
     return d
 
 
+def block_gemm_golden_model_fp8(
+    M, K, N, meshRow, tileSize, meshCol, A, B, subtraction_a, subtraction_b, C
+):
+    """
+    Golden model for FP8 matrix multiplication with FP32 accumulation.
+    """
+    # Reshape inputs
+    A = A.reshape(M, K, meshRow, tileSize)
+    B = B.reshape(K, N, tileSize, meshCol)
+    C = C.reshape(M, N, meshRow, meshCol)
+
+    assert subtraction_a == 0
+    assert subtraction_b == 0
+
+    # Initialize output
+    D = np.zeros((M, N, meshRow, meshCol), dtype=np.float32)
+
+    # Perform matrix multiplication
+    for m in range(M):
+        for n in range(N):
+            for k in range(K):
+                for mr in range(meshRow):
+                    for mc in range(meshCol):
+                        for ts in range(tileSize):
+                            a_val = A[m, k, mr, ts]
+                            b_val = B[k, n, ts, mc]
+                            # FP8 multiplication with FP32 accumulation
+                            D[m, n, mr, mc] += a_val * b_val
+
+    # Add bias/subtraction and C matrix
+    for m in range(M):
+        for n in range(N):
+            for mr in range(meshRow):
+                for mc in range(meshCol):
+                    D[m, n, mr, mc] = D[m, n, mr, mc] + C[m, n, mr, mc]
+
+    return D.flatten()
+
+
 # This function Performs a tiled block
 # General Matrix Multiply (GEMM) operation.
 #
@@ -266,7 +301,7 @@ def tiled_block_gemm_golden_model(
                     * m
                     * k
                     * row
-                    * size: (mm2 * k2 + kk2 + 1)
+                    * size : (mm2 * k2 + kk2 + 1)
                     * m
                     * k
                     * row
@@ -277,7 +312,7 @@ def tiled_block_gemm_golden_model(
                     * n
                     * k
                     * size
-                    * col: (nn2 * k2 + kk2 + 1)
+                    * col : (nn2 * k2 + kk2 + 1)
                     * n
                     * k
                     * size
@@ -288,7 +323,7 @@ def tiled_block_gemm_golden_model(
                     * m
                     * row
                     * n
-                    * col: (mm2 * n2 + nn2 + 1)
+                    * col : (mm2 * n2 + nn2 + 1)
                     * m
                     * row
                     * n
@@ -316,7 +351,7 @@ def tiled_block_gemm_golden_model(
                     * m
                     * row
                     * n
-                    * col: (mm2 * n2 + nn2 + 1)
+                    * col : (mm2 * n2 + nn2 + 1)
                     * m
                     * row
                     * n
@@ -360,11 +395,9 @@ def data_reshuffler_golden_model(
     }
 
     if int32:
-        result_array = np.zeros(
-            (matrix_size["M"] * matrix_size["K"]), np.int32)
+        result_array = np.zeros((matrix_size["M"] * matrix_size["K"]), np.int32)
     else:
-        result_array = np.zeros(
-            (matrix_size["M"] * matrix_size["K"]), np.int8)
+        result_array = np.zeros((matrix_size["M"] * matrix_size["K"]), np.int8)
 
     # apply strided layout mapping for the golden model of data reshuffler
     for M in range(matrix_size["M"] // matrix_size["m"]):
@@ -541,9 +574,7 @@ def postprocessing_simd_golden_model_V3(
     var_1 = data_in - input_zp_i
 
     # Additional Step 1:
-    bits_to_shift_input = max(
-        0, 9 + shift_i - ceil(np.log2(multiplier_i)) - 16
-    )
+    bits_to_shift_input = max(0, 9 + shift_i - ceil(np.log2(multiplier_i)) - 16)
     # 8 can be adapted to be higher. higher will add more support for
     # overflows, but will also reduce accuracy of the output.
     bits_to_shift_multiplier = max(0, ceil(np.log2(multiplier_i)) - 16)
@@ -666,11 +697,10 @@ def sumpool_golden(
     )
     # Iterate over each channel and apply max pooling
     for i in range(0, ((m - m_kernel) // m_stride + 1) * m_stride, m_stride):
-        for j in range(0, ((n - n_kernel) // n_stride + 1) * n_stride,
-                       n_stride):
+        for j in range(0, ((n - n_kernel) // n_stride + 1) * n_stride, n_stride):
             for c in range(channels):
                 # Extract the kernel region
-                kernel_region = a_vals[i: i + m_kernel, j: j + n_kernel, c]
+                kernel_region = a_vals[i : i + m_kernel, j : j + n_kernel, c]
                 # Compute the maximum value in the kernel region
                 sum_value = int(np.sum(kernel_region))
                 output[i // m_stride, j // n_stride, c] = sum_value
