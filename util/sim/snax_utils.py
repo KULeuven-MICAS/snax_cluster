@@ -231,9 +231,11 @@ def block_gemm_golden_model_fp8(
     Golden model for FP8 matrix multiplication with FP32 accumulation.
     """
     # Reshape inputs
+    A = A.astype(np.float32)
+    B = B.astype(np.float32)
+    C = C.astype(np.float32)
     A = A.reshape(M, K, meshRow, tileSize)
-    B = B.reshape(K, N, tileSize, meshCol)
-    C = C.reshape(M, N, meshRow, meshCol)
+    B = B.reshape(N, K, meshCol, tileSize)
 
     assert subtraction_a == 0
     assert subtraction_b == 0
@@ -244,21 +246,11 @@ def block_gemm_golden_model_fp8(
     # Perform matrix multiplication
     for m in range(M):
         for n in range(N):
-            for k in range(K):
-                for mr in range(meshRow):
-                    for mc in range(meshCol):
-                        for ts in range(tileSize):
-                            a_val = A[m, k, mr, ts]
-                            b_val = B[k, n, ts, mc]
-                            # FP8 multiplication with FP32 accumulation
-                            D[m, n, mr, mc] += a_val * b_val
+            # FP8 multiplication with FP32 accumulation
+            D[m, n] = np.tensordot(A[m], B[n], axes=([0, 2], [0, 2]))
 
     # Add bias/subtraction and C matrix
-    for m in range(M):
-        for n in range(N):
-            for mr in range(meshRow):
-                for mc in range(meshCol):
-                    D[m, n, mr, mc] = D[m, n, mr, mc] + C[m, n, mr, mc]
+    D = D.reshape(M * N * meshRow * meshCol) + C
 
     return D.flatten()
 
@@ -301,7 +293,7 @@ def tiled_block_gemm_golden_model(
                     * m
                     * k
                     * row
-                    * size : (mm2 * k2 + kk2 + 1)
+                    * size: (mm2 * k2 + kk2 + 1)
                     * m
                     * k
                     * row
@@ -312,7 +304,7 @@ def tiled_block_gemm_golden_model(
                     * n
                     * k
                     * size
-                    * col : (nn2 * k2 + kk2 + 1)
+                    * col: (nn2 * k2 + kk2 + 1)
                     * n
                     * k
                     * size
@@ -323,7 +315,7 @@ def tiled_block_gemm_golden_model(
                     * m
                     * row
                     * n
-                    * col : (mm2 * n2 + nn2 + 1)
+                    * col: (mm2 * n2 + nn2 + 1)
                     * m
                     * row
                     * n
@@ -351,7 +343,7 @@ def tiled_block_gemm_golden_model(
                     * m
                     * row
                     * n
-                    * col : (mm2 * n2 + nn2 + 1)
+                    * col: (mm2 * n2 + nn2 + 1)
                     * m
                     * row
                     * n
@@ -700,7 +692,7 @@ def sumpool_golden(
         for j in range(0, ((n - n_kernel) // n_stride + 1) * n_stride, n_stride):
             for c in range(channels):
                 # Extract the kernel region
-                kernel_region = a_vals[i : i + m_kernel, j : j + n_kernel, c]
+                kernel_region = a_vals[i: i + m_kernel, j: j + n_kernel, c]
                 # Compute the maximum value in the kernel region
                 sum_value = int(np.sum(kernel_region))
                 output[i // m_stride, j // n_stride, c] = sum_value

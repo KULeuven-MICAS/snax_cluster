@@ -250,11 +250,13 @@ def emit_matmul_data(**kwargs):
     c_len = snax_acc_cfg["snax_versacore_input_c_element_width"][data_type]
 
     # For FP8 data type, we need to handle floating point values
-    if data_type == 1:  # FP8 data type
+    if (
+        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
+    ):  # FP8 data type
         A_MIN, A_MAX = -10.0, 10.0  # FP8 range
         B_MIN, B_MAX = -10.0, 10.0  # FP8 range
         C_MIN, C_MAX = -10.0, 10.0  # FP32 range for accumulation
-    else:
+    else:  # Integer data types
         A_MIN, A_MAX = signed_int_range(a_len)
         B_MIN, B_MAX = signed_int_range(b_len)
         C_MIN, C_MAX = signed_int_range(c_len)
@@ -719,16 +721,16 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int8_t", "subtraction_b", subtraction_b)]
 
     # Generate test data based on data type
-    if data_type == 1:  # FP8 data type
+    if (
+        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
+    ):  # FP8 data type
         # Generate FP8 data (using float32 for generation, will be converted to FP8)
-        # A_float = np.random.uniform(
-        #     A_MIN, A_MAX, size=(M, K, meshRow, tileSize)
-        # ).reshape(-1)
-        # B_float = np.random.uniform(
-        #     B_MIN, B_MAX, size=(K, N, tileSize, meshCol)
-        # ).reshape(-1)
-        A_float = np.random.choice([1, 2], size=(M, K, meshRow, tileSize)).reshape(-1)
-        B_float = np.random.choice([1, 2], size=(K, N, tileSize, meshCol)).reshape(-1)
+        A_float = np.random.uniform(
+            A_MIN, A_MAX, size=(M, K, meshRow, tileSize)
+        ).reshape(-1)
+        B_float = np.random.uniform(
+            B_MIN, B_MAX, size=(K, N, tileSize, meshCol)
+        ).reshape(-1)
 
         # Convert to FP8 format (using int8 to represent FP8 bits) for hardware
         A_fp8 = float32_to_fp8_scale(A_float)
@@ -740,12 +742,14 @@ def emit_matmul_data(**kwargs):
         data_str += [format_vector_definition("int8_t", "B", B_fp8_bin.flatten())]
 
         if enable_full_C == 1:
-            # C = np.random.uniform(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(-1)
-            C = np.random.uniform(1, 1, size=(M, N, meshRow, meshCol)).reshape(-1)
+            C = np.random.uniform(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(
+                -1
+            )
+            # C = np.random.uniform(1, 1, size=(M, N, meshRow, meshCol)).reshape(-1)
         else:
             C = np.zeros((M, N, meshRow, meshCol)).reshape(-1)
 
-        data_str += [format_vector_definition("int32_t", "C", C.view(np.int32))]
+        data_str += [format_vector_definition("int32_t", "C", float32_to_hex_uint(C))]
 
     else:  # Integer data types
         A = np.random.randint(A_MIN, A_MAX, size=(M, K, meshRow, tileSize)).reshape(-1)
@@ -791,7 +795,9 @@ def emit_matmul_data(**kwargs):
     ]
 
     # Generate golden reference output
-    if data_type == 1:  # FP8 data type
+    if (
+        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
+    ):  # FP8 data type
         D = block_gemm_golden_model_fp8(
             M,
             K,
