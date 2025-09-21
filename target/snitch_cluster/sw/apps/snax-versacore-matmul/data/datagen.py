@@ -13,6 +13,7 @@ import hjson
 import sys
 import os
 import math
+import struct
 
 # Add data utility path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
@@ -21,6 +22,7 @@ from data_utils import format_scalar_definition, format_vector_definition  # noq
 # Add golden model path
 from snax_utils import (  # noqa E402
     block_gemm_golden_model,
+    block_gemm_golden_model_fp8,
     align_wide_addr,
 )  # noqa E402
 
@@ -101,6 +103,113 @@ def gen_channel_enable_CSR(channel_en_CSR, channel_en_bits):
     return channel_en_CSR
 
 
+# FP8 (E5M2) constants
+FP8_EXP_BITS = 5
+FP8_MAN_BITS = 2
+FP8_EXP_BIAS = (2 ** (FP8_EXP_BITS - 1)) - 1  # bias = 15
+FP8_MAX_EXP = (2**FP8_EXP_BITS) - 2  # 30 (reserve 31 for Inf/NaN)
+FP8_MIN_EXP = 1  # exponent=0 is subnormal/zero
+
+
+def float32_to_fp8_scale(values):
+    """
+    Convert float32 array to FP8 E5M2 float values (after quantization).
+    Small values that underflow are truncated to zero.
+    """
+    fp8_vals = []
+    for val in values:
+        if np.isnan(val):
+            fp8_vals.append(np.nan)
+            continue
+        if np.isinf(val):
+            fp8_vals.append(np.inf * np.sign(val))
+            continue
+
+        sign = -1 if val < 0 else 1
+        abs_val = abs(val)
+
+        if abs_val == 0:
+            fp8_vals.append(0.0)
+            continue
+
+        exp = int(np.floor(np.log2(abs_val)))
+        frac = abs_val / (2**exp) - 1.0
+
+        # Clamp exponent to FP8 range
+        exp_unbiased = exp
+        exp_biased = exp_unbiased + FP8_EXP_BIAS
+
+        if exp_biased <= 0:
+            # Underflow -> flush to zero
+            fp8_vals.append(0.0)
+            continue
+
+        if exp_biased >= FP8_MAX_EXP:
+            # Overflow -> Inf
+            fp8_vals.append(sign * np.inf)
+            continue
+
+        # Quantize mantissa to 2 bits
+        mantissa = int(np.floor(frac * (2**FP8_MAN_BITS)))
+        quantized = sign * (2**exp) * (1 + mantissa / (2**FP8_MAN_BITS))
+        fp8_vals.append(quantized)
+
+    return np.array(fp8_vals, dtype=np.float32)
+
+
+def float32_to_fp8_bin(values):
+    """
+    Convert float32 array to FP8 E5M2 bit representation (int8).
+    """
+    fp8_bits = []
+    for val in values:
+        if np.isnan(val):
+            fp8_bits.append(0x7F)  # NaN
+            continue
+        if np.isposinf(val):
+            fp8_bits.append(0x7C)  # +Inf (exp=31, mant=0)
+            continue
+        if np.isneginf(val):
+            fp8_bits.append(0xFC)  # -Inf
+            continue
+
+        sign_bit = 1 if val < 0 else 0
+        abs_val = abs(val)
+
+        if abs_val == 0:
+            fp8_bits.append(0)
+            continue
+
+        exp = int(np.floor(np.log2(abs_val)))
+        frac = abs_val / (2**exp) - 1.0
+
+        exp_biased = exp + FP8_EXP_BIAS
+
+        if exp_biased <= 0:
+            fp8_bits.append(0)  # underflow -> zero
+            continue
+        if exp_biased >= FP8_MAX_EXP:
+            fp8_bits.append((sign_bit << 7) | (0x1F << 2))  # Inf
+            continue
+
+        mantissa = int(np.floor(frac * (2**FP8_MAN_BITS)))
+        bits = (sign_bit << 7) | (exp_biased << FP8_MAN_BITS) | mantissa
+        fp8_bits.append(bits & 0xFF)
+
+    return np.array(fp8_bits, dtype=np.uint8)
+
+
+def float32_to_hex_uint(values):
+    """
+    Convert float32 array to IEEE-754 uint32 representation.
+    """
+    uint_vals = []
+    for val in values.astype(np.float32):
+        bits = struct.unpack(">I", struct.pack(">f", val))[0]
+        uint_vals.append(bits)
+    return np.array(uint_vals, dtype=np.uint32)
+
+
 def emit_matmul_data(**kwargs):
 
     # -------------------------------------------------------------
@@ -137,11 +246,20 @@ def emit_matmul_data(**kwargs):
     ]
 
     a_len = snax_acc_cfg["snax_versacore_input_a_element_width"][data_type]
-    A_MIN, A_MAX = signed_int_range(a_len)
     b_len = snax_acc_cfg["snax_versacore_input_b_element_width"][data_type]
-    B_MIN, B_MAX = signed_int_range(b_len)
     c_len = snax_acc_cfg["snax_versacore_input_c_element_width"][data_type]
-    C_MIN, C_MAX = signed_int_range(c_len)
+
+    # For FP8 data type, we need to handle floating point values
+    if (
+        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
+    ):  # FP8 data type
+        A_MIN, A_MAX = -10.0, 10.0  # FP8 range
+        B_MIN, B_MAX = -10.0, 10.0  # FP8 range
+        C_MIN, C_MAX = -10.0, 10.0  # FP32 range for accumulation
+    else:  # Integer data types
+        A_MIN, A_MAX = signed_int_range(a_len)
+        B_MIN, B_MAX = signed_int_range(b_len)
+        C_MIN, C_MAX = signed_int_range(c_len)
 
     a_array_width = snax_acc_cfg["snax_versacore_array_input_a_width"]
     b_array_width = snax_acc_cfg["snax_versacore_array_input_b_width"]
@@ -602,31 +720,65 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int8_t", "subtraction_a", subtraction_a)]
     data_str += [format_scalar_definition("int8_t", "subtraction_b", subtraction_b)]
 
-    A = np.random.randint(A_MIN, A_MAX, size=(M, K, meshRow, tileSize)).reshape(-1)
-    if a_len == 8:
-        data_str += [format_vector_definition("int8_t", "A", A)]
-    elif a_len == 16:
-        data_str += [format_vector_definition("int16_t", "A", A)]
-    else:
-        raise ValueError("Invalid A data type")
+    # Generate test data based on data type
+    if (
+        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
+    ):  # FP8 data type
+        # Generate FP8 data (using float32 for generation, will be converted to FP8)
+        A_float = np.random.uniform(
+            A_MIN, A_MAX, size=(M, K, meshRow, tileSize)
+        ).reshape(-1)
+        B_float = np.random.uniform(
+            B_MIN, B_MAX, size=(K, N, tileSize, meshCol)
+        ).reshape(-1)
 
-    B = np.random.randint(B_MIN, B_MAX, size=(K, N, tileSize, meshCol)).reshape(-1)
-    if b_len == 4:
-        data_str += [format_vector_definition("int8_t", "B_orginal_4bits", B)]
-        B_packed = pack_signed_nbit(B, bit_width=4, pack_per_byte=2)
-        data_str += [format_vector_definition("int8_t", "B", B_packed)]
-    elif b_len == 8:
-        data_str += [format_vector_definition("int8_t", "B", B)]
-    else:
-        raise ValueError("Invalid B data type")
+        # Convert to FP8 format (using int8 to represent FP8 bits) for hardware
+        A_fp8 = float32_to_fp8_scale(A_float)
+        B_fp8 = float32_to_fp8_scale(B_float)
+        A_fp8_bin = float32_to_fp8_bin(A_fp8)
+        B_fp8_bin = float32_to_fp8_bin(B_fp8)
 
-    if enable_full_C == 1:
-        C = np.random.randint(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(-1)
-    else:
-        C = np.random.randint(0, 1, size=(M, N, meshRow, meshCol)).reshape(-1)
+        data_str += [format_vector_definition("int8_t", "A", A_fp8_bin.flatten())]
+        data_str += [format_vector_definition("int8_t", "B", B_fp8_bin.flatten())]
 
-    assert c_len == 32, "C data type must be 32 bits for now"
-    data_str += [format_vector_definition("int32_t", "C", C)]
+        if enable_full_C == 1:
+            C = np.random.uniform(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(
+                -1
+            )
+            # C = np.random.uniform(1, 1, size=(M, N, meshRow, meshCol)).reshape(-1)
+        else:
+            C = np.zeros((M, N, meshRow, meshCol)).reshape(-1)
+
+        data_str += [format_vector_definition("int32_t", "C", float32_to_hex_uint(C))]
+
+    else:  # Integer data types
+        A = np.random.randint(A_MIN, A_MAX, size=(M, K, meshRow, tileSize)).reshape(-1)
+        if a_len == 8:
+            data_str += [format_vector_definition("int8_t", "A", A)]
+        elif a_len == 16:
+            data_str += [format_vector_definition("int16_t", "A", A)]
+        else:
+            raise ValueError("Invalid A data type")
+
+        B = np.random.randint(B_MIN, B_MAX, size=(K, N, tileSize, meshCol)).reshape(-1)
+        if b_len == 4:
+            data_str += [format_vector_definition("int8_t", "B_orginal_4bits", B)]
+            B_packed = pack_signed_nbit(B, bit_width=4, pack_per_byte=2)
+            data_str += [format_vector_definition("int8_t", "B", B_packed)]
+        elif b_len == 8:
+            data_str += [format_vector_definition("int8_t", "B", B)]
+        else:
+            raise ValueError("Invalid B data type")
+
+        if enable_full_C == 1:
+            C = np.random.randint(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(
+                -1
+            )
+        else:
+            C = np.random.randint(0, 1, size=(M, N, meshRow, meshCol)).reshape(-1)
+
+        assert c_len == 32, "C data type must be 32 bits for now"
+        data_str += [format_vector_definition("int32_t", "C", C)]
 
     if kwargs["transposed_A"] == 1:
         A = A.reshape(M, K, meshRow, tileSize)
@@ -642,21 +794,40 @@ def emit_matmul_data(**kwargs):
         format_scalar_definition("int32_t", "transposed_B", kwargs["transposed_B"])
     ]
 
-    D = block_gemm_golden_model(
-        M,
-        K,
-        N,
-        meshRow,
-        tileSize,
-        meshCol,
-        A,
-        B,
-        subtraction_a,
-        subtraction_b,
-        C,
-    )
-
-    data_str += [format_vector_definition("int32_t", "D", D)]
+    # Generate golden reference output
+    if (
+        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
+    ):  # FP8 data type
+        D = block_gemm_golden_model_fp8(
+            M,
+            K,
+            N,
+            meshRow,
+            tileSize,
+            meshCol,
+            A_fp8,
+            B_fp8,
+            subtraction_a,
+            subtraction_b,
+            C,
+        )
+        D = float32_to_hex_uint(D)
+        data_str += [format_vector_definition("int32_t", "D", D)]
+    else:
+        D = block_gemm_golden_model(
+            M,
+            K,
+            N,
+            meshRow,
+            tileSize,
+            meshCol,
+            A,
+            B,
+            subtraction_a,
+            subtraction_b,
+            C,
+        )
+        data_str += [format_vector_definition("int32_t", "D", D)]
 
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_A", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_B", 0)]
@@ -701,5 +872,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()

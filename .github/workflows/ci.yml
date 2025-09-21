@@ -370,6 +370,7 @@ jobs:
           activate-environment: true
       - name: Generate RTL
         run: |
+          export JAVA_OPTS="-Xmx8G -Xms4G"
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax_versacore_cluster.hjson
       - name: Build Hardware
