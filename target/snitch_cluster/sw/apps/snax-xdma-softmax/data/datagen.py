@@ -12,6 +12,8 @@ import os
 import pathlib
 import sys
 
+import debugpy
+
 import hjson
 import numpy as np
 
@@ -47,12 +49,13 @@ def emit_softmax_data(**kwargs):
 
 
     # Scaling Matrix for softmax
-    matrix_scaling = np.zeros((4, channel_count), dtype=np.int32)
+    matrix_scaling = np.zeros((5, channel_count), dtype=np.int32)
     for i in range(channel_count):
-        matrix_scaling[0, i] = math.log(2) * kwargs["inverse_scaling_factor"]
-        matrix_scaling[1, i] = 0.3585 * kwargs["inverse_scaling_factor"]
-        matrix_scaling[2, i] = 1.353 * kwargs["inverse_scaling_factor"]
-        matrix_scaling[3, i] = 0.344 * kwargs["inverse_scaling_factor"]
+        matrix_scaling[0, i] = int(math.log(2) * kwargs["inverse_scaling_factor"])
+        matrix_scaling[1, i] = int(0.3585 * kwargs["inverse_scaling_factor"])
+        matrix_scaling[2, i] = int(1.353 * kwargs["inverse_scaling_factor"])
+        matrix_scaling[3, i] = int(0.344 * (kwargs["inverse_scaling_factor"] ** 3)) >> math.floor(math.log2(kwargs["inverse_scaling_factor"]) * 2)
+        matrix_scaling[4, i] = math.floor(math.log2(kwargs["inverse_scaling_factor"])) * 2
     scaling_matrix = matrix_scaling.flatten()
 
     emit_str += [
@@ -132,7 +135,7 @@ def emit_softmax_data(**kwargs):
 
     # Input Side (Reader)
     scaling_spatial_stride_src = 8
-    scaling_temporal_bounds_src = [4, 1, 1, 1, 1]
+    scaling_temporal_bounds_src = [5, 1, 1, 1, 1]
     scaling_temporal_strides_src = [4 * channel_count, 0, 0, 0, 0]
 
     # Output Side (Writer)
@@ -258,6 +261,12 @@ def emit_softmax_data(**kwargs):
 
 
 def main():
+
+    # debugpy.listen(("0.0.0.0", 5678))
+    # print("🔍 Waiting for debugger attach...")
+    # debugpy.wait_for_client()  # Blocks until VS Code attaches
+    # print("Debugger attached! Running program...")
+
     # Parsing cmd args
     parser = argparse.ArgumentParser(description="Generating data for kernels")
     parser.add_argument(

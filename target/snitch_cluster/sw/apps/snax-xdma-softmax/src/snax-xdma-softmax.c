@@ -40,68 +40,68 @@ int main() {
         // --------------------- Configure the Ext --------------------- //
 
         uint32_t ext_param[1] = {softmax_cycles};
-        if (xdma_disable_src_ext(0) != 0) {
+        if (snax_xdma_disable_src_ext(0) != 0) {
             printf("Error in disabling reader xdma extension 0\n");
             err++;
         }
 
-        if (xdma_disable_src_ext(1) != 0) {
+        if (snax_xdma_disable_src_ext(1) != 0) {
             printf("Error in disabling reader xdma extension 1\n");
             err++;
         }
 
-        if (xdma_disable_src_ext(2) != 0) {
+        if (snax_xdma_disable_src_ext(2) != 0) {
             printf("Error in disabling reader xdma extension 2\n");
             err++;
         }
 
-        if (xdma_disable_src_ext(3) != 0) {
+        if (snax_xdma_disable_src_ext(3) != 0) {
             printf("Error in disabling reader xdma extension 3\n");
             err++;
         }
 
-        if (xdma_disable_src_ext(4) != 0) {
+        if (snax_xdma_disable_src_ext(4) != 0) {
             printf("Error in disabling reader xdma extension 4\n");
             err++;
         }
 
-        if (xdma_disable_dst_ext(0) != 0) {
+        if (snax_xdma_disable_dst_ext(0) != 0) {
             printf("Error in disabling writer xdma extension 0\n");
             err++;
         }
 
-        if (xdma_disable_dst_ext(1) != 0) {
+        if (snax_xdma_disable_dst_ext(1) != 0) {
             printf("Error in disabling writer xdma extension 1\n");
             err++;
         }
 
-        if (xdma_enable_dst_ext(2, ext_param) != 0) {
+        if (snax_xdma_enable_dst_ext(2, ext_param) != 0) {
             printf("Error in enabling writer xdma extension 2\n");
             err++;
         }
 
         // --------------------- Configure the AGU --------------------- //
         for (int i = 0; i < 4; i++) {
-            xdma_memcpy_nd(tcdm_scaling + (64 * i), tcdm_out + (64 * i), spatial_stride_src,
+            snax_xdma_memcpy_nd(tcdm_scaling + (64 * i), tcdm_out + (64 * i), spatial_stride_src,
                         spatial_stride_dst, temporal_dimension_src,
                         temporal_strides_src_scaling, temporal_bounds_src_scaling,
                         temporal_dimension_dst, temporal_strides_dst_scaling,
                         temporal_bounds_dst_scaling, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
-            int scaling_task_id = xdma_start();
-            printf("scaling task id: %d\n", scaling_task_id);
-            xdma_local_wait(scaling_task_id);
-            printf("got out of scaling\n");
-            xdma_memcpy_nd(tcdm_in + (64 * i), tcdm_out + (64 * i), spatial_stride_src,
+            int scaling_task_id = snax_xdma_start();
+            // printf("scaling task id: %d\n", scaling_task_id);
+            snax_xdma_local_wait(scaling_task_id);
+            // printf("got out of scaling\n");
+            snax_xdma_memcpy_nd(tcdm_in + (64 * i), tcdm_out + (64 * i), spatial_stride_src,
                         spatial_stride_dst, temporal_dimension_src,
                         temporal_strides_src_data, temporal_bounds_src_data,
                         temporal_dimension_dst, temporal_strides_dst_data,
                         temporal_bounds_dst_data, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
-            printf("xdma_memcpy_nd done\n");
-            int task_id = xdma_start();
-            printf("got out of xdma_start, csr address: %d\n", task_id);
-            xdma_local_wait(task_id);
-            printf("xdma task %d is done in %d cycles\n", task_id,
-                xdma_last_task_cycle());
+            // printf("snax_xdma_memcpy_nd done\n");
+            int task_id = snax_xdma_start();
+            // printf("got out of snax_xdma_start, csr address: %d\n", task_id);
+            snax_xdma_local_wait(task_id);
+            // printf("xdma task %d is done in %d cycles\n", task_id,
+            //    snax_xdma_last_task_cycle());
         }
 
         // --------------------- Checking the Results --------------------- //

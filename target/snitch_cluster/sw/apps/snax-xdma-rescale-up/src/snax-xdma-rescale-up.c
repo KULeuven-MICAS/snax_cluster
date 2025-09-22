@@ -74,7 +74,7 @@ int main() {
             err++;
         }
 
-        if (xdma_disable_dst_ext(2) != 0) {
+        if (snax_xdma_disable_dst_ext(2) != 0) {
             printf("Error in disabling writer xdma extension 2\n");
             err++;
         }

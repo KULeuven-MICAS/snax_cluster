@@ -127,7 +127,7 @@ class SoftMaxCtrl() extends Module {
   })
   counter.io.ceil := io.softmax_cycles + 4.U // +4 for the end of exponentiation and divide
   counter.io.reset := reset_counter
-  counter.io.tick  := io.valid_in & (io.dont_check_ready || io.ready_out)
+  counter.io.tick  := (io.dont_check_valid || io.valid_in) & (io.dont_check_ready || io.ready_out)
 
   switch(state) {
     is(cIdle) {

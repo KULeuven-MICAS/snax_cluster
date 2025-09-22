@@ -49,15 +49,6 @@ int main() {
         }
 #endif
 
-        if (xdma_disable_dst_ext(2) != 0) {
-            printf("Error in disabling writer xdma extension 2\n");
-            err++;
-        }
-
-        if (err != 0) {
-            return err;
-        }
-
         int task_id = snax_xdma_start();
         printf(
             "The xdma is started, setting memory region to 0xFF. The task id "
