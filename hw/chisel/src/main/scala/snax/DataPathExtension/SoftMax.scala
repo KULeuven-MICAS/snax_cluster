@@ -90,34 +90,35 @@ class DivisionFinder extends Module {
 class SoftMaxCtrl() extends Module {
   val io = IO(new Bundle {
     // Control signals for the overall block
-    val start            = Input(Bool())
-    val valid_in         = Input(Bool())
-    val ready_in         = Output(Bool())
-    val valid_out        = Output(Bool())
-    val ready_out        = Input(Bool())
-    val softmax_cycles   = Input(UInt(32.W))
+    val start             = Input(Bool())
+    val valid_in          = Input(Bool())
+    val ready_in          = Output(Bool())
+    val valid_out         = Output(Bool())
+    val ready_out         = Input(Bool())
+    val softmax_cycles    = Input(UInt(32.W))
     // Control signals for the max finder
-    val update_max       = Output(Bool())
+    val update_max        = Output(Bool())
     // Control signals for the exponentiation
-    val update_adders    = Output(Bool())
+    val update_adders     = Output(Bool())
     // Control signals for the divider
-    val start_divider    = Output(Bool())
-    val divider_valid    = Input(Bool())
-    val busy             = Output(Bool())
+    val start_divider     = Output(Bool())
+    val divider_valid     = Input(Bool())
+    val busy              = Output(Bool())
     // Finalization signals
-    val dont_check_ready = Output(Bool())
-    val dont_check_valid = Output(Bool())
-    val reset_max        = Output(Bool()) // Reset the max value register
-    val reset_adder      = Output(Bool()) // Reset the adder register
+    val dont_check_ready  = Output(Bool())
+    val dont_check_valid  = Output(Bool())
+    val reset_max         = Output(Bool()) // Reset the max value register
+    val reset_adder       = Output(Bool()) // Reset the adder register
     // Load Scaling Factors
-    val load_ln2_scaled  = Output(Bool())
-    val load_a_scaled    = Output(Bool())
-    val load_b_scaled    = Output(Bool())
-    val load_c_scaled    = Output(Bool())
+    val load_ln2_scaled   = Output(Bool())
+    val load_a_scaled     = Output(Bool())
+    val load_b_scaled     = Output(Bool())
+    val load_c_scaled     = Output(Bool())
     val load_shift_scaled = Output(Bool())
   })
 
-  val cIdle :: cLoadLn2 :: cLoadA :: cLoadB :: cLoadC :: cLoadShift :: cMaxSearch :: cExponentiation :: cEndOfExponentiation :: cDivide :: cOutput :: cEndOfOutput :: Nil = Enum(12)
+  val cIdle :: cLoadLn2 :: cLoadA :: cLoadB :: cLoadC :: cLoadShift :: cMaxSearch :: cExponentiation :: cEndOfExponentiation :: cDivide :: cOutput :: cEndOfOutput :: Nil =
+    Enum(12)
   val state = RegInit(cIdle)
 
   val reset_counter = Wire(Bool())
@@ -193,21 +194,21 @@ class SoftMaxCtrl() extends Module {
     }
   }
 
-  reset_counter       := true.B
-  io.ready_in         := true.B
-  io.valid_out        := false.B
-  io.update_max       := false.B
-  io.start_divider    := false.B
-  io.busy             := counter.io.value =/= 0.U
-  io.update_adders    := false.B
-  io.dont_check_ready := true.B // Only check ready when outputting
-  io.dont_check_valid := true.B // Only check valid when new inputs necessary
-  io.reset_max        := true.B
-  io.reset_adder      := true.B
-  io.load_ln2_scaled  := state === cLoadLn2 && io.valid_in
-  io.load_a_scaled    := state === cLoadA && io.valid_in
-  io.load_b_scaled    := state === cLoadB && io.valid_in
-  io.load_c_scaled    := state === cLoadC && io.valid_in
+  reset_counter        := true.B
+  io.ready_in          := true.B
+  io.valid_out         := false.B
+  io.update_max        := false.B
+  io.start_divider     := false.B
+  io.busy              := counter.io.value =/= 0.U
+  io.update_adders     := false.B
+  io.dont_check_ready  := true.B // Only check ready when outputting
+  io.dont_check_valid  := true.B // Only check valid when new inputs necessary
+  io.reset_max         := true.B
+  io.reset_adder       := true.B
+  io.load_ln2_scaled   := state === cLoadLn2 && io.valid_in
+  io.load_a_scaled     := state === cLoadA && io.valid_in
+  io.load_b_scaled     := state === cLoadB && io.valid_in
+  io.load_c_scaled     := state === cLoadC && io.valid_in
   io.load_shift_scaled := state === cLoadShift && io.valid_in
 
   switch(state) {
@@ -389,9 +390,7 @@ class HasSoftMax() extends HasDataPathExtension {
 //All data in Softmax needs to be passed 3 times. this can be done by adding a stride of 0 and bound of 3
 class SoftMax()(implicit extensionParam: DataPathExtensionParam) extends DataPathExtension {
 
-  val elementWidth  = 32
-
-
+  val elementWidth = 32
 
   // Control signals
   val update_max           = Wire(Bool())
@@ -430,20 +429,23 @@ class SoftMax()(implicit extensionParam: DataPathExtensionParam) extends DataPat
   load_c_scaled          := ctrl.io.load_c_scaled
   load_shift_scaled      := ctrl.io.load_shift_scaled
 
-
   // Input Vector
   val input_vector = Wire(Vec(16, SInt(elementWidth.W)))
   input_vector := ext_data_i.bits.asTypeOf(Vec(16, SInt(elementWidth.W)))
   dontTouch(input_vector)
 
   // Stage 0: Load all scaling factor
-    val ln2_scaled = RegEnable(VecInit(input_vector.map(_.asUInt)), VecInit(Seq.fill(16)(0.U(32.W))), load_ln2_scaled)
-    val A_scaled   = RegEnable(VecInit(input_vector.map(_.asUInt)), VecInit(Seq.fill(16)(0.U(32.W))), load_a_scaled)
-    val B_scaled   = RegEnable(VecInit(input_vector.map(_.asUInt)), VecInit(Seq.fill(16)(0.U(32.W))), load_b_scaled)
-    val C_scaled   = RegEnable(VecInit(input_vector.map(_.asUInt)), VecInit(Seq.fill(16)(0.U(32.W))), load_c_scaled)
+  val ln2_scaled    = RegEnable(VecInit(input_vector.map(_.asUInt)), VecInit(Seq.fill(16)(0.U(32.W))), load_ln2_scaled)
+  val A_scaled      = RegEnable(VecInit(input_vector.map(_.asUInt)), VecInit(Seq.fill(16)(0.U(32.W))), load_a_scaled)
+  val B_scaled      = RegEnable(VecInit(input_vector.map(_.asUInt)), VecInit(Seq.fill(16)(0.U(32.W))), load_b_scaled)
+  val C_scaled      = RegEnable(VecInit(input_vector.map(_.asUInt)), VecInit(Seq.fill(16)(0.U(32.W))), load_c_scaled)
   // For the shift, take the lower 7 bits of each element as UInt(7.W)
   // Use a mask instead of a two-argument apply to avoid parsing issues
-  val scaling_shift = RegEnable(VecInit(input_vector.map(x => (x.asUInt & 0x7F.U(7.W)))), VecInit(Seq.fill(16)(0.U(7.W))), load_shift_scaled)
+  val scaling_shift = RegEnable(
+    VecInit(input_vector.map(x => (x.asUInt & 0x7f.U(7.W)))),
+    VecInit(Seq.fill(16)(0.U(7.W))),
+    load_shift_scaled
+  )
 
   // Stage 1: Find the maximum value in the input vector
   val max_value = RegInit(VecInit(Seq.fill(16)(0x80000000.S(elementWidth.W))))
@@ -508,8 +510,8 @@ class SoftMax()(implicit extensionParam: DataPathExtensionParam) extends DataPat
     val added_val = Wire(SInt(elementWidth.W))
     added_val               := limited_to_ln2_value_2(i) + ln2_scaled(i).asSInt // Scale by 1
     limited_to_ln2_value(i) := Mux(added_val < 0.S, added_val, limited_to_ln2_value_2(i))
-    z_0(i)                  := added_val < 0.S                               // Set the lowest bit if the value is >= 0
-    is_big_enough(i)        := (added_val >= -(ln2_scaled(i).asSInt))
+    z_0(i)           := added_val < 0.S // Set the lowest bit if the value is >= 0
+    is_big_enough(i) := (added_val >= -(ln2_scaled(i).asSInt))
   }
 
   // Stage 2c: Compute exponentials with polynomial approximation (a * (x + b)^2 + c)
@@ -518,14 +520,14 @@ class SoftMax()(implicit extensionParam: DataPathExtensionParam) extends DataPat
     poly_after_b(i) := (limited_to_ln2_value(i) + B_scaled(i).asSInt).asUInt
   }
 
-  val poly_reg_1   = RegInit(VecInit(Seq.fill(16)(0.U(elementWidth.W))))
-  val pipeline_z_1 = RegInit(VecInit(Seq.fill(16)(0.U(4.W))))
+  val poly_reg_1               = RegInit(VecInit(Seq.fill(16)(0.U(elementWidth.W))))
+  val pipeline_z_1             = RegInit(VecInit(Seq.fill(16)(0.U(4.W))))
   val pipeline_is_big_enough_1 = RegInit(VecInit(Seq.fill(16)(false.B)))
 
   when((ext_data_i.valid || dont_check_valid) & (ext_data_o.ready || dont_check_ready)) {
-    poly_reg_1   := poly_after_b
-    pipeline_z_1 := z
-    pipeline_is_big_enough_1 := is_big_enough 
+    poly_reg_1               := poly_after_b
+    pipeline_z_1             := z
+    pipeline_is_big_enough_1 := is_big_enough
   }
 
   val poly_after_square = Wire(Vec(16, UInt((2 * elementWidth).W)))
@@ -533,13 +535,13 @@ class SoftMax()(implicit extensionParam: DataPathExtensionParam) extends DataPat
     poly_after_square(i) := (poly_reg_1(i) * poly_reg_1(i)).asUInt
   }
 
-  val poly_reg_2   = RegInit(VecInit(Seq.fill(16)(0.U((2 * elementWidth).W))))
-  val pipeline_z_2 = RegInit(VecInit(Seq.fill(16)(0.U(4.W))))
+  val poly_reg_2               = RegInit(VecInit(Seq.fill(16)(0.U((2 * elementWidth).W))))
+  val pipeline_z_2             = RegInit(VecInit(Seq.fill(16)(0.U(4.W))))
   val pipeline_is_big_enough_2 = RegInit(VecInit(Seq.fill(16)(false.B)))
 
   when((ext_data_i.valid || dont_check_valid) & (ext_data_o.ready || dont_check_ready)) {
-    poly_reg_2   := poly_after_square
-    pipeline_z_2 := pipeline_z_1
+    poly_reg_2               := poly_after_square
+    pipeline_z_2             := pipeline_z_1
     pipeline_is_big_enough_2 := pipeline_is_big_enough_1
   }
 
@@ -548,13 +550,13 @@ class SoftMax()(implicit extensionParam: DataPathExtensionParam) extends DataPat
     poly_after_a(i) := (poly_reg_2(i) * A_scaled(i).asUInt).asUInt
   }
 
-  val poly_reg_3   = RegInit(VecInit(Seq.fill(16)(0.U((3 * elementWidth).W))))
-  val pipeline_z_3 = RegInit(VecInit(Seq.fill(16)(0.U(4.W))))
+  val poly_reg_3               = RegInit(VecInit(Seq.fill(16)(0.U((3 * elementWidth).W))))
+  val pipeline_z_3             = RegInit(VecInit(Seq.fill(16)(0.U(4.W))))
   val pipeline_is_big_enough_3 = RegInit(VecInit(Seq.fill(16)(false.B)))
 
   when((ext_data_i.valid || dont_check_valid) & (ext_data_o.ready || dont_check_ready)) {
-    poly_reg_3   := poly_after_a
-    pipeline_z_3 := pipeline_z_2
+    poly_reg_3               := poly_after_a
+    pipeline_z_3             := pipeline_z_2
     pipeline_is_big_enough_3 := pipeline_is_big_enough_2
   }
 

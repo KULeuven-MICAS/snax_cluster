@@ -12,8 +12,6 @@ import os
 import pathlib
 import sys
 
-import debugpy
-
 import hjson
 import numpy as np
 
@@ -39,7 +37,6 @@ def emit_header_file(**kwargs):
 
 
 def emit_softmax_data(**kwargs):
-
     data_in_type = "int32_t"
     data_out_type = "uint32_t"
 
@@ -47,14 +44,15 @@ def emit_softmax_data(**kwargs):
     M = kwargs["M"]
     channel_count = kwargs["channels"]
 
-
     # Scaling Matrix for softmax
     matrix_scaling = np.zeros((5, channel_count), dtype=np.int32)
     for i in range(channel_count):
         matrix_scaling[0, i] = int(math.log(2) * kwargs["inverse_scaling_factor"])
         matrix_scaling[1, i] = int(0.3585 * kwargs["inverse_scaling_factor"])
         matrix_scaling[2, i] = int(1.353 * kwargs["inverse_scaling_factor"])
-        matrix_scaling[3, i] = int(0.344 * (kwargs["inverse_scaling_factor"] ** 3)) >> math.floor(math.log2(kwargs["inverse_scaling_factor"]) * 2)
+        matrix_scaling[3, i] = int(
+            0.344 * (kwargs["inverse_scaling_factor"] ** 3)
+            ) >> math.floor(math.log2(kwargs["inverse_scaling_factor"]) * 2)
         matrix_scaling[4, i] = math.floor(math.log2(kwargs["inverse_scaling_factor"])) * 2
     scaling_matrix = matrix_scaling.flatten()
 
@@ -72,7 +70,6 @@ def emit_softmax_data(**kwargs):
             scaling_matrix,
         )
     ]
-
 
     # Input Matrix for Softmax
     matrix_data = np.random.randint(
@@ -261,11 +258,6 @@ def emit_softmax_data(**kwargs):
 
 
 def main():
-
-    # debugpy.listen(("0.0.0.0", 5678))
-    # print("🔍 Waiting for debugger attach...")
-    # debugpy.wait_for_client()  # Blocks until VS Code attaches
-    # print("Debugger attached! Running program...")
 
     # Parsing cmd args
     parser = argparse.ArgumentParser(description="Generating data for kernels")

@@ -17,13 +17,15 @@ int main() {
     uint32_t tcdm_baseaddress = snrt_cluster_base_addrl();
     // Put the first input at the starting of tcdm
     void *tcdm_scaling = (void *)(tcdm_baseaddress);
-    void *tcdm_in = (void *)(tcdm_baseaddress + (scaling_size * sizeof(scaling_matrix[0]) * 8 + 7) / 8);
+    void *tcdm_in =
+        (void *)(tcdm_baseaddress +
+                 (scaling_size * sizeof(scaling_matrix[0]) * 8 + 7) / 8);
 
     // Put the output at the middle of tcdm
     void *tcdm_out =
         (void *)(tcdm_baseaddress +
-                (scaling_size * sizeof(scaling_matrix[0]) * 8 + 7) / 8 +
-                (matrix_size * sizeof(input_matrix[0]) * 8 + 7) / 8);
+                 (scaling_size * sizeof(scaling_matrix[0]) * 8 + 7) / 8 +
+                 (matrix_size * sizeof(input_matrix[0]) * 8 + 7) / 8);
 
     printf("tcdm_out: %p\n", tcdm_out);
 
@@ -32,7 +34,7 @@ int main() {
         snrt_dma_start_1d(tcdm_scaling, scaling_matrix,
                           scaling_size * sizeof(scaling_matrix[0]));
         snrt_dma_wait_all();
-        
+
         snrt_dma_start_1d(tcdm_in, input_matrix,
                           matrix_size * sizeof(input_matrix[0]));
         snrt_dma_wait_all();
@@ -82,20 +84,23 @@ int main() {
 
         // --------------------- Configure the AGU --------------------- //
         for (int i = 0; i < 4; i++) {
-            snax_xdma_memcpy_nd(tcdm_scaling + (64 * i), tcdm_out + (64 * i), spatial_stride_src,
-                        spatial_stride_dst, temporal_dimension_src,
-                        temporal_strides_src_scaling, temporal_bounds_src_scaling,
-                        temporal_dimension_dst, temporal_strides_dst_scaling,
-                        temporal_bounds_dst_scaling, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            snax_xdma_memcpy_nd(
+                tcdm_scaling + (64 * i), tcdm_out + (64 * i),
+                spatial_stride_src, spatial_stride_dst, temporal_dimension_src,
+                temporal_strides_src_scaling, temporal_bounds_src_scaling,
+                temporal_dimension_dst, temporal_strides_dst_scaling,
+                temporal_bounds_dst_scaling, 0xFFFFFFFF, 0xFFFFFFFF,
+                0xFFFFFFFF);
             int scaling_task_id = snax_xdma_start();
             // printf("scaling task id: %d\n", scaling_task_id);
             snax_xdma_local_wait(scaling_task_id);
             // printf("got out of scaling\n");
-            snax_xdma_memcpy_nd(tcdm_in + (64 * i), tcdm_out + (64 * i), spatial_stride_src,
-                        spatial_stride_dst, temporal_dimension_src,
-                        temporal_strides_src_data, temporal_bounds_src_data,
-                        temporal_dimension_dst, temporal_strides_dst_data,
-                        temporal_bounds_dst_data, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            snax_xdma_memcpy_nd(
+                tcdm_in + (64 * i), tcdm_out + (64 * i), spatial_stride_src,
+                spatial_stride_dst, temporal_dimension_src,
+                temporal_strides_src_data, temporal_bounds_src_data,
+                temporal_dimension_dst, temporal_strides_dst_data,
+                temporal_bounds_dst_data, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
             // printf("snax_xdma_memcpy_nd done\n");
             int task_id = snax_xdma_start();
             // printf("got out of snax_xdma_start, csr address: %d\n", task_id);
