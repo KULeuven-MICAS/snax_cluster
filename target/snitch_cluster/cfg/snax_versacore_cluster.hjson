@@ -61,11 +61,11 @@ Naming convention:
             snax_enable_assign_tcdm_idx: true
             snax_narrow_assign_start_idx:
             [
-                416
+                544
             ]
             snax_narrow_assign_end_idx:
             [
-                431
+                559
             ]
             snax_wide_assign_start_idx:
             [
@@ -73,7 +73,7 @@ Naming convention:
             ]
             snax_wide_assign_end_idx:
             [
-                415
+                543
             ]
         }
         use_ax_bw_converter: true
@@ -154,12 +154,12 @@ Naming convention:
                     snax_versacore
                 ]
                 snax_narrow_tcdm_ports: 0
-                snax_wide_tcdm_ports: 416
+                snax_wide_tcdm_ports: 544
                 snax_num_rw_csr: 7
                 snax_num_ro_csr: 2
                 snax_versacore_mac_num:
                 [
-                    2048, 2048
+                    2048, 4096
                 ]
                 snax_versacore_input_a_element_width:
                 [
@@ -167,15 +167,15 @@ Naming convention:
                 ]
                 snax_versacore_input_a_data_type:
                 [
-                    "SInt", "Float"
+                    "SInt", "SInt"
                 ]
                 snax_versacore_input_b_element_width:
                 [
-                    8, 8
+                    8, 4
                 ]
                 snax_versacore_input_b_data_type:
                 [
-                    "SInt", "Float"
+                    "SInt", "SInt"
                 ]
                 snax_versacore_input_c_element_width:
                 [
@@ -183,7 +183,7 @@ Naming convention:
                 ]
                 snax_versacore_input_c_data_type:
                 [
-                    "SInt", "Float"
+                    "SInt", "SInt"
                 ]
                 snax_versacore_output_d_element_width:
                 [
@@ -191,15 +191,15 @@ Naming convention:
                 ]
                 snax_versacore_output_d_data_type:
                 [
-                    "SInt", "Float"
+                    "SInt", "SInt"
                 ]
                 snax_versacore_array_input_a_width: 2048
                 snax_versacore_array_input_b_width: 16384
-                snax_versacore_array_input_c_width: 4096
-                snax_versacore_array_output_d_width: 4096
+                snax_versacore_array_input_c_width: 8192
+                snax_versacore_array_output_d_width: 8192
                 snax_versacore_serial_a_width: 2048
                 snax_versacore_serial_b_width: 16384
-                snax_versacore_serial_c_d_width: 4096
+                snax_versacore_serial_c_d_width: 8192
                 snax_versacore_adder_tree_delay: 2
                 snax_versacore_spatial_unrolling:
                 [
@@ -219,12 +219,12 @@ Naming convention:
                         [
                             16
                             16
-                            8
+                            16
                         ]
                         [
                             1
                             64
-                            32
+                            64
                         ]
                     ]
                 ]
@@ -232,6 +232,7 @@ Naming convention:
                 [
                     output_stationary
                     weight_stationary
+                    input_stationary
                 ]
                 snax_streamer_cfg:
                 {
@@ -322,7 +323,7 @@ Naming convention:
                     256
                 ]
                 [
-                    64
+                    128
                 ]
             ]
             temporal_dim:
@@ -335,7 +336,7 @@ Naming convention:
             [
                 32
                 256
-                64
+                128
             ]
             fifo_depth:
             [
@@ -355,7 +356,7 @@ Naming convention:
             spatial_bounds:
             [
                 [
-                    64
+                    128
                 ]
             ]
             temporal_dim:
@@ -364,7 +365,7 @@ Naming convention:
             ]
             num_channel:
             [
-                64
+                128
             ]
             fifo_depth:
             [
