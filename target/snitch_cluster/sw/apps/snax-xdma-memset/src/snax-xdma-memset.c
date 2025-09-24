@@ -49,10 +49,6 @@ int main() {
         }
 #endif
 
-        if (err != 0) {
-            return err;
-        }
-
         int task_id = snax_xdma_start();
         printf(
             "The xdma is started, setting memory region to 0xFF. The task id "

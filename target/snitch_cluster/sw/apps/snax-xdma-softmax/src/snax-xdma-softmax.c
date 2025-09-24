@@ -16,29 +16,32 @@ int main() {
     uint32_t dma_load_input_end;
     uint32_t tcdm_baseaddress = snrt_cluster_base_addrl();
     // Put the first input at the starting of tcdm
-    void *tcdm_in = (void *)tcdm_baseaddress;
+    void *tcdm_scaling = (void *)(tcdm_baseaddress);
+    void *tcdm_in =
+        (void *)(tcdm_baseaddress +
+                 (scaling_size * sizeof(scaling_matrix[0]) * 8 + 7) / 8);
 
     // Put the output at the middle of tcdm
     void *tcdm_out =
         (void *)(tcdm_baseaddress +
+                 (scaling_size * sizeof(scaling_matrix[0]) * 8 + 7) / 8 +
                  (matrix_size * sizeof(input_matrix[0]) * 8 + 7) / 8);
 
     printf("tcdm_out: %p\n", tcdm_out);
 
     if (snrt_is_dm_core()) {
         // First we need to transfer the input data from L3->TCDM
+        snrt_dma_start_1d(tcdm_scaling, scaling_matrix,
+                          scaling_size * sizeof(scaling_matrix[0]));
+        snrt_dma_wait_all();
+
         snrt_dma_start_1d(tcdm_in, input_matrix,
                           matrix_size * sizeof(input_matrix[0]));
         snrt_dma_wait_all();
 
         // --------------------- Configure the Ext --------------------- //
-        int32_t input_zp_i = 0;
-        uint32_t multiplier_i = 10283821;
-        int32_t output_zp_i = 0;
-        uint32_t shift_i = 10;
 
-        uint32_t ext_param[4] = {input_zp_i, multiplier_i, output_zp_i,
-                                 shift_i};
+        uint32_t ext_param[1] = {softmax_cycles};
         if (snax_xdma_disable_src_ext(0) != 0) {
             printf("Error in disabling reader xdma extension 0\n");
             err++;
@@ -59,8 +62,8 @@ int main() {
             err++;
         }
 
-        if (snax_xdma_enable_src_ext(4, ext_param) != 0) {
-            printf("Error in enabling reader xdma extension 4\n");
+        if (snax_xdma_disable_src_ext(4) != 0) {
+            printf("Error in disabling reader xdma extension 4\n");
             err++;
         }
 
@@ -74,29 +77,43 @@ int main() {
             err++;
         }
 
-        if (snax_xdma_disable_dst_ext(2) != 0) {
-            printf("Error in disabling writer xdma extension 2\n");
+        if (snax_xdma_enable_dst_ext(2, ext_param) != 0) {
+            printf("Error in enabling writer xdma extension 2\n");
             err++;
         }
 
         // --------------------- Configure the AGU --------------------- //
-        snax_xdma_memcpy_nd(
-            tcdm_in, tcdm_out, spatial_stride_src, spatial_stride_dst,
-            temporal_dimension_src, temporal_strides_src, temporal_bounds_src,
-            temporal_dimension_dst, temporal_strides_dst, temporal_bounds_dst,
-            0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
-        printf("snax_xdma_memcpy_nd done\n");
-        int task_id = snax_xdma_start();
-        printf("got out of snax_xdma_start, csr address: %d\n", task_id);
-        snax_xdma_local_wait(task_id);
-        printf("xdma task %d is done in %d cycles\n", task_id,
-               snax_xdma_last_task_cycle());
+        for (int i = 0; i < 4; i++) {
+            snax_xdma_memcpy_nd(
+                tcdm_scaling + (64 * i), tcdm_out + (64 * i),
+                spatial_stride_src, spatial_stride_dst, temporal_dimension_src,
+                temporal_strides_src_scaling, temporal_bounds_src_scaling,
+                temporal_dimension_dst, temporal_strides_dst_scaling,
+                temporal_bounds_dst_scaling, 0xFFFFFFFF, 0xFFFFFFFF,
+                0xFFFFFFFF);
+            int scaling_task_id = snax_xdma_start();
+            // printf("scaling task id: %d\n", scaling_task_id);
+            snax_xdma_local_wait(scaling_task_id);
+            // printf("got out of scaling\n");
+            snax_xdma_memcpy_nd(
+                tcdm_in + (64 * i), tcdm_out + (64 * i), spatial_stride_src,
+                spatial_stride_dst, temporal_dimension_src,
+                temporal_strides_src_data, temporal_bounds_src_data,
+                temporal_dimension_dst, temporal_strides_dst_data,
+                temporal_bounds_dst_data, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            // printf("snax_xdma_memcpy_nd done\n");
+            int task_id = snax_xdma_start();
+            // printf("got out of snax_xdma_start, csr address: %d\n", task_id);
+            snax_xdma_local_wait(task_id);
+            // printf("xdma task %d is done in %d cycles\n", task_id,
+            //    snax_xdma_last_task_cycle());
+        }
 
         // --------------------- Checking the Results --------------------- //
         uint32_t *golden_result = (uint32_t *)golden_output_matrix;
         uint32_t *tcdm_result = (uint32_t *)tcdm_out;
 
-        for (int i = 0; i < matrix_size; i++) {
+        for (int i = 0; i < matrix_size * sizeof(input_matrix[0]) / 4; i++) {
             if (tcdm_result[i] != golden_result[i]) {
                 printf("The sum is incorrect at byte %d! \n", i << 2);
             }
