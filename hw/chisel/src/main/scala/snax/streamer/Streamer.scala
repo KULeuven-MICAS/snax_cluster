@@ -8,10 +8,10 @@ import chisel3.util._
 
 import play.api.libs.json._
 import snax.DataPathExtension._
-import snax.reqRspManager._
 import snax.readerWriter._
+import snax.reqRspManager.ReqRspManager
+import snax.reqRspManager.SnaxReqRspIO
 import snax.utils._
-import snax.reqRspManager.{ReqRspManager, SnaxReqRspIO}
 
 // data to accelerator interface generator
 // a vector of decoupled interface with configurable number and configurable width for each port
@@ -57,23 +57,14 @@ class StreamerDataIO(param: StreamerParam) extends Bundle {
   ))
 }
 
-/** This class represents the input and output ports of the streamer top module
-  *
-  * @param param
-  *   the parameters class instantiation for the streamer top module
-  */
+/** This class represents the input and output ports of the streamer top module */
 class StreamerIO(param: StreamerParam) extends Bundle {
-
   // cross clock domain clock from the accelerator
   val accClock = if (param.hasCrossClockDomain) Some(Input(Clock())) else None
-
   // ports for csr configuration
-  val csr = new SnaxReqRspIO(param.csrAddrWidth, 32)
-
+  val csr      = new SnaxReqRspIO(param.csrAddrWidth, 32)
   // ports for data in and out
-  val data = new StreamerDataIO(
-    param
-  )
+  val data     = new StreamerDataIO(param)
 }
 
 // streamer generator module
@@ -81,11 +72,7 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
 
   override val desiredName = param.tagName + "Streamer"
 
-  val io = IO(
-    new StreamerIO(
-      param
-    )
-  )
+  val io = IO(new StreamerIO(param))
 
   require(
     param.readerParams.length == param.readerDatapathExtention.length,
@@ -104,16 +91,11 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   // ---------------------- csr manager instantiation--------------------------------
   // --------------------------------------------------------------------------------
 
-  val reader_csr        =
-    param.readerParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
-  val writer_csr        =
-    param.writerParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
-  val reader_writer_csr =
-    param.readerWriterParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+  val reader_csr        = param.readerParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+  val writer_csr        = param.writerParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
+  val reader_writer_csr = param.readerWriterParams.map(_.csrNum).reduceLeftOption(_ + _).getOrElse(0)
 
-  def get_extension_list_csr_num(
-    extensionSeqSeq: Seq[Seq[HasDataPathExtension]]
-  ): Int = {
+  def get_extension_list_csr_num(extensionSeqSeq: Seq[Seq[HasDataPathExtension]]): Int = {
     extensionSeqSeq.map {
       case seq if seq.nonEmpty =>
         seq
@@ -126,17 +108,9 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
       .getOrElse(0)
   }
 
-  val reader_extension_csr = get_extension_list_csr_num(
-    param.readerDatapathExtention
-  )
-
-  val writer_extension_csr = get_extension_list_csr_num(
-    param.writerDatapathExtention
-  )
-
-  val reader_writer_extension_csr = get_extension_list_csr_num(
-    param.readerWriterDatapathExtention
-  )
+  val reader_extension_csr        = get_extension_list_csr_num(param.readerDatapathExtention)
+  val writer_extension_csr        = get_extension_list_csr_num(param.writerDatapathExtention)
+  val reader_writer_extension_csr = get_extension_list_csr_num(param.readerWriterDatapathExtention)
 
   // extra one is the start csr
   val csrNumReadWrite =
@@ -162,23 +136,13 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   // data readers instantiation
   // a vector of data reader generator instantiation with different parameters for each module
   val reader = Seq((0 until param.readerNum).map { i =>
-    Module(
-      new Reader(
-        param.readerParams(i),
-        param.tagName + "_C" + i.toString()
-      )
-    )
+    Module(new Reader(param.readerParams(i), param.tagName + "_C" + i.toString()))
   }: _*)
 
   // data writers instantiation
   // a vector of data writer generator instantiation with different parameters for each module
   val writer = Seq((0 until param.writerNum).map { i =>
-    Module(
-      new Writer(
-        param.writerParams(i),
-        param.tagName + "_C" + i.toString()
-      )
-    )
+    Module(new Writer(param.writerParams(i), param.tagName + "_C" + i.toString()))
   }: _*)
 
   // data reader_writers instantiation

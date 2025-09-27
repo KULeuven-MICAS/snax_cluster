@@ -1,13 +1,14 @@
 // See README.md for license details.
 
-ThisBuild / scalaVersion := "2.13.14"
-ThisBuild / version      := "0.1.0"
-ThisBuild / organization := "be.kuleuven.esat.micas"
+ThisBuild / scalaVersion               := "2.13.14"
+ThisBuild / version                    := "0.1.0"
+ThisBuild / organization               := "be.kuleuven.esat.micas"
+ThisBuild / scalafixScalaBinaryVersion := "2.13"
 
 val chiselVersion   = "6.4.0"
 val playJSONVersion = "3.0.4"
 
-lazy val root = (project in file("."))
+lazy val chisel = (project in file("."))
   .settings(
     name := "snax-streamer",
     libraryDependencies ++= Seq(

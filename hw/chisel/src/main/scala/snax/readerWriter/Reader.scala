@@ -13,20 +13,12 @@ class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
 
   override val desiredName = s"${moduleNamePrefix}_Reader"
 
-  require(
-    param.configurableByteMask == false,
-    "Byte Mask is not supported in Reader"
-  )
+  require(param.configurableByteMask == false, "Byte Mask is not supported in Reader")
 
   val io = IO(new ReaderIO(param))
 
   // New Address Generator
-  val addressgen = Module(
-    new AddressGenUnit(
-      param.aguParam,
-      moduleNamePrefix = s"${moduleNamePrefix}_Reader"
-    )
-  )
+  val addressgen = Module(new AddressGenUnit(param.aguParam, moduleNamePrefix = s"${moduleNamePrefix}_Reader"))
 
   // Requestors to send address to TCDM
   val requestors = Module(

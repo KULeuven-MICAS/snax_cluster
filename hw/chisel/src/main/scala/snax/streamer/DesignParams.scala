@@ -68,7 +68,9 @@ class StreamerParam(
     readerParams ++ writerParams ++ readerWriterParams
   totalReaderWriterParams.foreach { param =>
     require(
-      param.aguParam.spatialBounds.reduce(_ * _) == param.aguParam.numChannel
+      param.aguParam.spatialBounds.reduce(_ * _) == param.aguParam.numChannel,
+      s"spatial unrolling factor product ${param.aguParam.spatialBounds
+          .reduce(_ * _)} does not match the channel number ${param.aguParam.numChannel}"
     )
   }
 

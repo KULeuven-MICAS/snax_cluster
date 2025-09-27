@@ -1,7 +1,7 @@
 package snax.utils
 import chisel3._
-import chisel3.util._
 import chisel3.experimental.requireIsChiselType
+import chisel3.util._
 
 /** The definition of -|> / -||> / -|||> connector for decoupled signal it connects leftward Decoupled signal (Decoupled
   * port) and rightward Decoupled signal (Flipped port); and insert one level of pipeline in between to avoid long

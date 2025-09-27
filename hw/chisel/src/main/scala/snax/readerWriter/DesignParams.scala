@@ -6,13 +6,12 @@ import chisel3.util.log2Ceil
  *  Design Params is placed all together with companion object to avoid multiple definition of one config & config conflict
  */
 
-// TCDM Params
-
 class TCDMParam(val addrWidth: Int, val dataWidth: Int, val numChannel: Int, val tcdmSize: Int)
 
 object TCDMParam {
   def apply(dataWidth: Int, numChannel: Int, tcdmSize: Int): TCDMParam =
     new TCDMParam(log2Ceil(tcdmSize) + 10, dataWidth, numChannel, tcdmSize)
+
   // By default, the TCDM is 128kB, 64bit data width, 8 channels
   def apply(): TCDMParam = apply(dataWidth = 64, numChannel = 8, tcdmSize = 128)
 }
@@ -133,8 +132,7 @@ class ReaderWriterParam(
   val bufferDepth = dataBufferDepth
 
   val csrNum =
-    2 + spatialBounds.length + 2 * temporalDimension + (if (configurableChannel)
-                                                          ((tcdmParam.numChannel + 31) / 32)
+    2 + spatialBounds.length + 2 * temporalDimension + (if (configurableChannel) ((tcdmParam.numChannel + 31) / 32)
                                                         else
                                                           0) + (if (configurableByteMask) 1
                                                                 else

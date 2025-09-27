@@ -7,11 +7,13 @@ ThisBuild / scalafixScalaBinaryVersion := "2.13"
 
 val chiselVersion = "6.4.0"
 
-lazy val chisel_float = ProjectRef(file("subprojects/chisel-float"), "chisel_float")
+lazy val chisel       = ProjectRef(file("hw/chisel"), "chisel")
+lazy val chisel_acc   = ProjectRef(file("hw/chisel_acc"), "chisel_acc")
+lazy val chisel_float = ProjectRef(file("hw/chisel_acc/subprojects/chisel-float"), "chisel_float")
 
-lazy val chisel_acc = (project in file("."))
+lazy val root = (project in file("."))
   .settings(
-    name := "snax-accelerators",
+    name := "snax-cluster",
     libraryDependencies ++= Seq(
       "org.chipsalliance" %% "chisel"     % chiselVersion,
       "edu.berkeley.cs"   %% "chiseltest" % "6.0.0" % "test"
@@ -28,4 +30,4 @@ lazy val chisel_acc = (project in file("."))
       "org.chipsalliance" % "chisel-plugin" % chiselVersion cross CrossVersion.full
     )
   )
-  .dependsOn(chisel_float, chisel_float % "compile->test")
+  .dependsOn(chisel_float, chisel, chisel_acc)

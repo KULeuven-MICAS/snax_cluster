@@ -3,6 +3,8 @@ package snax.xdma.xdmaFrontend
 import chisel3._
 import chisel3.util._
 
+import snax.reqRspManager.ReqRspManager
+import snax.reqRspManager.SnaxReqRspIO
 import snax.utils.DecoupledCut._
 import snax.utils.DemuxDecoupled
 import snax.utils._
@@ -12,7 +14,6 @@ import snax.xdma.xdmaIO.XDMAInterClusterCfgIO
 import snax.xdma.xdmaIO.XDMAInterClusterCfgIODeserializer
 import snax.xdma.xdmaIO.XDMAInterClusterCfgIOSerializer
 import snax.xdma.xdmaIO.XDMAIntraClusterCfgIO
-import snax.reqRspManager.{ReqRspManager, SnaxReqRspIO}
 
 class XDMACtrlIO(readerParam: XDMAParam, writerParam: XDMAParam) extends Bundle {
   // clusterBaseAddress to determine if it is the local command or remote command

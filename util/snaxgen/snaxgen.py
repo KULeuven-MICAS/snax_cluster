@@ -81,75 +81,41 @@ def streamer_csr_num(acc_cfgs):
     # This is the total number of loop dimension registers
     num_t_loop_dim = 0
     if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
-        num_t_loop_dim += sum(
-            acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["temporal_dim"]
-        )
+        num_t_loop_dim += sum(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["temporal_dim"])
 
     if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
-        num_t_loop_dim += sum(
-            acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["temporal_dim"]
-        )
+        num_t_loop_dim += sum(acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["temporal_dim"])
 
     if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
-        num_t_loop_dim += sum(
-            acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["temporal_dim"]
-        )
+        num_t_loop_dim += sum(acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["temporal_dim"])
 
     num_s_loop_dim = 0
     if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
-        num_s_loop_dim += sum(
-            (
-                len(i)
-                for i in acc_cfgs["snax_streamer_cfg"]["data_reader_params"][
-                    "spatial_bounds"
-                ]
-            )
-        )
+        num_s_loop_dim += sum((len(i) for i in acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["spatial_bounds"]))
     if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
-        num_s_loop_dim += sum(
-            (
-                len(i)
-                for i in acc_cfgs["snax_streamer_cfg"]["data_writer_params"][
-                    "spatial_bounds"
-                ]
-            )
-        )
+        num_s_loop_dim += sum((len(i) for i in acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["spatial_bounds"]))
     if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
         num_s_loop_dim += sum(
-            (
-                len(i)
-                for i in acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"][
-                    "spatial_bounds"
-                ]
-            )
+            (len(i) for i in acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["spatial_bounds"])
         )
 
     address_remapper_csr_num = 0
     if (
         "data_reader_params" in acc_cfgs["snax_streamer_cfg"]
-        and "tcdm_logic_word_size"
-        in acc_cfgs["snax_streamer_cfg"]["data_reader_params"]
+        and "tcdm_logic_word_size" in acc_cfgs["snax_streamer_cfg"]["data_reader_params"]
     ):
-        address_remapper_csr_num += len(
-            acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["tcdm_logic_word_size"]
-        )
+        address_remapper_csr_num += len(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["tcdm_logic_word_size"])
     if (
         "data_writer_params" in acc_cfgs["snax_streamer_cfg"]
-        and "tcdm_logic_word_size"
-        in acc_cfgs["snax_streamer_cfg"]["data_writer_params"]
+        and "tcdm_logic_word_size" in acc_cfgs["snax_streamer_cfg"]["data_writer_params"]
     ):
-        address_remapper_csr_num += len(
-            acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["tcdm_logic_word_size"]
-        )
+        address_remapper_csr_num += len(acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["tcdm_logic_word_size"])
     if (
         "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]
-        and "tcdm_logic_word_size"
-        in acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]
+        and "tcdm_logic_word_size" in acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]
     ):
         address_remapper_csr_num += len(
-            acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"][
-                "tcdm_logic_word_size"
-            ]
+            acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["tcdm_logic_word_size"]
         )
 
     # Calculation of data movers
@@ -159,24 +125,14 @@ def streamer_csr_num(acc_cfgs):
     num_data_mover = 0
 
     if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
-        num_data_reader = len(
-            acc_cfgs["snax_streamer_cfg"]["data_reader_params"][
-                "num_channel"
-            ]  # noqa: E501
-        )
+        num_data_reader = len(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["num_channel"])  # noqa: E501
 
     if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
-        num_data_writer = len(
-            acc_cfgs["snax_streamer_cfg"]["data_writer_params"][
-                "num_channel"
-            ]  # noqa: E501
-        )
+        num_data_writer = len(acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["num_channel"])  # noqa: E501
 
     if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
         num_data_reader_writer = len(
-            acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"][
-                "num_channel"
-            ]  # noqa: E501
+            acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["num_channel"]  # noqa: E501
         )
 
     # This sets the total number of base pointers
@@ -185,82 +141,34 @@ def streamer_csr_num(acc_cfgs):
     num_configurable_channel = 0
 
     if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
-        if (
-            "configurable_channel"
-            in acc_cfgs["snax_streamer_cfg"]["data_reader_params"]
-        ):
+        if "configurable_channel" in acc_cfgs["snax_streamer_cfg"]["data_reader_params"]:
             num_configurable_channel += sum(
                 int(
-                    acc_cfgs["snax_streamer_cfg"]["data_reader_params"][
-                        "configurable_channel"
-                    ][i]
-                    * (
-                        acc_cfgs["snax_streamer_cfg"]["data_reader_params"][
-                            "num_channel"
-                        ][i]
-                        + 31
-                    )
+                    acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["configurable_channel"][i]
+                    * (acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["num_channel"][i] + 31)
                     / 32
                 )
-                for i in range(
-                    len(
-                        acc_cfgs["snax_streamer_cfg"]["data_reader_params"][
-                            "configurable_channel"
-                        ]
-                    )
-                )
+                for i in range(len(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["configurable_channel"]))
             )
     if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
-        if (
-            "configurable_channel"
-            in acc_cfgs["snax_streamer_cfg"]["data_writer_params"]
-        ):
+        if "configurable_channel" in acc_cfgs["snax_streamer_cfg"]["data_writer_params"]:
             num_configurable_channel += sum(
                 int(
-                    acc_cfgs["snax_streamer_cfg"]["data_writer_params"][
-                        "configurable_channel"
-                    ][i]
-                    * (
-                        acc_cfgs["snax_streamer_cfg"]["data_writer_params"][
-                            "num_channel"
-                        ][i]
-                        + 31
-                    )
+                    acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["configurable_channel"][i]
+                    * (acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["num_channel"][i] + 31)
                     / 32
                 )
-                for i in range(
-                    len(
-                        acc_cfgs["snax_streamer_cfg"]["data_writer_params"][
-                            "configurable_channel"
-                        ]
-                    )
-                )
+                for i in range(len(acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["configurable_channel"]))
             )
     if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
-        if (
-            "configurable_channel"
-            in acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]
-        ):
+        if "configurable_channel" in acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]:
             num_configurable_channel += sum(
                 int(
-                    acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"][
-                        "configurable_channel"
-                    ][i]
-                    * int(
-                        acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"][
-                            "num_channel"
-                        ][i]
-                        + 31
-                    )
+                    acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["configurable_channel"][i]
+                    * int(acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["num_channel"][i] + 31)
                     / 32
                 )
-                for i in range(
-                    len(
-                        acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"][
-                            "configurable_channel"
-                        ]
-                    )
-                )
+                for i in range(len(acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["configurable_channel"]))
             )
 
     streamer_csr_num = (
@@ -304,9 +212,7 @@ def find_keys_with_keyword(data, keyword, parent_key=""):
 
     elif isinstance(data, list):
         for index, item in enumerate(data):
-            results.update(
-                find_keys_with_keyword(item, keyword, f"{parent_key}[{index}]")
-            )
+            results.update(find_keys_with_keyword(item, keyword, f"{parent_key}[{index}]"))
 
     return results
 
@@ -348,9 +254,7 @@ def main():
         default="false",
         help="Bypass default accelerator generation",
     )
-    parser.add_argument(
-        "--gen_path", type=str, default="./", help="Points to the output directory"
-    )
+    parser.add_argument("--gen_path", type=str, default="./", help="Points to the output directory")
     parser.add_argument(
         "--get_bender_targets",
         action="store_true",
@@ -421,12 +325,7 @@ def main():
             tcdm_data_width = cfg["cluster"]["data_width"]
             acc_cfgs[i]["tcdm_data_width"] = tcdm_data_width
             acc_cfgs[i]["tcdm_dma_data_width"] = cfg["cluster"]["dma_data_width"]
-            tcdm_depth = (
-                cfg["cluster"]["tcdm"]["size"]
-                * 1024
-                // cfg["cluster"]["tcdm"]["banks"]
-                // 8
-            )
+            tcdm_depth = cfg["cluster"]["tcdm"]["size"] * 1024 // cfg["cluster"]["tcdm"]["banks"] // 8
             acc_cfgs[i]["tcdm_depth"] = tcdm_depth
             tcdm_num_banks = cfg["cluster"]["tcdm"]["banks"]
             acc_cfgs[i]["tcdm_num_banks"] = tcdm_num_banks
@@ -455,9 +354,7 @@ def main():
 
             # CSR manager scala parameter generation
             if not acc_cfgs[i].get("snax_disable_csr_manager", False):
-                chisel_target_path = (
-                    args.chisel_path + "src/main/scala/snax/reqRspManager/"
-                )
+                chisel_target_path = args.chisel_path + "src/main/scala/snax/reqRspManager/"
                 file_name = "ReqRspManagerParamGen.scala"
                 tpl_scala_param_file = args.tpl_path + "reqrspman_param_gen.scala.tpl"
                 tpl_scala_param = get_template(tpl_scala_param_file)
@@ -485,9 +382,7 @@ def main():
 
             # This first one generates the streamer wrapper
             file_name = acc_cfgs[i]["snax_acc_name"] + "_streamer_wrapper.sv"
-            tpl_streamer_wrapper_file = (
-                args.tpl_path + "snax_streamer_wrapper.sv.tpl"
-            )  # noqa: E501
+            tpl_streamer_wrapper_file = args.tpl_path + "snax_streamer_wrapper.sv.tpl"  # noqa: E501
             tpl_streamer_wrapper = get_template(tpl_streamer_wrapper_file)
             gen_file(
                 cfg=acc_cfgs[i],
@@ -515,17 +410,13 @@ def main():
                     gen_path=rtl_target_path,
                 )
 
-            streamer_cfg = find_keys_with_keyword(
-                cfg, f"{acc_cfgs[i]['tag_name']}_streamer"
-            )
+            streamer_cfg = find_keys_with_keyword(cfg, f"{acc_cfgs[i]['tag_name']}_streamer")
             # Generate chisel component using chisel generation script
             gen_chisel_file(
                 chisel_path=args.chisel_path,
                 chisel_param="snax.streamer.StreamerGen",
                 gen_path=" --streamercfg "
-                + hjson.dumpsJSON(obj=streamer_cfg, separators=(",", ":")).replace(
-                    " ", ""
-                )
+                + hjson.dumpsJSON(obj=streamer_cfg, separators=(",", ":")).replace(" ", "")
                 + " "
                 + " --hw-target-dir "
                 + rtl_target_path,
@@ -587,9 +478,7 @@ def main():
                 chisel_path=chisel_acc_path,
                 chisel_param="snax_acc.versacore.VersaCoreGen"
                 + " --versacoreCfg "
-                + hjson.dumpsJSON(obj=snax_versacore_cfg, separators=(",", ":")).replace(
-                    " ", ""
-                ),
+                + hjson.dumpsJSON(obj=snax_versacore_cfg, separators=(",", ":")).replace(" ", ""),
                 gen_path=" --hw-target-dir " + rtl_target_path,
             )
         elif acc_cfgs[i]["snax_acc_name"] == "snax_data_reshuffler":
@@ -649,7 +538,7 @@ def main():
             + "_xdma/"
             + " --sw-target-dir "
             + args.gen_path
-            + "../sw/snax/xdma/include/snax-xdma-addr.h"
+            + "../sw/snax/xdma/include/snax-xdma-addr.h",
         )
 
     # ---------------------------------------
@@ -659,21 +548,15 @@ def main():
     harness_cfg = read_schema(cluster_schema_path)
 
     if "enable_debug" not in cfg["cluster"]:
-        cfg["cluster"]["enable_debug"] = harness_cfg["properties"]["enable_debug"][
-            "default"
-        ]
+        cfg["cluster"]["enable_debug"] = harness_cfg["properties"]["enable_debug"]["default"]
 
     if "iso_crossings" not in cfg["cluster"]["timing"]:
-        cfg["cluster"]["timing"]["iso_crossings"] = harness_cfg["properties"]["timing"][
-            "properties"
-        ]["iso_crossings"][
+        cfg["cluster"]["timing"]["iso_crossings"] = harness_cfg["properties"]["timing"]["properties"]["iso_crossings"][
             "default"
         ]  # noqa: E501
 
     if "sram_cfg_expose" not in cfg["cluster"]:
-        cfg["cluster"]["sram_cfg_expose"] = harness_cfg["properties"][
-            "sram_cfg_expose"
-        ]["default"]
+        cfg["cluster"]["sram_cfg_expose"] = harness_cfg["properties"]["sram_cfg_expose"]["default"]
 
     test_target_path = args.test_path
     file_name = "testharness.sv"

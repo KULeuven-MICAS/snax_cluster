@@ -9,11 +9,11 @@ import chisel3.util._
 import play.api.libs.json._
 import snax.DataPathExtension._
 import snax.readerWriter.ReaderWriterParam
+import snax.reqRspManager.SnaxReqRspIO
 import snax.utils._
 import snax.xdma.DesignParams._
 import snax.xdma.xdmaFrontend._
 import snax.xdma.xdmaIO.XDMADataPathCfgIO
-import snax.reqRspManager.SnaxReqRspIO
 
 class XDMATopIO(readerParam: XDMAParam, writerParam: XDMAParam) extends Bundle {
   val clusterBaseAddress = Input(

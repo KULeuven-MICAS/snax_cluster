@@ -11,7 +11,6 @@ import snax.utils._
 import snax.xdma.DesignParams._
 import snax.xdma.xdmaIO.XDMADataPathCfgIO
 import snax.xdma.xdmaIO.XDMAIntraClusterCfgIO
-import snax.xdma.xdmaTop.XDMATopGen.cfgParam
 
 class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: String = "unnamed_cluster")
     extends Module
