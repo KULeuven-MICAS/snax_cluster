@@ -14,6 +14,13 @@ work
 *.svf
 *.log
 
+simbacore-work
+!simbacore-work/flist.tcl
+!target/snitch_cluster/generated/snax_simbacore
+!target/snitch_cluster/generated/snax_simbacore_cluster_xdma
+!target/snitch_cluster/generated/snax_simbacore_cluster_wrapper.sv
+
+
 #  File List Synthesis Files
 *_flist.tcl
 
