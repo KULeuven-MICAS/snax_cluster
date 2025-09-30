@@ -1112,6 +1112,24 @@ DmaXbarCfg.NoMstPorts
   // if this happens
   if ((TotalSnaxNarrowTcdmPorts > 0)) begin : gen_yes_snax_tcdm_interconnect
 
+    if (Topology == snitch_pkg::SparseInterconnect) begin: gen_sparse_interconnect
+    sparse_interconnect_wrapper #(
+        .NumInp(NumTCDMIn + TotalSnaxNarrowTcdmPorts),
+        .NumOut(NrBanks),
+        .tcdm_req_t(tcdm_req_t),
+        .tcdm_rsp_t(tcdm_rsp_t),
+        .mem_req_t(mem_req_t),
+        .mem_rsp_t(mem_rsp_t)
+    ) i_tcdm_interconnect (
+        .clk_i,
+        .rst_ni,
+        .req_i({axi_soc_req, tcdm_req, snax_tcdm_req_narrow}),
+        //snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]}),
+        .rsp_o({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_narrow}),
+        .mem_req_o(ic_req),
+        .mem_rsp_i(ic_rsp)
+    );
+    end else begin: gen_logarithmic_interconnect
     snitch_tcdm_interconnect #(
         .NumInp(NumTCDMIn + TotalSnaxNarrowTcdmPorts),
         .NumOut(NrBanks),
@@ -1134,6 +1152,7 @@ DmaXbarCfg.NoMstPorts
         .mem_req_o(ic_req),
         .mem_rsp_i(ic_rsp)
     );
+  end
   end else begin : gen_no_snax_tcdm_interconnect
 
     snitch_tcdm_interconnect #(

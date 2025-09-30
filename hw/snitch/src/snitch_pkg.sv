@@ -153,12 +153,14 @@ package snitch_pkg;
   } cluster_master_dma_e;
 
   /// Possible interconnect implementations.
-  typedef enum bit {
+  typedef enum int unsigned {
     /// Crossbar implementation. We call it `LogarithmicInterconnect` because the
     /// response path isn't arbitrated.
-    LogarithmicInterconnect,
+    LogarithmicInterconnect = 0,
     /// Omega Network. It is isomorphic to a butterfly network.
-    OmegaNet
+    OmegaNet = 1,
+    /// Sparse Interconnect.
+    SparseInterconnect = 2
   } topo_e;
 
   // Event strobes per core, counted by the performance counters in the cluster

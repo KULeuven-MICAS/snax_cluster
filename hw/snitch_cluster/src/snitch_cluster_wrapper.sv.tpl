@@ -449,7 +449,7 @@ for core_id in range(len(cfg['cores'])):
     # Note that the order is from last core to the first core
     snax_narrow_tcdm_ports_list.append(0)
     snax_wide_tcdm_ports_list.append(0)
-    
+
   # This is the packed configuration
   snax_core_acc[curr_snax_acc_core] = {
     'snax_acc_flag': snax_acc_flag,
@@ -508,7 +508,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
   logic [${cfg['pkg_name']}::NrCores-1:0][31:0] snax_csr_rsp_data;
   logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_rsp_valid;
   logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_rsp_ready;
-    
+
   //-----------------------------
   // SNAX TCDM wires
   //-----------------------------
@@ -533,7 +533,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
   // We need both wide and narrow links
   // The wide links are for the data
   // The narrow links are for the configurations
-  
+
   // Wide links
   ${cfg['pkg_name']}::wide_out_req_t    xdma_wide_out_req;
   ${cfg['pkg_name']}::wide_out_resp_t   xdma_wide_out_resp;
@@ -624,7 +624,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
 % endif
     .NumSequencerInstr (NumSequencerInstr),
     .Hive (${cfg['pkg_name']}::Hive),
-    .Topology (snitch_pkg::LogarithmicInterconnect),
+    .Topology (${cfg['tcdm']['topology']}),
     .Radix (2),
     .RegisterOffloadReq (${int(cfg['timing']['register_offload_req'])}),
     .RegisterOffloadRsp (${int(cfg['timing']['register_offload_rsp'])}),
@@ -761,7 +761,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     .xdma_narrow_out_req_o   (                    ),
     .xdma_narrow_out_resp_i  ('0                  ),
     .xdma_narrow_in_req_i    ('0                  ),
-    .xdma_narrow_in_resp_o   (                    ), 
+    .xdma_narrow_in_resp_o   (                    ),
 %endif
     //-----------------------------
     // Wide AXI ports
@@ -967,7 +967,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
 
       % endfor
     % endif
-  
+
   % elif snax_core_acc[idx_key]['snax_xdma_flag']:
     % for jdx, jdx_key in enumerate(snax_core_acc[idx_key]['snax_acc_dict']):
   // Instantiation of xdma wrapper
@@ -1046,7 +1046,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     % endfor
 
   % else:
-  
+
   // If no accelerator is connected to Snitch core
   // Tie SNAX custom ports to 0
   assign snax_qready  [${idx}] = '0;
