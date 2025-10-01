@@ -172,7 +172,7 @@ int main() {
         // Check results
         //-------------------------------
         for (uint32_t i = 0; i < num_predictions; i++) {
-            if (golden_list_data[i] != (uint32_t)*(predict_start + i * 64)) {
+            if (golden_list_data[i] != (uint32_t) * (predict_start + i * 64)) {
                 err++;
             }
         };

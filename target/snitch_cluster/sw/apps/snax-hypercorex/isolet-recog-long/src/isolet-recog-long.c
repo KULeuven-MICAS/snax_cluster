@@ -244,7 +244,7 @@ int main() {
             //-------------------------------
             for (uint32_t i = 0; i < max_num_predictions; i++) {
                 if (golden_list_data[i] !=
-                    (uint32_t)*(predict_start + i * 64)) {
+                    (uint32_t) * (predict_start + i * 64)) {
                     err++;
                 }
             };
@@ -355,7 +355,7 @@ int main() {
         // Check results
         //-------------------------------
         for (uint32_t i = 0; i < final_predictions; i++) {
-            if (golden_list_data[i] != (uint32_t)*(predict_start + i * 64)) {
+            if (golden_list_data[i] != (uint32_t) * (predict_start + i * 64)) {
                 err++;
             }
         };

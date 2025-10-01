@@ -217,7 +217,7 @@ int main() {
 
         // Check if prediction results are correct
         for (uint64_t i = 0; i < num_classes; i++) {
-            if (i != (uint32_t)*(predict_start + i * 32)) {
+            if (i != (uint32_t) * (predict_start + i * 32)) {
                 err++;
             }
         };
