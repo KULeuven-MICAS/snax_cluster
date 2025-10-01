@@ -209,8 +209,6 @@ def main():
     # Golden list of data
     # Take note that 2 more are needed to get 8 samples
     golden_list_data = list(range(NUM_CLASSES + 2))
-    golden_list_data[0] = 1
-    golden_list_data[3] = 4
     golden_list_data[6] = 1
     golden_list_data[7] = 2
 
