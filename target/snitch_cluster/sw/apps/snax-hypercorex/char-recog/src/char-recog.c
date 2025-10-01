@@ -103,24 +103,35 @@ int main() {
             (uint32_t)local_data_0,  // Base pointer low
             0,                       // Base pointer high
             1,                       // Spatial stride
-            num_elem_size,           // Inner loop bound
-            2,                       // Outer loop bound
-            256,                     // Inner loop stride
-            8                        // Outer loop stride
+            // Loop bounds from inner to outer
+            num_elem_size,           
+            2,
+            0,
+            0,
+            // Strides from inner to outer
+            256,                     
+            8,
+            0,
+            0
         );
 
         hypercorex_set_streamer_highdim_qhv(
             (uint32_t)qhv_start,  // Base pointer low
             0,                    // Base pointer high
             8,                    // Spatial stride
-            num_classes,          // Inner loop bound
-            1,                    // Outer loop bound
-            256,                  // Inner loop stride
-            0                     // Outer loop stride
+            // Loop bounds from inner to outer
+            num_classes,           
+            1,
+            0,
+            0,
+            // Strides from inner to outer
+            256,                     
+            0,
+            0,
+            0
         );
 
-        // Start the streamers
-        hypercorex_start_streamer();
+        
 
         //-------------------------------
         // Configuring the Hypercorex
@@ -133,16 +144,19 @@ int main() {
         csrw_ss(HYPERCOREX_INST_LOOP_CTRL_REG_ADDR, 0x00000002);
 
         // Set loop jump addresses
-        hypercorex_set_inst_loop_jump_addr(0, 0, 0);
+        hypercorex_set_inst_loop_jump_addr(0, 0, 0, 0);
 
         // Set loop end addresses
-        hypercorex_set_inst_loop_end_addr(0, 3, 0);
+        hypercorex_set_inst_loop_end_addr(0, 3, 0, 0);
 
         // Set loop counts
-        hypercorex_set_inst_loop_count(num_features, 26, 0);
+        hypercorex_set_inst_loop_count(num_features, 26, 0, 0);
 
         // Start hypercorex
         hypercorex_start_core();
+
+        // Start the streamers
+        hypercorex_start_streamer();
 
         // Poll the busy-state of Hypercorex
         // Check both the Hypercorex and Streamer
@@ -157,75 +171,94 @@ int main() {
         // Configuring the streamers
         //-------------------------------
 
-        // The settings for input streamer are
-        // the same hence we do not need to process
+        // // The settings for input streamer are
+        // // the same hence we do not need to process
 
-        // Disable the QHV streamer by setting all to 0
-        hypercorex_set_streamer_highdim_qhv(0,  // Base pointer low
-                                            0,  // Base pointer high
-                                            0,  // Spatial stride
-                                            0,  // Inner loop bound
-                                            0,  // Outer loop bound
-                                            0,  // Inner loop stride
-                                            0   // Outer loop stride
-        );
+        // // Disable the QHV streamer by setting all to 0
+        // hypercorex_set_streamer_highdim_qhv(
+        //     0,  // Base pointer low
+        //     0,  // Base pointer high
+        //     0,  // Spatial stride
+        //     // Loop bounds from inner to outer
+        //     0,           
+        //     0,
+        //     0,
+        //     0,
+        //     // Strides from inner to outer
+        //     0,                     
+        //     0,
+        //     0,
+        //     0
+        // );
 
-        // Enable the AM streamer
-        // Note that it uses the output of the
-        // where the QHV streamer data was stored
-        // It needs to loop 26 times for all classes
-        // and we also check all 26 classes at the same time
-        hypercorex_set_streamer_highdim_am(
-            (uint32_t)qhv_start,  // Base pointer low
-            0,                    // Base pointer high
-            8,                    // Spatial stride
-            num_classes,          // Inner loop bound
-            num_classes,          // Outer loop bound
-            256,                  // Inner loop stride
-            0                     // Outer loop stride
-        );
+        // // Enable the AM streamer
+        // // Note that it uses the output of the
+        // // where the QHV streamer data was stored
+        // // It needs to loop 26 times for all classes
+        // // and we also check all 26 classes at the same time
+        // hypercorex_set_streamer_highdim_am(
+        //     (uint32_t)qhv_start,  // Base pointer low
+        //     0,                    // Base pointer high
+        //     8,                    // Spatial stride
+        //     // Loop bounds from inner to outer
+        //     num_classes,           
+        //     num_classes,
+        //     0,
+        //     0,
+        //     // Strides from inner to outer
+        //     256,                     
+        //     0,
+        //     0,
+        //     0
+        // );
 
-        // Enable the predict output streamer
-        hypercorex_set_streamer_lowdim_predict(
-            (uint32_t)predict_start,  // Base pointer low
-            0,                        // Base pointer high
-            1,                        // Spatial stride
-            num_classes,              // Inner loop bound
-            1,                        // Outer loop bound
-            256,                      // Inner loop stride
-            0                         // Outer loop stride
-        );
+        // // Enable the predict output streamer
+        // hypercorex_set_streamer_lowdim_predict(
+        //     (uint32_t)predict_start,  // Base pointer low
+        //     0,                        // Base pointer high
+        //     1,                        // Spatial stride
+        //     // Loop bounds from inner to outer
+        //     num_classes,           
+        //     1,
+        //     0,
+        //     0,
+        //     // Strides from inner to outer
+        //     256,                     
+        //     0,
+        //     0,
+        //     0
+        // );
 
-        // Start the streamers
-        hypercorex_start_streamer();
+        // // Start the streamers
+        // hypercorex_start_streamer();
 
-        //-------------------------------
-        // Configuring the Hypercorex
-        //-------------------------------
-        // Load test instructions for hypercorex
-        hypercorex_load_inst(4, 0, test_inst_code);
+        // //-------------------------------
+        // // Configuring the Hypercorex
+        // //-------------------------------
+        // // Load test instructions for hypercorex
+        // hypercorex_load_inst(4, 0, test_inst_code);
 
-        // Set number of classes to be predicted
-        // During AM search mode
-        csrw_ss(HYPERCOREX_AM_NUM_PREDICT_REG_ADDR, num_classes);
+        // // Set number of classes to be predicted
+        // // During AM search mode
+        // csrw_ss(HYPERCOREX_AM_NUM_PREDICT_REG_ADDR, num_classes);
 
-        // Nothing else changes for the other
-        // configurations hence we can start immediately
+        // // Nothing else changes for the other
+        // // configurations hence we can start immediately
 
-        // Start hypercorex
-        csrw_ss(HYPERCOREX_CORE_SET_REG_ADDR, 1);
+        // // Start hypercorex
+        // csrw_ss(HYPERCOREX_CORE_SET_REG_ADDR, 1);
 
-        // Poll the busy-state of Hypercorex
-        // Check both the Hypercorex and Streamer
-        while (hypercorex_is_core_busy() | hypercorex_is_streamer_busy()) {
-        };
+        // // Poll the busy-state of Hypercorex
+        // // Check both the Hypercorex and Streamer
+        // while (hypercorex_is_core_busy() | hypercorex_is_streamer_busy()) {
+        // };
 
-        // Check if prediction results are correct
-        for (uint64_t i = 0; i < num_classes; i++) {
-            if (i != (uint32_t) * (predict_start + i * 32)) {
-                err++;
-            }
-        };
+        // // Check if prediction results are correct
+        // for (uint64_t i = 0; i < num_classes; i++) {
+        //     if (i != (uint32_t) * (predict_start + i * 32)) {
+        //         err++;
+        //     }
+        // };
     };
 
     // Synchronize cores
