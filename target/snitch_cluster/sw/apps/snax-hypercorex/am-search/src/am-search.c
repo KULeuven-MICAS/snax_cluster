@@ -85,36 +85,33 @@ int main() {
         uint32_t core_config_start = snrt_mcycle();
         // Configure streamer for the input
         hypercorex_set_streamer_highdim_a(
-            (uint32_t)local_data_1,  // Base pointer low
-            0,                       // Base pointer high
-            8,                       // Spatial stride
-            target_num_data,         // Inner loop bound
-            1,                       // Outer loop bound
-            256,                     // Inner loop stride
-            0                        // Outer loop stride
-        );
-
-        // Configure streamer for the AM
-        hypercorex_set_streamer_highdim_am(
             (uint32_t)local_data_0,  // Base pointer low
             0,                       // Base pointer high
             8,                       // Spatial stride
-            target_num_data,         // Inner loop bound
-            target_num_data,         // Outer loop bound
-            256,                     // Inner loop stride
-            0                        // Outer loop stride
-        );
+            // Loop bounds from inner to outer
+            target_num_data, 1, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
+
+        // Configure streamer for the AM
+        hypercorex_set_streamer_highdim_am(
+            (uint32_t)local_data_1,  // Base pointer low
+            0,                       // Base pointer high
+            8,                       // Spatial stride
+            // Loop bounds from inner to outer
+            target_num_data, target_num_data, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
 
         // Configure streamer for low dim predictions
         hypercorex_set_streamer_lowdim_predict(
             (uint32_t)predict_start,  // Base pointer low
             0,                        // Base pointer high
             1,                        // Spatial stride
-            target_num_data,          // Inner loop bound
-            1,                        // Outer loop bound
-            256,                      // Inner loop stride
-            0                         // Outer loop stride
-        );
+            // Loop bounds from inner to outer
+            target_num_data, 1, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
 
         // Start the streamers
         hypercorex_start_streamer();
@@ -134,13 +131,13 @@ int main() {
         csrw_ss(HYPERCOREX_INST_LOOP_CTRL_REG_ADDR, 0x00000002);
 
         // Set loop jump addresses
-        hypercorex_set_inst_loop_jump_addr(3, 0, 0);
+        hypercorex_set_inst_loop_jump_addr(3, 0, 0, 0);
 
         // Set loop end addresses
-        hypercorex_set_inst_loop_end_addr(3, 4, 0);
+        hypercorex_set_inst_loop_end_addr(3, 4, 0, 0);
 
         // Set loop counts
-        hypercorex_set_inst_loop_count(target_num_data, target_num_data, 0);
+        hypercorex_set_inst_loop_count(target_num_data, target_num_data, 0, 0);
 
         // Write control registers
         csrw_ss(HYPERCOREX_CORE_SET_REG_ADDR, 0x00000010);
@@ -162,7 +159,7 @@ int main() {
 
         // Check if prediction results are correct
         for (uint32_t i = 0; i < 10; i++) {
-            if (i != (uint32_t) * (predict_start + i * 64)) {
+            if (i != (uint32_t)*(predict_start + i * 64)) {
                 err++;
             }
         };

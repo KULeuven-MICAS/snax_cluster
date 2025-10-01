@@ -112,7 +112,7 @@ CUT_WIDTH = 32
 NUM_CUT_IN_WIDE_ELEM = WIDE_DATA_WIDTH // CUT_WIDTH
 
 # Number of targetted wide data
-TARGET_NUM_DATA = 100
+TARGET_NUM_DATA = 32
 
 # Total number of data to check
 TOTAL_NUM_DATA = TARGET_NUM_DATA * NUM_CUT_IN_WIDE_ELEM
