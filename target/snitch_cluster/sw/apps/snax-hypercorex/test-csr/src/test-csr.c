@@ -29,46 +29,102 @@ int main() {
         // Set streamer registers
         //-------------------------------
         hypercorex_set_streamer_lowdim_a(
-            test_streamer_test_val1, test_streamer_test_val2,
-            test_streamer_test_val3, test_streamer_test_val4,
-            test_streamer_test_val5, test_streamer_test_val6,
-            test_streamer_test_val7);
+            test_streamer_test_val1,   // base_ptr_low
+            test_streamer_test_val2,   // base_ptr_high
+            test_streamer_test_val3,   // spat_stride
+            test_streamer_test_val4,   // loop_bound_0
+            test_streamer_test_val5,   // loop_bound_1
+            test_streamer_test_val6,   // loop_bound_2
+            test_streamer_test_val7,   // loop_bound_3
+            test_streamer_test_val8,   // temp_stride_0
+            test_streamer_test_val9,   // temp_stride_1
+            test_streamer_test_val10,  // temp_stride_2
+            test_streamer_test_val11   // temp_stride_3
+        );
 
         hypercorex_set_streamer_lowdim_b(
-            test_streamer_test_val1, test_streamer_test_val2,
-            test_streamer_test_val3, test_streamer_test_val4,
-            test_streamer_test_val5, test_streamer_test_val6,
-            test_streamer_test_val7);
+            test_streamer_test_val1,   // base_ptr_low
+            test_streamer_test_val2,   // base_ptr_high
+            test_streamer_test_val3,   // spat_stride
+            test_streamer_test_val4,   // loop_bound_0
+            test_streamer_test_val5,   // loop_bound_1
+            test_streamer_test_val6,   // loop_bound_2
+            test_streamer_test_val7,   // loop_bound_3
+            test_streamer_test_val8,   // temp_stride_0
+            test_streamer_test_val9,   // temp_stride_1
+            test_streamer_test_val10,  // temp_stride_2
+            test_streamer_test_val11   // temp_stride_3
+        );
 
         hypercorex_set_streamer_highdim_a(
-            test_streamer_test_val1, test_streamer_test_val2,
-            test_streamer_test_val3, test_streamer_test_val4,
-            test_streamer_test_val5, test_streamer_test_val6,
-            test_streamer_test_val7);
+            test_streamer_test_val1,   // base_ptr_low
+            test_streamer_test_val2,   // base_ptr_high
+            test_streamer_test_val3,   // spat_stride
+            test_streamer_test_val4,   // loop_bound_0
+            test_streamer_test_val5,   // loop_bound_1
+            test_streamer_test_val6,   // loop_bound_2
+            test_streamer_test_val7,   // loop_bound_3
+            test_streamer_test_val8,   // temp_stride_0
+            test_streamer_test_val9,   // temp_stride_1
+            test_streamer_test_val10,  // temp_stride_2
+            test_streamer_test_val11   // temp_stride_3
+        );
 
         hypercorex_set_streamer_highdim_b(
-            test_streamer_test_val1, test_streamer_test_val2,
-            test_streamer_test_val3, test_streamer_test_val4,
-            test_streamer_test_val5, test_streamer_test_val6,
-            test_streamer_test_val7);
+            test_streamer_test_val1,   // base_ptr_low
+            test_streamer_test_val2,   // base_ptr_high
+            test_streamer_test_val3,   // spat_stride
+            test_streamer_test_val4,   // loop_bound_0
+            test_streamer_test_val5,   // loop_bound_1
+            test_streamer_test_val6,   // loop_bound_2
+            test_streamer_test_val7,   // loop_bound_3
+            test_streamer_test_val8,   // temp_stride_0
+            test_streamer_test_val9,   // temp_stride_1
+            test_streamer_test_val10,  // temp_stride_2
+            test_streamer_test_val11   // temp_stride_3
+        );
 
         hypercorex_set_streamer_highdim_am(
-            test_streamer_test_val1, test_streamer_test_val2,
-            test_streamer_test_val3, test_streamer_test_val4,
-            test_streamer_test_val5, test_streamer_test_val6,
-            test_streamer_test_val7);
+            test_streamer_test_val1,   // base_ptr_low
+            test_streamer_test_val2,   // base_ptr_high
+            test_streamer_test_val3,   // spat_stride
+            test_streamer_test_val4,   // loop_bound_0
+            test_streamer_test_val5,   // loop_bound_1
+            test_streamer_test_val6,   // loop_bound_2
+            test_streamer_test_val7,   // loop_bound_3
+            test_streamer_test_val8,   // temp_stride_0
+            test_streamer_test_val9,   // temp_stride_1
+            test_streamer_test_val10,  // temp_stride_2
+            test_streamer_test_val11   // temp_stride_3
+        );
 
         hypercorex_set_streamer_lowdim_predict(
-            test_streamer_test_val1, test_streamer_test_val2,
-            test_streamer_test_val3, test_streamer_test_val4,
-            test_streamer_test_val5, test_streamer_test_val6,
-            test_streamer_test_val7);
+            test_streamer_test_val1,   // base_ptr_low
+            test_streamer_test_val2,   // base_ptr_high
+            test_streamer_test_val3,   // spat_stride
+            test_streamer_test_val4,   // loop_bound_0
+            test_streamer_test_val5,   // loop_bound_1
+            test_streamer_test_val6,   // loop_bound_2
+            test_streamer_test_val7,   // loop_bound_3
+            test_streamer_test_val8,   // temp_stride_0
+            test_streamer_test_val9,   // temp_stride_1
+            test_streamer_test_val10,  // temp_stride_2
+            test_streamer_test_val11   // temp_stride_3
+        );
 
         hypercorex_set_streamer_highdim_qhv(
-            test_streamer_test_val1, test_streamer_test_val2,
-            test_streamer_test_val3, test_streamer_test_val4,
-            test_streamer_test_val5, test_streamer_test_val6,
-            test_streamer_test_val7);
+            test_streamer_test_val1,   // base_ptr_low
+            test_streamer_test_val2,   // base_ptr_high
+            test_streamer_test_val3,   // spat_stride
+            test_streamer_test_val4,   // loop_bound_0
+            test_streamer_test_val5,   // loop_bound_1
+            test_streamer_test_val6,   // loop_bound_2
+            test_streamer_test_val7,   // loop_bound_3
+            test_streamer_test_val8,   // temp_stride_0
+            test_streamer_test_val9,   // temp_stride_1
+            test_streamer_test_val10,  // temp_stride_2
+            test_streamer_test_val11   // temp_stride_3
+        );
 
         // Write to observable CSR for visibile state
         write_csr_obs(0x001);
@@ -98,11 +154,27 @@ int main() {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_READER_0_0) != golden_streamer_test_val6) {
+        if (csrr_ss(T_BOUND_READER_0_2) != golden_streamer_test_val6) {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_READER_0_1) != golden_streamer_test_val7) {
+        if (csrr_ss(T_BOUND_READER_0_3) != golden_streamer_test_val7) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_0_0) != golden_streamer_test_val8) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_0_1) != golden_streamer_test_val9) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_0_2) != golden_streamer_test_val10) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_0_3) != golden_streamer_test_val11) {
             err += 1;
         };
 
@@ -127,11 +199,27 @@ int main() {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_READER_1_0) != golden_streamer_test_val6) {
+        if (csrr_ss(T_BOUND_READER_1_2) != golden_streamer_test_val6) {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_READER_1_1) != golden_streamer_test_val7) {
+        if (csrr_ss(T_BOUND_READER_1_3) != golden_streamer_test_val7) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_1_0) != golden_streamer_test_val8) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_1_1) != golden_streamer_test_val9) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_1_2) != golden_streamer_test_val10) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_1_3) != golden_streamer_test_val11) {
             err += 1;
         };
 
@@ -156,11 +244,27 @@ int main() {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_READER_2_0) != golden_streamer_test_val6) {
+        if (csrr_ss(T_BOUND_READER_2_2) != golden_streamer_test_val6) {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_READER_2_1) != golden_streamer_test_val7) {
+        if (csrr_ss(T_BOUND_READER_2_3) != golden_streamer_test_val7) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_2_0) != golden_streamer_test_val8) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_2_1) != golden_streamer_test_val9) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_2_2) != golden_streamer_test_val10) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_2_3) != golden_streamer_test_val11) {
             err += 1;
         };
 
@@ -185,11 +289,27 @@ int main() {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_READER_3_0) != golden_streamer_test_val6) {
+        if (csrr_ss(T_BOUND_READER_3_2) != golden_streamer_test_val6) {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_READER_3_1) != golden_streamer_test_val7) {
+        if (csrr_ss(T_BOUND_READER_3_3) != golden_streamer_test_val7) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_3_0) != golden_streamer_test_val8) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_3_1) != golden_streamer_test_val9) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_3_2) != golden_streamer_test_val10) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_3_3) != golden_streamer_test_val11) {
             err += 1;
         };
 
@@ -214,11 +334,27 @@ int main() {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_READER_4_0) != golden_streamer_test_val6) {
+        if (csrr_ss(T_BOUND_READER_4_2) != golden_streamer_test_val6) {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_READER_4_1) != golden_streamer_test_val7) {
+        if (csrr_ss(T_BOUND_READER_4_3) != golden_streamer_test_val7) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_4_0) != golden_streamer_test_val8) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_4_1) != golden_streamer_test_val9) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_4_2) != golden_streamer_test_val10) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_READER_4_3) != golden_streamer_test_val11) {
             err += 1;
         };
 
@@ -243,11 +379,27 @@ int main() {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_WRITER_0_0) != golden_streamer_test_val6) {
+        if (csrr_ss(T_BOUND_WRITER_0_2) != golden_streamer_test_val6) {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_WRITER_0_1) != golden_streamer_test_val7) {
+        if (csrr_ss(T_BOUND_WRITER_0_3) != golden_streamer_test_val7) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_WRITER_0_0) != golden_streamer_test_val8) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_WRITER_0_1) != golden_streamer_test_val9) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_WRITER_0_2) != golden_streamer_test_val10) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_WRITER_0_3) != golden_streamer_test_val11) {
             err += 1;
         };
 
@@ -272,11 +424,27 @@ int main() {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_WRITER_1_0) != golden_streamer_test_val6) {
+        if (csrr_ss(T_BOUND_WRITER_1_2) != golden_streamer_test_val6) {
             err += 1;
         };
 
-        if (csrr_ss(T_STRIDE_WRITER_1_1) != golden_streamer_test_val7) {
+        if (csrr_ss(T_BOUND_WRITER_1_3) != golden_streamer_test_val7) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_WRITER_1_0) != golden_streamer_test_val8) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_WRITER_1_1) != golden_streamer_test_val9) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_WRITER_1_2) != golden_streamer_test_val10) {
+            err += 1;
+        };
+
+        if (csrr_ss(T_STRIDE_WRITER_1_3) != golden_streamer_test_val11) {
             err += 1;
         };
 
@@ -314,17 +482,17 @@ int main() {
         // Write to instruction loop configurations
         csrw_ss(HYPERCOREX_INST_LOOP_CTRL_REG_ADDR, test_inst_loop_ctrl);
 
-        hypercorex_set_inst_loop_jump_addr(test_inst_loop_jump_addr1,
-                                           test_inst_loop_jump_addr2,
-                                           test_inst_loop_jump_addr3);
+        hypercorex_set_inst_loop_jump_addr(
+            test_inst_loop_jump_addr1, test_inst_loop_jump_addr2,
+            test_inst_loop_jump_addr3, test_inst_loop_jump_addr4);
 
-        hypercorex_set_inst_loop_end_addr(test_inst_loop_end_addr1,
-                                          test_inst_loop_end_addr2,
-                                          test_inst_loop_end_addr3);
+        hypercorex_set_inst_loop_end_addr(
+            test_inst_loop_end_addr1, test_inst_loop_end_addr2,
+            test_inst_loop_end_addr3, test_inst_loop_end_addr4);
 
-        hypercorex_set_inst_loop_count(test_inst_loop_count1,
-                                       test_inst_loop_count2,
-                                       test_inst_loop_count3);
+        hypercorex_set_inst_loop_count(
+            test_inst_loop_count1, test_inst_loop_count2, test_inst_loop_count3,
+            test_inst_loop_count4);
 
         // Write to data slicer configurations
         csrw_ss(HYPERCOREX_DATA_SLICE_CTRL, test_data_slice_ctrl);
@@ -404,8 +572,13 @@ int main() {
             err += 1;
         };
 
-        if (csrr_ss(HYPERCOREX_INST_LOOP_COUNT_REG_ADDR) !=
-            golden_inst_loop_count) {
+        if (csrr_ss(HYPERCOREX_INST_LOOP_COUNT1_REG_ADDR) !=
+            golden_inst_loop_count1) {
+            err += 1;
+        }
+
+        if (csrr_ss(HYPERCOREX_INST_LOOP_COUNT2_REG_ADDR) !=
+            golden_inst_loop_count2) {
             err += 1;
         }
 
@@ -445,7 +618,8 @@ int main() {
 
         // Write to observable CSR for visibile state
         write_csr_obs(0x004);
-    };
+
+    };  // End of snrt compute core
 
     return err;
 }

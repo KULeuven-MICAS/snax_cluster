@@ -29,6 +29,10 @@ uint32_t test_streamer_test_val4 = 0x01010101;
 uint32_t test_streamer_test_val5 = 0x55551111;
 uint32_t test_streamer_test_val6 = 0x7189cdef;
 uint32_t test_streamer_test_val7 = 0x1f9d39a0;
+uint32_t test_streamer_test_val8 = 0xbabec0de;
+uint32_t test_streamer_test_val9 = 0xc0de9111;
+uint32_t test_streamer_test_val10 = 0xabcdef01;
+uint32_t test_streamer_test_val11 = 0x12345678;
 
 // Need to leave core_config LSB as 0
 // Since it starts the core
@@ -40,20 +44,23 @@ uint32_t test_inst_ctrl = 0xffffffff;
 
 uint32_t test_inst_write_addr = 0xffffffff;
 uint32_t test_inst_write_data = 0xffffffff;
-uint32_t test_inst_rddbg_addr = 0xffffffff;
+uint32_t test_inst_rddbg_addr = 0x000003ff;
 uint32_t test_inst_pc_addr = 0xffffffff;
 uint32_t test_inst_inst_at_addr = 0xffffffff;
 
 uint32_t test_inst_loop_ctrl = 0xffffffff;
-uint32_t test_inst_loop_jump_addr1 = 0xff;
-uint32_t test_inst_loop_jump_addr2 = 0xff;
-uint32_t test_inst_loop_jump_addr3 = 0xff;
-uint32_t test_inst_loop_end_addr1 = 0xff;
-uint32_t test_inst_loop_end_addr2 = 0xff;
-uint32_t test_inst_loop_end_addr3 = 0xff;
-uint32_t test_inst_loop_count1 = 0x3ff;
-uint32_t test_inst_loop_count2 = 0x3ff;
-uint32_t test_inst_loop_count3 = 0x3ff;
+uint8_t test_inst_loop_jump_addr1 = 0xff;
+uint8_t test_inst_loop_jump_addr2 = 0xff;
+uint8_t test_inst_loop_jump_addr3 = 0xff;
+uint8_t test_inst_loop_jump_addr4 = 0xff;
+uint8_t test_inst_loop_end_addr1 = 0xff;
+uint8_t test_inst_loop_end_addr2 = 0xff;
+uint8_t test_inst_loop_end_addr3 = 0xff;
+uint8_t test_inst_loop_end_addr4 = 0xff;
+uint16_t test_inst_loop_count1 = 0xffff;
+uint16_t test_inst_loop_count2 = 0xffff;
+uint16_t test_inst_loop_count3 = 0xffff;
+uint16_t test_inst_loop_count4 = 0xffff;
 
 uint32_t test_data_slice_ctrl = 0xffffffff;
 uint32_t test_data_slice_num_elem_a = 0xffffffff;
@@ -76,6 +83,10 @@ uint32_t golden_streamer_test_val4 = 0x01010101;
 uint32_t golden_streamer_test_val5 = 0x55551111;
 uint32_t golden_streamer_test_val6 = 0x7189cdef;
 uint32_t golden_streamer_test_val7 = 0x1f9d39a0;
+uint32_t golden_streamer_test_val8 = 0xbabec0de;
+uint32_t golden_streamer_test_val9 = 0xc0de9111;
+uint32_t golden_streamer_test_val10 = 0xabcdef01;
+uint32_t golden_streamer_test_val11 = 0x12345678;
 
 uint32_t golden_core_config = 0x0000003c;
 uint32_t golden_am_num_predict = 0xffffffff;
@@ -84,14 +95,15 @@ uint32_t golden_inst_ctrl = 0x00000003;
 
 uint32_t golden_inst_write_addr = 0x00000000;
 uint32_t golden_inst_write_data = 0x00000000;
-uint32_t golden_inst_rddbg_addr = 0xffffffff;
+uint32_t golden_inst_rddbg_addr = 0x000003ff;
 uint32_t golden_inst_pc_addr = 0x00000000;
 uint32_t golden_inst_at_addr = 0xffffffff;
 
-uint32_t golden_inst_loop_ctrl = 0x00000003;
-uint32_t golden_inst_loop_jump_addr = 0x001fffff;
-uint32_t golden_inst_loop_end_addr = 0x001fffff;
-uint32_t golden_inst_loop_count = 0x3fffffff;
+uint32_t golden_inst_loop_ctrl = 0x000003ff;
+uint32_t golden_inst_loop_jump_addr = 0xffffffff;
+uint32_t golden_inst_loop_end_addr = 0xffffffff;
+uint32_t golden_inst_loop_count1 = 0xffffffff;
+uint32_t golden_inst_loop_count2 = 0xffffffff;
 
 uint32_t golden_data_slice_ctrl = 0x0000003f;
 uint32_t golden_data_slice_num_elem_a = 0xffffffff;

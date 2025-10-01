@@ -203,7 +203,6 @@ def main():
 
     # Golden list of data
     golden_list_data = list(range(NUM_CLASSES))
-    golden_list_data[0] = 7
 
     golden_long_list_data = (
         golden_list_data[0:24] + golden_list_data[0:24] + golden_list_data[0:4]
