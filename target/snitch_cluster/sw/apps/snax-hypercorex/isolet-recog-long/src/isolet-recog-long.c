@@ -147,36 +147,33 @@ int main() {
                     (uint32_t)data_start_2,  // Base pointer low
                     0,                       // Base pointer high
                     1,                       // Spatial stride
-                    8,                       // Inner loop bound
-                    max_num_rows,            // Outer loop bound
-                    8,                       // Inner loop stride
-                    256                      // Outer loop stride
-                );
+                    // Loop bounds from inner to outer
+                    8, max_num_rows, 1, 1,
+                    // Strides from inner to outer
+                    8, 256, 0, 0);
                 process_left_flag = 0;
             } else {
                 hypercorex_set_streamer_lowdim_a(
                     (uint32_t)data_start_1,  // Base pointer low
                     0,                       // Base pointer high
                     1,                       // Spatial stride
-                    8,                       // Inner loop bound
-                    max_num_rows,            // Outer loop bound
-                    8,                       // Inner loop stride
-                    256                      // Outer loop stride
-                );
+                    // Loop bounds from inner to outer
+                    8, max_num_rows, 1, 1,
+                    // Strides from inner to outer
+                    8, 256, 0, 0);
                 process_left_flag = 1;
             }
 
             if (pre_config_acc == 0) {
                 // Configure streamer for AM
                 hypercorex_set_streamer_highdim_am(
-                    (uint32_t)am_start,   // Base pointer low
-                    0,                    // Base pointer high
-                    8,                    // Spatial stride
-                    num_classes,          // Inner loop bound
-                    max_num_predictions,  // Outer loop bound
-                    256,                  // Inner loop stride
-                    0                     // Outer loop stride
-                );
+                    (uint32_t)am_start,  // Base pointer low
+                    0,                   // Base pointer high
+                    8,                   // Spatial stride
+                    // Loop bounds from inner to outer
+                    num_classes, max_num_predictions, 1, 1,
+                    // Strides from inner to outer
+                    256, 0, 0, 0);
                 pre_config_acc = 1;
             }
 
@@ -184,11 +181,10 @@ int main() {
                 (uint32_t)predict_start,  // Base pointer low
                 0,                        // Base pointer high
                 1,                        // Spatial stride
-                max_num_predictions,      // Inner loop bound
-                1,                        // Outer loop bound
-                256,                      // Inner loop stride
-                0                         // Outer loop stride
-            );
+                // Loop bounds from inner to outer
+                max_num_predictions, 1, 1, 1,
+                // Strides from inner to outer
+                256, 0, 0, 0);
 
             // Start the streamers
             hypercorex_start_streamer();
@@ -207,11 +203,11 @@ int main() {
             csrw_ss(HYPERCOREX_INST_LOOP_CTRL_REG_ADDR, 0x00000002);
 
             // Encoding loops and jumps
-            hypercorex_set_inst_loop_jump_addr(0, 0, 0);
+            hypercorex_set_inst_loop_jump_addr(0, 0, 0, 0);
 
-            hypercorex_set_inst_loop_end_addr(0, 3, 0);
+            hypercorex_set_inst_loop_end_addr(0, 3, 0, 0);
 
-            hypercorex_set_inst_loop_count(num_features, max_num_predictions,
+            hypercorex_set_inst_loop_count(num_features, max_num_predictions, 0,
                                            0);
 
             // Set data slice control and automatic updates
@@ -248,7 +244,7 @@ int main() {
             //-------------------------------
             for (uint32_t i = 0; i < max_num_predictions; i++) {
                 if (golden_list_data[i] !=
-                    (uint32_t) * (predict_start + i * 64)) {
+                    (uint32_t)*(predict_start + i * 64)) {
                     err++;
                 }
             };
@@ -269,21 +265,19 @@ int main() {
                 (uint32_t)data_start_2,  // Base pointer low
                 0,                       // Base pointer high
                 1,                       // Spatial stride
-                8,                       // Inner loop bound
-                final_rows,              // Outer loop bound
-                8,                       // Inner loop stride
-                256                      // Outer loop stride
-            );
+                // Loop bounds from inner to outer
+                8, final_rows, 1, 1,
+                // Strides from inner to outer
+                8, 256, 0, 0);
         } else {
             hypercorex_set_streamer_lowdim_a(
                 (uint32_t)data_start_1,  // Base pointer low
                 0,                       // Base pointer high
                 1,                       // Spatial stride
-                8,                       // Inner loop bound
-                final_rows,              // Outer loop bound
-                8,                       // Inner loop stride
-                256                      // Outer loop stride
-            );
+                // Loop bounds from inner to outer
+                8, final_rows, 1, 1,
+                // Strides from inner to outer
+                8, 256, 0, 0);
         }
 
         // Configure streamer for AM
@@ -291,21 +285,19 @@ int main() {
             (uint32_t)am_start,  // Base pointer low
             0,                   // Base pointer high
             8,                   // Spatial stride
-            num_classes,         // Inner loop bound
-            final_predictions,   // Outer loop bound
-            256,                 // Inner loop stride
-            0                    // Outer loop stride
-        );
+            // Loop bounds from inner to outer
+            num_classes, final_predictions, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
 
         hypercorex_set_streamer_lowdim_predict(
             (uint32_t)predict_start,  // Base pointer low
             0,                        // Base pointer high
             1,                        // Spatial stride
-            final_predictions,        // Inner loop bound
-            1,                        // Outer loop bound
-            256,                      // Inner loop stride
-            0                         // Outer loop stride
-        );
+            // Loop bounds from inner to outer
+            final_predictions, 1, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
 
         // Start the streamers
         hypercorex_start_streamer();
@@ -324,11 +316,11 @@ int main() {
         csrw_ss(HYPERCOREX_INST_LOOP_CTRL_REG_ADDR, 0x00000002);
 
         // Encoding loops and jumps
-        hypercorex_set_inst_loop_jump_addr(0, 0, 0);
+        hypercorex_set_inst_loop_jump_addr(0, 0, 0, 0);
 
-        hypercorex_set_inst_loop_end_addr(0, 3, 0);
+        hypercorex_set_inst_loop_end_addr(0, 3, 0, 0);
 
-        hypercorex_set_inst_loop_count(num_features, final_predictions, 0);
+        hypercorex_set_inst_loop_count(num_features, final_predictions, 0, 0);
 
         // Set data slice control and automatic updates
         hypercorex_set_data_slice_ctrl(3, 0, 0, 1);
@@ -363,7 +355,7 @@ int main() {
         // Check results
         //-------------------------------
         for (uint32_t i = 0; i < final_predictions; i++) {
-            if (golden_list_data[i] != (uint32_t) * (predict_start + i * 64)) {
+            if (golden_list_data[i] != (uint32_t)*(predict_start + i * 64)) {
                 err++;
             }
         };
