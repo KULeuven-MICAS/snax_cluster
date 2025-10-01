@@ -161,7 +161,7 @@ int main() {
         // Check if prediction results are correct
         for (uint32_t i = 0; i < target_num_data; i++) {
             for (uint32_t j = 0; j < num_cut_in_wide_elem; j++) {
-                if ((uint32_t)*(qhv_start + i * 64 + j) !=
+                if ((uint32_t) * (qhv_start + i * 64 + j) !=
                     golden_list_data[i * num_cut_in_wide_elem + j]) {
                     err = 1;
                 };
