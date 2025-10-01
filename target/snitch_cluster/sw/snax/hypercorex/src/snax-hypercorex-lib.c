@@ -19,99 +19,134 @@
 //-------------------------------
 void hypercorex_set_streamer_lowdim_a(
     uint32_t base_ptr_low, uint32_t base_ptr_high, uint32_t spat_stride,
-    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t temp_stride_0,
-    uint32_t temp_stride_1) {
+    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t loop_bound_2,
+    uint32_t loop_bound_3, uint32_t temp_stride_0, uint32_t temp_stride_1,
+    uint32_t temp_stride_2, uint32_t temp_stride_3) {
     csrw_ss(BASE_PTR_READER_0_LOW, base_ptr_low);
     csrw_ss(BASE_PTR_READER_0_HIGH, base_ptr_high);
     csrw_ss(S_STRIDE_READER_0_0, spat_stride);
     csrw_ss(T_BOUND_READER_0_0, loop_bound_0);
     csrw_ss(T_BOUND_READER_0_1, loop_bound_1);
+    csrw_ss(T_BOUND_READER_0_2, loop_bound_2);
+    csrw_ss(T_BOUND_READER_0_3, loop_bound_3);
     csrw_ss(T_STRIDE_READER_0_0, temp_stride_0);
     csrw_ss(T_STRIDE_READER_0_1, temp_stride_1);
+    csrw_ss(T_STRIDE_READER_0_2, temp_stride_2);
+    csrw_ss(T_STRIDE_READER_0_3, temp_stride_3);
     return;
 };
 
 void hypercorex_set_streamer_lowdim_b(
     uint32_t base_ptr_low, uint32_t base_ptr_high, uint32_t spat_stride,
-    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t temp_stride_0,
-    uint32_t temp_stride_1) {
+    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t loop_bound_2,
+    uint32_t loop_bound_3, uint32_t temp_stride_0, uint32_t temp_stride_1,
+    uint32_t temp_stride_2, uint32_t temp_stride_3) {
     csrw_ss(BASE_PTR_READER_1_LOW, base_ptr_low);
     csrw_ss(BASE_PTR_READER_1_HIGH, base_ptr_high);
     csrw_ss(S_STRIDE_READER_1_0, spat_stride);
     csrw_ss(T_BOUND_READER_1_0, loop_bound_0);
     csrw_ss(T_BOUND_READER_1_1, loop_bound_1);
+    csrw_ss(T_BOUND_READER_1_2, loop_bound_2);
+    csrw_ss(T_BOUND_READER_1_3, loop_bound_3);
     csrw_ss(T_STRIDE_READER_1_0, temp_stride_0);
     csrw_ss(T_STRIDE_READER_1_1, temp_stride_1);
+    csrw_ss(T_STRIDE_READER_1_2, temp_stride_2);
+    csrw_ss(T_STRIDE_READER_1_3, temp_stride_3);
     return;
 };
 
 void hypercorex_set_streamer_highdim_a(
     uint32_t base_ptr_low, uint32_t base_ptr_high, uint32_t spat_stride,
-    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t temp_stride_0,
-    uint32_t temp_stride_1) {
+    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t loop_bound_2,
+    uint32_t loop_bound_3, uint32_t temp_stride_0, uint32_t temp_stride_1,
+    uint32_t temp_stride_2, uint32_t temp_stride_3) {
     csrw_ss(BASE_PTR_READER_2_LOW, base_ptr_low);
     csrw_ss(BASE_PTR_READER_2_HIGH, base_ptr_high);
     csrw_ss(S_STRIDE_READER_2_0, spat_stride);
     csrw_ss(T_BOUND_READER_2_0, loop_bound_0);
     csrw_ss(T_BOUND_READER_2_1, loop_bound_1);
+    csrw_ss(T_BOUND_READER_2_2, loop_bound_2);
+    csrw_ss(T_BOUND_READER_2_3, loop_bound_3);
     csrw_ss(T_STRIDE_READER_2_0, temp_stride_0);
     csrw_ss(T_STRIDE_READER_2_1, temp_stride_1);
+    csrw_ss(T_STRIDE_READER_2_2, temp_stride_2);
+    csrw_ss(T_STRIDE_READER_2_3, temp_stride_3);
     return;
 };
 
 void hypercorex_set_streamer_highdim_b(
     uint32_t base_ptr_low, uint32_t base_ptr_high, uint32_t spat_stride,
-    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t temp_stride_0,
-    uint32_t temp_stride_1) {
+    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t loop_bound_2,
+    uint32_t loop_bound_3, uint32_t temp_stride_0, uint32_t temp_stride_1,
+    uint32_t temp_stride_2, uint32_t temp_stride_3) {
     csrw_ss(BASE_PTR_READER_3_LOW, base_ptr_low);
     csrw_ss(BASE_PTR_READER_3_HIGH, base_ptr_high);
     csrw_ss(S_STRIDE_READER_3_0, spat_stride);
     csrw_ss(T_BOUND_READER_3_0, loop_bound_0);
     csrw_ss(T_BOUND_READER_3_1, loop_bound_1);
+    csrw_ss(T_BOUND_READER_3_2, loop_bound_2);
+    csrw_ss(T_BOUND_READER_3_3, loop_bound_3);
     csrw_ss(T_STRIDE_READER_3_0, temp_stride_0);
     csrw_ss(T_STRIDE_READER_3_1, temp_stride_1);
+    csrw_ss(T_STRIDE_READER_3_2, temp_stride_2);
+    csrw_ss(T_STRIDE_READER_3_3, temp_stride_3);
     return;
 };
 
 void hypercorex_set_streamer_highdim_am(
     uint32_t base_ptr_low, uint32_t base_ptr_high, uint32_t spat_stride,
-    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t temp_stride_0,
-    uint32_t temp_stride_1) {
+    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t loop_bound_2,
+    uint32_t loop_bound_3, uint32_t temp_stride_0, uint32_t temp_stride_1,
+    uint32_t temp_stride_2, uint32_t temp_stride_3) {
     csrw_ss(BASE_PTR_READER_4_LOW, base_ptr_low);
     csrw_ss(BASE_PTR_READER_4_HIGH, base_ptr_high);
     csrw_ss(S_STRIDE_READER_4_0, spat_stride);
     csrw_ss(T_BOUND_READER_4_0, loop_bound_0);
     csrw_ss(T_BOUND_READER_4_1, loop_bound_1);
+    csrw_ss(T_BOUND_READER_4_2, loop_bound_2);
+    csrw_ss(T_BOUND_READER_4_3, loop_bound_3);
     csrw_ss(T_STRIDE_READER_4_0, temp_stride_0);
     csrw_ss(T_STRIDE_READER_4_1, temp_stride_1);
+    csrw_ss(T_STRIDE_READER_4_2, temp_stride_2);
+    csrw_ss(T_STRIDE_READER_4_3, temp_stride_3);
     return;
 };
 
 void hypercorex_set_streamer_lowdim_predict(
     uint32_t base_ptr_low, uint32_t base_ptr_high, uint32_t spat_stride,
-    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t temp_stride_0,
-    uint32_t temp_stride_1) {
+    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t loop_bound_2,
+    uint32_t loop_bound_3, uint32_t temp_stride_0, uint32_t temp_stride_1,
+    uint32_t temp_stride_2, uint32_t temp_stride_3) {
     csrw_ss(BASE_PTR_WRITER_0_LOW, base_ptr_low);
     csrw_ss(BASE_PTR_WRITER_0_HIGH, base_ptr_high);
     csrw_ss(S_STRIDE_WRITER_0_0, spat_stride);
     csrw_ss(T_BOUND_WRITER_0_0, loop_bound_0);
     csrw_ss(T_BOUND_WRITER_0_1, loop_bound_1);
+    csrw_ss(T_BOUND_WRITER_0_2, loop_bound_2);
+    csrw_ss(T_BOUND_WRITER_0_3, loop_bound_3);
     csrw_ss(T_STRIDE_WRITER_0_0, temp_stride_0);
     csrw_ss(T_STRIDE_WRITER_0_1, temp_stride_1);
+    csrw_ss(T_STRIDE_WRITER_0_2, temp_stride_2);
+    csrw_ss(T_STRIDE_WRITER_0_3, temp_stride_3);
     return;
 };
 
 void hypercorex_set_streamer_highdim_qhv(
     uint32_t base_ptr_low, uint32_t base_ptr_high, uint32_t spat_stride,
-    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t temp_stride_0,
-    uint32_t temp_stride_1) {
+    uint32_t loop_bound_0, uint32_t loop_bound_1, uint32_t loop_bound_2,
+    uint32_t loop_bound_3, uint32_t temp_stride_0, uint32_t temp_stride_1,
+    uint32_t temp_stride_2, uint32_t temp_stride_3) {
     csrw_ss(BASE_PTR_WRITER_1_LOW, base_ptr_low);
     csrw_ss(BASE_PTR_WRITER_1_HIGH, base_ptr_high);
     csrw_ss(S_STRIDE_WRITER_1_0, spat_stride);
     csrw_ss(T_BOUND_WRITER_1_0, loop_bound_0);
     csrw_ss(T_BOUND_WRITER_1_1, loop_bound_1);
+    csrw_ss(T_BOUND_WRITER_1_2, loop_bound_2);
+    csrw_ss(T_BOUND_WRITER_1_3, loop_bound_3);
     csrw_ss(T_STRIDE_WRITER_1_0, temp_stride_0);
     csrw_ss(T_STRIDE_WRITER_1_1, temp_stride_1);
+    csrw_ss(T_STRIDE_WRITER_1_2, temp_stride_2);
+    csrw_ss(T_STRIDE_WRITER_1_3, temp_stride_3);
     return;
 };
 
@@ -163,29 +198,30 @@ void hypercorex_load_inst(uint32_t inst_size, uint32_t start_addr,
 //-------------------------------
 
 void hypercorex_set_inst_loop_jump_addr(uint8_t config1, uint8_t config2,
-                                        uint8_t config3) {
-    uint32_t config =
-        ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
+                                        uint8_t config3, uint8_t config4) {
+    uint32_t config = ((config4 & 0xff) << 24) | ((config3 & 0xff) << 16) |
+                      ((config2 & 0xff) << 8) | (config1 & 0xff);
 
     csrw_ss(HYPERCOREX_INST_LOOP_JUMP_ADDR_REG_ADDR, config);
     return;
 };
 
 void hypercorex_set_inst_loop_end_addr(uint8_t config1, uint8_t config2,
-                                       uint8_t config3) {
-    uint32_t config =
-        ((config3 & 0x7f) << 14) | ((config2 & 0x7f) << 7) | (config1 & 0x7f);
+                                       uint8_t config3, uint8_t config4) {
+    uint32_t config = ((config4 & 0xff) << 24) | ((config3 & 0xff) << 16) |
+                      ((config2 & 0xff) << 8) | (config1 & 0xff);
 
     csrw_ss(HYPERCOREX_INST_LOOP_END_ADDR_REG_ADDR, config);
     return;
 };
 
-void hypercorex_set_inst_loop_count(uint32_t config1, uint32_t config2,
-                                    uint32_t config3) {
-    uint32_t config = ((config3 & 0x3ff) << 20) | ((config2 & 0x3ff) << 10) |
-                      (config1 & 0x3ff);
+void hypercorex_set_inst_loop_count(uint16_t config1, uint16_t config2,
+                                    uint16_t config3, uint16_t config4) {
+    uint32_t config_count1 = ((config2 & 0xffff) << 16) | (config1 & 0xffff);
+    uint32_t config_count2 = ((config4 & 0xffff) << 16) | (config3 & 0xffff);
 
-    csrw_ss(HYPERCOREX_INST_LOOP_COUNT_REG_ADDR, config);
+    csrw_ss(HYPERCOREX_INST_LOOP_COUNT1_REG_ADDR, config_count1);
+    csrw_ss(HYPERCOREX_INST_LOOP_COUNT2_REG_ADDR, config_count2);
     return;
 };
 
