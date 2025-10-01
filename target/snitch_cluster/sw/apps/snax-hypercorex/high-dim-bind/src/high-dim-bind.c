@@ -89,33 +89,30 @@ int main() {
             (uint32_t)local_data_0,  // Base pointer low
             0,                       // Base pointer high
             8,                       // Spatial stride
-            target_num_data,         // Inner loop bound
-            1,                       // Outer loop bound
-            256,                     // Inner loop stride
-            0                        // Outer loop stride
-        );
+            // Loop bounds from inner to outer
+            target_num_data, 1, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
 
         // Configure streamer for high dim B
         hypercorex_set_streamer_highdim_b(
             (uint32_t)local_data_1,  // Base pointer low
             0,                       // Base pointer high
             8,                       // Spatial stride
-            target_num_data,         // Inner loop bound
-            1,                       // Outer loop bound
-            256,                     // Inner loop stride
-            0                        // Outer loop stride
-        );
+            // Loop bounds from inner to outer
+            target_num_data, 1, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
 
         // Configure streamer for high dim QHV
         hypercorex_set_streamer_highdim_qhv(
             (uint32_t)qhv_start,  // Base pointer low
             0,                    // Base pointer high
             8,                    // Spatial stride
-            target_num_data,      // Inner loop bound
-            1,                    // Outer loop bound
-            256,                  // Inner loop stride
-            0                     // Outer loop stride
-        );
+            // Loop bounds from inner to outer
+            target_num_data, 1, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
 
         // Start the streamers
         hypercorex_start_streamer();
@@ -131,13 +128,13 @@ int main() {
         csrw_ss(HYPERCOREX_INST_LOOP_CTRL_REG_ADDR, 0x00000001);
 
         // Set loop jump addresses
-        hypercorex_set_inst_loop_jump_addr(0, 0, 0);
+        hypercorex_set_inst_loop_jump_addr(0, 0, 0, 0);
 
         // Set loop end addresses
-        hypercorex_set_inst_loop_end_addr(2, 0, 0);
+        hypercorex_set_inst_loop_end_addr(2, 0, 0, 0);
 
         // Set loop counts
-        hypercorex_set_inst_loop_count(target_num_data, 0, 0);
+        hypercorex_set_inst_loop_count(target_num_data, 0, 0, 0);
 
         // Write control registers
         csrw_ss(HYPERCOREX_CORE_SET_REG_ADDR, 0x00000030);
@@ -164,7 +161,7 @@ int main() {
         // Check if prediction results are correct
         for (uint32_t i = 0; i < target_num_data; i++) {
             for (uint32_t j = 0; j < num_cut_in_wide_elem; j++) {
-                if ((uint32_t) * (qhv_start + i * 64 + j) !=
+                if ((uint32_t)*(qhv_start + i * 64 + j) !=
                     golden_list_data[i * num_cut_in_wide_elem + j]) {
                     err = 1;
                 };
