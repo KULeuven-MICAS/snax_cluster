@@ -153,7 +153,6 @@ def main():
 
     # Golden list of data
     golden_list_data = list(range(NUM_CLASSES))
-    golden_list_data[0] = 7
 
     code_str = format_vector_definition("uint32_t", "code", code_list)
     am_list_str = format_vector_definition("uint32_t", "am_list", am_list)
