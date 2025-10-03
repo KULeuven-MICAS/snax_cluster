@@ -415,11 +415,10 @@ class SnitchCluster(Generator):
 
     def parse_tcdm_topology(self):
         # Get tcdm topology
-        if ("sparse_interconnect_cfg" not in self.cfg ):
+        if ("sparse_interconnect_cfg" not in self.cfg):
             self.cfg["tcdm"]["topology"] = "snitch_pkg::LogarithmicInterconnect"
         else:
             self.cfg["tcdm"]["topology"] = "snitch_pkg::SparseInterconnect"
-
 
     def cfg_validate(self):
         failed = True
