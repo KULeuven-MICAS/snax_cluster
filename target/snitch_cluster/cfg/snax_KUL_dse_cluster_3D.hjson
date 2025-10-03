@@ -11,7 +11,7 @@
 
     cluster: {
         name: "snax_KUL_dse_cluster",
-        bender_target: ["snax_KUL_dse_cluster"],
+        bender_target: ["snax_KUL_dse_cluster", "sparse_interconnect"],
         boot_addr: 4096, // 0x1000
         cluster_base_addr: 268435456, // 0x1000_0000
         cluster_base_offset: 4194304,  // 4MB
@@ -22,6 +22,8 @@
         tcdm: {
             size: 128,
             banks: 32,
+        },
+        sparse_interconnect_cfg: {
         },
         cluster_periph_size: 64, // kB
         zero_mem_size: 64, // kB
