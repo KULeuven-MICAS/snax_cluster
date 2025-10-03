@@ -652,7 +652,6 @@ def main():
             + "../sw/snax/xdma/include/snax-xdma-addr.h"
         )
 
-
     # ---------------------------------------
     # Generating Sparse Interconnect
     # ---------------------------------------
@@ -662,12 +661,13 @@ def main():
         print("------------------------------------------------")
 
         # Calculate params for the tcdm
-        narrow_ports: int = 1 # axi connection
+        narrow_ports: int = 1  # axi connection
         for i in range(num_cores):
-            narrow_ports += 1 # core connection (no ssr assumed)
+            narrow_ports += 1  # core connection (no ssr assumed)
             if "snax_acc_cfg" in cfg_cores[i]:
                 for acc in cfg_cores[i]['snax_acc_cfg']:
-                    assert 'snax_narrow_tcdm_ports' in acc, "Please specify snax_narrow_tcdm_ports in the accelerator configuration"
+                    assert 'snax_narrow_tcdm_ports' in acc, \
+                        "Please specify snax_narrow_tcdm_ports in the accelerator configuration"
                     narrow_ports += int(acc['snax_narrow_tcdm_ports'])
             if "snax_xdma_cfg" in cfg_cores[i]:
                 narrow_ports += 16
@@ -701,8 +701,8 @@ def main():
             + " --userWidth "
             + str(0)
             + " --hw-target-dir "
-            + str(args.gen_path)
-            , gen_path=""
+            + str(args.gen_path),
+            gen_path=""
         )
 
     # ---------------------------------------
