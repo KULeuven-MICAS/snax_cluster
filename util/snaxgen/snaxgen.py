@@ -671,7 +671,6 @@ def main():
                     narrow_ports += int(acc['snax_narrow_tcdm_ports'])
             if "snax_xdma_cfg" in cfg_cores[i]:
                 narrow_ports += 16
-        breakpoint()
         cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"] = narrow_ports
         cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"] = int(cfg["cluster"]["tcdm"]["banks"])
 
