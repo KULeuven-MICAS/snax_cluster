@@ -12,79 +12,77 @@ class SparseInterconnect(NumInp: Int, NumOut: Int, addrWidth: Int, dataWidth: In
     val memRsps  = Vec(NumOut, Flipped(Decoupled(new MemRsp(dataWidth))))
   })
 
+  // === Bank Selection ===
+
   // Address construction:
-  // bank addr - bank offset - byte offset
+  // [bank addr | bank offset | byte offset]
   val byteOffsetWidth = log2Ceil(addrWidth / 8)
   val bankSelectWidth = log2Ceil(NumOut)
 
-  // Determine bank selection of the requests
+  // Determines the bank selection of the requests
   val bankSelect = Wire(Vec(NumInp, UInt(log2Ceil(NumOut).W)))
   for (i <- 0 until NumInp) {
     bankSelect(i) := io.tcdmReqs(i).bits.addr(bankSelectWidth + byteOffsetWidth - 1, byteOffsetWidth)
   }
 
-  // Registers to track the source of each memory bank's response
-  val lastReqSource = RegInit(VecInit(Seq.fill(NumOut)(0.U(log2Ceil(NumInp).W))))
-  val lastReqValid  = RegInit(VecInit(Seq.fill(NumOut)(false.B)))
+  // Determines the success of each request
+  val reqFire = Wire(Vec(NumInp, Bool()))
+  reqFire := io.tcdmReqs.map(req => req.fire)
 
-  // Default values for tcdm requests
-  for (i <- 0 until NumInp) {
-    io.tcdmReqs(i).ready := false.B
-  }
+  // === Forward Request Routing (tcdm -> bank) ===
 
-  // Default values for memory requests
-  for (out <- 0 until NumOut) {
-    io.memReqs(out).valid := false.B
-    io.memReqs(out).bits  := DontCare
-  }
-
-  // Arbitration and request routing
-  for (out <- 0 until NumOut) {
-
-    // Collect all valid requests to this bank:
-    val validRequests = io.tcdmReqs.zip(bankSelect).map { case (req, bank) =>
-      req.valid && (bank === out.U)
-    }
-
-    val anyValid: Bool = validRequests.reduce(_ || _)
-    // just take the first valid request for now
-    val selectedRequest = PriorityEncoder(validRequests)
-
-    // Propagate the request to the memory bank
-    when(anyValid) {
-      io.memReqs(out).bits      := io.tcdmReqs(selectedRequest).bits
-      // The bank and byte offset should be subtracted from the address for memory requests
-      io.memReqs(out).bits.addr :=
-        io.tcdmReqs(selectedRequest).bits.addr(addrWidth - 1, bankSelectWidth + byteOffsetWidth)
-      io.memReqs(out).valid     := true.B
-
-      // Return ready signal to the original requestor
-      io.tcdmReqs(selectedRequest).ready := io.memReqs(out).ready
-    }
-
-    // Track the source of the request
-    when(io.memReqs(out).fire) {
-      lastReqSource(out) := selectedRequest
-      lastReqValid(out)  := true.B
-    }.otherwise(
-      lastReqValid(out) := false.B
+  // one arbitration module per output memory bank
+  val arbiters = Seq.fill(NumOut)(
+    Module(
+      new ArbitrationTree(NumInp, addrWidth, dataWidth, strbWidth, userWidth)
     )
-  }
+  )
 
-  // Default Response Routing
-  for (inp <- 0 until NumInp) {
-    io.tcdmRsps(inp).valid := false.B
-    io.tcdmRsps(inp).bits  := DontCare
-  }
+  // Default ready signals to false
+  io.tcdmReqs.foreach(_.ready := false.B)
 
   for (out <- 0 until NumOut) {
-    when(io.memRsps(out).valid && lastReqValid(out)) {
-      val source = lastReqSource(out)
-      io.tcdmRsps(source).valid := true.B
-      io.tcdmRsps(source).bits  := io.memRsps(out).bits
-      io.memRsps(out).ready     := io.tcdmRsps(source).ready
-    }.otherwise {
-      io.memRsps(out).ready := false.B
+
+    // Connect the inputs
+    for (in <- 0 until NumInp) {
+      // Connect the request to the arbiter
+      arbiters(out).io.tcdmReqs(in).bits <> io.tcdmReqs(in).bits
+      // Only send the relevant part of the address
+      arbiters(out).io.tcdmReqs(in).bits.addr :=
+        io.tcdmReqs(in).bits.addr(addrWidth - 1, bankSelectWidth + byteOffsetWidth)
+      // Valid only on correct arbiter
+      arbiters(out).io.tcdmReqs(in).valid     := io.tcdmReqs(in).valid && (bankSelect(in) === out.U)
+      // Reverse routing of the ready signal
+      when(bankSelect(in) === out.U) {
+        io.tcdmReqs(in).ready := arbiters(out).io.tcdmReqs(in).ready
+      }
+    }
+
+    // Connect to the memory output ports.
+    arbiters(out).io.memReq <> io.memReqs(out)
+    arbiters(out).io.memRsp <> io.memRsps(out)
+
+    // default value for tcdmrsp ready
+    arbiters(out).io.tcdmRsp.ready := false.B
+
+  }
+
+  // === Response Routing ===
+
+  // response arbitration is a simple mux based on bank selection in previous cycle
+  // this assumes that the memory banks have a 1-cycle latency
+  val prevBankRequest = RegNext(bankSelect)
+  val prevReqFire     = RegNext(reqFire)
+
+  for (in <- 0 until NumInp) {
+    io.tcdmRsps(in).valid := false.B
+    io.tcdmRsps(in).bits  := DontCare
+
+    // Mux the response based on the previous bank selection
+    for (out <- 0 until NumOut) {
+      when(prevBankRequest(in) === out.U && prevReqFire(in)) {
+        io.tcdmRsps(in) <> arbiters(out).io.tcdmRsp
+      }
     }
   }
 
