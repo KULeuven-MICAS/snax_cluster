@@ -22,19 +22,16 @@ class ArbitrationTree(NumInp: Int, addrWidth: Int, dataWidth: Int, strbWidth: In
   io.memReq.bits  := DontCare
 
   // Arbitration and request routing
-  // Collect all valid requests to this bank:
-  val validRequests = io.tcdmReqs.map { req => req.valid }
-  val anyValid: Bool = validRequests.reduce(_ || _)
-
-  // just take the first valid request for now
-  val selectedRequest = PriorityEncoder(validRequests)
+  val arbiter = Module(new RoundRobinArbiter(NumInp))
+  arbiter.io.requests        := io.tcdmReqs.map { req => req.valid }
+  arbiter.io.selection.ready := io.memReq.ready
 
   // Propagate the request to the memory bank
-  when(anyValid) {
-    io.memReq.bits                     := io.tcdmReqs(selectedRequest).bits
-    io.memReq.valid                    := true.B
+  when(arbiter.io.selection.valid) {
+    io.memReq.bits                               := io.tcdmReqs(arbiter.io.selection.bits).bits
+    io.memReq.valid                              := true.B
     // Return ready signal to the original requestor
-    io.tcdmReqs(selectedRequest).ready := io.memReq.ready
+    io.tcdmReqs(arbiter.io.selection.bits).ready := io.memReq.ready
   }
 
   // Simply Return Response:
