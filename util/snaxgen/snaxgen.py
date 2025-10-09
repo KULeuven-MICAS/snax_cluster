@@ -662,13 +662,7 @@ def main():
 
         sparse_config = []
         # Calculate params for the tcdm
-        narrow_ports: int = 1  # axi connection
-        sparse_config.append((1, 1))
-        # first come the cores
-        for i in range(num_cores):
-            narrow_ports += 1  # core connection (no ssr assumed)
-            sparse_config.append((1, 1))
-        # then come the accelerators
+        narrow_ports = 0
         for i in range(num_cores):
             if "snax_acc_cfg" in cfg_cores[i]:
                 for acc in cfg_cores[i]['snax_acc_cfg']:
@@ -681,11 +675,16 @@ def main():
                         sparse_config.append((int(acc['snax_narrow_tcdm_ports']), 1))
             if "snax_xdma_cfg" in cfg_cores[i]:
                 narrow_ports += 16
+        # then come the cores
+        for i in range(num_cores):
+            narrow_ports += 1  # core connection (no ssr assumed)
+            sparse_config.append((1, 1))
+        # finally, the AXI connection
+        narrow_ports += 1
+        sparse_config.append((1, 1))
         cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"] = narrow_ports
         cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"] = int(cfg["cluster"]["tcdm"]["banks"])
         cfg["cluster"]["sparse_interconnect_cfg"]["sparse_config"] = json.dumps(sparse_config)
-
-        breakpoint()
 
         tpl_rtl_wrapper_file = args.tpl_path + "sparse_interconnect_wrapper.sv.tpl"
 
@@ -713,6 +712,8 @@ def main():
             + str(int(cfg["cluster"]["data_width"] / 8))
             + " --userWidth "
             + str(0)
+            + " --sparseConfig "
+            + f"\"{cfg["cluster"]["sparse_interconnect_cfg"]["sparse_config"]}\""
             + " --hw-target-dir "
             + str(args.gen_path),
             gen_path=""
