@@ -1,0 +1,13 @@
+{
+    transposed_A: 0
+    transposed_B: 0
+    K: 256
+    N: 4
+    M: 1
+    bypassSIMD: 0
+    broadcast_C: 0
+    channel_en_C: 1
+    array_shape: 0
+    data_type: 0
+    stationary: 0
+}
