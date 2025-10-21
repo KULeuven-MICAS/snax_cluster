@@ -341,12 +341,71 @@ def emit_matmul_data(**kwargs):
     ]
     data_str += [format_vector_definition("int32_t", "C", C)]
 
-    if kwargs["transposed_A"] == 1:
-        A = A.reshape(kwargs["M"], kwargs["K"], meshRow, tileSize)
-        A = A.transpose(0, 1, 3, 2).reshape(-1)
-    if kwargs["transposed_B"] == 1:
-        B = B.reshape(kwargs["K"], kwargs["N"], tileSize, meshCol)
-        B = B.transpose(0, 1, 3, 2).reshape(-1)
+    # if kwargs["transposed_A"] == 1:
+    #     A = A.reshape(kwargs["M"], kwargs["K"], meshRow, tileSize)
+    #     A = A.transpose(0, 1, 3, 2).reshape(-1)
+    # if kwargs["transposed_B"] == 1:
+    #     B = B.reshape(kwargs["K"], kwargs["N"], tileSize, meshCol)
+    #     B = B.transpose(0, 1, 3, 2).reshape(-1)
+
+    # ============================================================
+    # Custom generation: Weight sparsity and input toggle control
+    # ============================================================
+
+    def generate_toggling_A(M, K, meshRow, tileSize, toggle_rate):
+        """Generate M×K×meshRow×tileSize int8 activations with controlled bit toggle rate."""
+        rng = np.random.default_rng(123)
+        A = np.zeros((M, K, meshRow, tileSize), dtype=np.int16)
+        bits_per_elem = 8
+        total_bits = meshRow * tileSize * bits_per_elem
+        flips_per_step = int(round(toggle_rate * total_bits))
+
+        # Initialize first row randomly
+        prev_block = rng.integers(MIN, MAX + 1, size=(meshRow, tileSize), dtype=np.int16)
+
+        for m in range(M):
+            for k in range(K):
+                block = prev_block.copy()
+                if toggle_rate > 0:
+                    flip_positions = rng.choice(total_bits, flips_per_step, replace=False)
+                    for pos in flip_positions:
+                        ei, bi = divmod(pos, bits_per_elem)
+                        r, c = divmod(ei, tileSize)
+                        block[r, c] ^= (1 << bi)
+                A[m, k] = block
+                prev_block = block
+
+        return A.reshape(-1).astype(np.int8)
+
+    def generate_sparse_B(K, N, tileSize, meshCol, sparsity):
+        """Generate K×N×tileSize×meshCol int8 weights with given sparsity."""
+        rng = np.random.default_rng(42)
+        B = rng.integers(MIN, MAX + 1, size=(K, N, tileSize, meshCol), dtype=np.int16)
+        if sparsity > 0:
+            mask = (rng.random(B.shape) > sparsity)
+            B = (B * mask).astype(np.int8)
+        return B.reshape(-1)
+
+    # ============================================================
+    # Use the new functions
+    # ============================================================
+    A = generate_toggling_A(kwargs["M"], kwargs["K"], meshRow, tileSize,
+                            kwargs.get("input_toggle_rate", 0.0))
+    data_str += [format_vector_definition("int8_t", "A", A)]
+
+    B = generate_sparse_B(kwargs["K"], kwargs["N"], tileSize, meshCol,
+                        kwargs.get("weight_sparsity", 0.0))
+    data_str += [format_vector_definition("int8_t", "B", B)]
+
+    # print(f"[INFO] Generated B with {np.mean(B==0)*100:.2f}% zeros "
+        # f"(target {kwargs.get('weight_sparsity',0)*100:.2f}%)")
+
+    def measure_toggle(A_flat, tileSize, meshRow):
+        bits = np.unpackbits(A_flat.view(np.uint8))
+        diffs = np.bitwise_xor(bits[:-8*tileSize*meshRow], bits[8*tileSize*meshRow:])
+        return diffs.sum() / bits[:-8*tileSize*meshRow].size
+
+    # print(f"[INFO] Approx. input toggle rate = {measure_toggle(A, tileSize, meshRow):.2%}")
 
     data_str += [
         format_scalar_definition("int32_t", "transposed_A", kwargs["transposed_A"])
@@ -467,6 +526,11 @@ def main():
         required=True,
         help="Select hardware config file kernel",
     )
+    parser.add_argument("--weight_sparsity", type=float, default=0.0,
+                        help="Fraction of zero weights (0.0–0.99).")
+    parser.add_argument("--input_toggle_rate", type=float, default=0.0,
+                        help="Fraction of bits toggling per cycle (0.0–1.0).")
+
     args = parser.parse_args()
 
     # Load param config file
@@ -479,6 +543,9 @@ def main():
 
     # Merge dictionaries (hw overrides param in case of conflicts)
     merged_config = {**param, **hw}
+
+    merged_config["weight_sparsity"] = args.weight_sparsity
+    merged_config["input_toggle_rate"] = args.input_toggle_rate
 
     # Emit header file
     print(emit_header_file(**merged_config))

@@ -36,6 +36,26 @@ SUBDIRS += snax-data-reshuffler
 SUBDIRS += snax-gemmx-matmul
 SUBDIRS += snax-gemmx-conv
 endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_gemm_chip_baseline1_64simd_wo_cdmerge_wo_cdserialize.hjson)
+SUBDIRS += snax-gemmx-matmul-baseline1
+endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_gemm_chip_baseline2_8simd_wo_cdmerge_wo_cdserialize.hjson)
+SUBDIRS += snax-gemmx-matmul-baseline1
+endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_gemm_chip_baseline3_8simd_w_cdmerge_wo_cdserialize.hjson)
+SUBDIRS += snax-gemmx-matmul
+endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_gemm_chip_baseline4_8simd_w_cdmerge_w_cdserialize.hjson)
+SUBDIRS += snax-gemmx-matmul
+endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster.hjson)
+SUBDIRS += snax-gemmx-matmul
+SUBDIRS += snax-gemmx-data-move
+endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster_fifo_1.hjson)
+SUBDIRS += snax-gemmx-matmul
+SUBDIRS += snax-gemmx-data-move
+endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_dse_cluster_2D.hjson)
 SUBDIRS += snax-data-reshuffler
 SUBDIRS += snax-gemmx-matmul

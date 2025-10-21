@@ -1,17 +1,19 @@
-// Copyright 2024 KU Leuven.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
-
-// Cluster configuration for a matmul testbench system.
 {
-  // gemm configurations
-  transposed_A: 0,
-  transposed_B: 0,
-  K: 1,
-  N: 2,
-  M: 3,
-  bypassSIMD: 1,
-  // broadcast_C won't work in the serial C input
-  broadcast_C: 0,
-  channel_en_C: 1,
+    transposed_A: 0
+    transposed_B: 0
+    K: 128
+    N: 8
+    M: 3
+    weight_sparsity: 0.5
+    input_toggle_rate: 0.1
+    bypassSIMD: 0
+    broadcast_C: 0
+    channel_en_C: 0
+    array_shape: 0
+    data_type: 0
+    stationary: 0
+    if_separate_l1: 0
+    mu: 8
+    ku: 8
+    nu: 8
 }

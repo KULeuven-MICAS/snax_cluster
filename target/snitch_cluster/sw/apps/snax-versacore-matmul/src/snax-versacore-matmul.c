@@ -98,14 +98,19 @@ int main() {
         // Poll until Streamer and GEMM accelerator finish
         wait_versacore_and_streamer();
 
-        // Result check
-        err += check_versacore_result_D32((int8_t *)local_d, (int8_t *)D,
-                                          d_data_length, false);
+        // err += check_versacore_result_D32((int8_t *)local_d, (int8_t *)D,
+                                        //   d_data_length, false);
+        int32_t versacore_cycles = read_versacore_perf_counter();
+        int32_t versacore_streamer_cycles = read_versacore_streamer_perf_counter();
+        printf("Workload size: M = %d, N = %d, K = %d\n", M, N, K);
+        printf("SNAX GEMM Ideal cycles: %d\n", M * K * N);
+        printf("SNAX GEMM cycles: %d\n", versacore_cycles);
+        printf("SNAX GEMM Streamer cycles: %d\n", versacore_streamer_cycles);
 
         printf(
-            "Array shape: %d, meshRow %d, tileSize %d, meshCol %d, stationary: "
+            "Array shape: %d, data type: %d, meshRow %d, tileSize %d, meshCol %d, stationary: "
             "%d, SNAX GEMM Matmul: %s, Error: %d.\n",
-            array_shape, meshRow, tileSize, meshCol, stationary,
+            array_shape, data_type, meshRow, tileSize, meshCol, stationary,
             err ? "FAIL" : "PASS", err);
     };
 

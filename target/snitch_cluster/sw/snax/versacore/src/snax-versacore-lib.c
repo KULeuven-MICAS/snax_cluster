@@ -30,157 +30,157 @@ void set_versacore_streamer_csr(
     int32_t delta_local_d32, int32_t* D32slstride, int32_t* D32tlbound,
     int32_t* D32tlstride, int32_t set_addr_remap_index_D32,
     int32_t* channel_en_D) {
-#ifdef SNAX_VERSACORE_OUTPUT_STATIONARY_ONLY
+// #ifdef SNAX_VERSACORE_OUTPUT_STATIONARY_ONLY
 
-    // ----------------------------------A-----------------------------------
-    // ----------------------------------A-----------------------------------
-    // ----------------------------------A-----------------------------------
-    // base ptr for A
-    csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)(delta_local_a + snrt_l1_next()));
+//     // ----------------------------------A-----------------------------------
+//     // ----------------------------------A-----------------------------------
+//     // ----------------------------------A-----------------------------------
+//     // base ptr for A
+//     csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)(delta_local_a + snrt_l1_next()));
 
-    // spatial strides for A
-    for (int i = 0; i < S_STRIDE_NUM_READER_0; i++) {
-        csrw_ss(S_STRIDE_BASE_READER_0 + i, Aslstride[i]);
-    }
+//     // spatial strides for A
+//     for (int i = 0; i < S_STRIDE_NUM_READER_0; i++) {
+//         csrw_ss(S_STRIDE_BASE_READER_0 + i, Aslstride[i]);
+//     }
 
-    // loop bounds, from innermost to outermost, for data mover A
-    for (int i = 0; i < T_BOUND_NUM_READER_0; i++) {
-        csrw_ss(T_BOUND_BASE_READER_0 + i, Atlbound[i]);
-    }
+//     // loop bounds, from innermost to outermost, for data mover A
+//     for (int i = 0; i < T_BOUND_NUM_READER_0; i++) {
+//         csrw_ss(T_BOUND_BASE_READER_0 + i, Atlbound[i]);
+//     }
 
-    // temporal strides for A
-    for (int i = 0; i < T_STRIDE_NUM_READER_0; i++) {
-        csrw_ss(T_STRIDE_BASE_READER_0 + i, Atlstride[i]);
-    }
+//     // temporal strides for A
+//     for (int i = 0; i < T_STRIDE_NUM_READER_0; i++) {
+//         csrw_ss(T_STRIDE_BASE_READER_0 + i, Atlstride[i]);
+//     }
 
-    // set the address remap index for A
-#ifdef ADDR_REMAP_INDEX_READER_0
-    csrw_ss(ADDR_REMAP_INDEX_READER_0, set_addr_remap_index_A);
-#endif
+//     // set the address remap index for A
+// #ifdef ADDR_REMAP_INDEX_READER_0
+//     csrw_ss(ADDR_REMAP_INDEX_READER_0, set_addr_remap_index_A);
+// #endif
 
-    // set the channel enable
-#ifdef ENABLED_CHANNEL_READER_0
-    for (int i = 0; i < ENABLED_CHANNEL_READER_0_CSR_NUM; i++) {
-        csrw_ss(ENABLED_CHANNEL_READER_0 + i, channel_en_A[i]);
-    }
-#endif
-    // ----------------------------------B-----------------------------------
-    // ----------------------------------B-----------------------------------
-    // ----------------------------------B-----------------------------------
+//     // set the channel enable
+// #ifdef ENABLED_CHANNEL_READER_0
+//     for (int i = 0; i < ENABLED_CHANNEL_READER_0_CSR_NUM; i++) {
+//         csrw_ss(ENABLED_CHANNEL_READER_0 + i, channel_en_A[i]);
+//     }
+// #endif
+//     // ----------------------------------B-----------------------------------
+//     // ----------------------------------B-----------------------------------
+//     // ----------------------------------B-----------------------------------
 
-    // base ptr for B
-    csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)(delta_local_b + snrt_l1_next()));
+//     // base ptr for B
+//     csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)(delta_local_b + snrt_l1_next()));
 
-    // spatial strides for B
-    for (int i = 0; i < S_STRIDE_NUM_READER_1; i++) {
-        csrw_ss(S_STRIDE_BASE_READER_1 + i, Bslstride[i]);
-    }
+//     // spatial strides for B
+//     for (int i = 0; i < S_STRIDE_NUM_READER_1; i++) {
+//         csrw_ss(S_STRIDE_BASE_READER_1 + i, Bslstride[i]);
+//     }
 
-    // loop bounds, from innermost to outermost, for data mover B
-    for (int i = 0; i < T_BOUND_NUM_READER_1; i++) {
-        csrw_ss(T_BOUND_BASE_READER_1 + i, Btlbound[i]);
-    }
+//     // loop bounds, from innermost to outermost, for data mover B
+//     for (int i = 0; i < T_BOUND_NUM_READER_1; i++) {
+//         csrw_ss(T_BOUND_BASE_READER_1 + i, Btlbound[i]);
+//     }
 
-    // temporal strides for B
-    for (int i = 0; i < T_STRIDE_NUM_READER_1; i++) {
-        csrw_ss(T_STRIDE_BASE_READER_1 + i, Btlstride[i]);
-    }
+//     // temporal strides for B
+//     for (int i = 0; i < T_STRIDE_NUM_READER_1; i++) {
+//         csrw_ss(T_STRIDE_BASE_READER_1 + i, Btlstride[i]);
+//     }
 
-    // set the address remap index for B
-#ifdef ADDR_REMAP_INDEX_READER_1
-    csrw_ss(ADDR_REMAP_INDEX_READER_1, set_addr_remap_index_B);
-#endif
+//     // set the address remap index for B
+// #ifdef ADDR_REMAP_INDEX_READER_1
+//     csrw_ss(ADDR_REMAP_INDEX_READER_1, set_addr_remap_index_B);
+// #endif
 
-    // set the channel enable
-#ifdef ENABLED_CHANNEL_READER_1
-    for (int i = 0; i < ENABLED_CHANNEL_READER_1_CSR_NUM; i++) {
-        csrw_ss(ENABLED_CHANNEL_READER_1 + i, channel_en_B[i]);
-    }
-#endif
+//     // set the channel enable
+// #ifdef ENABLED_CHANNEL_READER_1
+//     for (int i = 0; i < ENABLED_CHANNEL_READER_1_CSR_NUM; i++) {
+//         csrw_ss(ENABLED_CHANNEL_READER_1 + i, channel_en_B[i]);
+//     }
+// #endif
 
-    // ----------------------------------C-----------------------------------
-    // ----------------------------------C-----------------------------------
-    // ----------------------------------C-----------------------------------
-    // base ptr for C
-    csrw_ss(BASE_PTR_READER_WRITER_0_LOW,
-            (uint32_t)(delta_local_c + snrt_l1_next()));
+//     // ----------------------------------C-----------------------------------
+//     // ----------------------------------C-----------------------------------
+//     // ----------------------------------C-----------------------------------
+//     // base ptr for C
+//     csrw_ss(BASE_PTR_READER_WRITER_0_LOW,
+//             (uint32_t)(delta_local_c + snrt_l1_next()));
 
-    // spatial strides for C
-    for (int i = 0; i < S_STRIDE_NUM_READER_WRITER_0; i++) {
-        csrw_ss(S_STRIDE_BASE_READER_WRITER_0 + i, Cslstride[i]);
-    }
+//     // spatial strides for C
+//     for (int i = 0; i < S_STRIDE_NUM_READER_WRITER_0; i++) {
+//         csrw_ss(S_STRIDE_BASE_READER_WRITER_0 + i, Cslstride[i]);
+//     }
 
-    // loop bounds, from innermost to outermost, for data mover C
-    for (int i = 0; i < T_BOUND_NUM_READER_WRITER_0; i++) {
-        csrw_ss(T_BOUND_BASE_READER_WRITER_0 + i, Ctlbound[i]);
-    }
+//     // loop bounds, from innermost to outermost, for data mover C
+//     for (int i = 0; i < T_BOUND_NUM_READER_WRITER_0; i++) {
+//         csrw_ss(T_BOUND_BASE_READER_WRITER_0 + i, Ctlbound[i]);
+//     }
 
-    // temporal strides for C
-    for (int i = 0; i < T_STRIDE_NUM_READER_WRITER_0; i++) {
-        csrw_ss(T_STRIDE_BASE_READER_WRITER_0 + i, Ctlstride[i]);
-    }
+//     // temporal strides for C
+//     for (int i = 0; i < T_STRIDE_NUM_READER_WRITER_0; i++) {
+//         csrw_ss(T_STRIDE_BASE_READER_WRITER_0 + i, Ctlstride[i]);
+//     }
 
-    // set the address remap index for C
-#ifdef ADDR_REMAP_INDEX_READER_WRITER_0
-    csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_0, set_addr_remap_index_C);
-#endif
+//     // set the address remap index for C
+// #ifdef ADDR_REMAP_INDEX_READER_WRITER_0
+//     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_0, set_addr_remap_index_C);
+// #endif
 
-    // set the channel enable
-#ifdef ENABLED_CHANNEL_READER_WRITER_0
-    for (int i = 0; i < ENABLED_CHANNEL_READER_WRITER_0_CSR_NUM; i++) {
-        csrw_ss(ENABLED_CHANNEL_READER_WRITER_0 + i, channel_en_C[i]);
-    }
-#endif
+//     // set the channel enable
+// #ifdef ENABLED_CHANNEL_READER_WRITER_0
+//     for (int i = 0; i < ENABLED_CHANNEL_READER_WRITER_0_CSR_NUM; i++) {
+//         csrw_ss(ENABLED_CHANNEL_READER_WRITER_0 + i, channel_en_C[i]);
+//     }
+// #endif
 
-    // ----------------------------------D32-----------------------------------
-    // ----------------------------------D32-----------------------------------
-    // ----------------------------------D32-----------------------------------
-    // base ptr for D32
-    csrw_ss(BASE_PTR_READER_WRITER_1_LOW,
-            (uint32_t)(delta_local_d32 + snrt_l1_next()));
+//     // ----------------------------------D32-----------------------------------
+//     // ----------------------------------D32-----------------------------------
+//     // ----------------------------------D32-----------------------------------
+//     // base ptr for D32
+//     csrw_ss(BASE_PTR_READER_WRITER_1_LOW,
+//             (uint32_t)(delta_local_d32 + snrt_l1_next()));
 
-    // spatial strides for D32
-    for (int i = 0; i < S_STRIDE_NUM_READER_WRITER_1; i++) {
-        csrw_ss(S_STRIDE_BASE_READER_WRITER_1 + i, D32slstride[i]);
-    }
+//     // spatial strides for D32
+//     for (int i = 0; i < S_STRIDE_NUM_READER_WRITER_1; i++) {
+//         csrw_ss(S_STRIDE_BASE_READER_WRITER_1 + i, D32slstride[i]);
+//     }
 
-    // for D32, from N to M
+//     // for D32, from N to M
 
-    for (int i = 0; i < T_BOUND_NUM_READER_WRITER_1; i++) {
-        csrw_ss(T_BOUND_BASE_READER_WRITER_1 + i, D32tlbound[i]);
-    }
+//     for (int i = 0; i < T_BOUND_NUM_READER_WRITER_1; i++) {
+//         csrw_ss(T_BOUND_BASE_READER_WRITER_1 + i, D32tlbound[i]);
+//     }
 
-    // temporal strides for D32
-    for (int i = 0; i < T_STRIDE_NUM_READER_WRITER_1; i++) {
-        csrw_ss(T_STRIDE_BASE_READER_WRITER_1 + i, D32tlstride[i]);
-    }
+//     // temporal strides for D32
+//     for (int i = 0; i < T_STRIDE_NUM_READER_WRITER_1; i++) {
+//         csrw_ss(T_STRIDE_BASE_READER_WRITER_1 + i, D32tlstride[i]);
+//     }
 
-    // set the address remap index for D32
-#ifdef ADDR_REMAP_INDEX_READER_WRITER_1
-    csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_1, set_addr_remap_index_D32);
-#endif
+//     // set the address remap index for D32
+// #ifdef ADDR_REMAP_INDEX_READER_WRITER_1
+//     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_1, set_addr_remap_index_D32);
+// #endif
 
-    // set the channel enable
-#ifdef ENABLED_CHANNEL_READER_WRITER_1
-    for (int i = 0; i < ENABLED_CHANNEL_READER_WRITER_1_CSR_NUM; i++) {
-        csrw_ss(ENABLED_CHANNEL_READER_WRITER_1 + i, channel_en_D[i]);
-    }
-#endif
+//     // set the channel enable
+// #ifdef ENABLED_CHANNEL_READER_WRITER_1
+//     for (int i = 0; i < ENABLED_CHANNEL_READER_WRITER_1_CSR_NUM; i++) {
+//         csrw_ss(ENABLED_CHANNEL_READER_WRITER_1 + i, channel_en_D[i]);
+//     }
+// #endif
 
-    // ------------------------- datapath extension ----------------------------
-    // ------------------------- datapath extension ----------------------------
-    // ------------------------- datapath extension ----------------------------
+//     // ------------------------- datapath extension ----------------------------
+//     // ------------------------- datapath extension ----------------------------
+//     // ------------------------- datapath extension ----------------------------
 
-    // set the transpose
-#ifdef READER_EXTENSION_0_CSR_BASE
-    csrw_ss(READER_EXTENSION_0_CSR_BASE, transpose_A == 1 ? 0 : 1);
-#endif
+//     // set the transpose
+// #ifdef READER_EXTENSION_0_CSR_BASE
+//     csrw_ss(READER_EXTENSION_0_CSR_BASE, transpose_A == 1 ? 0 : 1);
+// #endif
 
-#ifdef READER_EXTENSION_1_CSR_BASE
-    csrw_ss(READER_EXTENSION_1_CSR_BASE, transpose_B == 1 ? 0 : 1);
-#endif
+// #ifdef READER_EXTENSION_1_CSR_BASE
+//     csrw_ss(READER_EXTENSION_1_CSR_BASE, transpose_B == 1 ? 0 : 1);
+// #endif
 
-#else
+// #else
     // ----------------------------------A-----------------------------------
     // ----------------------------------A-----------------------------------
     // ----------------------------------A-----------------------------------
@@ -328,7 +328,7 @@ void set_versacore_streamer_csr(
     csrw_ss(READER_EXTENSION_1_CSR_BASE, transpose_B == 1 ? 0 : 1);
 #endif
 
-#endif
+// #endif
 }
 
 // Set GEMM configuration CSR
