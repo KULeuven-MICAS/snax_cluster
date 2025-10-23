@@ -25,7 +25,6 @@ class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
   val arrayShapeCfg = Input(UInt(params.configWidth.W))
   val dataTypeCfg   = Input(UInt(params.configWidth.W))
   val accAddExtIn   = Input(Bool())
-  val accClear      = Input(Bool())
 }
 
 class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {
@@ -254,7 +253,6 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   accumulators.foreach(_.io.in1.valid := io.data.in_a.valid && io.data.in_b.valid)
   accumulators.foreach(_.io.in2.valid := io.data.in_c.valid)
   accumulators.foreach(_.io.accAddExtIn := io.ctrl.accAddExtIn)
-  accumulators.foreach(_.io.accClear := io.ctrl.accClear)
   accumulators.foreach(_.io.out.ready := io.data.out_d.ready)
   (0 until params.inputTypeA.length).foreach { dataTypeIdx =>
     accumulators(dataTypeIdx).io.enable := io.ctrl.dataTypeCfg === dataTypeIdx.U
