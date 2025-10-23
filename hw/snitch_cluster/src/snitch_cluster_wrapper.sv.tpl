@@ -16,12 +16,6 @@ ${c[prop]}${', ' if not loop.last else ''}\
   % endfor
 </%def>\
 
-<%def name="snax_custom_tcdm_idx(prop)">\
-  % for idx in range(len(cfg['snax_custom_tcdm_assign'][prop])):
-${cfg['snax_custom_tcdm_assign'][prop][idx]}${', ' if not loop.last else ''}\
-  % endfor
-</%def>\
-
 <%def name="acc_cfg(prop)">\
   % for idx in range(len(prop)):
 ${prop[idx]}${', ' if not loop.last else ''}\
@@ -342,9 +336,7 @@ tcdm_offset_stop = -1
 total_snax_tcdm_ports = 0
 snax_core_acc = {}
 total_snax_narrow_ports = 0
-total_snax_wide_ports = 0
 snax_narrow_tcdm_ports_list = []
-snax_wide_tcdm_ports_list = []
 
 # Cycle through each core
 # and check if an accelerator setting exists
@@ -376,8 +368,7 @@ for core_id in range(len(cfg['cores'])):
       snax_num_acc = len(cfg['cores'][core_id]['snax_acc_cfg'])
 
     # Note that the order is from last core to the first core
-    snax_narrow_tcdm_ports_list.append(cfg['cores'][core_id]['snax_acc_cfg'][0]['snax_narrow_tcdm_ports'])
-    snax_wide_tcdm_ports_list.append(cfg['cores'][core_id]['snax_acc_cfg'][0]['snax_wide_tcdm_ports'])
+    snax_narrow_tcdm_ports_list.append(cfg['cores'][core_id]['snax_acc_cfg'][0]['snax_tcdm_ports'])
 
     # This is only necessary for custom instructions
     snax_use_custom_ports = cfg['cores'][core_id]['snax_use_custom_ports']
@@ -390,9 +381,8 @@ for core_id in range(len(cfg['cores'])):
       curr_snax_acc = "i_snax_core_" + str(core_id) + "_acc_" + str(prefix_snax_count) + "_" + cfg['cores'][core_id]['snax_acc_cfg'][j]['snax_acc_name']
 
       # Set tcdm offset ports
-      snax_narrow_tcdm_ports = cfg['cores'][core_id]['snax_acc_cfg'][j]['snax_narrow_tcdm_ports']
-      snax_wide_tcdm_ports = cfg['cores'][core_id]['snax_acc_cfg'][j]['snax_wide_tcdm_ports']
-      snax_tcdm_ports = snax_narrow_tcdm_ports + snax_wide_tcdm_ports
+      snax_narrow_tcdm_ports = cfg['cores'][core_id]['snax_acc_cfg'][j]['snax_tcdm_ports']
+      snax_tcdm_ports = snax_narrow_tcdm_ports
       tcdm_offset_stop += snax_tcdm_ports
 
       # Save settings in the dictionary
@@ -405,14 +395,12 @@ for core_id in range(len(cfg['cores'])):
       tcdm_offset_start += snax_tcdm_ports
       prefix_snax_count += 1
       total_snax_narrow_ports += snax_narrow_tcdm_ports
-      total_snax_wide_ports += snax_wide_tcdm_ports
 
   elif ('snax_xdma_cfg' in cfg['cores'][core_id]):
     snax_xdma_flag = True
     xdma_cfg = cfg['cores'][core_id]['snax_xdma_cfg']
     # Note that the order is from last core to the first core
     snax_narrow_tcdm_ports_list.append(round(cfg['dma_data_width'] / cfg['data_width']) << 1)
-    snax_wide_tcdm_ports_list.append(0)
 
     # Prepare accelerator tags
     xdma_instance_name = "xdma"
@@ -424,8 +412,7 @@ for core_id in range(len(cfg['cores'])):
 
     # Set tcdm offset ports
     snax_narrow_tcdm_ports = round(cfg['dma_data_width'] / cfg['data_width']) * 2
-    snax_wide_tcdm_ports = 0
-    snax_tcdm_ports = snax_narrow_tcdm_ports + snax_wide_tcdm_ports
+    snax_tcdm_ports = snax_narrow_tcdm_ports
     tcdm_offset_stop += snax_tcdm_ports
 
     # Save settings in the dictionary
@@ -437,7 +424,6 @@ for core_id in range(len(cfg['cores'])):
         }
     tcdm_offset_start += snax_tcdm_ports
     total_snax_narrow_ports += snax_narrow_tcdm_ports
-    total_snax_wide_ports += snax_wide_tcdm_ports
 
   else:
 
@@ -448,7 +434,6 @@ for core_id in range(len(cfg['cores'])):
 
     # Note that the order is from last core to the first core
     snax_narrow_tcdm_ports_list.append(0)
-    snax_wide_tcdm_ports_list.append(0)
 
   # This is the packed configuration
   snax_core_acc[curr_snax_acc_core] = {
@@ -460,7 +445,7 @@ for core_id in range(len(cfg['cores'])):
     'snax_acc_dict':snax_acc_dict
   }
 
-total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
+total_snax_tcdm_ports = total_snax_narrow_ports
 %>\
   // Internal local parameters to be hooked into the Snitch / SNAX cluster
   localparam int unsigned NumIntOutstandingLoads  [${cfg['nr_cores']}] = '{${core_cfg('num_int_outstanding_loads')}};
@@ -473,15 +458,6 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
   localparam int unsigned NumSsrs                 [${cfg['nr_cores']}] = '{${core_cfg('num_ssrs')}};
   localparam int unsigned SsrMuxRespDepth         [${cfg['nr_cores']}] = '{${core_cfg('ssr_mux_resp_depth')}};
   localparam int unsigned SnaxNarrowTcdmPorts     [${cfg['nr_cores']}] = '{${acc_cfg(snax_narrow_tcdm_ports_list)}};
-  localparam int unsigned SnaxWideTcdmPorts       [${cfg['nr_cores']}] = '{${acc_cfg(snax_wide_tcdm_ports_list)}};
-% if 'snax_custom_tcdm_assign' in cfg:
-% if cfg['snax_custom_tcdm_assign']['snax_enable_assign_tcdm_idx']:
-  localparam int unsigned SnaxNarrowStartIdx      [${len(cfg['snax_custom_tcdm_assign']['snax_narrow_assign_start_idx'])}] = '{${snax_custom_tcdm_idx('snax_narrow_assign_start_idx')}};
-  localparam int unsigned SnaxNarrowEndIdx        [${len(cfg['snax_custom_tcdm_assign']['snax_narrow_assign_end_idx'])}] = '{${snax_custom_tcdm_idx('snax_narrow_assign_end_idx')}};
-  localparam int unsigned SnaxWideStartIdx        [${len(cfg['snax_custom_tcdm_assign']['snax_wide_assign_start_idx'])}] = '{${snax_custom_tcdm_idx('snax_wide_assign_start_idx')}};
-  localparam int unsigned SnaxWideEndIdx          [${len(cfg['snax_custom_tcdm_assign']['snax_wide_assign_end_idx'])}] = '{${snax_custom_tcdm_idx('snax_wide_assign_end_idx')}};
-% endif
-% endif
 
   //-----------------------------
   // SNAX Custom Instruction Ports
@@ -592,21 +568,8 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     .Xssr (${core_cfg_flat('xssr')}),
     .Xfrep (${core_cfg_flat('xfrep')}),
     .SnaxNarrowTcdmPorts (SnaxNarrowTcdmPorts),
-    .SnaxWideTcdmPorts (SnaxWideTcdmPorts),
     .TotalSnaxNarrowTcdmPorts(${total_snax_narrow_ports}),
-    .TotalSnaxWideTcdmPorts(${total_snax_wide_ports}),
     .SnaxUseCustomPorts (${core_cfg_flat('snax_use_custom_ports')}),
-% if 'snax_custom_tcdm_assign' in cfg:
-  % if cfg['snax_custom_tcdm_assign']['snax_enable_assign_tcdm_idx']:
-    .SnaxUseIdxTcdmAssign(1'b1),
-    .SnaxNumNarrowAssignIdx(${len(cfg['snax_custom_tcdm_assign']['snax_narrow_assign_start_idx'])}),
-    .SnaxNumWideAssignIdx(${len(cfg['snax_custom_tcdm_assign']['snax_wide_assign_start_idx'])}),
-    .SnaxNarrowStartIdx(SnaxNarrowStartIdx),
-    .SnaxNarrowEndIdx(SnaxNarrowEndIdx),
-    .SnaxWideStartIdx(SnaxWideStartIdx),
-    .SnaxWideEndIdx(SnaxWideEndIdx),
-  % endif
-% endif
     .FPUImplementation (${cfg['pkg_name']}::FPUImplementation),
     .SnitchPMACfg (${cfg['pkg_name']}::SnitchPMACfg),
     .NumIntOutstandingLoads (NumIntOutstandingLoads),
