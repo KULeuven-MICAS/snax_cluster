@@ -865,6 +865,42 @@ def emit_matmul_data(**kwargs):
         )
         data_str += [format_vector_definition("int32_t", "D2", D2)]
 
+    # Generate golden reference output for 3 times accumulation
+    # -----------------------------------------------------------
+    if (
+        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
+    ):  # FP8 data type
+        D3 = block_gemm_golden_model_fp8(
+            M,
+            K,
+            N,
+            meshRow,
+            tileSize,
+            meshCol,
+            A_fp8,
+            B_fp8,
+            subtraction_a,
+            subtraction_b,
+            D2,
+        )
+        D3 = float32_to_hex_uint(D3)
+        data_str += [format_vector_definition("int32_t", "D3", D3)]
+    else:
+        D3 = block_gemm_golden_model(
+            M,
+            K,
+            N,
+            meshRow,
+            tileSize,
+            meshCol,
+            A,
+            B,
+            subtraction_a,
+            subtraction_b,
+            D2,
+        )
+        data_str += [format_vector_definition("int32_t", "D3", D3)]
+
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_A", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_B", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_C", 0)]

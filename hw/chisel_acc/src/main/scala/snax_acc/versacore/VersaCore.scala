@@ -449,14 +449,12 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   // output_times == 0 means no output
   // If output_times is 0, we need to ensure that the valid signal is not asserted
   // othwerwise, output one valid signal after a_b_input_times_one_output computations
-  when(cstate === sBUSY && csrReg.fsmCfg.a_b_input_times_one_output === 0.U) {
-    D_p2s.io.in.valid := false.B
-  }.elsewhen(csrReg.fsmCfg.output_times === 0.U) {
+  when(csrReg.fsmCfg.output_times === 0.U) {
     D_p2s.io.in.valid := false.B
   }.otherwise {
     D_p2s.io.in.valid := array.io.data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.a_b_input_times_one_output - 1.U)
   }
-  array.io.data.out_d.ready := Mux(D_p2s.io.in.valid, D_p2s.io.in.ready, true.B) && cstate === sBUSY
+  array.io.data.out_d.ready := Mux(D_p2s.io.in.valid, D_p2s.io.in.ready, true.B)
 
   // ------------------------------------
   // array instance and data handshake signal connections ends
