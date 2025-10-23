@@ -811,7 +811,7 @@ def emit_matmul_data(**kwargs):
             subtraction_b,
             C,
         )
-        D = float32_to_hex_uint(D)
+        D1 = float32_to_hex_uint(D1)
         data_str += [format_vector_definition("int32_t", "D1", D1)]
     else:
         D1 = block_gemm_golden_model(

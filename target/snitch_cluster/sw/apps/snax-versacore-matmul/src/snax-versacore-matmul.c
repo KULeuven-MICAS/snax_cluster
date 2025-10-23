@@ -18,10 +18,10 @@ int main() {
     int32_t *local_c, *local_d;
 
     // Allocate space in TCDM
-    local_a = (int8_t*)(snrt_l1_next() + delta_local_a);
-    local_b = (int8_t*)(snrt_l1_next() + delta_local_b);
-    local_c = (int32_t*)(snrt_l1_next() + delta_local_c);
-    local_d = (int32_t*)(snrt_l1_next() + delta_local_d);
+    local_a = (int8_t *)(snrt_l1_next() + delta_local_a);
+    local_b = (int8_t *)(snrt_l1_next() + delta_local_b);
+    local_c = (int32_t *)(snrt_l1_next() + delta_local_c);
+    local_d = (int32_t *)(snrt_l1_next() + delta_local_d);
 
     // Transfer data from L3 to L1
     // Using DMA only
@@ -106,7 +106,7 @@ int main() {
         wait_versacore_and_streamer();
 
         // Result check
-        err += check_versacore_result_D32((int8_t*)local_d, (int8_t*)D1,
+        err += check_versacore_result_D32((int8_t *)local_d, (int8_t *)D1,
                                           d_data_length, false);
 
         printf(
@@ -163,7 +163,7 @@ int main() {
         wait_versacore_and_streamer();
 
         // Result check
-        err += check_versacore_result_D32((int8_t*)local_d, (int8_t*)D2,
+        err += check_versacore_result_D32((int8_t *)local_d, (int8_t *)D2,
                                           d_data_length, false);
 
         printf(
@@ -322,7 +322,7 @@ int main() {
         wait_versacore_and_streamer();
 
         // Result check
-        err += check_versacore_result_D32((int8_t*)local_d, (int8_t*)D3,
+        err += check_versacore_result_D32((int8_t *)local_d, (int8_t *)D3,
                                           d_data_length, false);
 
         printf(
