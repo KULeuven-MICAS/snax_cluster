@@ -57,8 +57,7 @@ int main() {
         int32_t Ctlstride[] = {Ctlstride0, Ctlstride1, Ctlstride2, Ctlstride3};
 
         int32_t D32slstride[] = {D32slstride0};
-        int32_t D32tlbound[] = {D32tlbound0, D32tlbound1, D32tlbound2,
-                                D32tlbound3};
+        int32_t D32tlbound[] = {0, 0, 0, 0};
         int32_t D32tlstride[] = {D32tlstride0, D32tlstride1, D32tlstride2,
                                  D32tlstride3};
 
@@ -85,7 +84,9 @@ int main() {
 
         if (stationary == 0) {
             // Set CSR for output-stationary
-            set_versacore_csr(1, K, N * M, subtraction_setting, array_shape,
+            // no need to output any result in phase 1
+            // store inside the accumulator
+            set_versacore_csr(1, K, 0, subtraction_setting, array_shape,
                               data_type);
         } else {
             // Set CSR for weight-stationary or input-stationary
@@ -102,17 +103,6 @@ int main() {
         // Poll until Streamer and GEMM accelerator finish
         wait_versacore_and_streamer();
 
-        // Result check
-        err += check_versacore_result_D32((int8_t*)local_d, (int8_t*)D1,
-                                          d_data_length, false);
-
-        printf(
-            "Phase-1: Array shape: %d, meshRow %d, tileSize %d, meshCol %d, "
-            "stationary: "
-            "%d, SNAX GEMM Matmul: %s, Error: %d.\n",
-            array_shape, meshRow, tileSize, meshCol, stationary,
-            err ? "FAIL" : "PASS", err);
-
         // --------------------------------------------------
         // phase two: first GEMM, add partial sums stored inside the accumulator
         // --------------------------------------------------
@@ -123,6 +113,11 @@ int main() {
         Ctlbound[1] = 0;
         Ctlbound[2] = 0;
         Ctlbound[3] = 0;
+
+        D32tlbound[0] = D32tlbound0;
+        D32tlbound[1] = D32tlbound1;
+        D32tlbound[2] = D32tlbound2;
+        D32tlbound[3] = D32tlbound3;
 
         set_versacore_streamer_csr(
             delta_local_a, Aslstride, Atlbound, Atlstride,

@@ -16,7 +16,7 @@ import snax_acc.utils._
 /** VersaCoreCfg is a configuration bundle for the VersaCore module. */
 class VersaCoreCfg(params: SpatialArrayParam) extends Bundle {
   val fsmCfg = new Bundle {
-    val take_in_new_c              = Bool()
+    val take_in_new_c              = UInt(params.configWidth.W)
     // two signals to decide the computation count and the output count
     val a_b_input_times_one_output = UInt(params.configWidth.W)
     val output_times               = UInt(params.configWidth.W)
@@ -479,7 +479,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   val computation_finish = WireInit(0.B)
   // if no output, computation finish depends on the computeFireCounter only
   when(csrReg.fsmCfg.output_times === 0.U && cstate === sBUSY) {
-    computation_finish := (computeFireCounter.io.value === csrReg.fsmCfg.a_b_input_times_one_output) && cstate === sBUSY
+    computation_finish := (computeFireCounter.io.lastVal) && cstate === sBUSY
   }.otherwise {
     computation_finish := output_finish
   }
