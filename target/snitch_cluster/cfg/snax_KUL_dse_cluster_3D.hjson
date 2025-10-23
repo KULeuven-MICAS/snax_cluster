@@ -22,8 +22,7 @@
         tcdm: {
             size: 128,
             banks: 32,
-        },
-        sparse_interconnect_cfg: {
+            sparse_interconnect: true,
         },
         cluster_periph_size: 64, // kB
         zero_mem_size: 64, // kB
@@ -119,7 +118,7 @@
         snax_acc_cfg: [{
             snax_acc_name: "snax_streamer_gemmX",
             bender_target: ["snax_gemmX"],
-            snax_narrow_tcdm_ports: 32,
+            snax_tcdm_ports: 32,
             sparse_config: [[8, 1], [24, 8]],
             snax_wide_tcdm_ports: 0,
             snax_num_rw_csr: 19,
@@ -158,8 +157,7 @@
         snax_acc_cfg: [{
             snax_acc_name: "snax_data_reshuffler",
             bender_target: ["snax_data_reshuffler"],
-            snax_narrow_tcdm_ports: 16,
-            snax_wide_tcdm_ports: 0,
+            snax_tcdm_ports: 16,
             snax_num_rw_csr: 2,
             snax_num_ro_csr: 2,
             snax_streamer_cfg: {$ref: "#/snax_data_reshuffler_streamer_template" }
