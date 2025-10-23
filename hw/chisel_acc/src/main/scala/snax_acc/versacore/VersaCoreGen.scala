@@ -252,9 +252,9 @@ module snax_versacore_shell_wrapper #(
 
       .io_ctrl_ready(csr_reg_set_ready_o),
       .io_ctrl_valid(csr_reg_set_valid_i),
-      .io_ctrl_bits_fsmCfg_K_i(csr_reg_set_i[0]),
-      .io_ctrl_bits_fsmCfg_N_i(csr_reg_set_i[1]),
-      .io_ctrl_bits_fsmCfg_M_i(csr_reg_set_i[2]),
+      .io_ctrl_bits_fsmCfg_take_in_new_c(csr_reg_set_i[0]),
+      .io_ctrl_bits_fsmCfg_a_b_input_times_one_output(csr_reg_set_i[1]),
+      .io_ctrl_bits_fsmCfg_output_times(csr_reg_set_i[2]),
       .io_ctrl_bits_fsmCfg_subtraction_constant_i(csr_reg_set_i[3]),
       .io_ctrl_bits_arrayCfg_arrayShapeCfg(csr_reg_set_i[4]),
       .io_ctrl_bits_arrayCfg_dataTypeCfg(csr_reg_set_i[5]),

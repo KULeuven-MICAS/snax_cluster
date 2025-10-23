@@ -332,13 +332,14 @@ void set_versacore_streamer_csr(
 }
 
 // Set GEMM configuration CSR
-void set_versacore_csr(uint32_t tempLoop0, uint32_t tempLoop1,
-                       uint32_t tempLoop2, uint32_t subtractions,
+void set_versacore_csr(uint32_t take_in_new_c,
+                       uint32_t a_b_input_times_one_output,
+                       uint32_t output_times, uint32_t subtractions,
                        uint32_t array_shape, uint32_t data_type) {
     // set loop bounds, from innermost to outermost, aka from K to N to M
-    csrw_ss(T_BOUND_K, tempLoop0);
-    csrw_ss(T_BOUND_N, tempLoop1);
-    csrw_ss(T_BOUND_M, tempLoop2);
+    csrw_ss(OVERWRITE_ACCUM, take_in_new_c);
+    csrw_ss(ACCUM_BOUND, a_b_input_times_one_output);
+    csrw_ss(OUTPUT_BOUND, output_times);
 
     // set subtraction a and b
     csrw_ss(SUBTRACTIONS, subtractions);

@@ -794,11 +794,11 @@ def emit_matmul_data(**kwargs):
         format_scalar_definition("int32_t", "transposed_B", kwargs["transposed_B"])
     ]
 
-    # Generate golden reference output
+    # Generate golden reference output for phase 1
     if (
         snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
     ):  # FP8 data type
-        D = block_gemm_golden_model_fp8(
+        D1 = block_gemm_golden_model_fp8(
             M,
             K,
             N,
@@ -812,9 +812,9 @@ def emit_matmul_data(**kwargs):
             C,
         )
         D = float32_to_hex_uint(D)
-        data_str += [format_vector_definition("int32_t", "D", D)]
+        data_str += [format_vector_definition("int32_t", "D1", D1)]
     else:
-        D = block_gemm_golden_model(
+        D1 = block_gemm_golden_model(
             M,
             K,
             N,
@@ -827,7 +827,43 @@ def emit_matmul_data(**kwargs):
             subtraction_b,
             C,
         )
-        data_str += [format_vector_definition("int32_t", "D", D)]
+        data_str += [format_vector_definition("int32_t", "D1", D1)]
+
+    # Generate golden reference output for phase 2
+    # -----------------------------------------------------------
+    if (
+        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
+    ):  # FP8 data type
+        D2 = block_gemm_golden_model_fp8(
+            M,
+            K,
+            N,
+            meshRow,
+            tileSize,
+            meshCol,
+            A_fp8,
+            B_fp8,
+            subtraction_a,
+            subtraction_b,
+            D1,
+        )
+        D2 = float32_to_hex_uint(D2)
+        data_str += [format_vector_definition("int32_t", "D2", D2)]
+    else:
+        D2 = block_gemm_golden_model(
+            M,
+            K,
+            N,
+            meshRow,
+            tileSize,
+            meshCol,
+            A,
+            B,
+            subtraction_a,
+            subtraction_b,
+            D1,
+        )
+        data_str += [format_vector_definition("int32_t", "D2", D2)]
 
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_A", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_B", 0)]

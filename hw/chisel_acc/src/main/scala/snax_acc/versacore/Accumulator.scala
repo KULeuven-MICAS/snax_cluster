@@ -27,8 +27,6 @@ class AccumulatorBlock(
     val accAddExtIn = Input(Bool())
     // enable signal
     val enable      = Input(Bool())
-    // clear signal to reset the accumulator
-    val accClear    = Input(Bool())
     // output of the accumulator
     val out         = Output(UInt(outputType.width.W))
   })
@@ -45,9 +43,9 @@ class AccumulatorBlock(
   adder.in_b := Mux(io.accAddExtIn, io.in2, accumulatorReg)
 
   val nextAcc = Wire(UInt(outputType.width.W))
-  nextAcc := Mux(io.accClear, 0.U, Mux(io.enable, adder.out_c, accumulatorReg))
+  nextAcc := Mux(io.enable, adder.out_c, accumulatorReg)
 
-  val accUpdate = io.enable || io.accClear
+  val accUpdate = io.enable
   accumulatorReg := Mux(accUpdate, nextAcc, accumulatorReg)
 
   // output of accumulator register
@@ -68,7 +66,6 @@ class Accumulator(
     val in2         = Flipped(DecoupledIO(Vec(numElements, UInt(inputType.width.W))))
     val accAddExtIn = Input(Bool())
     val enable      = Input(Bool())
-    val accClear    = Input(Bool())
     val out         = DecoupledIO(Vec(numElements, UInt(outputType.width.W)))
   })
 
@@ -88,7 +85,6 @@ class Accumulator(
     accumulator_blocks(i).io.in2         := io.in2.bits(i)
     accumulator_blocks(i).io.accAddExtIn := io.accAddExtIn
     accumulator_blocks(i).io.enable      := accUpdate
-    accumulator_blocks(i).io.accClear    := io.accClear
   }
 
   val inputDataFire  = RegNext(accUpdate)

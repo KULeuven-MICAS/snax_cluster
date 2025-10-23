@@ -16,10 +16,11 @@ import snax_acc.utils._
 /** VersaCoreCfg is a configuration bundle for the VersaCore module. */
 class VersaCoreCfg(params: SpatialArrayParam) extends Bundle {
   val fsmCfg = new Bundle {
-    val K_i                    = UInt(params.configWidth.W)
-    val N_i                    = UInt(params.configWidth.W)
-    val M_i                    = UInt(params.configWidth.W)
-    val subtraction_constant_i = UInt(params.configWidth.W)
+    val take_in_new_c              = Bool()
+    // two signals to decide the computation count and the output count
+    val a_b_input_times_one_output = UInt(params.configWidth.W)
+    val output_times               = UInt(params.configWidth.W)
+    val subtraction_constant_i     = UInt(params.configWidth.W)
   }
 
   val arrayCfg = new Bundle {
@@ -69,11 +70,10 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   val nstate                = WireInit(sIDLE)
 
   // signals for state transition
-  val config_valid       = WireInit(0.B)
-  val computation_finish = WireInit(0.B)
+  val config_valid     = WireInit(0.B)
+  val versacore_finish = WireInit(0.B)
 
-  val zeroLoopBoundCase =
-    io.ctrl.bits.fsmCfg.M_i === 0.U || io.ctrl.bits.fsmCfg.K_i === 0.U || io.ctrl.bits.fsmCfg.K_i === 0.U
+  val zeroLoopBoundCase = io.ctrl.bits.fsmCfg.a_b_input_times_one_output === 0.U
 
   // Changing states
   cstate := nstate
@@ -88,7 +88,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
       }
     }
     is(sBUSY) {
-      when(computation_finish) {
+      when(versacore_finish) {
         nstate := sIDLE
       }.otherwise {
         nstate := sBUSY
@@ -96,7 +96,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
     }
   }
 
-  config_valid  := io.ctrl.fire && !zeroLoopBoundCase && cstate === sIDLE
+  config_valid  := io.ctrl.fire && cstate === sIDLE
   io.ctrl.ready := cstate === sIDLE
 
   val csrReg = RegInit(0.U.asTypeOf(new VersaCoreCfg(params)))
@@ -104,22 +104,19 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   // Store the configurations when config valid
   when(config_valid) {
     when(!zeroLoopBoundCase) {
-      csrReg.fsmCfg.M_i := io.ctrl.bits.fsmCfg.M_i
-      csrReg.fsmCfg.N_i := io.ctrl.bits.fsmCfg.N_i
-      csrReg.fsmCfg.K_i := io.ctrl.bits.fsmCfg.K_i
+      csrReg.fsmCfg.take_in_new_c              := io.ctrl.bits.fsmCfg.take_in_new_c
+      csrReg.fsmCfg.a_b_input_times_one_output := io.ctrl.bits.fsmCfg.a_b_input_times_one_output
+      csrReg.fsmCfg.output_times               := io.ctrl.bits.fsmCfg.output_times
     }.otherwise {
       assert(
-        io.ctrl.bits.fsmCfg.M_i =/= 0.U || io.ctrl.bits.fsmCfg.K_i =/= 0.U || io.ctrl.bits.fsmCfg.K_i =/= 0.U,
-        " M == 0 or K ==0 or N == 0, invalid configuration!"
+        io.ctrl.bits.fsmCfg.a_b_input_times_one_output =/= 0.U,
+        " a_b_input_times_one_output == 0, invalid configuration!"
       )
     }
     csrReg.fsmCfg.subtraction_constant_i := io.ctrl.bits.fsmCfg.subtraction_constant_i
     csrReg.arrayCfg.arrayShapeCfg        := io.ctrl.bits.arrayCfg.arrayShapeCfg
     csrReg.arrayCfg.dataTypeCfg          := io.ctrl.bits.arrayCfg.dataTypeCfg
   }
-
-  // counter for output data count
-  val dOutputCounter = Module(new BasicCounter(params.configWidth, nameTag = "dOutputCounter"))
 
   val dimRom = VecInit(params.arrayDim.map { twoD =>
     VecInit(twoD.map { oneD =>
@@ -158,13 +155,13 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
       )
     )
 
-  // all number of cycles that the data needs to be outputted
-  dOutputCounter.io.ceil  := csrReg.fsmCfg.M_i * csrReg.fsmCfg.N_i * output_d_serial_factor
-  dOutputCounter.io.tick  := io.data.out_d.fire && cstate === sBUSY
-  dOutputCounter.io.reset := computation_finish
+  // counter for output data count
+  val dOutputCounter = Module(new BasicCounter(params.configWidth, hasCeil = false, nameTag = "dOutputCounter"))
 
-  // all the data is outputted means the computation is finished
-  computation_finish := dOutputCounter.io.lastVal
+  // all number of counts that the data needs to be outputted
+  // dOutputCounter.io.ceil  := csrReg.fsmCfg.output_times * output_d_serial_factor
+  dOutputCounter.io.tick  := io.data.out_d.fire && cstate === sBUSY
+  dOutputCounter.io.reset := versacore_finish
 
   // -----------------------------------
   // state machine ends
@@ -194,6 +191,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   )
 
   // TODO: a single input or weight stationary are not tested, but should be valid
+  // so for now we require the input widths to be equal, e.g., no serialization
   require(params.serialInputADataWidth == params.arrayInputAWidth)
   require(params.serialInputBDataWidth == params.arrayInputBWidth)
 
@@ -410,23 +408,22 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   val array = Module(new SpatialArray(params))
 
   // array accAddExtIn control signal
-  // always one accumulation then  K_i array computation
   val accAddExtIn        = WireInit(0.B)
-  val computeFireCounter = Module(new BasicCounter(params.configWidth, nameTag = "computeFireCounter"))
-  computeFireCounter.io.ceil := csrReg.fsmCfg.K_i
+  val computeFireCounter = Module(new BasicCounter(params.configWidth, hasCeil = true, nameTag = "computeFireCounter"))
+  computeFireCounter.io.ceilOpt.get := csrReg.fsmCfg.a_b_input_times_one_output
   val addCFire =
-    (a_after_cut.fire && b_after_cut.fire && array.io.data.in_c.fire && computeFireCounter.io.value === 0.U)
+    (a_after_cut.fire && b_after_cut.fire && array.io.data.in_c.fire && computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U) ||
+      (a_after_cut.fire && b_after_cut.fire && computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 0.U)
   val mulABFire = (a_after_cut.fire && b_after_cut.fire && computeFireCounter.io.value =/= 0.U)
   computeFireCounter.io.tick  := (addCFire || mulABFire) && cstate === sBUSY
-  computeFireCounter.io.reset := computation_finish
+  computeFireCounter.io.reset := versacore_finish
 
-  accAddExtIn := computeFireCounter.io.value === 0.U && cstate === sBUSY
+  accAddExtIn := computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U && cstate === sBUSY
 
   // array ctrl signals
   array.io.ctrl.arrayShapeCfg := csrReg.arrayCfg.arrayShapeCfg
   array.io.ctrl.dataTypeCfg   := csrReg.arrayCfg.dataTypeCfg
   array.io.ctrl.accAddExtIn   := accAddExtIn
-  array.io.ctrl.accClear      := computation_finish
 
   // array data signals
   array.io.data.in_a <> a_after_cut
@@ -434,20 +431,31 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   array.io.data.in_c.bits  := C_s2p.io.out.bits
   array.io.data.in_c.valid := C_s2p.io.out.valid && cstate === sBUSY
-  // array c_ready  considering output stationary
+  // array c_ready considering output stationary
   C_s2p.io.out.ready       := addCFire           && cstate === sBUSY
 
   array.io.data.in_subtraction <> sub_after_cut
 
   // array d_ready considering output stationary
-  val dOutputValidCounter = Module(new BasicCounter(params.configWidth, nameTag = "dOutputValidCounter"))
-  dOutputValidCounter.io.ceil  := csrReg.fsmCfg.K_i
+  val dOutputValidCounter = Module(
+    new BasicCounter(params.configWidth, hasCeil = true, nameTag = "dOutputValidCounter")
+  )
+  dOutputValidCounter.io.ceilOpt.get := csrReg.fsmCfg.a_b_input_times_one_output
   dOutputValidCounter.io.tick  := array.io.data.out_d.fire && cstate === sBUSY
-  dOutputValidCounter.io.reset := computation_finish
+  dOutputValidCounter.io.reset := versacore_finish
 
   // array output data to the D_p2s converter
-  D_p2s.io.in.bits := array.io.data.out_d.bits
-  D_p2s.io.in.valid := array.io.data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.K_i - 1.U)
+  D_p2s.io.in.bits          := array.io.data.out_d.bits
+  // output_times == 0 means no output
+  // If output_times is 0, we need to ensure that the valid signal is not asserted
+  // othwerwise, output one valid signal after a_b_input_times_one_output computations
+  when(cstate === sBUSY && csrReg.fsmCfg.a_b_input_times_one_output === 0.U) {
+    D_p2s.io.in.valid := false.B
+  }.elsewhen(csrReg.fsmCfg.output_times === 0.U) {
+    D_p2s.io.in.valid := false.B
+  }.otherwise {
+    D_p2s.io.in.valid := array.io.data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.a_b_input_times_one_output - 1.U)
+  }
   array.io.data.out_d.ready := Mux(D_p2s.io.in.valid, D_p2s.io.in.ready, true.B) && cstate === sBUSY
 
   // ------------------------------------
@@ -465,6 +473,18 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   // output control signals for read-only csrs
   io.performance_counter := performance_counter
+
+  // all the data is outputted means the computation is finished
+  val output_finish      = (dOutputCounter.io.value === csrReg.fsmCfg.output_times) && cstate === sBUSY
+  val computation_finish = WireInit(0.B)
+  // if no output, computation finish depends on the computeFireCounter only
+  when(csrReg.fsmCfg.output_times === 0.U && cstate === sBUSY) {
+    computation_finish := (computeFireCounter.io.value === csrReg.fsmCfg.a_b_input_times_one_output) && cstate === sBUSY
+  }.otherwise {
+    computation_finish := output_finish
+  }
+
+  versacore_finish := computation_finish && output_finish
 
   io.busy_o := cstate =/= sIDLE
 }

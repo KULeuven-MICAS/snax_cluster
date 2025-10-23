@@ -14,11 +14,11 @@
 
 // GeMM CSR = 4
 #define GEMMX_CSR_ADDR_BASE (STREAMER_PERFORMANCE_COUNTER_CSR + 1)
-#define T_BOUND_K (GEMMX_CSR_ADDR_BASE)
-#define T_BOUND_N (T_BOUND_K + 1)
-#define T_BOUND_M (T_BOUND_N + 1)
+#define OVERWRITE_ACCUM (GEMMX_CSR_ADDR_BASE)
+#define ACCUM_BOUND (OVERWRITE_ACCUM + 1)
+#define OUTPUT_BOUND (ACCUM_BOUND + 1)
 
-#define SUBTRACTIONS (T_BOUND_M + 1)
+#define SUBTRACTIONS (OUTPUT_BOUND + 1)
 
 #define ARRAY_SHAPE_CFG (SUBTRACTIONS + 1)
 #define DATA_TYPE_CFG (ARRAY_SHAPE_CFG + 1)
@@ -53,8 +53,9 @@ void set_versacore_streamer_csr(
 inline void set_versacore_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }
 
 // Set GEMM configuration CSR
-void set_versacore_csr(uint32_t tempLoop0, uint32_t tempLoop1,
-                       uint32_t tempLoop2, uint32_t subtractions,
+void set_versacore_csr(uint32_t take_in_new_c,
+                       uint32_t a_b_input_times_one_output,
+                       uint32_t output_times, uint32_t subtractions,
                        uint32_t array_shape, uint32_t data_type);
 
 // Set CSR to start GEMM

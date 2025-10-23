@@ -48,7 +48,7 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
       val Ku = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(1)
       val Nu = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(2)
 
-      val sizeRange = 1
+      val sizeRange = 5
       val rand      = new Random()
       val M         = rand.nextInt(sizeRange) + 1
       val N         = rand.nextInt(sizeRange) + 1
@@ -139,9 +139,9 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
 
       // Configure hardware
       dut.clock.step(5)
-      dut.io.ctrl.bits.fsmCfg.K_i.poke(K.U)
-      dut.io.ctrl.bits.fsmCfg.N_i.poke(N.U)
-      dut.io.ctrl.bits.fsmCfg.M_i.poke(M.U)
+      dut.io.ctrl.bits.fsmCfg.take_in_new_c.poke(1.U)
+      dut.io.ctrl.bits.fsmCfg.a_b_input_times_one_output.poke(K.U)
+      dut.io.ctrl.bits.fsmCfg.output_times.poke((N * M).U)
       dut.io.ctrl.bits.fsmCfg.subtraction_constant_i.poke(0.U)
       dut.io.ctrl.bits.arrayCfg.arrayShapeCfg.poke(arrayShapeIdx.U)
       dut.io.ctrl.bits.arrayCfg.dataTypeCfg.poke(dataTypeIdx.U)
