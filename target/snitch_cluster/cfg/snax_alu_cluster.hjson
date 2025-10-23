@@ -11,7 +11,7 @@
 
     cluster: {
         name: "snax_alu_cluster",
-        bender_target: ["snax_alu_cluster"],
+        bender_target: ["snax_alu_cluster", "sparse_interconnect"],
         boot_addr: 4096, // 0x1000
         cluster_base_addr: 268435456, // 0x1000_0000
         cluster_base_offset: 4194304,  // 4MB
@@ -22,6 +22,7 @@
         tcdm: {
             size: 128,
             banks: 32,
+            sparse_interconnect: true,
         },
         cluster_periph_size: 64, // kB
         zero_mem_size: 64, // kB
@@ -114,8 +115,8 @@
         snax_acc_cfg: [{
             snax_acc_name: "snax_alu",
             bender_target: ["snax_alu"],
-            snax_narrow_tcdm_ports: 12,
-            snax_wide_tcdm_ports: 0,
+            snax_tcdm_ports: 12,
+            sparse_interconnect_config: [[12, 1]],
             snax_num_rw_csr: 3,
             snax_num_ro_csr: 2,
             snax_streamer_cfg: {$ref: "#/snax_alu_streamer_template" }

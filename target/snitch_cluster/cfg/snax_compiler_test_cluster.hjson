@@ -11,9 +11,10 @@
 
     cluster: {
         name: snax_KUL_cluster
-        bender_target: 
+        bender_target:
         [
             snax_KUL_cluster
+            sparse_interconnect
         ],
         boot_addr: 4096, // 0x1000
         cluster_base_addr: 268435456, // 0x1000_0000
@@ -25,6 +26,7 @@
         tcdm: {
             size: 128,
             banks: 32,
+            sparse_interconnect: true,
         },
         cluster_periph_size: 64, // kB
         zero_mem_size: 64, // kB
@@ -49,13 +51,6 @@
             ema: 3,
             emaw: 2,
             emas: 1
-        },
-        snax_custom_tcdm_assign: {
-            snax_enable_assign_tcdm_idx: true,
-            snax_narrow_assign_start_idx: [0,56],
-            snax_narrow_assign_end_idx: [7,71],
-            snax_wide_assign_start_idx: [8],
-            snax_wide_assign_end_idx: [55],
         },
         // AXI bandwidth switcher
         use_ax_bw_converter: true,
@@ -126,8 +121,8 @@
         snax_acc_cfg: [{
             snax_acc_name: "snax_streamer_gemmX",
             bender_target: ["snax_gemmX"],
-            snax_narrow_tcdm_ports: 8,
-            snax_wide_tcdm_ports: 48,
+            snax_tcdm_ports: 56,
+            sparse_interconnect_config: [[8, 1], [8, 8], [8, 8], [32, 8]],
             snax_num_rw_csr: 19,
             snax_num_ro_csr: 2,
             snax_gemmx_mesh_row: 8,
@@ -161,8 +156,8 @@
             max_dimension: 5,
             max_mem_size: 4096,
             // DataMaestro Cfg
-            reader_buffer: 4, 
-            writer_buffer: 4, 
+            reader_buffer: 4,
+            writer_buffer: 4,
             reader_agu_temporal_dimension: 5,
             writer_agu_temporal_dimension: 5,
             // Extension Cfg
