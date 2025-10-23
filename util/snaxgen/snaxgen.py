@@ -655,7 +655,8 @@ def main():
     # ---------------------------------------
     # Generating Sparse Interconnect
     # ---------------------------------------
-    if "sparse_interconnect" in cfg["cluster"]["tcdm"] and cfg["cluster"]["tcdm"]["sparse_interconnect"]:
+    if "sparse_interconnect" in cfg["cluster"]["tcdm"] and \
+            cfg["cluster"]["tcdm"]["sparse_interconnect"]:
         print("------------------------------------------------")
         print("    Generating Sparse Interconnect")
         print("------------------------------------------------")
@@ -715,7 +716,7 @@ def main():
             + " --userWidth "
             + str(0)
             + " --sparseConfig "
-            + f"\"{cfg["cluster"]["sparse_interconnect_cfg"]["sparse_config"]}\""
+            + f"\"{cfg['cluster']['sparse_interconnect_cfg']['sparse_config']}\""
             + " --hw-target-dir "
             + str(args.gen_path),
             gen_path=""
