@@ -655,7 +655,8 @@ def main():
     # ---------------------------------------
     # Generating Sparse Interconnect
     # ---------------------------------------
-    if "sparse_interconnect" in cfg["cluster"]["tcdm"] and cfg["cluster"]["tcdm"]["sparse_interconnect"]:
+    if "sparse_interconnect" in cfg["cluster"]["tcdm"] and \
+            cfg["cluster"]["tcdm"]["sparse_interconnect"]:
         print("------------------------------------------------")
         print("    Generating Sparse Interconnect")
         print("------------------------------------------------")
