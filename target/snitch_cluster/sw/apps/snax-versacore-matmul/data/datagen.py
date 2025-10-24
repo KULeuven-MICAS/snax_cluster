@@ -693,7 +693,8 @@ def emit_matmul_data(**kwargs):
     delta_local_c = align_wide_addr(delta_local_c)
 
     if stationary == output_stationary:
-        delta_local_d = delta_local_c
+        # for the two fold test
+        delta_local_d = delta_local_c + M * N * (meshRow * meshCol * c_len / 8)
         delta_local_d = align_wide_addr(delta_local_d)
     elif stationary == weight_stationary:
         delta_local_d = delta_local_c
@@ -745,7 +746,6 @@ def emit_matmul_data(**kwargs):
             C = np.random.uniform(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(
                 -1
             )
-            # C = np.random.uniform(1, 1, size=(M, N, meshRow, meshCol)).reshape(-1)
         else:
             C = np.zeros((M, N, meshRow, meshCol)).reshape(-1)
 
