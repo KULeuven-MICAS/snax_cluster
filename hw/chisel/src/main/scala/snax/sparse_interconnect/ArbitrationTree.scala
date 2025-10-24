@@ -8,8 +8,8 @@ class ArbitrationTree(NumInp: Int, addrWidth: Int, dataWidth: Int, strbWidth: In
   val io = IO(new Bundle {
     val tcdmReqs = Vec(NumInp, Flipped(Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, userWidth))))
     val tcdmRsp  = Decoupled(new TcdmRsp(dataWidth))
-    val memReq   = Decoupled(new MemReq(addrWidth, dataWidth, strbWidth, userWidth))
-    val memRsp   = Flipped(Decoupled(new MemRsp(dataWidth)))
+    val memReq   = Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, userWidth))
+    val memRsp   = Flipped(Decoupled(new TcdmRsp(dataWidth)))
   })
 
   // Default values for tcdm requests

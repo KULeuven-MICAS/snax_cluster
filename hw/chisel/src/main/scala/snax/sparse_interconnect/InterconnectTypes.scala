@@ -39,25 +39,3 @@ class TcdmRsp(
 ) extends Bundle {
   val data = UInt(dataWidth.W)
 }
-
-/** MEM Request Type */
-class MemReq(
-  addrWidth: Int,
-  dataWidth: Int,
-  strbWidth: Int,
-  userWidth: Int
-) extends Bundle {
-  val addr  = UInt(addrWidth.W)
-  val write = Bool()
-  val amo   = AmoOp()
-  val data  = UInt(dataWidth.W)
-  val strb  = UInt(strbWidth.W)
-  val user  = UInt(userWidth.W)
-}
-
-/** MEM Response Type */
-class MemRsp(
-  dataWidth: Int
-) extends Bundle {
-  val data = UInt(dataWidth.W)
-}

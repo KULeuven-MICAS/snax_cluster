@@ -8,8 +8,8 @@ class SparseInterconnect(NumInp: Int, NumOut: Int, addrWidth: Int, dataWidth: In
   val io = IO(new Bundle {
     val tcdmReqs = Vec(NumInp, Flipped(Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, userWidth))))
     val tcdmRsps = Vec(NumInp, Decoupled(new TcdmRsp(dataWidth)))
-    val memReqs  = Vec(NumOut, Decoupled(new MemReq(addrWidth, dataWidth, strbWidth, userWidth)))
-    val memRsps  = Vec(NumOut, Flipped(Decoupled(new MemRsp(dataWidth))))
+    val memReqs  = Vec(NumOut, Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, userWidth)))
+    val memRsps  = Vec(NumOut, Flipped(Decoupled(new TcdmRsp(dataWidth))))
   })
 
   // === Bank Selection ===
