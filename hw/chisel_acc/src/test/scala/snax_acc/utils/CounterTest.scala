@@ -16,7 +16,7 @@ class NestCounterTest extends AnyFlatSpec with ChiselScalatestTester {
 
       // Poke the ceil values to the NestCounter inputs
       for (i <- 0 until loopNum) {
-        c.io.ceil(i).poke(ceilValues(i).U)
+        c.io.ceilOpt.get(i).poke(ceilValues(i).U)
       }
 
       // Apply reset signal

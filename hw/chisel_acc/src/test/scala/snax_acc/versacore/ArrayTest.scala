@@ -77,8 +77,7 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
             c.io.ctrl.arrayShapeCfg.poke(arrayShapeIdx.U)
             c.io.ctrl.dataTypeCfg.poke(dataTypeIdx.U)
-            c.io.ctrl.accAddExtIn.poke(false.B)
-            c.io.ctrl.accClear.poke(false.B)
+            c.io.ctrl.accAddExtIn.poke(true.B)
 
             c.clock.step(1)
 
@@ -100,10 +99,6 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
               assert(actual == expected_cut, f"Mismatch at index $i: got 0x$actual%X, expected 0x${expected_cut}%X")
             }
-
-            c.io.ctrl.accClear.poke(true.B)
-            c.clock.step(1)
-            c.io.ctrl.accClear.poke(false.B)
 
           }
         }

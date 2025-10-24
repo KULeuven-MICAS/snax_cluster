@@ -98,32 +98,29 @@ int main() {
             (uint32_t)data_start_1,  // Base pointer low
             0,                       // Base pointer high
             1,                       // Spatial stride
-            490,                     // Inner loop bound
-            1,                       // Outer loop bound
-            256,                     // Inner loop stride
-            0                        // Outer loop stride
-        );
+            // Loop bounds from inner to outer
+            490, 1, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
 
         // Configure streamer for AM
         hypercorex_set_streamer_highdim_am(
             (uint32_t)am_start,  // Base pointer low
             0,                   // Base pointer high
             8,                   // Spatial stride
-            num_classes,         // Inner loop bound
-            num_predictions,     // Outer loop bound
-            256,                 // Inner loop stride
-            0                    // Outer loop stride
-        );
+            // Loop bounds from inner to outer
+            num_classes, num_predictions, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
 
         hypercorex_set_streamer_lowdim_predict(
             (uint32_t)predict_start,  // Base pointer low
             0,                        // Base pointer high
             1,                        // Spatial stride
-            num_predictions,          // Inner loop bound
-            1,                        // Outer loop bound
-            256,                      // Inner loop stride
-            0                         // Outer loop stride
-        );
+            // Loop bounds from inner to outer
+            num_predictions, 1, 1, 1,
+            // Strides from inner to outer
+            256, 0, 0, 0);
 
         // Start the streamers
         hypercorex_start_streamer();
@@ -142,11 +139,11 @@ int main() {
         csrw_ss(HYPERCOREX_INST_LOOP_CTRL_REG_ADDR, 0x00000002);
 
         // Encoding loops and jumps
-        hypercorex_set_inst_loop_jump_addr(0, 0, 0);
+        hypercorex_set_inst_loop_jump_addr(0, 0, 0, 0);
 
-        hypercorex_set_inst_loop_end_addr(0, 3, 0);
+        hypercorex_set_inst_loop_end_addr(0, 3, 0, 0);
 
-        hypercorex_set_inst_loop_count(num_features, num_predictions, 0);
+        hypercorex_set_inst_loop_count(num_features, num_predictions, 0, 0);
 
         // Set data slice control and automatic updates
         hypercorex_set_data_slice_ctrl(2, 0, 0, 1);
