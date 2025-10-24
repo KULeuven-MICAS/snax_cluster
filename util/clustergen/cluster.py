@@ -195,6 +195,7 @@ class SnitchCluster(Generator):
         self.parse_cores()
         self.parse_streamer_csr()
         self.parse_tcdm_topology()
+        self.parse_tcdm_topology()
 
     def l1_region(self):
         """Return L1 Region as tuple. Base and length."""
