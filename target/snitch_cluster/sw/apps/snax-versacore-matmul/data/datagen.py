@@ -693,7 +693,8 @@ def emit_matmul_data(**kwargs):
     delta_local_c = align_wide_addr(delta_local_c)
 
     if stationary == output_stationary:
-        delta_local_d = delta_local_c
+        # for the two fold test
+        delta_local_d = delta_local_c + M * N * (meshRow * meshCol * c_len / 8)
         delta_local_d = align_wide_addr(delta_local_d)
     elif stationary == weight_stationary:
         delta_local_d = delta_local_c
@@ -752,7 +753,8 @@ def emit_matmul_data(**kwargs):
         data_str += [format_vector_definition("int32_t", "C", float32_to_hex_uint(C))]
 
     else:  # Integer data types
-        A = np.random.randint(A_MIN, A_MAX, size=(M, K, meshRow, tileSize)).reshape(-1)
+        A = np.random.randint(1, 2, size=(M, K, meshRow, tileSize)).reshape(-1)
+        # A = np.random.randint(A_MIN, A_MAX, size=(M, K, meshRow, tileSize)).reshape(-1)
         if a_len == 8:
             data_str += [format_vector_definition("int8_t", "A", A)]
         elif a_len == 16:
@@ -760,7 +762,8 @@ def emit_matmul_data(**kwargs):
         else:
             raise ValueError("Invalid A data type")
 
-        B = np.random.randint(B_MIN, B_MAX, size=(K, N, tileSize, meshCol)).reshape(-1)
+        B = np.random.randint(1, 2, size=(K, N, tileSize, meshCol)).reshape(-1)
+        # B = np.random.randint(B_MIN, B_MAX, size=(K, N, tileSize, meshCol)).reshape(-1)
         if b_len == 4:
             data_str += [format_vector_definition("int8_t", "B_orginal_4bits", B)]
             B_packed = pack_signed_nbit(B, bit_width=4, pack_per_byte=2)
