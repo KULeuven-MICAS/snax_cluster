@@ -194,6 +194,7 @@ class SnitchCluster(Generator):
         self.parse_pma_cfg(pma_cfg)
         self.parse_cores()
         self.parse_streamer_csr()
+        self.parse_tcdm_topology()
 
     def l1_region(self):
         """Return L1 Region as tuple. Base and length."""
@@ -411,6 +412,13 @@ class SnitchCluster(Generator):
             streamer_csr_num_list.append(streamer_csr_acc_num_list)
         # Set as config file for tpl to process
         self.cfg["streamer_csr_num_list"] = streamer_csr_num_list
+
+    def parse_tcdm_topology(self):
+        # Get tcdm topology
+        if ("sparse_interconnect_cfg" not in self.cfg):
+            self.cfg["tcdm"]["topology"] = "snitch_pkg::LogarithmicInterconnect"
+        else:
+            self.cfg["tcdm"]["topology"] = "snitch_pkg::SparseInterconnect"
 
     def cfg_validate(self):
         failed = True
