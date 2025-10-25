@@ -81,7 +81,7 @@ int main() {
 
         if (stationary == 0) {
             // Set CSR for output-stationary
-            set_versacore_csr(1, K, K * M, subtraction_setting, array_shape,
+            set_versacore_csr(1, K, N * M, subtraction_setting, array_shape,
                               data_type);
         } else {
             // Set CSR for weight-stationary or input-stationary
@@ -114,7 +114,6 @@ int main() {
         printf("SNAX GEMM Ideal cycles: %d\n", M * K * N);
         printf("SNAX GEMM cycles: %d\n", gemmx_cycles);
         printf("SNAX GEMM Streamer cycles: %d\n", gemmx_streamer_cycles);
-
     };
 
     return err;
