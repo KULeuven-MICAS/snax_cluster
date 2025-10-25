@@ -24,7 +24,7 @@ Naming convention:
         name: snax_versacore_cluster
         bender_target:
         [
-            snax_versacore_cluster
+            snax_versacore_cluster, sparse_interconnect
         ]
         boot_addr: 4096
         cluster_base_addr: 268435456
@@ -37,6 +37,7 @@ Naming convention:
         {
             size: 256
             banks: 64
+            sparse_interconnect: true
         }
         cluster_periph_size: 64
         zero_mem_size: 64
@@ -155,8 +156,8 @@ Naming convention:
                 [
                     snax_versacore
                 ]
-                snax_narrow_tcdm_ports: 16
-                snax_wide_tcdm_ports: 80
+                snax_tcdm_ports: 96
+                sparse_config: [[16, 1], [80, 8]],
                 snax_num_rw_csr: 7
                 snax_num_ro_csr: 2
                 snax_versacore_mac_num:

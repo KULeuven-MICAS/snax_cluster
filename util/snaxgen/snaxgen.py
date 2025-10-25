@@ -655,7 +655,8 @@ def main():
     # ---------------------------------------
     # Generating Sparse Interconnect
     # ---------------------------------------
-    if "sparse_interconnect_cfg" in cfg["cluster"]:
+    if "sparse_interconnect" in cfg["cluster"]["tcdm"] and \
+            cfg["cluster"]["tcdm"]["sparse_interconnect"]:
         print("------------------------------------------------")
         print("    Generating Sparse Interconnect")
         print("------------------------------------------------")
@@ -666,15 +667,16 @@ def main():
         for i in range(num_cores):
             if "snax_acc_cfg" in cfg_cores[i]:
                 for acc in cfg_cores[i]['snax_acc_cfg']:
-                    assert 'snax_narrow_tcdm_ports' in acc, \
-                        "Please specify snax_narrow_tcdm_ports in the accelerator configuration"
-                    narrow_ports += int(acc['snax_narrow_tcdm_ports'])
-                    if "sparse_config" in acc:
-                        sparse_config.extend(acc["sparse_config"])
+                    assert 'snax_tcdm_ports' in acc, \
+                        "Please specify snax_tcdm_ports in the accelerator configuration"
+                    narrow_ports += int(acc['snax_tcdm_ports'])
+                    if "sparse_interconnect_config" in acc:
+                        sparse_config.extend(acc["sparse_interconnect_config"])
                     else:
-                        sparse_config.append((int(acc['snax_narrow_tcdm_ports']), 1))
+                        sparse_config.append((int(acc['snax_tcdm_ports']), 1))
             if "snax_xdma_cfg" in cfg_cores[i]:
                 narrow_ports += 16
+                sparse_config.append((16, 1))
         # then come the cores
         for i in range(num_cores):
             narrow_ports += 1  # core connection (no ssr assumed)
@@ -682,6 +684,7 @@ def main():
         # finally, the AXI connection
         narrow_ports += 1
         sparse_config.append((1, 1))
+        cfg["cluster"]["sparse_interconnect_cfg"] = {}
         cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"] = narrow_ports
         cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"] = int(cfg["cluster"]["tcdm"]["banks"])
         cfg["cluster"]["sparse_interconnect_cfg"]["sparse_config"] = json.dumps(sparse_config)
@@ -713,60 +716,7 @@ def main():
             + " --userWidth "
             + str(0)
             + " --sparseConfig "
-            + f"\"{cfg["cluster"]["sparse_interconnect_cfg"]["sparse_config"]}\""
-            + " --hw-target-dir "
-            + str(args.gen_path),
-            gen_path=""
-        )
-
-    # ---------------------------------------
-    # Generating Sparse Interconnect
-    # ---------------------------------------
-    if "sparse_interconnect_cfg" in cfg["cluster"]:
-        print("------------------------------------------------")
-        print("    Generating Sparse Interconnect")
-        print("------------------------------------------------")
-
-        # Calculate params for the tcdm
-        narrow_ports: int = 1  # axi connection
-        for i in range(num_cores):
-            narrow_ports += 1  # core connection (no ssr assumed)
-            if "snax_acc_cfg" in cfg_cores[i]:
-                for acc in cfg_cores[i]['snax_acc_cfg']:
-                    assert 'snax_narrow_tcdm_ports' in acc, \
-                        "Please specify snax_narrow_tcdm_ports in the accelerator configuration"
-                    narrow_ports += int(acc['snax_narrow_tcdm_ports'])
-            if "snax_xdma_cfg" in cfg_cores[i]:
-                narrow_ports += 16
-        cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"] = narrow_ports
-        cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"] = int(cfg["cluster"]["tcdm"]["banks"])
-
-        tpl_rtl_wrapper_file = args.tpl_path + "sparse_interconnect_wrapper.sv.tpl"
-
-        tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
-
-        gen_file(
-            cfg=cfg["cluster"],
-            tpl=tpl_rtl_wrapper,
-            target_path=args.gen_path,
-            file_name="sparse_interconnect_wrapper.sv",
-        )
-
-        gen_chisel_file(
-            chisel_path=args.chisel_path,
-            chisel_param="snax.sparse_interconnect.SparseInterconnectGen"
-            + " --NumInp "
-            + str(cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"])
-            + " --NumOut "
-            + str(cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"])
-            + " --addrWidth "
-            + str(cfg["cluster"]["addr_width"])
-            + " --dataWidth "
-            + str(cfg["cluster"]["data_width"])
-            + " --strbWidth "
-            + str(int(cfg["cluster"]["data_width"] / 8))
-            + " --userWidth "
-            + str(0)
+            + f"\"{cfg['cluster']['sparse_interconnect_cfg']['sparse_config']}\""
             + " --hw-target-dir "
             + str(args.gen_path),
             gen_path=""
