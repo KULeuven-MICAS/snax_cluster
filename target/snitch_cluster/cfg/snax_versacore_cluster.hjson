@@ -24,7 +24,7 @@ Naming convention:
         name: snax_versacore_cluster
         bender_target:
         [
-            snax_versacore_cluster, sparse_interconnect
+            "snax_versacore_cluster", "sparse_interconnect"
         ]
         boot_addr: 4096
         cluster_base_addr: 268435456
