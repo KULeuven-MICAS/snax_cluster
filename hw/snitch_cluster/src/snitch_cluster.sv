@@ -323,7 +323,7 @@ module snitch_cluster
   localparam int unsigned NumTotalBanks = BanksPerSuperBank * NrSuperBanks;
 
   localparam int unsigned NrTCDMPortsCores = get_tcdm_port_offs(NrCores);
-  localparam int unsigned NumTCDMIn = NrTCDMPortsCores + 1;
+  localparam int unsigned NumTCDMIn = NrTCDMPortsCores + 1 + 8; // +1 for AXI, +8 for DMA
   localparam logic [PhysicalAddrWidth-1:0] TCDMMask = ~(TCDMSize - 1);
 
   // Core Requests, SoC Request, PTW, XDMA
@@ -725,25 +725,74 @@ DmaXbarCfg.NoMstPorts
   assign ext_dma_req.q.amo  = reqrsp_pkg::AMONone;
   assign ext_dma_req.q.user = '0;
 
-    snitch_tcdm_interconnect #(
-        .NumInp(1),
-        .NumOut(NrSuperBanks),
-        .tcdm_req_t(tcdm_dma_req_t),
-        .tcdm_rsp_t(tcdm_dma_rsp_t),
-        .mem_req_t(mem_dma_req_t),
-        .mem_rsp_t(mem_dma_rsp_t),
-        .user_t(logic),
-        .MemAddrWidth(TCDMMemAddrWidth),
-        .DataWidth(WideDataWidth),
-        .MemoryResponseLatency(MemoryMacroLatency)
-    ) i_dma_interconnect (
-        .clk_i,
-        .rst_ni,
-        .req_i(ext_dma_req),
-        .rsp_o(ext_dma_rsp),
-        .mem_req_o(sb_dma_req),
-        .mem_rsp_i(sb_dma_rsp)
-    );
+  // Convert iDMA Wide Request to narrow requests suitable for sparse interconnect:
+  // Narrow requests:
+  tcdm_req_t [(WideDataWidth / NarrowDataWidth)-1:0] dma_narrow_req;
+  // Keep track which part of the request has been processed
+  // logic [(WideDataWidth / NarrowDataWidth)-1:0] req_processed;
+  // logic [(WideDataWidth / NarrowDataWidth)-1:0] req_ready;
+
+  // Narrow responses:
+  tcdm_rsp_t [(WideDataWidth / NarrowDataWidth)-1:0] dma_narrow_rsp;
+  logic [(WideDataWidth / NarrowDataWidth)-1:0] narrow_rsp_valid;
+  logic [(WideDataWidth / NarrowDataWidth)-1:0] narrow_rsp_ready;
+
+  // Buffer the responses until it can be sent out as a wide response
+  // logic [(WideDataWidth / NarrowDataWidth)-1:0] dma_buffer_signals;
+  // logic [(WideDataWidth / NarrowDataWidth)-1:0] dma_buffer_signals_prev;
+  // tcdm_rsp_t [(WideDataWidth / NarrowDataWidth)-1:0] dma_narrow_rsp_buffered;
+
+  for (genvar i = 0; i < (WideDataWidth / NarrowDataWidth); i++) begin : gen_convert_wide_narrow_req
+    always_comb begin
+      // assign consecutive addresses
+      dma_narrow_req[i].q.addr = ext_dma_req.q.addr + i * (NarrowDataWidth / 8);
+      // slice the data and strobe
+      dma_narrow_req[i].q.data = ext_dma_req.q.data[(i + 1) * NarrowDataWidth - 1 -: NarrowDataWidth];
+      dma_narrow_req[i].q.strb = ext_dma_req.q.strb[(i + 1) * (NarrowDataWidth / 8) - 1 -: (NarrowDataWidth / 8)];
+      dma_narrow_req[i].q.write = ext_dma_req.q.write;
+
+      // default values for other fields
+      dma_narrow_req[i].q.user = '0;
+      dma_narrow_req[i].q.amo = reqrsp_pkg::AMONone;
+
+      // keep asserting valid on every narrow request
+      dma_narrow_req[i].q_valid = ext_dma_req.q_valid;
+
+      // Response assignment
+      ext_dma_rsp.p.data[(i + 1) * NarrowDataWidth - 1 -: NarrowDataWidth] = dma_narrow_rsp[i].p.data;
+      // collect narrow rsp ready/valid signals
+      narrow_rsp_ready[i] = dma_narrow_rsp[i].q_ready;
+      narrow_rsp_valid[i] = dma_narrow_rsp[i].p_valid;
+    end
+  end
+
+  // Combine narrow responses into a wide response
+  always_comb begin
+    // Ready when all narrow responses are ready
+    ext_dma_rsp.q_ready = &narrow_rsp_ready;
+    // Valid when all narrow responses are valid
+    ext_dma_rsp.p_valid = &narrow_rsp_valid;
+  end
+
+    // snitch_tcdm_interconnect #(
+    //     .NumInp(1),
+    //     .NumOut(NrSuperBanks),
+    //     .tcdm_req_t(tcdm_dma_req_t),
+    //     .tcdm_rsp_t(tcdm_dma_rsp_t),
+    //     .mem_req_t(mem_dma_req_t),
+    //     .mem_rsp_t(mem_dma_rsp_t),
+    //     .user_t(logic),
+    //     .MemAddrWidth(TCDMMemAddrWidth),
+    //     .DataWidth(WideDataWidth),
+    //     .MemoryResponseLatency(MemoryMacroLatency)
+    // ) i_dma_interconnect (
+    //     .clk_i,
+    //     .rst_ni,
+    //     .req_i(ext_dma_req),
+    //     .rsp_o(ext_dma_rsp),
+    //     .mem_req_o(sb_dma_req),
+    //     .mem_rsp_i(sb_dma_rsp)
+    // );
 
   // ----------------
   // Memory Subsystem
@@ -777,76 +826,79 @@ DmaXbarCfg.NoMstPorts
       .mem_rdata_o(mem_rdata)
   );
 
-  for (genvar i = 0; i < NrSuperBanks; i++) begin : gen_tcdm_super_bank
+  mem_req_t [NrBanks-1:0] amo_req;
+  mem_rsp_t [NrBanks-1:0] amo_rsp;
 
-    mem_req_t [BanksPerSuperBank-1:0] amo_req;
-    mem_rsp_t [BanksPerSuperBank-1:0] amo_rsp;
+  for (genvar i = 0; i < NrBanks; i++) begin: gen_tcdm_bank
 
-    mem_wide_narrow_mux #(
-        .NarrowDataWidth(NarrowDataWidth),
-        .WideDataWidth(WideDataWidth),
-        .mem_narrow_req_t(mem_req_t),
-        .mem_narrow_rsp_t(mem_rsp_t),
-        .mem_wide_req_t(mem_dma_req_t),
-        .mem_wide_rsp_t(mem_dma_rsp_t)
-    ) i_tcdm_mux (
-        .clk_i,
-        .rst_ni,
-        .in_narrow_req_i(ic_req[i]),
-        .in_narrow_rsp_o(ic_rsp[i]),
-        .in_wide_req_i(sb_dma_req[i]),
-        .in_wide_rsp_o(sb_dma_rsp[i]),
-        .out_req_o(amo_req),
-        .out_rsp_i(amo_rsp),
-        .sel_wide_i(sb_dma_req[i].q_valid)
-    );
+    //for (genvar i = 0; i < NrSuperBanks; i++) begin : gen_tcdm_super_bank
+
+
+    //mem_wide_narrow_mux #(
+    //    .NarrowDataWidth(NarrowDataWidth),
+    //    .WideDataWidth(WideDataWidth),
+    //    .mem_narrow_req_t(mem_req_t),
+    //    .mem_narrow_rsp_t(mem_rsp_t),
+    //    .mem_wide_req_t(mem_dma_req_t),
+    //    .mem_wide_rsp_t(mem_dma_rsp_t)
+    //) i_tcdm_mux (
+    //    .clk_i,
+    //    .rst_ni,
+    //    .in_narrow_req_i(ic_req[i]),
+    //    .in_narrow_rsp_o(ic_rsp[i]),
+    //    .in_wide_req_i(sb_dma_req[i]),
+    //    .in_wide_rsp_o(sb_dma_rsp[i]),
+    //    .out_req_o(amo_req),
+    //    .out_rsp_i(amo_rsp),
+    //    .sel_wide_i(sb_dma_req[i].q_valid)
+    //);
 
     // generate banks of the superbank
-    for (genvar j = 0; j < BanksPerSuperBank; j++) begin : gen_tcdm_bank
+    //for (genvar j = 0; j < BanksPerSuperBank; j++) begin : gen_tcdm_bank
 
-      data_t amo_rdata_local;
+    data_t amo_rdata_local;
 
-      // TODO(zarubaf): Share atomic units between mutltiple cuts
-      snitch_amo_shim #(
-          .AddrMemWidth(TCDMMemAddrWidth),
-          .DataWidth(NarrowDataWidth),
-          .CoreIDWidth(CoreIDWidth)
-      ) i_amo_shim (
-          .clk_i,
-          .rst_ni(rst_ni),
-          .valid_i(amo_req[j].q_valid),
-          .ready_o(amo_rsp[j].q_ready),
-          .addr_i(amo_req[j].q.addr),
-          .write_i(amo_req[j].q.write),
-          .wdata_i(amo_req[j].q.data),
-          .wstrb_i(amo_req[j].q.strb),
-          .core_id_i(amo_req[j].q.user.core_id),
-          .is_core_i(amo_req[j].q.user.is_core),
-          .rdata_o(amo_rdata_local),
-          .amo_i(amo_req[j].q.amo),
-          .mem_req_o(mem_cs[i*BanksPerSuperBank+j]),
-          .mem_add_o(mem_add[i*BanksPerSuperBank+j]),
-          .mem_wen_o(mem_wen[i*BanksPerSuperBank+j]),
-          .mem_wdata_o(mem_wdata[i*BanksPerSuperBank+j]),
-          .mem_be_o(mem_be[i*BanksPerSuperBank+j]),
-          .mem_rdata_i(mem_rdata[i*BanksPerSuperBank+j]),
-          .dma_access_i(sb_dma_req[i].q_valid),
-          // TODO(zarubaf): Signal AMO conflict somewhere. Socregs?
-          .amo_conflict_o()
-      );
+    // TODO(zarubaf): Share atomic units between mutltiple cuts
+    snitch_amo_shim #(
+        .AddrMemWidth(TCDMMemAddrWidth),
+        .DataWidth(NarrowDataWidth),
+        .CoreIDWidth(CoreIDWidth)
+    ) i_amo_shim (
+        .clk_i,
+        .rst_ni(rst_ni),
+        .valid_i(amo_req[i].q_valid),
+        .ready_o(amo_rsp[i].q_ready),
+        .addr_i(amo_req[i].q.addr),
+        .write_i(amo_req[i].q.write),
+        .wdata_i(amo_req[i].q.data),
+        .wstrb_i(amo_req[i].q.strb),
+        .core_id_i(amo_req[i].q.user.core_id),
+        .is_core_i(amo_req[i].q.user.is_core),
+        .rdata_o(amo_rdata_local),
+        .amo_i(amo_req[i].q.amo),
+        .mem_req_o(mem_cs[i]),
+        .mem_add_o(mem_add[i]),
+        .mem_wen_o(mem_wen[i]),
+        .mem_wdata_o(mem_wdata[i]),
+        .mem_be_o(mem_be[i]),
+        .mem_rdata_i(mem_rdata[i]),
+        .dma_access_i(1'b0), // TODO(jdumouli): set signal correctly
+        // TODO(zarubaf): Signal AMO conflict somewhere. Socregs?
+        .amo_conflict_o()
+    );
 
-      // Insert a pipeline register at the output of each SRAM.
-      shift_reg #(
-          .dtype(data_t),
-          .Depth(RegisterTCDMCuts)
-      ) i_sram_pipe (
-          .clk_i,
-          .rst_ni,
-          .d_i(amo_rdata_local),
-          .d_o(amo_rsp[j].p.data)
-      );
-    end
+    // Insert a pipeline register at the output of each SRAM.
+    shift_reg #(
+        .dtype(data_t),
+        .Depth(RegisterTCDMCuts)
+    ) i_sram_pipe (
+        .clk_i,
+        .rst_ni,
+        .d_i(amo_rdata_local),
+        .d_o(amo_rsp[i].p.data)
+    );
   end
+  // end
 
   // generate TCDM for snax if any of the cores has SNAX enabled
   // Make ConnectSnaxAccWide a switcher for now that all accelerators connect to wide
@@ -864,11 +916,11 @@ DmaXbarCfg.NoMstPorts
     ) i_tcdm_interconnect (
         .clk_i,
         .rst_ni,
-        .req_i({axi_soc_req, tcdm_req, snax_tcdm_req_i}),
+        .req_i({dma_narrow_req, axi_soc_req, tcdm_req, snax_tcdm_req_i}),
         //snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]}),
-        .rsp_o({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o}),
-        .mem_req_o(ic_req),
-        .mem_rsp_i(ic_rsp)
+        .rsp_o({dma_narrow_rsp, axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o}),
+        .mem_req_o(amo_req),
+        .mem_rsp_i(amo_rsp)
     );
     end else begin: gen_logarithmic_interconnect
     snitch_tcdm_interconnect #(
@@ -887,11 +939,11 @@ DmaXbarCfg.NoMstPorts
     ) i_tcdm_interconnect (
         .clk_i,
         .rst_ni,
-        .req_i({axi_soc_req, tcdm_req, snax_tcdm_req_i}),
+        .req_i({dma_narrow_req, axi_soc_req, tcdm_req, snax_tcdm_req_i}),
         //snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]}),
-        .rsp_o({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o}),
-        .mem_req_o(ic_req),
-        .mem_rsp_i(ic_rsp)
+        .rsp_o({dma_narrow_rsp, axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o}),
+        .mem_req_o(amo_req),
+        .mem_rsp_i(amo_rsp)
     );
   end
   end else begin : gen_no_snax_tcdm_interconnect
@@ -912,10 +964,10 @@ DmaXbarCfg.NoMstPorts
     ) i_tcdm_interconnect (
         .clk_i,
         .rst_ni,
-        .req_i({axi_soc_req, tcdm_req}),
-        .rsp_o({axi_soc_rsp, tcdm_rsp}),
-        .mem_req_o(ic_req),
-        .mem_rsp_i(ic_rsp)
+        .req_i({dma_narrow_req, axi_soc_req, tcdm_req}),
+        .rsp_o({dma_narrow_req, axi_soc_rsp, tcdm_rsp}),
+        .mem_req_o(amo_req),
+        .mem_rsp_i(amo_rsp)
     );
   end
 
