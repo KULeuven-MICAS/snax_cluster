@@ -91,7 +91,9 @@ class SparseInterconnect(
     val (port_idx, index) = sparse_config.getPortAndIndex(in)
     val port              = sparse_config.ports(port_idx)
     // Print for debug
-    println(s"Routing outputs for input $in: port $port_idx, index $index, sparse_port_access_granularity ${port.access_granularity}")
+    println(
+      s"Routing outputs for input $in: port $port_idx, index $index, sparse_port_access_granularity ${port.access_granularity}"
+    )
 
     // Mux the response based on the previous bank selection
     for (sparse_out <- 0 until NumOut / port.access_granularity) {
@@ -138,14 +140,15 @@ object SparseInterconnectGen {
     }
 
     // Parse the sparse configuration string
-    val sparseConfigString = parsedArgs.getOrElse("sparseConfig", {
-      throw new IllegalArgumentException("sparseConfig argument is required")
-    })
+    val sparseConfigString = parsedArgs.getOrElse(
+      "sparseConfig", {
+        throw new IllegalArgumentException("sparseConfig argument is required")
+      }
+    )
 
     println(s"SparseConfig String: $sparseConfigString")
     val sparseConfig = SparseConfig.parseSparseConfig(sparseConfigString)
     println(s"Parsed SparseConfig: $sparseConfig")
-
 
     emitVerilog(
       new SparseInterconnect(NumInp, NumOut, memAddrWidth, tcdmAddrWidth, dataWidth, strbWidth, userWidth, sparseConfig),
