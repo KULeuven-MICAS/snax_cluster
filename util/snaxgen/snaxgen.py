@@ -700,6 +700,23 @@ def main():
             file_name="sparse_interconnect_wrapper.sv",
         )
 
+        tcdm_depth = (
+            cfg["cluster"]["tcdm"]["size"]
+            * 1024
+            // cfg["cluster"]["tcdm"]["banks"]
+            // 8
+        )
+
+        tcdm_num_banks = cfg["cluster"]["tcdm"]["banks"]
+        tcdm_data_width = cfg["cluster"]["data_width"]
+
+        tcdm_addr_width = tcdm_num_banks * tcdm_depth * (tcdm_data_width // 8)
+
+        # memory address width
+        memory_addr_width = int(math.log2(tcdm_depth))
+        # tcdm request address width
+        tcdm_addr_width = int(math.log2(tcdm_addr_width))
+
         gen_chisel_file(
             chisel_path=args.chisel_path,
             chisel_param="snax.sparse_interconnect.SparseInterconnectGen"
@@ -707,8 +724,10 @@ def main():
             + str(cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"])
             + " --NumOut "
             + str(cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"])
-            + " --addrWidth "
-            + str(cfg["cluster"]["addr_width"])
+            + " --memAddrWidth "
+            + str(memory_addr_width)
+            + " --tcdmAddrWidth "
+            + str(tcdm_addr_width)
             + " --dataWidth "
             + str(cfg["cluster"]["data_width"])
             + " --strbWidth "
