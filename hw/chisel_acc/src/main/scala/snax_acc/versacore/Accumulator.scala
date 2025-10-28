@@ -45,6 +45,7 @@ class AccumulatorBlock(
   val nextAcc = Wire(UInt(outputType.width.W))
   nextAcc := Mux(io.enable, adder.out_c, accumulatorReg)
 
+  // update accumulator register enable signal
   val accUpdate = io.enable
   accumulatorReg := Mux(accUpdate, nextAcc, accumulatorReg)
 
@@ -76,7 +77,7 @@ class Accumulator(
     Module(new AccumulatorBlock(inputType, outputType))
   }
 
-  // accumulation update logic, considering the handshake
+  // accumulation update logic, considering the handshake and the accumulator enable at runtime
   val accUpdate = (io.in1.fire && io.enable && (!io.accAddExtIn || (io.in2.fire && io.accAddExtIn)))
 
   // Connect the inputs of each AccumulatorBlock

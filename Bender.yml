@@ -276,6 +276,11 @@ sources:
       - hw/snax_util/src/snax_acc_mux_demux.sv
       - hw/snax_util/src/snax_intf_translator.sv
 
+  - target: sparse_interconnect
+    files:
+      - target/snitch_cluster/generated/SparseInterconnect.sv
+      - target/snitch_cluster/generated/sparse_interconnect_wrapper.sv
+
   #---------------------------
   # SNAX Accelerators
   #---------------------------
