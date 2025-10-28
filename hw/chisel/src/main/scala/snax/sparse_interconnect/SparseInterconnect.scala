@@ -3,12 +3,12 @@ package snax.sparse_interconnect
 import chisel3._
 import chisel3.util._
 
-class SparseInterconnect(NumInp: Int, NumOut: Int, addrWidth: Int, dataWidth: Int, strbWidth: Int, userWidth: Int)
+class SparseInterconnect(NumInp: Int, NumOut: Int, memAddrWidth: Int, tcdmAddrWidth: Int, dataWidth: Int, strbWidth: Int, userWidth: Int)
     extends Module {
   val io = IO(new Bundle {
-    val tcdmReqs = Vec(NumInp, Flipped(Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, userWidth))))
+    val tcdmReqs = Vec(NumInp, Flipped(Decoupled(new TcdmReq(tcdmAddrWidth, dataWidth, strbWidth, userWidth))))
     val tcdmRsps = Vec(NumInp, Decoupled(new TcdmRsp(dataWidth)))
-    val memReqs  = Vec(NumOut, Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, userWidth)))
+    val memReqs  = Vec(NumOut, Decoupled(new TcdmReq(memAddrWidth, dataWidth, strbWidth, userWidth)))
     val memRsps  = Vec(NumOut, Flipped(Decoupled(new TcdmRsp(dataWidth))))
   })
 
@@ -16,7 +16,7 @@ class SparseInterconnect(NumInp: Int, NumOut: Int, addrWidth: Int, dataWidth: In
 
   // Address construction:
   // [bank addr | bank offset | byte offset]
-  val byteOffsetWidth = log2Ceil(addrWidth / 8)
+  val byteOffsetWidth = log2Ceil(dataWidth / 8)
   val bankSelectWidth = log2Ceil(NumOut)
 
   // Determines the bank selection of the requests
@@ -34,7 +34,7 @@ class SparseInterconnect(NumInp: Int, NumOut: Int, addrWidth: Int, dataWidth: In
   // one arbitration module per output memory bank
   val arbiters = Seq.fill(NumOut)(
     Module(
-      new ArbitrationTree(NumInp, addrWidth, dataWidth, strbWidth, userWidth)
+      new ArbitrationTree(NumInp, memAddrWidth, dataWidth, strbWidth, userWidth)
     )
   )
 
@@ -49,7 +49,7 @@ class SparseInterconnect(NumInp: Int, NumOut: Int, addrWidth: Int, dataWidth: In
       arbiters(out).io.tcdmReqs(in).bits <> io.tcdmReqs(in).bits
       // Only send the relevant part of the address
       arbiters(out).io.tcdmReqs(in).bits.addr :=
-        io.tcdmReqs(in).bits.addr(addrWidth - 1, bankSelectWidth + byteOffsetWidth)
+        io.tcdmReqs(in).bits.addr(tcdmAddrWidth - 1, bankSelectWidth + byteOffsetWidth)
       // Valid only on correct arbiter
       arbiters(out).io.tcdmReqs(in).valid     := io.tcdmReqs(in).valid && (bankSelect(in) === out.U)
       // Reverse routing of the ready signal
@@ -104,8 +104,11 @@ object SparseInterconnectGen {
     val NumOut    = parsedArgs.get("NumOut").map(_.toInt).getOrElse {
       throw new IllegalArgumentException("NumOut argument is required")
     }
-    val addrWidth = parsedArgs.get("addrWidth").map(_.toInt).getOrElse {
-      throw new IllegalArgumentException("addrWidth argument is required")
+    val memAddrWidth = parsedArgs.get("memAddrWidth").map(_.toInt).getOrElse {
+      throw new IllegalArgumentException("memAddrWidth argument is required")
+    }
+    val tcdmAddrWidth = parsedArgs.get("tcdmAddrWidth").map(_.toInt).getOrElse {
+      throw new IllegalArgumentException("tcdmAddrWidth argument is required")
     }
     val dataWidth = parsedArgs.get("dataWidth").map(_.toInt).getOrElse {
       throw new IllegalArgumentException("dataWidth argument is required")
@@ -118,7 +121,7 @@ object SparseInterconnectGen {
     }
 
     emitVerilog(
-      new SparseInterconnect(NumInp, NumOut, addrWidth, dataWidth, strbWidth, userWidth),
+      new SparseInterconnect(NumInp, NumOut, memAddrWidth, tcdmAddrWidth, dataWidth, strbWidth, userWidth),
       Array("--target-dir", outPath)
     )
   }
