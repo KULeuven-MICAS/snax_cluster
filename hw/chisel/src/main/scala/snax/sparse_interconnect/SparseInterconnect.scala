@@ -11,7 +11,7 @@ class SparseInterconnect(
   tcdmAddrWidth: Int,
   dataWidth:     Int,
   strbWidth:     Int,
-  userWidth:     Int
+  userWidth:     Int,
   sparse_config: SparseConfig
 ) extends Module {
   val io = IO(new Bundle {
@@ -151,7 +151,16 @@ object SparseInterconnectGen {
     println(s"Parsed SparseConfig: $sparseConfig")
 
     emitVerilog(
-      new SparseInterconnect(NumInp, NumOut, memAddrWidth, tcdmAddrWidth, dataWidth, strbWidth, userWidth, sparseConfig),
+      new SparseInterconnect(
+        NumInp,
+        NumOut,
+        memAddrWidth,
+        tcdmAddrWidth,
+        dataWidth,
+        strbWidth,
+        userWidth,
+        sparseConfig
+      ),
       Array("--target-dir", outPath)
     )
 
