@@ -3,8 +3,15 @@ package snax.sparse_interconnect
 import chisel3._
 import chisel3.util._
 
-class SparseInterconnect(NumInp: Int, NumOut: Int, memAddrWidth: Int, tcdmAddrWidth: Int, dataWidth: Int, strbWidth: Int, userWidth: Int)
-    extends Module {
+class SparseInterconnect(
+  NumInp:        Int,
+  NumOut:        Int,
+  memAddrWidth:  Int,
+  tcdmAddrWidth: Int,
+  dataWidth:     Int,
+  strbWidth:     Int,
+  userWidth:     Int
+) extends Module {
   val io = IO(new Bundle {
     val tcdmReqs = Vec(NumInp, Flipped(Decoupled(new TcdmReq(tcdmAddrWidth, dataWidth, strbWidth, userWidth))))
     val tcdmRsps = Vec(NumInp, Decoupled(new TcdmRsp(dataWidth)))
@@ -98,25 +105,25 @@ object SparseInterconnectGen {
       "generated"
     )
 
-    val NumInp    = parsedArgs.get("NumInp").map(_.toInt).getOrElse {
+    val NumInp        = parsedArgs.get("NumInp").map(_.toInt).getOrElse {
       throw new IllegalArgumentException("NumInp argument is required")
     }
-    val NumOut    = parsedArgs.get("NumOut").map(_.toInt).getOrElse {
+    val NumOut        = parsedArgs.get("NumOut").map(_.toInt).getOrElse {
       throw new IllegalArgumentException("NumOut argument is required")
     }
-    val memAddrWidth = parsedArgs.get("memAddrWidth").map(_.toInt).getOrElse {
+    val memAddrWidth  = parsedArgs.get("memAddrWidth").map(_.toInt).getOrElse {
       throw new IllegalArgumentException("memAddrWidth argument is required")
     }
     val tcdmAddrWidth = parsedArgs.get("tcdmAddrWidth").map(_.toInt).getOrElse {
       throw new IllegalArgumentException("tcdmAddrWidth argument is required")
     }
-    val dataWidth = parsedArgs.get("dataWidth").map(_.toInt).getOrElse {
+    val dataWidth     = parsedArgs.get("dataWidth").map(_.toInt).getOrElse {
       throw new IllegalArgumentException("dataWidth argument is required")
     }
-    val strbWidth = parsedArgs.get("strbWidth").map(_.toInt).getOrElse {
+    val strbWidth     = parsedArgs.get("strbWidth").map(_.toInt).getOrElse {
       throw new IllegalArgumentException("strbWidth argument is required")
     }
-    val userWidth = parsedArgs.get("userWidth").map(_.toInt).getOrElse {
+    val userWidth     = parsedArgs.get("userWidth").map(_.toInt).getOrElse {
       throw new IllegalArgumentException("userWidth argument is required")
     }
 
