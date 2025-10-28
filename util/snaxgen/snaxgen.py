@@ -732,7 +732,7 @@ def main():
             + " --userWidth "
             + str(0)
             + " --sparseConfig "
-            + f"\"{cfg["cluster"]["sparse_interconnect_cfg"]["sparse_config"]}\""
+            + f"\"{cfg['cluster']['sparse_interconnect_cfg']['sparse_config']}\""
             + " --hw-target-dir "
             + str(args.gen_path),
             gen_path=""
