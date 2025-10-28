@@ -473,7 +473,8 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   io.performance_counter := performance_counter
 
   // all the data is outputted means the computation is finished
-  val output_finish      = (dOutputCounter.io.value === csrReg.fsmCfg.output_times * output_d_serial_factor) && cstate === sBUSY
+  val output_finish =
+    (dOutputCounter.io.value === csrReg.fsmCfg.output_times * output_d_serial_factor) && cstate === sBUSY
   val computation_finish = WireInit(0.B)
   // if no output, computation finish depends on the computeFireCounter only
   when(csrReg.fsmCfg.output_times === 0.U && cstate === sBUSY) {

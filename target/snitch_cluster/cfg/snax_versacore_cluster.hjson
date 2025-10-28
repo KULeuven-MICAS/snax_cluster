@@ -323,8 +323,8 @@ Naming convention:
             ]
             fifo_depth:
             [
-                8
-                8
+                4
+                4
             ]
             configurable_channel:
             [
