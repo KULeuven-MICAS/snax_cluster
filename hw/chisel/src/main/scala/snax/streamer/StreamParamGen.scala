@@ -22,249 +22,83 @@ object StreamerParametersGen {
   def readerParams = Seq(
     new ReaderWriterParam(
       spatialBounds = List(
-        4
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 4,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        6
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 6,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        2
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 2,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        1
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        1
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        1
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        1
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
         8
       ),
-      temporalDimension = 4,
+      temporalDimension = 6,
       tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
+      tcdmSize = 256,
+      tcdmLogicWordSize = Seq(
+        256,
+        128,
+        64
+      ),
       numChannel = 8,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
+      addressBufferDepth = 8,
+      dataBufferDepth = 8,
       configurableChannel = true,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
       spatialBounds = List(
-        1
+        64
       ),
-      temporalDimension = 4,
+      temporalDimension = 3,
       tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        1
+      tcdmSize = 256,
+      tcdmLogicWordSize = Seq(
+        256,
+        128,
+        64
       ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        1
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        1
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        6
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 6,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        4
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 4,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
+      numChannel = 64,
+      addressBufferDepth = 8,
+      dataBufferDepth = 8,
       configurableChannel = true,
       crossClockDomain = hasCrossClockDomain
     )
   )
 
-  def writerParams = Seq(
+  def writerParams = Seq()
+
+  def readerWriterParams = Seq(
     new ReaderWriterParam(
       spatialBounds = List(
-        1
+        16
       ),
       temporalDimension = 4,
       tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
+      tcdmSize = 256,
+      tcdmLogicWordSize = Seq(
+        256,
+        128,
+        64
+      ),
+      numChannel = 16,
+      addressBufferDepth = 1,
+      dataBufferDepth = 1,
       configurableChannel = true,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
       spatialBounds = List(
-        1
+        16
       ),
       temporalDimension = 4,
       tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = true,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        4
+      tcdmSize = 256,
+      tcdmLogicWordSize = Seq(
+        256,
+        128,
+        64
       ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 4,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
+      numChannel = 16,
+      addressBufferDepth = 1,
+      dataBufferDepth = 1,
       configurableChannel = true,
       crossClockDomain = hasCrossClockDomain
     )
   )
 
-  def readerWriterParams = Seq()
-
-  def tagName = "snax_simbacore_"
-  def headerFilepath = "../../target/snitch_cluster/sw/snax/simbacore/include"
+  def tagName = "snax_versacore_"
+  def headerFilepath = "../../target/snitch_cluster/sw/snax/versacore/include"
 }

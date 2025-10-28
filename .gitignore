@@ -13,7 +13,9 @@ global-logging
 work
 *.svf
 *.log
+.cache
 
+# Keep track of these generated files
 simbacore-work
 !simbacore-work/flist.tcl
 !target/snitch_cluster/generated/snax_simbacore

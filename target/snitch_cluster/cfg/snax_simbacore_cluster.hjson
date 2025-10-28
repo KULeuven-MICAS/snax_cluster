@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Author: Xiaoling Yi (xiaoling.yi@kuleuven.be)
+// Author: Robin Geens <robin.geens@esat.kuleuven.be>
 
 /**
 Naming convention: 
@@ -193,11 +193,11 @@ Naming convention:
       "configurable_channel": [ 1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1 ]
     },
     "data_writer_params": {
-      "spatial_bounds":       [[1], [1], [4]],
-      "temporal_dim":         [ 4,   4,   4],
-      "num_channel":          [ 1,   1,   4],
-      "fifo_depth":           [ 2,   2,   2],
-      "configurable_channel": [ 1,   1,   1]
+      "spatial_bounds":       [[1], [1], [1], [4]],
+      "temporal_dim":         [ 4,   4,   4,   4],
+      "num_channel":          [ 1,   1,   1,   4],
+      "fifo_depth":           [ 2,   2,   2,   2],
+      "configurable_channel": [ 1,   1,   1,   1]
     },
     "snax_library_name": "simbacore" // where to upload the regenerated streamer register header file
   }

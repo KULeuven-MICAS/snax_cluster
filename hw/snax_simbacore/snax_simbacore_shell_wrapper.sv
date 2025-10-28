@@ -19,10 +19,11 @@ module snax_simbacore_shell_wrapper #(
     parameter int unsigned OSCoreInAWidth  = 256,  // 4
     parameter int unsigned OSCoreInBWidth  = 384,  // 6
 
-    parameter int unsigned SwitchCoreInMatmulWidth = 96,  // 2
-    parameter int unsigned SwitchCoreInWeightWidth = 16,  // 1
-    parameter int unsigned SwitchCoreInBiasWidth = 16,  // 1
+    parameter int unsigned SwitchCoreInMatmulWidth       = 96,  // 2
+    parameter int unsigned SwitchCoreInWeightWidth       = 16,  // 1
+    parameter int unsigned SwitchCoreInBiasWidth         = 16,  // 1
     parameter int unsigned SwitchCoreInMatmulWeightWidth = 16,  // 1
+    parameter int unsigned SwitchCoreOutWidth            = 64,  // 1
 
     parameter int unsigned SUCoreInAWidth  = 16,   // 1
     parameter int unsigned SUCoreInBCWidth = 512,  // 8
@@ -48,19 +49,21 @@ module snax_simbacore_shell_wrapper #(
     //-------------------------------
     // Accelerator ports
     //-------------------------------
-    // Note, we maintained the form of these signals
-    // just to comply with the top-level wrapper
+    // Note, we maintained the form of these signals just to comply with the top-level wrapper
 
     // Ports from accelerator to streamer
-    output logic [OSCoreOutDWidth-1:0] acc2stream_0_data_o,
-    output logic                       acc2stream_0_valid_o,
-    input  logic                       acc2stream_0_ready_i,
-    output logic [SUCoreOutYWidth-1:0] acc2stream_1_data_o,
-    output logic                       acc2stream_1_valid_o,
-    input  logic                       acc2stream_1_ready_i,
-    output logic [ISCoreOutDWidth-1:0] acc2stream_2_data_o,
-    output logic                       acc2stream_2_valid_o,
-    input  logic                       acc2stream_2_ready_i,
+    output logic [   OSCoreOutDWidth-1:0] acc2stream_0_data_o,
+    output logic                          acc2stream_0_valid_o,
+    input  logic                          acc2stream_0_ready_i,
+    output logic [SwitchCoreOutWidth-1:0] acc2stream_1_data_o,
+    output logic                          acc2stream_1_valid_o,
+    input  logic                          acc2stream_1_ready_i,
+    output logic [   SUCoreOutYWidth-1:0] acc2stream_2_data_o,
+    output logic                          acc2stream_2_valid_o,
+    input  logic                          acc2stream_2_ready_i,
+    output logic [   ISCoreOutDWidth-1:0] acc2stream_3_data_o,
+    output logic                          acc2stream_3_valid_o,
+    input  logic                          acc2stream_3_ready_i,
 
     // Ports from streamer to accelerator
     input  logic [               OSCoreInAWidth-1:0] stream2acc_0_data_i,
@@ -152,6 +155,10 @@ module snax_simbacore_shell_wrapper #(
       .io_switchCore_in_matmulWeight_valid(stream2acc_5_valid_i),
       .io_switchCore_in_matmulWeight_bits (stream2acc_5_data_i),
 
+      .io_switchCore_out_x_valid(acc2stream_1_valid_o),
+      .io_switchCore_out_x_ready(acc2stream_1_ready_i),
+      .io_switchCore_out_x_bits (acc2stream_1_data_o),
+
 
       // State update Core
       .io_suCore_in_A_ready(stream2acc_6_ready_o),
@@ -174,9 +181,9 @@ module snax_simbacore_shell_wrapper #(
       .io_suCore_in_z_valid(stream2acc_10_valid_i),
       .io_suCore_in_z_bits (stream2acc_10_data_i),
 
-      .io_suCore_out_y_ready(acc2stream_1_ready_i),
-      .io_suCore_out_y_valid(acc2stream_1_valid_o),
-      .io_suCore_out_y_bits (acc2stream_1_data_o),
+      .io_suCore_out_y_ready(acc2stream_2_ready_i),
+      .io_suCore_out_y_valid(acc2stream_2_valid_o),
+      .io_suCore_out_y_bits (acc2stream_2_data_o),
 
       // IS Core
       .io_isCore_in_a_ready(stream2acc_11_ready_o),
@@ -191,9 +198,9 @@ module snax_simbacore_shell_wrapper #(
       .io_isCore_in_c_valid(stream2acc_13_valid_i),
       .io_isCore_in_c_bits (stream2acc_13_data_i),
 
-      .io_isCore_out_d_ready(acc2stream_2_ready_i),
-      .io_isCore_out_d_valid(acc2stream_2_valid_o),
-      .io_isCore_out_d_bits (acc2stream_2_data_o),
+      .io_isCore_out_d_ready(acc2stream_3_ready_i),
+      .io_isCore_out_d_valid(acc2stream_3_valid_o),
+      .io_isCore_out_d_bits (acc2stream_3_data_o),
 
       // CSR
       .io_config_ready(csr_reg_set_ready_o),
