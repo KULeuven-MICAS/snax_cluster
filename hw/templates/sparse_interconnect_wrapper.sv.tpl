@@ -36,6 +36,14 @@ module sparse_interconnect_wrapper #(
   input  mem_rsp_t            [NumOut-1:0] mem_rsp_i
 );
 
+import reqrsp_pkg::*;
+
+logic [${cfg["sparse_interconnect_cfg"]["NumOut"]}-1:0][3:0] mem_req_o_amo;
+
+% for idx in range(cfg["sparse_interconnect_cfg"]["NumOut"]):
+    assign mem_req_o[${idx}].q.amo = amo_op_e'(mem_req_o_amo[${idx}]);
+% endfor
+
 
 //-----------------------------
 // Instantiate generated interconnect
@@ -73,7 +81,7 @@ SparseInterconnect sparse_interconnect_i (
         .io_memReqs_${idx}_valid ( mem_req_o[${idx}].q_valid ),
         .io_memReqs_${idx}_bits_addr  ( mem_req_o[${idx}].q.addr  ),
         .io_memReqs_${idx}_bits_write ( mem_req_o[${idx}].q.write ),
-        .io_memReqs_${idx}_bits_amo   ( mem_req_o[${idx}].q.amo   ),
+        .io_memReqs_${idx}_bits_amo   ( mem_req_o_amo[${idx}] ),
         .io_memReqs_${idx}_bits_data  ( mem_req_o[${idx}].q.data  ),
         .io_memReqs_${idx}_bits_strb  ( mem_req_o[${idx}].q.strb  ),
     % endfor
