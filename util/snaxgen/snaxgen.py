@@ -655,7 +655,8 @@ def main():
     # ---------------------------------------
     # Generating Sparse Interconnect
     # ---------------------------------------
-    if "sparse_interconnect_cfg" in cfg["cluster"]:
+    if "sparse_interconnect" in cfg["cluster"]["tcdm"] and \
+            cfg["cluster"]["tcdm"]["sparse_interconnect"]:
         print("------------------------------------------------")
         print("    Generating Sparse Interconnect")
         print("------------------------------------------------")
@@ -666,15 +667,16 @@ def main():
         for i in range(num_cores):
             if "snax_acc_cfg" in cfg_cores[i]:
                 for acc in cfg_cores[i]['snax_acc_cfg']:
-                    assert 'snax_narrow_tcdm_ports' in acc, \
-                        "Please specify snax_narrow_tcdm_ports in the accelerator configuration"
-                    narrow_ports += int(acc['snax_narrow_tcdm_ports'])
-                    if "sparse_config" in acc:
-                        sparse_config.extend(acc["sparse_config"])
+                    assert 'snax_tcdm_ports' in acc, \
+                        "Please specify snax_tcdm_ports in the accelerator configuration"
+                    narrow_ports += int(acc['snax_tcdm_ports'])
+                    if "sparse_interconnect_config" in acc:
+                        sparse_config.extend(acc["sparse_interconnect_config"])
                     else:
-                        sparse_config.append((int(acc['snax_narrow_tcdm_ports']), 1))
+                        sparse_config.append((int(acc['snax_tcdm_ports']), 1))
             if "snax_xdma_cfg" in cfg_cores[i]:
                 narrow_ports += 16
+                sparse_config.append((16, 1))
         # then come the cores
         for i in range(num_cores):
             narrow_ports += 1  # core connection (no ssr assumed)
@@ -682,6 +684,7 @@ def main():
         # finally, the AXI connection
         narrow_ports += 1
         sparse_config.append((1, 1))
+        cfg["cluster"]["sparse_interconnect_cfg"] = {}
         cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"] = narrow_ports
         cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"] = int(cfg["cluster"]["tcdm"]["banks"])
         cfg["cluster"]["sparse_interconnect_cfg"]["sparse_config"] = json.dumps(sparse_config)
