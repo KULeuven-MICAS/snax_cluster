@@ -2,6 +2,7 @@ package snax.sparse_interconnect
 
 import chisel3._
 import chisel3.util._
+import snax.sparse_interconnect.SparseConfig
 
 class SparseInterconnect(
   NumInp:        Int,
@@ -10,7 +11,8 @@ class SparseInterconnect(
   tcdmAddrWidth: Int,
   dataWidth:     Int,
   strbWidth:     Int,
-  userWidth:     Int
+  userWidth:     Int,
+  sparse_config: SparseConfig
 ) extends Module {
   val io = IO(new Bundle {
     val tcdmReqs = Vec(NumInp, Flipped(Decoupled(new TcdmReq(tcdmAddrWidth, dataWidth, strbWidth, userWidth))))
@@ -41,7 +43,7 @@ class SparseInterconnect(
   // one arbitration module per output memory bank
   val arbiters = Seq.fill(NumOut)(
     Module(
-      new ArbitrationTree(NumInp, memAddrWidth, dataWidth, strbWidth, userWidth)
+      new ArbitrationTree(sparse_config.inputsPerBank, memAddrWidth, dataWidth, strbWidth, userWidth)
     )
   )
 
@@ -51,17 +53,18 @@ class SparseInterconnect(
   for (out <- 0 until NumOut) {
 
     // Connect the inputs
-    for (in <- 0 until NumInp) {
+    for (in <- 0 until sparse_config.inputsPerBank) {
+      val global_in = sparse_config.get_global_idx(in, out)
       // Connect the request to the arbiter
-      arbiters(out).io.tcdmReqs(in).bits <> io.tcdmReqs(in).bits
+      arbiters(out).io.tcdmReqs(in).bits <> io.tcdmReqs(global_in).bits
       // Only send the relevant part of the address
       arbiters(out).io.tcdmReqs(in).bits.addr :=
-        io.tcdmReqs(in).bits.addr(tcdmAddrWidth - 1, bankSelectWidth + byteOffsetWidth)
+        io.tcdmReqs(global_in).bits.addr(tcdmAddrWidth - 1, bankSelectWidth + byteOffsetWidth)
       // Valid only on correct arbiter
-      arbiters(out).io.tcdmReqs(in).valid     := io.tcdmReqs(in).valid && (bankSelect(in) === out.U)
+      arbiters(out).io.tcdmReqs(in).valid     := io.tcdmReqs(global_in).valid && (bankSelect(global_in) === out.U)
       // Reverse routing of the ready signal
-      when(bankSelect(in) === out.U) {
-        io.tcdmReqs(in).ready := arbiters(out).io.tcdmReqs(in).ready
+      when(bankSelect(global_in) === out.U) {
+        io.tcdmReqs(global_in).ready := arbiters(out).io.tcdmReqs(in).ready
       }
     }
 
@@ -85,8 +88,17 @@ class SparseInterconnect(
     io.tcdmRsps(in).valid := false.B
     io.tcdmRsps(in).bits  := DontCare
 
+    val (port_idx, index) = sparse_config.getPortAndIndex(in)
+    val port              = sparse_config.ports(port_idx)
+    // Print for debug
+    println(
+      s"Routing outputs for input $in: port $port_idx, index $index, sparse_port_access_granularity ${port.access_granularity}"
+    )
+
     // Mux the response based on the previous bank selection
-    for (out <- 0 until NumOut) {
+    for (sparse_out <- 0 until NumOut / port.access_granularity) {
+      val out = sparse_out * port.access_granularity + (index % port.access_granularity)
+      println(s"Routing outputs for input $in: port $port_idx, index $index, sparse_out $sparse_out, out $out")
       when(prevBankRequest(in) === out.U && prevReqFire(in)) {
         io.tcdmRsps(in) <> arbiters(out).io.tcdmRsp
       }
@@ -127,9 +139,30 @@ object SparseInterconnectGen {
       throw new IllegalArgumentException("userWidth argument is required")
     }
 
+    // Parse the sparse configuration string
+    val sparseConfigString = parsedArgs.getOrElse(
+      "sparseConfig", {
+        throw new IllegalArgumentException("sparseConfig argument is required")
+      }
+    )
+
+    println(s"SparseConfig String: $sparseConfigString")
+    val sparseConfig = SparseConfig.parseSparseConfig(sparseConfigString)
+    println(s"Parsed SparseConfig: $sparseConfig")
+
     emitVerilog(
-      new SparseInterconnect(NumInp, NumOut, memAddrWidth, tcdmAddrWidth, dataWidth, strbWidth, userWidth),
+      new SparseInterconnect(
+        NumInp,
+        NumOut,
+        memAddrWidth,
+        tcdmAddrWidth,
+        dataWidth,
+        strbWidth,
+        userWidth,
+        sparseConfig
+      ),
       Array("--target-dir", outPath)
     )
+
   }
 }
