@@ -5,7 +5,7 @@
 # Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 # Robin Geens <robin.geens@esat.kuleuven.be>
 
-APP = snax-simbacore
+APP = snax-simbacore-main
 
 INCDIRS = data \
           ../../snax/simbacore/include
@@ -13,7 +13,7 @@ INCDIRS = data \
 # Include this binary in the final build
 RISCV_LDFLAGS += ../../snax/simbacore/build/snax-simbacore-lib.o
 
-SRCS = src/snax-simbacore.c
+SRCS = src/snax-simbacore-main.c
 
 include ../common.mk
 include ./data/Makefile

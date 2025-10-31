@@ -119,7 +119,6 @@ module snax_simbacore_shell_wrapper #(
     output logic [RegROCount-1:0][RegDataWidth-1:0] csr_reg_ro_set_o
 );
 
-  assign csr_reg_ro_set_o[0][31:0] = 0;  // TODO
 
   SimbaCore inst_SimbaCore (
       .clock(clk_i),
@@ -209,7 +208,10 @@ module snax_simbacore_shell_wrapper #(
       .io_config_bits_seqLen(csr_reg_set_i[1]),
       .io_config_bits_dModel(csr_reg_set_i[2]),
       .io_config_bits_dtRank(csr_reg_set_i[3]),
-      .io_config_bits_dInner(csr_reg_set_i[4])
+      .io_config_bits_dInner(csr_reg_set_i[4]),
+
+      .io_busy_o(csr_reg_ro_set_o[0][0]),
+      .io_performance_counter(csr_reg_ro_set_o[1])
   );
 
 endmodule

@@ -32,22 +32,21 @@ endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster.hjson)
 SUBDIRS += snax/xdma
 endif
-
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
 SUBDIRS += snax/xdma
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_cluster.hjson)
-
 SUBDIRS += snax/versacore snax/xdma
+endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_simbacore_cluster.hjson)
+SUBDIRS += snax/simbacore snax/xdma
 endif
 ifeq (${CFG_OVERRIDE}, cfg/snax_alu_cluster.hjson)
 SUBDIRS += snax/snax-alu
 endif
-
 ifeq (${CFG_OVERRIDE}, cfg/snax_multi_alu_cluster.hjson)
 SUBDIRS += snax/snax-alu
 endif
-
 ifeq (${CFG_OVERRIDE}, cfg/snax_hypercorex_cluster.hjson)
 SUBDIRS += snax/hypercorex
 endif
@@ -64,5 +63,5 @@ apps: math $(RUNTIME) snax/snax-alu snax/mac snax/data-reshuffler snax/gemmx sna
 tests: math $(RUNTIME) snax/snax-alu snax/mac snax/data-reshuffler snax/gemmx snax/versacore snax/xdma snax/hypercorex
 	$(MAKE) -C $@ $(TARGET)
 
-runtime/rtl runtime/banshee runtime/rtl-generic math snax/snax-alu snax/mac snax/data-reshuffler snax/gemmx snax/versacore snax/xdma snax/hypercorex:
+runtime/rtl runtime/banshee runtime/rtl-generic math snax/snax-alu snax/mac snax/data-reshuffler snax/gemmx snax/versacore snax/simbacore snax/xdma snax/hypercorex:
 	$(MAKE) -C $@ $(TARGET)

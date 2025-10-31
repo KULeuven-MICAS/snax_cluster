@@ -10,20 +10,19 @@
 #include "snrt.h"
 #include "streamer_csr_addr_map.h"
 
-void set_simbacore_oscore_streamer_csr(
-    int32_t delta_local_a, int32_t* Aslstride, int32_t* Atlbound,
-    int32_t* Atlstride, int32_t set_addr_remap_index_A, int32_t* channel_en_A,
+void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32_t* Atlbound, int32_t* Atlstride,
+                                       int32_t set_addr_remap_index_A, int32_t* channel_en_A,
 
-    int32_t delta_local_b, int32_t* Bslstride, int32_t* Btlbound,
-    int32_t* Btlstride, int32_t set_addr_remap_index_B, int32_t* channel_en_B,
+                                       uint32_t ptr_b, int32_t* Bslstride, int32_t* Btlbound, int32_t* Btlstride,
+                                       int32_t set_addr_remap_index_B, int32_t* channel_en_B,
 
-    int32_t delta_local_d, int32_t* Dslstride, int32_t* Dtlbound,
-    int32_t* Dtlstride, int32_t set_addr_remap_index_D, int32_t* channel_en_D) {
-    // ----------------------------------A-----------------------------------
-    // ----------------------------------A-----------------------------------
-    // ----------------------------------A-----------------------------------
+                                       uint32_t ptr_d, int32_t* Dslstride, int32_t* Dtlbound, int32_t* Dtlstride,
+                                       int32_t set_addr_remap_index_D, int32_t* channel_en_D) {
+    // -------------------
+    // A streamer setting
+    // -------------------
     // base ptr for A
-    csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)(delta_local_a + snrt_l1_next()));
+    csrw_ss(BASE_PTR_READER_0_LOW, ptr_a);
 
     // spatial strides for A
     for (int i = 0; i < S_STRIDE_NUM_READER_0; i++) {
@@ -51,12 +50,12 @@ void set_simbacore_oscore_streamer_csr(
         csrw_ss(ENABLED_CHANNEL_READER_0 + i, channel_en_A[i]);
     }
 #endif
-    // ----------------------------------B-----------------------------------
-    // ----------------------------------B-----------------------------------
-    // ----------------------------------B-----------------------------------
 
+    // -------------------
+    // B streamer setting
+    // -------------------
     // base ptr for B
-    csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)(delta_local_b + snrt_l1_next()));
+    csrw_ss(BASE_PTR_READER_1_LOW, ptr_b);
 
     // spatial strides for B
     for (int i = 0; i < S_STRIDE_NUM_READER_1; i++) {
@@ -85,11 +84,11 @@ void set_simbacore_oscore_streamer_csr(
     }
 #endif
 
-    // ----------------------------------D-----------------------------------
-    // ----------------------------------D-----------------------------------
-    // ----------------------------------D-----------------------------------
+    // -------------------
+    // D streamer setting
+    // -------------------
     // base ptr for D
-    csrw_ss(BASE_PTR_WRITER_0_LOW, (uint32_t)(delta_local_d + snrt_l1_next()));
+    csrw_ss(BASE_PTR_WRITER_0_LOW, ptr_d);
 
     // spatial strides for D
     for (int i = 0; i < S_STRIDE_NUM_WRITER_0; i++) {
@@ -120,77 +119,68 @@ void set_simbacore_oscore_streamer_csr(
 #endif
 }
 
-// Set GEMM configuration CSR
-void set_simbacore_csr(uint32_t take_in_new_c,
-                       uint32_t a_b_input_times_one_output,
-                       uint32_t output_times, uint32_t subtractions,
-                       uint32_t array_shape, uint32_t data_type) {
-    //  TODO: implement this
-    // set loop bounds, from innermost to outermost, aka from K to N to M
-    csrw_ss(OVERWRITE_ACCUM, take_in_new_c);
-
-    csrw_ss(ACCUM_BOUND, a_b_input_times_one_output);
-    csrw_ss(OUTPUT_BOUND, output_times);
-
-    // set subtraction a and b
-    csrw_ss(SUBTRACTIONS, subtractions);
-
-    // set array shape
-    csrw_ss(ARRAY_SHAPE_CFG, array_shape);
-    // set data type
-    csrw_ss(DATA_TYPE_CFG, data_type);
+void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank) {
+    csrw_ss(MODE, mode);
+    csrw_ss(SEQ_LEN, seqLen);
+    csrw_ss(D_MODEL, dModel);
+    csrw_ss(D_INNER, dInner);
+    csrw_ss(DT_RANK, dtRank);
 }
 
 // Stall until Streamer and GEMM accelerator finish
-void wait_versacore_and_streamer() {
+void wait_simbacore_and_streamer() {
     csrw_ss(STREAMER_START_CSR, 0);
     csrw_ss(STREAMER_START_CSR, 0);
-    csrw_ss(GEMMX_START, 0);
-    while (csrr_ss(GEMMX_BUSY)) {
-    }
-    while (csrr_ss(STREAMER_BUSY_CSR)) {
-    }
+    csrw_ss(SIMBACORE_START, 0);
+    while (csrr_ss(SIMBACORE_BUSY));
+    while (csrr_ss(STREAMER_BUSY_CSR));
 }
 
-void wait_versacore() {
-    csrw_ss(GEMMX_START, 0);
-    csrw_ss(GEMMX_START, 0);
-    while (csrr_ss(GEMMX_BUSY)) {
-    }
+void wait_simbacore() {
+    csrw_ss(STREAMER_START_CSR, 0);
+    csrw_ss(STREAMER_START_CSR, 0);
+    while (csrr_ss(SIMBACORE_BUSY));
 }
 
 // Read performance counter of the Streamer, a read-only CSR
-uint32_t read_versacore_streamer_perf_counter() {
+uint32_t read_simbacore_oscore_streamer_perf_counter() {
     uint32_t perf_counter = csrr_ss(STREAMER_PERFORMANCE_COUNTER_CSR);
     return perf_counter;
 }
 
 // Read performance counter of GEMM, a read-only CSR
-uint32_t read_versacore_perf_counter() {
-    uint32_t perf_counter = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
+uint32_t read_simbacore_perf_counter() {
+    uint32_t perf_counter = csrr_ss(SIMBACORE_PERFORMANCE_COUNTER);
     return perf_counter;
 }
 
-uint32_t check_versacore_result_D32(int8_t* output, int8_t* output_golden,
-                                    int32_t data_length,
-                                    bool banked_data_layout) {
+// Check result, word-by-word. data_length in bytes
+uint32_t check_simbacore_result_D(uint16_t* output, uint16_t* output_golden, int32_t data_length,
+                                  bool banked_data_layout) {
     uint32_t err = 0;
+    int32_t num_elements = data_length / sizeof(uint16_t);
+    printf("Sanity check 4\n");
+    printf("Start checking results. data_length: %d bytes (%d elements)\n", data_length, num_elements);
 
     if (banked_data_layout) {
-        for (int i = 0; i < data_length / 16; i += 1) {
+        for (int i = 0; i < num_elements / 16; i += 1) {
             for (int j = 0; j < 16; j++) {
-                if (*(output + i * (256 / 4) + j) !=
-                    output_golden[i * 16 + j]) {
+                if (*(output + i * (256 / (4 * sizeof(uint16_t))) + j) != output_golden[i * 16 + j]) {
                     err++;
                 }
             }
         }
     } else {
-        for (int i = 0; i < data_length; i++) {
+        printf("Right before the loop\n");
+        for (int i = 0; i < num_elements; i++) {
+            printf("Loop iteration: %d\n", i);
+            printf("%d\n", output[i]);
+            printf("%d\n", output_golden[i]);
             if (output[i] != output_golden[i]) {
                 err++;
-                printf("Unequals. output[%d] = %d, output_golden[%d] = %d\n", i,
-                       output[i], i, output_golden[i]);
+                printf("Unequals. output[%d] = %d, output_golden[%d] = %d\n", i, output[i], i, output_golden[i]);
+            } else {
+                printf("pass: output[%d] = %d, output_golden[%d] = %d\n", i, output[i], i, output_golden[i]);
             }
         }
     }

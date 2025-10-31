@@ -67,6 +67,9 @@ SUBDIRS += snax-xdma-rescale-down
 SUBDIRS += snax-xdma-rescale-up
 SUBDIRS += snax-xdma-avgpool
 endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_simbacore_cluster.hjson)
+SUBDIRS += snax-simbacore
+endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_cluster.hjson)
 SUBDIRS += snax-versacore-matmul
 SUBDIRS += snax-versacore-matmul-profile

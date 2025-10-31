@@ -9,8 +9,7 @@ typedef uint32_t snrt_dma_txid_t;
 inline uint32_t __attribute__((const)) snrt_cluster_base_addrh();
 
 /// Initiate an asynchronous 1D DMA transfer with wide 64-bit pointers.
-inline snrt_dma_txid_t snrt_dma_start_1d_wideptr(uint64_t dst, uint64_t src,
-                                                 size_t size) {
+inline snrt_dma_txid_t snrt_dma_start_1d_wideptr(uint64_t dst, uint64_t src, size_t size) {
     // Current DMA does not allow transfers with size == 0 (blocks)
     // TODO(colluca) remove this check once new DMA is integrated
     if (size > 0) {
@@ -57,8 +56,7 @@ inline snrt_dma_txid_t snrt_dma_start_1d_wideptr(uint64_t dst, uint64_t src,
 }
 
 /// Initiate an asynchronous 1D DMA transfer. (for local-chip transfers)
-inline snrt_dma_txid_t snrt_dma_start_1d(void *dst, const void *src,
-                                         size_t size) {
+inline snrt_dma_txid_t snrt_dma_start_1d(void* dst, const void* src, size_t size) {
     uint64_t dst_wideptr = (uint64_t)dst;
     dst_wideptr += (uint64_t)snrt_cluster_base_addrh() << 32;
     uint64_t src_wideptr = (uint64_t)src;
@@ -67,10 +65,8 @@ inline snrt_dma_txid_t snrt_dma_start_1d(void *dst, const void *src,
 }
 
 /// Initiate an asynchronous 2D DMA transfer with wide 64-bit pointers.
-inline snrt_dma_txid_t snrt_dma_start_2d_wideptr(uint64_t dst, uint64_t src,
-                                                 size_t size, size_t dst_stride,
-                                                 size_t src_stride,
-                                                 size_t repeat) {
+inline snrt_dma_txid_t snrt_dma_start_2d_wideptr(uint64_t dst, uint64_t src, size_t size, size_t dst_stride,
+                                                 size_t src_stride, size_t repeat) {
     // Current DMA does not allow transfers with size == 0 (blocks)
     // TODO(colluca) remove this check once new DMA is integrated
     if (size > 0) {
@@ -139,15 +135,13 @@ inline snrt_dma_txid_t snrt_dma_start_2d_wideptr(uint64_t dst, uint64_t src,
 }
 
 /// Initiate an asynchronous 2D DMA transfer. (for local-chip transfers)
-inline snrt_dma_txid_t snrt_dma_start_2d(void *dst, const void *src,
-                                         size_t size, size_t dst_stride,
-                                         size_t src_stride, size_t repeat) {
+inline snrt_dma_txid_t snrt_dma_start_2d(void* dst, const void* src, size_t size, size_t dst_stride, size_t src_stride,
+                                         size_t repeat) {
     uint64_t dst_wideptr = (uint64_t)dst;
     dst_wideptr += (uint64_t)snrt_cluster_base_addrh() << 32;
     uint64_t src_wideptr = (uint64_t)src;
     src_wideptr += (uint64_t)snrt_cluster_base_addrh() << 32;
-    return snrt_dma_start_2d_wideptr(dst_wideptr, src_wideptr, size, dst_stride,
-                                     src_stride, repeat);
+    return snrt_dma_start_2d_wideptr(dst_wideptr, src_wideptr, size, dst_stride, src_stride, repeat);
 }
 
 /// Block until a transfer finishes.
@@ -202,17 +196,16 @@ inline void snrt_dma_stop_tracking() { asm volatile("dmstati zero, 3"); }
  * @param value value to set
  * @param len number of bytes, must be multiple of DMA bus-width
  */
-inline void snrt_dma_memset(void *ptr, uint8_t value, uint32_t len) {
+inline void snrt_dma_memset(void* ptr, uint8_t value, uint32_t len) {
     // set first 64bytes to value
     // memset(ptr, value, 64);
-    uint8_t *p = ptr;
+    uint8_t* p = ptr;
     uint32_t nbytes = 64;
     while (nbytes--) {
         *p++ = value;
     }
 
     // DMA copy the the rest
-    snrt_dma_txid_t memset_txid =
-        snrt_dma_start_2d(ptr, ptr, 64, 64, 0, len / 64);
+    snrt_dma_txid_t memset_txid = snrt_dma_start_2d(ptr, ptr, 64, 64, 0, len / 64);
     snrt_dma_wait_all();
 }

@@ -39,3 +39,19 @@ CompileFlags:
     - -Itarget/snitch_cluster/sw/apps/snax-xdma-maxpool/data
     - -Itarget/snitch_cluster/sw/apps/snax-xdma-transpose/data
     - -Itarget/snitch_cluster/sw/apps/snax-xdma-reshape-comparison/data
+
+# Diagnostics:
+#   UnusedIncludes: None
+
+# Index:
+#   Background: Build
+
+# # Treat .h files as C files for proper parsing and formatting
+# If:
+#   PathMatch: .*\.(h|H)$
+# CompileFlags:
+#   Add:
+#     - -x
+#     - c
+#     - -std=c11
+#     - -Wno-everything
