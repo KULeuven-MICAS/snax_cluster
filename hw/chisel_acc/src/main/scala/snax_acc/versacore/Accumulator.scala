@@ -25,6 +25,7 @@ class AccumulatorBlock(
     val in2         = Input(UInt(inputType.width.W))
     // whether to add the external input to the accumulator or accumulate the internal reg value
     val accAddExtIn = Input(Bool())
+    val accAddZero = Input(Bool())
     // enable signal
     val enable      = Input(Bool())
     // output of the accumulator
@@ -40,7 +41,7 @@ class AccumulatorBlock(
 
   // connection description
   adder.in_a := io.in1
-  adder.in_b := Mux(io.accAddExtIn, io.in2, accumulatorReg)
+  adder.in_b := Mux(io.accAddExtIn, io.in2, Mux(io.accAddZero, 0.U, accumulatorReg))
 
   val nextAcc = Wire(UInt(outputType.width.W))
   nextAcc := Mux(io.enable, adder.out_c, accumulatorReg)
@@ -66,6 +67,7 @@ class Accumulator(
     val in1         = Flipped(DecoupledIO(Vec(numElements, UInt(inputType.width.W))))
     val in2         = Flipped(DecoupledIO(Vec(numElements, UInt(inputType.width.W))))
     val accAddExtIn = Input(Bool())
+    val accAddZero = Input(Bool())
     val enable      = Input(Bool())
     val out         = DecoupledIO(Vec(numElements, UInt(outputType.width.W)))
   })
@@ -78,13 +80,14 @@ class Accumulator(
   }
 
   // accumulation update logic, considering the handshake and the accumulator enable at runtime
-  val accUpdate = (io.in1.fire && io.enable && (!io.accAddExtIn || (io.in2.fire && io.accAddExtIn)))
+  val accUpdate = (io.in1.fire && io.enable && (!io.accAddExtIn || (io.accAddZero) || (io.in2.fire && io.accAddExtIn)))
 
   // Connect the inputs of each AccumulatorBlock
   for (i <- 0 until numElements) {
     accumulator_blocks(i).io.in1         := io.in1.bits(i)
     accumulator_blocks(i).io.in2         := io.in2.bits(i)
     accumulator_blocks(i).io.accAddExtIn := io.accAddExtIn
+    accumulator_blocks(i).io.accAddZero := io.accAddZero
     accumulator_blocks(i).io.enable      := accUpdate
   }
 

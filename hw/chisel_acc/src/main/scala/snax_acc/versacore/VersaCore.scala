@@ -409,6 +409,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   // array accAddExtIn control signal
   val accAddExtIn        = WireInit(0.B)
+  val accAddZero         = WireInit(0.B)
   val computeFireCounter = Module(new BasicCounter(params.configWidth, hasCeil = true, nameTag = "computeFireCounter"))
   computeFireCounter.io.ceilOpt.get := csrReg.fsmCfg.a_b_input_times_one_output
   val addCFire =
@@ -419,11 +420,13 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   computeFireCounter.io.reset := versacore_finish
 
   accAddExtIn := computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U && cstate === sBUSY
+  accAddZero  := computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 0.U && cstate === sBUSY
 
   // array ctrl signals
   array.io.ctrl.arrayShapeCfg := csrReg.arrayCfg.arrayShapeCfg
   array.io.ctrl.dataTypeCfg   := csrReg.arrayCfg.dataTypeCfg
   array.io.ctrl.accAddExtIn   := accAddExtIn
+  array.io.ctrl.accAddZero := accAddZero
 
   // array data signals
   array.io.data.in_a <> a_after_cut
