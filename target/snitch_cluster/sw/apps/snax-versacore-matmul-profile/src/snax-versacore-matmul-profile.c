@@ -81,12 +81,12 @@ int main() {
 
         if (stationary == 0) {
             // Set CSR for output-stationary
-            set_versacore_csr(1, K, N * M, subtraction_setting, array_shape,
-                              data_type);
+            set_versacore_csr(add_new_c, K, N * M, subtraction_setting,
+                              array_shape, data_type);
         } else {
             // Set CSR for weight-stationary or input-stationary
-            set_versacore_csr(1, 1, N * K * M, subtraction_setting, array_shape,
-                              data_type);
+            set_versacore_csr(add_new_c, 1, N * K * M, subtraction_setting,
+                              array_shape, data_type);
         }
 
         // Set CSR to start Streamer

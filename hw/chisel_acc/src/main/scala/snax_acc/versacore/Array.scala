@@ -25,7 +25,7 @@ class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
   val arrayShapeCfg = Input(UInt(params.configWidth.W))
   val dataTypeCfg   = Input(UInt(params.configWidth.W))
   val accAddExtIn   = Input(Bool())
-  val accAddZero = Input(Bool())
+  val accAddZero    = Input(Bool())
 }
 
 class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {

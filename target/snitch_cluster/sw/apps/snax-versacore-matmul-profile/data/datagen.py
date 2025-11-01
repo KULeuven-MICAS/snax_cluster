@@ -570,6 +570,9 @@ def emit_matmul_data(**kwargs):
 
     c_data_length = M * N * meshRow * meshCol * c_len / 8
     data_str += [format_scalar_definition("int32_t", "c_data_length", c_data_length)]
+    data_str += [
+        format_scalar_definition("int32_t", "add_new_c", kwargs["channel_en_C"])
+    ]
 
     # -----------------------------------------------------------
     # streamer D settings

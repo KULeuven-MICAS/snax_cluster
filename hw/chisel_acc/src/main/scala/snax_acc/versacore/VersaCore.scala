@@ -426,7 +426,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   array.io.ctrl.arrayShapeCfg := csrReg.arrayCfg.arrayShapeCfg
   array.io.ctrl.dataTypeCfg   := csrReg.arrayCfg.dataTypeCfg
   array.io.ctrl.accAddExtIn   := accAddExtIn
-  array.io.ctrl.accAddZero := accAddZero
+  array.io.ctrl.accAddZero    := accAddZero
 
   // array data signals
   array.io.data.in_a <> a_after_cut
