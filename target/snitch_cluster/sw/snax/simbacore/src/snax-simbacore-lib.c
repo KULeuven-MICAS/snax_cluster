@@ -22,7 +22,7 @@ void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32
     // A streamer setting
     // -------------------
     // base ptr for A
-    csrw_ss(BASE_PTR_READER_0_LOW, ptr_a);
+    write_csr(BASE_PTR_READER_0_LOW, ptr_a);
 
     // spatial strides for A
     for (int i = 0; i < S_STRIDE_NUM_READER_0; i++) {
@@ -41,7 +41,7 @@ void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32
 
     // set the address remap index for A
 #ifdef ADDR_REMAP_INDEX_READER_0
-    csrw_ss(ADDR_REMAP_INDEX_READER_0, set_addr_remap_index_A);
+    write_csr(ADDR_REMAP_INDEX_READER_0, set_addr_remap_index_A);
 #endif
 
     // set the channel enable
@@ -55,7 +55,7 @@ void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32
     // B streamer setting
     // -------------------
     // base ptr for B
-    csrw_ss(BASE_PTR_READER_1_LOW, ptr_b);
+    write_csr(BASE_PTR_READER_1_LOW, ptr_b);
 
     // spatial strides for B
     for (int i = 0; i < S_STRIDE_NUM_READER_1; i++) {
@@ -74,7 +74,7 @@ void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32
 
     // set the address remap index for B
 #ifdef ADDR_REMAP_INDEX_READER_1
-    csrw_ss(ADDR_REMAP_INDEX_READER_1, set_addr_remap_index_B);
+    write_csr(ADDR_REMAP_INDEX_READER_1, set_addr_remap_index_B);
 #endif
 
     // set the channel enable
@@ -88,7 +88,7 @@ void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32
     // D streamer setting
     // -------------------
     // base ptr for D
-    csrw_ss(BASE_PTR_WRITER_0_LOW, ptr_d);
+    write_csr(BASE_PTR_WRITER_0_LOW, ptr_d);
 
     // spatial strides for D
     for (int i = 0; i < S_STRIDE_NUM_WRITER_0; i++) {
@@ -96,7 +96,6 @@ void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32
     }
 
     // for D, from N to M
-
     for (int i = 0; i < T_BOUND_NUM_WRITER_0; i++) {
         csrw_ss(T_BOUND_BASE_WRITER_0 + i, Dtlbound[i]);
     }
@@ -108,7 +107,7 @@ void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32
 
     // set the address remap index for D
 #ifdef ADDR_REMAP_INDEX_WRITER_0
-    csrw_ss(ADDR_REMAP_INDEX_WRITER_0, set_addr_remap_index_D);
+    write_csr(ADDR_REMAP_INDEX_WRITER_0, set_addr_remap_index_D);
 #endif
 
     // set the channel enable
@@ -120,37 +119,41 @@ void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32
 }
 
 void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank) {
-    csrw_ss(MODE, mode);
-    csrw_ss(SEQ_LEN, seqLen);
-    csrw_ss(D_MODEL, dModel);
-    csrw_ss(D_INNER, dInner);
-    csrw_ss(DT_RANK, dtRank);
+    write_csr(MODE, mode);
+    write_csr(SEQ_LEN, seqLen);
+    write_csr(D_MODEL, dModel);
+    write_csr(D_INNER, dInner);
+    write_csr(DT_RANK, dtRank);
 }
 
 // Stall until Streamer and GEMM accelerator finish
 void wait_simbacore_and_streamer() {
-    csrw_ss(STREAMER_START_CSR, 0);
-    csrw_ss(STREAMER_START_CSR, 0);
-    csrw_ss(SIMBACORE_START, 0);
-    while (csrr_ss(SIMBACORE_BUSY));
-    while (csrr_ss(STREAMER_BUSY_CSR));
+    printf("Waiting for Streamer and SimbaCore to finish...\n");
+    write_csr(STREAMER_START_CSR, 0);
+    write_csr(STREAMER_START_CSR, 0);
+    write_csr(SIMBACORE_START, 0);
+    while (read_csr(SIMBACORE_BUSY));  // 1185 = 0x4a1
+    printf("SimbaCore finished. Polling Streamer...\n");
+    while (read_csr(STREAMER_BUSY_CSR));  // 1177 = 0x499
+    printf("Streamer and SimbaCore finished\n");
 }
 
 void wait_simbacore() {
-    csrw_ss(STREAMER_START_CSR, 0);
-    csrw_ss(STREAMER_START_CSR, 0);
-    while (csrr_ss(SIMBACORE_BUSY));
+    write_csr(SIMBACORE_START, 0);
+    write_csr(SIMBACORE_START, 0);
+    while (read_csr(SIMBACORE_BUSY));
+    printf("SimbaCore finished\n");
 }
 
 // Read performance counter of the Streamer, a read-only CSR
 uint32_t read_simbacore_oscore_streamer_perf_counter() {
-    uint32_t perf_counter = csrr_ss(STREAMER_PERFORMANCE_COUNTER_CSR);
+    uint32_t perf_counter = read_csr(STREAMER_PERFORMANCE_COUNTER_CSR);
     return perf_counter;
 }
 
 // Read performance counter of GEMM, a read-only CSR
 uint32_t read_simbacore_perf_counter() {
-    uint32_t perf_counter = csrr_ss(SIMBACORE_PERFORMANCE_COUNTER);
+    uint32_t perf_counter = read_csr(SIMBACORE_PERFORMANCE_COUNTER);
     return perf_counter;
 }
 
@@ -159,7 +162,6 @@ uint32_t check_simbacore_result_D(uint16_t* output, uint16_t* output_golden, int
                                   bool banked_data_layout) {
     uint32_t err = 0;
     int32_t num_elements = data_length / sizeof(uint16_t);
-    printf("Sanity check 4\n");
     printf("Start checking results. data_length: %d bytes (%d elements)\n", data_length, num_elements);
 
     if (banked_data_layout) {
@@ -171,7 +173,6 @@ uint32_t check_simbacore_result_D(uint16_t* output, uint16_t* output_golden, int
             }
         }
     } else {
-        printf("Right before the loop\n");
         for (int i = 0; i < num_elements; i++) {
             printf("Loop iteration: %d\n", i);
             printf("%d\n", output[i]);

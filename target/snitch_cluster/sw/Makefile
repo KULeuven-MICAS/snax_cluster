@@ -40,6 +40,7 @@ SUBDIRS += snax/versacore snax/xdma
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_simbacore_cluster.hjson)
 SUBDIRS += snax/simbacore snax/xdma
+apps: snax/simbacore
 endif
 ifeq (${CFG_OVERRIDE}, cfg/snax_alu_cluster.hjson)
 SUBDIRS += snax/snax-alu

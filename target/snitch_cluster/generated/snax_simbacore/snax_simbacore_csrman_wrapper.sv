@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: SHL-0.51
 
 module snax_simbacore_csrman_wrapper #(
-  parameter int unsigned NumRwCsr = 5,
+  parameter int unsigned NumRwCsr = 6,
   parameter int unsigned NumRoCsr = 2
 )(
   //-----------------------------
@@ -68,6 +68,7 @@ module snax_simbacore_csrman_wrapper #(
     .io_readWriteRegIO_bits_2      ( csr_reg_rw_set_o[2] ),
     .io_readWriteRegIO_bits_3      ( csr_reg_rw_set_o[3] ),
     .io_readWriteRegIO_bits_4      ( csr_reg_rw_set_o[4] ),
+    .io_readWriteRegIO_bits_5      ( csr_reg_rw_set_o[5] ),
     .io_readOnlyReg_0              ( csr_reg_ro_set_i[0] ),
     .io_readOnlyReg_1              ( csr_reg_ro_set_i[1] ),
     .io_readWriteRegIO_valid          ( csr_reg_set_valid_o ),

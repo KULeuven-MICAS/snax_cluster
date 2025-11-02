@@ -443,11 +443,92 @@ static uint32_t csrr_ss(uint32_t csr_address) {
             return read_csr(1160);
         case 1161:
             return read_csr(1161);
+        case 1162:
+            return read_csr(1162);
+        case 1163:
+            return read_csr(1163);
+        case 1164:
+            return read_csr(1164);
+        case 1165:
+            return read_csr(1165);
+        case 1166:
+            return read_csr(1166);
+        case 1167:
+            return read_csr(1167);
+        case 1168:
+            return read_csr(1168);
+        case 1169:
+            return read_csr(1169);
+        case 1170:
+            return read_csr(1170);
+        case 1171:
+            return read_csr(1171);
+        case 1172:
+            return read_csr(1172);
+        case 1173:
+            return read_csr(1173);
+        case 1174:
+            return read_csr(1174);
+        case 1175:
+            return read_csr(1175);
+        case 1176:
+            return read_csr(1176);
+        case 1177:
+            return read_csr(1177);
+        case 1178:
+            return read_csr(1178);
+        case 1179:
+            return read_csr(1179);
+        case 1180:
+            return read_csr(1180);
+        case 1181:
+            return read_csr(1181);
+        case 1182:
+            return read_csr(1182);
+        case 1183:
+            return read_csr(1183);
+        case 1184:
+            return read_csr(1184);
+        case 1185:
+            return read_csr(1185);
+        case 1186:
+            return read_csr(1186);
+        case 1187:
+            return read_csr(1187);
+        case 1188:
+            return read_csr(1188);
+        case 1189:
+            return read_csr(1189);
+        case 1190:
+            return read_csr(1190);
+        case 1191:
+            return read_csr(1191);
+        case 1192:
+            return read_csr(1192);
+        case 1193:
+            return read_csr(1193);
+        case 1194:
+            return read_csr(1194);
+        case 1195:
+            return read_csr(1195);
+        case 1196:
+            return read_csr(1196);
+        case 1197:
+            return read_csr(1197);
+        case 1198:
+            return read_csr(1198);
+        case 1199:
+            return read_csr(1199);
+        case 1200:
+            return read_csr(1200);
 #endif
     }
-    return 0;
+    // Should never be reached
+    return -1;
 }
 
+// Helper function to call write_csr macro with a run-time computed CSR address. If the CSR address is a compile-time
+// known macro, the `write_csr` macro can be used instead.
 static void csrw_ss(uint32_t csr_address, uint32_t value) {
     switch (csr_address) {
         case 960:
@@ -1057,6 +1138,124 @@ static void csrw_ss(uint32_t csr_address, uint32_t value) {
         case 1161:
             write_csr(1161, value);
             break;
+        case 1162:
+            write_csr(1162, value);
+            break;
+        case 1163:
+            write_csr(1163, value);
+            break;
+        case 1164:
+            write_csr(1164, value);
+            break;
+        case 1165:
+            write_csr(1165, value);
+            break;
+        case 1166:
+            write_csr(1166, value);
+            break;
+        case 1167:
+            write_csr(1167, value);
+            break;
+        case 1168:
+            write_csr(1168, value);
+            break;
+        case 1169:
+            write_csr(1169, value);
+            break;
+        case 1170:
+            write_csr(1170, value);
+            break;
+        case 1171:
+            write_csr(1171, value);
+            break;
+        case 1172:
+            write_csr(1172, value);
+            break;
+        case 1173:
+            write_csr(1173, value);
+            break;
+        case 1174:
+            write_csr(1174, value);
+            break;
+        case 1175:
+            write_csr(1175, value);
+            break;
+        case 1176:
+            write_csr(1176, value);
+            break;
+        case 1177:
+            write_csr(1177, value);
+            break;
+        case 1178:
+            write_csr(1178, value);
+            break;
+        case 1179:
+            write_csr(1179, value);
+            break;
+        case 1180:
+            write_csr(1180, value);
+            break;
+        case 1181:
+            write_csr(1181, value);
+            break;
+        case 1182:
+            write_csr(1182, value);
+            break;
+        case 1183:
+            write_csr(1183, value);
+            break;
+        case 1184:
+            write_csr(1184, value);
+            break;
+        case 1185:
+            write_csr(1185, value);
+            break;
+        case 1186:
+            write_csr(1186, value);
+            break;
+        case 1187:
+            write_csr(1187, value);
+            break;
+        case 1188:
+            write_csr(1188, value);
+            break;
+        case 1189:
+            write_csr(1189, value);
+            break;
+        case 1190:
+            write_csr(1190, value);
+            break;
+        case 1191:
+            write_csr(1191, value);
+            break;
+        case 1192:
+            write_csr(1192, value);
+            break;
+        case 1193:
+            write_csr(1193, value);
+            break;
+        case 1194:
+            write_csr(1194, value);
+            break;
+        case 1195:
+            write_csr(1195, value);
+            break;
+        case 1196:
+            write_csr(1196, value);
+            break;
+        case 1197:
+            write_csr(1197, value);
+            break;
+        case 1198:
+            write_csr(1198, value);
+            break;
+        case 1199:
+            write_csr(1199, value);
+            break;
+        case 1200:
+            write_csr(1200, value);
+            break;
+
 #endif
     }
 }

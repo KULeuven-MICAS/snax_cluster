@@ -35,7 +35,7 @@ module snax_simbacore_shell_wrapper #(
     parameter int unsigned ISCoreInBWidth = 384,  // 6
     parameter int unsigned ISCoreInCWidth = 256,  // 4
     // CSR
-    parameter int unsigned RegRWCount     = 5,
+    parameter int unsigned RegRWCount     = 6,    // +1 for start csr
     parameter int unsigned RegROCount     = 2,
     parameter int unsigned RegDataWidth   = 32,
     parameter int unsigned RegAddrWidth   = 32
@@ -119,6 +119,7 @@ module snax_simbacore_shell_wrapper #(
     output logic [RegROCount-1:0][RegDataWidth-1:0] csr_reg_ro_set_o
 );
 
+  assign csr_reg_ro_set_o[0][31:1] = 0;
 
   SimbaCore inst_SimbaCore (
       .clock(clk_i),

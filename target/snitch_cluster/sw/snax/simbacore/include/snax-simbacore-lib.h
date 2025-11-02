@@ -36,13 +36,13 @@ void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32
                                        int32_t set_addr_remap_index_D, int32_t* channel_en_D);
 
 // Set CSR to start STREAMER
-static inline void set_simbacore_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }
+static inline void set_simbacore_streamer_start() { write_csr(STREAMER_START_CSR, 1); }
 
 // Set GEMM configuration CSR
 void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank);
 
 // Set CSR to start GEMM
-static inline void set_simbacore_start() { csrw_ss(SIMBACORE_START, 1); }
+static inline void set_simbacore_start() { write_csr(SIMBACORE_START, 1); }
 
 // Poll until Streamer and SimbaCore accelerator finish
 void wait_simbacore_and_streamer();

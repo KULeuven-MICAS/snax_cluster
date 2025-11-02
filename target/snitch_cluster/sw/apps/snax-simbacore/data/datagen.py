@@ -64,15 +64,16 @@ def emit_matmul_data(**kwargs):
     M = kwargs["M"]
     K = kwargs["K"]
     N = kwargs["N"]
+    mode = kwargs["mode"]
 
     data_str += [format_scalar_definition("uint32_t", "M", M)]
     data_str += [format_scalar_definition("uint32_t", "K", K)]
     data_str += [format_scalar_definition("uint32_t", "N", N)]
+    data_str += [format_scalar_definition("uint32_t", "mode", mode)]
 
     # -------------------
     # Hardware parameters
     # -------------------
-
     Mu = kwargs["Mu"]
     Ku = kwargs["Ku"]
     Nu = kwargs["Nu"]
@@ -136,14 +137,16 @@ def emit_matmul_data(**kwargs):
     # -------------------
     # B streamer setting
     # -------------------
-
     data_str += [format_scalar_definition("int32_t", "Bslstride0", BANKWIDTH / 8)]
+
     data_str += [format_scalar_definition("int32_t", "Btlbound0", K)]
-    data_str += [format_scalar_definition("int32_t", "Btlstride0", nbit_b * Ku * Nu / 8)]
+    data_str += [format_scalar_definition("int32_t", "Btlstride0", b_array_width / 8)]
     data_str += [format_scalar_definition("int32_t", "Btlbound1", N)]
-    data_str += [format_scalar_definition("int32_t", "Btlstride1", K * nbit_b * Ku * Nu / 8)]
+    data_str += [format_scalar_definition("int32_t", "Btlstride1", K * b_array_width / 8)]
     data_str += [format_scalar_definition("int32_t", "Btlbound2", M)]
     data_str += [format_scalar_definition("int32_t", "Btlstride2", 0)]
+    data_str += [format_scalar_definition("int32_t", "Btlbound3", 1)]
+    data_str += [format_scalar_definition("int32_t", "Btlstride3", 0)]
 
     B_enabled_channel_CSR_num = int(math.ceil(b_array_width / BANKWIDTH / 32))
     channel_en_B = [0] * B_enabled_channel_CSR_num
@@ -170,8 +173,6 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "Ctlstride1", nbit_c * Mu * Nu / 8)]
     data_str += [format_scalar_definition("int32_t", "Ctlbound2", M)]
     data_str += [format_scalar_definition("int32_t", "Ctlstride2", N * nbit_c * Mu * Nu / 8)]
-
-    # C is not used in this case
     data_str += [format_scalar_definition("int32_t", "Ctlbound3", 1)]
     data_str += [format_scalar_definition("int32_t", "Ctlstride3", 0)]
 
@@ -197,15 +198,15 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "Dslstride0", BANKWIDTH / 8)]
 
     # temporal settings
-    assert Nu * Mu * nbit_c % serial_width_d == 0, "Nu * Mu * nbit_c must be divisible by serial_width_d"
-    data_str += [format_scalar_definition("int32_t", "Dtlbound0", Nu * Mu * nbit_c / serial_width_d)]
+    assert d_array_width % serial_width_d == 0, "d_array_width must be divisible by serial_width_d"
+    # TODO this is row major order, not convFormat
+    data_str += [format_scalar_definition("int32_t", "Dtlbound0", d_array_width / serial_width_d)]
     data_str += [format_scalar_definition("int32_t", "Dtlstride0", serial_width_d / 8)]
     data_str += [format_scalar_definition("int32_t", "Dtlbound1", N)]
-    data_str += [format_scalar_definition("int32_t", "Dtlstride1", nbit_c * Mu * Nu / 8)]
+    data_str += [format_scalar_definition("int32_t", "Dtlstride1", d_array_width / 8)]
     data_str += [format_scalar_definition("int32_t", "Dtlbound2", M)]
-    data_str += [format_scalar_definition("int32_t", "Dtlstride2", N * nbit_c * Mu * Nu / 8)]
-
-    # D is not used in this case
+    data_str += [format_scalar_definition("int32_t", "Dtlstride2", N * d_array_width / 8)]
+    # Not used
     data_str += [format_scalar_definition("int32_t", "Dtlbound3", 1)]
     data_str += [format_scalar_definition("int32_t", "Dtlstride3", 0)]
 
@@ -234,7 +235,8 @@ def emit_matmul_data(**kwargs):
     # Test Data generation
     # -------------------
 
-    # Parse test data from external file
+    # Parse test data from external file.
+    # TODO these file names are hardcoded too much
     try:
         A_int = read_data_int("A.bin")
         B_int = read_data_int("B.bin")
@@ -242,7 +244,7 @@ def emit_matmul_data(**kwargs):
         D_int = read_data_int("D.bin")
     except FileNotFoundError as e:
         raise RuntimeError(
-            f"Error loading test data: {e}. Did you run gen_test_data_external and is the data directory correct?"
+            f"Error loading test data: {e}. Did you run the scala data generator and is the data directory correct?"
         )
 
     data_str += [format_vector_definition("uint16_t", "A", A_int)]
@@ -250,7 +252,7 @@ def emit_matmul_data(**kwargs):
     data_str += [format_vector_definition("uint16_t", "C", C_int)]
     data_str += [format_vector_definition("uint16_t", "D", D_int)]
 
-    # TODO [RG] why do whe need this
+    # NOTE [RG] why do whe need this
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_A", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_B", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_C", 0)]
@@ -297,10 +299,6 @@ def main():
         help="Select hardware config file kernel",
     )
     args = parser.parse_args()
-
-    # Generate test data externally
-    # TODO too complicated to include this in the Makefile flow.
-    # gen_test_data_external(args.swcfg)
 
     # Load param config file
     with args.swcfg.open() as f:

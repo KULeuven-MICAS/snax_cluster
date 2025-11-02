@@ -324,7 +324,7 @@ module snax_simbacore_cluster_wrapper (
   localparam int unsigned NumSequencerInstr       [2] = '{16, 16};
   localparam int unsigned NumSsrs                 [2] = '{1, 1};
   localparam int unsigned SsrMuxRespDepth         [2] = '{4, 4};
-  localparam int unsigned SnaxNarrowTcdmPorts     [2] = '{18, 16};
+  localparam int unsigned SnaxNarrowTcdmPorts     [2] = '{13, 16};
   localparam int unsigned SnaxWideTcdmPorts       [2] = '{0, 0};
 
   //-----------------------------
@@ -356,8 +356,8 @@ module snax_simbacore_cluster_wrapper (
   //-----------------------------
   // SNAX TCDM wires
   //-----------------------------
-  snax_simbacore_cluster_pkg::tcdm_req_t [33:0] snax_tcdm_req;
-  snax_simbacore_cluster_pkg::tcdm_rsp_t [33:0] snax_tcdm_rsp;
+  snax_simbacore_cluster_pkg::tcdm_req_t [28:0] snax_tcdm_req;
+  snax_simbacore_cluster_pkg::tcdm_rsp_t [28:0] snax_tcdm_rsp;
 
   //-----------------------------
   // SNAX Multiaccelerator MUX
@@ -435,7 +435,7 @@ module snax_simbacore_cluster_wrapper (
     .Xfrep (2'b00),
     .SnaxNarrowTcdmPorts (SnaxNarrowTcdmPorts),
     .SnaxWideTcdmPorts (SnaxWideTcdmPorts),
-    .TotalSnaxNarrowTcdmPorts(34),
+    .TotalSnaxNarrowTcdmPorts(29),
     .TotalSnaxWideTcdmPorts(0),
     .SnaxUseCustomPorts (2'b00),
     .FPUImplementation (snax_simbacore_cluster_pkg::FPUImplementation),
@@ -578,7 +578,7 @@ module snax_simbacore_cluster_wrapper (
   // Accelerators controlled with custom instruction format ports
   snax_simbacore_wrapper # (
     .DataWidth        ( snax_simbacore_cluster_pkg::NarrowDataWidth ),
-    .SnaxTcdmPorts    ( 18 ),
+    .SnaxTcdmPorts    ( 13 ),
     .tcdm_req_t       ( snax_simbacore_cluster_pkg::tcdm_req_t ),
     .tcdm_rsp_t       ( snax_simbacore_cluster_pkg::tcdm_rsp_t )
   ) i_snax_core_0_acc_0_snax_simbacore  (
@@ -607,8 +607,8 @@ module snax_simbacore_cluster_wrapper (
     //-----------------------------
     // TCDM ports
     //-----------------------------
-    .snax_tcdm_req_o  ( snax_tcdm_req[17:0] ),
-    .snax_tcdm_rsp_i  ( snax_tcdm_rsp[17:0] )
+    .snax_tcdm_req_o  ( snax_tcdm_req[12:0] ),
+    .snax_tcdm_rsp_i  ( snax_tcdm_rsp[12:0] )
   );
 
   // Tie unused custom instruction ports to 0
@@ -681,8 +681,8 @@ module snax_simbacore_cluster_wrapper (
     //-----------------------------
     // TCDM ports
     //-----------------------------
-    .tcdm_req_o  ( snax_tcdm_req[33:18] ),
-    .tcdm_rsp_i  ( snax_tcdm_rsp[33:18] )
+    .tcdm_req_o  ( snax_tcdm_req[28:13] ),
+    .tcdm_rsp_i  ( snax_tcdm_rsp[28:13] )
   );
 
   // Tie unused custom instruction ports to 0

@@ -38,23 +38,13 @@ class DataFromAcceleratorX(param: StreamerParam) extends Bundle {
 // data related io
 class StreamerDataIO(param: StreamerParam) extends Bundle {
   // specify the interface to the accelerator
-  val streamer2accelerator =
-    new DataToAcceleratorX(param)
-  val accelerator2streamer =
-    new DataFromAcceleratorX(param)
-
+  val streamer2accelerator = new DataToAcceleratorX(param)
+  val accelerator2streamer = new DataFromAcceleratorX(param)
   // specify the interface to the TCDM
   // request interface with q_valid and q_ready
-  val tcdm_req =
-    (Vec(
-      param.tcdmPortsNum,
-      Decoupled(new RegReq(param.addrWidth, param.tcdmDataWidth))
-    ))
+  val tcdm_req             = (Vec(param.tcdmPortsNum, Decoupled(new RegReq(param.addrWidth, param.tcdmDataWidth))))
   // response interface with p_valid
-  val tcdm_rsp = (Vec(
-    param.tcdmPortsNum,
-    Flipped(Valid(new RegRsp(param.tcdmDataWidth)))
-  ))
+  val tcdm_rsp             = (Vec(param.tcdmPortsNum, Flipped(Valid(new RegRsp(param.tcdmDataWidth)))))
 }
 
 /** This class represents the input and output ports of the streamer top module */
@@ -97,11 +87,7 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
 
   def get_extension_list_csr_num(extensionSeqSeq: Seq[Seq[HasDataPathExtension]]): Int = {
     extensionSeqSeq.map {
-      case seq if seq.nonEmpty =>
-        seq
-          .map(_.extensionParam.userCsrNum)
-          .reduceLeftOption(_ + _)
-          .getOrElse(0) + 1
+      case seq if seq.nonEmpty => seq.map(_.extensionParam.userCsrNum).reduceLeftOption(_ + _).getOrElse(0) + 1
       case _                   => 0
     }
       .reduceLeftOption(_ + _)
@@ -241,28 +227,15 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   streamer_ready       := cstate === sIDLE
 
   // if every data reader/writer is not busy
-  streamer_finish := !(reader
-    .map(_.io.busy)
-    .reduceLeftOption(_ || _)
-    .getOrElse(0.B) || writer
-    .map(_.io.busy)
-    .reduceLeftOption(_ || _)
-    .getOrElse(0.B) || reader_writer
-    .map(_.io.readerInterface.busy)
-    .reduceLeftOption(_ || _)
-    .getOrElse(0.B) || reader_writer
-    .map(_.io.writerInterface.busy)
-    .reduceLeftOption(_ || _)
-    .getOrElse(0.B) || readerDatapathExtention
-    .map(_.io.busy)
-    .reduceLeftOption(_ || _)
-    .getOrElse(0.B) || writerDatapathExtention
-    .map(_.io.busy)
-    .reduceLeftOption(_ || _)
-    .getOrElse(0.B) || readerWriterDatapathExtention
-    .map(_.io.busy)
-    .reduceLeftOption(_ || _)
-    .getOrElse(0.B))
+  streamer_finish := !(
+    reader.map(_.io.busy).reduceLeftOption(_ || _).getOrElse(0.B) ||
+      writer.map(_.io.busy).reduceLeftOption(_ || _).getOrElse(0.B) ||
+      reader_writer.map(_.io.readerInterface.busy).reduceLeftOption(_ || _).getOrElse(0.B) ||
+      reader_writer.map(_.io.writerInterface.busy).reduceLeftOption(_ || _).getOrElse(0.B) ||
+      readerDatapathExtention.map(_.io.busy).reduceLeftOption(_ || _).getOrElse(0.B) ||
+      writerDatapathExtention.map(_.io.busy).reduceLeftOption(_ || _).getOrElse(0.B) ||
+      readerWriterDatapathExtention.map(_.io.busy).reduceLeftOption(_ || _).getOrElse(0.B)
+  )
   dontTouch(streamer_finish)
 
   // --------------------------------------------------------------------------------
@@ -351,48 +324,27 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   var remainingCSR = csrCfg.toIndexedSeq
 
   // reader
-  for (i <- 0 until param.readerNum) {
-    remainingCSR = reader(i).io.connectCfgWithList(
-      remainingCSR
-    )
-  }
+  for (i <- 0 until param.readerNum)
+    remainingCSR = reader(i).io.connectCfgWithList(remainingCSR)
 
   // writer
-  for (i <- 0 until param.writerNum) {
-    remainingCSR = writer(i).io.connectCfgWithList(
-      remainingCSR
-    )
-  }
+  for (i <- 0 until param.writerNum)
+    remainingCSR = writer(i).io.connectCfgWithList(remainingCSR)
 
   // reader_writer
-  for (i <- 0 until param.readerWriterNum) {
-    if (i % 2 == 0) {
-      remainingCSR = reader_writer(i / 2).io.readerInterface.connectCfgWithList(
-        remainingCSR
-      )
-    } else {
-      remainingCSR = reader_writer(i / 2).io.writerInterface.connectCfgWithList(
-        remainingCSR
-      )
-    }
-  }
+  for (i <- 0 until param.readerWriterNum)
+    if (i % 2 == 0) remainingCSR = reader_writer(i / 2).io.readerInterface.connectCfgWithList(remainingCSR)
+    else remainingCSR = reader_writer(i / 2).io.writerInterface.connectCfgWithList(remainingCSR)
 
   // connect the csr configuration to the extension
-  for (i <- 0 until param.readerDatapathExtention.length) {
-    remainingCSR = readerDatapathExtention(i).io.connectCfgWithList(
-      remainingCSR
-    )
-  }
+  for (i <- 0 until param.readerDatapathExtention.length)
+    remainingCSR = readerDatapathExtention(i).io.connectCfgWithList(remainingCSR)
 
-  for (i <- 0 until param.writerDatapathExtention.length) {
+  for (i <- 0 until param.writerDatapathExtention.length)
     remainingCSR = writerDatapathExtention(i).io.connectCfgWithList(remainingCSR)
-  }
 
-  for (i <- 0 until param.readerWriterDatapathExtention.length) {
-    remainingCSR = readerWriterDatapathExtention(i).io.connectCfgWithList(
-      remainingCSR
-    )
-  }
+  for (i <- 0 until param.readerWriterDatapathExtention.length)
+    remainingCSR = readerWriterDatapathExtention(i).io.connectCfgWithList(remainingCSR)
 
   // 1 left csr for start signal
   require(remainingCSR.length == 1)
@@ -419,14 +371,9 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   val read_flatten_seq = flattenSeq(param.readerTcdmPorts)
   for ((dimIndex, innerIndex, flattenedIndex) <- read_flatten_seq) {
     // read request to TCDM
-    io.data.tcdm_req(flattenedIndex) <> reader(dimIndex).io.tcdmReq(
-      innerIndex
-    )
-
+    io.data.tcdm_req(flattenedIndex) <> reader(dimIndex).io.tcdmReq(innerIndex)
     // signals from TCDM responses
-    reader(dimIndex).io.tcdmRsp(innerIndex) <> io.data.tcdm_rsp(
-      flattenedIndex
-    )
+    reader(dimIndex).io.tcdmRsp(innerIndex) <> io.data.tcdm_rsp(flattenedIndex)
   }
 
   // data writer <> TCDM write ports
@@ -434,26 +381,18 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   val write_flatten_seq = flattenSeq(param.writerTcdmPorts)
   for ((dimIndex, innerIndex, flattenedIndex) <- write_flatten_seq) {
     // write request to TCDM
-    io.data.tcdm_req(flattenedIndex + tcdm_read_ports_num) <> writer(
-      dimIndex
-    ).io.tcdmReq(innerIndex)
+    io.data.tcdm_req(flattenedIndex + tcdm_read_ports_num) <> writer(dimIndex).io.tcdmReq(innerIndex)
   }
 
   // data reader writer <> TCDM read and write ports
   val read_write_flatten_seq = flattenSeq(param.readerWriterTcdmPorts)
   for ((dimIndex, innerIndex, flattenedIndex) <- read_write_flatten_seq) {
     // read request to TCDM
-    io.data.tcdm_req(
-      flattenedIndex + tcdm_read_ports_num + tcdm_write_ports_num
-    ) <> reader_writer(dimIndex).io.readerInterface.tcdmReq(
-      innerIndex
-    )
-
+    io.data.tcdm_req(flattenedIndex + tcdm_read_ports_num + tcdm_write_ports_num) <>
+      reader_writer(dimIndex).io.readerInterface.tcdmReq(innerIndex)
     // signals from TCDM responses
-    reader_writer(dimIndex).io.readerInterface.tcdmRsp(innerIndex) <> io.data
-      .tcdm_rsp(
-        flattenedIndex + tcdm_read_ports_num + tcdm_write_ports_num
-      )
+    reader_writer(dimIndex).io.readerInterface.tcdmRsp(innerIndex) <>
+      io.data.tcdm_rsp(flattenedIndex + tcdm_read_ports_num + tcdm_write_ports_num)
   }
 
   // --------------------------------------------------------------------------------
@@ -466,50 +405,30 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
     if (i < param.readerNum) {
       // reader
       readerDatapathExtention(i).io.data.in <> reader(i).io.data
-      readerDatapathExtention(i).io.data.out <> io.data.streamer2accelerator
-        .data(
-          i
-        )
+      readerDatapathExtention(i).io.data.out <> io.data.streamer2accelerator.data(i)
     } else {
       // writer
       if (i < param.readerNum + param.writerNum) {
-        io.data.accelerator2streamer
-          .data(i - param.readerNum) <> writerDatapathExtention(
-          i - param.readerNum
-        ).io.data.in
-        writer(
-          i - param.readerNum
-        ).io.data <> writerDatapathExtention(i - param.readerNum).io.data.out
+        io.data.accelerator2streamer.data(i - param.readerNum) <>
+          writerDatapathExtention(i - param.readerNum).io.data.in
+        writer(i - param.readerNum).io.data <> writerDatapathExtention(i - param.readerNum).io.data.out
       } else {
         // reader_writer
         reader_writer_idx           = (i - param.readerNum - param.writerNum) / 2
         reader_writer_extension_idx = (i - param.readerNum - param.writerNum)
         // reader first
         if (reader_writer_extension_idx % 2 == 0) {
-          reader_writer(
-            reader_writer_idx
-          ).io.readerInterface.data <> readerWriterDatapathExtention(
-            reader_writer_extension_idx
-          ).io.data.in
-          readerWriterDatapathExtention(
-            reader_writer_extension_idx
-          ).io.data.out <> io.data.streamer2accelerator.data(
-            reader_writer_idx + param.readerNum
-          )
+          reader_writer(reader_writer_idx).io.readerInterface.data <>
+            readerWriterDatapathExtention(reader_writer_extension_idx).io.data.in
+          readerWriterDatapathExtention(reader_writer_extension_idx).io.data.out <>
+            io.data.streamer2accelerator.data(reader_writer_idx + param.readerNum)
 
         } else {
           // writer
-          reader_writer(
-            reader_writer_idx
-          ).io.writerInterface.data <> readerWriterDatapathExtention(
-            reader_writer_extension_idx
-          ).io.data.out
-          io.data.accelerator2streamer
-            .data(
-              reader_writer_idx + param.writerNum
-            ) <> readerWriterDatapathExtention(
-            reader_writer_extension_idx
-          ).io.data.in
+          reader_writer(reader_writer_idx).io.writerInterface.data <>
+            readerWriterDatapathExtention(reader_writer_extension_idx).io.data.out
+          io.data.accelerator2streamer.data(reader_writer_idx + param.writerNum) <>
+            readerWriterDatapathExtention(reader_writer_extension_idx).io.data.in
         }
 
       }
@@ -529,12 +448,8 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
           writer(i - param.readerNum).io.accClock.get := io.accClock.get
         } else {
           reader_writer_idx = (i - param.readerNum - param.writerNum) / 2
-          reader_writer(
-            reader_writer_idx
-          ).io.readerInterface.accClock.get := io.accClock.get
-          reader_writer(
-            reader_writer_idx
-          ).io.writerInterface.accClock.get := io.accClock.get
+          reader_writer(reader_writer_idx).io.readerInterface.accClock.get := io.accClock.get
+          reader_writer(reader_writer_idx).io.writerInterface.accClock.get := io.accClock.get
         }
       }
     }
