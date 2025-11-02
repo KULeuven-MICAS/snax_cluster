@@ -133,20 +133,21 @@ void wait_simbacore_and_streamer() {
     write_csr(STREAMER_START_CSR, 0);
     write_csr(SIMBACORE_START, 0);
     while (read_csr(SIMBACORE_BUSY));  // 1185 = 0x4a1
-    printf("SimbaCore finished. Polling Streamer...\n");
+    printf("SimbaCore has finished. Polling Streamer...\n");
     while (read_csr(STREAMER_BUSY_CSR));  // 1177 = 0x499
-    printf("Streamer and SimbaCore finished\n");
+    printf("Streamer and SimbaCore have finished\n");
 }
 
 void wait_simbacore() {
+    printf("Waiting for SimbaCore to finish...\n");
     write_csr(SIMBACORE_START, 0);
     write_csr(SIMBACORE_START, 0);
     while (read_csr(SIMBACORE_BUSY));
-    printf("SimbaCore finished\n");
+    printf("SimbaCore has finished\n");
 }
 
 // Read performance counter of the Streamer, a read-only CSR
-uint32_t read_simbacore_oscore_streamer_perf_counter() {
+uint32_t read_streamer_perf_counter() {
     uint32_t perf_counter = read_csr(STREAMER_PERFORMANCE_COUNTER_CSR);
     return perf_counter;
 }
@@ -162,8 +163,9 @@ uint32_t check_simbacore_result_D(uint16_t* output, uint16_t* output_golden, int
                                   bool banked_data_layout) {
     uint32_t err = 0;
     int32_t num_elements = data_length / sizeof(uint16_t);
-    printf("Start checking results. data_length: %d bytes (%d elements)\n", data_length, num_elements);
+    printf("Checking results: %d bytes (%d elements)\n", data_length, num_elements);
 
+    // TODO most likely incorrect
     if (banked_data_layout) {
         for (int i = 0; i < num_elements / 16; i += 1) {
             for (int j = 0; j < 16; j++) {
@@ -174,14 +176,11 @@ uint32_t check_simbacore_result_D(uint16_t* output, uint16_t* output_golden, int
         }
     } else {
         for (int i = 0; i < num_elements; i++) {
-            printf("Loop iteration: %d\n", i);
-            printf("%d\n", output[i]);
-            printf("%d\n", output_golden[i]);
             if (output[i] != output_golden[i]) {
                 err++;
-                printf("Unequals. output[%d] = %d, output_golden[%d] = %d\n", i, output[i], i, output_golden[i]);
+                printf("FAIL out[%d] = %d, ref[%d] = %d\n", i, output[i], i, output_golden[i]);
             } else {
-                printf("pass: output[%d] = %d, output_golden[%d] = %d\n", i, output[i], i, output_golden[i]);
+                printf("PASS out[%d] = %d, ref[%d] = %d\n", i, output[i], i, output_golden[i]);
             }
         }
     }

@@ -7,21 +7,17 @@
 # Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 # Robin Geens <robin.geens@esat.kuleuven.be>
 
-import numpy as np
+
 import argparse
 import pathlib
 import hjson
 import sys
 import os
 import math
-import struct
-import subprocess
 
 # Add data utility path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
-
-
 from snax_utils import align_wide_addr  # noqa E402
 
 DATA_OUT_DIR = os.path.join(os.path.dirname(__file__), "generated")
@@ -111,25 +107,25 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "Aslstride0", BANKWIDTH / 8)]
 
     # INFO [RG] Number of lines here corresponds to "temporal_dim" in the hjson file.
-    # for m in M
-    #   for n in N (irrelevant dimension)
+    # for n in N (irrelevant dimension)
+    #   for m in M
     #     for k in K
-    #       addr = k * tile_size + m * K * tile_size    # Tile size = array_width / 8
+    #         parfor s in (tileSize / bankWidth)
+    #             addr = k * tile_size + m * K * tile_size + s * bankWidth
+    #  Tile size = array_width / 8
     data_str += [format_scalar_definition("int32_t", "Atlbound0", K)]
     data_str += [format_scalar_definition("int32_t", "Atlstride0", a_array_width / 8)]
-    data_str += [format_scalar_definition("int32_t", "Atlbound1", N)]
-    data_str += [format_scalar_definition("int32_t", "Atlstride1", 0)]
-    data_str += [format_scalar_definition("int32_t", "Atlbound2", M)]
-    data_str += [format_scalar_definition("int32_t", "Atlstride2", K * a_array_width / 8)]
+    data_str += [format_scalar_definition("int32_t", "Atlbound1", M)]
+    data_str += [format_scalar_definition("int32_t", "Atlstride1", K * a_array_width / 8)]
+    data_str += [format_scalar_definition("int32_t", "Atlbound2", N)]
+    data_str += [format_scalar_definition("int32_t", "Atlstride2", 0)]
     data_str += [format_scalar_definition("int32_t", "Atlbound3", 1)]
     data_str += [format_scalar_definition("int32_t", "Atlstride3", 0)]
 
     # TODO [RG] what does this mean exactly?
     A_enabled_channel_CSR_num = int(math.ceil(a_array_width / BANKWIDTH / 32))
     channel_en_A = [0] * A_enabled_channel_CSR_num
-    # related to if this is a wide channel or not
-    # if wide, must be divisible by 8
-    # if narrow, must be divisible by 1
+    # Related to if this is a wide channel or not. If wide, must be divisible by 8, if narrow, must be divisible by 1
     channel_en_A_bits = max(8, int((Mu * Ku * nbit_a / BANKWIDTH + 7) // 8 * 8))
     channel_en_A = gen_channel_enable_CSR(channel_en_A, channel_en_A_bits)
     data_str += ["int32_t channel_en_A[] = { " + ", ".join(map(str, channel_en_A)) + " };"]
@@ -141,9 +137,9 @@ def emit_matmul_data(**kwargs):
 
     data_str += [format_scalar_definition("int32_t", "Btlbound0", K)]
     data_str += [format_scalar_definition("int32_t", "Btlstride0", b_array_width / 8)]
-    data_str += [format_scalar_definition("int32_t", "Btlbound1", N)]
+    data_str += [format_scalar_definition("int32_t", "Btlbound1", M)]
     data_str += [format_scalar_definition("int32_t", "Btlstride1", K * b_array_width / 8)]
-    data_str += [format_scalar_definition("int32_t", "Btlbound2", M)]
+    data_str += [format_scalar_definition("int32_t", "Btlbound2", N)]
     data_str += [format_scalar_definition("int32_t", "Btlstride2", 0)]
     data_str += [format_scalar_definition("int32_t", "Btlbound3", 1)]
     data_str += [format_scalar_definition("int32_t", "Btlstride3", 0)]
@@ -161,12 +157,9 @@ def emit_matmul_data(**kwargs):
 
     # spatial settings
     data_str += [format_scalar_definition("int32_t", "Cslstride0", BANKWIDTH / 8)]
-    if Nu * Mu * nbit_c >= serial_width_d:  # This should always be true
-        c_spatial_bound_0 = serial_width_d / BANKWIDTH
-    else:
-        c_spatial_bound_0 = Nu * Mu * nbit_c / BANKWIDTH
+    c_spatial_bound_0 = serial_width_d / BANKWIDTH
 
-    # temporal settings
+    # temporal settings # TODO change to order of D
     data_str += [format_scalar_definition("int32_t", "Ctlbound0", max(1, Nu * Mu * nbit_c / serial_width_d))]
     data_str += [format_scalar_definition("int32_t", "Ctlstride0", c_spatial_bound_0 * (BANKWIDTH / 8))]
     data_str += [format_scalar_definition("int32_t", "Ctlbound1", N)]
@@ -197,16 +190,14 @@ def emit_matmul_data(**kwargs):
     # spatial settings
     data_str += [format_scalar_definition("int32_t", "Dslstride0", BANKWIDTH / 8)]
 
-    # temporal settings
+    # Temporal settings. Order: N, M, K
     assert d_array_width % serial_width_d == 0, "d_array_width must be divisible by serial_width_d"
-    # TODO this is row major order, not convFormat
     data_str += [format_scalar_definition("int32_t", "Dtlbound0", d_array_width / serial_width_d)]
     data_str += [format_scalar_definition("int32_t", "Dtlstride0", serial_width_d / 8)]
-    data_str += [format_scalar_definition("int32_t", "Dtlbound1", N)]
+    data_str += [format_scalar_definition("int32_t", "Dtlbound1", M)]
     data_str += [format_scalar_definition("int32_t", "Dtlstride1", d_array_width / 8)]
-    data_str += [format_scalar_definition("int32_t", "Dtlbound2", M)]
-    data_str += [format_scalar_definition("int32_t", "Dtlstride2", N * d_array_width / 8)]
-    # Not used
+    data_str += [format_scalar_definition("int32_t", "Dtlbound2", N)]
+    data_str += [format_scalar_definition("int32_t", "Dtlstride2", M * d_array_width / 8)]
     data_str += [format_scalar_definition("int32_t", "Dtlbound3", 1)]
     data_str += [format_scalar_definition("int32_t", "Dtlstride3", 0)]
 
@@ -261,18 +252,6 @@ def emit_matmul_data(**kwargs):
     data_str = "\n\n".join(data_str)
 
     return data_str
-
-
-def gen_test_data_external(param_cfg_file):
-    """Generate test data externally using chisel-ssm. Using this flow within datagen.py is deprecated.
-    Explicitly run sbt before calling make sw"""
-    DATAGEN_ROOT = os.path.join(os.path.dirname(__file__), "../../../../../../../chisel-ssm")
-    DATAGEN_CMD = "test:runMain snax.MatmulDataGenerator"
-    run_cmd = f"sbt '{DATAGEN_CMD} {param_cfg_file}'"
-    process = subprocess.Popen(run_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, cwd=DATAGEN_ROOT)
-    out, err = process.communicate()
-    if err:
-        raise RuntimeError(f"Failed to generate test data: {err.decode()}")
 
 
 def read_data_int(filename):

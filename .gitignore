@@ -1,3 +1,9 @@
+__pycache__
+env
+logs
+project
+global-logging
+work
 .bender/
 Bender.lock
 .vscode/
@@ -5,15 +11,13 @@ Bender.lock
 .bloop
 .bsp
 .scala-build
-__pycache__
-env
-logs
-project
-global-logging
-work
 *.svf
 *.log
+*.bin
 .cache
+
+# Only .bin file to be tracked
+!bootrom.bin
 
 # Keep track of these generated files
 simbacore-work
@@ -32,6 +36,7 @@ modelsim.ini
 *stacktrace*
 transcript
 gmon.out
+wlft*
 
 # Docs
 /site/

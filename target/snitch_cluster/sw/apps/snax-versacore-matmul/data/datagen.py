@@ -75,9 +75,7 @@ def pack_signed_nbit(B, bit_width, pack_per_byte=2):
         list[int]: List of packed signed 8-bit integers.
     """
     if len(B) % pack_per_byte != 0:
-        raise ValueError(
-            f"Length of B must be a multiple of {pack_per_byte} to pack into 8-bit integers"
-        )
+        raise ValueError(f"Length of B must be a multiple of {pack_per_byte} to pack into 8-bit integers")
 
     packed = []
     for i in range(0, len(B), pack_per_byte):
@@ -235,24 +233,16 @@ def emit_matmul_data(**kwargs):
     # --------------------------------------------------------------
 
     snax_acc_cfg = kwargs["snax_versacore_core_template"]["snax_acc_cfg"][0]
-    meshRow = snax_acc_cfg["snax_versacore_spatial_unrolling"][data_type][array_shape][
-        0
-    ]
-    tileSize = snax_acc_cfg["snax_versacore_spatial_unrolling"][data_type][array_shape][
-        1
-    ]
-    meshCol = snax_acc_cfg["snax_versacore_spatial_unrolling"][data_type][array_shape][
-        2
-    ]
+    meshRow = snax_acc_cfg["snax_versacore_spatial_unrolling"][data_type][array_shape][0]
+    tileSize = snax_acc_cfg["snax_versacore_spatial_unrolling"][data_type][array_shape][1]
+    meshCol = snax_acc_cfg["snax_versacore_spatial_unrolling"][data_type][array_shape][2]
 
     a_len = snax_acc_cfg["snax_versacore_input_a_element_width"][data_type]
     b_len = snax_acc_cfg["snax_versacore_input_b_element_width"][data_type]
     c_len = snax_acc_cfg["snax_versacore_input_c_element_width"][data_type]
 
     # For FP8 data type, we need to handle floating point values
-    if (
-        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
-    ):  # FP8 data type
+    if snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float":  # FP8 data type
         A_MIN, A_MAX = -10.0, 10.0  # FP8 range
         B_MIN, B_MAX = -10.0, 10.0  # FP8 range
         C_MIN, C_MAX = -10.0, 10.0  # FP32 range for accumulation
@@ -276,9 +266,7 @@ def emit_matmul_data(**kwargs):
 
     stationary = kwargs["stationary"]
     data_str += [format_scalar_definition("uint32_t", "stationary", stationary)]
-    assert (
-        stationary == 0 or stationary == 1 or stationary == 2
-    ), "Invalid stationary setting"
+    assert stationary == 0 or stationary == 1 or stationary == 2, "Invalid stationary setting"
     output_stationary = 0
     weight_stationary = 1
     input_stationary = 2
@@ -289,11 +277,7 @@ def emit_matmul_data(**kwargs):
 
     if stationary == output_stationary:
         data_str += [format_scalar_definition("int32_t", "Atlbound0", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Atlstride0", a_len * tileSize * meshRow / 8
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Atlstride0", a_len * tileSize * meshRow / 8)]
         data_str += [format_scalar_definition("int32_t", "Atlbound1", N)]
         data_str += [format_scalar_definition("int32_t", "Atlstride1", 0)]
         data_str += [format_scalar_definition("int32_t", "Atlbound2", M)]
@@ -355,16 +339,12 @@ def emit_matmul_data(**kwargs):
     # related to if this is a wide channel or not
     # if wide, must be divisible by 8
     # if narrow, must be divisible by 1
-    channel_en_A_bits = max(
-        8, int((meshRow * tileSize * a_len / bankWidth + 7) // 8 * 8)
-    )
+    channel_en_A_bits = max(8, int((meshRow * tileSize * a_len / bankWidth + 7) // 8 * 8))
     channel_en_A = gen_channel_enable_CSR(
         channel_en_A,
         channel_en_A_bits,
     )
-    data_str += [
-        "int32_t channel_en_A[] = { " + ", ".join(map(str, channel_en_A)) + " };"
-    ]
+    data_str += ["int32_t channel_en_A[] = { " + ", ".join(map(str, channel_en_A)) + " };"]
 
     a_data_length = M * K * meshRow * tileSize * a_len / 8  # in bytes
     data_str += [format_scalar_definition("int32_t", "a_data_length", a_data_length)]
@@ -377,11 +357,7 @@ def emit_matmul_data(**kwargs):
 
     if stationary == output_stationary:
         data_str += [format_scalar_definition("int32_t", "Btlbound0", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Btlstride0", b_len * tileSize * meshCol / 8
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Btlstride0", b_len * tileSize * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "Btlbound1", N)]
         data_str += [
             format_scalar_definition(
@@ -410,18 +386,10 @@ def emit_matmul_data(**kwargs):
             )
         ]
         data_str += [format_scalar_definition("int32_t", "Btlbound2", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Btlstride2", K * b_len * tileSize * meshCol / 8
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Btlstride2", K * b_len * tileSize * meshCol / 8)]
     elif stationary == input_stationary:
         data_str += [format_scalar_definition("int32_t", "Btlbound0", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Btlstride0", K * b_len * tileSize * meshCol / 8
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Btlstride0", K * b_len * tileSize * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "Btlbound1", K)]
         data_str += [
             format_scalar_definition(
@@ -441,16 +409,12 @@ def emit_matmul_data(**kwargs):
 
     B_enabled_channel_CSR_num = int(math.ceil(b_array_width / bankWidth / 32))
     channel_en_B = [0] * B_enabled_channel_CSR_num
-    channel_en_B_bits = max(
-        8, int((meshCol * tileSize * b_len / bankWidth + 7) // 8 * 8)
-    )
+    channel_en_B_bits = max(8, int((meshCol * tileSize * b_len / bankWidth + 7) // 8 * 8))
     channel_en_B = gen_channel_enable_CSR(
         channel_en_B,
         channel_en_B_bits,
     )
-    data_str += [
-        "int32_t channel_en_B[] = { " + ", ".join(map(str, channel_en_B)) + " };"
-    ]
+    data_str += ["int32_t channel_en_B[] = { " + ", ".join(map(str, channel_en_B)) + " };"]
 
     b_data_length = K * N * tileSize * meshCol * b_len / 8  # in bytes
     data_str += [format_scalar_definition("int32_t", "b_data_length", b_data_length)]
@@ -477,19 +441,11 @@ def emit_matmul_data(**kwargs):
         )
     ]
     # assert(meshCol * meshRow * output_data_width >= snax_versacore_serial_c_d_width)
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "Ctlstride0", c_spatial_bound_0 * (bankWidth / 8)
-        )
-    ]
+    data_str += [format_scalar_definition("int32_t", "Ctlstride0", c_spatial_bound_0 * (bankWidth / 8))]
 
     if stationary == output_stationary:
         data_str += [format_scalar_definition("int32_t", "Ctlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Ctlstride1", c_len * meshRow * meshCol / 8
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Ctlstride1", c_len * meshRow * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "Ctlbound2", M)]
         data_str += [
             format_scalar_definition(
@@ -522,18 +478,10 @@ def emit_matmul_data(**kwargs):
         ]
         #
         data_str += [format_scalar_definition("int32_t", "Ctlbound3", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Ctlstride3", c_len * meshRow * meshCol / 8
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Ctlstride3", c_len * meshRow * meshCol / 8)]
     elif stationary == input_stationary:
         data_str += [format_scalar_definition("int32_t", "Ctlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Ctlstride1", c_len * meshRow * meshCol / 8
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Ctlstride1", c_len * meshRow * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "Ctlbound2", K)]
         data_str += [format_scalar_definition("int32_t", "Ctlstride2", 0)]
         data_str += [format_scalar_definition("int32_t", "Ctlbound3", M)]
@@ -550,9 +498,7 @@ def emit_matmul_data(**kwargs):
 
     assert disable_C or enable_full_C, "Invalid C settings"
 
-    C_enabled_channel_CSR_num = int(
-        math.ceil(snax_versacore_serial_c_d_width / bankWidth / 32)
-    )
+    C_enabled_channel_CSR_num = int(math.ceil(snax_versacore_serial_c_d_width / bankWidth / 32))
     channel_en_C = [0] * C_enabled_channel_CSR_num
 
     if enable_full_C == 1:
@@ -564,9 +510,7 @@ def emit_matmul_data(**kwargs):
         channel_en_C,
         channel_en_C_bits,
     )
-    data_str += [
-        "int32_t channel_en_C[] = { " + ", ".join(map(str, channel_en_C)) + " };"
-    ]
+    data_str += ["int32_t channel_en_C[] = { " + ", ".join(map(str, channel_en_C)) + " };"]
 
     c_data_length = M * N * meshRow * meshCol * c_len / 8
     data_str += [format_scalar_definition("int32_t", "c_data_length", c_data_length)]
@@ -592,20 +536,12 @@ def emit_matmul_data(**kwargs):
         )
     ]
     # assert(meshCol * meshRow * c_len >= snax_versacore_serial_c_d_width)
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "D32tlstride0", d_spatial_bound_0 * (bankWidth / 8)
-        )
-    ]
+    data_str += [format_scalar_definition("int32_t", "D32tlstride0", d_spatial_bound_0 * (bankWidth / 8))]
 
     if stationary == output_stationary:
 
         data_str += [format_scalar_definition("int32_t", "D32tlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "D32tlstride1", c_len * meshRow * meshCol / 8
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "D32tlstride1", c_len * meshRow * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "D32tlbound2", M)]
         data_str += [
             format_scalar_definition(
@@ -647,11 +583,7 @@ def emit_matmul_data(**kwargs):
 
     elif stationary == input_stationary:
         data_str += [format_scalar_definition("int32_t", "D32tlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "D32tlstride1", c_len * meshRow * meshCol / 8
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "D32tlstride1", c_len * meshRow * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "D32tlbound2", K)]
         data_str += [format_scalar_definition("int32_t", "D32tlstride2", 0)]
         data_str += [format_scalar_definition("int32_t", "D32tlbound3", M)]
@@ -663,9 +595,7 @@ def emit_matmul_data(**kwargs):
             )
         ]
 
-    D_enabled_channel_CSR_num = int(
-        math.ceil(snax_versacore_serial_c_d_width / bankWidth / 32)
-    )
+    D_enabled_channel_CSR_num = int(math.ceil(snax_versacore_serial_c_d_width / bankWidth / 32))
 
     channel_en_D = [0] * D_enabled_channel_CSR_num
     channel_en_D_bits = int((meshRow * meshCol * c_len / bankWidth + 7) // 8 * 8)
@@ -673,14 +603,10 @@ def emit_matmul_data(**kwargs):
         channel_en_D,
         channel_en_D_bits,
     )
-    data_str += [
-        "int32_t channel_en_D[] = { " + ", ".join(map(str, channel_en_D)) + " };"
-    ]
+    data_str += ["int32_t channel_en_D[] = { " + ", ".join(map(str, channel_en_D)) + " };"]
 
     d_data_length = M * N * meshRow * meshCol
-    data_str += [
-        format_scalar_definition("int32_t", "d_data_length", d_data_length * c_len / 8)
-    ]
+    data_str += [format_scalar_definition("int32_t", "d_data_length", d_data_length * c_len / 8)]
 
     # -----------------------------------------------------------
     # -------------------------base address----------------------
@@ -722,16 +648,10 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int8_t", "subtraction_b", subtraction_b)]
 
     # Generate test data based on data type
-    if (
-        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
-    ):  # FP8 data type
+    if snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float":  # FP8 data type
         # Generate FP8 data (using float32 for generation, will be converted to FP8)
-        A_float = np.random.uniform(
-            A_MIN, A_MAX, size=(M, K, meshRow, tileSize)
-        ).reshape(-1)
-        B_float = np.random.uniform(
-            B_MIN, B_MAX, size=(K, N, tileSize, meshCol)
-        ).reshape(-1)
+        A_float = np.random.uniform(A_MIN, A_MAX, size=(M, K, meshRow, tileSize)).reshape(-1)
+        B_float = np.random.uniform(B_MIN, B_MAX, size=(K, N, tileSize, meshCol)).reshape(-1)
 
         # Convert to FP8 format (using int8 to represent FP8 bits) for hardware
         A_fp8 = float32_to_fp8_scale(A_float)
@@ -743,9 +663,7 @@ def emit_matmul_data(**kwargs):
         data_str += [format_vector_definition("int8_t", "B", B_fp8_bin.flatten())]
 
         if enable_full_C == 1:
-            C = np.random.uniform(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(
-                -1
-            )
+            C = np.random.uniform(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(-1)
         else:
             C = np.zeros((M, N, meshRow, meshCol)).reshape(-1)
 
@@ -771,9 +689,7 @@ def emit_matmul_data(**kwargs):
             raise ValueError("Invalid B data type")
 
         if enable_full_C == 1:
-            C = np.random.randint(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(
-                -1
-            )
+            C = np.random.randint(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(-1)
         else:
             C = np.random.randint(0, 1, size=(M, N, meshRow, meshCol)).reshape(-1)
 
@@ -787,17 +703,11 @@ def emit_matmul_data(**kwargs):
         B = B.reshape(K, N, tileSize, meshCol)
         B = B.transpose(0, 1, 3, 2).reshape(-1)
 
-    data_str += [
-        format_scalar_definition("int32_t", "transposed_A", kwargs["transposed_A"])
-    ]
-    data_str += [
-        format_scalar_definition("int32_t", "transposed_B", kwargs["transposed_B"])
-    ]
+    data_str += [format_scalar_definition("int32_t", "transposed_A", kwargs["transposed_A"])]
+    data_str += [format_scalar_definition("int32_t", "transposed_B", kwargs["transposed_B"])]
 
     # Generate golden reference output for phase 1
-    if (
-        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
-    ):  # FP8 data type
+    if snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float":  # FP8 data type
         D1 = block_gemm_golden_model_fp8(
             M,
             K,
@@ -831,9 +741,7 @@ def emit_matmul_data(**kwargs):
 
     # Generate golden reference output for phase 2
     # -----------------------------------------------------------
-    if (
-        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
-    ):  # FP8 data type
+    if snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float":  # FP8 data type
         D2 = block_gemm_golden_model_fp8(
             M,
             K,
@@ -867,9 +775,7 @@ def emit_matmul_data(**kwargs):
 
     # Generate golden reference output for 3 times accumulation
     # -----------------------------------------------------------
-    if (
-        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
-    ):  # FP8 data type
+    if snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float":  # FP8 data type
         D3 = block_gemm_golden_model_fp8(
             M,
             K,

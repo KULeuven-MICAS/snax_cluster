@@ -2545,7 +2545,7 @@ module ram_2x20(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
   assign R0_data = R0_en ? Memory[R0_addr] : 20'bx;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
 endmodule
 
-module Queue_W20_D2_Hc7ogda(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hq4t497(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -2647,7 +2647,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hc7ogda queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hq4t497 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -2657,7 +2657,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hc7ogda queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hq4t497 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -2667,7 +2667,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hc7ogda queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hq4t497 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -2677,7 +2677,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_Hc7ogda queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hq4t497 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -3145,7 +3145,7 @@ module ram_2x64(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
   assign R0_data = R0_en ? Memory[R0_addr] : 64'bx;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
 endmodule
 
-module Queue_W64_D2_H8a85bl(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_H73ehba(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -3245,7 +3245,7 @@ module snax_simbacore__C0_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
     & _queues_3_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_3_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_H8a85bl queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H73ehba queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -3254,7 +3254,7 @@ module snax_simbacore__C0_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_H8a85bl queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H73ehba queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -3263,7 +3263,7 @@ module snax_simbacore__C0_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_H8a85bl queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H73ehba queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -3272,7 +3272,7 @@ module snax_simbacore__C0_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_H8a85bl queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H73ehba queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -3674,7 +3674,7 @@ module snax_simbacore__C1_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hmgqb01(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hjvjiie(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -3784,7 +3784,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready & _queues_4_io_enq_ready & _queues_5_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_5_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hmgqb01 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hjvjiie queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -3794,7 +3794,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hmgqb01 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hjvjiie queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -3804,7 +3804,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hmgqb01 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hjvjiie queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -3814,7 +3814,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_Hmgqb01 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hjvjiie queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -3824,7 +3824,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_3_valid),
     .io_deq_bits  (io_out_3_bits)
   );
-  Queue_W20_D2_Hmgqb01 queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hjvjiie queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_4_io_enq_ready),
@@ -3834,7 +3834,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_4_valid),
     .io_deq_bits  (io_out_4_bits)
   );
-  Queue_W20_D2_Hmgqb01 queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hjvjiie queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_5_io_enq_ready),
@@ -4367,7 +4367,7 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hbu63a9(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hn648ke(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -4475,7 +4475,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
     & _queues_3_io_deq_valid & _queues_4_io_deq_valid & _queues_5_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_5_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_Hbu63a9 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn648ke queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -4484,7 +4484,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_Hbu63a9 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn648ke queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -4493,7 +4493,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_Hbu63a9 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn648ke queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -4502,7 +4502,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_Hbu63a9 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn648ke queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -4511,7 +4511,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_3_io_deq_valid),
     .io_deq_bits  (_queues_3_io_deq_bits)
   );
-  Queue_W64_D2_Hbu63a9 queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn648ke queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_4_valid),
@@ -4520,7 +4520,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_4_io_deq_valid),
     .io_deq_bits  (_queues_4_io_deq_bits)
   );
-  Queue_W64_D2_Hbu63a9 queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn648ke queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_5_valid),
@@ -4992,7 +4992,7 @@ module snax_simbacore__C2_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hnena0k(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H90qvtl(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -5084,7 +5084,7 @@ module snax_simbacore__C2_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   wire _queues_0_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire enq_all_ready = _queues_0_io_enq_ready & _queues_1_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_1_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hnena0k queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H90qvtl queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -5094,7 +5094,7 @@ module snax_simbacore__C2_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hnena0k queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H90qvtl queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -5428,7 +5428,7 @@ module snax_simbacore__C2_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_H3i6qkd(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hthmu74(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -5518,7 +5518,7 @@ module snax_simbacore__C2_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   wire [63:0] _queues_0_io_deq_bits;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire        deq_all_valid = _queues_0_io_deq_valid & _queues_1_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_1_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_H3i6qkd queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hthmu74 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -5527,7 +5527,7 @@ module snax_simbacore__C2_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_H3i6qkd queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hthmu74 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -5857,7 +5857,7 @@ module snax_simbacore__C3_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hcdr1qf(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hi0e4nf(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -5942,7 +5942,7 @@ module snax_simbacore__C3_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hcdr1qf queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hi0e4nf queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -6223,7 +6223,7 @@ module snax_simbacore__C3_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hfr6i2k(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hc4tm1a(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -6305,7 +6305,7 @@ module snax_simbacore__C3_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hfr6i2k queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc4tm1a queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -6596,7 +6596,7 @@ module snax_simbacore__C4_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hhc8dru(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Ha581gn(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -6681,7 +6681,7 @@ module snax_simbacore__C4_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hhc8dru queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Ha581gn queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -6962,7 +6962,7 @@ module snax_simbacore__C4_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_H2eval2(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hbqdn3k(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -7044,7 +7044,7 @@ module snax_simbacore__C4_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_H2eval2 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hbqdn3k queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -7335,7 +7335,7 @@ module snax_simbacore__C5_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H6lh0mo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Ho1rs2(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -7420,7 +7420,7 @@ module snax_simbacore__C5_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H6lh0mo queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Ho1rs2 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -7701,7 +7701,7 @@ module snax_simbacore__C5_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_H6f1ug3(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_H4s1ebr(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -7783,7 +7783,7 @@ module snax_simbacore__C5_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_H6f1ug3 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H4s1ebr queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -8074,7 +8074,7 @@ module snax_simbacore__C6_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Htkilnh(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hn3l4p7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -8159,7 +8159,7 @@ module snax_simbacore__C6_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Htkilnh queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hn3l4p7 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -8440,7 +8440,7 @@ module snax_simbacore__C6_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_H1ir1ad(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Ht4rafv(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -8522,7 +8522,7 @@ module snax_simbacore__C6_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_H1ir1ad queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Ht4rafv queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -8813,7 +8813,7 @@ module snax_simbacore__C7_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H2hjmvs(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hef3r79(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -8932,7 +8932,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     & _queues_3_io_enq_ready & _queues_4_io_enq_ready & _queues_5_io_enq_ready
     & _queues_6_io_enq_ready & _queues_7_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_7_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_H2hjmvs queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hef3r79 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -8942,7 +8942,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_H2hjmvs queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hef3r79 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -8952,7 +8952,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_H2hjmvs queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hef3r79 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -8962,7 +8962,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_H2hjmvs queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hef3r79 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -8972,7 +8972,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_3_valid),
     .io_deq_bits  (io_out_3_bits)
   );
-  Queue_W20_D2_H2hjmvs queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hef3r79 queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_4_io_enq_ready),
@@ -8982,7 +8982,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_4_valid),
     .io_deq_bits  (io_out_4_bits)
   );
-  Queue_W20_D2_H2hjmvs queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hef3r79 queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_5_io_enq_ready),
@@ -8992,7 +8992,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_5_valid),
     .io_deq_bits  (io_out_5_bits)
   );
-  Queue_W20_D2_H2hjmvs queues_6 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hef3r79 queues_6 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_6_io_enq_ready),
@@ -9002,7 +9002,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_6_valid),
     .io_deq_bits  (io_out_6_bits)
   );
-  Queue_W20_D2_H2hjmvs queues_7 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hef3r79 queues_7 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_7_io_enq_ready),
@@ -9634,7 +9634,7 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hmack8v(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_H7fs576(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -9751,7 +9751,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     & _queues_3_io_deq_valid & _queues_4_io_deq_valid & _queues_5_io_deq_valid
     & _queues_6_io_deq_valid & _queues_7_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_7_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_Hmack8v queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7fs576 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -9760,7 +9760,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_Hmack8v queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7fs576 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -9769,7 +9769,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_Hmack8v queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7fs576 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -9778,7 +9778,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_Hmack8v queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7fs576 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -9787,7 +9787,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_3_io_deq_valid),
     .io_deq_bits  (_queues_3_io_deq_bits)
   );
-  Queue_W64_D2_Hmack8v queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7fs576 queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_4_valid),
@@ -9796,7 +9796,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_4_io_deq_valid),
     .io_deq_bits  (_queues_4_io_deq_bits)
   );
-  Queue_W64_D2_Hmack8v queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7fs576 queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_5_valid),
@@ -9805,7 +9805,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_5_io_deq_valid),
     .io_deq_bits  (_queues_5_io_deq_bits)
   );
-  Queue_W64_D2_Hmack8v queues_6 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7fs576 queues_6 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_6_valid),
@@ -9814,7 +9814,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_6_io_deq_valid),
     .io_deq_bits  (_queues_6_io_deq_bits)
   );
-  Queue_W64_D2_Hmack8v queues_7 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7fs576 queues_7 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_7_valid),
@@ -10356,7 +10356,7 @@ module snax_simbacore__C8_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hq9mtdt(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hv7pc0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -10441,7 +10441,7 @@ module snax_simbacore__C8_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hq9mtdt queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hv7pc0 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -10722,7 +10722,7 @@ module snax_simbacore__C8_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hf3moc2(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hckk6d8(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -10804,7 +10804,7 @@ module snax_simbacore__C8_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hf3moc2 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hckk6d8 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -11095,7 +11095,7 @@ module snax_simbacore__C9_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hssk3o0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hqos4e0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -11180,7 +11180,7 @@ module snax_simbacore__C9_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hssk3o0 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hqos4e0 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -11461,7 +11461,7 @@ module snax_simbacore__C9_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hjn9i6n(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hgem81g(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -11543,7 +11543,7 @@ module snax_simbacore__C9_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hjn9i6n queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hgem81g queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -11834,7 +11834,7 @@ module snax_simbacore__C10_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hhu5p4j(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H8iafd2(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -11919,7 +11919,7 @@ module snax_simbacore__C10_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hhu5p4j queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H8iafd2 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -12200,7 +12200,7 @@ module snax_simbacore__C10_Reader_DataResponsers(	// src/main/scala/snax/readerW
   );
 endmodule
 
-module Queue_W64_D2_Hdd5cec(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hn3vv0i(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -12282,7 +12282,7 @@ module snax_simbacore__C10_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hdd5cec queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn3vv0i queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -12573,7 +12573,7 @@ module snax_simbacore__C11_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hid7erc(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H2elmc8(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -12658,7 +12658,7 @@ module snax_simbacore__C11_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hid7erc queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H2elmc8 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -12939,7 +12939,7 @@ module snax_simbacore__C11_Reader_DataResponsers(	// src/main/scala/snax/readerW
   );
 endmodule
 
-module Queue_W64_D2_Hq5dd33(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hh33tcn(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -13021,7 +13021,7 @@ module snax_simbacore__C11_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hq5dd33 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hh33tcn queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -13312,7 +13312,7 @@ module snax_simbacore__C12_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hehtsd8(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Htfpa4s(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -13422,7 +13422,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready & _queues_4_io_enq_ready & _queues_5_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_5_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hehtsd8 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Htfpa4s queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -13432,7 +13432,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hehtsd8 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Htfpa4s queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -13442,7 +13442,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hehtsd8 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Htfpa4s queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -13452,7 +13452,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_Hehtsd8 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Htfpa4s queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -13462,7 +13462,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_3_valid),
     .io_deq_bits  (io_out_3_bits)
   );
-  Queue_W20_D2_Hehtsd8 queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Htfpa4s queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_4_io_enq_ready),
@@ -13472,7 +13472,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_4_valid),
     .io_deq_bits  (io_out_4_bits)
   );
-  Queue_W20_D2_Hehtsd8 queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Htfpa4s queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_5_io_enq_ready),
@@ -14005,7 +14005,7 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
   );
 endmodule
 
-module Queue_W64_D2_Hudv74p(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hc3h9hd(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -14113,7 +14113,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
     & _queues_3_io_deq_valid & _queues_4_io_deq_valid & _queues_5_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_5_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_Hudv74p queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc3h9hd queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -14122,7 +14122,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_Hudv74p queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc3h9hd queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -14131,7 +14131,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_Hudv74p queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc3h9hd queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -14140,7 +14140,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_Hudv74p queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc3h9hd queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -14149,7 +14149,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_3_io_deq_valid),
     .io_deq_bits  (_queues_3_io_deq_bits)
   );
-  Queue_W64_D2_Hudv74p queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc3h9hd queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_4_valid),
@@ -14158,7 +14158,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_4_io_deq_valid),
     .io_deq_bits  (_queues_4_io_deq_bits)
   );
-  Queue_W64_D2_Hudv74p queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc3h9hd queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_5_valid),
@@ -14630,7 +14630,7 @@ module snax_simbacore__C13_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H6uqpru(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H3ehce7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -14732,7 +14732,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_H6uqpru queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3ehce7 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -14742,7 +14742,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_H6uqpru queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3ehce7 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -14752,7 +14752,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_H6uqpru queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3ehce7 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -14762,7 +14762,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_H6uqpru queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3ehce7 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -15196,7 +15196,7 @@ module snax_simbacore__C13_Reader_DataResponsers(	// src/main/scala/snax/readerW
   );
 endmodule
 
-module Queue_W64_D2_H7b716t(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hj4ep2h(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -15296,7 +15296,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
     & _queues_3_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_3_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_H7b716t queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hj4ep2h queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -15305,7 +15305,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_H7b716t queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hj4ep2h queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -15314,7 +15314,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_H7b716t queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hj4ep2h queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -15323,7 +15323,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_H7b716t queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hj4ep2h queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -15725,7 +15725,7 @@ module snax_simbacore__C0_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hc4r947(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hi4015o(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -15810,7 +15810,7 @@ module snax_simbacore__C0_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hc4r947 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hi4015o queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -15995,7 +15995,7 @@ module snax_simbacore__C0_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hhuino7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hvi2hoi(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -16079,7 +16079,7 @@ module snax_simbacore__C0_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hhuino7 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hvi2hoi queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -16267,7 +16267,7 @@ module snax_simbacore__C1_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H2ftq6v(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hc3oku8(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -16352,7 +16352,7 @@ module snax_simbacore__C1_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H2ftq6v queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hc3oku8 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -16537,7 +16537,7 @@ module snax_simbacore__C1_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hj8a8mv(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hqie3fm(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -16621,7 +16621,7 @@ module snax_simbacore__C1_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hj8a8mv queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hqie3fm queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -16809,7 +16809,7 @@ module snax_simbacore__C2_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H9cd7m4(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hqsubp2(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -16894,7 +16894,7 @@ module snax_simbacore__C2_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H9cd7m4 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hqsubp2 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -17079,7 +17079,7 @@ module snax_simbacore__C2_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_H8g36u2(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hthsvo9(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -17163,7 +17163,7 @@ module snax_simbacore__C2_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_H8g36u2 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hthsvo9 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -17351,7 +17351,7 @@ module snax_simbacore__C3_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hlr77a9(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H4glf7c(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -17453,7 +17453,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hlr77a9 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H4glf7c queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -17463,7 +17463,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hlr77a9 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H4glf7c queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -17473,7 +17473,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hlr77a9 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H4glf7c queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -17483,7 +17483,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_Hlr77a9 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H4glf7c queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -17773,7 +17773,7 @@ module snax_simbacore__C3_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hdu5o2a(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_H7pu4lc(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -17874,7 +17874,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W64_D2_Hdu5o2a queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7pu4lc queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -17884,7 +17884,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W64_D2_Hdu5o2a queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7pu4lc queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -17894,7 +17894,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W64_D2_Hdu5o2a queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7pu4lc queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -17904,7 +17904,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W64_D2_Hdu5o2a queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H7pu4lc queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -18147,1794 +18147,1794 @@ module snax_simbacore__DataPathExtensionHost_7(	// src/main/scala/snax/DataPathE
   assign io_data_out_bits = io_data_in_bits;	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:37:7
 endmodule
 
-module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:71:7
-  input          clock,	// src/main/scala/snax/streamer/Streamer.scala:71:7
-                 reset,	// src/main/scala/snax/streamer/Streamer.scala:71:7
-  output         io_csr_req_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_csr_req_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [31:0]  io_csr_req_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_csr_req_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [31:0]  io_csr_req_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [3:0]   io_csr_req_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_csr_rsp_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_csr_rsp_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [31:0]  io_csr_rsp_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_13_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_13_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [255:0] io_data_streamer2accelerator_data_13_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_12_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_12_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [383:0] io_data_streamer2accelerator_data_12_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_11_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_11_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_streamer2accelerator_data_11_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_10_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_10_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_streamer2accelerator_data_10_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_9_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_9_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_streamer2accelerator_data_9_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_8_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_8_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_streamer2accelerator_data_8_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_7_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_7_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [511:0] io_data_streamer2accelerator_data_7_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_6_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_6_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_streamer2accelerator_data_6_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_5_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_5_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_streamer2accelerator_data_5_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_4_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_4_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_streamer2accelerator_data_4_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_3_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_3_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_streamer2accelerator_data_3_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_2_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_2_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [127:0] io_data_streamer2accelerator_data_2_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_1_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_1_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [383:0] io_data_streamer2accelerator_data_1_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_streamer2accelerator_data_0_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_streamer2accelerator_data_0_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [255:0] io_data_streamer2accelerator_data_0_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_accelerator2streamer_data_3_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_accelerator2streamer_data_3_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [255:0] io_data_accelerator2streamer_data_3_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_accelerator2streamer_data_2_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_accelerator2streamer_data_2_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_accelerator2streamer_data_2_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_accelerator2streamer_data_1_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_accelerator2streamer_data_1_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_accelerator2streamer_data_1_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_accelerator2streamer_data_0_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_accelerator2streamer_data_0_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_accelerator2streamer_data_0_bits,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_0_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_0_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_0_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_0_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_0_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_0_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_1_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_1_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_1_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_1_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_1_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_1_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_2_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_2_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_2_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_2_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_2_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_2_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_3_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_3_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_3_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_3_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_3_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_3_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_4_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_4_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_4_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_4_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_4_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_4_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_5_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_5_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_5_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_5_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_5_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_5_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_6_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_6_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_6_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_6_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_6_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_6_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_7_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_7_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_7_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_7_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_7_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_7_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_8_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_8_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_8_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_8_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_8_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_8_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_9_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_9_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_9_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_9_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_9_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_9_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_10_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_10_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_10_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_10_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_10_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_10_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_11_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_11_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_11_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_11_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_11_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_11_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_12_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_12_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_12_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_12_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_12_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_12_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_13_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_13_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_13_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_13_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_13_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_13_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_14_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_14_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_14_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_14_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_14_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_14_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_15_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_15_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_15_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_15_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_15_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_15_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_16_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_16_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_16_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_16_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_16_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_16_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_17_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_17_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_17_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_17_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_17_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_17_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_18_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_18_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_18_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_18_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_18_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_18_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_19_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_19_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_19_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_19_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_19_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_19_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_20_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_20_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_20_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_20_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_20_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_20_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_21_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_21_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_21_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_21_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_21_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_21_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_22_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_22_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_22_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_22_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_22_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_22_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_23_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_23_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_23_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_23_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_23_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_23_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_24_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_24_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_24_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_24_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_24_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_24_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_25_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_25_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_25_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_25_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_25_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_25_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_26_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_26_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_26_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_26_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_26_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_26_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_27_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_27_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_27_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_27_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_27_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_27_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_28_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_28_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_28_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_28_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_28_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_28_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_29_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_29_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_29_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_29_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_29_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_29_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_30_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_30_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_30_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_30_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_30_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_30_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_31_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_31_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_31_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_31_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_31_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_31_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_32_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_32_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_32_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_32_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_32_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_32_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_33_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_33_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_33_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_33_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_33_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_33_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_34_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_34_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_34_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_34_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_34_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_34_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_35_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_35_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_35_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_35_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_35_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_35_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_36_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_36_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_36_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_36_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_36_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_36_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_37_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_37_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_37_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_37_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_37_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_37_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_38_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_38_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_38_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_38_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_38_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_38_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_39_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_39_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_39_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_39_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_39_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_39_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_40_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_40_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_40_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_40_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_40_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_40_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_41_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_41_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_41_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_41_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_41_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_41_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_42_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_42_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_42_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_42_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_42_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_42_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_43_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_43_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_43_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_43_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_43_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_43_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_req_44_ready,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_44_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [19:0]  io_data_tcdm_req_44_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output         io_data_tcdm_req_44_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [63:0]  io_data_tcdm_req_44_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  output [7:0]   io_data_tcdm_req_44_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_0_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_0_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_1_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_1_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_2_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_2_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_3_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_3_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_4_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_4_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_5_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_5_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_6_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_6_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_7_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_7_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_8_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_8_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_9_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_9_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_10_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_10_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_11_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_11_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_12_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_12_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_13_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_13_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_14_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_14_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_15_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_15_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_16_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_16_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_17_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_17_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_18_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_18_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_19_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_19_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_20_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_20_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_21_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_21_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_22_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_22_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_23_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_23_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_24_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_24_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_25_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_25_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_26_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_26_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_27_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_27_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_28_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_28_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_29_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_29_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_30_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_30_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_31_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_31_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_32_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_32_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_33_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_33_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_34_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_34_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_35_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_35_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_36_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_36_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_37_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_37_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_38_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_38_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_39_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_39_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_40_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_40_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_41_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_41_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_42_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_42_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_43_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_43_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input          io_data_tcdm_rsp_44_valid,	// src/main/scala/snax/streamer/Streamer.scala:75:14
-  input  [63:0]  io_data_tcdm_rsp_44_bits_data	// src/main/scala/snax/streamer/Streamer.scala:75:14
+module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:61:7
+  input          clock,	// src/main/scala/snax/streamer/Streamer.scala:61:7
+                 reset,	// src/main/scala/snax/streamer/Streamer.scala:61:7
+  output         io_csr_req_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_csr_req_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [31:0]  io_csr_req_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_csr_req_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [31:0]  io_csr_req_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [3:0]   io_csr_req_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_csr_rsp_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_csr_rsp_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [31:0]  io_csr_rsp_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_13_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_13_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [255:0] io_data_streamer2accelerator_data_13_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_12_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_12_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [383:0] io_data_streamer2accelerator_data_12_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_11_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_11_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_streamer2accelerator_data_11_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_10_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_10_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_streamer2accelerator_data_10_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_9_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_9_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_streamer2accelerator_data_9_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_8_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_8_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_streamer2accelerator_data_8_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_7_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_7_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [511:0] io_data_streamer2accelerator_data_7_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_6_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_6_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_streamer2accelerator_data_6_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_5_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_5_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_streamer2accelerator_data_5_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_4_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_4_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_streamer2accelerator_data_4_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_3_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_3_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_streamer2accelerator_data_3_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_2_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_2_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [127:0] io_data_streamer2accelerator_data_2_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_1_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_1_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [383:0] io_data_streamer2accelerator_data_1_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_streamer2accelerator_data_0_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_streamer2accelerator_data_0_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [255:0] io_data_streamer2accelerator_data_0_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_accelerator2streamer_data_3_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_accelerator2streamer_data_3_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [255:0] io_data_accelerator2streamer_data_3_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_accelerator2streamer_data_2_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_accelerator2streamer_data_2_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_accelerator2streamer_data_2_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_accelerator2streamer_data_1_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_accelerator2streamer_data_1_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_accelerator2streamer_data_1_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_accelerator2streamer_data_0_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_accelerator2streamer_data_0_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_accelerator2streamer_data_0_bits,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_0_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_0_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_0_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_0_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_0_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_0_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_1_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_1_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_1_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_1_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_1_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_1_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_2_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_2_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_2_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_2_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_2_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_2_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_3_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_3_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_3_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_3_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_3_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_3_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_4_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_4_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_4_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_4_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_4_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_4_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_5_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_5_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_5_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_5_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_5_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_5_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_6_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_6_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_6_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_6_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_6_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_6_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_7_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_7_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_7_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_7_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_7_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_7_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_8_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_8_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_8_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_8_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_8_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_8_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_9_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_9_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_9_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_9_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_9_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_9_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_10_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_10_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_10_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_10_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_10_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_10_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_11_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_11_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_11_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_11_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_11_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_11_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_12_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_12_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_12_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_12_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_12_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_12_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_13_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_13_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_13_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_13_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_13_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_13_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_14_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_14_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_14_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_14_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_14_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_14_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_15_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_15_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_15_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_15_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_15_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_15_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_16_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_16_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_16_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_16_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_16_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_16_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_17_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_17_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_17_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_17_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_17_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_17_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_18_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_18_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_18_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_18_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_18_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_18_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_19_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_19_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_19_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_19_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_19_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_19_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_20_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_20_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_20_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_20_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_20_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_20_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_21_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_21_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_21_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_21_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_21_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_21_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_22_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_22_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_22_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_22_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_22_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_22_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_23_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_23_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_23_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_23_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_23_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_23_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_24_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_24_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_24_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_24_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_24_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_24_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_25_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_25_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_25_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_25_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_25_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_25_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_26_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_26_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_26_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_26_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_26_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_26_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_27_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_27_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_27_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_27_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_27_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_27_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_28_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_28_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_28_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_28_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_28_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_28_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_29_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_29_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_29_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_29_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_29_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_29_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_30_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_30_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_30_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_30_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_30_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_30_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_31_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_31_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_31_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_31_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_31_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_31_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_32_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_32_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_32_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_32_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_32_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_32_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_33_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_33_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_33_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_33_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_33_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_33_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_34_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_34_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_34_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_34_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_34_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_34_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_35_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_35_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_35_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_35_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_35_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_35_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_36_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_36_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_36_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_36_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_36_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_36_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_37_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_37_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_37_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_37_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_37_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_37_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_38_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_38_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_38_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_38_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_38_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_38_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_39_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_39_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_39_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_39_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_39_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_39_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_40_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_40_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_40_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_40_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_40_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_40_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_41_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_41_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_41_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_41_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_41_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_41_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_42_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_42_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_42_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_42_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_42_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_42_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_43_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_43_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_43_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_43_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_43_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_43_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_req_44_ready,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_44_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [19:0]  io_data_tcdm_req_44_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output         io_data_tcdm_req_44_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [63:0]  io_data_tcdm_req_44_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  output [7:0]   io_data_tcdm_req_44_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_0_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_0_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_1_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_1_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_2_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_2_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_3_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_3_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_4_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_4_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_5_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_5_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_6_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_6_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_7_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_7_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_8_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_8_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_9_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_9_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_10_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_10_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_11_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_11_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_12_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_12_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_13_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_13_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_14_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_14_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_15_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_15_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_16_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_16_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_17_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_17_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_18_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_18_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_19_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_19_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_20_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_20_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_21_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_21_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_22_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_22_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_23_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_23_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_24_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_24_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_25_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_25_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_26_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_26_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_27_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_27_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_28_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_28_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_29_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_29_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_30_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_30_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_31_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_31_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_32_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_32_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_33_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_33_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_34_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_34_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_35_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_35_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_36_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_36_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_37_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_37_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_38_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_38_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_39_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_39_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_40_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_40_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_41_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_41_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_42_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_42_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_43_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_43_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input          io_data_tcdm_rsp_44_valid,	// src/main/scala/snax/streamer/Streamer.scala:65:14
+  input  [63:0]  io_data_tcdm_rsp_44_bits_data	// src/main/scala/snax/streamer/Streamer.scala:65:14
 );
 
-  reg          cstate;	// src/main/scala/snax/streamer/Streamer.scala:211:38
-  wire         _writerDatapathExtention_3_io_data_out_valid;	// src/main/scala/snax/streamer/Streamer.scala:174:11
-  wire [255:0] _writerDatapathExtention_3_io_data_out_bits;	// src/main/scala/snax/streamer/Streamer.scala:174:11
-  wire         _writerDatapathExtention_2_io_data_out_valid;	// src/main/scala/snax/streamer/Streamer.scala:174:11
-  wire [63:0]  _writerDatapathExtention_2_io_data_out_bits;	// src/main/scala/snax/streamer/Streamer.scala:174:11
-  wire         _writerDatapathExtention_1_io_data_out_valid;	// src/main/scala/snax/streamer/Streamer.scala:174:11
-  wire [63:0]  _writerDatapathExtention_1_io_data_out_bits;	// src/main/scala/snax/streamer/Streamer.scala:174:11
-  wire         _writerDatapathExtention_0_io_data_out_valid;	// src/main/scala/snax/streamer/Streamer.scala:174:11
-  wire [63:0]  _writerDatapathExtention_0_io_data_out_bits;	// src/main/scala/snax/streamer/Streamer.scala:174:11
-  wire         _readerDatapathExtention_13_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_12_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_11_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_10_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_9_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_8_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_7_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_6_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_5_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_4_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_3_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_2_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_1_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _readerDatapathExtention_0_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:161:11
-  wire         _writer_3_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:145:11
-  wire         _writer_3_io_data_ready;	// src/main/scala/snax/streamer/Streamer.scala:145:11
-  wire         _writer_2_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:145:11
-  wire         _writer_2_io_data_ready;	// src/main/scala/snax/streamer/Streamer.scala:145:11
-  wire         _writer_1_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:145:11
-  wire         _writer_1_io_data_ready;	// src/main/scala/snax/streamer/Streamer.scala:145:11
-  wire         _writer_0_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:145:11
-  wire         _writer_0_io_data_ready;	// src/main/scala/snax/streamer/Streamer.scala:145:11
-  wire         _reader_13_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_13_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [255:0] _reader_13_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_12_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_12_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [383:0] _reader_12_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_11_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_11_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [63:0]  _reader_11_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_10_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_10_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [63:0]  _reader_10_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_9_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_9_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [63:0]  _reader_9_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_8_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_8_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [63:0]  _reader_8_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_7_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_7_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [511:0] _reader_7_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_6_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_6_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [63:0]  _reader_6_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_5_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_5_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [63:0]  _reader_5_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_4_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_4_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [63:0]  _reader_4_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_3_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_3_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [63:0]  _reader_3_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_2_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_2_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [127:0] _reader_2_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_1_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_1_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [383:0] _reader_1_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_0_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _reader_0_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire [255:0] _reader_0_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:139:11
-  wire         _csrManager_io_readWriteRegIO_valid;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_0;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_1;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_2;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_3;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_4;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_5;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_6;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_7;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_8;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_9;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_10;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_11;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_12;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_13;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_14;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_15;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_16;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_17;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_18;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_19;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_20;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_21;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_22;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_23;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_24;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_25;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_26;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_27;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_28;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_29;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_30;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_31;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_32;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_33;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_34;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_35;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_36;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_37;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_39;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_40;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_41;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_42;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_43;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_44;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_45;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_46;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_47;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_48;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_49;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_51;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_52;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_53;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_54;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_55;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_56;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_57;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_58;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_59;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_60;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_61;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_63;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_64;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_65;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_66;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_67;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_68;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_69;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_70;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_71;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_72;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_73;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_75;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_76;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_77;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_78;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_79;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_80;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_81;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_82;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_83;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_84;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_85;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_86;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_87;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_88;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_89;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_90;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_91;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_92;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_93;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_94;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_95;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_96;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_97;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_99;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_100;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_101;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_102;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_103;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_104;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_105;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_106;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_107;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_108;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_109;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_111;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_112;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_113;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_114;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_115;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_116;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_117;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_118;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_119;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_120;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_121;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_123;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_124;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_125;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_126;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_127;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_128;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_129;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_130;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_131;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_132;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_133;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_135;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_136;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_137;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_138;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_139;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_140;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_141;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_142;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_143;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_144;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_145;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_146;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_147;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_148;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_149;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_150;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_151;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_152;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_153;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_154;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_155;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_156;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_157;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_158;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_159;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_160;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_161;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_162;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_163;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_164;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_165;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_166;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_167;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_168;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_169;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_171;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_172;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_173;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_174;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_175;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_176;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_177;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_178;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_179;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_180;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_181;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_183;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_184;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_185;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_186;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_187;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_188;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_189;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_190;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_191;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_192;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_193;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_195;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_196;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_197;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_198;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_199;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_200;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_201;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_202;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_203;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_204;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_205;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_206;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_207;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_208;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_209;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_210;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_211;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_212;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_213;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_214;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_215;	// src/main/scala/snax/streamer/Streamer.scala:120:26
-  wire         streamer_config_fire = ~cstate & _csrManager_io_readWriteRegIO_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :211:38, :241:34
+  reg          cstate;	// src/main/scala/snax/streamer/Streamer.scala:197:38
+  wire         _writerDatapathExtention_3_io_data_out_valid;	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  wire [255:0] _writerDatapathExtention_3_io_data_out_bits;	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  wire         _writerDatapathExtention_2_io_data_out_valid;	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  wire [63:0]  _writerDatapathExtention_2_io_data_out_bits;	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  wire         _writerDatapathExtention_1_io_data_out_valid;	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  wire [63:0]  _writerDatapathExtention_1_io_data_out_bits;	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  wire         _writerDatapathExtention_0_io_data_out_valid;	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  wire [63:0]  _writerDatapathExtention_0_io_data_out_bits;	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  wire         _readerDatapathExtention_13_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_12_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_11_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_10_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_9_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_8_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_7_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_6_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_5_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_4_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_3_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_2_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_1_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _readerDatapathExtention_0_io_data_in_ready;	// src/main/scala/snax/streamer/Streamer.scala:147:11
+  wire         _writer_3_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:131:11
+  wire         _writer_3_io_data_ready;	// src/main/scala/snax/streamer/Streamer.scala:131:11
+  wire         _writer_2_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:131:11
+  wire         _writer_2_io_data_ready;	// src/main/scala/snax/streamer/Streamer.scala:131:11
+  wire         _writer_1_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:131:11
+  wire         _writer_1_io_data_ready;	// src/main/scala/snax/streamer/Streamer.scala:131:11
+  wire         _writer_0_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:131:11
+  wire         _writer_0_io_data_ready;	// src/main/scala/snax/streamer/Streamer.scala:131:11
+  wire         _reader_13_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_13_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [255:0] _reader_13_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_12_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_12_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [383:0] _reader_12_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_11_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_11_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [63:0]  _reader_11_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_10_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_10_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [63:0]  _reader_10_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_9_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_9_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [63:0]  _reader_9_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_8_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_8_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [63:0]  _reader_8_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_7_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_7_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [511:0] _reader_7_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_6_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_6_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [63:0]  _reader_6_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_5_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_5_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [63:0]  _reader_5_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_4_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_4_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [63:0]  _reader_4_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_3_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_3_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [63:0]  _reader_3_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_2_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_2_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [127:0] _reader_2_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_1_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_1_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [383:0] _reader_1_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_0_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _reader_0_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire [255:0] _reader_0_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:125:11
+  wire         _csrManager_io_readWriteRegIO_valid;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_0;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_1;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_2;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_3;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_4;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_5;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_6;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_7;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_8;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_9;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_10;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_11;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_12;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_13;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_14;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_15;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_16;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_17;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_18;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_19;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_20;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_21;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_22;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_23;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_24;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_25;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_26;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_27;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_28;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_29;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_30;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_31;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_32;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_33;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_34;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_35;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_36;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_37;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_39;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_40;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_41;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_42;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_43;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_44;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_45;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_46;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_47;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_48;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_49;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_51;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_52;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_53;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_54;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_55;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_56;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_57;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_58;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_59;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_60;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_61;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_63;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_64;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_65;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_66;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_67;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_68;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_69;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_70;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_71;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_72;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_73;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_75;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_76;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_77;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_78;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_79;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_80;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_81;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_82;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_83;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_84;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_85;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_86;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_87;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_88;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_89;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_90;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_91;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_92;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_93;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_94;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_95;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_96;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_97;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_99;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_100;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_101;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_102;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_103;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_104;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_105;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_106;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_107;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_108;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_109;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_111;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_112;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_113;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_114;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_115;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_116;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_117;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_118;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_119;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_120;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_121;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_123;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_124;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_125;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_126;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_127;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_128;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_129;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_130;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_131;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_132;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_133;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_135;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_136;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_137;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_138;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_139;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_140;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_141;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_142;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_143;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_144;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_145;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_146;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_147;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_148;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_149;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_150;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_151;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_152;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_153;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_154;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_155;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_156;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_157;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_158;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_159;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_160;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_161;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_162;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_163;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_164;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_165;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_166;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_167;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_168;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_169;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_171;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_172;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_173;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_174;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_175;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_176;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_177;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_178;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_179;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_180;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_181;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_183;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_184;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_185;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_186;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_187;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_188;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_189;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_190;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_191;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_192;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_193;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_195;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_196;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_197;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_198;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_199;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_200;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_201;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_202;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_203;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_204;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_205;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_206;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_207;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_208;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_209;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_210;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_211;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_212;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_213;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_214;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_215;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire         streamer_config_fire = ~cstate & _csrManager_io_readWriteRegIO_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :197:38, :227:34
   wire         streamer_finish =
     ~(_reader_0_io_busy | _reader_1_io_busy | _reader_2_io_busy | _reader_3_io_busy
       | _reader_4_io_busy | _reader_5_io_busy | _reader_6_io_busy | _reader_7_io_busy
       | _reader_8_io_busy | _reader_9_io_busy | _reader_10_io_busy | _reader_11_io_busy
       | _reader_12_io_busy | _reader_13_io_busy | _writer_0_io_busy | _writer_1_io_busy
-      | _writer_2_io_busy | _writer_3_io_busy);	// src/main/scala/snax/streamer/Streamer.scala:139:11, :145:11, :205:34, :244:22, :247:21
-  reg          streamerIdle2Busy_REG;	// src/main/scala/snax/streamer/Streamer.scala:322:49
-  reg  [31:0]  performance_counter;	// src/main/scala/snax/streamer/Streamer.scala:324:36
-  reg  [31:0]  csrCfgReg_0;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_1;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_2;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_3;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_4;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_5;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_6;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_7;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_8;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_9;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_10;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_11;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_12;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_13;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_14;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_15;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_16;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_17;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_18;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_19;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_20;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_21;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_22;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_23;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_24;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_25;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_26;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_27;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_28;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_29;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_30;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_31;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_32;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_33;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_34;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_35;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_36;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_37;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_39;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_40;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_41;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_42;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_43;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_44;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_45;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_46;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_47;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_48;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_49;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_51;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_52;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_53;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_54;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_55;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_56;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_57;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_58;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_59;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_60;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_61;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_63;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_64;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_65;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_66;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_67;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_68;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_69;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_70;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_71;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_72;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_73;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_75;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_76;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_77;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_78;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_79;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_80;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_81;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_82;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_83;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_84;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_85;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_86;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_87;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_88;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_89;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_90;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_91;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_92;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_93;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_94;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_95;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_96;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_97;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_99;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_100;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_101;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_102;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_103;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_104;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_105;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_106;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_107;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_108;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_109;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_111;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_112;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_113;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_114;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_115;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_116;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_117;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_118;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_119;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_120;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_121;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_123;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_124;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_125;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_126;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_127;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_128;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_129;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_130;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_131;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_132;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_133;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_135;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_136;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_137;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_138;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_139;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_140;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_141;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_142;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_143;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_144;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_145;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_146;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_147;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_148;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_149;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_150;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_151;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_152;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_153;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_154;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_155;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_156;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_157;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_158;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_159;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_160;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_161;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_162;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_163;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_164;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_165;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_166;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_167;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_168;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_169;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_171;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_172;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_173;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_174;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_175;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_176;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_177;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_178;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_179;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_180;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_181;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_183;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_184;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_185;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_186;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_187;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_188;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_189;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_190;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_191;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_192;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_193;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_195;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_196;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_197;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_198;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_199;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_200;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_201;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_202;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_203;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_204;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_205;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_206;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_207;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_208;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_209;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_210;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_211;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_212;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_213;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_214;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  reg  [31:0]  csrCfgReg_215;	// src/main/scala/snax/streamer/Streamer.scala:336:26
-  always @(posedge clock or posedge reset) begin	// src/main/scala/snax/streamer/Streamer.scala:71:7
-    if (reset) begin	// src/main/scala/snax/streamer/Streamer.scala:71:7
-      cstate <= 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :211:38, :258:25, :261:25
-      performance_counter <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36
-      csrCfgReg_0 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_1 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_2 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_3 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_4 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_5 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_6 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_7 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_8 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_9 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_10 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_11 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_12 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_13 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_14 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_15 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_16 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_17 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_18 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_19 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_20 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_21 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_22 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_23 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_24 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_25 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_26 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_27 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_28 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_29 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_30 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_31 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_32 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_33 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_34 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_35 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_36 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_37 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_39 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_40 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_41 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_42 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_43 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_44 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_45 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_46 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_47 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_48 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_49 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_51 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_52 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_53 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_54 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_55 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_56 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_57 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_58 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_59 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_60 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_61 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_63 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_64 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_65 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_66 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_67 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_68 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_69 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_70 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_71 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_72 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_73 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_75 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_76 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_77 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_78 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_79 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_80 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_81 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_82 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_83 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_84 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_85 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_86 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_87 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_88 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_89 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_90 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_91 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_92 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_93 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_94 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_95 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_96 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_97 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_99 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_100 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_101 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_102 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_103 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_104 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_105 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_106 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_107 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_108 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_109 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_111 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_112 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_113 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_114 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_115 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_116 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_117 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_118 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_119 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_120 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_121 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_123 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_124 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_125 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_126 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_127 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_128 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_129 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_130 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_131 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_132 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_133 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_135 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_136 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_137 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_138 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_139 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_140 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_141 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_142 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_143 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_144 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_145 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_146 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_147 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_148 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_149 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_150 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_151 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_152 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_153 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_154 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_155 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_156 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_157 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_158 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_159 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_160 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_161 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_162 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_163 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_164 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_165 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_166 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_167 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_168 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_169 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_171 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_172 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_173 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_174 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_175 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_176 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_177 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_178 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_179 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_180 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_181 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_183 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_184 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_185 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_186 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_187 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_188 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_189 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_190 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_191 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_192 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_193 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_195 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_196 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_197 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_198 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_199 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_200 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_201 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_202 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_203 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_204 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_205 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_206 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_207 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_208 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_209 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_210 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_211 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_212 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_213 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_214 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-      csrCfgReg_215 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
+      | _writer_2_io_busy | _writer_3_io_busy);	// src/main/scala/snax/streamer/Streamer.scala:125:11, :131:11, :191:34, :230:22, :231:67
+  reg          streamerIdle2Busy_REG;	// src/main/scala/snax/streamer/Streamer.scala:295:49
+  reg  [31:0]  performance_counter;	// src/main/scala/snax/streamer/Streamer.scala:297:36
+  reg  [31:0]  csrCfgReg_0;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_1;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_2;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_3;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_4;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_5;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_6;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_7;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_8;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_9;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_10;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_11;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_12;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_13;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_14;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_15;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_16;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_17;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_18;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_19;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_20;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_21;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_22;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_23;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_24;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_25;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_26;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_27;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_28;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_29;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_30;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_31;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_32;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_33;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_34;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_35;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_36;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_37;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_39;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_40;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_41;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_42;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_43;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_44;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_45;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_46;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_47;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_48;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_49;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_51;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_52;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_53;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_54;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_55;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_56;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_57;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_58;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_59;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_60;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_61;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_63;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_64;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_65;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_66;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_67;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_68;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_69;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_70;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_71;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_72;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_73;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_75;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_76;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_77;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_78;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_79;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_80;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_81;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_82;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_83;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_84;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_85;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_86;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_87;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_88;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_89;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_90;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_91;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_92;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_93;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_94;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_95;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_96;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_97;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_99;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_100;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_101;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_102;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_103;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_104;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_105;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_106;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_107;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_108;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_109;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_111;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_112;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_113;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_114;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_115;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_116;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_117;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_118;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_119;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_120;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_121;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_123;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_124;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_125;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_126;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_127;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_128;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_129;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_130;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_131;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_132;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_133;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_135;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_136;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_137;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_138;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_139;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_140;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_141;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_142;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_143;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_144;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_145;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_146;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_147;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_148;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_149;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_150;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_151;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_152;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_153;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_154;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_155;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_156;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_157;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_158;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_159;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_160;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_161;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_162;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_163;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_164;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_165;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_166;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_167;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_168;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_169;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_171;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_172;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_173;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_174;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_175;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_176;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_177;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_178;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_179;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_180;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_181;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_183;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_184;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_185;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_186;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_187;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_188;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_189;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_190;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_191;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_192;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_193;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_195;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_196;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_197;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_198;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_199;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_200;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_201;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_202;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_203;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_204;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_205;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_206;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_207;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_208;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_209;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_210;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_211;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_212;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_213;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_214;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_215;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  always @(posedge clock or posedge reset) begin	// src/main/scala/snax/streamer/Streamer.scala:61:7
+    if (reset) begin	// src/main/scala/snax/streamer/Streamer.scala:61:7
+      cstate <= 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :197:38, :235:65, :236:65
+      performance_counter <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36
+      csrCfgReg_0 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_1 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_2 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_3 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_4 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_5 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_6 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_7 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_8 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_9 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_10 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_11 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_12 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_13 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_14 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_15 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_16 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_17 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_18 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_19 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_20 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_21 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_22 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_23 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_24 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_25 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_26 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_27 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_28 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_29 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_30 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_31 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_32 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_33 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_34 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_35 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_36 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_37 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_39 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_40 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_41 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_42 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_43 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_44 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_45 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_46 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_47 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_48 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_49 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_51 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_52 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_53 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_54 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_55 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_56 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_57 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_58 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_59 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_60 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_61 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_63 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_64 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_65 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_66 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_67 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_68 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_69 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_70 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_71 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_72 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_73 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_75 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_76 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_77 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_78 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_79 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_80 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_81 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_82 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_83 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_84 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_85 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_86 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_87 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_88 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_89 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_90 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_91 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_92 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_93 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_94 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_95 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_96 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_97 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_99 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_100 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_101 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_102 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_103 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_104 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_105 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_106 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_107 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_108 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_109 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_111 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_112 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_113 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_114 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_115 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_116 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_117 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_118 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_119 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_120 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_121 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_123 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_124 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_125 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_126 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_127 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_128 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_129 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_130 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_131 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_132 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_133 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_135 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_136 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_137 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_138 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_139 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_140 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_141 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_142 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_143 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_144 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_145 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_146 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_147 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_148 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_149 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_150 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_151 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_152 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_153 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_154 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_155 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_156 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_157 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_158 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_159 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_160 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_161 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_162 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_163 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_164 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_165 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_166 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_167 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_168 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_169 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_171 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_172 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_173 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_174 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_175 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_176 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_177 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_178 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_179 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_180 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_181 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_183 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_184 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_185 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_186 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_187 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_188 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_189 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_190 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_191 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_192 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_193 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_195 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_196 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_197 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_198 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_199 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_200 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_201 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_202 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_203 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_204 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_205 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_206 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_207 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_208 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_209 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_210 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_211 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_212 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_213 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_214 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_215 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
     end
-    else begin	// src/main/scala/snax/streamer/Streamer.scala:71:7
-      if (cstate)	// src/main/scala/snax/streamer/Streamer.scala:211:38
-        cstate <= cstate & ~streamer_finish;	// src/main/scala/snax/streamer/Streamer.scala:205:34, :211:38, :212:39, :218:18, :221:16, :228:29, :229:16, :231:16
-      else	// src/main/scala/snax/streamer/Streamer.scala:211:38
-        cstate <= streamer_config_fire;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:211:38
-      if (cstate & ~streamerIdle2Busy_REG)	// src/main/scala/snax/streamer/Streamer.scala:211:38, :322:{38,41,49}
-        performance_counter <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36
-      else if (cstate)	// src/main/scala/snax/streamer/Streamer.scala:211:38
-        performance_counter <= performance_counter + 32'h1;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :328:48
+    else begin	// src/main/scala/snax/streamer/Streamer.scala:61:7
+      if (cstate)	// src/main/scala/snax/streamer/Streamer.scala:197:38
+        cstate <= cstate & ~streamer_finish;	// src/main/scala/snax/streamer/Streamer.scala:191:34, :197:38, :198:39, :204:18, :207:16, :214:29, :215:16, :217:16
+      else	// src/main/scala/snax/streamer/Streamer.scala:197:38
+        cstate <= streamer_config_fire;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:197:38
+      if (cstate & ~streamerIdle2Busy_REG)	// src/main/scala/snax/streamer/Streamer.scala:197:38, :295:{38,41,49}
+        performance_counter <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36
+      else if (cstate)	// src/main/scala/snax/streamer/Streamer.scala:197:38
+        performance_counter <= performance_counter + 32'h1;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :301:48
       if (streamer_config_fire) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        csrCfgReg_0 <= _csrManager_io_readWriteRegIO_bits_0;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_1 <= _csrManager_io_readWriteRegIO_bits_1;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_2 <= _csrManager_io_readWriteRegIO_bits_2;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_3 <= _csrManager_io_readWriteRegIO_bits_3;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_4 <= _csrManager_io_readWriteRegIO_bits_4;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_5 <= _csrManager_io_readWriteRegIO_bits_5;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_6 <= _csrManager_io_readWriteRegIO_bits_6;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_7 <= _csrManager_io_readWriteRegIO_bits_7;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_8 <= _csrManager_io_readWriteRegIO_bits_8;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_9 <= _csrManager_io_readWriteRegIO_bits_9;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_10 <= _csrManager_io_readWriteRegIO_bits_10;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_11 <= _csrManager_io_readWriteRegIO_bits_11;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_12 <= _csrManager_io_readWriteRegIO_bits_12;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_13 <= _csrManager_io_readWriteRegIO_bits_13;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_14 <= _csrManager_io_readWriteRegIO_bits_14;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_15 <= _csrManager_io_readWriteRegIO_bits_15;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_16 <= _csrManager_io_readWriteRegIO_bits_16;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_17 <= _csrManager_io_readWriteRegIO_bits_17;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_18 <= _csrManager_io_readWriteRegIO_bits_18;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_19 <= _csrManager_io_readWriteRegIO_bits_19;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_20 <= _csrManager_io_readWriteRegIO_bits_20;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_21 <= _csrManager_io_readWriteRegIO_bits_21;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_22 <= _csrManager_io_readWriteRegIO_bits_22;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_23 <= _csrManager_io_readWriteRegIO_bits_23;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_24 <= _csrManager_io_readWriteRegIO_bits_24;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_25 <= _csrManager_io_readWriteRegIO_bits_25;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_26 <= _csrManager_io_readWriteRegIO_bits_26;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_27 <= _csrManager_io_readWriteRegIO_bits_27;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_28 <= _csrManager_io_readWriteRegIO_bits_28;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_29 <= _csrManager_io_readWriteRegIO_bits_29;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_30 <= _csrManager_io_readWriteRegIO_bits_30;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_31 <= _csrManager_io_readWriteRegIO_bits_31;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_32 <= _csrManager_io_readWriteRegIO_bits_32;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_33 <= _csrManager_io_readWriteRegIO_bits_33;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_34 <= _csrManager_io_readWriteRegIO_bits_34;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_35 <= _csrManager_io_readWriteRegIO_bits_35;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_36 <= _csrManager_io_readWriteRegIO_bits_36;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_37 <= _csrManager_io_readWriteRegIO_bits_37;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_39 <= _csrManager_io_readWriteRegIO_bits_39;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_40 <= _csrManager_io_readWriteRegIO_bits_40;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_41 <= _csrManager_io_readWriteRegIO_bits_41;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_42 <= _csrManager_io_readWriteRegIO_bits_42;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_43 <= _csrManager_io_readWriteRegIO_bits_43;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_44 <= _csrManager_io_readWriteRegIO_bits_44;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_45 <= _csrManager_io_readWriteRegIO_bits_45;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_46 <= _csrManager_io_readWriteRegIO_bits_46;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_47 <= _csrManager_io_readWriteRegIO_bits_47;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_48 <= _csrManager_io_readWriteRegIO_bits_48;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_49 <= _csrManager_io_readWriteRegIO_bits_49;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_51 <= _csrManager_io_readWriteRegIO_bits_51;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_52 <= _csrManager_io_readWriteRegIO_bits_52;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_53 <= _csrManager_io_readWriteRegIO_bits_53;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_54 <= _csrManager_io_readWriteRegIO_bits_54;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_55 <= _csrManager_io_readWriteRegIO_bits_55;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_56 <= _csrManager_io_readWriteRegIO_bits_56;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_57 <= _csrManager_io_readWriteRegIO_bits_57;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_58 <= _csrManager_io_readWriteRegIO_bits_58;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_59 <= _csrManager_io_readWriteRegIO_bits_59;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_60 <= _csrManager_io_readWriteRegIO_bits_60;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_61 <= _csrManager_io_readWriteRegIO_bits_61;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_63 <= _csrManager_io_readWriteRegIO_bits_63;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_64 <= _csrManager_io_readWriteRegIO_bits_64;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_65 <= _csrManager_io_readWriteRegIO_bits_65;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_66 <= _csrManager_io_readWriteRegIO_bits_66;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_67 <= _csrManager_io_readWriteRegIO_bits_67;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_68 <= _csrManager_io_readWriteRegIO_bits_68;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_69 <= _csrManager_io_readWriteRegIO_bits_69;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_70 <= _csrManager_io_readWriteRegIO_bits_70;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_71 <= _csrManager_io_readWriteRegIO_bits_71;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_72 <= _csrManager_io_readWriteRegIO_bits_72;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_73 <= _csrManager_io_readWriteRegIO_bits_73;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_75 <= _csrManager_io_readWriteRegIO_bits_75;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_76 <= _csrManager_io_readWriteRegIO_bits_76;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_77 <= _csrManager_io_readWriteRegIO_bits_77;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_78 <= _csrManager_io_readWriteRegIO_bits_78;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_79 <= _csrManager_io_readWriteRegIO_bits_79;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_80 <= _csrManager_io_readWriteRegIO_bits_80;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_81 <= _csrManager_io_readWriteRegIO_bits_81;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_82 <= _csrManager_io_readWriteRegIO_bits_82;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_83 <= _csrManager_io_readWriteRegIO_bits_83;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_84 <= _csrManager_io_readWriteRegIO_bits_84;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_85 <= _csrManager_io_readWriteRegIO_bits_85;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_86 <= _csrManager_io_readWriteRegIO_bits_86;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_87 <= _csrManager_io_readWriteRegIO_bits_87;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_88 <= _csrManager_io_readWriteRegIO_bits_88;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_89 <= _csrManager_io_readWriteRegIO_bits_89;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_90 <= _csrManager_io_readWriteRegIO_bits_90;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_91 <= _csrManager_io_readWriteRegIO_bits_91;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_92 <= _csrManager_io_readWriteRegIO_bits_92;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_93 <= _csrManager_io_readWriteRegIO_bits_93;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_94 <= _csrManager_io_readWriteRegIO_bits_94;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_95 <= _csrManager_io_readWriteRegIO_bits_95;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_96 <= _csrManager_io_readWriteRegIO_bits_96;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_97 <= _csrManager_io_readWriteRegIO_bits_97;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_99 <= _csrManager_io_readWriteRegIO_bits_99;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_100 <= _csrManager_io_readWriteRegIO_bits_100;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_101 <= _csrManager_io_readWriteRegIO_bits_101;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_102 <= _csrManager_io_readWriteRegIO_bits_102;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_103 <= _csrManager_io_readWriteRegIO_bits_103;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_104 <= _csrManager_io_readWriteRegIO_bits_104;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_105 <= _csrManager_io_readWriteRegIO_bits_105;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_106 <= _csrManager_io_readWriteRegIO_bits_106;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_107 <= _csrManager_io_readWriteRegIO_bits_107;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_108 <= _csrManager_io_readWriteRegIO_bits_108;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_109 <= _csrManager_io_readWriteRegIO_bits_109;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_111 <= _csrManager_io_readWriteRegIO_bits_111;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_112 <= _csrManager_io_readWriteRegIO_bits_112;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_113 <= _csrManager_io_readWriteRegIO_bits_113;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_114 <= _csrManager_io_readWriteRegIO_bits_114;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_115 <= _csrManager_io_readWriteRegIO_bits_115;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_116 <= _csrManager_io_readWriteRegIO_bits_116;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_117 <= _csrManager_io_readWriteRegIO_bits_117;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_118 <= _csrManager_io_readWriteRegIO_bits_118;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_119 <= _csrManager_io_readWriteRegIO_bits_119;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_120 <= _csrManager_io_readWriteRegIO_bits_120;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_121 <= _csrManager_io_readWriteRegIO_bits_121;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_123 <= _csrManager_io_readWriteRegIO_bits_123;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_124 <= _csrManager_io_readWriteRegIO_bits_124;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_125 <= _csrManager_io_readWriteRegIO_bits_125;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_126 <= _csrManager_io_readWriteRegIO_bits_126;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_127 <= _csrManager_io_readWriteRegIO_bits_127;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_128 <= _csrManager_io_readWriteRegIO_bits_128;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_129 <= _csrManager_io_readWriteRegIO_bits_129;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_130 <= _csrManager_io_readWriteRegIO_bits_130;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_131 <= _csrManager_io_readWriteRegIO_bits_131;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_132 <= _csrManager_io_readWriteRegIO_bits_132;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_133 <= _csrManager_io_readWriteRegIO_bits_133;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_135 <= _csrManager_io_readWriteRegIO_bits_135;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_136 <= _csrManager_io_readWriteRegIO_bits_136;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_137 <= _csrManager_io_readWriteRegIO_bits_137;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_138 <= _csrManager_io_readWriteRegIO_bits_138;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_139 <= _csrManager_io_readWriteRegIO_bits_139;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_140 <= _csrManager_io_readWriteRegIO_bits_140;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_141 <= _csrManager_io_readWriteRegIO_bits_141;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_142 <= _csrManager_io_readWriteRegIO_bits_142;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_143 <= _csrManager_io_readWriteRegIO_bits_143;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_144 <= _csrManager_io_readWriteRegIO_bits_144;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_145 <= _csrManager_io_readWriteRegIO_bits_145;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_146 <= _csrManager_io_readWriteRegIO_bits_146;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_147 <= _csrManager_io_readWriteRegIO_bits_147;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_148 <= _csrManager_io_readWriteRegIO_bits_148;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_149 <= _csrManager_io_readWriteRegIO_bits_149;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_150 <= _csrManager_io_readWriteRegIO_bits_150;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_151 <= _csrManager_io_readWriteRegIO_bits_151;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_152 <= _csrManager_io_readWriteRegIO_bits_152;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_153 <= _csrManager_io_readWriteRegIO_bits_153;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_154 <= _csrManager_io_readWriteRegIO_bits_154;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_155 <= _csrManager_io_readWriteRegIO_bits_155;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_156 <= _csrManager_io_readWriteRegIO_bits_156;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_157 <= _csrManager_io_readWriteRegIO_bits_157;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_158 <= _csrManager_io_readWriteRegIO_bits_158;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_159 <= _csrManager_io_readWriteRegIO_bits_159;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_160 <= _csrManager_io_readWriteRegIO_bits_160;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_161 <= _csrManager_io_readWriteRegIO_bits_161;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_162 <= _csrManager_io_readWriteRegIO_bits_162;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_163 <= _csrManager_io_readWriteRegIO_bits_163;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_164 <= _csrManager_io_readWriteRegIO_bits_164;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_165 <= _csrManager_io_readWriteRegIO_bits_165;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_166 <= _csrManager_io_readWriteRegIO_bits_166;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_167 <= _csrManager_io_readWriteRegIO_bits_167;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_168 <= _csrManager_io_readWriteRegIO_bits_168;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_169 <= _csrManager_io_readWriteRegIO_bits_169;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_171 <= _csrManager_io_readWriteRegIO_bits_171;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_172 <= _csrManager_io_readWriteRegIO_bits_172;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_173 <= _csrManager_io_readWriteRegIO_bits_173;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_174 <= _csrManager_io_readWriteRegIO_bits_174;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_175 <= _csrManager_io_readWriteRegIO_bits_175;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_176 <= _csrManager_io_readWriteRegIO_bits_176;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_177 <= _csrManager_io_readWriteRegIO_bits_177;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_178 <= _csrManager_io_readWriteRegIO_bits_178;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_179 <= _csrManager_io_readWriteRegIO_bits_179;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_180 <= _csrManager_io_readWriteRegIO_bits_180;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_181 <= _csrManager_io_readWriteRegIO_bits_181;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_183 <= _csrManager_io_readWriteRegIO_bits_183;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_184 <= _csrManager_io_readWriteRegIO_bits_184;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_185 <= _csrManager_io_readWriteRegIO_bits_185;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_186 <= _csrManager_io_readWriteRegIO_bits_186;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_187 <= _csrManager_io_readWriteRegIO_bits_187;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_188 <= _csrManager_io_readWriteRegIO_bits_188;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_189 <= _csrManager_io_readWriteRegIO_bits_189;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_190 <= _csrManager_io_readWriteRegIO_bits_190;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_191 <= _csrManager_io_readWriteRegIO_bits_191;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_192 <= _csrManager_io_readWriteRegIO_bits_192;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_193 <= _csrManager_io_readWriteRegIO_bits_193;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_195 <= _csrManager_io_readWriteRegIO_bits_195;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_196 <= _csrManager_io_readWriteRegIO_bits_196;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_197 <= _csrManager_io_readWriteRegIO_bits_197;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_198 <= _csrManager_io_readWriteRegIO_bits_198;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_199 <= _csrManager_io_readWriteRegIO_bits_199;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_200 <= _csrManager_io_readWriteRegIO_bits_200;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_201 <= _csrManager_io_readWriteRegIO_bits_201;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_202 <= _csrManager_io_readWriteRegIO_bits_202;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_203 <= _csrManager_io_readWriteRegIO_bits_203;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_204 <= _csrManager_io_readWriteRegIO_bits_204;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_205 <= _csrManager_io_readWriteRegIO_bits_205;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_206 <= _csrManager_io_readWriteRegIO_bits_206;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_207 <= _csrManager_io_readWriteRegIO_bits_207;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_208 <= _csrManager_io_readWriteRegIO_bits_208;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_209 <= _csrManager_io_readWriteRegIO_bits_209;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_210 <= _csrManager_io_readWriteRegIO_bits_210;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_211 <= _csrManager_io_readWriteRegIO_bits_211;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_212 <= _csrManager_io_readWriteRegIO_bits_212;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_213 <= _csrManager_io_readWriteRegIO_bits_213;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_214 <= _csrManager_io_readWriteRegIO_bits_214;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
-        csrCfgReg_215 <= _csrManager_io_readWriteRegIO_bits_215;	// src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26
+        csrCfgReg_0 <= _csrManager_io_readWriteRegIO_bits_0;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_1 <= _csrManager_io_readWriteRegIO_bits_1;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_2 <= _csrManager_io_readWriteRegIO_bits_2;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_3 <= _csrManager_io_readWriteRegIO_bits_3;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_4 <= _csrManager_io_readWriteRegIO_bits_4;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_5 <= _csrManager_io_readWriteRegIO_bits_5;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_6 <= _csrManager_io_readWriteRegIO_bits_6;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_7 <= _csrManager_io_readWriteRegIO_bits_7;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_8 <= _csrManager_io_readWriteRegIO_bits_8;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_9 <= _csrManager_io_readWriteRegIO_bits_9;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_10 <= _csrManager_io_readWriteRegIO_bits_10;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_11 <= _csrManager_io_readWriteRegIO_bits_11;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_12 <= _csrManager_io_readWriteRegIO_bits_12;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_13 <= _csrManager_io_readWriteRegIO_bits_13;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_14 <= _csrManager_io_readWriteRegIO_bits_14;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_15 <= _csrManager_io_readWriteRegIO_bits_15;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_16 <= _csrManager_io_readWriteRegIO_bits_16;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_17 <= _csrManager_io_readWriteRegIO_bits_17;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_18 <= _csrManager_io_readWriteRegIO_bits_18;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_19 <= _csrManager_io_readWriteRegIO_bits_19;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_20 <= _csrManager_io_readWriteRegIO_bits_20;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_21 <= _csrManager_io_readWriteRegIO_bits_21;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_22 <= _csrManager_io_readWriteRegIO_bits_22;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_23 <= _csrManager_io_readWriteRegIO_bits_23;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_24 <= _csrManager_io_readWriteRegIO_bits_24;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_25 <= _csrManager_io_readWriteRegIO_bits_25;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_26 <= _csrManager_io_readWriteRegIO_bits_26;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_27 <= _csrManager_io_readWriteRegIO_bits_27;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_28 <= _csrManager_io_readWriteRegIO_bits_28;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_29 <= _csrManager_io_readWriteRegIO_bits_29;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_30 <= _csrManager_io_readWriteRegIO_bits_30;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_31 <= _csrManager_io_readWriteRegIO_bits_31;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_32 <= _csrManager_io_readWriteRegIO_bits_32;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_33 <= _csrManager_io_readWriteRegIO_bits_33;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_34 <= _csrManager_io_readWriteRegIO_bits_34;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_35 <= _csrManager_io_readWriteRegIO_bits_35;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_36 <= _csrManager_io_readWriteRegIO_bits_36;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_37 <= _csrManager_io_readWriteRegIO_bits_37;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_39 <= _csrManager_io_readWriteRegIO_bits_39;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_40 <= _csrManager_io_readWriteRegIO_bits_40;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_41 <= _csrManager_io_readWriteRegIO_bits_41;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_42 <= _csrManager_io_readWriteRegIO_bits_42;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_43 <= _csrManager_io_readWriteRegIO_bits_43;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_44 <= _csrManager_io_readWriteRegIO_bits_44;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_45 <= _csrManager_io_readWriteRegIO_bits_45;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_46 <= _csrManager_io_readWriteRegIO_bits_46;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_47 <= _csrManager_io_readWriteRegIO_bits_47;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_48 <= _csrManager_io_readWriteRegIO_bits_48;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_49 <= _csrManager_io_readWriteRegIO_bits_49;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_51 <= _csrManager_io_readWriteRegIO_bits_51;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_52 <= _csrManager_io_readWriteRegIO_bits_52;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_53 <= _csrManager_io_readWriteRegIO_bits_53;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_54 <= _csrManager_io_readWriteRegIO_bits_54;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_55 <= _csrManager_io_readWriteRegIO_bits_55;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_56 <= _csrManager_io_readWriteRegIO_bits_56;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_57 <= _csrManager_io_readWriteRegIO_bits_57;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_58 <= _csrManager_io_readWriteRegIO_bits_58;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_59 <= _csrManager_io_readWriteRegIO_bits_59;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_60 <= _csrManager_io_readWriteRegIO_bits_60;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_61 <= _csrManager_io_readWriteRegIO_bits_61;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_63 <= _csrManager_io_readWriteRegIO_bits_63;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_64 <= _csrManager_io_readWriteRegIO_bits_64;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_65 <= _csrManager_io_readWriteRegIO_bits_65;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_66 <= _csrManager_io_readWriteRegIO_bits_66;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_67 <= _csrManager_io_readWriteRegIO_bits_67;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_68 <= _csrManager_io_readWriteRegIO_bits_68;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_69 <= _csrManager_io_readWriteRegIO_bits_69;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_70 <= _csrManager_io_readWriteRegIO_bits_70;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_71 <= _csrManager_io_readWriteRegIO_bits_71;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_72 <= _csrManager_io_readWriteRegIO_bits_72;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_73 <= _csrManager_io_readWriteRegIO_bits_73;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_75 <= _csrManager_io_readWriteRegIO_bits_75;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_76 <= _csrManager_io_readWriteRegIO_bits_76;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_77 <= _csrManager_io_readWriteRegIO_bits_77;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_78 <= _csrManager_io_readWriteRegIO_bits_78;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_79 <= _csrManager_io_readWriteRegIO_bits_79;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_80 <= _csrManager_io_readWriteRegIO_bits_80;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_81 <= _csrManager_io_readWriteRegIO_bits_81;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_82 <= _csrManager_io_readWriteRegIO_bits_82;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_83 <= _csrManager_io_readWriteRegIO_bits_83;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_84 <= _csrManager_io_readWriteRegIO_bits_84;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_85 <= _csrManager_io_readWriteRegIO_bits_85;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_86 <= _csrManager_io_readWriteRegIO_bits_86;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_87 <= _csrManager_io_readWriteRegIO_bits_87;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_88 <= _csrManager_io_readWriteRegIO_bits_88;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_89 <= _csrManager_io_readWriteRegIO_bits_89;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_90 <= _csrManager_io_readWriteRegIO_bits_90;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_91 <= _csrManager_io_readWriteRegIO_bits_91;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_92 <= _csrManager_io_readWriteRegIO_bits_92;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_93 <= _csrManager_io_readWriteRegIO_bits_93;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_94 <= _csrManager_io_readWriteRegIO_bits_94;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_95 <= _csrManager_io_readWriteRegIO_bits_95;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_96 <= _csrManager_io_readWriteRegIO_bits_96;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_97 <= _csrManager_io_readWriteRegIO_bits_97;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_99 <= _csrManager_io_readWriteRegIO_bits_99;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_100 <= _csrManager_io_readWriteRegIO_bits_100;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_101 <= _csrManager_io_readWriteRegIO_bits_101;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_102 <= _csrManager_io_readWriteRegIO_bits_102;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_103 <= _csrManager_io_readWriteRegIO_bits_103;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_104 <= _csrManager_io_readWriteRegIO_bits_104;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_105 <= _csrManager_io_readWriteRegIO_bits_105;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_106 <= _csrManager_io_readWriteRegIO_bits_106;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_107 <= _csrManager_io_readWriteRegIO_bits_107;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_108 <= _csrManager_io_readWriteRegIO_bits_108;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_109 <= _csrManager_io_readWriteRegIO_bits_109;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_111 <= _csrManager_io_readWriteRegIO_bits_111;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_112 <= _csrManager_io_readWriteRegIO_bits_112;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_113 <= _csrManager_io_readWriteRegIO_bits_113;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_114 <= _csrManager_io_readWriteRegIO_bits_114;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_115 <= _csrManager_io_readWriteRegIO_bits_115;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_116 <= _csrManager_io_readWriteRegIO_bits_116;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_117 <= _csrManager_io_readWriteRegIO_bits_117;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_118 <= _csrManager_io_readWriteRegIO_bits_118;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_119 <= _csrManager_io_readWriteRegIO_bits_119;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_120 <= _csrManager_io_readWriteRegIO_bits_120;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_121 <= _csrManager_io_readWriteRegIO_bits_121;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_123 <= _csrManager_io_readWriteRegIO_bits_123;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_124 <= _csrManager_io_readWriteRegIO_bits_124;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_125 <= _csrManager_io_readWriteRegIO_bits_125;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_126 <= _csrManager_io_readWriteRegIO_bits_126;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_127 <= _csrManager_io_readWriteRegIO_bits_127;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_128 <= _csrManager_io_readWriteRegIO_bits_128;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_129 <= _csrManager_io_readWriteRegIO_bits_129;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_130 <= _csrManager_io_readWriteRegIO_bits_130;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_131 <= _csrManager_io_readWriteRegIO_bits_131;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_132 <= _csrManager_io_readWriteRegIO_bits_132;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_133 <= _csrManager_io_readWriteRegIO_bits_133;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_135 <= _csrManager_io_readWriteRegIO_bits_135;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_136 <= _csrManager_io_readWriteRegIO_bits_136;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_137 <= _csrManager_io_readWriteRegIO_bits_137;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_138 <= _csrManager_io_readWriteRegIO_bits_138;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_139 <= _csrManager_io_readWriteRegIO_bits_139;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_140 <= _csrManager_io_readWriteRegIO_bits_140;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_141 <= _csrManager_io_readWriteRegIO_bits_141;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_142 <= _csrManager_io_readWriteRegIO_bits_142;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_143 <= _csrManager_io_readWriteRegIO_bits_143;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_144 <= _csrManager_io_readWriteRegIO_bits_144;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_145 <= _csrManager_io_readWriteRegIO_bits_145;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_146 <= _csrManager_io_readWriteRegIO_bits_146;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_147 <= _csrManager_io_readWriteRegIO_bits_147;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_148 <= _csrManager_io_readWriteRegIO_bits_148;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_149 <= _csrManager_io_readWriteRegIO_bits_149;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_150 <= _csrManager_io_readWriteRegIO_bits_150;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_151 <= _csrManager_io_readWriteRegIO_bits_151;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_152 <= _csrManager_io_readWriteRegIO_bits_152;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_153 <= _csrManager_io_readWriteRegIO_bits_153;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_154 <= _csrManager_io_readWriteRegIO_bits_154;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_155 <= _csrManager_io_readWriteRegIO_bits_155;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_156 <= _csrManager_io_readWriteRegIO_bits_156;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_157 <= _csrManager_io_readWriteRegIO_bits_157;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_158 <= _csrManager_io_readWriteRegIO_bits_158;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_159 <= _csrManager_io_readWriteRegIO_bits_159;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_160 <= _csrManager_io_readWriteRegIO_bits_160;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_161 <= _csrManager_io_readWriteRegIO_bits_161;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_162 <= _csrManager_io_readWriteRegIO_bits_162;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_163 <= _csrManager_io_readWriteRegIO_bits_163;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_164 <= _csrManager_io_readWriteRegIO_bits_164;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_165 <= _csrManager_io_readWriteRegIO_bits_165;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_166 <= _csrManager_io_readWriteRegIO_bits_166;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_167 <= _csrManager_io_readWriteRegIO_bits_167;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_168 <= _csrManager_io_readWriteRegIO_bits_168;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_169 <= _csrManager_io_readWriteRegIO_bits_169;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_171 <= _csrManager_io_readWriteRegIO_bits_171;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_172 <= _csrManager_io_readWriteRegIO_bits_172;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_173 <= _csrManager_io_readWriteRegIO_bits_173;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_174 <= _csrManager_io_readWriteRegIO_bits_174;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_175 <= _csrManager_io_readWriteRegIO_bits_175;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_176 <= _csrManager_io_readWriteRegIO_bits_176;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_177 <= _csrManager_io_readWriteRegIO_bits_177;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_178 <= _csrManager_io_readWriteRegIO_bits_178;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_179 <= _csrManager_io_readWriteRegIO_bits_179;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_180 <= _csrManager_io_readWriteRegIO_bits_180;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_181 <= _csrManager_io_readWriteRegIO_bits_181;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_183 <= _csrManager_io_readWriteRegIO_bits_183;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_184 <= _csrManager_io_readWriteRegIO_bits_184;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_185 <= _csrManager_io_readWriteRegIO_bits_185;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_186 <= _csrManager_io_readWriteRegIO_bits_186;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_187 <= _csrManager_io_readWriteRegIO_bits_187;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_188 <= _csrManager_io_readWriteRegIO_bits_188;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_189 <= _csrManager_io_readWriteRegIO_bits_189;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_190 <= _csrManager_io_readWriteRegIO_bits_190;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_191 <= _csrManager_io_readWriteRegIO_bits_191;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_192 <= _csrManager_io_readWriteRegIO_bits_192;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_193 <= _csrManager_io_readWriteRegIO_bits_193;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_195 <= _csrManager_io_readWriteRegIO_bits_195;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_196 <= _csrManager_io_readWriteRegIO_bits_196;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_197 <= _csrManager_io_readWriteRegIO_bits_197;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_198 <= _csrManager_io_readWriteRegIO_bits_198;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_199 <= _csrManager_io_readWriteRegIO_bits_199;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_200 <= _csrManager_io_readWriteRegIO_bits_200;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_201 <= _csrManager_io_readWriteRegIO_bits_201;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_202 <= _csrManager_io_readWriteRegIO_bits_202;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_203 <= _csrManager_io_readWriteRegIO_bits_203;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_204 <= _csrManager_io_readWriteRegIO_bits_204;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_205 <= _csrManager_io_readWriteRegIO_bits_205;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_206 <= _csrManager_io_readWriteRegIO_bits_206;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_207 <= _csrManager_io_readWriteRegIO_bits_207;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_208 <= _csrManager_io_readWriteRegIO_bits_208;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_209 <= _csrManager_io_readWriteRegIO_bits_209;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_210 <= _csrManager_io_readWriteRegIO_bits_210;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_211 <= _csrManager_io_readWriteRegIO_bits_211;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_212 <= _csrManager_io_readWriteRegIO_bits_212;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_213 <= _csrManager_io_readWriteRegIO_bits_213;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_214 <= _csrManager_io_readWriteRegIO_bits_214;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_215 <= _csrManager_io_readWriteRegIO_bits_215;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
       end
     end
   end // always @(posedge, posedge)
-  always @(posedge clock)	// src/main/scala/snax/streamer/Streamer.scala:71:7
-    streamerIdle2Busy_REG <= cstate;	// src/main/scala/snax/streamer/Streamer.scala:211:38, :322:49
-  `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/streamer/Streamer.scala:71:7
-    `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/streamer/Streamer.scala:71:7
-      `FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/streamer/Streamer.scala:71:7
+  always @(posedge clock)	// src/main/scala/snax/streamer/Streamer.scala:61:7
+    streamerIdle2Busy_REG <= cstate;	// src/main/scala/snax/streamer/Streamer.scala:197:38, :295:49
+  `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/streamer/Streamer.scala:61:7
+    `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/streamer/Streamer.scala:61:7
+      `FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/streamer/Streamer.scala:61:7
     `endif // FIRRTL_BEFORE_INITIAL
-    initial begin	// src/main/scala/snax/streamer/Streamer.scala:71:7
-      automatic logic [31:0] _RANDOM[0:217];	// src/main/scala/snax/streamer/Streamer.scala:71:7
-      `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/snax/streamer/Streamer.scala:71:7
-        `INIT_RANDOM_PROLOG_	// src/main/scala/snax/streamer/Streamer.scala:71:7
+    initial begin	// src/main/scala/snax/streamer/Streamer.scala:61:7
+      automatic logic [31:0] _RANDOM[0:217];	// src/main/scala/snax/streamer/Streamer.scala:61:7
+      `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/snax/streamer/Streamer.scala:61:7
+        `INIT_RANDOM_PROLOG_	// src/main/scala/snax/streamer/Streamer.scala:61:7
       `endif // INIT_RANDOM_PROLOG_
-      `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/streamer/Streamer.scala:71:7
+      `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/streamer/Streamer.scala:61:7
         for (logic [7:0] i = 8'h0; i < 8'hDA; i += 8'h1) begin
-          _RANDOM[i] = `RANDOM;	// src/main/scala/snax/streamer/Streamer.scala:71:7
-        end	// src/main/scala/snax/streamer/Streamer.scala:71:7
-        cstate = _RANDOM[8'h0][0];	// src/main/scala/snax/streamer/Streamer.scala:71:7, :211:38
-        streamerIdle2Busy_REG = _RANDOM[8'h0][1];	// src/main/scala/snax/streamer/Streamer.scala:71:7, :211:38, :322:49
-        performance_counter = {_RANDOM[8'h0][31:2], _RANDOM[8'h1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :211:38, :324:36
-        csrCfgReg_0 = {_RANDOM[8'h1][31:2], _RANDOM[8'h2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :324:36, :336:26
-        csrCfgReg_1 = {_RANDOM[8'h2][31:2], _RANDOM[8'h3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_2 = {_RANDOM[8'h3][31:2], _RANDOM[8'h4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_3 = {_RANDOM[8'h4][31:2], _RANDOM[8'h5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_4 = {_RANDOM[8'h5][31:2], _RANDOM[8'h6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_5 = {_RANDOM[8'h6][31:2], _RANDOM[8'h7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_6 = {_RANDOM[8'h7][31:2], _RANDOM[8'h8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_7 = {_RANDOM[8'h8][31:2], _RANDOM[8'h9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_8 = {_RANDOM[8'h9][31:2], _RANDOM[8'hA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_9 = {_RANDOM[8'hA][31:2], _RANDOM[8'hB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_10 = {_RANDOM[8'hB][31:2], _RANDOM[8'hC][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_11 = {_RANDOM[8'hC][31:2], _RANDOM[8'hD][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_12 = {_RANDOM[8'hD][31:2], _RANDOM[8'hE][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_13 = {_RANDOM[8'hE][31:2], _RANDOM[8'hF][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_14 = {_RANDOM[8'hF][31:2], _RANDOM[8'h10][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_15 = {_RANDOM[8'h10][31:2], _RANDOM[8'h11][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_16 = {_RANDOM[8'h11][31:2], _RANDOM[8'h12][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_17 = {_RANDOM[8'h12][31:2], _RANDOM[8'h13][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_18 = {_RANDOM[8'h13][31:2], _RANDOM[8'h14][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_19 = {_RANDOM[8'h14][31:2], _RANDOM[8'h15][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_20 = {_RANDOM[8'h15][31:2], _RANDOM[8'h16][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_21 = {_RANDOM[8'h16][31:2], _RANDOM[8'h17][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_22 = {_RANDOM[8'h17][31:2], _RANDOM[8'h18][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_23 = {_RANDOM[8'h18][31:2], _RANDOM[8'h19][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_24 = {_RANDOM[8'h19][31:2], _RANDOM[8'h1A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_25 = {_RANDOM[8'h1A][31:2], _RANDOM[8'h1B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_26 = {_RANDOM[8'h1B][31:2], _RANDOM[8'h1C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_27 = {_RANDOM[8'h1C][31:2], _RANDOM[8'h1D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_28 = {_RANDOM[8'h1D][31:2], _RANDOM[8'h1E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_29 = {_RANDOM[8'h1E][31:2], _RANDOM[8'h1F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_30 = {_RANDOM[8'h1F][31:2], _RANDOM[8'h20][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_31 = {_RANDOM[8'h20][31:2], _RANDOM[8'h21][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_32 = {_RANDOM[8'h21][31:2], _RANDOM[8'h22][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_33 = {_RANDOM[8'h22][31:2], _RANDOM[8'h23][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_34 = {_RANDOM[8'h23][31:2], _RANDOM[8'h24][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_35 = {_RANDOM[8'h24][31:2], _RANDOM[8'h25][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_36 = {_RANDOM[8'h25][31:2], _RANDOM[8'h26][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_37 = {_RANDOM[8'h26][31:2], _RANDOM[8'h27][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_39 = {_RANDOM[8'h28][31:2], _RANDOM[8'h29][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_40 = {_RANDOM[8'h29][31:2], _RANDOM[8'h2A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_41 = {_RANDOM[8'h2A][31:2], _RANDOM[8'h2B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_42 = {_RANDOM[8'h2B][31:2], _RANDOM[8'h2C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_43 = {_RANDOM[8'h2C][31:2], _RANDOM[8'h2D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_44 = {_RANDOM[8'h2D][31:2], _RANDOM[8'h2E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_45 = {_RANDOM[8'h2E][31:2], _RANDOM[8'h2F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_46 = {_RANDOM[8'h2F][31:2], _RANDOM[8'h30][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_47 = {_RANDOM[8'h30][31:2], _RANDOM[8'h31][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_48 = {_RANDOM[8'h31][31:2], _RANDOM[8'h32][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_49 = {_RANDOM[8'h32][31:2], _RANDOM[8'h33][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_51 = {_RANDOM[8'h34][31:2], _RANDOM[8'h35][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_52 = {_RANDOM[8'h35][31:2], _RANDOM[8'h36][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_53 = {_RANDOM[8'h36][31:2], _RANDOM[8'h37][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_54 = {_RANDOM[8'h37][31:2], _RANDOM[8'h38][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_55 = {_RANDOM[8'h38][31:2], _RANDOM[8'h39][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_56 = {_RANDOM[8'h39][31:2], _RANDOM[8'h3A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_57 = {_RANDOM[8'h3A][31:2], _RANDOM[8'h3B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_58 = {_RANDOM[8'h3B][31:2], _RANDOM[8'h3C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_59 = {_RANDOM[8'h3C][31:2], _RANDOM[8'h3D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_60 = {_RANDOM[8'h3D][31:2], _RANDOM[8'h3E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_61 = {_RANDOM[8'h3E][31:2], _RANDOM[8'h3F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_63 = {_RANDOM[8'h40][31:2], _RANDOM[8'h41][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_64 = {_RANDOM[8'h41][31:2], _RANDOM[8'h42][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_65 = {_RANDOM[8'h42][31:2], _RANDOM[8'h43][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_66 = {_RANDOM[8'h43][31:2], _RANDOM[8'h44][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_67 = {_RANDOM[8'h44][31:2], _RANDOM[8'h45][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_68 = {_RANDOM[8'h45][31:2], _RANDOM[8'h46][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_69 = {_RANDOM[8'h46][31:2], _RANDOM[8'h47][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_70 = {_RANDOM[8'h47][31:2], _RANDOM[8'h48][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_71 = {_RANDOM[8'h48][31:2], _RANDOM[8'h49][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_72 = {_RANDOM[8'h49][31:2], _RANDOM[8'h4A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_73 = {_RANDOM[8'h4A][31:2], _RANDOM[8'h4B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_75 = {_RANDOM[8'h4C][31:2], _RANDOM[8'h4D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_76 = {_RANDOM[8'h4D][31:2], _RANDOM[8'h4E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_77 = {_RANDOM[8'h4E][31:2], _RANDOM[8'h4F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_78 = {_RANDOM[8'h4F][31:2], _RANDOM[8'h50][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_79 = {_RANDOM[8'h50][31:2], _RANDOM[8'h51][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_80 = {_RANDOM[8'h51][31:2], _RANDOM[8'h52][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_81 = {_RANDOM[8'h52][31:2], _RANDOM[8'h53][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_82 = {_RANDOM[8'h53][31:2], _RANDOM[8'h54][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_83 = {_RANDOM[8'h54][31:2], _RANDOM[8'h55][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_84 = {_RANDOM[8'h55][31:2], _RANDOM[8'h56][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_85 = {_RANDOM[8'h56][31:2], _RANDOM[8'h57][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_86 = {_RANDOM[8'h57][31:2], _RANDOM[8'h58][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_87 = {_RANDOM[8'h58][31:2], _RANDOM[8'h59][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_88 = {_RANDOM[8'h59][31:2], _RANDOM[8'h5A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_89 = {_RANDOM[8'h5A][31:2], _RANDOM[8'h5B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_90 = {_RANDOM[8'h5B][31:2], _RANDOM[8'h5C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_91 = {_RANDOM[8'h5C][31:2], _RANDOM[8'h5D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_92 = {_RANDOM[8'h5D][31:2], _RANDOM[8'h5E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_93 = {_RANDOM[8'h5E][31:2], _RANDOM[8'h5F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_94 = {_RANDOM[8'h5F][31:2], _RANDOM[8'h60][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_95 = {_RANDOM[8'h60][31:2], _RANDOM[8'h61][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_96 = {_RANDOM[8'h61][31:2], _RANDOM[8'h62][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_97 = {_RANDOM[8'h62][31:2], _RANDOM[8'h63][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_99 = {_RANDOM[8'h64][31:2], _RANDOM[8'h65][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_100 = {_RANDOM[8'h65][31:2], _RANDOM[8'h66][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_101 = {_RANDOM[8'h66][31:2], _RANDOM[8'h67][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_102 = {_RANDOM[8'h67][31:2], _RANDOM[8'h68][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_103 = {_RANDOM[8'h68][31:2], _RANDOM[8'h69][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_104 = {_RANDOM[8'h69][31:2], _RANDOM[8'h6A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_105 = {_RANDOM[8'h6A][31:2], _RANDOM[8'h6B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_106 = {_RANDOM[8'h6B][31:2], _RANDOM[8'h6C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_107 = {_RANDOM[8'h6C][31:2], _RANDOM[8'h6D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_108 = {_RANDOM[8'h6D][31:2], _RANDOM[8'h6E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_109 = {_RANDOM[8'h6E][31:2], _RANDOM[8'h6F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_111 = {_RANDOM[8'h70][31:2], _RANDOM[8'h71][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_112 = {_RANDOM[8'h71][31:2], _RANDOM[8'h72][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_113 = {_RANDOM[8'h72][31:2], _RANDOM[8'h73][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_114 = {_RANDOM[8'h73][31:2], _RANDOM[8'h74][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_115 = {_RANDOM[8'h74][31:2], _RANDOM[8'h75][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_116 = {_RANDOM[8'h75][31:2], _RANDOM[8'h76][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_117 = {_RANDOM[8'h76][31:2], _RANDOM[8'h77][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_118 = {_RANDOM[8'h77][31:2], _RANDOM[8'h78][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_119 = {_RANDOM[8'h78][31:2], _RANDOM[8'h79][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_120 = {_RANDOM[8'h79][31:2], _RANDOM[8'h7A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_121 = {_RANDOM[8'h7A][31:2], _RANDOM[8'h7B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_123 = {_RANDOM[8'h7C][31:2], _RANDOM[8'h7D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_124 = {_RANDOM[8'h7D][31:2], _RANDOM[8'h7E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_125 = {_RANDOM[8'h7E][31:2], _RANDOM[8'h7F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_126 = {_RANDOM[8'h7F][31:2], _RANDOM[8'h80][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_127 = {_RANDOM[8'h80][31:2], _RANDOM[8'h81][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_128 = {_RANDOM[8'h81][31:2], _RANDOM[8'h82][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_129 = {_RANDOM[8'h82][31:2], _RANDOM[8'h83][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_130 = {_RANDOM[8'h83][31:2], _RANDOM[8'h84][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_131 = {_RANDOM[8'h84][31:2], _RANDOM[8'h85][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_132 = {_RANDOM[8'h85][31:2], _RANDOM[8'h86][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_133 = {_RANDOM[8'h86][31:2], _RANDOM[8'h87][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_135 = {_RANDOM[8'h88][31:2], _RANDOM[8'h89][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_136 = {_RANDOM[8'h89][31:2], _RANDOM[8'h8A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_137 = {_RANDOM[8'h8A][31:2], _RANDOM[8'h8B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_138 = {_RANDOM[8'h8B][31:2], _RANDOM[8'h8C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_139 = {_RANDOM[8'h8C][31:2], _RANDOM[8'h8D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_140 = {_RANDOM[8'h8D][31:2], _RANDOM[8'h8E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_141 = {_RANDOM[8'h8E][31:2], _RANDOM[8'h8F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_142 = {_RANDOM[8'h8F][31:2], _RANDOM[8'h90][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_143 = {_RANDOM[8'h90][31:2], _RANDOM[8'h91][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_144 = {_RANDOM[8'h91][31:2], _RANDOM[8'h92][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_145 = {_RANDOM[8'h92][31:2], _RANDOM[8'h93][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_146 = {_RANDOM[8'h93][31:2], _RANDOM[8'h94][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_147 = {_RANDOM[8'h94][31:2], _RANDOM[8'h95][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_148 = {_RANDOM[8'h95][31:2], _RANDOM[8'h96][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_149 = {_RANDOM[8'h96][31:2], _RANDOM[8'h97][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_150 = {_RANDOM[8'h97][31:2], _RANDOM[8'h98][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_151 = {_RANDOM[8'h98][31:2], _RANDOM[8'h99][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_152 = {_RANDOM[8'h99][31:2], _RANDOM[8'h9A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_153 = {_RANDOM[8'h9A][31:2], _RANDOM[8'h9B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_154 = {_RANDOM[8'h9B][31:2], _RANDOM[8'h9C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_155 = {_RANDOM[8'h9C][31:2], _RANDOM[8'h9D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_156 = {_RANDOM[8'h9D][31:2], _RANDOM[8'h9E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_157 = {_RANDOM[8'h9E][31:2], _RANDOM[8'h9F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_158 = {_RANDOM[8'h9F][31:2], _RANDOM[8'hA0][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_159 = {_RANDOM[8'hA0][31:2], _RANDOM[8'hA1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_160 = {_RANDOM[8'hA1][31:2], _RANDOM[8'hA2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_161 = {_RANDOM[8'hA2][31:2], _RANDOM[8'hA3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_162 = {_RANDOM[8'hA3][31:2], _RANDOM[8'hA4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_163 = {_RANDOM[8'hA4][31:2], _RANDOM[8'hA5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_164 = {_RANDOM[8'hA5][31:2], _RANDOM[8'hA6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_165 = {_RANDOM[8'hA6][31:2], _RANDOM[8'hA7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_166 = {_RANDOM[8'hA7][31:2], _RANDOM[8'hA8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_167 = {_RANDOM[8'hA8][31:2], _RANDOM[8'hA9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_168 = {_RANDOM[8'hA9][31:2], _RANDOM[8'hAA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_169 = {_RANDOM[8'hAA][31:2], _RANDOM[8'hAB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_171 = {_RANDOM[8'hAC][31:2], _RANDOM[8'hAD][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_172 = {_RANDOM[8'hAD][31:2], _RANDOM[8'hAE][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_173 = {_RANDOM[8'hAE][31:2], _RANDOM[8'hAF][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_174 = {_RANDOM[8'hAF][31:2], _RANDOM[8'hB0][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_175 = {_RANDOM[8'hB0][31:2], _RANDOM[8'hB1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_176 = {_RANDOM[8'hB1][31:2], _RANDOM[8'hB2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_177 = {_RANDOM[8'hB2][31:2], _RANDOM[8'hB3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_178 = {_RANDOM[8'hB3][31:2], _RANDOM[8'hB4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_179 = {_RANDOM[8'hB4][31:2], _RANDOM[8'hB5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_180 = {_RANDOM[8'hB5][31:2], _RANDOM[8'hB6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_181 = {_RANDOM[8'hB6][31:2], _RANDOM[8'hB7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_183 = {_RANDOM[8'hB8][31:2], _RANDOM[8'hB9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_184 = {_RANDOM[8'hB9][31:2], _RANDOM[8'hBA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_185 = {_RANDOM[8'hBA][31:2], _RANDOM[8'hBB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_186 = {_RANDOM[8'hBB][31:2], _RANDOM[8'hBC][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_187 = {_RANDOM[8'hBC][31:2], _RANDOM[8'hBD][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_188 = {_RANDOM[8'hBD][31:2], _RANDOM[8'hBE][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_189 = {_RANDOM[8'hBE][31:2], _RANDOM[8'hBF][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_190 = {_RANDOM[8'hBF][31:2], _RANDOM[8'hC0][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_191 = {_RANDOM[8'hC0][31:2], _RANDOM[8'hC1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_192 = {_RANDOM[8'hC1][31:2], _RANDOM[8'hC2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_193 = {_RANDOM[8'hC2][31:2], _RANDOM[8'hC3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_195 = {_RANDOM[8'hC4][31:2], _RANDOM[8'hC5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_196 = {_RANDOM[8'hC5][31:2], _RANDOM[8'hC6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_197 = {_RANDOM[8'hC6][31:2], _RANDOM[8'hC7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_198 = {_RANDOM[8'hC7][31:2], _RANDOM[8'hC8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_199 = {_RANDOM[8'hC8][31:2], _RANDOM[8'hC9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_200 = {_RANDOM[8'hC9][31:2], _RANDOM[8'hCA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_201 = {_RANDOM[8'hCA][31:2], _RANDOM[8'hCB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_202 = {_RANDOM[8'hCB][31:2], _RANDOM[8'hCC][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_203 = {_RANDOM[8'hCC][31:2], _RANDOM[8'hCD][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_204 = {_RANDOM[8'hCD][31:2], _RANDOM[8'hCE][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_205 = {_RANDOM[8'hCE][31:2], _RANDOM[8'hCF][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_206 = {_RANDOM[8'hCF][31:2], _RANDOM[8'hD0][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_207 = {_RANDOM[8'hD0][31:2], _RANDOM[8'hD1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_208 = {_RANDOM[8'hD1][31:2], _RANDOM[8'hD2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_209 = {_RANDOM[8'hD2][31:2], _RANDOM[8'hD3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_210 = {_RANDOM[8'hD3][31:2], _RANDOM[8'hD4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_211 = {_RANDOM[8'hD4][31:2], _RANDOM[8'hD5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_212 = {_RANDOM[8'hD5][31:2], _RANDOM[8'hD6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_213 = {_RANDOM[8'hD6][31:2], _RANDOM[8'hD7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_214 = {_RANDOM[8'hD7][31:2], _RANDOM[8'hD8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
-        csrCfgReg_215 = {_RANDOM[8'hD8][31:2], _RANDOM[8'hD9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:71:7, :336:26
+          _RANDOM[i] = `RANDOM;	// src/main/scala/snax/streamer/Streamer.scala:61:7
+        end	// src/main/scala/snax/streamer/Streamer.scala:61:7
+        cstate = _RANDOM[8'h0][0];	// src/main/scala/snax/streamer/Streamer.scala:61:7, :197:38
+        streamerIdle2Busy_REG = _RANDOM[8'h0][1];	// src/main/scala/snax/streamer/Streamer.scala:61:7, :197:38, :295:49
+        performance_counter = {_RANDOM[8'h0][31:2], _RANDOM[8'h1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :197:38, :297:36
+        csrCfgReg_0 = {_RANDOM[8'h1][31:2], _RANDOM[8'h2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :297:36, :309:26
+        csrCfgReg_1 = {_RANDOM[8'h2][31:2], _RANDOM[8'h3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_2 = {_RANDOM[8'h3][31:2], _RANDOM[8'h4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_3 = {_RANDOM[8'h4][31:2], _RANDOM[8'h5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_4 = {_RANDOM[8'h5][31:2], _RANDOM[8'h6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_5 = {_RANDOM[8'h6][31:2], _RANDOM[8'h7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_6 = {_RANDOM[8'h7][31:2], _RANDOM[8'h8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_7 = {_RANDOM[8'h8][31:2], _RANDOM[8'h9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_8 = {_RANDOM[8'h9][31:2], _RANDOM[8'hA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_9 = {_RANDOM[8'hA][31:2], _RANDOM[8'hB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_10 = {_RANDOM[8'hB][31:2], _RANDOM[8'hC][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_11 = {_RANDOM[8'hC][31:2], _RANDOM[8'hD][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_12 = {_RANDOM[8'hD][31:2], _RANDOM[8'hE][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_13 = {_RANDOM[8'hE][31:2], _RANDOM[8'hF][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_14 = {_RANDOM[8'hF][31:2], _RANDOM[8'h10][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_15 = {_RANDOM[8'h10][31:2], _RANDOM[8'h11][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_16 = {_RANDOM[8'h11][31:2], _RANDOM[8'h12][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_17 = {_RANDOM[8'h12][31:2], _RANDOM[8'h13][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_18 = {_RANDOM[8'h13][31:2], _RANDOM[8'h14][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_19 = {_RANDOM[8'h14][31:2], _RANDOM[8'h15][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_20 = {_RANDOM[8'h15][31:2], _RANDOM[8'h16][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_21 = {_RANDOM[8'h16][31:2], _RANDOM[8'h17][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_22 = {_RANDOM[8'h17][31:2], _RANDOM[8'h18][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_23 = {_RANDOM[8'h18][31:2], _RANDOM[8'h19][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_24 = {_RANDOM[8'h19][31:2], _RANDOM[8'h1A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_25 = {_RANDOM[8'h1A][31:2], _RANDOM[8'h1B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_26 = {_RANDOM[8'h1B][31:2], _RANDOM[8'h1C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_27 = {_RANDOM[8'h1C][31:2], _RANDOM[8'h1D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_28 = {_RANDOM[8'h1D][31:2], _RANDOM[8'h1E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_29 = {_RANDOM[8'h1E][31:2], _RANDOM[8'h1F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_30 = {_RANDOM[8'h1F][31:2], _RANDOM[8'h20][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_31 = {_RANDOM[8'h20][31:2], _RANDOM[8'h21][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_32 = {_RANDOM[8'h21][31:2], _RANDOM[8'h22][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_33 = {_RANDOM[8'h22][31:2], _RANDOM[8'h23][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_34 = {_RANDOM[8'h23][31:2], _RANDOM[8'h24][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_35 = {_RANDOM[8'h24][31:2], _RANDOM[8'h25][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_36 = {_RANDOM[8'h25][31:2], _RANDOM[8'h26][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_37 = {_RANDOM[8'h26][31:2], _RANDOM[8'h27][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_39 = {_RANDOM[8'h28][31:2], _RANDOM[8'h29][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_40 = {_RANDOM[8'h29][31:2], _RANDOM[8'h2A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_41 = {_RANDOM[8'h2A][31:2], _RANDOM[8'h2B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_42 = {_RANDOM[8'h2B][31:2], _RANDOM[8'h2C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_43 = {_RANDOM[8'h2C][31:2], _RANDOM[8'h2D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_44 = {_RANDOM[8'h2D][31:2], _RANDOM[8'h2E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_45 = {_RANDOM[8'h2E][31:2], _RANDOM[8'h2F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_46 = {_RANDOM[8'h2F][31:2], _RANDOM[8'h30][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_47 = {_RANDOM[8'h30][31:2], _RANDOM[8'h31][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_48 = {_RANDOM[8'h31][31:2], _RANDOM[8'h32][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_49 = {_RANDOM[8'h32][31:2], _RANDOM[8'h33][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_51 = {_RANDOM[8'h34][31:2], _RANDOM[8'h35][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_52 = {_RANDOM[8'h35][31:2], _RANDOM[8'h36][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_53 = {_RANDOM[8'h36][31:2], _RANDOM[8'h37][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_54 = {_RANDOM[8'h37][31:2], _RANDOM[8'h38][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_55 = {_RANDOM[8'h38][31:2], _RANDOM[8'h39][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_56 = {_RANDOM[8'h39][31:2], _RANDOM[8'h3A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_57 = {_RANDOM[8'h3A][31:2], _RANDOM[8'h3B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_58 = {_RANDOM[8'h3B][31:2], _RANDOM[8'h3C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_59 = {_RANDOM[8'h3C][31:2], _RANDOM[8'h3D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_60 = {_RANDOM[8'h3D][31:2], _RANDOM[8'h3E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_61 = {_RANDOM[8'h3E][31:2], _RANDOM[8'h3F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_63 = {_RANDOM[8'h40][31:2], _RANDOM[8'h41][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_64 = {_RANDOM[8'h41][31:2], _RANDOM[8'h42][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_65 = {_RANDOM[8'h42][31:2], _RANDOM[8'h43][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_66 = {_RANDOM[8'h43][31:2], _RANDOM[8'h44][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_67 = {_RANDOM[8'h44][31:2], _RANDOM[8'h45][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_68 = {_RANDOM[8'h45][31:2], _RANDOM[8'h46][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_69 = {_RANDOM[8'h46][31:2], _RANDOM[8'h47][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_70 = {_RANDOM[8'h47][31:2], _RANDOM[8'h48][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_71 = {_RANDOM[8'h48][31:2], _RANDOM[8'h49][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_72 = {_RANDOM[8'h49][31:2], _RANDOM[8'h4A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_73 = {_RANDOM[8'h4A][31:2], _RANDOM[8'h4B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_75 = {_RANDOM[8'h4C][31:2], _RANDOM[8'h4D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_76 = {_RANDOM[8'h4D][31:2], _RANDOM[8'h4E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_77 = {_RANDOM[8'h4E][31:2], _RANDOM[8'h4F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_78 = {_RANDOM[8'h4F][31:2], _RANDOM[8'h50][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_79 = {_RANDOM[8'h50][31:2], _RANDOM[8'h51][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_80 = {_RANDOM[8'h51][31:2], _RANDOM[8'h52][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_81 = {_RANDOM[8'h52][31:2], _RANDOM[8'h53][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_82 = {_RANDOM[8'h53][31:2], _RANDOM[8'h54][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_83 = {_RANDOM[8'h54][31:2], _RANDOM[8'h55][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_84 = {_RANDOM[8'h55][31:2], _RANDOM[8'h56][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_85 = {_RANDOM[8'h56][31:2], _RANDOM[8'h57][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_86 = {_RANDOM[8'h57][31:2], _RANDOM[8'h58][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_87 = {_RANDOM[8'h58][31:2], _RANDOM[8'h59][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_88 = {_RANDOM[8'h59][31:2], _RANDOM[8'h5A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_89 = {_RANDOM[8'h5A][31:2], _RANDOM[8'h5B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_90 = {_RANDOM[8'h5B][31:2], _RANDOM[8'h5C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_91 = {_RANDOM[8'h5C][31:2], _RANDOM[8'h5D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_92 = {_RANDOM[8'h5D][31:2], _RANDOM[8'h5E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_93 = {_RANDOM[8'h5E][31:2], _RANDOM[8'h5F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_94 = {_RANDOM[8'h5F][31:2], _RANDOM[8'h60][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_95 = {_RANDOM[8'h60][31:2], _RANDOM[8'h61][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_96 = {_RANDOM[8'h61][31:2], _RANDOM[8'h62][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_97 = {_RANDOM[8'h62][31:2], _RANDOM[8'h63][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_99 = {_RANDOM[8'h64][31:2], _RANDOM[8'h65][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_100 = {_RANDOM[8'h65][31:2], _RANDOM[8'h66][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_101 = {_RANDOM[8'h66][31:2], _RANDOM[8'h67][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_102 = {_RANDOM[8'h67][31:2], _RANDOM[8'h68][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_103 = {_RANDOM[8'h68][31:2], _RANDOM[8'h69][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_104 = {_RANDOM[8'h69][31:2], _RANDOM[8'h6A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_105 = {_RANDOM[8'h6A][31:2], _RANDOM[8'h6B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_106 = {_RANDOM[8'h6B][31:2], _RANDOM[8'h6C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_107 = {_RANDOM[8'h6C][31:2], _RANDOM[8'h6D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_108 = {_RANDOM[8'h6D][31:2], _RANDOM[8'h6E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_109 = {_RANDOM[8'h6E][31:2], _RANDOM[8'h6F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_111 = {_RANDOM[8'h70][31:2], _RANDOM[8'h71][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_112 = {_RANDOM[8'h71][31:2], _RANDOM[8'h72][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_113 = {_RANDOM[8'h72][31:2], _RANDOM[8'h73][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_114 = {_RANDOM[8'h73][31:2], _RANDOM[8'h74][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_115 = {_RANDOM[8'h74][31:2], _RANDOM[8'h75][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_116 = {_RANDOM[8'h75][31:2], _RANDOM[8'h76][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_117 = {_RANDOM[8'h76][31:2], _RANDOM[8'h77][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_118 = {_RANDOM[8'h77][31:2], _RANDOM[8'h78][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_119 = {_RANDOM[8'h78][31:2], _RANDOM[8'h79][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_120 = {_RANDOM[8'h79][31:2], _RANDOM[8'h7A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_121 = {_RANDOM[8'h7A][31:2], _RANDOM[8'h7B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_123 = {_RANDOM[8'h7C][31:2], _RANDOM[8'h7D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_124 = {_RANDOM[8'h7D][31:2], _RANDOM[8'h7E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_125 = {_RANDOM[8'h7E][31:2], _RANDOM[8'h7F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_126 = {_RANDOM[8'h7F][31:2], _RANDOM[8'h80][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_127 = {_RANDOM[8'h80][31:2], _RANDOM[8'h81][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_128 = {_RANDOM[8'h81][31:2], _RANDOM[8'h82][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_129 = {_RANDOM[8'h82][31:2], _RANDOM[8'h83][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_130 = {_RANDOM[8'h83][31:2], _RANDOM[8'h84][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_131 = {_RANDOM[8'h84][31:2], _RANDOM[8'h85][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_132 = {_RANDOM[8'h85][31:2], _RANDOM[8'h86][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_133 = {_RANDOM[8'h86][31:2], _RANDOM[8'h87][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_135 = {_RANDOM[8'h88][31:2], _RANDOM[8'h89][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_136 = {_RANDOM[8'h89][31:2], _RANDOM[8'h8A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_137 = {_RANDOM[8'h8A][31:2], _RANDOM[8'h8B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_138 = {_RANDOM[8'h8B][31:2], _RANDOM[8'h8C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_139 = {_RANDOM[8'h8C][31:2], _RANDOM[8'h8D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_140 = {_RANDOM[8'h8D][31:2], _RANDOM[8'h8E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_141 = {_RANDOM[8'h8E][31:2], _RANDOM[8'h8F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_142 = {_RANDOM[8'h8F][31:2], _RANDOM[8'h90][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_143 = {_RANDOM[8'h90][31:2], _RANDOM[8'h91][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_144 = {_RANDOM[8'h91][31:2], _RANDOM[8'h92][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_145 = {_RANDOM[8'h92][31:2], _RANDOM[8'h93][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_146 = {_RANDOM[8'h93][31:2], _RANDOM[8'h94][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_147 = {_RANDOM[8'h94][31:2], _RANDOM[8'h95][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_148 = {_RANDOM[8'h95][31:2], _RANDOM[8'h96][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_149 = {_RANDOM[8'h96][31:2], _RANDOM[8'h97][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_150 = {_RANDOM[8'h97][31:2], _RANDOM[8'h98][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_151 = {_RANDOM[8'h98][31:2], _RANDOM[8'h99][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_152 = {_RANDOM[8'h99][31:2], _RANDOM[8'h9A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_153 = {_RANDOM[8'h9A][31:2], _RANDOM[8'h9B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_154 = {_RANDOM[8'h9B][31:2], _RANDOM[8'h9C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_155 = {_RANDOM[8'h9C][31:2], _RANDOM[8'h9D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_156 = {_RANDOM[8'h9D][31:2], _RANDOM[8'h9E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_157 = {_RANDOM[8'h9E][31:2], _RANDOM[8'h9F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_158 = {_RANDOM[8'h9F][31:2], _RANDOM[8'hA0][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_159 = {_RANDOM[8'hA0][31:2], _RANDOM[8'hA1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_160 = {_RANDOM[8'hA1][31:2], _RANDOM[8'hA2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_161 = {_RANDOM[8'hA2][31:2], _RANDOM[8'hA3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_162 = {_RANDOM[8'hA3][31:2], _RANDOM[8'hA4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_163 = {_RANDOM[8'hA4][31:2], _RANDOM[8'hA5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_164 = {_RANDOM[8'hA5][31:2], _RANDOM[8'hA6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_165 = {_RANDOM[8'hA6][31:2], _RANDOM[8'hA7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_166 = {_RANDOM[8'hA7][31:2], _RANDOM[8'hA8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_167 = {_RANDOM[8'hA8][31:2], _RANDOM[8'hA9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_168 = {_RANDOM[8'hA9][31:2], _RANDOM[8'hAA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_169 = {_RANDOM[8'hAA][31:2], _RANDOM[8'hAB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_171 = {_RANDOM[8'hAC][31:2], _RANDOM[8'hAD][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_172 = {_RANDOM[8'hAD][31:2], _RANDOM[8'hAE][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_173 = {_RANDOM[8'hAE][31:2], _RANDOM[8'hAF][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_174 = {_RANDOM[8'hAF][31:2], _RANDOM[8'hB0][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_175 = {_RANDOM[8'hB0][31:2], _RANDOM[8'hB1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_176 = {_RANDOM[8'hB1][31:2], _RANDOM[8'hB2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_177 = {_RANDOM[8'hB2][31:2], _RANDOM[8'hB3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_178 = {_RANDOM[8'hB3][31:2], _RANDOM[8'hB4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_179 = {_RANDOM[8'hB4][31:2], _RANDOM[8'hB5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_180 = {_RANDOM[8'hB5][31:2], _RANDOM[8'hB6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_181 = {_RANDOM[8'hB6][31:2], _RANDOM[8'hB7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_183 = {_RANDOM[8'hB8][31:2], _RANDOM[8'hB9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_184 = {_RANDOM[8'hB9][31:2], _RANDOM[8'hBA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_185 = {_RANDOM[8'hBA][31:2], _RANDOM[8'hBB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_186 = {_RANDOM[8'hBB][31:2], _RANDOM[8'hBC][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_187 = {_RANDOM[8'hBC][31:2], _RANDOM[8'hBD][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_188 = {_RANDOM[8'hBD][31:2], _RANDOM[8'hBE][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_189 = {_RANDOM[8'hBE][31:2], _RANDOM[8'hBF][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_190 = {_RANDOM[8'hBF][31:2], _RANDOM[8'hC0][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_191 = {_RANDOM[8'hC0][31:2], _RANDOM[8'hC1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_192 = {_RANDOM[8'hC1][31:2], _RANDOM[8'hC2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_193 = {_RANDOM[8'hC2][31:2], _RANDOM[8'hC3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_195 = {_RANDOM[8'hC4][31:2], _RANDOM[8'hC5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_196 = {_RANDOM[8'hC5][31:2], _RANDOM[8'hC6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_197 = {_RANDOM[8'hC6][31:2], _RANDOM[8'hC7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_198 = {_RANDOM[8'hC7][31:2], _RANDOM[8'hC8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_199 = {_RANDOM[8'hC8][31:2], _RANDOM[8'hC9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_200 = {_RANDOM[8'hC9][31:2], _RANDOM[8'hCA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_201 = {_RANDOM[8'hCA][31:2], _RANDOM[8'hCB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_202 = {_RANDOM[8'hCB][31:2], _RANDOM[8'hCC][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_203 = {_RANDOM[8'hCC][31:2], _RANDOM[8'hCD][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_204 = {_RANDOM[8'hCD][31:2], _RANDOM[8'hCE][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_205 = {_RANDOM[8'hCE][31:2], _RANDOM[8'hCF][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_206 = {_RANDOM[8'hCF][31:2], _RANDOM[8'hD0][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_207 = {_RANDOM[8'hD0][31:2], _RANDOM[8'hD1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_208 = {_RANDOM[8'hD1][31:2], _RANDOM[8'hD2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_209 = {_RANDOM[8'hD2][31:2], _RANDOM[8'hD3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_210 = {_RANDOM[8'hD3][31:2], _RANDOM[8'hD4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_211 = {_RANDOM[8'hD4][31:2], _RANDOM[8'hD5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_212 = {_RANDOM[8'hD5][31:2], _RANDOM[8'hD6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_213 = {_RANDOM[8'hD6][31:2], _RANDOM[8'hD7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_214 = {_RANDOM[8'hD7][31:2], _RANDOM[8'hD8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_215 = {_RANDOM[8'hD8][31:2], _RANDOM[8'hD9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
       `endif // RANDOMIZE_REG_INIT
-      if (reset) begin	// src/main/scala/snax/streamer/Streamer.scala:71:7
-        cstate = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :211:38, :258:25, :261:25
-        performance_counter = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36
-        csrCfgReg_0 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_1 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_2 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_3 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_4 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_5 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_6 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_7 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_8 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_9 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_10 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_11 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_12 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_13 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_14 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_15 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_16 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_17 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_18 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_19 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_20 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_21 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_22 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_23 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_24 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_25 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_26 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_27 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_28 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_29 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_30 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_31 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_32 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_33 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_34 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_35 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_36 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_37 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_39 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_40 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_41 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_42 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_43 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_44 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_45 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_46 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_47 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_48 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_49 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_51 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_52 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_53 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_54 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_55 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_56 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_57 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_58 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_59 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_60 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_61 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_63 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_64 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_65 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_66 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_67 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_68 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_69 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_70 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_71 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_72 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_73 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_75 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_76 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_77 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_78 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_79 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_80 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_81 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_82 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_83 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_84 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_85 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_86 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_87 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_88 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_89 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_90 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_91 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_92 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_93 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_94 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_95 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_96 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_97 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_99 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_100 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_101 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_102 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_103 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_104 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_105 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_106 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_107 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_108 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_109 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_111 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_112 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_113 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_114 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_115 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_116 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_117 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_118 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_119 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_120 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_121 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_123 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_124 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_125 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_126 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_127 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_128 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_129 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_130 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_131 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_132 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_133 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_135 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_136 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_137 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_138 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_139 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_140 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_141 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_142 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_143 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_144 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_145 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_146 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_147 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_148 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_149 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_150 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_151 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_152 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_153 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_154 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_155 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_156 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_157 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_158 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_159 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_160 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_161 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_162 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_163 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_164 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_165 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_166 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_167 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_168 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_169 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_171 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_172 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_173 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_174 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_175 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_176 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_177 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_178 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_179 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_180 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_181 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_183 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_184 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_185 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_186 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_187 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_188 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_189 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_190 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_191 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_192 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_193 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_195 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_196 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_197 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_198 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_199 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_200 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_201 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_202 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_203 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_204 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_205 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_206 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_207 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_208 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_209 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_210 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_211 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_212 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_213 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_214 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
-        csrCfgReg_215 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:324:36, :336:26
+      if (reset) begin	// src/main/scala/snax/streamer/Streamer.scala:61:7
+        cstate = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :197:38, :235:65, :236:65
+        performance_counter = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36
+        csrCfgReg_0 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_1 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_2 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_3 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_4 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_5 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_6 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_7 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_8 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_9 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_10 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_11 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_12 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_13 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_14 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_15 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_16 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_17 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_18 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_19 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_20 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_21 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_22 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_23 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_24 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_25 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_26 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_27 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_28 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_29 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_30 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_31 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_32 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_33 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_34 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_35 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_36 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_37 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_39 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_40 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_41 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_42 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_43 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_44 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_45 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_46 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_47 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_48 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_49 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_51 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_52 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_53 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_54 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_55 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_56 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_57 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_58 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_59 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_60 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_61 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_63 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_64 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_65 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_66 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_67 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_68 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_69 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_70 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_71 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_72 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_73 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_75 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_76 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_77 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_78 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_79 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_80 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_81 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_82 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_83 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_84 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_85 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_86 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_87 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_88 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_89 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_90 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_91 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_92 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_93 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_94 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_95 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_96 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_97 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_99 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_100 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_101 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_102 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_103 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_104 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_105 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_106 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_107 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_108 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_109 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_111 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_112 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_113 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_114 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_115 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_116 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_117 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_118 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_119 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_120 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_121 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_123 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_124 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_125 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_126 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_127 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_128 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_129 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_130 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_131 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_132 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_133 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_135 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_136 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_137 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_138 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_139 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_140 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_141 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_142 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_143 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_144 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_145 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_146 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_147 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_148 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_149 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_150 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_151 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_152 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_153 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_154 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_155 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_156 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_157 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_158 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_159 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_160 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_161 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_162 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_163 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_164 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_165 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_166 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_167 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_168 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_169 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_171 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_172 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_173 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_174 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_175 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_176 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_177 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_178 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_179 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_180 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_181 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_183 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_184 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_185 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_186 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_187 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_188 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_189 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_190 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_191 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_192 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_193 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_195 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_196 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_197 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_198 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_199 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_200 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_201 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_202 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_203 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_204 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_205 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_206 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_207 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_208 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_209 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_210 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_211 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_212 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_213 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_214 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_215 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       end
     end // initial
-    `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/streamer/Streamer.scala:71:7
-      `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/streamer/Streamer.scala:71:7
+    `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/streamer/Streamer.scala:61:7
+      `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/streamer/Streamer.scala:61:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore_ReqRspManager csrManager (	// src/main/scala/snax/streamer/Streamer.scala:120:26
+  snax_simbacore_ReqRspManager csrManager (	// src/main/scala/snax/streamer/Streamer.scala:106:26
     .clock                      (clock),
     .reset                      (reset),
     .io_reqRspIO_req_ready      (io_csr_req_ready),
@@ -19946,7 +19946,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_reqRspIO_rsp_ready      (io_csr_rsp_ready),
     .io_reqRspIO_rsp_valid      (io_csr_rsp_valid),
     .io_reqRspIO_rsp_bits_data  (io_csr_rsp_bits_data),
-    .io_readWriteRegIO_ready    (~cstate),	// src/main/scala/snax/streamer/Streamer.scala:211:38, :241:34
+    .io_readWriteRegIO_ready    (~cstate),	// src/main/scala/snax/streamer/Streamer.scala:197:38, :227:34
     .io_readWriteRegIO_valid    (_csrManager_io_readWriteRegIO_valid),
     .io_readWriteRegIO_bits_0   (_csrManager_io_readWriteRegIO_bits_0),
     .io_readWriteRegIO_bits_1   (_csrManager_io_readWriteRegIO_bits_1),
@@ -20153,56 +20153,56 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_readWriteRegIO_bits_213 (_csrManager_io_readWriteRegIO_bits_213),
     .io_readWriteRegIO_bits_214 (_csrManager_io_readWriteRegIO_bits_214),
     .io_readWriteRegIO_bits_215 (_csrManager_io_readWriteRegIO_bits_215),
-    .io_readOnlyReg_0           ({31'h0, cstate}),	// src/main/scala/snax/streamer/Streamer.scala:211:38, :332:32
-    .io_readOnlyReg_1           (performance_counter)	// src/main/scala/snax/streamer/Streamer.scala:324:36
+    .io_readOnlyReg_0           ({31'h0, cstate}),	// src/main/scala/snax/streamer/Streamer.scala:197:38, :305:32
+    .io_readOnlyReg_1           (performance_counter)	// src/main/scala/snax/streamer/Streamer.scala:297:36
   );
-  snax_simbacore__C0_Reader reader_0 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C0_Reader reader_0 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_0[19:0]
-         : csrCfgReg_0[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_0[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_spatialStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_2[19:0]
-         : csrCfgReg_2[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_2[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_3[19:0]
-         : csrCfgReg_3[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_3[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_4[19:0]
-         : csrCfgReg_4[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_4[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_5[19:0]
-         : csrCfgReg_5[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_5[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_6[19:0]
-         : csrCfgReg_6[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_6[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_7[19:0]
-         : csrCfgReg_7[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_7[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_8[19:0]
-         : csrCfgReg_8[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_8[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_9[19:0]
-         : csrCfgReg_9[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_9[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_10[19:0]
-         : csrCfgReg_10[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_10[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_11[3:0]
-         : csrCfgReg_11[3:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_11[3:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_0_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_0_ready),
@@ -20225,57 +20225,57 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmRsp_2_bits_data            (io_data_tcdm_rsp_2_bits_data),
     .io_tcdmRsp_3_valid                (io_data_tcdm_rsp_3_valid),
     .io_tcdmRsp_3_bits_data            (io_data_tcdm_rsp_3_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_0_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_0_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_0_io_data_valid),
     .io_data_bits                      (_reader_0_io_data_bits)
   );
-  snax_simbacore__C1_Reader reader_1 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C1_Reader reader_1 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_12[19:0]
-         : csrCfgReg_12[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_12[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_spatialStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_14[19:0]
-         : csrCfgReg_14[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_14[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_15[19:0]
-         : csrCfgReg_15[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_15[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_16[19:0]
-         : csrCfgReg_16[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_16[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_17[19:0]
-         : csrCfgReg_17[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_17[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_18[19:0]
-         : csrCfgReg_18[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_18[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_19[19:0]
-         : csrCfgReg_19[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_19[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_20[19:0]
-         : csrCfgReg_20[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_20[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_21[19:0]
-         : csrCfgReg_21[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_21[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_22[19:0]
-         : csrCfgReg_22[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_22[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_23[5:0]
-         : csrCfgReg_23[5:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_23[5:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_1_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_4_ready),
@@ -20308,57 +20308,57 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmRsp_4_bits_data            (io_data_tcdm_rsp_8_bits_data),
     .io_tcdmRsp_5_valid                (io_data_tcdm_rsp_9_valid),
     .io_tcdmRsp_5_bits_data            (io_data_tcdm_rsp_9_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_1_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_1_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_1_io_data_valid),
     .io_data_bits                      (_reader_1_io_data_bits)
   );
-  snax_simbacore__C2_Reader reader_2 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C2_Reader reader_2 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_24[19:0]
-         : csrCfgReg_24[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_24[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_spatialStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_26[19:0]
-         : csrCfgReg_26[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_26[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_27[19:0]
-         : csrCfgReg_27[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_27[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_28[19:0]
-         : csrCfgReg_28[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_28[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_29[19:0]
-         : csrCfgReg_29[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_29[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_30[19:0]
-         : csrCfgReg_30[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_30[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_31[19:0]
-         : csrCfgReg_31[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_31[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_32[19:0]
-         : csrCfgReg_32[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_32[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_33[19:0]
-         : csrCfgReg_33[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_33[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_34[19:0]
-         : csrCfgReg_34[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_34[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_35[1:0]
-         : csrCfgReg_35[1:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_35[1:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_2_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_10_ready),
@@ -20371,51 +20371,51 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_10_bits_data),
     .io_tcdmRsp_1_valid                (io_data_tcdm_rsp_11_valid),
     .io_tcdmRsp_1_bits_data            (io_data_tcdm_rsp_11_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_2_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_2_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_2_io_data_valid),
     .io_data_bits                      (_reader_2_io_data_bits)
   );
-  snax_simbacore__C3_Reader reader_3 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C3_Reader reader_3 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_36[19:0]
-         : csrCfgReg_36[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_36[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_39[19:0]
-         : csrCfgReg_39[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_39[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_40[19:0]
-         : csrCfgReg_40[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_40[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_41[19:0]
-         : csrCfgReg_41[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_41[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_42[19:0]
-         : csrCfgReg_42[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_42[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_43[19:0]
-         : csrCfgReg_43[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_43[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_44[19:0]
-         : csrCfgReg_44[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_44[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_45[19:0]
-         : csrCfgReg_45[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_45[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_46[19:0]
-         : csrCfgReg_46[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_46[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_47[0] : csrCfgReg_47[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_47[0] : csrCfgReg_47[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_3_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_12_ready),
@@ -20423,51 +20423,51 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_12_bits_addr),
     .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_12_valid),
     .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_12_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_3_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_3_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_3_io_data_valid),
     .io_data_bits                      (_reader_3_io_data_bits)
   );
-  snax_simbacore__C4_Reader reader_4 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C4_Reader reader_4 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_48[19:0]
-         : csrCfgReg_48[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_48[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_51[19:0]
-         : csrCfgReg_51[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_51[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_52[19:0]
-         : csrCfgReg_52[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_52[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_53[19:0]
-         : csrCfgReg_53[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_53[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_54[19:0]
-         : csrCfgReg_54[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_54[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_55[19:0]
-         : csrCfgReg_55[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_55[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_56[19:0]
-         : csrCfgReg_56[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_56[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_57[19:0]
-         : csrCfgReg_57[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_57[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_58[19:0]
-         : csrCfgReg_58[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_58[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_59[0] : csrCfgReg_59[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_59[0] : csrCfgReg_59[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_4_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_13_ready),
@@ -20475,51 +20475,51 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_13_bits_addr),
     .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_13_valid),
     .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_13_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_4_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_4_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_4_io_data_valid),
     .io_data_bits                      (_reader_4_io_data_bits)
   );
-  snax_simbacore__C5_Reader reader_5 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C5_Reader reader_5 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_60[19:0]
-         : csrCfgReg_60[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_60[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_63[19:0]
-         : csrCfgReg_63[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_63[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_64[19:0]
-         : csrCfgReg_64[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_64[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_65[19:0]
-         : csrCfgReg_65[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_65[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_66[19:0]
-         : csrCfgReg_66[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_66[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_67[19:0]
-         : csrCfgReg_67[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_67[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_68[19:0]
-         : csrCfgReg_68[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_68[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_69[19:0]
-         : csrCfgReg_69[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_69[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_70[19:0]
-         : csrCfgReg_70[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_70[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_71[0] : csrCfgReg_71[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_71[0] : csrCfgReg_71[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_5_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_14_ready),
@@ -20527,51 +20527,51 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_14_bits_addr),
     .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_14_valid),
     .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_14_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_5_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_5_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_5_io_data_valid),
     .io_data_bits                      (_reader_5_io_data_bits)
   );
-  snax_simbacore__C6_Reader reader_6 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C6_Reader reader_6 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_72[19:0]
-         : csrCfgReg_72[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_72[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_75[19:0]
-         : csrCfgReg_75[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_75[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_76[19:0]
-         : csrCfgReg_76[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_76[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_77[19:0]
-         : csrCfgReg_77[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_77[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_78[19:0]
-         : csrCfgReg_78[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_78[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_79[19:0]
-         : csrCfgReg_79[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_79[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_80[19:0]
-         : csrCfgReg_80[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_80[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_81[19:0]
-         : csrCfgReg_81[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_81[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_82[19:0]
-         : csrCfgReg_82[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_82[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_83[0] : csrCfgReg_83[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_83[0] : csrCfgReg_83[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_6_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_15_ready),
@@ -20579,57 +20579,57 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_15_bits_addr),
     .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_15_valid),
     .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_15_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_6_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_6_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_6_io_data_valid),
     .io_data_bits                      (_reader_6_io_data_bits)
   );
-  snax_simbacore__C7_Reader reader_7 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C7_Reader reader_7 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_84[19:0]
-         : csrCfgReg_84[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_84[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_spatialStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_86[19:0]
-         : csrCfgReg_86[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_86[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_87[19:0]
-         : csrCfgReg_87[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_87[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_88[19:0]
-         : csrCfgReg_88[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_88[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_89[19:0]
-         : csrCfgReg_89[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_89[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_90[19:0]
-         : csrCfgReg_90[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_90[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_91[19:0]
-         : csrCfgReg_91[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_91[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_92[19:0]
-         : csrCfgReg_92[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_92[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_93[19:0]
-         : csrCfgReg_93[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_93[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_94[19:0]
-         : csrCfgReg_94[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_94[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_95[7:0]
-         : csrCfgReg_95[7:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_95[7:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_7_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_16_ready),
@@ -20672,53 +20672,53 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmRsp_6_bits_data            (io_data_tcdm_rsp_22_bits_data),
     .io_tcdmRsp_7_valid                (io_data_tcdm_rsp_23_valid),
     .io_tcdmRsp_7_bits_data            (io_data_tcdm_rsp_23_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_7_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_7_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_7_io_data_valid),
     .io_data_bits                      (_reader_7_io_data_bits)
   );
-  snax_simbacore__C8_Reader reader_8 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C8_Reader reader_8 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_96[19:0]
-         : csrCfgReg_96[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_96[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_99[19:0]
-         : csrCfgReg_99[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_99[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_100[19:0]
-         : csrCfgReg_100[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_100[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_101[19:0]
-         : csrCfgReg_101[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_101[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_102[19:0]
-         : csrCfgReg_102[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_102[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_103[19:0]
-         : csrCfgReg_103[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_103[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_104[19:0]
-         : csrCfgReg_104[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_104[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_105[19:0]
-         : csrCfgReg_105[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_105[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_106[19:0]
-         : csrCfgReg_106[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_106[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_107[0]
-         : csrCfgReg_107[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_107[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_8_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_24_ready),
@@ -20726,53 +20726,53 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_24_bits_addr),
     .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_24_valid),
     .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_24_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_8_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_8_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_8_io_data_valid),
     .io_data_bits                      (_reader_8_io_data_bits)
   );
-  snax_simbacore__C9_Reader reader_9 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C9_Reader reader_9 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_108[19:0]
-         : csrCfgReg_108[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_108[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_111[19:0]
-         : csrCfgReg_111[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_111[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_112[19:0]
-         : csrCfgReg_112[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_112[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_113[19:0]
-         : csrCfgReg_113[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_113[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_114[19:0]
-         : csrCfgReg_114[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_114[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_115[19:0]
-         : csrCfgReg_115[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_115[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_116[19:0]
-         : csrCfgReg_116[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_116[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_117[19:0]
-         : csrCfgReg_117[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_117[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_118[19:0]
-         : csrCfgReg_118[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_118[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_119[0]
-         : csrCfgReg_119[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_119[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_9_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_25_ready),
@@ -20780,53 +20780,53 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_25_bits_addr),
     .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_25_valid),
     .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_25_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_9_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_9_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_9_io_data_valid),
     .io_data_bits                      (_reader_9_io_data_bits)
   );
-  snax_simbacore__C10_Reader reader_10 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C10_Reader reader_10 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_120[19:0]
-         : csrCfgReg_120[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_120[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_123[19:0]
-         : csrCfgReg_123[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_123[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_124[19:0]
-         : csrCfgReg_124[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_124[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_125[19:0]
-         : csrCfgReg_125[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_125[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_126[19:0]
-         : csrCfgReg_126[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_126[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_127[19:0]
-         : csrCfgReg_127[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_127[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_128[19:0]
-         : csrCfgReg_128[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_128[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_129[19:0]
-         : csrCfgReg_129[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_129[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_130[19:0]
-         : csrCfgReg_130[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_130[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_131[0]
-         : csrCfgReg_131[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_131[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_10_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_26_ready),
@@ -20834,53 +20834,53 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_26_bits_addr),
     .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_26_valid),
     .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_26_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_10_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_10_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_10_io_data_valid),
     .io_data_bits                      (_reader_10_io_data_bits)
   );
-  snax_simbacore__C11_Reader reader_11 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C11_Reader reader_11 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_132[19:0]
-         : csrCfgReg_132[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_132[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_135[19:0]
-         : csrCfgReg_135[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_135[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_136[19:0]
-         : csrCfgReg_136[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_136[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_137[19:0]
-         : csrCfgReg_137[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_137[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_138[19:0]
-         : csrCfgReg_138[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_138[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_139[19:0]
-         : csrCfgReg_139[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_139[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_140[19:0]
-         : csrCfgReg_140[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_140[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_141[19:0]
-         : csrCfgReg_141[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_141[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_142[19:0]
-         : csrCfgReg_142[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_142[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_143[0]
-         : csrCfgReg_143[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_143[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_11_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_27_ready),
@@ -20888,57 +20888,57 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_27_bits_addr),
     .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_27_valid),
     .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_27_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_11_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_11_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_11_io_data_valid),
     .io_data_bits                      (_reader_11_io_data_bits)
   );
-  snax_simbacore__C12_Reader reader_12 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C12_Reader reader_12 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_144[19:0]
-         : csrCfgReg_144[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_144[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_spatialStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_146[19:0]
-         : csrCfgReg_146[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_146[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_147[19:0]
-         : csrCfgReg_147[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_147[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_148[19:0]
-         : csrCfgReg_148[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_148[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_149[19:0]
-         : csrCfgReg_149[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_149[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_150[19:0]
-         : csrCfgReg_150[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_150[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_151[19:0]
-         : csrCfgReg_151[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_151[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_152[19:0]
-         : csrCfgReg_152[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_152[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_153[19:0]
-         : csrCfgReg_153[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_153[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_154[19:0]
-         : csrCfgReg_154[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_154[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_155[5:0]
-         : csrCfgReg_155[5:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_155[5:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_12_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_28_ready),
@@ -20971,57 +20971,57 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmRsp_4_bits_data            (io_data_tcdm_rsp_32_bits_data),
     .io_tcdmRsp_5_valid                (io_data_tcdm_rsp_33_valid),
     .io_tcdmRsp_5_bits_data            (io_data_tcdm_rsp_33_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_12_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_12_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_12_io_data_valid),
     .io_data_bits                      (_reader_12_io_data_bits)
   );
-  snax_simbacore__C13_Reader reader_13 (	// src/main/scala/snax/streamer/Streamer.scala:139:11
+  snax_simbacore__C13_Reader reader_13 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_156[19:0]
-         : csrCfgReg_156[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_156[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_spatialStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_158[19:0]
-         : csrCfgReg_158[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_158[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_159[19:0]
-         : csrCfgReg_159[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_159[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_160[19:0]
-         : csrCfgReg_160[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_160[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_161[19:0]
-         : csrCfgReg_161[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_161[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_162[19:0]
-         : csrCfgReg_162[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_162[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_163[19:0]
-         : csrCfgReg_163[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_163[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_164[19:0]
-         : csrCfgReg_164[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_164[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_165[19:0]
-         : csrCfgReg_165[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_165[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_166[19:0]
-         : csrCfgReg_166[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_166[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_167[3:0]
-         : csrCfgReg_167[3:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_167[3:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_reader_13_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_34_ready),
@@ -21044,53 +21044,53 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmRsp_2_bits_data            (io_data_tcdm_rsp_36_bits_data),
     .io_tcdmRsp_3_valid                (io_data_tcdm_rsp_37_valid),
     .io_tcdmRsp_3_bits_data            (io_data_tcdm_rsp_37_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_13_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:161:11
+    .io_data_ready                     (_readerDatapathExtention_13_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_valid                     (_reader_13_io_data_valid),
     .io_data_bits                      (_reader_13_io_data_bits)
   );
-  snax_simbacore__C0_Writer writer_0 (	// src/main/scala/snax/streamer/Streamer.scala:145:11
+  snax_simbacore__C0_Writer writer_0 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_168[19:0]
-         : csrCfgReg_168[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_168[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_171[19:0]
-         : csrCfgReg_171[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_171[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_172[19:0]
-         : csrCfgReg_172[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_172[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_173[19:0]
-         : csrCfgReg_173[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_173[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_174[19:0]
-         : csrCfgReg_174[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_174[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_175[19:0]
-         : csrCfgReg_175[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_175[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_176[19:0]
-         : csrCfgReg_176[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_176[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_177[19:0]
-         : csrCfgReg_177[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_177[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_178[19:0]
-         : csrCfgReg_178[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_178[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_179[0]
-         : csrCfgReg_179[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_179[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_writer_0_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_38_ready),
@@ -21098,52 +21098,52 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_38_bits_addr),
     .io_tcdmReq_0_bits_data            (io_data_tcdm_req_38_bits_data),
     .io_data_ready                     (_writer_0_io_data_ready),
-    .io_data_valid                     (_writerDatapathExtention_0_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:174:11
-    .io_data_bits                      (_writerDatapathExtention_0_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:174:11
+    .io_data_valid                     (_writerDatapathExtention_0_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
+    .io_data_bits                      (_writerDatapathExtention_0_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
   );
-  snax_simbacore__C1_Writer writer_1 (	// src/main/scala/snax/streamer/Streamer.scala:145:11
+  snax_simbacore__C1_Writer writer_1 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_180[19:0]
-         : csrCfgReg_180[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_180[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_183[19:0]
-         : csrCfgReg_183[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_183[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_184[19:0]
-         : csrCfgReg_184[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_184[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_185[19:0]
-         : csrCfgReg_185[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_185[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_186[19:0]
-         : csrCfgReg_186[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_186[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_187[19:0]
-         : csrCfgReg_187[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_187[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_188[19:0]
-         : csrCfgReg_188[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_188[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_189[19:0]
-         : csrCfgReg_189[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_189[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_190[19:0]
-         : csrCfgReg_190[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_190[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_191[0]
-         : csrCfgReg_191[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_191[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_writer_1_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_39_ready),
@@ -21151,52 +21151,52 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_39_bits_addr),
     .io_tcdmReq_0_bits_data            (io_data_tcdm_req_39_bits_data),
     .io_data_ready                     (_writer_1_io_data_ready),
-    .io_data_valid                     (_writerDatapathExtention_1_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:174:11
-    .io_data_bits                      (_writerDatapathExtention_1_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:174:11
+    .io_data_valid                     (_writerDatapathExtention_1_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
+    .io_data_bits                      (_writerDatapathExtention_1_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
   );
-  snax_simbacore__C2_Writer writer_2 (	// src/main/scala/snax/streamer/Streamer.scala:145:11
+  snax_simbacore__C2_Writer writer_2 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_192[19:0]
-         : csrCfgReg_192[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_192[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_195[19:0]
-         : csrCfgReg_195[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_195[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_196[19:0]
-         : csrCfgReg_196[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_196[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_197[19:0]
-         : csrCfgReg_197[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_197[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_198[19:0]
-         : csrCfgReg_198[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_198[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_199[19:0]
-         : csrCfgReg_199[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_199[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_200[19:0]
-         : csrCfgReg_200[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_200[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_201[19:0]
-         : csrCfgReg_201[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_201[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_202[19:0]
-         : csrCfgReg_202[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_202[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_203[0]
-         : csrCfgReg_203[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_203[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_writer_2_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_40_ready),
@@ -21204,56 +21204,56 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_40_bits_addr),
     .io_tcdmReq_0_bits_data            (io_data_tcdm_req_40_bits_data),
     .io_data_ready                     (_writer_2_io_data_ready),
-    .io_data_valid                     (_writerDatapathExtention_2_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:174:11
-    .io_data_bits                      (_writerDatapathExtention_2_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:174:11
+    .io_data_valid                     (_writerDatapathExtention_2_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
+    .io_data_bits                      (_writerDatapathExtention_2_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
   );
-  snax_simbacore__C3_Writer writer_3 (	// src/main/scala/snax/streamer/Streamer.scala:145:11
+  snax_simbacore__C3_Writer writer_3 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
     .clock                             (clock),
     .reset                             (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_204[19:0]
-         : csrCfgReg_204[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_204[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_spatialStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_206[19:0]
-         : csrCfgReg_206[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_206[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_207[19:0]
-         : csrCfgReg_207[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_207[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_208[19:0]
-         : csrCfgReg_208[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_208[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_209[19:0]
-         : csrCfgReg_209[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_209[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_210[19:0]
-         : csrCfgReg_210[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_210[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_211[19:0]
-         : csrCfgReg_211[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_211[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_212[19:0]
-         : csrCfgReg_212[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_212[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_213[19:0]
-         : csrCfgReg_213[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_213[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_214[19:0]
-         : csrCfgReg_214[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_214[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_readerwriterCfg_enabledChannel
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_215[3:0]
-         : csrCfgReg_215[3:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:120:26, :336:26, :338:30, :339:15
+         : csrCfgReg_215[3:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                           (_writer_3_io_busy),
     .io_tcdmReq_0_ready                (io_data_tcdm_req_41_ready),
@@ -21273,280 +21273,280 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:7
     .io_tcdmReq_3_bits_addr            (io_data_tcdm_req_44_bits_addr),
     .io_tcdmReq_3_bits_data            (io_data_tcdm_req_44_bits_data),
     .io_data_ready                     (_writer_3_io_data_ready),
-    .io_data_valid                     (_writerDatapathExtention_3_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:174:11
-    .io_data_bits                      (_writerDatapathExtention_3_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:174:11
+    .io_data_valid                     (_writerDatapathExtention_3_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
+    .io_data_bits                      (_writerDatapathExtention_3_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
   );
-  snax_simbacore__DataPathExtensionHost readerDatapathExtention_0 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost readerDatapathExtention_0 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_0_io_data_in_ready),
-    .io_data_in_valid  (_reader_0_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_0_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_0_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_0_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_0_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_0_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_0_bits)
   );
-  snax_simbacore__DataPathExtensionHost_1 readerDatapathExtention_1 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_1 readerDatapathExtention_1 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_1_io_data_in_ready),
-    .io_data_in_valid  (_reader_1_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_1_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_1_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_1_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_1_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_1_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_1_bits)
   );
-  snax_simbacore__DataPathExtensionHost_2 readerDatapathExtention_2 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_2 readerDatapathExtention_2 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_2_io_data_in_ready),
-    .io_data_in_valid  (_reader_2_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_2_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_2_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_2_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_2_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_2_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_2_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_3 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_3 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_3_io_data_in_ready),
-    .io_data_in_valid  (_reader_3_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_3_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_3_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_3_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_3_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_3_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_3_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_4 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_4 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_4_io_data_in_ready),
-    .io_data_in_valid  (_reader_4_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_4_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_4_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_4_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_4_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_4_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_4_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_5 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_5 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_5_io_data_in_ready),
-    .io_data_in_valid  (_reader_5_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_5_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_5_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_5_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_5_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_5_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_5_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_6 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_6 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_6_io_data_in_ready),
-    .io_data_in_valid  (_reader_6_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_6_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_6_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_6_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_6_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_6_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_6_bits)
   );
-  snax_simbacore__DataPathExtensionHost_7 readerDatapathExtention_7 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_7 readerDatapathExtention_7 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_7_io_data_in_ready),
-    .io_data_in_valid  (_reader_7_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_7_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_7_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_7_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_7_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_7_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_7_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_8 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_8 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_8_io_data_in_ready),
-    .io_data_in_valid  (_reader_8_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_8_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_8_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_8_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_8_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_8_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_8_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_9 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_9 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_9_io_data_in_ready),
-    .io_data_in_valid  (_reader_9_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_9_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_9_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_9_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_9_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_9_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_9_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_10 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_10 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_10_io_data_in_ready),
-    .io_data_in_valid  (_reader_10_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_10_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_10_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_10_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_10_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_10_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_10_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_11 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_3 readerDatapathExtention_11 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_11_io_data_in_ready),
-    .io_data_in_valid  (_reader_11_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_11_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_11_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_11_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_11_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_11_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_11_bits)
   );
-  snax_simbacore__DataPathExtensionHost_1 readerDatapathExtention_12 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost_1 readerDatapathExtention_12 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_12_io_data_in_ready),
-    .io_data_in_valid  (_reader_12_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_12_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_12_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_12_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_12_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_12_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_12_bits)
   );
-  snax_simbacore__DataPathExtensionHost readerDatapathExtention_13 (	// src/main/scala/snax/streamer/Streamer.scala:161:11
+  snax_simbacore__DataPathExtensionHost readerDatapathExtention_13 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_13_io_data_in_ready),
-    .io_data_in_valid  (_reader_13_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:139:11
-    .io_data_in_bits   (_reader_13_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:139:11
+    .io_data_in_valid  (_reader_13_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .io_data_in_bits   (_reader_13_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:125:11
     .io_data_out_ready (io_data_streamer2accelerator_data_13_ready),
     .io_data_out_valid (io_data_streamer2accelerator_data_13_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_13_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 writerDatapathExtention_0 (	// src/main/scala/snax/streamer/Streamer.scala:174:11
+  snax_simbacore__DataPathExtensionHost_3 writerDatapathExtention_0 (	// src/main/scala/snax/streamer/Streamer.scala:160:11
     .io_data_in_ready  (io_data_accelerator2streamer_data_0_ready),
     .io_data_in_valid  (io_data_accelerator2streamer_data_0_valid),
     .io_data_in_bits   (io_data_accelerator2streamer_data_0_bits),
-    .io_data_out_ready (_writer_0_io_data_ready),	// src/main/scala/snax/streamer/Streamer.scala:145:11
+    .io_data_out_ready (_writer_0_io_data_ready),	// src/main/scala/snax/streamer/Streamer.scala:131:11
     .io_data_out_valid (_writerDatapathExtention_0_io_data_out_valid),
     .io_data_out_bits  (_writerDatapathExtention_0_io_data_out_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 writerDatapathExtention_1 (	// src/main/scala/snax/streamer/Streamer.scala:174:11
+  snax_simbacore__DataPathExtensionHost_3 writerDatapathExtention_1 (	// src/main/scala/snax/streamer/Streamer.scala:160:11
     .io_data_in_ready  (io_data_accelerator2streamer_data_1_ready),
     .io_data_in_valid  (io_data_accelerator2streamer_data_1_valid),
     .io_data_in_bits   (io_data_accelerator2streamer_data_1_bits),
-    .io_data_out_ready (_writer_1_io_data_ready),	// src/main/scala/snax/streamer/Streamer.scala:145:11
+    .io_data_out_ready (_writer_1_io_data_ready),	// src/main/scala/snax/streamer/Streamer.scala:131:11
     .io_data_out_valid (_writerDatapathExtention_1_io_data_out_valid),
     .io_data_out_bits  (_writerDatapathExtention_1_io_data_out_bits)
   );
-  snax_simbacore__DataPathExtensionHost_3 writerDatapathExtention_2 (	// src/main/scala/snax/streamer/Streamer.scala:174:11
+  snax_simbacore__DataPathExtensionHost_3 writerDatapathExtention_2 (	// src/main/scala/snax/streamer/Streamer.scala:160:11
     .io_data_in_ready  (io_data_accelerator2streamer_data_2_ready),
     .io_data_in_valid  (io_data_accelerator2streamer_data_2_valid),
     .io_data_in_bits   (io_data_accelerator2streamer_data_2_bits),
-    .io_data_out_ready (_writer_2_io_data_ready),	// src/main/scala/snax/streamer/Streamer.scala:145:11
+    .io_data_out_ready (_writer_2_io_data_ready),	// src/main/scala/snax/streamer/Streamer.scala:131:11
     .io_data_out_valid (_writerDatapathExtention_2_io_data_out_valid),
     .io_data_out_bits  (_writerDatapathExtention_2_io_data_out_bits)
   );
-  snax_simbacore__DataPathExtensionHost writerDatapathExtention_3 (	// src/main/scala/snax/streamer/Streamer.scala:174:11
+  snax_simbacore__DataPathExtensionHost writerDatapathExtention_3 (	// src/main/scala/snax/streamer/Streamer.scala:160:11
     .io_data_in_ready  (io_data_accelerator2streamer_data_3_ready),
     .io_data_in_valid  (io_data_accelerator2streamer_data_3_valid),
     .io_data_in_bits   (io_data_accelerator2streamer_data_3_bits),
-    .io_data_out_ready (_writer_3_io_data_ready),	// src/main/scala/snax/streamer/Streamer.scala:145:11
+    .io_data_out_ready (_writer_3_io_data_ready),	// src/main/scala/snax/streamer/Streamer.scala:131:11
     .io_data_out_valid (_writerDatapathExtention_3_io_data_out_valid),
     .io_data_out_bits  (_writerDatapathExtention_3_io_data_out_bits)
   );
-  assign io_data_tcdm_req_0_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_0_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_0_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_1_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_1_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_1_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_2_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_2_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_2_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_3_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_3_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_3_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_4_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_4_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_4_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_5_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_5_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_5_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_6_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_6_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_6_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_7_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_7_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_7_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_8_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_8_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_8_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_9_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_9_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_9_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_10_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_10_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_10_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_11_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_11_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_11_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_12_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_12_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_12_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_13_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_13_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_13_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_14_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_14_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_14_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_15_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_15_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_15_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_16_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_16_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_16_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_17_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_17_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_17_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_18_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_18_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_18_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_19_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_19_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_19_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_20_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_20_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_20_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_21_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_21_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_21_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_22_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_22_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_22_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_23_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_23_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_23_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_24_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_24_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_24_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_25_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_25_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_25_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_26_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_26_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_26_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_27_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_27_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_27_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_28_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_28_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_28_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_29_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_29_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_29_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_30_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_30_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_30_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_31_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_31_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_31_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_32_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_32_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_32_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_33_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_33_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_33_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_34_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_34_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_34_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_35_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_35_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_35_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_36_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_36_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_36_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_37_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :161:11, :174:11, :258:25, :261:25
-  assign io_data_tcdm_req_37_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11
-  assign io_data_tcdm_req_37_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_38_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :145:11
-  assign io_data_tcdm_req_38_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_39_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :145:11
-  assign io_data_tcdm_req_39_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_40_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :145:11
-  assign io_data_tcdm_req_40_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_41_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :145:11
-  assign io_data_tcdm_req_41_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_42_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :145:11
-  assign io_data_tcdm_req_42_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_43_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :145:11
-  assign io_data_tcdm_req_43_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
-  assign io_data_tcdm_req_44_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :145:11
-  assign io_data_tcdm_req_44_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:71:7, :139:11, :145:11
+  assign io_data_tcdm_req_0_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_0_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_0_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_1_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_1_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_1_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_2_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_2_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_2_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_3_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_3_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_3_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_4_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_4_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_4_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_5_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_5_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_5_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_6_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_6_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_6_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_7_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_7_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_7_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_8_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_8_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_8_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_9_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_9_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_9_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_10_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_10_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_10_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_11_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_11_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_11_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_12_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_12_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_12_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_13_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_13_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_13_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_14_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_14_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_14_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_15_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_15_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_15_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_16_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_16_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_16_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_17_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_17_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_17_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_18_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_18_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_18_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_19_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_19_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_19_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_20_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_20_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_20_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_21_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_21_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_21_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_22_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_22_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_22_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_23_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_23_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_23_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_24_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_24_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_24_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_25_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_25_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_25_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_26_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_26_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_26_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_27_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_27_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_27_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_28_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_28_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_28_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_29_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_29_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_29_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_30_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_30_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_30_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_31_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_31_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_31_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_32_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_32_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_32_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_33_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_33_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_33_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_34_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_34_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_34_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_35_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_35_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_35_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_36_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_36_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_36_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_37_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :235:65, :236:65
+  assign io_data_tcdm_req_37_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11
+  assign io_data_tcdm_req_37_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_38_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :131:11
+  assign io_data_tcdm_req_38_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_39_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :131:11
+  assign io_data_tcdm_req_39_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_40_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :131:11
+  assign io_data_tcdm_req_40_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_41_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :131:11
+  assign io_data_tcdm_req_41_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_42_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :131:11
+  assign io_data_tcdm_req_42_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_43_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :131:11
+  assign io_data_tcdm_req_43_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
+  assign io_data_tcdm_req_44_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :131:11
+  assign io_data_tcdm_req_44_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :131:11
 endmodule
 

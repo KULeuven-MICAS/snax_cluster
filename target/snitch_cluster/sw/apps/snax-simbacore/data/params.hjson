@@ -15,6 +15,7 @@
   Mu: 16,
   Ku: 1, // output stationary
   Nu: 24,
+  convUnroll: 4,
   serial_width_d : 64, // convUnroll * fpType.width
   // Width A: 256
   // Width B: 384

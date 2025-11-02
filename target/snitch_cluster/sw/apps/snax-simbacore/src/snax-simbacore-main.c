@@ -71,16 +71,13 @@ int main() {
         set_simbacore_start();
 
         // Poll until streamer and accelerator finish
-        wait_simbacore();
         wait_simbacore_and_streamer();
+        printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
 
         // Result check
-        printf("Simbacore finished. Checking results...\n");
-        printf("local_d[0]: %u @ %p\n", local_d[0], (void*)local_d);
-        printf("D[0]: %u (0x%04x) @ %p\n", D[0], D[0], (void*)D);
         err += check_simbacore_result_D(local_d, D, data_length_d, false);
 
-        printf("Test SimbaCore: M = %d, K = %d, N = %d, Error: %d.\n", M, K, N, err ? "FAIL" : "PASS", err);
+        printf("Test SimbaCore: M = %d, K = %d, N = %d. %s: %u errors.\n", M, K, N, err ? "FAIL" : "PASS", err);
     }
     return err;
 }

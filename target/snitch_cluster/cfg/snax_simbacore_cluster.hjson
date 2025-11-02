@@ -110,9 +110,9 @@ Naming convention:
       {
         "snax_acc_name": "snax_simbacore",
         "bender_target": ["snax_simbacore"],
-        "snax_narrow_tcdm_ports": 13, // Sum of all streamer ports?  
+        "snax_narrow_tcdm_ports": 46, // NOTE this must match the sum of all streamer ports // TODO this fails VERY quietly
         "snax_wide_tcdm_ports": 0,
-        "snax_num_rw_csr": 6,
+        "snax_num_rw_csr": 6, // NOTE this must match the number in Simbacore shell wrapper
         "snax_num_ro_csr": 2,
         "snax_streamer_cfg": {"$ref": "#/snax_simbacore_streamer_template"}
       }
