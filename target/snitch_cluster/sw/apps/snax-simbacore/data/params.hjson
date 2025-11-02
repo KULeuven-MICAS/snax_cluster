@@ -6,9 +6,9 @@
 {
   // Algorithmic (specific to the test problem)
   mode : 2, // PHASE1 :: PHASE2 :: OSGemm
-  K: 1,
-  N: 1,
-  M: 1,
+  K: 3,
+  N: 3,
+  M: 2,
 
   // Hardware (must match RTL)
   // TODO parse from chisel directly? 

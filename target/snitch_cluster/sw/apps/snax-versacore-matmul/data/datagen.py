@@ -281,51 +281,21 @@ def emit_matmul_data(**kwargs):
         data_str += [format_scalar_definition("int32_t", "Atlbound1", N)]
         data_str += [format_scalar_definition("int32_t", "Atlstride1", 0)]
         data_str += [format_scalar_definition("int32_t", "Atlbound2", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Atlstride2",
-                K * a_len * tileSize * meshRow / 8,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Atlstride2", K * a_len * tileSize * meshRow / 8)]
     elif stationary == weight_stationary:
         data_str += [format_scalar_definition("int32_t", "Atlbound0", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Atlstride0",
-                K * a_len * tileSize * meshRow / 8,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Atlstride0", K * a_len * tileSize * meshRow / 8)]
         data_str += [format_scalar_definition("int32_t", "Atlbound1", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Atlstride1",
-                a_len * tileSize * meshRow / 8,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Atlstride1", a_len * tileSize * meshRow / 8)]
         data_str += [format_scalar_definition("int32_t", "Atlbound2", N)]
         data_str += [format_scalar_definition("int32_t", "Atlstride2", 0)]
     elif stationary == input_stationary:
         data_str += [format_scalar_definition("int32_t", "Atlbound0", N)]
         data_str += [format_scalar_definition("int32_t", "Atlstride0", 0)]
         data_str += [format_scalar_definition("int32_t", "Atlbound1", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Atlstride1",
-                a_len * tileSize * meshRow / 8,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Atlstride1", a_len * tileSize * meshRow / 8)]
         data_str += [format_scalar_definition("int32_t", "Atlbound2", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Atlstride2",
-                K * a_len * tileSize * meshRow / 8,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Atlstride2", K * a_len * tileSize * meshRow / 8)]
 
     data_str += [format_scalar_definition("int32_t", "Atlbound3", 1)]
     data_str += [format_scalar_definition("int32_t", "Atlstride3", 0)]
@@ -359,13 +329,7 @@ def emit_matmul_data(**kwargs):
         data_str += [format_scalar_definition("int32_t", "Btlbound0", K)]
         data_str += [format_scalar_definition("int32_t", "Btlstride0", b_len * tileSize * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "Btlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Btlstride1",
-                K * b_len * tileSize * meshCol / 8,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Btlstride1", K * b_len * tileSize * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "Btlbound2", M)]
         data_str += [format_scalar_definition("int32_t", "Btlstride2", 0)]
     elif stationary == weight_stationary:
