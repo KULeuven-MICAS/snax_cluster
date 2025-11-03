@@ -159,31 +159,38 @@ uint32_t read_simbacore_perf_counter() {
 }
 
 // Check result, word-by-word. data_length in bytes
-uint32_t check_simbacore_result_D(uint16_t* output, uint16_t* output_golden, int32_t data_length,
-                                  bool banked_data_layout) {
+uint32_t check_OSGeMM_result_all(uint16_t* output, uint16_t* output_golden, int32_t data_length) {
     uint32_t err = 0;
     int32_t num_elements = data_length / sizeof(uint16_t);
     printf("Checking results: %d bytes (%d elements)\n", data_length, num_elements);
 
-    // TODO most likely incorrect
-    if (banked_data_layout) {
-        for (int i = 0; i < num_elements / 16; i += 1) {
-            for (int j = 0; j < 16; j++) {
-                if (*(output + i * (256 / (4 * sizeof(uint16_t))) + j) != output_golden[i * 16 + j]) {
-                    err++;
-                }
-            }
-        }
-    } else {
-        for (int i = 0; i < num_elements; i++) {
-            if (output[i] != output_golden[i]) {
-                err++;
-                printf("FAIL out[%d] = %d, ref[%d] = %d\n", i, output[i], i, output_golden[i]);
-            } else {
-                printf("PASS out[%d] = %d, ref[%d] = %d\n", i, output[i], i, output_golden[i]);
-            }
+    for (int i = 0; i < num_elements; i++) {
+        if (output[i] != output_golden[i]) {
+            err++;
+            printf("FAIL out[%d] = %d,\tref = %d\n", i, output[i], i, output_golden[i]);
+        } else {
+            printf("PASS out[%d] = %d,\tref = %d\n", i, output[i], i, output_golden[i]);
         }
     }
+    return err;
+}
 
+// Check some samples of ther result to speed up verification
+uint32_t check_OSGeMM_result_sample(uint16_t* output, uint16_t* output_golden, int32_t* sample_indices,
+                                    int32_t test_sample_count) {
+    uint32_t err = 0;
+    printf("Checking results: sampling %d elements\n", test_sample_count);
+
+    for (int i = 0; i < test_sample_count; i++) {
+        int sample_index = sample_indices[i];
+        if (output[sample_index] != output_golden[sample_index]) {
+            err++;
+            printf("FAIL out[%d] = %d,\tref = %d\n", sample_index, output[sample_index], sample_index,
+                   output_golden[sample_index]);
+        } else {
+            printf("PASS out[%d] = %d,\tref = %d\n", sample_index, output[sample_index], sample_index,
+                   output_golden[sample_index]);
+        }
+    }
     return err;
 }

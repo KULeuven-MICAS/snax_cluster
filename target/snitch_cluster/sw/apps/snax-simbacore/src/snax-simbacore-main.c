@@ -5,7 +5,6 @@
 // Robin Geens <robin.geens@esat.kuleuven.be>
 
 #include "data.h"
-
 #include "snax-simbacore-lib.h"
 
 // This test only test on the output stationary dataflow
@@ -40,32 +39,12 @@ int main() {
     // Call compute core
     if (snrt_global_core_idx() == 0) {
         printf("Setting up Streamer and SimbaCore...\n");
-        // Set the CSR for the Streamer
-        int32_t Aslstride[] = {Aslstride0};
-        int32_t Atlbound[] = {Atlbound0, Atlbound1, Atlbound2, Atlbound3};
-        int32_t Atlstride[] = {Atlstride0, Atlstride1, Atlstride2, Atlstride3};
 
-        int32_t Bslstride[] = {Bslstride0};
-        int32_t Btlbound[] = {Btlbound0, Btlbound1, Btlbound2, Btlbound3};
-        int32_t Btlstride[] = {Btlstride0, Btlstride1, Btlstride2, Btlstride3};
-
-        // int32_t Cslstride[] = {Cslstride0};
-        // int32_t Ctlbound[] = {Ctlbound0, Ctlbound1, Ctlbound2, Ctlbound3};
-        // int32_t Ctlstride[] = {Ctlstride0, Ctlstride1, Ctlstride2, Ctlstride3};
-
-        int32_t Dslstride[] = {Dslstride0};
-        int32_t Dtlbound[] = {Dtlbound0, Dtlbound1, Dtlbound2, Dtlbound3};
-        int32_t Dtlstride[] = {Dtlstride0, Dtlstride1, Dtlstride2, Dtlstride3};
-
-        // Set Streamer configuration CSR
         set_simbacore_oscore_streamer_csr(
-            (uint32_t)local_a, Aslstride, Atlbound, Atlstride, set_addr_remap_index_A, channel_en_A,
+            (uint32_t)local_a, Aslstride, Atlbound, Atlstride, set_addr_remap_index_A, channel_en_A,   // A
+            (uint32_t)local_b, Bslstride, Btlbound, Btlstride, set_addr_remap_index_B, channel_en_B,   // B
+            (uint32_t)local_d, Dslstride, Dtlbound, Dtlstride, set_addr_remap_index_D, channel_en_D);  // D
 
-            (uint32_t)local_b, Bslstride, Btlbound, Btlstride, set_addr_remap_index_B, channel_en_B,
-
-            (uint32_t)local_d, Dslstride, Dtlbound, Dtlstride, set_addr_remap_index_D, channel_en_D);
-
-        // Set CSR
         set_simbacore_csr(mode, M * Mu, K * Ku, N * Nu, 1);
         set_simbacore_streamer_start();
         set_simbacore_start();
@@ -74,10 +53,11 @@ int main() {
         wait_simbacore_and_streamer();
         printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
 
-        // Result check
-        err += check_simbacore_result_D(local_d, D, data_length_d, false);
+        err += check_OSGeMM_result_sample(local_d, D, test_sample_indices, test_sample_count);
+        err += check_OSGeMM_result_all(local_d, D, data_length_d);
 
-        printf("Test SimbaCore: M = %d, K = %d, N = %d. %s: %u errors.\n", M, K, N, err ? "FAIL" : "PASS", err);
+        printf("Test SimbaCore: M = %d, K = %d, N = %d. %s: %u/%d errors.\n", M, K, N, err ? "FAIL" : "PASS", err,
+               test_sample_count);
     }
     return err;
 }

@@ -15,6 +15,7 @@ import sys
 import os
 import math
 import inspect
+import random
 
 # Add data utility path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
@@ -23,6 +24,7 @@ from snax_utils import align_wide_addr  # noqa E402
 
 DATA_OUT_DIR = os.path.join(os.path.dirname(__file__), "generated")
 BANKWIDTH = 64
+TEST_SAMPLE_COUNT = 25
 
 
 class DataGenerator:
@@ -73,12 +75,17 @@ class DataGenerator:
         # Extend with defaults
         bounds = bounds + [1] * (num_loops - len(bounds))
         strides = strides + [0] * (num_loops - len(strides))
+        # Save each bound/stride as a separate variable
         for i in range(num_loops):
             self.format("uint32_t", f"{streamer_name}tlbound{i}", bounds[i])
             self.format("uint32_t", f"{streamer_name}tlstride{i}", strides[i])
+        # Group values into array
+        self.data += [f"int32_t {streamer_name}tlbound[] = {{{', '.join(map(str, bounds))}}};"]
+        self.data += [f"int32_t {streamer_name}tlstride[] = {{{', '.join(map(str, strides))}}};"]
 
     def format_spatial_stride(self, streamer_name: str, stride: int):
         self.format("uint32_t", f"{streamer_name}slstride0", stride)
+        self.data += [f"int32_t {streamer_name}slstride[] = {{{stride}}};"]
 
     def _read_data_int(self, filename: str):
         """Read a vec from a file."""
@@ -86,6 +93,14 @@ class DataGenerator:
             lines = f.readlines()
         data_lines = [line.strip() for line in lines if not line.startswith("#")]
         return [int(x) for x in data_lines]
+
+    def format_test_sample_indices(self, num_outputs: int):
+        """Format variables used to test only a subset of the output."""
+        test_sample_count = min(num_outputs, TEST_SAMPLE_COUNT)
+        self.format_int(test_sample_count)
+        self.format_vector(
+            "int32_t", "test_sample_indices", [random.randint(0, num_outputs - 1) for _ in range(test_sample_count)]
+        )
 
     def generate_OSGeMM_data(self):
         # -------------------
@@ -216,8 +231,7 @@ class DataGenerator:
         # Test Data generation
         # -------------------
 
-        # Parse test data from external file.
-        # TODO these file names are hardcoded too much
+        # Parse test data from external file. # TODO these file names are hardcoded too much
         try:
             A_int = self._read_data_int("A.bin")
             B_int = self._read_data_int("B.bin")
@@ -228,6 +242,7 @@ class DataGenerator:
                 f"Error loading test data: {e}. Did you run the scala data generator and is the data directory correct?"
             )
 
+        self.format_test_sample_indices(len(D_int))
         self.format_vector("uint16_t", "A", A_int)
         self.format_vector("uint16_t", "B", B_int)
         self.format_vector("uint16_t", "C", C_int)
