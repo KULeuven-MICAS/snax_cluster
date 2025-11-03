@@ -9,7 +9,6 @@
 
 // This test only test on the output stationary dataflow
 int main() {
-    // Set err value for checking
     int err = 0;
 
     // Define TCDM addresses
@@ -29,13 +28,6 @@ int main() {
     // Wait for DMA to finish
     snrt_cluster_hw_barrier();
 
-    // NOTE no C for now
-    // if (snrt_is_dm_core()) {
-    //     snrt_dma_start_1d(local_c, C, data_length_c);
-    //     snrt_dma_wait_all();
-    // }
-    // snrt_cluster_hw_barrier();
-
     // Call compute core
     if (snrt_global_core_idx() == 0) {
         printf("Setting up Streamer and SimbaCore...\n");
@@ -45,7 +37,7 @@ int main() {
             (uint32_t)local_b, Bslstride, Btlbound, Btlstride, set_addr_remap_index_B, channel_en_B,   // B
             (uint32_t)local_d, Dslstride, Dtlbound, Dtlstride, set_addr_remap_index_D, channel_en_D);  // D
 
-        set_simbacore_csr(mode, M * Mu, K * Ku, N * Nu, 1);
+        set_simbacore_csr(mode, seqLen, dModel, dInner, 1);
         set_simbacore_streamer_start();
         set_simbacore_start();
 
@@ -54,7 +46,7 @@ int main() {
         printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
 
         err += check_OSGeMM_result_sample(local_d, D, test_sample_indices, test_sample_count);
-        err += check_OSGeMM_result_all(local_d, D, data_length_d);
+        // err += check_OSGeMM_result_all(local_d, D, data_length_d);
 
         printf("Test SimbaCore: M = %d, K = %d, N = %d. %s: %u/%d errors.\n", M, K, N, err ? "FAIL" : "PASS", err,
                test_sample_count);

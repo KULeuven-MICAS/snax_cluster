@@ -107,31 +107,38 @@ class DataGenerator:
         # Parameters
         # -------------------
         num_loops = 4  # NOTE this must match the hjson config
-        M = self.kwargs["M"]
-        K = self.kwargs["K"]
-        N = self.kwargs["N"]
+        seqLen = self.kwargs["seqLen"]
+        dModel = self.kwargs["dModel"]
+        dInner = self.kwargs["dInner"]
         Mu = self.kwargs["Mu"]
-        Ku = self.kwargs["Ku"]
         Nu = self.kwargs["Nu"]
         serial_width_d = self.kwargs["serial_width_d"]
+
         nbit_a = 16  # BF16. Hardcoded for now
         nbit_b = 16
         nbit_c = 16
         nbit_d = 16
 
+        # In VersaCore naming convention
+        M = seqLen // Mu
+        K = dModel
+        N = dInner // Nu
+        self.format("uint32_t", "M", M)
+        self.format("uint32_t", "K", K)
+        self.format("uint32_t", "N", N)
+
         # Unrolled widths: parallel size of the serial-to-parallel converter
-        a_array_width = Mu * Ku * nbit_a
-        b_array_width = Ku * Nu * nbit_b
+        a_array_width = Mu * nbit_a
+        b_array_width = Nu * nbit_b
         c_array_width = Mu * Nu * nbit_c
         d_array_width = Mu * Nu * nbit_d
         assert c_array_width == d_array_width, "C and D array width must be the same"
         assert d_array_width % serial_width_d == 0, "d_array_width must be divisible by serial_width_d"
 
-        data_length_a = M * K * Mu * Ku * nbit_a / 8
-        data_length_b = K * N * Ku * Nu * nbit_b / 8
+        data_length_a = M * K * Mu * nbit_a / 8
+        data_length_b = K * N * Nu * nbit_b / 8
         data_length_c = M * N * Mu * Nu * nbit_c / 8
         data_length_d = M * N * Mu * Nu * nbit_d / 8
-
         self.format_int(data_length_a)
         self.format_int(data_length_b)
         self.format_int(data_length_c)
@@ -165,7 +172,7 @@ class DataGenerator:
         A_enabled_channel_CSR_num = int(math.ceil(a_array_width / BANKWIDTH / 32))
         channel_en_A = [0] * A_enabled_channel_CSR_num
         # Related to if this is a wide channel or not. If wide, must be divisible by 8, if narrow, must be divisible by 1
-        channel_en_A_bits = max(8, int((Mu * Ku * nbit_a / BANKWIDTH + 7) // 8 * 8))
+        channel_en_A_bits = max(8, int(a_array_width / BANKWIDTH + 7) // 8 * 8)
         channel_en_A = self._gen_channel_enable_CSR(channel_en_A, channel_en_A_bits)
         self.data += ["int32_t channel_en_A[] = { " + ", ".join(map(str, channel_en_A)) + " };"]
 
@@ -183,7 +190,7 @@ class DataGenerator:
 
         B_enabled_channel_CSR_num = int(math.ceil(b_array_width / BANKWIDTH / 32))
         channel_en_B = [0] * B_enabled_channel_CSR_num
-        channel_en_B_bits = max(8, int((Nu * Ku * nbit_b / BANKWIDTH + 7) // 8 * 8))
+        channel_en_B_bits = max(8, int(b_array_width / BANKWIDTH + 7) // 8 * 8)
         channel_en_B = self._gen_channel_enable_CSR(channel_en_B, channel_en_B_bits)
         self.data += ["int32_t channel_en_B[] = { " + ", ".join(map(str, channel_en_B)) + " };"]
 
@@ -209,7 +216,7 @@ class DataGenerator:
 
         D_enabled_channel_CSR_num = int(math.ceil(serial_width_d / BANKWIDTH / 32))
         channel_en_D = [0] * D_enabled_channel_CSR_num
-        channel_en_D_bits = int((Mu * Nu * nbit_c / BANKWIDTH + 7) // 8 * 8)
+        channel_en_D_bits = int((d_array_width / BANKWIDTH + 7) // 8 * 8)
         channel_en_D = self._gen_channel_enable_CSR(channel_en_D, channel_en_D_bits)
         self.data += ["int32_t channel_en_D[] = { " + ", ".join(map(str, channel_en_D)) + " };"]
 
@@ -231,7 +238,7 @@ class DataGenerator:
         # Test Data generation
         # -------------------
 
-        # Parse test data from external file. # TODO these file names are hardcoded too much
+        # Parse test data from external file.
         try:
             A_int = self._read_data_int("A.bin")
             B_int = self._read_data_int("B.bin")

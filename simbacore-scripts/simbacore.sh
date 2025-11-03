@@ -38,7 +38,7 @@ make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson rtl-gen
 # (Manual verification required)
 
 # [bash|root] Generate raw test data externally via scala data generator
-cd ../chisel-ssm && sbt "test:runMain snax.DataGenerator" && cd ../snax_cluster
+cd ../chisel-ssm && sbt "test:runMain snax.DataGenerator mode=2 seqLen=64 dModel=36" && cd ../snax_cluster
 
 # [snax|target] Build the software
 make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson vsim_preparation
@@ -69,6 +69,5 @@ cd simbacore-work && dcnxt_shell -64bit -f dc.tcl > dc.log
 ###############
 
 # Current flaws in this flow:
-# 1) The hardware parameters in the app hjson are manual and must match those in the SimbaCore.sv
-# 2) Raw test data generation via scala generator is part of the sw makefile, but cannot be executed in the snax podman shell
+# 1) Raw test data generation via scala generator is part of the sw makefile, but cannot be executed in the snax podman shell
 # 3) 
