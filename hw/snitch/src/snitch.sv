@@ -21,7 +21,7 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
   parameter bit          Xdma      = 0,
   parameter bit          Xssr      = 0,
   /// Enable FP in general
-  parameter bit          FP_EN     = 1,
+  parameter bit          FP_EN     = 0,
   /// Enable F Extension.
   parameter bit          RVF       = 0,
   /// Enable D Extension.
