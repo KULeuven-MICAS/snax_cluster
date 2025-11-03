@@ -241,7 +241,7 @@ module snitch_cc #(
     .NumDTLBEntries (NumDTLBEntries),
     .NumITLBEntries (NumITLBEntries),
     .RVE (RVE),
-    .FP_EN (0),
+    .FP_EN (FPEn),
     .Xdma (Xdma),
     .Xssr (Xssr),
     .RVF (RVF),
@@ -495,29 +495,119 @@ module snitch_cc #(
   logic             ssr_streamctl_valid;
   logic             ssr_streamctl_ready;
 
-  assign fpu_status = '0;
+  if (FPEn) begin : gen_fpu
+    snitch_pkg::core_events_t fp_ss_core_events;
 
-  assign ssr_raddr = '0;
-  assign ssr_rvalid = '0;
-  assign ssr_rdone = '0;
-  assign ssr_waddr = '0;
-  assign ssr_wdata = '0;
-  assign ssr_wvalid = '0;
-  assign ssr_wdone = '0;
+    dreq_t fpu_dreq;
+    drsp_t fpu_drsp;
 
-  assign acc_qready    = '0;
-  assign acc_seq.data  = '0;
-  assign acc_seq.id    = '0;
-  assign acc_seq.error = '0;
-  assign acc_pvalid    = '0;
+    snitch_fp_ss #(
+      .AddrWidth (AddrWidth),
+      .DataWidth (DataWidth),
+      .NumFPOutstandingLoads (NumFPOutstandingLoads),
+      .NumFPOutstandingMem (NumFPOutstandingMem),
+      .NumFPUSequencerInstr (NumSequencerInstr),
+      .FPUImplementation (FPUImplementation),
+      .NumSsrs (NumSsrs),
+      .SsrRegs (SsrRegs),
+      .dreq_t (dreq_t),
+      .drsp_t (drsp_t),
+      .acc_req_t (acc_req_t),
+      .acc_resp_t (acc_resp_t),
+      .RegisterSequencer (RegisterSequencer),
+      .RegisterFPUIn (RegisterFPUIn),
+      .RegisterFPUOut (RegisterFPUOut),
+      .Xfrep (Xfrep),
+      .Xssr (Xssr),
+      .RVF (RVF),
+      .RVD (RVD),
+      .XF16 (XF16),
+      .XF16ALT (XF16ALT),
+      .XF8 (XF8),
+      .XF8ALT (XF8ALT),
+      .XFVEC (XFVEC),
+      .FLEN (FLEN)
+    ) i_snitch_fp_ss (
+      .clk_i,
+      .rst_i            ( ~rst_ni | (~rst_fp_ss_ni)   ),
+      // pragma translate_off
+      .trace_port_o            ( fpu_trace           ),
+      .sequencer_tracer_port_o ( fpu_sequencer_trace ),
+      // pragma translate_on
+      .acc_req_i        ( acc_snitch_req ),
+      .acc_req_valid_i  ( acc_qvalid     ),
+      .acc_req_ready_o  ( acc_qready     ),
+      .acc_resp_o       ( acc_seq        ),
+      .acc_resp_valid_o ( acc_pvalid     ),
+      .acc_resp_ready_i ( acc_pready     ),
+      .data_req_o       ( fpu_dreq       ),
+      .data_rsp_i       ( fpu_drsp       ),
+      .fpu_rnd_mode_i   ( fpu_rnd_mode   ),
+      .fpu_fmt_mode_i   ( fpu_fmt_mode   ),
+      .fpu_status_o     ( fpu_status     ),
+      .ssr_raddr_o      ( ssr_raddr      ),
+      .ssr_rdata_i      ( ssr_rdata      ),
+      .ssr_rvalid_o     ( ssr_rvalid     ),
+      .ssr_rready_i     ( ssr_rready     ),
+      .ssr_rdone_o      ( ssr_rdone      ),
+      .ssr_waddr_o      ( ssr_waddr      ),
+      .ssr_wdata_o      ( ssr_wdata      ),
+      .ssr_wvalid_o     ( ssr_wvalid     ),
+      .ssr_wready_i     ( ssr_wready     ),
+      .ssr_wdone_o      ( ssr_wdone      ),
+      .streamctl_done_i   ( ssr_streamctl_done  ),
+      .streamctl_valid_i  ( ssr_streamctl_valid ),
+      .streamctl_ready_o  ( ssr_streamctl_ready ),
+      .core_events_o      ( fp_ss_core_events   )
+    );
 
-  assign merged_dreq = snitch_dreq_q;
-  assign snitch_drsp_q = merged_drsp;
+    reqrsp_mux #(
+      .NrPorts (2),
+      .AddrWidth (AddrWidth),
+      .DataWidth (DataWidth),
+      .req_t (dreq_t),
+      .rsp_t (drsp_t),
+      // TODO(zarubaf): Wire-up to top-level.
+      .RespDepth (8),
+      .RegisterReq ({RegisterFPUReq, 1'b0})
+    ) i_reqrsp_mux (
+      .clk_i,
+      .rst_ni,
+      .slv_req_i ({fpu_dreq, snitch_dreq_q}),
+      .slv_rsp_o ({fpu_drsp, snitch_drsp_q}),
+      .mst_req_o (merged_dreq),
+      .mst_rsp_i (merged_drsp),
+      .idx_o (/*not connected*/)
+    );
 
-  assign core_events_o.issue_fpu = '0;
-  assign core_events_o.issue_fpu_seq = '0;
-  assign core_events_o.issue_core_to_fpu = '0;
+    assign core_events_o.issue_fpu = fp_ss_core_events.issue_fpu;
+    assign core_events_o.issue_fpu_seq = fp_ss_core_events.issue_fpu_seq;
+    assign core_events_o.issue_core_to_fpu = fp_ss_core_events.issue_core_to_fpu;
 
+  end else begin : gen_no_fpu
+    assign fpu_status = '0;
+
+    assign ssr_raddr = '0;
+    assign ssr_rvalid = '0;
+    assign ssr_rdone = '0;
+    assign ssr_waddr = '0;
+    assign ssr_wdata = '0;
+    assign ssr_wvalid = '0;
+    assign ssr_wdone = '0;
+
+    assign acc_qready    = '0;
+    assign acc_seq.data  = '0;
+    assign acc_seq.id    = '0;
+    assign acc_seq.error = '0;
+    assign acc_pvalid    = '0;
+
+    assign merged_dreq = snitch_dreq_q;
+    assign snitch_drsp_q = merged_drsp;
+
+    assign core_events_o.issue_fpu = '0;
+    assign core_events_o.issue_fpu_seq = '0;
+    assign core_events_o.issue_core_to_fpu = '0;
+  end
 
   // Decide whether to go to SoC or TCDM
   dreq_t data_tcdm_req;
@@ -857,6 +947,12 @@ module snitch_cc #(
           (i_snitch.acc_qready_i && i_snitch.acc_qvalid_o && i_snitch.acc_qreq_o.addr == 0),
         is_seq_insn:  (i_snitch.inst_data_i inside {riscv_instr::FREP_I, riscv_instr::FREP_O})
       };
+      if (FPEn) begin
+        extras_fpu = fpu_trace;
+        if (Xfrep) begin
+          // Addenda to FPU extras iff popping sequencer
+          extras_fpu_seq_out = fpu_sequencer_trace;
+        end
       end
 
       cycle++;
@@ -870,6 +966,29 @@ module snitch_cc #(
             $time, cycle, i_snitch.priv_lvl_q, i_snitch.pc_q, i_snitch.inst_data_i,
             snitch_pkg::print_snitch_trace(extras_snitch));
         $fwrite(f, trace_entry);
+      end
+      if (FPEn) begin
+        // Trace FPU iff:
+        // an incoming handshake on the accelerator bus occurs <==> an instruction was issued
+        // OR an FPU result is ready to be written back to an FPR register or the bus
+        // OR an LSU result is ready to be written back to an FPR register or the bus
+        // OR an FPU result, LSU result or bus value is ready to be written back to an FPR register
+        if (extras_fpu.acc_q_hs || extras_fpu.fpu_out_hs
+        || extras_fpu.lsu_q_hs || extras_fpu.fpr_we) begin
+          $sformat(trace_entry, "%t %1d %8d 0x%h DASM(%h) #; %s\n",
+              $time, cycle, i_snitch.priv_lvl_q, 32'hz, extras_fpu.op_in,
+              snitch_pkg::print_fpu_trace(extras_fpu));
+          $fwrite(f, trace_entry);
+        end
+        // sequencer instructions
+        if (Xfrep) begin
+          if (extras_fpu_seq_out.cbuf_push) begin
+            $sformat(trace_entry, "%t %1d %8d 0x%h DASM(%h) #; %s\n",
+                $time, cycle, i_snitch.priv_lvl_q, 32'hz, 64'hz,
+                snitch_pkg::print_fpu_sequencer_trace(extras_fpu_seq_out));
+            $fwrite(f, trace_entry);
+          end
+        end
       end
     end else begin
       cycle = '0;
