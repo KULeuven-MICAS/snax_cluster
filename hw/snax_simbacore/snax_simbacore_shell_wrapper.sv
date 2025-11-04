@@ -52,60 +52,60 @@ module snax_simbacore_shell_wrapper #(
     // Note, we maintained the form of these signals just to comply with the top-level wrapper
 
     // Ports from accelerator to streamer
-    output logic [   OSCoreOutDWidth-1:0] acc2stream_0_data_o,
+    output logic [   OSCoreOutDWidth-1:0] acc2stream_0_data_o,   // W0
     output logic                          acc2stream_0_valid_o,
     input  logic                          acc2stream_0_ready_i,
-    output logic [SwitchCoreOutWidth-1:0] acc2stream_1_data_o,
+    output logic [SwitchCoreOutWidth-1:0] acc2stream_1_data_o,   // W1
     output logic                          acc2stream_1_valid_o,
     input  logic                          acc2stream_1_ready_i,
-    output logic [   SUCoreOutYWidth-1:0] acc2stream_2_data_o,
+    output logic [   SUCoreOutYWidth-1:0] acc2stream_2_data_o,   // W2
     output logic                          acc2stream_2_valid_o,
     input  logic                          acc2stream_2_ready_i,
-    output logic [   ISCoreOutDWidth-1:0] acc2stream_3_data_o,
+    output logic [   ISCoreOutDWidth-1:0] acc2stream_3_data_o,   // W3
     output logic                          acc2stream_3_valid_o,
     input  logic                          acc2stream_3_ready_i,
 
     // Ports from streamer to accelerator
-    input  logic [               OSCoreInAWidth-1:0] stream2acc_0_data_i,
+    input  logic [               OSCoreInAWidth-1:0] stream2acc_0_data_i,    // R0
     input  logic                                     stream2acc_0_valid_i,
     output logic                                     stream2acc_0_ready_o,
-    input  logic [               OSCoreInBWidth-1:0] stream2acc_1_data_i,
+    input  logic [               OSCoreInBWidth-1:0] stream2acc_1_data_i,    // R1
     input  logic                                     stream2acc_1_valid_i,
     output logic                                     stream2acc_1_ready_o,
-    input  logic [      SwitchCoreInMatmulWidth-1:0] stream2acc_2_data_i,
+    input  logic [      SwitchCoreInMatmulWidth-1:0] stream2acc_2_data_i,    // R2
     input  logic                                     stream2acc_2_valid_i,
     output logic                                     stream2acc_2_ready_o,
-    input  logic [      SwitchCoreInWeightWidth-1:0] stream2acc_3_data_i,
+    input  logic [      SwitchCoreInWeightWidth-1:0] stream2acc_3_data_i,    // R3
     input  logic                                     stream2acc_3_valid_i,
     output logic                                     stream2acc_3_ready_o,
-    input  logic [        SwitchCoreInBiasWidth-1:0] stream2acc_4_data_i,
+    input  logic [        SwitchCoreInBiasWidth-1:0] stream2acc_4_data_i,    // R4
     input  logic                                     stream2acc_4_valid_i,
     output logic                                     stream2acc_4_ready_o,
-    input  logic [SwitchCoreInMatmulWeightWidth-1:0] stream2acc_5_data_i,
+    input  logic [SwitchCoreInMatmulWeightWidth-1:0] stream2acc_5_data_i,    // R5
     input  logic                                     stream2acc_5_valid_i,
     output logic                                     stream2acc_5_ready_o,
-    input  logic [               SUCoreInAWidth-1:0] stream2acc_6_data_i,
+    input  logic [               SUCoreInAWidth-1:0] stream2acc_6_data_i,    // R6
     input  logic                                     stream2acc_6_valid_i,
     output logic                                     stream2acc_6_ready_o,
-    input  logic [              SUCoreInBCWidth-1:0] stream2acc_7_data_i,
+    input  logic [              SUCoreInBCWidth-1:0] stream2acc_7_data_i,    // R7
     input  logic                                     stream2acc_7_valid_i,
     output logic                                     stream2acc_7_ready_o,
-    input  logic [               SUCoreInDWidth-1:0] stream2acc_8_data_i,
+    input  logic [               SUCoreInDWidth-1:0] stream2acc_8_data_i,    // R8
     input  logic                                     stream2acc_8_valid_i,
     output logic                                     stream2acc_8_ready_o,
-    input  logic [               SUCoreInXWidth-1:0] stream2acc_9_data_i,
+    input  logic [               SUCoreInXWidth-1:0] stream2acc_9_data_i,    // R9     
     input  logic                                     stream2acc_9_valid_i,
     output logic                                     stream2acc_9_ready_o,
-    input  logic [               SUCoreInZWidth-1:0] stream2acc_10_data_i,
+    input  logic [               SUCoreInZWidth-1:0] stream2acc_10_data_i,   // R10
     input  logic                                     stream2acc_10_valid_i,
     output logic                                     stream2acc_10_ready_o,
-    input  logic [               ISCoreInAWidth-1:0] stream2acc_11_data_i,
+    input  logic [               ISCoreInAWidth-1:0] stream2acc_11_data_i,   // R11
     input  logic                                     stream2acc_11_valid_i,
     output logic                                     stream2acc_11_ready_o,
-    input  logic [               ISCoreInBWidth-1:0] stream2acc_12_data_i,
+    input  logic [               ISCoreInBWidth-1:0] stream2acc_12_data_i,   // R12
     input  logic                                     stream2acc_12_valid_i,
     output logic                                     stream2acc_12_ready_o,
-    input  logic [               ISCoreInCWidth-1:0] stream2acc_13_data_i,
+    input  logic [               ISCoreInCWidth-1:0] stream2acc_13_data_i,   // R13
     input  logic                                     stream2acc_13_valid_i,
     output logic                                     stream2acc_13_ready_o,
 

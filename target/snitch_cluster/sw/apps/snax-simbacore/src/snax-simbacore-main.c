@@ -32,10 +32,9 @@ int main() {
     if (snrt_global_core_idx() == 0) {
         printf("Setting up Streamer and SimbaCore...\n");
 
-        set_simbacore_oscore_streamer_csr(
-            (uint32_t)local_a, Aslstride, Atlbound, Atlstride, set_addr_remap_index_A, channel_en_A,   // A
-            (uint32_t)local_b, Bslstride, Btlbound, Btlstride, set_addr_remap_index_B, channel_en_B,   // B
-            (uint32_t)local_d, Dslstride, Dtlbound, Dtlstride, set_addr_remap_index_D, channel_en_D);  // D
+        set_simbacore_osgemm_streamer_csr((uint32_t)local_a, Aslstride, Atlbound, Atlstride, channel_en_A,   // A
+                                          (uint32_t)local_b, Bslstride, Btlbound, Btlstride, channel_en_B,   // B
+                                          (uint32_t)local_d, Dslstride, Dtlbound, Dtlstride, channel_en_D);  // D
 
         set_simbacore_csr(mode, seqLen, dModel, dInner, 1);
         set_simbacore_streamer_start();

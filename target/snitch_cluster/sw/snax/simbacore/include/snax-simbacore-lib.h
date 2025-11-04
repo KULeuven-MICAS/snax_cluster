@@ -26,14 +26,12 @@
 #define SIMBACORE_BUSY (SIMBACORE_CSR_ADDR_BASE + 6)
 #define SIMBACORE_PERFORMANCE_COUNTER (SIMBACORE_CSR_ADDR_BASE + 7)
 
-void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32_t* Atlbound, int32_t* Atlstride,
-                                       int32_t set_addr_remap_index_A, int32_t* channel_en_A,
-
+void set_simbacore_osgemm_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32_t* Atlbound, int32_t* Atlstride,
+                                       uint32_t channel_en_A,  //
                                        uint32_t ptr_b, int32_t* Bslstride, int32_t* Btlbound, int32_t* Btlstride,
-                                       int32_t set_addr_remap_index_B, int32_t* channel_en_B,
-
+                                       uint32_t channel_en_B,  //
                                        uint32_t ptr_d, int32_t* Dslstride, int32_t* Dtlbound, int32_t* Dtlstride,
-                                       int32_t set_addr_remap_index_D, int32_t* channel_en_D);
+                                       uint32_t channel_en_D);
 
 // Set CSR to start STREAMER
 static inline void set_simbacore_streamer_start() { write_csr(STREAMER_START_CSR, 1); }

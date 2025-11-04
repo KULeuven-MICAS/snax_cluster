@@ -4,23 +4,25 @@ logs
 project
 global-logging
 work
-.bender/
 Bender.lock
+.bender/
 .vscode/
 .metals
 .bloop
 .bsp
 .scala-build
+.cache
+
 *.svf
 *.log
 *.bin
-.cache
 
 # Only .bin file to be tracked
 !bootrom.bin
 
-# Keep track of these generated files
 simbacore-work
+target/snitch_cluster/sw/apps/snax-simbacore/data/params.hjson
+# Keep track of these generated files
 !simbacore-work/flist.tcl
 !target/snitch_cluster/generated/snax_simbacore
 !target/snitch_cluster/generated/snax_simbacore_cluster_xdma

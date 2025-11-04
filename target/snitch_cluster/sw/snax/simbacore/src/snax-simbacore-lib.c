@@ -7,115 +7,61 @@
 
 #include "snax-simbacore-lib.h"
 #include <stdbool.h>
-#include "snrt.h"
 #include "streamer_csr_addr_map.h"
 
-void set_simbacore_oscore_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32_t* Atlbound, int32_t* Atlstride,
-                                       int32_t set_addr_remap_index_A, int32_t* channel_en_A,
-
+void set_simbacore_osgemm_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32_t* Atlbound, int32_t* Atlstride,
+                                       uint32_t channel_en_A,  //
                                        uint32_t ptr_b, int32_t* Bslstride, int32_t* Btlbound, int32_t* Btlstride,
-                                       int32_t set_addr_remap_index_B, int32_t* channel_en_B,
-
+                                       uint32_t channel_en_B,  //
                                        uint32_t ptr_d, int32_t* Dslstride, int32_t* Dtlbound, int32_t* Dtlstride,
-                                       int32_t set_addr_remap_index_D, int32_t* channel_en_D) {
+                                       uint32_t channel_en_D) {
     // -------------------
     // A streamer setting
     // -------------------
-    // base ptr for A
     write_csr(BASE_PTR_READER_0_LOW, ptr_a);
 
-    // spatial strides for A
-    for (int i = 0; i < S_STRIDE_NUM_READER_0; i++) {
+    for (int i = 0; i < S_STRIDE_NUM_READER_0; i++)  // spatial strides
         csrw_ss(S_STRIDE_BASE_READER_0 + i, Aslstride[i]);
-    }
 
-    // loop bounds, from innermost to outermost, for data mover A
-    for (int i = 0; i < T_BOUND_NUM_READER_0; i++) {
+    for (int i = 0; i < T_BOUND_NUM_READER_0; i++)  // temporal bounds
         csrw_ss(T_BOUND_BASE_READER_0 + i, Atlbound[i]);
-    }
 
-    // temporal strides for A
-    for (int i = 0; i < T_STRIDE_NUM_READER_0; i++) {
+    for (int i = 0; i < T_STRIDE_NUM_READER_0; i++)  // temporal strides
         csrw_ss(T_STRIDE_BASE_READER_0 + i, Atlstride[i]);
-    }
 
-    // set the address remap index for A
-#ifdef ADDR_REMAP_INDEX_READER_0
-    write_csr(ADDR_REMAP_INDEX_READER_0, set_addr_remap_index_A);
-#endif
-
-    // set the channel enable
-#ifdef ENABLED_CHANNEL_READER_0
-    for (int i = 0; i < ENABLED_CHANNEL_READER_0_CSR_NUM; i++) {
-        csrw_ss(ENABLED_CHANNEL_READER_0 + i, channel_en_A[i]);
-    }
-#endif
+    write_csr(ENABLED_CHANNEL_READER_0, channel_en_A);
 
     // -------------------
     // B streamer setting
     // -------------------
-    // base ptr for B
     write_csr(BASE_PTR_READER_1_LOW, ptr_b);
 
-    // spatial strides for B
-    for (int i = 0; i < S_STRIDE_NUM_READER_1; i++) {
+    for (int i = 0; i < S_STRIDE_NUM_READER_1; i++)  // spatial strides
         csrw_ss(S_STRIDE_BASE_READER_1 + i, Bslstride[i]);
-    }
 
-    // loop bounds, from innermost to outermost, for data mover B
-    for (int i = 0; i < T_BOUND_NUM_READER_1; i++) {
+    for (int i = 0; i < T_BOUND_NUM_READER_1; i++)  // temporal bounds
         csrw_ss(T_BOUND_BASE_READER_1 + i, Btlbound[i]);
-    }
 
-    // temporal strides for B
-    for (int i = 0; i < T_STRIDE_NUM_READER_1; i++) {
+    for (int i = 0; i < T_STRIDE_NUM_READER_1; i++)  // temporal strides
         csrw_ss(T_STRIDE_BASE_READER_1 + i, Btlstride[i]);
-    }
 
-    // set the address remap index for B
-#ifdef ADDR_REMAP_INDEX_READER_1
-    write_csr(ADDR_REMAP_INDEX_READER_1, set_addr_remap_index_B);
-#endif
-
-    // set the channel enable
-#ifdef ENABLED_CHANNEL_READER_1
-    for (int i = 0; i < ENABLED_CHANNEL_READER_1_CSR_NUM; i++) {
-        csrw_ss(ENABLED_CHANNEL_READER_1 + i, channel_en_B[i]);
-    }
-#endif
+    write_csr(ENABLED_CHANNEL_READER_1, channel_en_B);
 
     // -------------------
     // D streamer setting
     // -------------------
-    // base ptr for D
     write_csr(BASE_PTR_WRITER_0_LOW, ptr_d);
 
-    // spatial strides for D
-    for (int i = 0; i < S_STRIDE_NUM_WRITER_0; i++) {
+    for (int i = 0; i < S_STRIDE_NUM_WRITER_0; i++)  // spatial strides
         csrw_ss(S_STRIDE_BASE_WRITER_0 + i, Dslstride[i]);
-    }
 
-    // for D, from N to M
-    for (int i = 0; i < T_BOUND_NUM_WRITER_0; i++) {
+    for (int i = 0; i < T_BOUND_NUM_WRITER_0; i++)  // temporal bounds
         csrw_ss(T_BOUND_BASE_WRITER_0 + i, Dtlbound[i]);
-    }
 
-    // temporal strides for D
-    for (int i = 0; i < T_STRIDE_NUM_WRITER_0; i++) {
+    for (int i = 0; i < T_STRIDE_NUM_WRITER_0; i++)  // temporal strides
         csrw_ss(T_STRIDE_BASE_WRITER_0 + i, Dtlstride[i]);
-    }
 
-    // set the address remap index for D
-#ifdef ADDR_REMAP_INDEX_WRITER_0
-    write_csr(ADDR_REMAP_INDEX_WRITER_0, set_addr_remap_index_D);
-#endif
-
-    // set the channel enable
-#ifdef ENABLED_CHANNEL_WRITER_0
-    for (int i = 0; i < ENABLED_CHANNEL_WRITER_0_CSR_NUM; i++) {
-        csrw_ss(ENABLED_CHANNEL_WRITER_0 + i, channel_en_D[i]);
-    }
-#endif
+    write_csr(ENABLED_CHANNEL_WRITER_0, channel_en_D);
 }
 
 void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank) {
@@ -165,11 +111,13 @@ uint32_t check_OSGeMM_result_all(uint16_t* output, uint16_t* output_golden, int3
     printf("Checking results: %d bytes (%d elements)\n", data_length, num_elements);
 
     for (int i = 0; i < num_elements; i++) {
-        if (output[i] != output_golden[i]) {
+        uint16_t output_value = output[i];
+        uint16_t golden_value = output_golden[i];
+        if (output_value != golden_value) {
             err++;
-            printf("FAIL out[%d] = %d,\tref = %d\n", i, output[i], i, output_golden[i]);
+            printf("FAIL out[%d] = %d,\tref = %d\n", i, output_value, golden_value);
         } else {
-            printf("PASS out[%d] = %d,\tref = %d\n", i, output[i], i, output_golden[i]);
+            printf("PASS out[%d] = %d,\tref = %d\n", i, output_value, golden_value);
         }
     }
     return err;
@@ -183,13 +131,13 @@ uint32_t check_OSGeMM_result_sample(uint16_t* output, uint16_t* output_golden, i
 
     for (int i = 0; i < test_sample_count; i++) {
         int sample_index = sample_indices[i];
-        if (output[sample_index] != output_golden[sample_index]) {
+        uint16_t output_value = output[sample_index];
+        uint16_t golden_value = output_golden[sample_index];
+        if (output_value != golden_value) {
             err++;
-            printf("FAIL out[%d] = %d,\tref = %d\n", sample_index, output[sample_index], sample_index,
-                   output_golden[sample_index]);
+            printf("FAIL out[%d] = %d,\tref = %d\n", sample_index, output_value, golden_value);
         } else {
-            printf("PASS out[%d] = %d,\tref = %d\n", sample_index, output[sample_index], sample_index,
-                   output_golden[sample_index]);
+            printf("PASS out[%d] = %d,\tref = %d\n", sample_index, output_value, golden_value);
         }
     }
     return err;
