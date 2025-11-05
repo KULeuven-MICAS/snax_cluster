@@ -11,7 +11,7 @@
 
     cluster: {
         name: "snax_hypercorex_cluster",
-        bender_target: ["snax_hypercorex_cluster"],
+        bender_target: ["snax_hypercorex_cluster", "sparse_interconnect"],
         boot_addr: 4096, // 0x1000
         cluster_base_addr: 268435456, // 0x1000_0000
         cluster_base_offset: 4194304,  // 4MB
@@ -22,6 +22,7 @@
         tcdm: {
             size: 128,
             banks: 32,
+            sparse_interconnect: true,
         },
         cluster_periph_size: 64, // kB
         zero_mem_size: 64, // kB
@@ -46,14 +47,6 @@
             ema: 3,
             emaw: 2,
             emas: 1
-        },
-        // SNAX custom cluster TCDM assignment
-        snax_custom_tcdm_assign: {
-            snax_enable_assign_tcdm_idx: true,
-            snax_narrow_assign_start_idx: [0,26],
-            snax_narrow_assign_end_idx: [1,26],
-            snax_wide_assign_start_idx: [2,27],
-            snax_wide_assign_end_idx: [25,34],
         },
         // Timing parameters
         timing: {
@@ -121,9 +114,8 @@
         snax_acc_cfg: [{
             snax_acc_name: "snax_hypercorex",
             bender_target: ["hypercorex"],
-            snax_narrow_tcdm_ports: 3,
-            snax_wide_tcdm_ports: 0,
-            snax_wide_tcdm_ports: 32,
+            snax_tcdm_ports: 35,
+            sparse_interconnect_config: [[2, 1], [24, 8], [1, 1], [8, 8]],
             snax_disable_csr_manager: true,
             snax_streamer_cfg: {$ref: "#/snax_hypercorex_streamer_template" }
         }],
