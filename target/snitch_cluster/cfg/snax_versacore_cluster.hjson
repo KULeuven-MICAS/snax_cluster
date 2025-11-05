@@ -36,7 +36,7 @@ Naming convention:
         user_width: 3
         tcdm:
         {
-            size: 256
+            size: 512
             banks: 64
             sparse_interconnect: true
         }
