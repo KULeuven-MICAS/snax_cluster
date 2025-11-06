@@ -135,8 +135,22 @@ Naming convention:
                 [
                     snax_versacore
                 ]
-                snax_tcdm_ports: 88
-                sparse_interconnect_config: [[8, 1], [80, 8]],
+                snax_tcdm_ports: 112
+                sparse_interconnect_config:
+                [
+                    [
+                        32
+                        1
+                    ]
+                    [
+                        64
+                        16
+                    ]
+                    [
+                        16
+                        4
+                    ]
+                ]
                 snax_num_rw_csr: 7
                 snax_num_ro_csr: 2
                 snax_versacore_mac_num:
@@ -175,11 +189,11 @@ Naming convention:
                 [
                     SInt
                 ]
-                snax_versacore_array_input_a_width: 1024
+                snax_versacore_array_input_a_width: 2048
                 snax_versacore_array_input_b_width: 4096
                 snax_versacore_array_input_c_width: 32768
                 snax_versacore_array_output_d_width: 32768
-                snax_versacore_serial_a_width: 1024
+                snax_versacore_serial_a_width: 2048
                 snax_versacore_serial_b_width: 4096
                 snax_versacore_serial_c_d_width: 1024
                 snax_versacore_adder_tree_delay: 2
@@ -193,8 +207,23 @@ Naming convention:
                         ]
                         [
                             1
-                            32
-                            16
+                            8
+                            64
+                        ]
+                        [
+                            4
+                            8
+                            64
+                        ]
+                        [
+                            8
+                            8
+                            64
+                        ]
+                        [
+                            4
+                            64
+                            4
                         ]
                     ]
                 ]
@@ -285,7 +314,7 @@ Naming convention:
             spatial_bounds:
             [
                 [
-                    16
+                    32
                 ]
                 [
                     64
@@ -298,7 +327,7 @@ Naming convention:
             ]
             num_channel:
             [
-                16
+                32
                 64
             ]
             fifo_depth:
