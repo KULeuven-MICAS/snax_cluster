@@ -4,7 +4,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 # Robin Geens <robin.geens@esat.kuleuven.be>
 
 
@@ -34,9 +33,12 @@ class DataGenerator:
         self.data: list[str] = []
 
     def emit_header_file(self):
+        self.data.append("#include <stdint.h>\n")
         self.format_params()
+        self.format("uint32_t", "test_sample_count", TEST_SAMPLE_COUNT)
+        self.format("uint32_t", "channel_en", (1 << 32) - 1)  # Use global channel_en for all streamers
+        self.generate_Phase1_data()
         self.generate_OSGeMM_data()
-        self.data.insert(0, "#include <stdint.h>\n\n")
         return "\n".join(self.data)
 
     def format(self, type: str, var_name: str, value: int):
@@ -59,6 +61,15 @@ class DataGenerator:
     def format_vector(self, type: str, var_name: str, value: list[int]):
         self.data.append(format_vector_definition(type, var_name, value))
 
+    def read_and_format_vector(self, type: str, tensor_name: str):
+        try:
+            tensor_data = self._read_data_int(tensor_name)
+        except FileNotFoundError as e:
+            raise RuntimeError(
+                f"Error loading test data for tensor {tensor_name}: {e}. Did you run the scala data generator and is the data directory correct?"
+            )
+        self.format_vector(type, tensor_name, tensor_data)
+
     def format_temporal_bounds_strides(self, streamer_name: str, bounds: list[int], strides: list[int]):
         """Format temporal bounds and strides for a streamer by automatically naming the variables and adding defaults.
         bounds are from inner to outer loop.
@@ -78,32 +89,26 @@ class DataGenerator:
         self.format("uint32_t", f"{streamer_name}slstride0", stride)
         self.data += [f"int32_t {streamer_name}slstride[] = {{{stride}}};"]
 
-    def _read_data_int(self, filename: str):
+    def _read_data_int(self, tensor_name: str):
         """Read a vec from a file."""
-        with open(os.path.join(DATA_OUT_DIR, filename), "r") as f:
+        with open(os.path.join(DATA_OUT_DIR, tensor_name + ".bin"), "r") as f:
             lines = f.readlines()
         data_lines = [line.strip() for line in lines if not line.startswith("#")]
         return [int(x) for x in data_lines]
 
-    def format_test_sample_indices(self, num_outputs: int):
+    def format_test_sample_indices(self, tensor_name: str, tensor_size: int):
         """Format variables used to test only a subset of the output."""
-        test_sample_count = min(num_outputs, TEST_SAMPLE_COUNT)
-        self.format_int(test_sample_count)
-
         self.format_vector(
             "int32_t",
-            "test_sample_indices",
-            [random.randint(0, num_outputs - 1) for _ in range(test_sample_count)],
+            f"test_sample_indices_{tensor_name}",
+            [random.randint(0, tensor_size - 1) for _ in range(TEST_SAMPLE_COUNT)],
         )
 
-    def format_channel_enable(self, streamer_name: str, total_channel_width: int):
-        """If a streamer has more than 1 channel (memory port), it can disable some channels"""
-        enabled_channel_CSR_num = int(math.ceil(total_channel_width / BANKWIDTH / 32))
-        assert enabled_channel_CSR_num == 1, "The C code currently does not support having more than 32 channels"
-        # If the channel is wide, it must be divisible by 8. If narrow, it must be divisible by 1.
-        nb_bits = max(8, int(total_channel_width / BANKWIDTH + 7) // 8 * 8)
-        channel_en = (1 << nb_bits) - 1
-        self.format("int32_t", f"channel_en_{streamer_name}", channel_en)
+    def format_channel_enable(self, streamer_name: str):
+        """If a streamer has more than 1 channel (memory port), it can disable some channels.
+        Here, we ignore this and set all channels to 1."""
+        channel_en = (1 << 32) - 1
+        self.format("uint32_t", f"channel_en_{streamer_name}", channel_en)
 
     def generate_OSGeMM_data(self):
         # -------------------
@@ -112,35 +117,29 @@ class DataGenerator:
         seqLen = self.kwargs["seqLen"]
         dModel = self.kwargs["dModel"]
         dInner = self.kwargs["dInner"]
-        Mu = self.kwargs["Mu"]
-        Nu = self.kwargs["Nu"]
+        Mu = self.kwargs["seqLenUnroll"]
+        Nu = self.kwargs["dInnerUnroll"]
         serial_width_d = self.kwargs["serial_width_d"]
 
-        nbit_a = 16  # BF16. Hardcoded for now
-        nbit_b = 16
-        nbit_c = 16
-        nbit_d = 16
+        nbit = 16  # BF16. Hardcoded for now
 
         # In VersaCore naming convention
         M = seqLen // Mu
         K = dModel
         N = dInner // Nu
-        self.format("uint32_t", "M", M)
-        self.format("uint32_t", "K", K)
-        self.format("uint32_t", "N", N)
 
         # Unrolled widths: parallel size of the serial-to-parallel converter
-        a_array_width = Mu * nbit_a
-        b_array_width = Nu * nbit_b
-        c_array_width = Mu * Nu * nbit_c
-        d_array_width = Mu * Nu * nbit_d
+        a_array_width = Mu * nbit
+        b_array_width = Nu * nbit
+        c_array_width = Mu * Nu * nbit
+        d_array_width = Mu * Nu * nbit
         assert c_array_width == d_array_width, "C and D array width must be the same"
         assert d_array_width % serial_width_d == 0, "d_array_width must be divisible by serial_width_d"
 
-        data_length_a = M * K * Mu * nbit_a / 8
-        data_length_b = K * N * Nu * nbit_b / 8
-        data_length_c = M * N * Mu * Nu * nbit_c / 8
-        data_length_d = M * N * Mu * Nu * nbit_d / 8
+        data_length_a = M * K * Mu * nbit / 8
+        data_length_b = K * N * Nu * nbit / 8
+        data_length_c = M * N * Mu * Nu * nbit / 8
+        data_length_d = M * N * Mu * Nu * nbit / 8
         self.format_int(data_length_a)
         self.format_int(data_length_b)
         self.format_int(data_length_c)
@@ -165,7 +164,7 @@ class DataGenerator:
         self.format_temporal_bounds_strides("A", bounds_A, strides_A)
         # INFO [RG] Spatial stride is 1 full bank: i.e. streamer accesses multiple, sequential banks.
         self.format_spatial_stride("A", BANKWIDTH // 8)
-        self.format_channel_enable("A", a_array_width)
+        self.format_channel_enable("A")
 
         # ------------------
         # Reader 1: weight B
@@ -178,7 +177,7 @@ class DataGenerator:
         ]
         self.format_spatial_stride("B", BANKWIDTH // 8)
         self.format_temporal_bounds_strides("B", bounds_A, strides_B)
-        self.format_channel_enable("B", b_array_width)
+        self.format_channel_enable("B")
         # -------------------
         # Writer 0: output D
         # -------------------
@@ -187,7 +186,7 @@ class DataGenerator:
         strides_D = [serial_width_d / 8]
         self.format_temporal_bounds_strides("D", bounds_D, strides_D)
         self.format_spatial_stride("D", BANKWIDTH // 8)
-        self.format_channel_enable("D", serial_width_d)
+        self.format_channel_enable("D")
 
         # ------------
         # Base address
@@ -206,22 +205,12 @@ class DataGenerator:
         # Test Data generation
         # -------------------
 
-        # Parse test data from external file.
-        try:
-            A_int = self._read_data_int("A.bin")
-            B_int = self._read_data_int("B.bin")
-            C_int = self._read_data_int("C.bin")
-            D_int = self._read_data_int("D.bin")
-        except FileNotFoundError as e:
-            raise RuntimeError(
-                f"Error loading test data: {e}. Did you run the scala data generator and is the data directory correct?"
-            )
-
-        self.format_test_sample_indices(len(D_int))
-        self.format_vector("uint16_t", "A", A_int)
-        self.format_vector("uint16_t", "B", B_int)
-        self.format_vector("uint16_t", "C", C_int)
-        self.format_vector("uint16_t", "D", D_int)
+        # Parse test data from external file and format
+        self.format_test_sample_indices("D", tensor_size=seqLen * dInner)
+        self.read_and_format_vector("uint16_t", "A")
+        self.read_and_format_vector("uint16_t", "B")
+        self.read_and_format_vector("uint16_t", "C")
+        self.read_and_format_vector("uint16_t", "D")
 
     def generate_Phase1_data(self):
         # -------------------
@@ -230,157 +219,165 @@ class DataGenerator:
         seqLen = self.kwargs["seqLen"]
         dModel = self.kwargs["dModel"]
         dInner = self.kwargs["dInner"]
-        Mu = self.kwargs["Mu"]
-        Nu = self.kwargs["Nu"]
+        seqLenUnroll = self.kwargs["seqLenUnroll"]
+        dInnerUnroll = self.kwargs["dInnerUnroll"]
         dConv = self.kwargs["dConv"]
         convUnroll = self.kwargs["convUnroll"]
-        serial_width_d = self.kwargs["serial_width_d"]
 
-        nbit_a = 16  # BF16. Hardcoded for now
-        nbit_b = 16
-        nbit_c = 16
-        nbit_d = 16
-        nbit = 16
-
-        # In VersaCore naming convention
-        M = seqLen // Mu
-        K = dModel
-        N = dInner // Nu
-        self.format("uint32_t", "M", M)
-        self.format("uint32_t", "K", K)
-        self.format("uint32_t", "N", N)
-
-        # Unrolled widths: parallel size of the serial-to-parallel converter
-        b_array_width = Nu * nbit_b
-        c_array_width = Mu * Nu * nbit_c
-        d_array_width = Mu * Nu * nbit_d
-        assert c_array_width == d_array_width, "C and D array width must be the same"
-        assert d_array_width % serial_width_d == 0, "d_array_width must be divisible by serial_width_d"
-
-        data_length_a = M * K * Mu * nbit_a / 8
-        data_length_b = K * N * Nu * nbit_b / 8
-        data_length_c = M * N * Mu * Nu * nbit_c / 8
-        data_length_d = M * N * Mu * Nu * nbit_d / 8
-        self.format_int(data_length_a)
-        self.format_int(data_length_b)
-        self.format_int(data_length_c)
-        self.format_int(data_length_d)
+        nbit = 16  # BF16. Hardcoded for now
 
         # ------------
         # Reader 0: in
         # ------------
-        os_core_width_a = Mu * nbit_a
-        bounds_R0 = [K, M, N]
+        bounds_R0 = [
+            dModel,  # K
+            seqLen // seqLenUnroll,  # M
+            dInner // dInnerUnroll,  # N
+        ]
         strides_R0 = [
-            os_core_width_a / 8,
-            K * os_core_width_a / 8,
+            (seqLenUnroll * nbit) / 8,
+            dModel * (seqLenUnroll * nbit) / 8,
             0,
         ]
         self.format_temporal_bounds_strides("R0", bounds_R0, strides_R0)
         self.format_spatial_stride("R0", BANKWIDTH // 8)
-        self.format_channel_enable("R0", os_core_width_a)
+        self.format_channel_enable("R0")
 
-        # ---------------------------------
-        # Reader1: in proj weight (osCore)
-        # ---------------------------------
+        # ----------------------
+        # Reader1: osCore weight
+        # ----------------------
         strides_R1 = [
-            b_array_width / 8,  # K
+            (dInnerUnroll * nbit) / 8,  # K
             0,  # M - irrelevant dimension
-            K * b_array_width / 8,  # N
+            dModel * (dInnerUnroll * nbit) / 8,  # N
         ]
         self.format_spatial_stride("R1", BANKWIDTH // 8)
         self.format_temporal_bounds_strides("R1", bounds_R0, strides_R1)
+        self.format_channel_enable("R1")
 
         # ---------------------------------
-        # Reader 3: conv weight (switchCore)
+        # Reader 3: conv (switchCore) weight
         # ---------------------------------
-        # layout is row-major [dInner, dConv]. 1 elem per cycle (currently 1 elem per bank)
-        bounds_R3 = [dConv, dInner]
-        strides_R3 = [BANKWIDTH // 8, dConv * BANKWIDTH // 8]
+        # layout is row-major [dInner, dConv]
+        bounds_R3 = [dConv * dInner // convUnroll]
+        strides_R3 = [BANKWIDTH // 8]
         self.format_spatial_stride("R3", BANKWIDTH // 8)
         self.format_temporal_bounds_strides("R3", bounds_R3, strides_R3)
+        self.format_channel_enable("R3")
 
         # ---------------------------------
-        # Reader 4: conv bias (switchCore)
+        # Reader 4: conv (switchCore) bias
         # ---------------------------------
-        # layout is [dInner]. 1 elem per cycle (currently 1 elem per bank)
-        bounds_R4 = [dInner]
+        bounds_R4 = [dInner // convUnroll]
         strides_R4 = [BANKWIDTH // 8]
         self.format_spatial_stride("R4", BANKWIDTH // 8)
         self.format_temporal_bounds_strides("R4", bounds_R4, strides_R4)
+        self.format_channel_enable("R4")
 
-        # ---------------------------------
-        # Reader 12: out proj weight (isCore)
-        # ---------------------------------
+        # ------------------------
+        # Reader 12: isCore weight
+        # ------------------------
+        bounds_R12 = [
+            dModel,  # N
+            seqLen // seqLenUnroll,  # M
+            dInner // dInnerUnroll,  # K
+        ]
+        strides_R12 = [
+            (dInnerUnroll * nbit) // 8,  # TODO versacore heeft de strides gewisseld?
+            0,
+            dModel * (dInnerUnroll * nbit) // 8,
+        ]
+        self.format_spatial_stride("R12", BANKWIDTH // 8)
+        self.format_temporal_bounds_strides("R12", bounds_R12, strides_R12)
 
-        # TODO
-        bounds_R12 = [dInner]
-        strides_R12 = [BANKWIDTH // 8]
-        self.format_spatial_stride("R4", BANKWIDTH // 8)
-        self.format_temporal_bounds_strides("R4", bounds_R12, strides_R12)
+        # ----------------------
+        # Reader 13: isCore psum
+        # ----------------------
 
-        # ---------------------------------
-        # Reader 13: out proj psum (isCore)
-        # ---------------------------------
-
-        # TODO
-        bounds_R13 = [dInner]
-        strides_R13 = [BANKWIDTH // 8]
-        self.format_spatial_stride("R4", BANKWIDTH // 8)
-        self.format_temporal_bounds_strides("R4", bounds_R13, strides_R13)
+        # First inject zeros, then (K-1) times the full output matrix
+        # I guess the initial values (C) can be at the same addresses as the output matrix
+        bounds_R13 = [
+            (seqLen // seqLenUnroll) * dModel,  # one output matrix
+            (dInner // dInnerUnroll),  # complete reduction dimension
+        ]
+        strides_R13 = [
+            (seqLenUnroll * nbit) // 8,
+            0,  # Go to same addresses again
+        ]
+        self.format_spatial_stride("R13", BANKWIDTH // 8)
+        self.format_temporal_bounds_strides("R13", bounds_R13, strides_R13)
+        self.format_channel_enable("R13")
 
         # -------------------
         # Writer 1: output conv
         # -------------------
-        switch_core_width = convUnroll * nbit
-        bounds_W1 = [seqLen * dInner / convUnroll]
-        strides_W1 = [switch_core_width / 8]
+        assert (convUnroll * nbit) == BANKWIDTH, "switchCore output width must be equal to BANKWIDTH"
+        bounds_W1 = [seqLen * dInner // convUnroll]
+        strides_W1 = [(convUnroll * nbit) // 8]
         self.format_temporal_bounds_strides("W1", bounds_W1, strides_W1)
+        # TODO What if we don't set spatial stride in 1-port streamer?
         self.format_spatial_stride("W1", BANKWIDTH // 8)
+        self.format_channel_enable("W1")
 
-        # -------------------
-        # Writer 3: out proj D (isCore)
-        # -------------------
-
-        # TODO
-        bounds_W3 = [dInner, M, N]
-        strides_W3 = [BANKWIDTH // 8, dInner * BANKWIDTH // 8, M * BANKWIDTH // 8]
-        self.format_temporal_bounds_strides("W3", bounds_W3, strides_W3)
-        self.format_spatial_stride("W1", BANKWIDTH // 8)
+        # -----------------------
+        # Writer 3: isCore output
+        # -----------------------
+        # Exactly the same as the psum reader
+        self.format_temporal_bounds_strides("W3", bounds_R13, strides_R13)
+        self.format_spatial_stride("W3", BANKWIDTH // 8)
 
         # ------------
         # Base address
         # ------------
-        # Start address of the data (relative to some base address)
-        delta_local_a = 0
-        delta_local_b = align_wide_addr(delta_local_a + data_length_a)
-        delta_local_c = align_wide_addr(delta_local_b + data_length_b)
-        delta_local_d = align_wide_addr(delta_local_c + data_length_c)
-        self.format_int(delta_local_a)
-        self.format_int(delta_local_b)
-        self.format_int(delta_local_c)
-        self.format_int(delta_local_d)
+        # Matrix sizes
+        length_oscore_in = seqLen * dModel * nbit / 8
+        length_oscore_weight = dModel * dInner * nbit / 8
+        length_conv_weight = dInner * dConv * nbit / 8
+        length_conv_bias = dInner * nbit / 8
+        length_conv_out = seqLen * dInner * nbit / 8
+        length_iscore_weight = dModel * dInner * nbit / 8
+        length_iscore_out = seqLen * dModel * nbit / 8
+        length_iscore_bias = seqLen * dModel * nbit / 8
+        self.format_int(length_oscore_in)
+        self.format_int(length_oscore_weight)
+        self.format_int(length_conv_weight)
+        self.format_int(length_conv_bias)
+        self.format_int(length_conv_out)
+        self.format_int(length_iscore_weight)
+        self.format_int(length_iscore_bias)
+        self.format_int(length_iscore_out)
+
+        # Address offsets
+        delta_oscore_in = 0
+        delta_oscore_weight = align_wide_addr(delta_oscore_in + length_oscore_in)
+        delta_conv_weight = align_wide_addr(delta_oscore_weight + length_oscore_weight)
+        delta_conv_bias = align_wide_addr(delta_conv_weight + length_conv_weight)
+        delta_conv_out = align_wide_addr(delta_conv_bias + length_conv_bias)
+        delta_iscore_weight = align_wide_addr(delta_conv_out + length_conv_out)
+        delta_iscore_out = align_wide_addr(delta_iscore_weight + length_iscore_weight)
+        self.format_int(delta_oscore_in)
+        self.format_int(delta_oscore_weight)
+        self.format_int(delta_conv_weight)
+        self.format_int(delta_conv_bias)
+        self.format_int(delta_conv_out)
+        self.format_int(delta_iscore_weight)
+        self.format_int(delta_iscore_out)
 
         # -------------------
         # Test Data generation
         # -------------------
 
-        # Parse test data from external file.
-        try:
-            A_int = self._read_data_int("A.bin")
-            B_int = self._read_data_int("B.bin")
-            C_int = self._read_data_int("C.bin")
-            D_int = self._read_data_int("D.bin")
-        except FileNotFoundError as e:
-            raise RuntimeError(
-                f"Error loading test data: {e}. Did you run the scala data generator and is the data directory correct?"
-            )
-
-        self.format_test_sample_indices(len(D_int))
-        self.format_vector("uint16_t", "A", A_int)
-        self.format_vector("uint16_t", "B", B_int)
-        self.format_vector("uint16_t", "C", C_int)
-        self.format_vector("uint16_t", "D", D_int)
+        # Parse test data from external file. NOTE the tensor names must match those in Scala
+        self.format_test_sample_indices("conv_out", tensor_size=seqLen * dInner)
+        self.format_test_sample_indices("iscore_out", tensor_size=seqLen * dModel)
+        self.read_and_format_vector("uint16_t", "oscore_in")
+        self.read_and_format_vector("uint16_t", "oscore_weight")
+        self.read_and_format_vector("uint16_t", "conv_weight")
+        self.read_and_format_vector("uint16_t", "conv_bias")
+        self.read_and_format_vector("uint16_t", "conv_out")  # golden vector
+        self.read_and_format_vector("uint16_t", "iscore_weight")
+        self.read_and_format_vector("uint16_t", "iscore_bias")  # psum initial value
+        self.read_and_format_vector("uint16_t", "iscore_out")  # golden vector
 
 
 def main():

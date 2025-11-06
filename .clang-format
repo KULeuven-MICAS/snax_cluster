@@ -7,3 +7,4 @@ BasedOnStyle: Google
 IndentWidth: 4
 ColumnLimit: 120
 IncludeBlocks: Preserve
+AlignConsecutiveAssignments: true

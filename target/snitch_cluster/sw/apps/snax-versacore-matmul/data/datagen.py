@@ -334,50 +334,23 @@ def emit_matmul_data(**kwargs):
         data_str += [format_scalar_definition("int32_t", "Btlstride2", 0)]
     elif stationary == weight_stationary:
         data_str += [format_scalar_definition("int32_t", "Btlbound0", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Btlstride0",
-                0,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Btlstride0", 0)]
         data_str += [format_scalar_definition("int32_t", "Btlbound1", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Btlstride1",
-                b_len * tileSize * meshCol / 8,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Btlstride1", b_len * tileSize * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "Btlbound2", N)]
         data_str += [format_scalar_definition("int32_t", "Btlstride2", K * b_len * tileSize * meshCol / 8)]
     elif stationary == input_stationary:
         data_str += [format_scalar_definition("int32_t", "Btlbound0", N)]
         data_str += [format_scalar_definition("int32_t", "Btlstride0", K * b_len * tileSize * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "Btlbound1", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Btlstride1",
-                b_len * tileSize * meshCol / 8,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Btlstride1", b_len * tileSize * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "Btlbound2", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Btlstride2",
-                0,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Btlstride2", 0)]
 
     B_enabled_channel_CSR_num = int(math.ceil(b_array_width / bankWidth / 32))
     channel_en_B = [0] * B_enabled_channel_CSR_num
     channel_en_B_bits = max(8, int((meshCol * tileSize * b_len / bankWidth + 7) // 8 * 8))
-    channel_en_B = gen_channel_enable_CSR(
-        channel_en_B,
-        channel_en_B_bits,
-    )
+    channel_en_B = gen_channel_enable_CSR(channel_en_B, channel_en_B_bits)
     data_str += ["int32_t channel_en_B[] = { " + ", ".join(map(str, channel_en_B)) + " };"]
 
     b_data_length = K * N * tileSize * meshCol * b_len / 8  # in bytes
@@ -425,21 +398,9 @@ def emit_matmul_data(**kwargs):
 
     elif stationary == weight_stationary:
         data_str += [format_scalar_definition("int32_t", "Ctlbound1", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Ctlstride1",
-                N * c_len * meshRow * meshCol / 8,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Ctlstride1", N * c_len * meshRow * meshCol / 8)]
         data_str += [format_scalar_definition("int32_t", "Ctlbound2", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Ctlstride2",
-                0,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Ctlstride2", 0)]
         #
         data_str += [format_scalar_definition("int32_t", "Ctlbound3", N)]
         data_str += [format_scalar_definition("int32_t", "Ctlstride3", c_len * meshRow * meshCol / 8)]
@@ -449,13 +410,7 @@ def emit_matmul_data(**kwargs):
         data_str += [format_scalar_definition("int32_t", "Ctlbound2", K)]
         data_str += [format_scalar_definition("int32_t", "Ctlstride2", 0)]
         data_str += [format_scalar_definition("int32_t", "Ctlbound3", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Ctlstride3",
-                N * c_len * meshRow * meshCol / 8,
-            )
-        ]
+        data_str += [format_scalar_definition("int32_t", "Ctlstride3", N * c_len * meshRow * meshCol / 8)]
 
     disable_C = kwargs["channel_en_C"] == 0
     enable_full_C = kwargs["channel_en_C"] == 1
