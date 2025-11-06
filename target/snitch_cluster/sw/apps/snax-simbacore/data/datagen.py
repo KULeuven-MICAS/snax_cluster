@@ -1,119 +1,47 @@
 #!/usr/bin/env python3
 
 # Copyright 2025 KU Leuven.
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
+# Not released under license. All rights reserved.
 #
-# Robin Geens <robin.geens@esat.kuleuven.be>
-
+# Author: Robin Geens <robin.geens@kuleuven.be>
 
 import argparse
 import pathlib
 import hjson
 import sys
 import os
-import math
-import inspect
-import random
 
 # Add data utility path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
-from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
-from snax_utils import align_wide_addr  # noqa E402
+sys.path.append(str(pathlib.Path(__file__).resolve().parent))
+from snax_utils import align_wide_addr  # noqa: E402
 
-DATA_OUT_DIR = os.path.join(os.path.dirname(__file__), "generated")
+# try:
+#     from .datagen_util import DataGeneratorBase, BANKWIDTH  # type: ignore[import]
+# except ImportError:  # pragma: no cover - executed when run as a script
+from datagen_util import DataGeneratorBase  # type: ignore[import]
+
+
+NB_TEST_SAMPLES = 25
 BANKWIDTH = 64
-TEST_SAMPLE_COUNT = 25
-NUM_LOOPS = 4  # NOTE this must match the hjson config
 
 
-class DataGenerator:
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
-        self.data: list[str] = []
-
-    def emit_header_file(self):
-        self.data.append("#include <stdint.h>\n")
-        self.format_params()
-        self.format("uint32_t", "test_sample_count", TEST_SAMPLE_COUNT)
-        self.format("uint32_t", "channel_en", (1 << 32) - 1)  # Use global channel_en for all streamers
-        self.generate_Phase1_data()
+class DataGenerator(DataGeneratorBase):
+    def run(self):
+        self.gen_common_data()
         self.generate_OSGeMM_data()
-        return "\n".join(self.data)
+        self.generate_Phase1_data()
 
-    def format(self, type: str, var_name: str, value: int):
-        self.data.append(format_scalar_definition(type, var_name, value))
-
-    def format_int(self, value: int):
-        """Format `value` as integer. The name will be the variable name in the caller's scope."""
-        callers_local_vars = (
-            inspect.currentframe().f_back.f_locals.items()  # pyright: ignore[reportOptionalMemberAccess]
-        )
-        variable_name = next((name for name, val in callers_local_vars if val is value), None)
-        assert variable_name is not None, "Variable name not found"
-        self.format("uint32_t", variable_name, value)
-
-    def format_params(self):
-        """Takes all parameters from the kwargs and formats them as integers."""
-        for key, value in self.kwargs.items():
-            self.format("uint32_t", key, value)
-
-    def format_vector(self, type: str, var_name: str, value: list[int]):
-        self.data.append(format_vector_definition(type, var_name, value))
-
-    def read_and_format_vector(self, type: str, tensor_name: str):
-        try:
-            tensor_data = self._read_data_int(tensor_name)
-        except FileNotFoundError as e:
-            raise RuntimeError(
-                f"Error loading test data for tensor {tensor_name}: {e}. Did you run the scala data generator and is the data directory correct?"
-            )
-        self.format_vector(type, tensor_name, tensor_data)
-
-    def format_temporal_bounds_strides(self, streamer_name: str, bounds: list[int], strides: list[int]):
-        """Format temporal bounds and strides for a streamer by automatically naming the variables and adding defaults.
-        bounds are from inner to outer loop.
-        """
-        # Extend with defaults
-        bounds = bounds + [1] * (NUM_LOOPS - len(bounds))
-        strides = strides + [0] * (NUM_LOOPS - len(strides))
-        # Save each bound/stride as a separate variable
-        for i in range(NUM_LOOPS):
-            self.format("uint32_t", f"{streamer_name}tlbound{i}", bounds[i])
-            self.format("uint32_t", f"{streamer_name}tlstride{i}", strides[i])
-        # Group values into array
-        self.data += [f"int32_t {streamer_name}tlbound[] = {{{', '.join(map(str, bounds))}}};"]
-        self.data += [f"int32_t {streamer_name}tlstride[] = {{{', '.join(map(str, strides))}}};"]
-
-    def format_spatial_stride(self, streamer_name: str, stride: int):
-        self.format("uint32_t", f"{streamer_name}slstride0", stride)
-        self.data += [f"int32_t {streamer_name}slstride[] = {{{stride}}};"]
-
-    def _read_data_int(self, tensor_name: str):
-        """Read a vec from a file."""
-        with open(os.path.join(DATA_OUT_DIR, tensor_name + ".bin"), "r") as f:
-            lines = f.readlines()
-        data_lines = [line.strip() for line in lines if not line.startswith("#")]
-        return [int(x) for x in data_lines]
-
-    def format_test_sample_indices(self, tensor_name: str, tensor_size: int):
-        """Format variables used to test only a subset of the output."""
-        self.format_vector(
-            "int32_t",
-            f"test_sample_indices_{tensor_name}",
-            [random.randint(0, tensor_size - 1) for _ in range(TEST_SAMPLE_COUNT)],
-        )
-
-    def format_channel_enable(self, streamer_name: str):
-        """If a streamer has more than 1 channel (memory port), it can disable some channels.
-        Here, we ignore this and set all channels to 1."""
-        channel_en = (1 << 32) - 1
-        self.format("uint32_t", f"channel_en_{streamer_name}", channel_en)
+    def gen_common_data(self):
+        self.format("uint32_t", "nb_test_samples", NB_TEST_SAMPLES)
+        self.format("uint32_t", "channel_en", (1 << 32) - 1)  # Use global channel_en for all streamers
+        self.format_params()
 
     def generate_OSGeMM_data(self):
         # -------------------
         # Parameters
         # -------------------
+        mode = self.kwargs["M2_OSGEMM"]  # mode bit = 2
         seqLen = self.kwargs["seqLen"]
         dModel = self.kwargs["dModel"]
         dInner = self.kwargs["dInner"]
@@ -161,32 +89,31 @@ class DataGenerator:
             K * a_array_width / 8,
             0,
         ]
-        self.format_temporal_bounds_strides("A", bounds_A, strides_A)
+        self.format_temporal_bounds_strides("A", mode, bounds_A, strides_A)
         # INFO [RG] Spatial stride is 1 full bank: i.e. streamer accesses multiple, sequential banks.
-        self.format_spatial_stride("A", BANKWIDTH // 8)
-        self.format_channel_enable("A")
+        self.format_spatial_stride("A", mode, BANKWIDTH // 8)
+        self.format_channel_enable("A", mode)
 
         # ------------------
         # Reader 1: weight B
         # ------------------
-
         strides_B = [
             b_array_width / 8,  # K
             0,  # M - irrelevant dimension
             K * b_array_width / 8,  # N
         ]
-        self.format_spatial_stride("B", BANKWIDTH // 8)
-        self.format_temporal_bounds_strides("B", bounds_A, strides_B)
-        self.format_channel_enable("B")
+        self.format_spatial_stride("B", mode, BANKWIDTH // 8)
+        self.format_temporal_bounds_strides("B", mode, bounds_A, strides_B)
+        self.format_channel_enable("B", mode)
+
         # -------------------
         # Writer 0: output D
         # -------------------
-
         bounds_D = [d_array_width / serial_width_d * M * N]
         strides_D = [serial_width_d / 8]
-        self.format_temporal_bounds_strides("D", bounds_D, strides_D)
-        self.format_spatial_stride("D", BANKWIDTH // 8)
-        self.format_channel_enable("D")
+        self.format_temporal_bounds_strides("D", mode, bounds_D, strides_D)
+        self.format_spatial_stride("D", mode, BANKWIDTH // 8)
+        self.format_channel_enable("D", mode)
 
         # ------------
         # Base address
@@ -206,7 +133,7 @@ class DataGenerator:
         # -------------------
 
         # Parse test data from external file and format
-        self.format_test_sample_indices("D", tensor_size=seqLen * dInner)
+        self.format_test_samples("D", tensor_size=seqLen * dInner, nb_test_samples=NB_TEST_SAMPLES)
         self.read_and_format_vector("uint16_t", "A")
         self.read_and_format_vector("uint16_t", "B")
         self.read_and_format_vector("uint16_t", "C")
@@ -216,6 +143,7 @@ class DataGenerator:
         # -------------------
         # Parameters
         # -------------------
+        mode = self.kwargs["M0_PHASE1"]  # mode bit = 1
         seqLen = self.kwargs["seqLen"]
         dModel = self.kwargs["dModel"]
         dInner = self.kwargs["dInner"]
@@ -239,9 +167,9 @@ class DataGenerator:
             dModel * (seqLenUnroll * nbit) / 8,
             0,
         ]
-        self.format_temporal_bounds_strides("R0", bounds_R0, strides_R0)
-        self.format_spatial_stride("R0", BANKWIDTH // 8)
-        self.format_channel_enable("R0")
+        self.format_temporal_bounds_strides("R0", mode, bounds_R0, strides_R0)
+        self.format_spatial_stride("R0", mode, BANKWIDTH // 8)
+        self.format_channel_enable("R0", mode)
 
         # ----------------------
         # Reader1: osCore weight
@@ -251,9 +179,9 @@ class DataGenerator:
             0,  # M - irrelevant dimension
             dModel * (dInnerUnroll * nbit) / 8,  # N
         ]
-        self.format_spatial_stride("R1", BANKWIDTH // 8)
-        self.format_temporal_bounds_strides("R1", bounds_R0, strides_R1)
-        self.format_channel_enable("R1")
+        self.format_spatial_stride("R1", mode, BANKWIDTH // 8)
+        self.format_temporal_bounds_strides("R1", mode, bounds_R0, strides_R1)
+        self.format_channel_enable("R1", mode)
 
         # ---------------------------------
         # Reader 3: conv (switchCore) weight
@@ -261,18 +189,18 @@ class DataGenerator:
         # layout is row-major [dInner, dConv]
         bounds_R3 = [dConv * dInner // convUnroll]
         strides_R3 = [BANKWIDTH // 8]
-        self.format_spatial_stride("R3", BANKWIDTH // 8)
-        self.format_temporal_bounds_strides("R3", bounds_R3, strides_R3)
-        self.format_channel_enable("R3")
+        self.format_spatial_stride("R3", mode, BANKWIDTH // 8)
+        self.format_temporal_bounds_strides("R3", mode, bounds_R3, strides_R3)
+        self.format_channel_enable("R3", mode)
 
         # ---------------------------------
         # Reader 4: conv (switchCore) bias
         # ---------------------------------
         bounds_R4 = [dInner // convUnroll]
         strides_R4 = [BANKWIDTH // 8]
-        self.format_spatial_stride("R4", BANKWIDTH // 8)
-        self.format_temporal_bounds_strides("R4", bounds_R4, strides_R4)
-        self.format_channel_enable("R4")
+        self.format_spatial_stride("R4", mode, BANKWIDTH // 8)
+        self.format_temporal_bounds_strides("R4", mode, bounds_R4, strides_R4)
+        self.format_channel_enable("R4", mode)
 
         # ------------------------
         # Reader 12: isCore weight
@@ -287,8 +215,9 @@ class DataGenerator:
             0,
             dModel * (dInnerUnroll * nbit) // 8,
         ]
-        self.format_spatial_stride("R12", BANKWIDTH // 8)
-        self.format_temporal_bounds_strides("R12", bounds_R12, strides_R12)
+        self.format_spatial_stride("R12", mode, BANKWIDTH // 8)
+        self.format_temporal_bounds_strides("R12", mode, bounds_R12, strides_R12)
+        self.format_channel_enable("R12", mode)
 
         # ----------------------
         # Reader 13: isCore psum
@@ -304,9 +233,9 @@ class DataGenerator:
             (seqLenUnroll * nbit) // 8,
             0,  # Go to same addresses again
         ]
-        self.format_spatial_stride("R13", BANKWIDTH // 8)
-        self.format_temporal_bounds_strides("R13", bounds_R13, strides_R13)
-        self.format_channel_enable("R13")
+        self.format_spatial_stride("R13", mode, BANKWIDTH // 8)
+        self.format_temporal_bounds_strides("R13", mode, bounds_R13, strides_R13)
+        self.format_channel_enable("R13", mode)
 
         # -------------------
         # Writer 1: output conv
@@ -314,17 +243,18 @@ class DataGenerator:
         assert (convUnroll * nbit) == BANKWIDTH, "switchCore output width must be equal to BANKWIDTH"
         bounds_W1 = [seqLen * dInner // convUnroll]
         strides_W1 = [(convUnroll * nbit) // 8]
-        self.format_temporal_bounds_strides("W1", bounds_W1, strides_W1)
+        self.format_temporal_bounds_strides("W1", mode, bounds_W1, strides_W1)
         # TODO What if we don't set spatial stride in 1-port streamer?
-        self.format_spatial_stride("W1", BANKWIDTH // 8)
-        self.format_channel_enable("W1")
+        self.format_spatial_stride("W1", mode, BANKWIDTH // 8)
+        self.format_channel_enable("W1", mode)
 
         # -----------------------
         # Writer 3: isCore output
         # -----------------------
         # Exactly the same as the psum reader
-        self.format_temporal_bounds_strides("W3", bounds_R13, strides_R13)
-        self.format_spatial_stride("W3", BANKWIDTH // 8)
+        self.format_temporal_bounds_strides("W3", mode, bounds_R13, strides_R13)
+        self.format_spatial_stride("W3", mode, BANKWIDTH // 8)
+        self.format_channel_enable("W3", mode)
 
         # ------------
         # Base address
@@ -355,7 +285,7 @@ class DataGenerator:
         delta_conv_out = align_wide_addr(delta_conv_bias + length_conv_bias)
         delta_iscore_weight = align_wide_addr(delta_conv_out + length_conv_out)
         delta_iscore_out = align_wide_addr(delta_iscore_weight + length_iscore_weight)
-        self.format_int(delta_oscore_in)
+        self.format("uint32_t", "delta_oscore_in", delta_oscore_in)
         self.format_int(delta_oscore_weight)
         self.format_int(delta_conv_weight)
         self.format_int(delta_conv_bias)
@@ -368,8 +298,8 @@ class DataGenerator:
         # -------------------
 
         # Parse test data from external file. NOTE the tensor names must match those in Scala
-        self.format_test_sample_indices("conv_out", tensor_size=seqLen * dInner)
-        self.format_test_sample_indices("iscore_out", tensor_size=seqLen * dModel)
+        self.format_test_samples("conv_out", tensor_size=seqLen * dInner, nb_test_samples=NB_TEST_SAMPLES)
+        self.format_test_samples("iscore_out", tensor_size=seqLen * dModel, nb_test_samples=NB_TEST_SAMPLES)
         self.read_and_format_vector("uint16_t", "oscore_in")
         self.read_and_format_vector("uint16_t", "oscore_weight")
         self.read_and_format_vector("uint16_t", "conv_weight")

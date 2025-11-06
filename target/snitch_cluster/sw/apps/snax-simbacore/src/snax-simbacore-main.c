@@ -1,13 +1,12 @@
 // Copyright 2025 KU Leuven.
-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
+// Not released under license.All rights reserved.
 //
-// Robin Geens <robin.geens@esat.kuleuven.be>
+// Author : Robin Geens < robin.geens@kuleuven.be>
 
 #include "data.h"
 #include "snax-simbacore-lib.h"
 
-int main() {
+int test_phase1() {
     int err = 0;
 
     // Define TCDM addresses
@@ -37,19 +36,21 @@ int main() {
 
     // Call compute core
     if (snrt_global_core_idx() == 0) {
-        printf("Setting up Streamer and SimbaCore...\n");
+        printf("Setting up Streamer and SimbaCore for Phase1...\n");
 
-        set_streamer_csr((uint32_t)local_oscore_in, R0slstride, R0tlbound, R0tlstride, channel_en,         //
-                         (uint32_t)local_oscore_weight, R1slstride, R1tlbound, R1tlstride, channel_en,     //
-                         (uint32_t)local_conv_weight, R3slstride, R3tlbound, R3tlstride, channel_en,       //
-                         (uint32_t)local_conv_bias, R4slstride, R4tlbound, R4tlstride, channel_en,         //
-                         (uint32_t)local_iscore_weight, R12slstride, R12tlbound, R12tlstride, channel_en,  //
-                         (uint32_t)local_iscore_out, R13slstride, R13tlbound, R13tlstride, channel_en,     // psums
-                         (uint32_t)local_conv_out, W1slstride, W1tlbound, W1tlstride, channel_en,          //
-                         (uint32_t)local_iscore_out, W3slstride, W3tlbound, W3tlstride, channel_en         //
+        set_streamer_csr(
+
+            (uint32_t)local_oscore_in, M0_R0_ss, M0_R0_tb, M0_R0_ts, M0_R0_en,          //
+            (uint32_t)local_oscore_weight, M0_R1_ss, M0_R1_tb, M0_R1_ts, M0_R1_en,      //
+            (uint32_t)local_conv_weight, M0_R3_ss, M0_R3_tb, M0_R3_ts, M0_R3_en,        //
+            (uint32_t)local_conv_bias, M0_R4_ss, M0_R4_tb, M0_R4_ts, M0_R4_en,          //
+            (uint32_t)local_iscore_weight, M0_R12_ss, M0_R12_tb, M0_R12_ts, M0_R12_en,  //
+            (uint32_t)local_iscore_out, M0_R13_ss, M0_R13_tb, M0_R13_ts, M0_R13_en,     // psums
+            (uint32_t)local_conv_out, M0_W1_ss, M0_W1_tb, M0_W1_ts, M0_W1_en,           //
+            (uint32_t)local_iscore_out, M0_W3_ss, M0_W3_tb, M0_W3_ts, M0_W3_en          //
         );
 
-        set_simbacore_csr(mode, seqLen, dModel, dInner, 1);
+        set_simbacore_csr(M0_PHASE1, seqLen, dModel, dInner, 1);
         set_simbacore_streamer_start();
         set_simbacore_start();
 
@@ -57,21 +58,16 @@ int main() {
         wait_simbacore_and_streamer();
         printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
 
-        err +=
-            check_result_sample(local_conv_out, conv_out, test_sample_indices_conv_out, test_sample_count, "conv_out");
+        err += check_result_sample(local_conv_out, conv_out, test_samples_conv_out, nb_test_samples, "conv_out");
         // err += check_result_all(local_conv_out, conv_out, length_conv_out);
-        check_result_sample(local_iscore_out, iscore_out, test_sample_indices_iscore_out, test_sample_count,
-                            "iscore_out");
+        check_result_sample(local_iscore_out, iscore_out, test_samples_iscore_out, nb_test_samples, "iscore_out");
 
-        printf("Test SimbaCore: seqLen=%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
-               test_sample_count);
+        printf("Test Phase1: seqLen=%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
+               nb_test_samples);
     }
     return err;
 }
 
-// This test only test on the output stationary dataflow
-// TODO the usage of naming is not scalable for multiple tests
-// TODO the programming should be the same anyways (only for this case )
 int test_osgemm() {
     int err = 0;
 
@@ -94,13 +90,15 @@ int test_osgemm() {
 
     // Call compute core
     if (snrt_global_core_idx() == 0) {
-        printf("Setting up Streamer and SimbaCore...\n");
+        printf("Setting up Streamer and SimbaCore for OSGeMM...\n");
 
-        set_simbacore_osgemm_streamer_csr((uint32_t)local_a, Aslstride, Atlbound, Atlstride, channel_en,   // A
-                                          (uint32_t)local_b, Bslstride, Btlbound, Btlstride, channel_en,   // B
-                                          (uint32_t)local_d, Dslstride, Dtlbound, Dtlstride, channel_en);  // D
+        set_simbacore_osgemm_streamer_csr(
 
-        set_simbacore_csr(mode, seqLen, dModel, dInner, 1);
+            (uint32_t)local_a, M2_A_ss, M2_A_tb, M2_A_ts, channel_en,   // A
+            (uint32_t)local_b, M2_B_ss, M2_B_tb, M2_B_ts, channel_en,   // B
+            (uint32_t)local_d, M2_D_ss, M2_D_tb, M2_D_ts, channel_en);  // D
+
+        set_simbacore_csr(M2_OSGEMM, seqLen, dModel, dInner, 1);
         set_simbacore_streamer_start();
         set_simbacore_start();
 
@@ -108,11 +106,18 @@ int test_osgemm() {
         wait_simbacore_and_streamer();
         printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
 
-        err += check_result_sample(local_d, D, test_sample_indices_D, test_sample_count, "out");
+        err += check_result_sample(local_d, D, test_samples_D, nb_test_samples, "out");
         // err += check_OSGeMM_result_all(local_d, D, data_length_d);
 
-        printf("Test SimbaCore: seqLen%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
-               test_sample_count);
+        printf("Test OSGeMM: seqLen%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
+               nb_test_samples);
     }
+    return err;
+}
+
+int main() {
+    int err = 0;
+    err += test_osgemm();
+    err += test_phase1();
     return err;
 }

@@ -20,7 +20,7 @@ $(DATA_H): $(DATA_DIR)/datagen.py $(DATA_CFG)
 
 $(DATA_CFG):
 	@mkdir -p $(DATA_SUBDIR)
-	@cd $(CHISEL_SSM_DIR) && sbt "test:runMain snax.DataGenerator mode=2 seqLen=64 dModel=36"
+	@cd $(CHISEL_SSM_DIR) && sbt "test:runMain snax.DataGenerator seqLen=64 dModel=36"
 	@touch $@
 
 .PHONY: clean-data clean
