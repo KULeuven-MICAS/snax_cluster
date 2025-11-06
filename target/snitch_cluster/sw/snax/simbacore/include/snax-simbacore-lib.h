@@ -26,25 +26,22 @@
 #define SIMBACORE_BUSY (SIMBACORE_CSR_ADDR_BASE + 6)
 #define SIMBACORE_PERFORMANCE_COUNTER (SIMBACORE_CSR_ADDR_BASE + 7)
 
-void set_streamer_csr(
-    uint32_t ptr_R0, int32_t* R0slstride, int32_t* R0tlbound, int32_t* R0tlstride, uint32_t enable_R0,       //
-    uint32_t ptr_R1, int32_t* R1slstride, int32_t* R1tlbound, int32_t* R1tlstride, uint32_t enable_R1,       //
-    uint32_t ptr_R3, int32_t* R3slstride, int32_t* R3tlbound, int32_t* R3tlstride, uint32_t enable_R3,       //
-    uint32_t ptr_R4, int32_t* R4slstride, int32_t* R4tlbound, int32_t* R4tlstride, uint32_t enable_R4,       //
-    uint32_t ptr_R12, int32_t* R12slstride, int32_t* R12tlbound, int32_t* R12tlstride, uint32_t enable_R12,  //
-    uint32_t ptr_R13, int32_t* R13slstride, int32_t* R13tlbound, int32_t* R13tlstride, uint32_t enable_R13,  //
-    // uint32_t ptr_W0, int32_t* W0slstride, int32_t* W0tlbound, int32_t* W0tlstride, uint32_t enable_W0,       //
-    uint32_t ptr_W1, int32_t* W1slstride, int32_t* W1tlbound, int32_t* W1tlstride, uint32_t enable_W1,  //
-    // uint32_t ptr_W2, int32_t* W2slstride, int32_t* W2tlbound, int32_t* W2tlstride, uint32_t enable_W2,       //
-    uint32_t ptr_W3, int32_t* W3slstride, int32_t* W3tlbound, int32_t* W3tlstride, uint32_t enable_W3  //
-);
+void set_streamer_csr(uint32_t R0_ptr, int32_t* R0_ss, int32_t* R0_tb, int32_t* R0_ts, uint32_t R0_en,       //
+                      uint32_t R1_ptr, int32_t* R1_ss, int32_t* R1_tb, int32_t* R1_ts, uint32_t R1_en,       //
+                      uint32_t R3_ptr, int32_t* R3_ss, int32_t* R3_tb, int32_t* R3_ts, uint32_t R3_en,       //
+                      uint32_t R4_ptr, int32_t* R4_ss, int32_t* R4_tb, int32_t* R4_ts, uint32_t R4_en,       //
+                      uint32_t R12_ptr, int32_t* R12_ss, int32_t* R12_tb, int32_t* R12_ts, uint32_t R12_en,  //
+                      uint32_t R13_ptr, int32_t* R13_ss, int32_t* R13_tb, int32_t* R13_ts, uint32_t R13_en,  //
+                      uint32_t W0_ptr, int32_t* W0_ss, int32_t* W0_tb, int32_t* W0_ts, uint32_t W0_en,       //
+                      uint32_t W1_ptr, int32_t* W1_ss, int32_t* W1_tb, int32_t* W1_ts, uint32_t W1_en,       //
+                      // uint32_t W2_ptr, int32_t* W2_ss, int32_t* W2_tb, int32_t* W2_ts, uint32_t W2_en,       //
+                      uint32_t W3_ptr, int32_t* W3_ss, int32_t* W3_tb, int32_t* W3_ts, uint32_t W3_en);
 
-void set_simbacore_osgemm_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32_t* Atlbound, int32_t* Atlstride,
-                                       uint32_t channel_en_A,  //
-                                       uint32_t ptr_b, int32_t* Bslstride, int32_t* Btlbound, int32_t* Btlstride,
-                                       uint32_t channel_en_B,  //
-                                       uint32_t ptr_d, int32_t* Dslstride, int32_t* Dtlbound, int32_t* Dtlstride,
-                                       uint32_t channel_en_D);
+void set_simbacore_osgemm_streamer_csr(
+
+    uint32_t ptr_a, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts, uint32_t channel_en_A,  //
+    uint32_t ptr_b, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts, uint32_t channel_en_B,  //
+    uint32_t ptr_d, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts, uint32_t channel_en_D);
 
 // Set CSR to start STREAMER
 static inline void set_simbacore_streamer_start() { write_csr(STREAMER_START_CSR, 1); }

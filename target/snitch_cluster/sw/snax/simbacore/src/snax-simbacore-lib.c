@@ -7,236 +7,226 @@
 #include <stdbool.h>
 #include "streamer_csr_addr_map.h"
 
-void set_simbacore_osgemm_streamer_csr(uint32_t ptr_a, int32_t* Aslstride, int32_t* Atlbound, int32_t* Atlstride,
+void set_simbacore_osgemm_streamer_csr(uint32_t a_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,
                                        uint32_t channel_en_A,  //
-                                       uint32_t ptr_b, int32_t* Bslstride, int32_t* Btlbound, int32_t* Btlstride,
+                                       uint32_t b_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,
                                        uint32_t channel_en_B,  //
-                                       uint32_t ptr_d, int32_t* Dslstride, int32_t* Dtlbound, int32_t* Dtlstride,
+                                       uint32_t d_ptr, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts,
                                        uint32_t channel_en_D) {
     // -------------------
     // A streamer setting
     // -------------------
-    write_csr(BASE_PTR_READER_0_LOW, ptr_a);
+    write_csr(BASE_PTR_READER_0_LOW, a_ptr);
 
     for (int i = 0; i < S_STRIDE_NUM_READER_0; i++)  // spatial strides
-        csrw_ss(S_STRIDE_BASE_READER_0 + i, Aslstride[i]);
+        csrw_ss(S_STRIDE_BASE_READER_0 + i, A_ss[i]);
 
     for (int i = 0; i < T_BOUND_NUM_READER_0; i++)  // temporal bounds
-        csrw_ss(T_BOUND_BASE_READER_0 + i, Atlbound[i]);
+        csrw_ss(T_BOUND_BASE_READER_0 + i, A_tb[i]);
 
     for (int i = 0; i < T_STRIDE_NUM_READER_0; i++)  // temporal strides
-        csrw_ss(T_STRIDE_BASE_READER_0 + i, Atlstride[i]);
+        csrw_ss(T_STRIDE_BASE_READER_0 + i, A_ts[i]);
 
     write_csr(ENABLED_CHANNEL_READER_0, channel_en_A);
 
     // -------------------
     // B streamer setting
     // -------------------
-    write_csr(BASE_PTR_READER_1_LOW, ptr_b);
+    write_csr(BASE_PTR_READER_1_LOW, b_ptr);
 
     for (int i = 0; i < S_STRIDE_NUM_READER_1; i++)  // spatial strides
-        csrw_ss(S_STRIDE_BASE_READER_1 + i, Bslstride[i]);
+        csrw_ss(S_STRIDE_BASE_READER_1 + i, B_ss[i]);
 
     for (int i = 0; i < T_BOUND_NUM_READER_1; i++)  // temporal bounds
-        csrw_ss(T_BOUND_BASE_READER_1 + i, Btlbound[i]);
+        csrw_ss(T_BOUND_BASE_READER_1 + i, B_tb[i]);
 
     for (int i = 0; i < T_STRIDE_NUM_READER_1; i++)  // temporal strides
-        csrw_ss(T_STRIDE_BASE_READER_1 + i, Btlstride[i]);
+        csrw_ss(T_STRIDE_BASE_READER_1 + i, B_ts[i]);
 
     write_csr(ENABLED_CHANNEL_READER_1, channel_en_B);
 
     // -------------------
     // D streamer setting
     // -------------------
-    write_csr(BASE_PTR_WRITER_0_LOW, ptr_d);
+    write_csr(BASE_PTR_WRITER_0_LOW, d_ptr);
 
     for (int i = 0; i < S_STRIDE_NUM_WRITER_0; i++)  // spatial strides
-        csrw_ss(S_STRIDE_BASE_WRITER_0 + i, Dslstride[i]);
+        csrw_ss(S_STRIDE_BASE_WRITER_0 + i, D_ss[i]);
 
     for (int i = 0; i < T_BOUND_NUM_WRITER_0; i++)  // temporal bounds
-        csrw_ss(T_BOUND_BASE_WRITER_0 + i, Dtlbound[i]);
+        csrw_ss(T_BOUND_BASE_WRITER_0 + i, D_tb[i]);
 
     for (int i = 0; i < T_STRIDE_NUM_WRITER_0; i++)  // temporal strides
-        csrw_ss(T_STRIDE_BASE_WRITER_0 + i, Dtlstride[i]);
+        csrw_ss(T_STRIDE_BASE_WRITER_0 + i, D_ts[i]);
 
     write_csr(ENABLED_CHANNEL_WRITER_0, channel_en_D);
 }
 
 void set_streamer_csr(
 
-    uint32_t ptr_R0, int32_t* R0slstride, int32_t* R0tlbound, int32_t* R0tlstride, uint32_t enable_R0,  // osCore in
-    uint32_t ptr_R1, int32_t* R1slstride, int32_t* R1tlbound, int32_t* R1tlstride, uint32_t enable_R1,  // oscore weight
-    // uint32_t ptr_R2, int32_t* R2slstride, int32_t* R2tlbound, int32_t* R2tlstride, uint32_t enable_R2,  // switchCore
-    // in
-    uint32_t ptr_R3, int32_t* R3slstride, int32_t* R3tlbound, int32_t* R3tlstride,
-    uint32_t enable_R3,  // switchCore weight
-    uint32_t ptr_R4, int32_t* R4slstride, int32_t* R4tlbound, int32_t* R4tlstride,
-    uint32_t enable_R4,  // switchCore bias
-    // uint32_t ptr_R5, int32_t* R5slstride, int32_t* R5tlbound, int32_t* R5tlstride, uint32_t enable_R5,  // switchCore
-    // matmul weight
-    // uint32_t ptr_R6, int32_t* R6slstride, int32_t* R6tlbound, int32_t* R6tlstride, uint32_t enable_R6,
-    // // SUC A
-    //  uint32_t ptr_R7, int32_t* R7slstride, int32_t* R7tlbound, int32_t* R7tlstride, uint32_t enable_R7,  //
-    // SUC BC uint32_t ptr_R8, int32_t* R8slstride, int32_t* R8tlbound, int32_t* R8tlstride, uint32_t enable_R8,  // SUC
-    // D
-    // uint32_t ptr_R9, int32_t* R9slstride, int32_t* R9tlbound, int32_t* R9tlstride, uint32_t enable_R9,  // SUC x
-    // uint32_t ptr_R10, int32_t* R10slstride, int32_t* R10tlbound, int32_t* R10tlstride, uint32_t enable_R10,  // SUC z
-    // uint32_t ptr_R11, int32_t* R11slstride, int32_t* R11tlbound, int32_t* R11tlstride, uint32_t enable_R11,  //
-    // iscore in
-    uint32_t ptr_R12, int32_t* R12slstride, int32_t* R12tlbound, int32_t* R12tlstride,
-    uint32_t enable_R12,  // isCore weight
-    uint32_t ptr_R13, int32_t* R13slstride, int32_t* R13tlbound, int32_t* R13tlstride,
-    uint32_t enable_R13,  // isCore psum
+    uint32_t R0_ptr, int32_t* R0_ss, int32_t* R0_tb, int32_t* R0_ts, uint32_t R0_en,  // osCore in
+    uint32_t R1_ptr, int32_t* R1_ss, int32_t* R1_tb, int32_t* R1_ts, uint32_t R1_en,  // oscore weight
+    // uint32_t R2_ptr, int32_t* R2_ss, int32_t* R2_tb, int32_t* R2_ts, uint32_t R2_en,  // switchCore/ in
+    uint32_t R3_ptr, int32_t* R3_ss, int32_t* R3_tb, int32_t* R3_ts, uint32_t R3_en,  // switchCore weight
+    uint32_t R4_ptr, int32_t* R4_ss, int32_t* R4_tb, int32_t* R4_ts, uint32_t R4_en,  // switchCore bias
+    // uint32_t R5_ptr, int32_t* R5_ss, int32_t* R5_tb, int32_t* R5_ts, uint32_t R5_en,  // switchCore  matmul weight
+    // uint32_t R6_ptr, int32_t* R6_ss, int32_t* R6_tb, int32_t* R6_ts, uint32_t R6_en, //  SUC A
+    //  uint32_t R7_ptr, int32_t* R7_ss, int32_t* R7_tb, int32_t* R7_ts, uint32_t R7_en,  // SUC BC
+    // uint32_t R8_ptr, int32_t* R8_ss, int32_t* R8_tb, int32_t* R8_ts, uint32_t R8_en,  // SUC  D
+    // uint32_t R9_ptr, int32_t* R9_ss, int32_t* R9_tb, int32_t* R9_ts, uint32_t R9_en,  // SUC x
+    // uint32_t R10_ptr, int32_t* R10_ss, int32_t* R10_tb, int32_t* R10_ts, uint32_t R10_en,  // SUC z
+    // uint32_t R11_ptr, int32_t* R11_ss, int32_t* R11_tb, int32_t* R11_ts, uint32_t R11_en,  // iscore in
+    uint32_t R12_ptr, int32_t* R12_ss, int32_t* R12_tb, int32_t* R12_ts, uint32_t R12_en,  // isCore weight
+    uint32_t R13_ptr, int32_t* R13_ss, int32_t* R13_tb, int32_t* R13_ts, uint32_t R13_en,  // isCore psum
 
-    // uint32_t ptr_W0, int32_t* W0slstride, int32_t* W0tlbound, int32_t* W0tlstride, uint32_t enable_W0,  // osCore out
-    uint32_t ptr_W1, int32_t* W1slstride, int32_t* W1tlbound, int32_t* W1tlstride,
-    uint32_t enable_W1,  // switchCore out
-    // uint32_t ptr_W2, int32_t* W2slstride, int32_t* W2tlbound, int32_t* W2tlstride, uint32_t enable_W2,  // SUC out
-    uint32_t ptr_W3, int32_t* W3slstride, int32_t* W3tlbound, int32_t* W3tlstride, uint32_t enable_W3  // isCore out
+    uint32_t W0_ptr, int32_t* W0_ss, int32_t* W0_tb, int32_t* W0_ts, uint32_t W0_en,  // osCore out
+    uint32_t W1_ptr, int32_t* W1_ss, int32_t* W1_tb, int32_t* W1_ts, uint32_t W1_en,  // switchCore out
+    // uint32_t W2_ptr, int32_t* W2_ss, int32_t* W2_tb, int32_t* W2_ts, uint32_t W2_en,  // SUC out
+    uint32_t W3_ptr, int32_t* W3_ss, int32_t* W3_tb, int32_t* W3_ts, uint32_t W3_en  // isCore out
 ) {
-    if (enable_R0) {
-        write_csr(BASE_PTR_READER_0_LOW, ptr_R0);
-        for (int i = 0; i < S_STRIDE_NUM_READER_0; i++) csrw_ss(S_STRIDE_BASE_READER_0 + i, R0slstride[i]);
-        for (int i = 0; i < T_BOUND_NUM_READER_0; i++) csrw_ss(T_BOUND_BASE_READER_0 + i, R0tlbound[i]);
-        for (int i = 0; i < T_STRIDE_NUM_READER_0; i++) csrw_ss(T_STRIDE_BASE_READER_0 + i, R0tlstride[i]);
-        write_csr(ENABLED_CHANNEL_READER_0, enable_R0);
+    if (R0_en) {
+        write_csr(BASE_PTR_READER_0_LOW, R0_ptr);
+        for (int i = 0; i < S_STRIDE_NUM_READER_0; i++) csrw_ss(S_STRIDE_BASE_READER_0 + i, R0_ss[i]);
+        for (int i = 0; i < T_BOUND_NUM_READER_0; i++) csrw_ss(T_BOUND_BASE_READER_0 + i, R0_tb[i]);
+        for (int i = 0; i < T_STRIDE_NUM_READER_0; i++) csrw_ss(T_STRIDE_BASE_READER_0 + i, R0_ts[i]);
     }
+    write_csr(ENABLED_CHANNEL_READER_0, R0_en);  // Disable by writing en=0
 
-    if (enable_R1) {
-        write_csr(BASE_PTR_READER_1_LOW, ptr_R1);
-        for (int i = 0; i < S_STRIDE_NUM_READER_1; i++) csrw_ss(S_STRIDE_BASE_READER_1 + i, R1slstride[i]);
-        for (int i = 0; i < T_BOUND_NUM_READER_1; i++) csrw_ss(T_BOUND_BASE_READER_1 + i, R1tlbound[i]);
-        for (int i = 0; i < T_STRIDE_NUM_READER_1; i++) csrw_ss(T_STRIDE_BASE_READER_1 + i, R1tlstride[i]);
-        write_csr(ENABLED_CHANNEL_READER_1, enable_R1);
+    if (R1_en) {
+        write_csr(BASE_PTR_READER_1_LOW, R1_ptr);
+        for (int i = 0; i < S_STRIDE_NUM_READER_1; i++) csrw_ss(S_STRIDE_BASE_READER_1 + i, R1_ss[i]);
+        for (int i = 0; i < T_BOUND_NUM_READER_1; i++) csrw_ss(T_BOUND_BASE_READER_1 + i, R1_tb[i]);
+        for (int i = 0; i < T_STRIDE_NUM_READER_1; i++) csrw_ss(T_STRIDE_BASE_READER_1 + i, R1_ts[i]);
     }
+    write_csr(ENABLED_CHANNEL_READER_1, R1_en);
 
-    // if (enable_R2) {
-    //     write_csr(BASE_PTR_READER_2_LOW, ptr_R2);
-    //     for (int i = 0; i < S_STRIDE_NUM_READER_2; i++) csrw_ss(S_STRIDE_BASE_READER_2 + i, R2slstride[i]);
-    //     for (int i = 0; i < T_BOUND_NUM_READER_2; i++) csrw_ss(T_BOUND_BASE_READER_2 + i, R2tlbound[i]);
-    //     for (int i = 0; i < T_STRIDE_NUM_READER_2; i++) csrw_ss(T_STRIDE_BASE_READER_2 + i, R2tlstride[i]);
-    //     write_csr(ENABLED_CHANNEL_READER_2, enable_R2);
+    // if (R2_en) {
+    //     write_csr(BASE_PTR_READER_2_LOW, R2_ptr);
+    //     for (int i = 0; i < S_STRIDE_NUM_READER_2; i++) csrw_ss(S_STRIDE_BASE_READER_2 + i, R2_ss[i]);
+    //     for (int i = 0; i < T_BOUND_NUM_READER_2; i++) csrw_ss(T_BOUND_BASE_READER_2 + i, R2_tb[i]);
+    //     for (int i = 0; i < T_STRIDE_NUM_READER_2; i++) csrw_ss(T_STRIDE_BASE_READER_2 + i, R2_ts[i]);
     // }
+    //     write_csr(ENABLED_CHANNEL_READER_2, R2_en);
 
-    if (enable_R3) {
-        write_csr(BASE_PTR_READER_3_LOW, ptr_R3);
-        for (int i = 0; i < S_STRIDE_NUM_READER_3; i++) csrw_ss(S_STRIDE_BASE_READER_3 + i, R3slstride[i]);
-        for (int i = 0; i < T_BOUND_NUM_READER_3; i++) csrw_ss(T_BOUND_BASE_READER_3 + i, R3tlbound[i]);
-        for (int i = 0; i < T_STRIDE_NUM_READER_3; i++) csrw_ss(T_STRIDE_BASE_READER_3 + i, R3tlstride[i]);
-        write_csr(ENABLED_CHANNEL_READER_3, enable_R3);
+    if (R3_en) {
+        write_csr(BASE_PTR_READER_3_LOW, R3_ptr);
+        for (int i = 0; i < S_STRIDE_NUM_READER_3; i++) csrw_ss(S_STRIDE_BASE_READER_3 + i, R3_ss[i]);
+        for (int i = 0; i < T_BOUND_NUM_READER_3; i++) csrw_ss(T_BOUND_BASE_READER_3 + i, R3_tb[i]);
+        for (int i = 0; i < T_STRIDE_NUM_READER_3; i++) csrw_ss(T_STRIDE_BASE_READER_3 + i, R3_ts[i]);
     }
+    write_csr(ENABLED_CHANNEL_READER_3, R3_en);
 
-    if (enable_R4) {
-        write_csr(BASE_PTR_READER_4_LOW, ptr_R4);
-        for (int i = 0; i < S_STRIDE_NUM_READER_4; i++) csrw_ss(S_STRIDE_BASE_READER_4 + i, R4slstride[i]);
-        for (int i = 0; i < T_BOUND_NUM_READER_4; i++) csrw_ss(T_BOUND_BASE_READER_4 + i, R4tlbound[i]);
-        for (int i = 0; i < T_STRIDE_NUM_READER_4; i++) csrw_ss(T_STRIDE_BASE_READER_4 + i, R4tlstride[i]);
-        write_csr(ENABLED_CHANNEL_READER_4, enable_R4);
+    if (R4_en) {
+        write_csr(BASE_PTR_READER_4_LOW, R4_ptr);
+        for (int i = 0; i < S_STRIDE_NUM_READER_4; i++) csrw_ss(S_STRIDE_BASE_READER_4 + i, R4_ss[i]);
+        for (int i = 0; i < T_BOUND_NUM_READER_4; i++) csrw_ss(T_BOUND_BASE_READER_4 + i, R4_tb[i]);
+        for (int i = 0; i < T_STRIDE_NUM_READER_4; i++) csrw_ss(T_STRIDE_BASE_READER_4 + i, R4_ts[i]);
     }
+    write_csr(ENABLED_CHANNEL_READER_4, R4_en);
 
-    // if (enable_R5) {
-    //     write_csr(BASE_PTR_READER_5_LOW, ptr_R5);
-    //     for (int i = 0; i < S_STRIDE_NUM_READER_5; i++) csrw_ss(S_STRIDE_BASE_READER_5 + i, R5slstride[i]);
-    //     for (int i = 0; i < T_BOUND_NUM_READER_5; i++) csrw_ss(T_BOUND_BASE_READER_5 + i, R5tlbound[i]);
-    //     for (int i = 0; i < T_STRIDE_NUM_READER_5; i++) csrw_ss(T_STRIDE_BASE_READER_5 + i, R5tlstride[i]);
-    //     write_csr(ENABLED_CHANNEL_READER_5, enable_R5);
+    // if (R5_en) {
+    //     write_csr(BASE_PTR_READER_5_LOW, R5_ptr);
+    //     for (int i = 0; i < S_STRIDE_NUM_READER_5; i++) csrw_ss(S_STRIDE_BASE_READER_5 + i, R5_ss[i]);
+    //     for (int i = 0; i < T_BOUND_NUM_READER_5; i++) csrw_ss(T_BOUND_BASE_READER_5 + i, R5_tb[i]);
+    //     for (int i = 0; i < T_STRIDE_NUM_READER_5; i++) csrw_ss(T_STRIDE_BASE_READER_5 + i, R5_ts[i]);
     // }
+    //     write_csr(ENABLED_CHANNEL_READER_5, R5_en);
 
-    // if (enable_R6) {
-    //     write_csr(BASE_PTR_READER_6_LOW, ptr_R6);
-    //     for (int i = 0; i < S_STRIDE_NUM_READER_6; i++) csrw_ss(S_STRIDE_BASE_READER_6 + i, R6slstride[i]);
-    //     for (int i = 0; i < T_BOUND_NUM_READER_6; i++) csrw_ss(T_BOUND_BASE_READER_6 + i, R6tlbound[i]);
-    //     for (int i = 0; i < T_STRIDE_NUM_READER_6; i++) csrw_ss(T_STRIDE_BASE_READER_6 + i, R6tlstride[i]);
-    //     write_csr(ENABLED_CHANNEL_READER_6, enable_R6);
+    // if (R6_en) {
+    //     write_csr(BASE_PTR_READER_6_LOW, R6_ptr);
+    //     for (int i = 0; i < S_STRIDE_NUM_READER_6; i++) csrw_ss(S_STRIDE_BASE_READER_6 + i, R6_ss[i]);
+    //     for (int i = 0; i < T_BOUND_NUM_READER_6; i++) csrw_ss(T_BOUND_BASE_READER_6 + i, R6_tb[i]);
+    //     for (int i = 0; i < T_STRIDE_NUM_READER_6; i++) csrw_ss(T_STRIDE_BASE_READER_6 + i, R6_ts[i]);
     // }
+    //     write_csr(ENABLED_CHANNEL_READER_6, R6_en);
 
-    // if (enable_R7) {
-    //     write_csr(BASE_PTR_READER_7_LOW, ptr_R7);
-    //     for (int i = 0; i < S_STRIDE_NUM_READER_7; i++) csrw_ss(S_STRIDE_BASE_READER_7 + i, R7slstride[i]);
-    //     for (int i = 0; i < T_BOUND_NUM_READER_7; i++) csrw_ss(T_BOUND_BASE_READER_7 + i, R7tlbound[i]);
-    //     for (int i = 0; i < T_STRIDE_NUM_READER_7; i++) csrw_ss(T_STRIDE_BASE_READER_7 + i, R7tlstride[i]);
-    //     write_csr(ENABLED_CHANNEL_READER_7, enable_R7);
+    // if (R7_en) {
+    //     write_csr(BASE_PTR_READER_7_LOW, R7_ptr);
+    //     for (int i = 0; i < S_STRIDE_NUM_READER_7; i++) csrw_ss(S_STRIDE_BASE_READER_7 + i, R7_ss[i]);
+    //     for (int i = 0; i < T_BOUND_NUM_READER_7; i++) csrw_ss(T_BOUND_BASE_READER_7 + i, R7_tb[i]);
+    //     for (int i = 0; i < T_STRIDE_NUM_READER_7; i++) csrw_ss(T_STRIDE_BASE_READER_7 + i, R7_ts[i]);
     // }
+    //     write_csr(ENABLED_CHANNEL_READER_7, R7_en);
 
-    // if (enable_R8) {
-    //     write_csr(BASE_PTR_READER_8_LOW, ptr_R8);
-    //     for (int i = 0; i < S_STRIDE_NUM_READER_8; i++) csrw_ss(S_STRIDE_BASE_READER_8 + i, R8slstride[i]);
-    //     for (int i = 0; i < T_BOUND_NUM_READER_8; i++) csrw_ss(T_BOUND_BASE_READER_8 + i, R8tlbound[i]);
-    //     for (int i = 0; i < T_STRIDE_NUM_READER_8; i++) csrw_ss(T_STRIDE_BASE_READER_8 + i, R8tlstride[i]);
-    //     write_csr(ENABLED_CHANNEL_READER_8, enable_R8);
+    // if (R8_en) {
+    //     write_csr(BASE_PTR_READER_8_LOW, R8_ptr);
+    //     for (int i = 0; i < S_STRIDE_NUM_READER_8; i++) csrw_ss(S_STRIDE_BASE_READER_8 + i, R8_ss[i]);
+    //     for (int i = 0; i < T_BOUND_NUM_READER_8; i++) csrw_ss(T_BOUND_BASE_READER_8 + i, R8_tb[i]);
+    //     for (int i = 0; i < T_STRIDE_NUM_READER_8; i++) csrw_ss(T_STRIDE_BASE_READER_8 + i, R8_ts[i]);
     // }
+    //     write_csr(ENABLED_CHANNEL_READER_8, R8_en);
 
-    // if (enable_R9) {
-    //     write_csr(BASE_PTR_READER_9_LOW, ptr_R9);
-    //     for (int i = 0; i < S_STRIDE_NUM_READER_9; i++) csrw_ss(S_STRIDE_BASE_READER_9 + i, R9slstride[i]);
-    //     for (int i = 0; i < T_BOUND_NUM_READER_9; i++) csrw_ss(T_BOUND_BASE_READER_9 + i, R9tlbound[i]);
-    //     for (int i = 0; i < T_STRIDE_NUM_READER_9; i++) csrw_ss(T_STRIDE_BASE_READER_9 + i, R9tlstride[i]);
-    //     write_csr(ENABLED_CHANNEL_READER_9, enable_R9);
+    // if (R9_en) {
+    //     write_csr(BASE_PTR_READER_9_LOW, R9_ptr);
+    //     for (int i = 0; i < S_STRIDE_NUM_READER_9; i++) csrw_ss(S_STRIDE_BASE_READER_9 + i, R9_ss[i]);
+    //     for (int i = 0; i < T_BOUND_NUM_READER_9; i++) csrw_ss(T_BOUND_BASE_READER_9 + i, R9_tb[i]);
+    //     for (int i = 0; i < T_STRIDE_NUM_READER_9; i++) csrw_ss(T_STRIDE_BASE_READER_9 + i, R9_ts[i]);
     // }
+    //     write_csr(ENABLED_CHANNEL_READER_9, R9_en);
 
-    // if (enable_R10) {
-    //     write_csr(BASE_PTR_READER_10_LOW, ptr_R10);
-    //     for (int i = 0; i < S_STRIDE_NUM_READER_10; i++) csrw_ss(S_STRIDE_BASE_READER_10 + i, R10slstride[i]);
-    //     for (int i = 0; i < T_BOUND_NUM_READER_10; i++) csrw_ss(T_BOUND_BASE_READER_10 + i, R10tlbound[i]);
-    //     for (int i = 0; i < T_STRIDE_NUM_READER_10; i++) csrw_ss(T_STRIDE_BASE_READER_10 + i, R10tlstride[i]);
-    //     write_csr(ENABLED_CHANNEL_READER_10, enable_R10);
+    // if (R10_en) {
+    //     write_csr(BASE_PTR_READER_10_LOW, R10_ptr);
+    //     for (int i = 0; i < S_STRIDE_NUM_READER_10; i++) csrw_ss(S_STRIDE_BASE_READER_10 + i, R10_ss[i]);
+    //     for (int i = 0; i < T_BOUND_NUM_READER_10; i++) csrw_ss(T_BOUND_BASE_READER_10 + i, R10_tb[i]);
+    //     for (int i = 0; i < T_STRIDE_NUM_READER_10; i++) csrw_ss(T_STRIDE_BASE_READER_10 + i, R10_ts[i]);
     // }
+    //     write_csr(ENABLED_CHANNEL_READER_10, R10_en);
 
-    // if (enable_R11) {
-    //     write_csr(BASE_PTR_READER_11_LOW, ptr_R11);
-    //     for (int i = 0; i < S_STRIDE_NUM_READER_11; i++) csrw_ss(S_STRIDE_BASE_READER_11 + i, R11slstride[i]);
-    //     for (int i = 0; i < T_BOUND_NUM_READER_11; i++) csrw_ss(T_BOUND_BASE_READER_11 + i, R11tlbound[i]);
-    //     for (int i = 0; i < T_STRIDE_NUM_READER_11; i++) csrw_ss(T_STRIDE_BASE_READER_11 + i, R11tlstride[i]);
-    //     write_csr(ENABLED_CHANNEL_READER_11, enable_R11);
+    // if (R11_en) {
+    //     write_csr(BASE_PTR_READER_11_LOW, R11_ptr);
+    //     for (int i = 0; i < S_STRIDE_NUM_READER_11; i++) csrw_ss(S_STRIDE_BASE_READER_11 + i, R11_ss[i]);
+    //     for (int i = 0; i < T_BOUND_NUM_READER_11; i++) csrw_ss(T_BOUND_BASE_READER_11 + i, R11_tb[i]);
+    //     for (int i = 0; i < T_STRIDE_NUM_READER_11; i++) csrw_ss(T_STRIDE_BASE_READER_11 + i, R11_ts[i]);
     // }
+    //     write_csr(ENABLED_CHANNEL_READER_11, R11_en);
 
-    if (enable_R12) {
-        write_csr(BASE_PTR_READER_12_LOW, ptr_R12);
-        for (int i = 0; i < S_STRIDE_NUM_READER_12; i++) csrw_ss(S_STRIDE_BASE_READER_12 + i, R12slstride[i]);
-        for (int i = 0; i < T_BOUND_NUM_READER_12; i++) csrw_ss(T_BOUND_BASE_READER_12 + i, R12tlbound[i]);
-        for (int i = 0; i < T_STRIDE_NUM_READER_12; i++) csrw_ss(T_STRIDE_BASE_READER_12 + i, R12tlstride[i]);
-        write_csr(ENABLED_CHANNEL_READER_12, enable_R12);
+    if (R12_en) {
+        write_csr(BASE_PTR_READER_12_LOW, R12_ptr);
+        for (int i = 0; i < S_STRIDE_NUM_READER_12; i++) csrw_ss(S_STRIDE_BASE_READER_12 + i, R12_ss[i]);
+        for (int i = 0; i < T_BOUND_NUM_READER_12; i++) csrw_ss(T_BOUND_BASE_READER_12 + i, R12_tb[i]);
+        for (int i = 0; i < T_STRIDE_NUM_READER_12; i++) csrw_ss(T_STRIDE_BASE_READER_12 + i, R12_ts[i]);
     }
+    write_csr(ENABLED_CHANNEL_READER_12, R12_en);
 
-    if (enable_R13) {
-        write_csr(BASE_PTR_READER_13_LOW, ptr_R13);
-        for (int i = 0; i < S_STRIDE_NUM_READER_13; i++) csrw_ss(S_STRIDE_BASE_READER_13 + i, R13slstride[i]);
-        for (int i = 0; i < T_BOUND_NUM_READER_13; i++) csrw_ss(T_BOUND_BASE_READER_13 + i, R13tlbound[i]);
-        for (int i = 0; i < T_STRIDE_NUM_READER_13; i++) csrw_ss(T_STRIDE_BASE_READER_13 + i, R13tlstride[i]);
-        write_csr(ENABLED_CHANNEL_READER_13, enable_R13);
+    if (R13_en) {
+        write_csr(BASE_PTR_READER_13_LOW, R13_ptr);
+        for (int i = 0; i < S_STRIDE_NUM_READER_13; i++) csrw_ss(S_STRIDE_BASE_READER_13 + i, R13_ss[i]);
+        for (int i = 0; i < T_BOUND_NUM_READER_13; i++) csrw_ss(T_BOUND_BASE_READER_13 + i, R13_tb[i]);
+        for (int i = 0; i < T_STRIDE_NUM_READER_13; i++) csrw_ss(T_STRIDE_BASE_READER_13 + i, R13_ts[i]);
     }
+    write_csr(ENABLED_CHANNEL_READER_13, R13_en);
 
-    // if (enable_W0) {
-    //     write_csr(BASE_PTR_WRITER_0_LOW, ptr_W0);
-    //     for (int i = 0; i < S_STRIDE_NUM_WRITER_0; i++) csrw_ss(S_STRIDE_BASE_WRITER_0 + i, W0slstride[i]);
-    //     for (int i = 0; i < T_BOUND_NUM_WRITER_0; i++) csrw_ss(T_BOUND_BASE_WRITER_0 + i, W0tlbound[i]);
-    //     for (int i = 0; i < T_STRIDE_NUM_WRITER_0; i++) csrw_ss(T_STRIDE_BASE_WRITER_0 + i, W0tlstride[i]);
-    //     write_csr(ENABLED_CHANNEL_WRITER_0, enable_W0);
+    if (W0_en) {
+        write_csr(BASE_PTR_WRITER_0_LOW, W0_ptr);
+        for (int i = 0; i < S_STRIDE_NUM_WRITER_0; i++) csrw_ss(S_STRIDE_BASE_WRITER_0 + i, W0_ss[i]);
+        for (int i = 0; i < T_BOUND_NUM_WRITER_0; i++) csrw_ss(T_BOUND_BASE_WRITER_0 + i, W0_tb[i]);
+        for (int i = 0; i < T_STRIDE_NUM_WRITER_0; i++) csrw_ss(T_STRIDE_BASE_WRITER_0 + i, W0_ts[i]);
+    }
+    write_csr(ENABLED_CHANNEL_WRITER_0, W0_en);
+
+    if (W1_en) {
+        write_csr(BASE_PTR_WRITER_1_LOW, W1_ptr);
+        for (int i = 0; i < S_STRIDE_NUM_WRITER_1; i++) csrw_ss(S_STRIDE_BASE_WRITER_1 + i, W1_ss[i]);
+        for (int i = 0; i < T_BOUND_NUM_WRITER_1; i++) csrw_ss(T_BOUND_BASE_WRITER_1 + i, W1_tb[i]);
+        for (int i = 0; i < T_STRIDE_NUM_WRITER_1; i++) csrw_ss(T_STRIDE_BASE_WRITER_1 + i, W1_ts[i]);
+    }
+    write_csr(ENABLED_CHANNEL_WRITER_1, W1_en);
+
+    // if (W2_en) {
+    //     write_csr(BASE_PTR_WRITER_2_LOW, W2_ptr);
+    //     for (int i = 0; i < S_STRIDE_NUM_WRITER_2; i++) csrw_ss(S_STRIDE_BASE_WRITER_2 + i, W2_ss[i]);
+    //     for (int i = 0; i < T_BOUND_NUM_WRITER_2; i++) csrw_ss(T_BOUND_BASE_WRITER_2 + i, W2_tb[i]);
+    //     for (int i = 0; i < T_STRIDE_NUM_WRITER_2; i++) csrw_ss(T_STRIDE_BASE_WRITER_2 + i, W2_ts[i]);
     // }
+    //     write_csr(ENABLED_CHANNEL_WRITER_2, W2_en);
 
-    if (enable_W1) {
-        write_csr(BASE_PTR_WRITER_1_LOW, ptr_W1);
-        for (int i = 0; i < S_STRIDE_NUM_WRITER_1; i++) csrw_ss(S_STRIDE_BASE_WRITER_1 + i, W1slstride[i]);
-        for (int i = 0; i < T_BOUND_NUM_WRITER_1; i++) csrw_ss(T_BOUND_BASE_WRITER_1 + i, W1tlbound[i]);
-        for (int i = 0; i < T_STRIDE_NUM_WRITER_1; i++) csrw_ss(T_STRIDE_BASE_WRITER_1 + i, W1tlstride[i]);
-        write_csr(ENABLED_CHANNEL_WRITER_1, enable_W1);
+    if (W3_en) {
+        write_csr(BASE_PTR_WRITER_3_LOW, W3_ptr);
+        for (int i = 0; i < S_STRIDE_NUM_WRITER_3; i++) csrw_ss(S_STRIDE_BASE_WRITER_3 + i, W3_ss[i]);
+        for (int i = 0; i < T_BOUND_NUM_WRITER_3; i++) csrw_ss(T_BOUND_BASE_WRITER_3 + i, W3_tb[i]);
+        for (int i = 0; i < T_STRIDE_NUM_WRITER_3; i++) csrw_ss(T_STRIDE_BASE_WRITER_3 + i, W3_ts[i]);
     }
-
-    // if (enable_W2) {
-    //     write_csr(BASE_PTR_WRITER_2_LOW, ptr_W2);
-    //     for (int i = 0; i < S_STRIDE_NUM_WRITER_2; i++) csrw_ss(S_STRIDE_BASE_WRITER_2 + i, W2slstride[i]);
-    //     for (int i = 0; i < T_BOUND_NUM_WRITER_2; i++) csrw_ss(T_BOUND_BASE_WRITER_2 + i, W2tlbound[i]);
-    //     for (int i = 0; i < T_STRIDE_NUM_WRITER_2; i++) csrw_ss(T_STRIDE_BASE_WRITER_2 + i, W2tlstride[i]);
-    //     write_csr(ENABLED_CHANNEL_WRITER_2, enable_W2);
-    // }
-
-    if (enable_W3) {
-        write_csr(BASE_PTR_WRITER_3_LOW, ptr_W3);
-        for (int i = 0; i < S_STRIDE_NUM_WRITER_3; i++) csrw_ss(S_STRIDE_BASE_WRITER_3 + i, W3slstride[i]);
-        for (int i = 0; i < T_BOUND_NUM_WRITER_3; i++) csrw_ss(T_BOUND_BASE_WRITER_3 + i, W3tlbound[i]);
-        for (int i = 0; i < T_STRIDE_NUM_WRITER_3; i++) csrw_ss(T_STRIDE_BASE_WRITER_3 + i, W3tlstride[i]);
-        write_csr(ENABLED_CHANNEL_WRITER_3, enable_W3);
-    }
+    write_csr(ENABLED_CHANNEL_WRITER_3, W3_en);
 }
 
 void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank) {

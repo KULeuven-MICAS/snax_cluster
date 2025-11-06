@@ -46,6 +46,7 @@ int test_phase1() {
             (uint32_t)local_conv_bias, M0_R4_ss, M0_R4_tb, M0_R4_ts, M0_R4_en,          //
             (uint32_t)local_iscore_weight, M0_R12_ss, M0_R12_tb, M0_R12_ts, M0_R12_en,  //
             (uint32_t)local_iscore_out, M0_R13_ss, M0_R13_tb, M0_R13_ts, M0_R13_en,     // psums
+            (uint32_t)0, 0, 0, 0, 0,                                                    // disable
             (uint32_t)local_conv_out, M0_W1_ss, M0_W1_tb, M0_W1_ts, M0_W1_en,           //
             (uint32_t)local_iscore_out, M0_W3_ss, M0_W3_tb, M0_W3_ts, M0_W3_en          //
         );
@@ -60,11 +61,14 @@ int test_phase1() {
 
         err += check_result_sample(local_conv_out, conv_out, test_samples_conv_out, nb_test_samples, "conv_out");
         // err += check_result_all(local_conv_out, conv_out, length_conv_out);
-        check_result_sample(local_iscore_out, iscore_out, test_samples_iscore_out, nb_test_samples, "iscore_out");
+        err += check_result_sample(local_iscore_out, iscore_out, test_samples_iscore_out, 2 * nb_test_samples,
+                                   "iscore_out");
 
         printf("Test Phase1: seqLen=%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
                nb_test_samples);
     }
+
+    snrt_cluster_hw_barrier();
     return err;
 }
 
@@ -112,6 +116,8 @@ int test_osgemm() {
         printf("Test OSGeMM: seqLen%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
                nb_test_samples);
     }
+
+    snrt_cluster_hw_barrier();
     return err;
 }
 
@@ -119,5 +125,6 @@ int main() {
     int err = 0;
     err += test_osgemm();
     err += test_phase1();
+    // TODO osgemm after phase1 cannot work because the streamer CSR must be reset
     return err;
 }
