@@ -61,11 +61,11 @@ int test_phase1() {
 
         err += check_result_sample(local_conv_out, conv_out, test_samples_conv_out, nb_test_samples, "conv_out");
         // err += check_result_all(local_conv_out, conv_out, length_conv_out);
-        err += check_result_sample(local_iscore_out, iscore_out, test_samples_iscore_out, 2 * nb_test_samples,
-                                   "iscore_out");
+        err +=
+            check_result_sample(local_iscore_out, iscore_out, test_samples_iscore_out, nb_test_samples, "iscore_out");
 
         printf("Test Phase1: seqLen=%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
-               nb_test_samples);
+               2 * nb_test_samples);
     }
 
     snrt_cluster_hw_barrier();
@@ -96,11 +96,9 @@ int test_osgemm() {
     if (snrt_global_core_idx() == 0) {
         printf("Setting up Streamer and SimbaCore for OSGeMM...\n");
 
-        set_simbacore_osgemm_streamer_csr(
-
-            (uint32_t)local_a, M2_A_ss, M2_A_tb, M2_A_ts, channel_en,   // A
-            (uint32_t)local_b, M2_B_ss, M2_B_tb, M2_B_ts, channel_en,   // B
-            (uint32_t)local_d, M2_D_ss, M2_D_tb, M2_D_ts, channel_en);  // D
+        set_simbacore_osgemm_streamer_csr((uint32_t)local_a, M2_A_ss, M2_A_tb, M2_A_ts,   // A
+                                          (uint32_t)local_b, M2_B_ss, M2_B_tb, M2_B_ts,   // B
+                                          (uint32_t)local_d, M2_D_ss, M2_D_tb, M2_D_ts);  // D
 
         set_simbacore_csr(M2_OSGEMM, seqLen, dModel, dInner, 1);
         set_simbacore_streamer_start();
@@ -123,8 +121,7 @@ int test_osgemm() {
 
 int main() {
     int err = 0;
-    err += test_osgemm();
     err += test_phase1();
-    // TODO osgemm after phase1 cannot work because the streamer CSR must be reset
+    err += test_osgemm();
     return err;
 }

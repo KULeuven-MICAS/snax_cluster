@@ -124,9 +124,9 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_32,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_33,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_34,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_35,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_36,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_37,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_38,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_39,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_40,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_41,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
@@ -134,32 +134,32 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_43,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_44,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_45,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_46,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_47,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_48,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_49,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_50,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_51,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_52,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_53,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_54,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_55,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_56,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_57,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_58,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_59,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_60,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_61,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_62,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_63,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_64,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_65,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_66,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_67,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_68,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_69,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_70,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_71,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_72,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_73,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_74,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_75,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_76,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_77,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
@@ -175,7 +175,6 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_87,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_88,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_89,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_90,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_91,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_92,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_93,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
@@ -183,9 +182,9 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_95,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_96,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_97,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_98,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_99,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_100,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_101,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_102,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_103,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_104,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
@@ -194,8 +193,8 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_107,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_108,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_109,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_110,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_111,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_112,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_113,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_114,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_115,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
@@ -205,7 +204,7 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_119,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_120,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_121,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_123,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_122,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_124,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_125,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_126,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
@@ -216,6 +215,7 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_131,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_132,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_133,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_134,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_135,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_136,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_137,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
@@ -237,7 +237,6 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_153,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_154,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_155,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_156,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_157,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_158,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_159,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
@@ -248,9 +247,9 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_164,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_165,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_166,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_167,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_168,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_169,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_170,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_171,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_172,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_173,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
@@ -258,10 +257,10 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_175,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_176,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_177,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_178,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_179,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_180,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_181,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_182,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_183,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_184,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_185,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
@@ -273,27 +272,10 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
                 io_readWriteRegIO_bits_191,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_192,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_193,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readWriteRegIO_bits_194,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_195,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_196,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_197,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_198,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_199,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_200,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_201,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_202,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_203,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_204,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_205,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_206,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_207,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_208,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_209,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_210,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_211,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_212,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_213,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_214,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readWriteRegIO_bits_215,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
   input  [31:0] io_readOnlyReg_0,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readOnlyReg_1	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
 );
@@ -498,51 +480,33 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   reg  [31:0]        regs_196;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
   reg  [31:0]        regs_197;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
   reg  [31:0]        regs_198;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_199;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_200;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_201;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_202;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_203;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_204;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_205;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_206;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_207;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_208;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_209;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_210;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_211;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_212;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_213;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_214;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_215;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]        regs_216;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
   wire               _writeReg_T = io_reqRspIO_req_ready_0 & io_reqRspIO_req_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/reqRspManager/ReqRspManager.scala:197:21, :198:27, :199:24
   wire               readReg = _writeReg_T & ~io_reqRspIO_req_bits_write;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:{40,43}
   wire               writeReg = _writeReg_T & io_reqRspIO_req_bits_write;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/reqRspManager/ReqRspManager.scala:83:40
   wire               _check_acc_status_T =
     io_reqRspIO_req_valid & io_reqRspIO_req_bits_write;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:84:40
-  wire               _io_readWriteRegIO_valid_T = io_reqRspIO_req_bits_addr == 32'hD8;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:86:32
+  wire               _io_readWriteRegIO_valid_T = io_reqRspIO_req_bits_addr == 32'hC6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:86:32
   wire [31:0]        remainingMask =
     {{8{io_reqRspIO_req_bits_strb[3]}},
      {8{io_reqRspIO_req_bits_strb[2]}},
      {8{io_reqRspIO_req_bits_strb[1]}},
      {8{io_reqRspIO_req_bits_strb[0]}}};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:89:12, :103:40
   wire [32:0]        _GEN = {1'h0, io_reqRspIO_req_bits_addr};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:43, :127:46
-  wire               _GEN_0 = _GEN < 33'hD9;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:127:46, :129:29
+  wire               _GEN_0 = _GEN < 33'hC7;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:127:46, :129:29
   reg                readRegBusy;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:144:28
   reg  [31:0]        readRegBuffer;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:148:30
   `ifndef SYNTHESIS	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:132:15
     always @(posedge clock) begin	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:132:15
       if (writeReg & ~_GEN_0 & ~reset & (|remainingMask)) begin	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:83:40, :103:40, :129:{29,50}, :132:15, :133:16
         if (`ASSERT_VERBOSE_COND_)	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:132:15
-          $error("Assertion failed: csr write address overflow! Address: %d, Max: 216, Config: %d\n    at ReqRspManager.scala:132 assert(\n",
+          $error("Assertion failed: csr write address overflow! Address: %d, Max: 198, Config: %d\n    at ReqRspManager.scala:132 assert(\n",
                  _GEN, io_reqRspIO_req_bits_data);	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:127:46, :132:15
         if (`STOP_COND_)	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:132:15
           $fatal;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:132:15
       end
-      if (readReg & ~reset & io_reqRspIO_req_bits_addr > 32'h1B5) begin	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:40, :132:15, :166:11, :167:33
+      if (readReg & ~reset & io_reqRspIO_req_bits_addr > 32'h191) begin	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:40, :132:15, :166:11, :167:33
         if (`ASSERT_VERBOSE_COND_)	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:166:11
-          $error("Assertion failed: csr read address overflow! Max allowed address is 218\n    at ReqRspManager.scala:166 assert(\n");	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:166:11
+          $error("Assertion failed: csr read address overflow! Max allowed address is 200\n    at ReqRspManager.scala:166 assert(\n");	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:166:11
         if (`STOP_COND_)	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:166:11
           $fatal;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:166:11
       end
@@ -586,26 +550,26 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
      {regs_0},
      {regs_0},
      {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
      {io_readOnlyReg_1},
      {io_readOnlyReg_0},
-     {regs_216},
-     {regs_215},
-     {regs_214},
-     {regs_213},
-     {regs_212},
-     {regs_211},
-     {regs_210},
-     {regs_209},
-     {regs_208},
-     {regs_207},
-     {regs_206},
-     {regs_205},
-     {regs_204},
-     {regs_203},
-     {regs_202},
-     {regs_201},
-     {regs_200},
-     {regs_199},
      {regs_198},
      {regs_197},
      {regs_196},
@@ -805,7 +769,7 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
      {regs_2},
      {regs_1},
      {regs_0}};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :170:33
-  wire [31:0]        _GEN_2 = _GEN_1[io_reqRspIO_req_bits_addr[7:0]];	// <stdin>:3284:43, src/main/scala/snax/reqRspManager/ReqRspManager.scala:170:33
+  wire [31:0]        _GEN_2 = _GEN_1[io_reqRspIO_req_bits_addr[7:0]];	// <stdin>:3230:43, src/main/scala/snax/reqRspManager/ReqRspManager.scala:170:33
   wire               io_reqRspIO_rsp_valid_0 = readReg | readRegBusy;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:40, :144:28, :165:17, :171:33, :172:27
   assign io_reqRspIO_req_ready_0 =
     ~readRegBusy
@@ -1014,24 +978,6 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
       regs_196 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
       regs_197 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
       regs_198 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_199 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_200 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_201 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_202 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_203 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_204 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_205 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_206 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_207 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_208 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_209 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_210 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_211 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_212 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_213 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_214 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_215 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-      regs_216 <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
       readRegBusy <= 1'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:43, :144:28
       readRegBuffer <= 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:29, :148:30
     end
@@ -1078,24 +1024,24 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
          {regs_0},
          {regs_0},
          {regs_0},
-         {regs_216},
-         {regs_215},
-         {regs_214},
-         {regs_213},
-         {regs_212},
-         {regs_211},
-         {regs_210},
-         {regs_209},
-         {regs_208},
-         {regs_207},
-         {regs_206},
-         {regs_205},
-         {regs_204},
-         {regs_203},
-         {regs_202},
-         {regs_201},
-         {regs_200},
-         {regs_199},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
+         {regs_0},
          {regs_198},
          {regs_197},
          {regs_196},
@@ -1297,441 +1243,405 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
          {regs_0}};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:55
       _regs_T_6 =
         _GEN_3[io_reqRspIO_req_bits_addr[7:0]] & ~remainingMask
-        | io_reqRspIO_req_bits_data & remainingMask;	// <stdin>:2812:26, src/main/scala/snax/reqRspManager/ReqRspManager.scala:103:40, :130:{55,57,64,76}
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h0)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+        | io_reqRspIO_req_bits_data & remainingMask;	// <stdin>:2794:26, src/main/scala/snax/reqRspManager/ReqRspManager.scala:103:40, :130:{55,57,64,76}
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h0)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_0 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_1 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_2 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_3 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_4 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_5 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_6 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_7 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_8 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_9 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_10 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_11 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_12 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_13 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hE)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hE)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_14 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hF)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hF)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_15 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h10)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h10)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_16 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h11)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h11)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_17 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h12)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h12)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_18 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h13)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h13)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_19 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h14)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h14)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_20 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h15)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h15)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_21 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h16)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h16)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_22 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h17)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h17)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_23 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h18)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h18)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_24 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h19)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h19)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_25 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1A)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1A)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_26 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1B)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1B)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_27 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1C)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1C)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_28 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1D)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1D)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_29 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1E)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1E)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_30 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1F)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1F)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_31 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h20)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h20)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_32 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h21)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h21)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_33 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h22)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h22)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_34 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h23)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h23)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_35 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h24)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h24)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_36 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h25)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h25)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_37 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h26)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h26)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_38 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h27)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h27)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_39 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h28)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h28)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_40 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h29)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h29)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_41 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2A)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2A)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_42 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2B)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2B)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_43 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2C)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2C)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_44 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2D)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2D)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_45 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2E)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2E)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_46 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2F)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2F)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_47 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h30)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h30)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_48 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h31)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h31)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_49 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h32)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h32)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_50 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h33)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h33)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_51 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h34)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h34)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_52 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h35)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h35)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_53 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h36)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h36)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_54 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h37)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h37)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_55 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h38)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h38)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_56 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h39)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h39)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_57 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3A)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3A)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_58 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3B)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3B)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_59 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3C)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3C)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_60 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3D)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3D)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_61 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3E)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3E)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_62 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3F)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3F)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_63 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h40)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h40)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_64 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h41)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h41)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_65 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h42)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h42)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_66 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h43)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h43)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_67 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h44)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h44)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_68 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h45)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h45)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_69 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h46)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h46)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_70 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h47)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h47)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_71 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h48)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h48)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_72 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h49)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h49)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_73 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4A)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4A)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_74 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4B)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4B)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_75 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4C)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4C)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_76 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4D)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4D)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_77 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4E)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4E)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_78 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4F)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4F)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_79 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h50)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h50)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_80 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h51)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h51)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_81 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h52)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h52)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_82 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h53)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h53)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_83 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h54)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h54)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_84 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h55)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h55)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_85 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h56)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h56)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_86 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h57)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h57)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_87 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h58)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h58)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_88 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h59)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h59)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_89 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5A)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5A)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_90 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5B)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5B)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_91 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5C)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5C)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_92 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5D)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5D)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_93 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5E)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5E)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_94 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5F)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5F)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_95 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h60)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h60)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_96 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h61)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h61)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_97 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h62)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h62)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_98 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h63)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h63)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_99 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h64)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h64)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_100 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h65)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h65)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_101 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h66)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h66)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_102 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h67)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h67)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_103 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h68)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h68)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_104 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h69)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h69)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_105 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6A)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6A)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_106 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6B)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6B)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_107 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6C)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6C)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_108 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6D)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6D)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_109 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6E)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6E)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_110 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6F)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6F)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_111 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h70)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h70)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_112 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h71)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h71)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_113 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h72)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h72)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_114 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h73)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h73)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_115 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h74)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h74)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_116 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h75)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h75)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_117 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h76)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h76)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_118 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h77)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h77)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_119 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h78)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h78)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_120 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h79)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h79)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_121 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7A)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7A)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_122 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7B)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7B)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_123 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7C)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7C)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_124 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7D)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7D)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_125 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7E)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7E)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_126 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7F)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7F)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_127 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h80)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h80)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_128 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h81)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h81)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_129 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h82)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h82)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_130 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h83)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h83)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_131 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h84)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h84)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_132 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h85)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h85)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_133 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h86)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h86)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_134 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h87)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h87)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_135 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h88)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h88)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_136 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h89)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h89)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_137 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8A)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8A)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_138 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8B)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8B)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_139 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8C)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8C)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_140 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8D)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8D)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_141 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8E)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8E)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_142 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8F)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8F)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_143 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h90)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h90)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_144 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h91)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h91)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_145 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h92)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h92)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_146 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h93)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h93)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_147 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h94)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h94)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_148 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h95)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h95)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_149 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h96)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h96)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_150 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h97)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h97)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_151 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h98)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h98)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_152 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h99)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h99)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_153 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9A)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9A)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_154 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9B)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9B)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_155 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9C)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9C)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_156 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9D)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9D)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_157 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9E)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9E)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_158 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9F)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9F)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_159 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA0)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA0)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_160 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA1)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA1)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_161 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA2)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA2)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_162 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA3)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA3)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_163 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA4)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA4)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_164 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA5)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA5)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_165 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA6)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA6)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_166 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA7)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA7)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_167 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA8)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA8)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_168 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA9)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA9)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_169 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAA)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAA)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_170 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAB)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAB)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_171 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAC)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAC)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_172 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAD)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAD)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_173 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAE)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAE)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_174 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAF)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAF)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_175 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB0)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB0)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_176 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB1)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB1)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_177 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB2)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB2)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_178 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB3)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB3)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_179 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB4)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB4)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_180 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB5)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB5)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_181 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB6)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB6)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_182 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB7)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB7)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_183 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB8)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB8)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_184 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB9)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB9)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_185 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBA)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBA)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_186 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBB)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBB)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_187 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBC)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBC)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_188 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBD)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBD)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_189 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBE)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBE)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_190 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBF)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBF)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_191 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC0)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC0)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_192 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC1)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC1)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_193 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC2)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC2)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_194 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC3)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC3)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_195 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC4)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC4)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_196 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC5)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC5)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_197 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC6)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC6)	// <stdin>:2791:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_198 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC7)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_199 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC8)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_200 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC9)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_201 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hCA)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_202 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hCB)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_203 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hCC)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_204 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hCD)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_205 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hCE)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_206 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hCF)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_207 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD0)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_208 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD1)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_209 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD2)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_210 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD3)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_211 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD4)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_212 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD5)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_213 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD6)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_214 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD7)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_215 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD8)	// <stdin>:2809:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
-        regs_216 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
       readRegBusy <= io_reqRspIO_rsp_valid_0 & ~io_reqRspIO_rsp_ready;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:144:28, :145:{40,43}, :165:17, :171:33, :172:27
       if (readReg)	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:40
         readRegBuffer <= _GEN_2;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:148:30, :170:33
@@ -1746,12 +1656,12 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
       `FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7
     `endif // FIRRTL_BEFORE_INITIAL
     initial begin	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7
-      automatic logic [31:0] _RANDOM[0:218];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7
+      automatic logic [31:0] _RANDOM[0:200];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7
       `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7
         `INIT_RANDOM_PROLOG_	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7
-        for (logic [7:0] i = 8'h0; i < 8'hDB; i += 8'h1) begin
+        for (logic [7:0] i = 8'h0; i < 8'hC9; i += 8'h1) begin
           _RANDOM[i] = `RANDOM;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7
         end	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7
         regs_0 = _RANDOM[8'h0];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -1953,26 +1863,8 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
         regs_196 = _RANDOM[8'hC4];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
         regs_197 = _RANDOM[8'hC5];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
         regs_198 = _RANDOM[8'hC6];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_199 = _RANDOM[8'hC7];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_200 = _RANDOM[8'hC8];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_201 = _RANDOM[8'hC9];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_202 = _RANDOM[8'hCA];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_203 = _RANDOM[8'hCB];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_204 = _RANDOM[8'hCC];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_205 = _RANDOM[8'hCD];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_206 = _RANDOM[8'hCE];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_207 = _RANDOM[8'hCF];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_208 = _RANDOM[8'hD0];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_209 = _RANDOM[8'hD1];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_210 = _RANDOM[8'hD2];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_211 = _RANDOM[8'hD3];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_212 = _RANDOM[8'hD4];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_213 = _RANDOM[8'hD5];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_214 = _RANDOM[8'hD6];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_215 = _RANDOM[8'hD7];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        regs_216 = _RANDOM[8'hD8];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-        readRegBusy = _RANDOM[8'hD9][0];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :144:28
-        readRegBuffer = {_RANDOM[8'hD9][31:1], _RANDOM[8'hDA][0]};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :144:28, :148:30
+        readRegBusy = _RANDOM[8'hC7][0];	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :144:28
+        readRegBuffer = {_RANDOM[8'hC7][31:1], _RANDOM[8'hC8][0]};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :144:28, :148:30
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7
         regs_0 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
@@ -2174,24 +2066,6 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
         regs_196 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
         regs_197 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
         regs_198 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_199 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_200 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_201 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_202 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_203 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_204 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_205 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_206 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_207 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_208 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_209 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_210 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_211 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_212 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_213 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_214 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_215 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
-        regs_216 = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:{21,29}
         readRegBusy = 1'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:43, :144:28
         readRegBuffer = 32'h0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:29, :148:30
       end
@@ -2242,9 +2116,9 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_32 = regs_32;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_33 = regs_33;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_34 = regs_34;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_35 = regs_35;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_36 = regs_36;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_37 = regs_37;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_38 = regs_38;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_39 = regs_39;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_40 = regs_40;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_41 = regs_41;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -2252,32 +2126,32 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_43 = regs_43;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_44 = regs_44;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_45 = regs_45;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_46 = regs_46;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_47 = regs_47;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_48 = regs_48;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_49 = regs_49;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_50 = regs_50;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_51 = regs_51;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_52 = regs_52;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_53 = regs_53;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_54 = regs_54;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_55 = regs_55;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_56 = regs_56;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_57 = regs_57;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_58 = regs_58;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_59 = regs_59;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_60 = regs_60;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_61 = regs_61;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_62 = regs_62;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_63 = regs_63;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_64 = regs_64;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_65 = regs_65;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_66 = regs_66;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_67 = regs_67;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_68 = regs_68;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_69 = regs_69;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_70 = regs_70;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_71 = regs_71;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_72 = regs_72;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_73 = regs_73;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_74 = regs_74;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_75 = regs_75;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_76 = regs_76;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_77 = regs_77;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -2293,7 +2167,6 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_87 = regs_87;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_88 = regs_88;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_89 = regs_89;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_90 = regs_90;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_91 = regs_91;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_92 = regs_92;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_93 = regs_93;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -2301,9 +2174,9 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_95 = regs_95;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_96 = regs_96;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_97 = regs_97;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_98 = regs_98;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_99 = regs_99;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_100 = regs_100;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_101 = regs_101;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_102 = regs_102;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_103 = regs_103;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_104 = regs_104;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -2312,8 +2185,8 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_107 = regs_107;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_108 = regs_108;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_109 = regs_109;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_110 = regs_110;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_111 = regs_111;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_112 = regs_112;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_113 = regs_113;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_114 = regs_114;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_115 = regs_115;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -2323,7 +2196,7 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_119 = regs_119;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_120 = regs_120;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_121 = regs_121;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_123 = regs_123;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_122 = regs_122;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_124 = regs_124;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_125 = regs_125;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_126 = regs_126;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -2334,6 +2207,7 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_131 = regs_131;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_132 = regs_132;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_133 = regs_133;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_134 = regs_134;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_135 = regs_135;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_136 = regs_136;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_137 = regs_137;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -2355,7 +2229,6 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_153 = regs_153;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_154 = regs_154;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_155 = regs_155;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_156 = regs_156;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_157 = regs_157;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_158 = regs_158;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_159 = regs_159;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -2366,9 +2239,9 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_164 = regs_164;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_165 = regs_165;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_166 = regs_166;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_167 = regs_167;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_168 = regs_168;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_169 = regs_169;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_170 = regs_170;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_171 = regs_171;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_172 = regs_172;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_173 = regs_173;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -2376,10 +2249,10 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_175 = regs_175;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_176 = regs_176;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_177 = regs_177;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_178 = regs_178;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_179 = regs_179;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_180 = regs_180;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_181 = regs_181;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_182 = regs_182;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_183 = regs_183;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_184 = regs_184;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_185 = regs_185;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
@@ -2391,27 +2264,10 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
   assign io_readWriteRegIO_bits_191 = regs_191;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_192 = regs_192;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_193 = regs_193;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
+  assign io_readWriteRegIO_bits_194 = regs_194;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_195 = regs_195;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_196 = regs_196;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
   assign io_readWriteRegIO_bits_197 = regs_197;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_198 = regs_198;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_199 = regs_199;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_200 = regs_200;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_201 = regs_201;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_202 = regs_202;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_203 = regs_203;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_204 = regs_204;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_205 = regs_205;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_206 = regs_206;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_207 = regs_207;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_208 = regs_208;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_209 = regs_209;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_210 = regs_210;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_211 = regs_211;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_212 = regs_212;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_213 = regs_213;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_214 = regs_214;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
-  assign io_readWriteRegIO_bits_215 = regs_215;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21
 endmodule
 
 module snax_simbacore__C0_Reader_AddressGenUnitCounter_SmallCounter(	// src/main/scala/snax/utils/Counter.scala:102:35
@@ -2545,7 +2401,7 @@ module ram_2x20(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
   assign R0_data = R0_en ? Memory[R0_addr] : 20'bx;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
 endmodule
 
-module Queue_W20_D2_Hjse121(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H9g7810(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -2619,9 +2475,9 @@ module Queue_W20_D2_Hjse121(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [79:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -2647,7 +2503,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hjse121 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H9g7810 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -2657,7 +2513,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hjse121 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H9g7810 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -2667,7 +2523,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hjse121 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H9g7810 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -2677,7 +2533,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_Hjse121 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H9g7810 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -2687,7 +2543,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_3_valid),
     .io_deq_bits  (io_out_3_bits)
   );
-  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
+  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
 endmodule
 
 module snax_simbacore__C0_Reader_AddressGenUnit(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -2720,34 +2576,34 @@ module snax_simbacore__C0_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_3_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire [19:0] _temporalOffset_T_4 =
     _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :130:71
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :129:71
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -2760,65 +2616,65 @@ module snax_simbacore__C0_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C0_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C0_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C0_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C0_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C0_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C0_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C0_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C0_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C0_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C0_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       ({io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h3,
         io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[18:0], 1'h0},
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0,
-        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :130:71, :134:67, :141:37, :152:27, :196:28
+        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :129:71, :133:67, :140:37, :151:27, :195:28
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits),
@@ -2832,14 +2688,14 @@ module snax_simbacore__C0_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
     .io_out_3_valid (_outputBuffer_io_out_3_valid),
     .io_out_3_bits  (io_addr_3_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
   assign io_bufferEmpty =
     ~(_outputBuffer_io_out_0_valid | _outputBuffer_io_out_1_valid
-      | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:{21,70}
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+      | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C0_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -2849,19 +2705,17 @@ module snax_simbacore__C0_Reader_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C0_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -2871,8 +2725,7 @@ module snax_simbacore__C0_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_1_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_1_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -2880,8 +2733,7 @@ module snax_simbacore__C0_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_1_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_1_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_1_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_2_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_2_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -2889,8 +2741,7 @@ module snax_simbacore__C0_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_2_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_2_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_2_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_3_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_3_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -2898,8 +2749,7 @@ module snax_simbacore__C0_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_3_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_3_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_3_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -2910,7 +2760,6 @@ module snax_simbacore__C0_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -2921,7 +2770,6 @@ module snax_simbacore__C0_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_1_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_1_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_1_out_tcdmReq_bits_addr),
-    .io_enable                (io_1_enable),
     .io_reqrspLink_rspReady   (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_1_reqrspLink_reqSubmit)
   );
@@ -2932,7 +2780,6 @@ module snax_simbacore__C0_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_2_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_2_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_2_out_tcdmReq_bits_addr),
-    .io_enable                (io_2_enable),
     .io_reqrspLink_rspReady   (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_2_reqrspLink_reqSubmit)
   );
@@ -2943,7 +2790,6 @@ module snax_simbacore__C0_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_3_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_3_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_3_out_tcdmReq_bits_addr),
-    .io_enable                (io_3_enable),
     .io_reqrspLink_rspReady   (io_3_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_3_reqrspLink_reqSubmit)
   );
@@ -3005,7 +2851,6 @@ module snax_simbacore__C0_Reader_DataResponser(	// src/main/scala/snax/readerWri
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -3018,8 +2863,8 @@ module snax_simbacore__C0_Reader_DataResponser(	// src/main/scala/snax/readerWri
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -3032,7 +2877,6 @@ module snax_simbacore__C0_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_1_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -3040,7 +2884,6 @@ module snax_simbacore__C0_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_1_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_1_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_1_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_2_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -3048,7 +2891,6 @@ module snax_simbacore__C0_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_2_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_2_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_2_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_3_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -3056,7 +2898,6 @@ module snax_simbacore__C0_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_3_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_3_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_3_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_3_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_3_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -3069,7 +2910,6 @@ module snax_simbacore__C0_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
@@ -3081,7 +2921,6 @@ module snax_simbacore__C0_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_1_out_data_valid),
     .io_out_data_bits        (io_1_out_data_bits),
     .io_out_dataFifoPopped   (io_1_out_dataFifoPopped),
-    .io_enable               (io_1_enable),
     .io_reqrspLink_rspReady  (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_1_reqrspLink_reqSubmit)
   );
@@ -3093,7 +2932,6 @@ module snax_simbacore__C0_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_2_out_data_valid),
     .io_out_data_bits        (io_2_out_data_bits),
     .io_out_dataFifoPopped   (io_2_out_dataFifoPopped),
-    .io_enable               (io_2_enable),
     .io_reqrspLink_rspReady  (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_2_reqrspLink_reqSubmit)
   );
@@ -3105,7 +2943,6 @@ module snax_simbacore__C0_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_3_out_data_valid),
     .io_out_data_bits        (io_3_out_data_bits),
     .io_out_dataFifoPopped   (io_3_out_dataFifoPopped),
-    .io_enable               (io_3_enable),
     .io_reqrspLink_rspReady  (io_3_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_3_reqrspLink_reqSubmit)
   );
@@ -3145,7 +2982,7 @@ module ram_2x64(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
   assign R0_data = R0_en ? Memory[R0_addr] : 64'bx;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
 endmodule
 
-module Queue_W64_D2_Hgucfam(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hc4456d(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -3245,7 +3082,7 @@ module snax_simbacore__C0_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
     & _queues_3_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_3_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_Hgucfam queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc4456d queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -3254,7 +3091,7 @@ module snax_simbacore__C0_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_Hgucfam queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc4456d queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -3263,7 +3100,7 @@ module snax_simbacore__C0_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_Hgucfam queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc4456d queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -3272,7 +3109,7 @@ module snax_simbacore__C0_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_Hgucfam queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hc4456d queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -3376,7 +3213,6 @@ module snax_simbacore__C0_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
                  io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input  [3:0]   io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output         io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -3477,7 +3313,6 @@ module snax_simbacore__C0_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit),
     .io_1_in_addr_ready         (_requestors_io_1_in_addr_ready),
@@ -3486,7 +3321,6 @@ module snax_simbacore__C0_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_1_out_tcdmReq_ready     (io_tcdmReq_1_ready),
     .io_1_out_tcdmReq_valid     (io_tcdmReq_1_valid),
     .io_1_out_tcdmReq_bits_addr (io_tcdmReq_1_bits_addr),
-    .io_1_enable                (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady   (_responsers_io_1_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_1_reqrspLink_reqSubmit  (_requestors_io_1_reqrspLink_reqSubmit),
     .io_2_in_addr_ready         (_requestors_io_2_in_addr_ready),
@@ -3495,7 +3329,6 @@ module snax_simbacore__C0_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_2_out_tcdmReq_ready     (io_tcdmReq_2_ready),
     .io_2_out_tcdmReq_valid     (io_tcdmReq_2_valid),
     .io_2_out_tcdmReq_bits_addr (io_tcdmReq_2_bits_addr),
-    .io_2_enable                (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_2_reqrspLink_rspReady   (_responsers_io_2_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_2_reqrspLink_reqSubmit  (_requestors_io_2_reqrspLink_reqSubmit),
     .io_3_in_addr_ready         (_requestors_io_3_in_addr_ready),
@@ -3504,7 +3337,6 @@ module snax_simbacore__C0_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_3_out_tcdmReq_ready     (io_tcdmReq_3_ready),
     .io_3_out_tcdmReq_valid     (io_tcdmReq_3_valid),
     .io_3_out_tcdmReq_bits_addr (io_tcdmReq_3_bits_addr),
-    .io_3_enable                (io_readerwriterCfg_enabledChannel[3]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_3_reqrspLink_rspReady   (_responsers_io_3_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_3_reqrspLink_reqSubmit  (_requestors_io_3_reqrspLink_reqSubmit)
   );
@@ -3516,7 +3348,6 @@ module snax_simbacore__C0_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_data_valid       (_responsers_io_0_out_data_valid),
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_0_enable               (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_1_in_tcdmRsp_valid     (io_tcdmRsp_1_valid),
@@ -3524,7 +3355,6 @@ module snax_simbacore__C0_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_1_out_data_valid       (_responsers_io_1_out_data_valid),
     .io_1_out_data_bits        (_responsers_io_1_out_data_bits),
     .io_1_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_1_enable               (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady  (_responsers_io_1_reqrspLink_rspReady),
     .io_1_reqrspLink_reqSubmit (_requestors_io_1_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_2_in_tcdmRsp_valid     (io_tcdmRsp_2_valid),
@@ -3532,7 +3362,6 @@ module snax_simbacore__C0_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_2_out_data_valid       (_responsers_io_2_out_data_valid),
     .io_2_out_data_bits        (_responsers_io_2_out_data_bits),
     .io_2_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_2_enable               (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_2_reqrspLink_rspReady  (_responsers_io_2_reqrspLink_rspReady),
     .io_2_reqrspLink_reqSubmit (_requestors_io_2_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_3_in_tcdmRsp_valid     (io_tcdmRsp_3_valid),
@@ -3540,7 +3369,6 @@ module snax_simbacore__C0_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_3_out_data_valid       (_responsers_io_3_out_data_valid),
     .io_3_out_data_bits        (_responsers_io_3_out_data_bits),
     .io_3_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_3_enable               (io_readerwriterCfg_enabledChannel[3]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_3_reqrspLink_rspReady  (_responsers_io_3_reqrspLink_rspReady),
     .io_3_reqrspLink_reqSubmit (_requestors_io_3_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -3674,7 +3502,7 @@ module snax_simbacore__C1_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hm3jnrp(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H3kgk0t(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -3748,9 +3576,9 @@ module Queue_W20_D2_Hm3jnrp(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input          clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                 reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input          clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                 reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output         io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input          io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [119:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -3784,7 +3612,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready & _queues_4_io_enq_ready & _queues_5_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_5_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hm3jnrp queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3kgk0t queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -3794,7 +3622,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hm3jnrp queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3kgk0t queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -3804,7 +3632,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hm3jnrp queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3kgk0t queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -3814,7 +3642,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_Hm3jnrp queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3kgk0t queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -3824,7 +3652,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_3_valid),
     .io_deq_bits  (io_out_3_bits)
   );
-  Queue_W20_D2_Hm3jnrp queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3kgk0t queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_4_io_enq_ready),
@@ -3834,7 +3662,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_4_valid),
     .io_deq_bits  (io_out_4_bits)
   );
-  Queue_W20_D2_Hm3jnrp queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3kgk0t queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_5_io_enq_ready),
@@ -3844,7 +3672,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_5_valid),
     .io_deq_bits  (io_out_5_bits)
   );
-  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
+  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
 endmodule
 
 module snax_simbacore__C1_Reader_AddressGenUnit(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -3883,36 +3711,36 @@ module snax_simbacore__C1_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_5_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire [19:0] _temporalOffset_T_4 =
     _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :130:71
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :129:71
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -3925,67 +3753,67 @@ module snax_simbacore__C1_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C1_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C1_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C1_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C1_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C1_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C1_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C1_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C1_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C1_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C1_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       ({io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h5,
         io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[17:0], 2'h0},
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h3,
         io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[18:0], 1'h0},
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0,
-        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :130:71, :134:67, :141:37, :152:27, :196:28
+        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :129:71, :133:67, :140:37, :151:27, :195:28
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits),
@@ -4005,17 +3833,17 @@ module snax_simbacore__C1_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
     .io_out_5_valid (_outputBuffer_io_out_5_valid),
     .io_out_5_bits  (io_addr_5_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
   assign io_bufferEmpty =
     ~(_outputBuffer_io_out_0_valid | _outputBuffer_io_out_1_valid
       | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid
-      | _outputBuffer_io_out_4_valid | _outputBuffer_io_out_5_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:{21,70}
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_4_valid = _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_5_valid = _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+      | _outputBuffer_io_out_4_valid | _outputBuffer_io_out_5_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_4_valid = _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_5_valid = _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C1_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -4025,19 +3853,17 @@ module snax_simbacore__C1_Reader_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -4047,8 +3873,7 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_1_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_1_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -4056,8 +3881,7 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_1_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_1_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_1_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_2_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_2_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -4065,8 +3889,7 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_2_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_2_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_2_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_3_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_3_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -4074,8 +3897,7 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_3_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_3_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_3_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_4_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_4_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -4083,8 +3905,7 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_4_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_4_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_4_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_4_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_4_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_4_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_4_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_5_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_5_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -4092,8 +3913,7 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_5_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_5_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_5_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_5_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_5_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_5_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_5_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -4104,7 +3924,6 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -4115,7 +3934,6 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_1_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_1_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_1_out_tcdmReq_bits_addr),
-    .io_enable                (io_1_enable),
     .io_reqrspLink_rspReady   (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_1_reqrspLink_reqSubmit)
   );
@@ -4126,7 +3944,6 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_2_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_2_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_2_out_tcdmReq_bits_addr),
-    .io_enable                (io_2_enable),
     .io_reqrspLink_rspReady   (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_2_reqrspLink_reqSubmit)
   );
@@ -4137,7 +3954,6 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_3_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_3_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_3_out_tcdmReq_bits_addr),
-    .io_enable                (io_3_enable),
     .io_reqrspLink_rspReady   (io_3_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_3_reqrspLink_reqSubmit)
   );
@@ -4148,7 +3964,6 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_4_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_4_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_4_out_tcdmReq_bits_addr),
-    .io_enable                (io_4_enable),
     .io_reqrspLink_rspReady   (io_4_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_4_reqrspLink_reqSubmit)
   );
@@ -4159,7 +3974,6 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_5_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_5_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_5_out_tcdmReq_bits_addr),
-    .io_enable                (io_5_enable),
     .io_reqrspLink_rspReady   (io_5_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_5_reqrspLink_reqSubmit)
   );
@@ -4221,7 +4035,6 @@ module snax_simbacore__C1_Reader_DataResponser(	// src/main/scala/snax/readerWri
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -4234,8 +4047,8 @@ module snax_simbacore__C1_Reader_DataResponser(	// src/main/scala/snax/readerWri
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -4248,7 +4061,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_1_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -4256,7 +4068,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_1_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_1_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_1_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_2_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -4264,7 +4075,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_2_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_2_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_2_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_3_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -4272,7 +4082,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_3_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_3_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_3_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_3_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_3_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_4_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -4280,7 +4089,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_4_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_4_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_4_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_4_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_4_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_4_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_5_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -4288,7 +4096,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_5_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_5_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_5_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_5_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_5_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_5_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -4301,7 +4108,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
@@ -4313,7 +4119,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_1_out_data_valid),
     .io_out_data_bits        (io_1_out_data_bits),
     .io_out_dataFifoPopped   (io_1_out_dataFifoPopped),
-    .io_enable               (io_1_enable),
     .io_reqrspLink_rspReady  (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_1_reqrspLink_reqSubmit)
   );
@@ -4325,7 +4130,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_2_out_data_valid),
     .io_out_data_bits        (io_2_out_data_bits),
     .io_out_dataFifoPopped   (io_2_out_dataFifoPopped),
-    .io_enable               (io_2_enable),
     .io_reqrspLink_rspReady  (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_2_reqrspLink_reqSubmit)
   );
@@ -4337,7 +4141,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_3_out_data_valid),
     .io_out_data_bits        (io_3_out_data_bits),
     .io_out_dataFifoPopped   (io_3_out_dataFifoPopped),
-    .io_enable               (io_3_enable),
     .io_reqrspLink_rspReady  (io_3_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_3_reqrspLink_reqSubmit)
   );
@@ -4349,7 +4152,6 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_4_out_data_valid),
     .io_out_data_bits        (io_4_out_data_bits),
     .io_out_dataFifoPopped   (io_4_out_dataFifoPopped),
-    .io_enable               (io_4_enable),
     .io_reqrspLink_rspReady  (io_4_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_4_reqrspLink_reqSubmit)
   );
@@ -4361,13 +4163,12 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_5_out_data_valid),
     .io_out_data_bits        (io_5_out_data_bits),
     .io_out_dataFifoPopped   (io_5_out_dataFifoPopped),
-    .io_enable               (io_5_enable),
     .io_reqrspLink_rspReady  (io_5_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_5_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_H6v8neb(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hn73be9(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -4475,7 +4276,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
     & _queues_3_io_deq_valid & _queues_4_io_deq_valid & _queues_5_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_5_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_H6v8neb queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn73be9 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -4484,7 +4285,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_H6v8neb queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn73be9 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -4493,7 +4294,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_H6v8neb queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn73be9 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -4502,7 +4303,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_H6v8neb queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn73be9 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -4511,7 +4312,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_3_io_deq_valid),
     .io_deq_bits  (_queues_3_io_deq_bits)
   );
-  Queue_W64_D2_H6v8neb queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn73be9 queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_4_valid),
@@ -4520,7 +4321,7 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_4_io_deq_valid),
     .io_deq_bits  (_queues_4_io_deq_bits)
   );
-  Queue_W64_D2_H6v8neb queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hn73be9 queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_5_valid),
@@ -4626,7 +4427,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
                  io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input  [5:0]   io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output         io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -4757,7 +4557,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit),
     .io_1_in_addr_ready         (_requestors_io_1_in_addr_ready),
@@ -4766,7 +4565,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_1_out_tcdmReq_ready     (io_tcdmReq_1_ready),
     .io_1_out_tcdmReq_valid     (io_tcdmReq_1_valid),
     .io_1_out_tcdmReq_bits_addr (io_tcdmReq_1_bits_addr),
-    .io_1_enable                (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady   (_responsers_io_1_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_1_reqrspLink_reqSubmit  (_requestors_io_1_reqrspLink_reqSubmit),
     .io_2_in_addr_ready         (_requestors_io_2_in_addr_ready),
@@ -4775,7 +4573,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_2_out_tcdmReq_ready     (io_tcdmReq_2_ready),
     .io_2_out_tcdmReq_valid     (io_tcdmReq_2_valid),
     .io_2_out_tcdmReq_bits_addr (io_tcdmReq_2_bits_addr),
-    .io_2_enable                (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_2_reqrspLink_rspReady   (_responsers_io_2_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_2_reqrspLink_reqSubmit  (_requestors_io_2_reqrspLink_reqSubmit),
     .io_3_in_addr_ready         (_requestors_io_3_in_addr_ready),
@@ -4784,7 +4581,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_3_out_tcdmReq_ready     (io_tcdmReq_3_ready),
     .io_3_out_tcdmReq_valid     (io_tcdmReq_3_valid),
     .io_3_out_tcdmReq_bits_addr (io_tcdmReq_3_bits_addr),
-    .io_3_enable                (io_readerwriterCfg_enabledChannel[3]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_3_reqrspLink_rspReady   (_responsers_io_3_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_3_reqrspLink_reqSubmit  (_requestors_io_3_reqrspLink_reqSubmit),
     .io_4_in_addr_ready         (_requestors_io_4_in_addr_ready),
@@ -4793,7 +4589,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_4_out_tcdmReq_ready     (io_tcdmReq_4_ready),
     .io_4_out_tcdmReq_valid     (io_tcdmReq_4_valid),
     .io_4_out_tcdmReq_bits_addr (io_tcdmReq_4_bits_addr),
-    .io_4_enable                (io_readerwriterCfg_enabledChannel[4]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_4_reqrspLink_rspReady   (_responsers_io_4_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_4_reqrspLink_reqSubmit  (_requestors_io_4_reqrspLink_reqSubmit),
     .io_5_in_addr_ready         (_requestors_io_5_in_addr_ready),
@@ -4802,7 +4597,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_5_out_tcdmReq_ready     (io_tcdmReq_5_ready),
     .io_5_out_tcdmReq_valid     (io_tcdmReq_5_valid),
     .io_5_out_tcdmReq_bits_addr (io_tcdmReq_5_bits_addr),
-    .io_5_enable                (io_readerwriterCfg_enabledChannel[5]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_5_reqrspLink_rspReady   (_responsers_io_5_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_5_reqrspLink_reqSubmit  (_requestors_io_5_reqrspLink_reqSubmit)
   );
@@ -4814,7 +4608,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_data_valid       (_responsers_io_0_out_data_valid),
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_0_enable               (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_1_in_tcdmRsp_valid     (io_tcdmRsp_1_valid),
@@ -4822,7 +4615,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_1_out_data_valid       (_responsers_io_1_out_data_valid),
     .io_1_out_data_bits        (_responsers_io_1_out_data_bits),
     .io_1_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_1_enable               (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady  (_responsers_io_1_reqrspLink_rspReady),
     .io_1_reqrspLink_reqSubmit (_requestors_io_1_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_2_in_tcdmRsp_valid     (io_tcdmRsp_2_valid),
@@ -4830,7 +4622,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_2_out_data_valid       (_responsers_io_2_out_data_valid),
     .io_2_out_data_bits        (_responsers_io_2_out_data_bits),
     .io_2_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_2_enable               (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_2_reqrspLink_rspReady  (_responsers_io_2_reqrspLink_rspReady),
     .io_2_reqrspLink_reqSubmit (_requestors_io_2_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_3_in_tcdmRsp_valid     (io_tcdmRsp_3_valid),
@@ -4838,7 +4629,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_3_out_data_valid       (_responsers_io_3_out_data_valid),
     .io_3_out_data_bits        (_responsers_io_3_out_data_bits),
     .io_3_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_3_enable               (io_readerwriterCfg_enabledChannel[3]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_3_reqrspLink_rspReady  (_responsers_io_3_reqrspLink_rspReady),
     .io_3_reqrspLink_reqSubmit (_requestors_io_3_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_4_in_tcdmRsp_valid     (io_tcdmRsp_4_valid),
@@ -4846,7 +4636,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_4_out_data_valid       (_responsers_io_4_out_data_valid),
     .io_4_out_data_bits        (_responsers_io_4_out_data_bits),
     .io_4_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_4_enable               (io_readerwriterCfg_enabledChannel[4]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_4_reqrspLink_rspReady  (_responsers_io_4_reqrspLink_rspReady),
     .io_4_reqrspLink_reqSubmit (_requestors_io_4_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_5_in_tcdmRsp_valid     (io_tcdmRsp_5_valid),
@@ -4854,7 +4643,6 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_5_out_data_valid       (_responsers_io_5_out_data_valid),
     .io_5_out_data_bits        (_responsers_io_5_out_data_bits),
     .io_5_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_5_enable               (io_readerwriterCfg_enabledChannel[5]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_5_reqrspLink_rspReady  (_responsers_io_5_reqrspLink_rspReady),
     .io_5_reqrspLink_reqSubmit (_requestors_io_5_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -4992,7 +4780,7 @@ module snax_simbacore__C2_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hi24ikq(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H44c8he(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -5066,9 +4854,9 @@ module Queue_W20_D2_Hi24ikq(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C2_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C2_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [39:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -5084,7 +4872,7 @@ module snax_simbacore__C2_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   wire _queues_0_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire enq_all_ready = _queues_0_io_enq_ready & _queues_1_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_1_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hi24ikq queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H44c8he queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -5094,7 +4882,7 @@ module snax_simbacore__C2_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hi24ikq queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H44c8he queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -5104,7 +4892,7 @@ module snax_simbacore__C2_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
+  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
 endmodule
 
 module snax_simbacore__C2_Reader_AddressGenUnit(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -5131,32 +4919,32 @@ module snax_simbacore__C2_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_1_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire [19:0] _temporalOffset_T_4 =
     _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :130:71
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :129:71
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -5169,63 +4957,63 @@ module snax_simbacore__C2_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C2_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C2_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C2_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C2_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C2_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C2_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C2_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C2_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C2_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C2_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       ({io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0,
-        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:130:71, :152:27, :196:28
+        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:129:71, :151:27, :195:28
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits),
@@ -5233,10 +5021,10 @@ module snax_simbacore__C2_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
     .io_out_1_valid (_outputBuffer_io_out_1_valid),
     .io_out_1_bits  (io_addr_1_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~(_outputBuffer_io_out_0_valid | _outputBuffer_io_out_1_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:{21,70}
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~(_outputBuffer_io_out_0_valid | _outputBuffer_io_out_1_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C2_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -5246,19 +5034,17 @@ module snax_simbacore__C2_Reader_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C2_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -5268,8 +5054,7 @@ module snax_simbacore__C2_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_1_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_1_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -5277,8 +5062,7 @@ module snax_simbacore__C2_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_1_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_1_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_1_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -5289,7 +5073,6 @@ module snax_simbacore__C2_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -5300,7 +5083,6 @@ module snax_simbacore__C2_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_1_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_1_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_1_out_tcdmReq_bits_addr),
-    .io_enable                (io_1_enable),
     .io_reqrspLink_rspReady   (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_1_reqrspLink_reqSubmit)
   );
@@ -5362,7 +5144,6 @@ module snax_simbacore__C2_Reader_DataResponser(	// src/main/scala/snax/readerWri
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -5375,8 +5156,8 @@ module snax_simbacore__C2_Reader_DataResponser(	// src/main/scala/snax/readerWri
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -5389,7 +5170,6 @@ module snax_simbacore__C2_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_1_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -5397,7 +5177,6 @@ module snax_simbacore__C2_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_1_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_1_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_1_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -5410,7 +5189,6 @@ module snax_simbacore__C2_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
@@ -5422,13 +5200,12 @@ module snax_simbacore__C2_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_1_out_data_valid),
     .io_out_data_bits        (io_1_out_data_bits),
     .io_out_dataFifoPopped   (io_1_out_dataFifoPopped),
-    .io_enable               (io_1_enable),
     .io_reqrspLink_rspReady  (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_1_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_H5cnlc3(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hrl5a4o(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -5518,7 +5295,7 @@ module snax_simbacore__C2_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   wire [63:0] _queues_0_io_deq_bits;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire        deq_all_valid = _queues_0_io_deq_valid & _queues_1_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_1_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_H5cnlc3 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hrl5a4o queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -5527,7 +5304,7 @@ module snax_simbacore__C2_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_H5cnlc3 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hrl5a4o queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -5627,7 +5404,6 @@ module snax_simbacore__C2_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
                  io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input  [1:0]   io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output         io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -5698,7 +5474,6 @@ module snax_simbacore__C2_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit),
     .io_1_in_addr_ready         (_requestors_io_1_in_addr_ready),
@@ -5707,7 +5482,6 @@ module snax_simbacore__C2_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_1_out_tcdmReq_ready     (io_tcdmReq_1_ready),
     .io_1_out_tcdmReq_valid     (io_tcdmReq_1_valid),
     .io_1_out_tcdmReq_bits_addr (io_tcdmReq_1_bits_addr),
-    .io_1_enable                (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady   (_responsers_io_1_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_1_reqrspLink_reqSubmit  (_requestors_io_1_reqrspLink_reqSubmit)
   );
@@ -5719,7 +5493,6 @@ module snax_simbacore__C2_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_data_valid       (_responsers_io_0_out_data_valid),
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped   (_responsers_io_1_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_0_enable               (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_1_in_tcdmRsp_valid     (io_tcdmRsp_1_valid),
@@ -5727,7 +5500,6 @@ module snax_simbacore__C2_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_1_out_data_valid       (_responsers_io_1_out_data_valid),
     .io_1_out_data_bits        (_responsers_io_1_out_data_bits),
     .io_1_out_dataFifoPopped   (_responsers_io_1_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_1_enable               (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady  (_responsers_io_1_reqrspLink_rspReady),
     .io_1_reqrspLink_reqSubmit (_requestors_io_1_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -5857,7 +5629,7 @@ module snax_simbacore__C3_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hd46ou3(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hk0lpab(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -5931,9 +5703,9 @@ module Queue_W20_D2_Hd46ou3(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C3_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C3_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -5942,7 +5714,7 @@ module snax_simbacore__C3_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hd46ou3 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hk0lpab queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -5974,28 +5746,28 @@ module snax_simbacore__C3_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -6008,70 +5780,70 @@ module snax_simbacore__C3_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C3_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C3_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C3_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C3_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C3_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C3_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C3_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C3_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C3_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C3_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C3_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -6081,19 +5853,17 @@ module snax_simbacore__C3_Reader_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C3_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -6103,8 +5873,7 @@ module snax_simbacore__C3_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -6115,7 +5884,6 @@ module snax_simbacore__C3_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -6177,7 +5945,6 @@ module snax_simbacore__C3_Reader_DataResponser(	// src/main/scala/snax/readerWri
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -6190,8 +5957,8 @@ module snax_simbacore__C3_Reader_DataResponser(	// src/main/scala/snax/readerWri
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -6204,7 +5971,6 @@ module snax_simbacore__C3_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -6217,13 +5983,12 @@ module snax_simbacore__C3_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_Hpdavf5(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hmf5ru7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -6305,7 +6070,7 @@ module snax_simbacore__C3_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hpdavf5 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hmf5ru7 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -6402,8 +6167,7 @@ module snax_simbacore__C3_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-                io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -6455,7 +6219,6 @@ module snax_simbacore__C3_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit)
   );
@@ -6468,7 +6231,6 @@ module snax_simbacore__C3_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped
       (_outputDataRepeat_io_in_ready & _dataBuffer_io_out_0_valid),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/Reader.scala:45:26, :122:32
-    .io_0_enable               (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -6596,7 +6358,7 @@ module snax_simbacore__C4_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H95oq51(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H1ut84n(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -6670,9 +6432,9 @@ module Queue_W20_D2_H95oq51(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C4_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C4_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -6681,7 +6443,7 @@ module snax_simbacore__C4_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H95oq51 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H1ut84n queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -6713,28 +6475,28 @@ module snax_simbacore__C4_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -6747,70 +6509,70 @@ module snax_simbacore__C4_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C4_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C4_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C4_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C4_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C4_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C4_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C4_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C4_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C4_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C4_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C4_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -6820,19 +6582,17 @@ module snax_simbacore__C4_Reader_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C4_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -6842,8 +6602,7 @@ module snax_simbacore__C4_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -6854,7 +6613,6 @@ module snax_simbacore__C4_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -6916,7 +6674,6 @@ module snax_simbacore__C4_Reader_DataResponser(	// src/main/scala/snax/readerWri
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -6929,8 +6686,8 @@ module snax_simbacore__C4_Reader_DataResponser(	// src/main/scala/snax/readerWri
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -6943,7 +6700,6 @@ module snax_simbacore__C4_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -6956,13 +6712,12 @@ module snax_simbacore__C4_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_Ht1ggu8(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hgemuf9(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -7044,7 +6799,7 @@ module snax_simbacore__C4_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Ht1ggu8 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hgemuf9 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -7141,8 +6896,7 @@ module snax_simbacore__C4_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-                io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -7194,7 +6948,6 @@ module snax_simbacore__C4_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit)
   );
@@ -7207,7 +6960,6 @@ module snax_simbacore__C4_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped
       (_outputDataRepeat_io_in_ready & _dataBuffer_io_out_0_valid),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/Reader.scala:45:26, :122:32
-    .io_0_enable               (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -7335,7 +7087,7 @@ module snax_simbacore__C5_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hepjrfk(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hu6togo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -7409,9 +7161,9 @@ module Queue_W20_D2_Hepjrfk(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C5_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C5_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -7420,7 +7172,7 @@ module snax_simbacore__C5_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hepjrfk queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hu6togo queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -7452,28 +7204,28 @@ module snax_simbacore__C5_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -7486,70 +7238,70 @@ module snax_simbacore__C5_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C5_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C5_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C5_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C5_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C5_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C5_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C5_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C5_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C5_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C5_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C5_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -7559,19 +7311,17 @@ module snax_simbacore__C5_Reader_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C5_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -7581,8 +7331,7 @@ module snax_simbacore__C5_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -7593,7 +7342,6 @@ module snax_simbacore__C5_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -7655,7 +7403,6 @@ module snax_simbacore__C5_Reader_DataResponser(	// src/main/scala/snax/readerWri
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -7668,8 +7415,8 @@ module snax_simbacore__C5_Reader_DataResponser(	// src/main/scala/snax/readerWri
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -7682,7 +7429,6 @@ module snax_simbacore__C5_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -7695,13 +7441,12 @@ module snax_simbacore__C5_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_Hsbrfcu(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hf8klbn(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -7783,7 +7528,7 @@ module snax_simbacore__C5_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hsbrfcu queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hf8klbn queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -7880,8 +7625,7 @@ module snax_simbacore__C5_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-                io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -7933,7 +7677,6 @@ module snax_simbacore__C5_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit)
   );
@@ -7946,7 +7689,6 @@ module snax_simbacore__C5_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped
       (_outputDataRepeat_io_in_ready & _dataBuffer_io_out_0_valid),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/Reader.scala:45:26, :122:32
-    .io_0_enable               (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -8074,7 +7816,7 @@ module snax_simbacore__C6_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H7civ4t(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Haid4l0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -8148,9 +7890,9 @@ module Queue_W20_D2_H7civ4t(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C6_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C6_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -8159,7 +7901,7 @@ module snax_simbacore__C6_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H7civ4t queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Haid4l0 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -8191,28 +7933,28 @@ module snax_simbacore__C6_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -8225,70 +7967,70 @@ module snax_simbacore__C6_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C6_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C6_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C6_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C6_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C6_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C6_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C6_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C6_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C6_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C6_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C6_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -8298,19 +8040,17 @@ module snax_simbacore__C6_Reader_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C6_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -8320,8 +8060,7 @@ module snax_simbacore__C6_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -8332,7 +8071,6 @@ module snax_simbacore__C6_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -8394,7 +8132,6 @@ module snax_simbacore__C6_Reader_DataResponser(	// src/main/scala/snax/readerWri
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -8407,8 +8144,8 @@ module snax_simbacore__C6_Reader_DataResponser(	// src/main/scala/snax/readerWri
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -8421,7 +8158,6 @@ module snax_simbacore__C6_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -8434,13 +8170,12 @@ module snax_simbacore__C6_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_Hdr69co(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_H1bar67(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -8522,7 +8257,7 @@ module snax_simbacore__C6_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hdr69co queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H1bar67 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -8619,8 +8354,7 @@ module snax_simbacore__C6_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-                io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -8672,7 +8406,6 @@ module snax_simbacore__C6_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit)
   );
@@ -8685,7 +8418,6 @@ module snax_simbacore__C6_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped
       (_outputDataRepeat_io_in_ready & _dataBuffer_io_out_0_valid),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/Reader.scala:45:26, :122:32
-    .io_0_enable               (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -8813,7 +8545,7 @@ module snax_simbacore__C7_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H546r9b(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hu7dt6u(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -8887,9 +8619,9 @@ module Queue_W20_D2_H546r9b(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input          clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                 reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input          clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                 reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output         io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input          io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [159:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -8932,7 +8664,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     & _queues_3_io_enq_ready & _queues_4_io_enq_ready & _queues_5_io_enq_ready
     & _queues_6_io_enq_ready & _queues_7_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_7_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_H546r9b queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hu7dt6u queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -8942,7 +8674,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_H546r9b queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hu7dt6u queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -8952,7 +8684,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_H546r9b queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hu7dt6u queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -8962,7 +8694,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_H546r9b queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hu7dt6u queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -8972,7 +8704,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_3_valid),
     .io_deq_bits  (io_out_3_bits)
   );
-  Queue_W20_D2_H546r9b queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hu7dt6u queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_4_io_enq_ready),
@@ -8982,7 +8714,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_4_valid),
     .io_deq_bits  (io_out_4_bits)
   );
-  Queue_W20_D2_H546r9b queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hu7dt6u queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_5_io_enq_ready),
@@ -8992,7 +8724,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_5_valid),
     .io_deq_bits  (io_out_5_bits)
   );
-  Queue_W20_D2_H546r9b queues_6 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hu7dt6u queues_6 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_6_io_enq_ready),
@@ -9002,7 +8734,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_6_valid),
     .io_deq_bits  (io_out_6_bits)
   );
-  Queue_W20_D2_H546r9b queues_7 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hu7dt6u queues_7 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_7_io_enq_ready),
@@ -9012,7 +8744,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_7_valid),
     .io_deq_bits  (io_out_7_bits)
   );
-  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
+  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
 endmodule
 
 module snax_simbacore__C7_Reader_AddressGenUnit(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -9057,38 +8789,38 @@ module snax_simbacore__C7_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_7_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_6_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_7_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_6_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_7_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire [19:0] _temporalOffset_T_4 =
     _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :130:71
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :129:71
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -9101,60 +8833,60 @@ module snax_simbacore__C7_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C7_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C7_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C7_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C7_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C7_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C7_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C7_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C7_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C7_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C7_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       ({io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h7,
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h6,
@@ -9163,7 +8895,7 @@ module snax_simbacore__C7_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h3,
         io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[18:0], 1'h0},
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0,
-        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :130:71, :134:67, :141:37, :152:27, :196:28
+        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :129:71, :133:67, :140:37, :151:27, :195:28
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits),
@@ -9189,20 +8921,20 @@ module snax_simbacore__C7_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
     .io_out_7_valid (_outputBuffer_io_out_7_valid),
     .io_out_7_bits  (io_addr_7_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
   assign io_bufferEmpty =
     ~(_outputBuffer_io_out_0_valid | _outputBuffer_io_out_1_valid
       | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid
       | _outputBuffer_io_out_4_valid | _outputBuffer_io_out_5_valid
-      | _outputBuffer_io_out_6_valid | _outputBuffer_io_out_7_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:{21,70}
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_4_valid = _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_5_valid = _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_6_valid = _outputBuffer_io_out_6_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_7_valid = _outputBuffer_io_out_7_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+      | _outputBuffer_io_out_6_valid | _outputBuffer_io_out_7_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_4_valid = _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_5_valid = _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_6_valid = _outputBuffer_io_out_6_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_7_valid = _outputBuffer_io_out_7_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C7_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -9212,19 +8944,17 @@ module snax_simbacore__C7_Reader_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -9234,8 +8964,7 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_1_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_1_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -9243,8 +8972,7 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_1_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_1_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_1_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_2_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_2_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -9252,8 +8980,7 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_2_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_2_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_2_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_3_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_3_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -9261,8 +8988,7 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_3_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_3_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_3_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_4_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_4_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -9270,8 +8996,7 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_4_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_4_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_4_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_4_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_4_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_4_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_4_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_5_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_5_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -9279,8 +9004,7 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_5_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_5_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_5_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_5_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_5_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_5_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_5_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_6_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_6_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -9288,8 +9012,7 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_6_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_6_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_6_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_6_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_6_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_6_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_6_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_7_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_7_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -9297,8 +9020,7 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_7_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_7_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_7_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_7_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_7_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_7_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_7_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -9309,7 +9031,6 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -9320,7 +9041,6 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_1_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_1_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_1_out_tcdmReq_bits_addr),
-    .io_enable                (io_1_enable),
     .io_reqrspLink_rspReady   (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_1_reqrspLink_reqSubmit)
   );
@@ -9331,7 +9051,6 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_2_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_2_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_2_out_tcdmReq_bits_addr),
-    .io_enable                (io_2_enable),
     .io_reqrspLink_rspReady   (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_2_reqrspLink_reqSubmit)
   );
@@ -9342,7 +9061,6 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_3_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_3_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_3_out_tcdmReq_bits_addr),
-    .io_enable                (io_3_enable),
     .io_reqrspLink_rspReady   (io_3_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_3_reqrspLink_reqSubmit)
   );
@@ -9353,7 +9071,6 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_4_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_4_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_4_out_tcdmReq_bits_addr),
-    .io_enable                (io_4_enable),
     .io_reqrspLink_rspReady   (io_4_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_4_reqrspLink_reqSubmit)
   );
@@ -9364,7 +9081,6 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_5_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_5_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_5_out_tcdmReq_bits_addr),
-    .io_enable                (io_5_enable),
     .io_reqrspLink_rspReady   (io_5_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_5_reqrspLink_reqSubmit)
   );
@@ -9375,7 +9091,6 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_6_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_6_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_6_out_tcdmReq_bits_addr),
-    .io_enable                (io_6_enable),
     .io_reqrspLink_rspReady   (io_6_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_6_reqrspLink_reqSubmit)
   );
@@ -9386,7 +9101,6 @@ module snax_simbacore__C7_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_7_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_7_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_7_out_tcdmReq_bits_addr),
-    .io_enable                (io_7_enable),
     .io_reqrspLink_rspReady   (io_7_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_7_reqrspLink_reqSubmit)
   );
@@ -9448,7 +9162,6 @@ module snax_simbacore__C7_Reader_DataResponser(	// src/main/scala/snax/readerWri
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -9461,8 +9174,8 @@ module snax_simbacore__C7_Reader_DataResponser(	// src/main/scala/snax/readerWri
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -9475,7 +9188,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_1_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -9483,7 +9195,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_1_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_1_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_1_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_2_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -9491,7 +9202,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_2_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_2_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_2_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_3_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -9499,7 +9209,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_3_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_3_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_3_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_3_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_3_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_4_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -9507,7 +9216,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_4_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_4_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_4_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_4_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_4_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_4_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_5_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -9515,7 +9223,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_5_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_5_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_5_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_5_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_5_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_5_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_6_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -9523,7 +9230,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_6_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_6_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_6_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_6_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_6_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_6_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_7_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -9531,7 +9237,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_7_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_7_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_7_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_7_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_7_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_7_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -9544,7 +9249,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
@@ -9556,7 +9260,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_1_out_data_valid),
     .io_out_data_bits        (io_1_out_data_bits),
     .io_out_dataFifoPopped   (io_1_out_dataFifoPopped),
-    .io_enable               (io_1_enable),
     .io_reqrspLink_rspReady  (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_1_reqrspLink_reqSubmit)
   );
@@ -9568,7 +9271,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_2_out_data_valid),
     .io_out_data_bits        (io_2_out_data_bits),
     .io_out_dataFifoPopped   (io_2_out_dataFifoPopped),
-    .io_enable               (io_2_enable),
     .io_reqrspLink_rspReady  (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_2_reqrspLink_reqSubmit)
   );
@@ -9580,7 +9282,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_3_out_data_valid),
     .io_out_data_bits        (io_3_out_data_bits),
     .io_out_dataFifoPopped   (io_3_out_dataFifoPopped),
-    .io_enable               (io_3_enable),
     .io_reqrspLink_rspReady  (io_3_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_3_reqrspLink_reqSubmit)
   );
@@ -9592,7 +9293,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_4_out_data_valid),
     .io_out_data_bits        (io_4_out_data_bits),
     .io_out_dataFifoPopped   (io_4_out_dataFifoPopped),
-    .io_enable               (io_4_enable),
     .io_reqrspLink_rspReady  (io_4_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_4_reqrspLink_reqSubmit)
   );
@@ -9604,7 +9304,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_5_out_data_valid),
     .io_out_data_bits        (io_5_out_data_bits),
     .io_out_dataFifoPopped   (io_5_out_dataFifoPopped),
-    .io_enable               (io_5_enable),
     .io_reqrspLink_rspReady  (io_5_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_5_reqrspLink_reqSubmit)
   );
@@ -9616,7 +9315,6 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_6_out_data_valid),
     .io_out_data_bits        (io_6_out_data_bits),
     .io_out_dataFifoPopped   (io_6_out_dataFifoPopped),
-    .io_enable               (io_6_enable),
     .io_reqrspLink_rspReady  (io_6_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_6_reqrspLink_reqSubmit)
   );
@@ -9628,13 +9326,12 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_7_out_data_valid),
     .io_out_data_bits        (io_7_out_data_bits),
     .io_out_dataFifoPopped   (io_7_out_dataFifoPopped),
-    .io_enable               (io_7_enable),
     .io_reqrspLink_rspReady  (io_7_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_7_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_Hb1fb6u(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hd4g2kj(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -9751,7 +9448,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     & _queues_3_io_deq_valid & _queues_4_io_deq_valid & _queues_5_io_deq_valid
     & _queues_6_io_deq_valid & _queues_7_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_7_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_Hb1fb6u queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hd4g2kj queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -9760,7 +9457,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_Hb1fb6u queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hd4g2kj queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -9769,7 +9466,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_Hb1fb6u queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hd4g2kj queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -9778,7 +9475,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_Hb1fb6u queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hd4g2kj queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -9787,7 +9484,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_3_io_deq_valid),
     .io_deq_bits  (_queues_3_io_deq_bits)
   );
-  Queue_W64_D2_Hb1fb6u queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hd4g2kj queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_4_valid),
@@ -9796,7 +9493,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_4_io_deq_valid),
     .io_deq_bits  (_queues_4_io_deq_bits)
   );
-  Queue_W64_D2_Hb1fb6u queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hd4g2kj queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_5_valid),
@@ -9805,7 +9502,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_5_io_deq_valid),
     .io_deq_bits  (_queues_5_io_deq_bits)
   );
-  Queue_W64_D2_Hb1fb6u queues_6 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hd4g2kj queues_6 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_6_valid),
@@ -9814,7 +9511,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_6_io_deq_valid),
     .io_deq_bits  (_queues_6_io_deq_bits)
   );
-  Queue_W64_D2_Hb1fb6u queues_7 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hd4g2kj queues_7 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_7_valid),
@@ -9922,7 +9619,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
                  io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input  [7:0]   io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output         io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -10083,7 +9779,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit),
     .io_1_in_addr_ready         (_requestors_io_1_in_addr_ready),
@@ -10092,7 +9787,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_1_out_tcdmReq_ready     (io_tcdmReq_1_ready),
     .io_1_out_tcdmReq_valid     (io_tcdmReq_1_valid),
     .io_1_out_tcdmReq_bits_addr (io_tcdmReq_1_bits_addr),
-    .io_1_enable                (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady   (_responsers_io_1_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_1_reqrspLink_reqSubmit  (_requestors_io_1_reqrspLink_reqSubmit),
     .io_2_in_addr_ready         (_requestors_io_2_in_addr_ready),
@@ -10101,7 +9795,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_2_out_tcdmReq_ready     (io_tcdmReq_2_ready),
     .io_2_out_tcdmReq_valid     (io_tcdmReq_2_valid),
     .io_2_out_tcdmReq_bits_addr (io_tcdmReq_2_bits_addr),
-    .io_2_enable                (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_2_reqrspLink_rspReady   (_responsers_io_2_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_2_reqrspLink_reqSubmit  (_requestors_io_2_reqrspLink_reqSubmit),
     .io_3_in_addr_ready         (_requestors_io_3_in_addr_ready),
@@ -10110,7 +9803,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_3_out_tcdmReq_ready     (io_tcdmReq_3_ready),
     .io_3_out_tcdmReq_valid     (io_tcdmReq_3_valid),
     .io_3_out_tcdmReq_bits_addr (io_tcdmReq_3_bits_addr),
-    .io_3_enable                (io_readerwriterCfg_enabledChannel[3]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_3_reqrspLink_rspReady   (_responsers_io_3_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_3_reqrspLink_reqSubmit  (_requestors_io_3_reqrspLink_reqSubmit),
     .io_4_in_addr_ready         (_requestors_io_4_in_addr_ready),
@@ -10119,7 +9811,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_4_out_tcdmReq_ready     (io_tcdmReq_4_ready),
     .io_4_out_tcdmReq_valid     (io_tcdmReq_4_valid),
     .io_4_out_tcdmReq_bits_addr (io_tcdmReq_4_bits_addr),
-    .io_4_enable                (io_readerwriterCfg_enabledChannel[4]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_4_reqrspLink_rspReady   (_responsers_io_4_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_4_reqrspLink_reqSubmit  (_requestors_io_4_reqrspLink_reqSubmit),
     .io_5_in_addr_ready         (_requestors_io_5_in_addr_ready),
@@ -10128,7 +9819,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_5_out_tcdmReq_ready     (io_tcdmReq_5_ready),
     .io_5_out_tcdmReq_valid     (io_tcdmReq_5_valid),
     .io_5_out_tcdmReq_bits_addr (io_tcdmReq_5_bits_addr),
-    .io_5_enable                (io_readerwriterCfg_enabledChannel[5]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_5_reqrspLink_rspReady   (_responsers_io_5_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_5_reqrspLink_reqSubmit  (_requestors_io_5_reqrspLink_reqSubmit),
     .io_6_in_addr_ready         (_requestors_io_6_in_addr_ready),
@@ -10137,7 +9827,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_6_out_tcdmReq_ready     (io_tcdmReq_6_ready),
     .io_6_out_tcdmReq_valid     (io_tcdmReq_6_valid),
     .io_6_out_tcdmReq_bits_addr (io_tcdmReq_6_bits_addr),
-    .io_6_enable                (io_readerwriterCfg_enabledChannel[6]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_6_reqrspLink_rspReady   (_responsers_io_6_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_6_reqrspLink_reqSubmit  (_requestors_io_6_reqrspLink_reqSubmit),
     .io_7_in_addr_ready         (_requestors_io_7_in_addr_ready),
@@ -10146,7 +9835,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_7_out_tcdmReq_ready     (io_tcdmReq_7_ready),
     .io_7_out_tcdmReq_valid     (io_tcdmReq_7_valid),
     .io_7_out_tcdmReq_bits_addr (io_tcdmReq_7_bits_addr),
-    .io_7_enable                (io_readerwriterCfg_enabledChannel[7]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_7_reqrspLink_rspReady   (_responsers_io_7_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_7_reqrspLink_reqSubmit  (_requestors_io_7_reqrspLink_reqSubmit)
   );
@@ -10158,7 +9846,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_data_valid       (_responsers_io_0_out_data_valid),
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped   (_responsers_io_7_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_0_enable               (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_1_in_tcdmRsp_valid     (io_tcdmRsp_1_valid),
@@ -10166,7 +9853,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_1_out_data_valid       (_responsers_io_1_out_data_valid),
     .io_1_out_data_bits        (_responsers_io_1_out_data_bits),
     .io_1_out_dataFifoPopped   (_responsers_io_7_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_1_enable               (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady  (_responsers_io_1_reqrspLink_rspReady),
     .io_1_reqrspLink_reqSubmit (_requestors_io_1_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_2_in_tcdmRsp_valid     (io_tcdmRsp_2_valid),
@@ -10174,7 +9860,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_2_out_data_valid       (_responsers_io_2_out_data_valid),
     .io_2_out_data_bits        (_responsers_io_2_out_data_bits),
     .io_2_out_dataFifoPopped   (_responsers_io_7_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_2_enable               (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_2_reqrspLink_rspReady  (_responsers_io_2_reqrspLink_rspReady),
     .io_2_reqrspLink_reqSubmit (_requestors_io_2_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_3_in_tcdmRsp_valid     (io_tcdmRsp_3_valid),
@@ -10182,7 +9867,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_3_out_data_valid       (_responsers_io_3_out_data_valid),
     .io_3_out_data_bits        (_responsers_io_3_out_data_bits),
     .io_3_out_dataFifoPopped   (_responsers_io_7_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_3_enable               (io_readerwriterCfg_enabledChannel[3]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_3_reqrspLink_rspReady  (_responsers_io_3_reqrspLink_rspReady),
     .io_3_reqrspLink_reqSubmit (_requestors_io_3_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_4_in_tcdmRsp_valid     (io_tcdmRsp_4_valid),
@@ -10190,7 +9874,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_4_out_data_valid       (_responsers_io_4_out_data_valid),
     .io_4_out_data_bits        (_responsers_io_4_out_data_bits),
     .io_4_out_dataFifoPopped   (_responsers_io_7_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_4_enable               (io_readerwriterCfg_enabledChannel[4]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_4_reqrspLink_rspReady  (_responsers_io_4_reqrspLink_rspReady),
     .io_4_reqrspLink_reqSubmit (_requestors_io_4_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_5_in_tcdmRsp_valid     (io_tcdmRsp_5_valid),
@@ -10198,7 +9881,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_5_out_data_valid       (_responsers_io_5_out_data_valid),
     .io_5_out_data_bits        (_responsers_io_5_out_data_bits),
     .io_5_out_dataFifoPopped   (_responsers_io_7_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_5_enable               (io_readerwriterCfg_enabledChannel[5]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_5_reqrspLink_rspReady  (_responsers_io_5_reqrspLink_rspReady),
     .io_5_reqrspLink_reqSubmit (_requestors_io_5_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_6_in_tcdmRsp_valid     (io_tcdmRsp_6_valid),
@@ -10206,7 +9888,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_6_out_data_valid       (_responsers_io_6_out_data_valid),
     .io_6_out_data_bits        (_responsers_io_6_out_data_bits),
     .io_6_out_dataFifoPopped   (_responsers_io_7_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_6_enable               (io_readerwriterCfg_enabledChannel[6]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_6_reqrspLink_rspReady  (_responsers_io_6_reqrspLink_rspReady),
     .io_6_reqrspLink_reqSubmit (_requestors_io_6_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_7_in_tcdmRsp_valid     (io_tcdmRsp_7_valid),
@@ -10214,7 +9895,6 @@ module snax_simbacore__C7_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_7_out_data_valid       (_responsers_io_7_out_data_valid),
     .io_7_out_data_bits        (_responsers_io_7_out_data_bits),
     .io_7_out_dataFifoPopped   (_responsers_io_7_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_7_enable               (io_readerwriterCfg_enabledChannel[7]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_7_reqrspLink_rspReady  (_responsers_io_7_reqrspLink_rspReady),
     .io_7_reqrspLink_reqSubmit (_requestors_io_7_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -10356,7 +10036,7 @@ module snax_simbacore__C8_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H62quqp(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hqtj6nb(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -10430,9 +10110,9 @@ module Queue_W20_D2_H62quqp(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C8_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C8_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -10441,7 +10121,7 @@ module snax_simbacore__C8_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H62quqp queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hqtj6nb queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -10473,28 +10153,28 @@ module snax_simbacore__C8_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -10507,70 +10187,70 @@ module snax_simbacore__C8_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C8_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C8_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C8_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C8_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C8_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C8_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C8_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C8_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C8_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C8_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C8_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -10580,19 +10260,17 @@ module snax_simbacore__C8_Reader_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C8_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -10602,8 +10280,7 @@ module snax_simbacore__C8_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -10614,7 +10291,6 @@ module snax_simbacore__C8_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -10676,7 +10352,6 @@ module snax_simbacore__C8_Reader_DataResponser(	// src/main/scala/snax/readerWri
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -10689,8 +10364,8 @@ module snax_simbacore__C8_Reader_DataResponser(	// src/main/scala/snax/readerWri
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -10703,7 +10378,6 @@ module snax_simbacore__C8_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -10716,13 +10390,12 @@ module snax_simbacore__C8_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_Hglnv45(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_H9s8h3f(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -10804,7 +10477,7 @@ module snax_simbacore__C8_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hglnv45 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H9s8h3f queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -10901,8 +10574,7 @@ module snax_simbacore__C8_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-                io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -10954,7 +10626,6 @@ module snax_simbacore__C8_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit)
   );
@@ -10967,7 +10638,6 @@ module snax_simbacore__C8_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped
       (_outputDataRepeat_io_in_ready & _dataBuffer_io_out_0_valid),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/Reader.scala:45:26, :122:32
-    .io_0_enable               (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -11095,7 +10765,7 @@ module snax_simbacore__C9_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H5237tu(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Haqlnrh(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -11169,9 +10839,9 @@ module Queue_W20_D2_H5237tu(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C9_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C9_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -11180,7 +10850,7 @@ module snax_simbacore__C9_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H5237tu queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Haqlnrh queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -11212,28 +10882,28 @@ module snax_simbacore__C9_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -11246,70 +10916,70 @@ module snax_simbacore__C9_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C9_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C9_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C9_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C9_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C9_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C9_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C9_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C9_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C9_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C9_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C9_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -11319,19 +10989,17 @@ module snax_simbacore__C9_Reader_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C9_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -11341,8 +11009,7 @@ module snax_simbacore__C9_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -11353,7 +11020,6 @@ module snax_simbacore__C9_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -11415,7 +11081,6 @@ module snax_simbacore__C9_Reader_DataResponser(	// src/main/scala/snax/readerWri
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -11428,8 +11093,8 @@ module snax_simbacore__C9_Reader_DataResponser(	// src/main/scala/snax/readerWri
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -11442,7 +11107,6 @@ module snax_simbacore__C9_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -11455,13 +11119,12 @@ module snax_simbacore__C9_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_Hs98lgd(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Huhrv3u(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -11543,7 +11206,7 @@ module snax_simbacore__C9_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hs98lgd queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Huhrv3u queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -11640,8 +11303,7 @@ module snax_simbacore__C9_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-                io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -11693,7 +11355,6 @@ module snax_simbacore__C9_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit)
   );
@@ -11706,7 +11367,6 @@ module snax_simbacore__C9_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped
       (_outputDataRepeat_io_in_ready & _dataBuffer_io_out_0_valid),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/Reader.scala:45:26, :122:32
-    .io_0_enable               (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -11834,7 +11494,7 @@ module snax_simbacore__C10_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hhg9bcm(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hi4fgn2(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -11908,9 +11568,9 @@ module Queue_W20_D2_Hhg9bcm(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C10_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C10_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -11919,7 +11579,7 @@ module snax_simbacore__C10_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hhg9bcm queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hi4fgn2 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -11951,28 +11611,28 @@ module snax_simbacore__C10_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -11985,70 +11645,70 @@ module snax_simbacore__C10_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C10_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C10_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C10_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C10_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C10_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C10_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C10_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C10_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C10_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C10_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C10_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -12058,19 +11718,17 @@ module snax_simbacore__C10_Reader_DataRequestor(	// src/main/scala/snax/readerWr
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C10_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -12080,8 +11738,7 @@ module snax_simbacore__C10_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -12092,7 +11749,6 @@ module snax_simbacore__C10_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -12154,7 +11810,6 @@ module snax_simbacore__C10_Reader_DataResponser(	// src/main/scala/snax/readerWr
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -12167,8 +11822,8 @@ module snax_simbacore__C10_Reader_DataResponser(	// src/main/scala/snax/readerWr
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -12181,7 +11836,6 @@ module snax_simbacore__C10_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -12194,13 +11848,12 @@ module snax_simbacore__C10_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_Ht3nbaf(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hk4uiot(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -12282,7 +11935,7 @@ module snax_simbacore__C10_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Ht3nbaf queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hk4uiot queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -12379,8 +12032,7 @@ module snax_simbacore__C10_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-                io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -12432,7 +12084,6 @@ module snax_simbacore__C10_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit)
   );
@@ -12445,7 +12096,6 @@ module snax_simbacore__C10_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped
       (_outputDataRepeat_io_in_ready & _dataBuffer_io_out_0_valid),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/Reader.scala:45:26, :122:32
-    .io_0_enable               (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -12573,7 +12223,7 @@ module snax_simbacore__C11_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hu5ioh(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hippi1s(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -12647,9 +12297,9 @@ module Queue_W20_D2_Hu5ioh(	// src/main/scala/snax/utils/ComplexQueue.scala:57:2
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C11_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C11_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -12658,7 +12308,7 @@ module snax_simbacore__C11_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hu5ioh queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hippi1s queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -12690,28 +12340,28 @@ module snax_simbacore__C11_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -12724,70 +12374,70 @@ module snax_simbacore__C11_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C11_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C11_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C11_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C11_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C11_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C11_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C11_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C11_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C11_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C11_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C11_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -12797,19 +12447,17 @@ module snax_simbacore__C11_Reader_DataRequestor(	// src/main/scala/snax/readerWr
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C11_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -12819,8 +12467,7 @@ module snax_simbacore__C11_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -12831,7 +12478,6 @@ module snax_simbacore__C11_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -12893,7 +12539,6 @@ module snax_simbacore__C11_Reader_DataResponser(	// src/main/scala/snax/readerWr
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -12906,8 +12551,8 @@ module snax_simbacore__C11_Reader_DataResponser(	// src/main/scala/snax/readerWr
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -12920,7 +12565,6 @@ module snax_simbacore__C11_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -12933,13 +12577,12 @@ module snax_simbacore__C11_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_Hdgljfp(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hjlc4t4(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -13021,7 +12664,7 @@ module snax_simbacore__C11_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hdgljfp queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hjlc4t4 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -13118,8 +12761,7 @@ module snax_simbacore__C11_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-                io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -13171,7 +12813,6 @@ module snax_simbacore__C11_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit)
   );
@@ -13184,7 +12825,6 @@ module snax_simbacore__C11_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped
       (_outputDataRepeat_io_in_ready & _dataBuffer_io_out_0_valid),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/Reader.scala:45:26, :122:32
-    .io_0_enable               (io_readerwriterCfg_enabledChannel),
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -13312,7 +12952,7 @@ module snax_simbacore__C12_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H7ah6cj(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H9er2q7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -13386,9 +13026,9 @@ module Queue_W20_D2_H7ah6cj(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input          clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                 reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input          clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                 reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output         io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input          io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [119:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -13422,7 +13062,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready & _queues_4_io_enq_ready & _queues_5_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_5_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_H7ah6cj queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H9er2q7 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -13432,7 +13072,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_H7ah6cj queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H9er2q7 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -13442,7 +13082,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_H7ah6cj queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H9er2q7 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -13452,7 +13092,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_H7ah6cj queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H9er2q7 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -13462,7 +13102,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_3_valid),
     .io_deq_bits  (io_out_3_bits)
   );
-  Queue_W20_D2_H7ah6cj queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H9er2q7 queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_4_io_enq_ready),
@@ -13472,7 +13112,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_4_valid),
     .io_deq_bits  (io_out_4_bits)
   );
-  Queue_W20_D2_H7ah6cj queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H9er2q7 queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_5_io_enq_ready),
@@ -13482,7 +13122,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_5_valid),
     .io_deq_bits  (io_out_5_bits)
   );
-  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
+  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
 endmodule
 
 module snax_simbacore__C12_Reader_AddressGenUnit(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -13521,36 +13161,36 @@ module snax_simbacore__C12_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
   output [19:0] io_addr_5_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire [19:0] _temporalOffset_T_4 =
     _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :130:71
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :129:71
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -13563,67 +13203,67 @@ module snax_simbacore__C12_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C12_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C12_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C12_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C12_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C12_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C12_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C12_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C12_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C12_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C12_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       ({io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h5,
         io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[17:0], 2'h0},
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h3,
         io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[18:0], 1'h0},
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0,
-        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :130:71, :134:67, :141:37, :152:27, :196:28
+        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :129:71, :133:67, :140:37, :151:27, :195:28
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits),
@@ -13643,17 +13283,17 @@ module snax_simbacore__C12_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
     .io_out_5_valid (_outputBuffer_io_out_5_valid),
     .io_out_5_bits  (io_addr_5_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
   assign io_bufferEmpty =
     ~(_outputBuffer_io_out_0_valid | _outputBuffer_io_out_1_valid
       | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid
-      | _outputBuffer_io_out_4_valid | _outputBuffer_io_out_5_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:{21,70}
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_4_valid = _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_5_valid = _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+      | _outputBuffer_io_out_4_valid | _outputBuffer_io_out_5_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_4_valid = _outputBuffer_io_out_4_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_5_valid = _outputBuffer_io_out_5_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C12_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -13663,19 +13303,17 @@ module snax_simbacore__C12_Reader_DataRequestor(	// src/main/scala/snax/readerWr
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -13685,8 +13323,7 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_1_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_1_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -13694,8 +13331,7 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_1_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_1_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_1_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_2_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_2_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -13703,8 +13339,7 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_2_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_2_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_2_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_3_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_3_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -13712,8 +13347,7 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_3_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_3_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_3_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_4_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_4_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -13721,8 +13355,7 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_4_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_4_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_4_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_4_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_4_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_4_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_4_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_5_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_5_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -13730,8 +13363,7 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_5_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_5_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_5_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_5_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_5_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_5_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_5_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -13742,7 +13374,6 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -13753,7 +13384,6 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_1_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_1_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_1_out_tcdmReq_bits_addr),
-    .io_enable                (io_1_enable),
     .io_reqrspLink_rspReady   (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_1_reqrspLink_reqSubmit)
   );
@@ -13764,7 +13394,6 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_2_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_2_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_2_out_tcdmReq_bits_addr),
-    .io_enable                (io_2_enable),
     .io_reqrspLink_rspReady   (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_2_reqrspLink_reqSubmit)
   );
@@ -13775,7 +13404,6 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_3_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_3_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_3_out_tcdmReq_bits_addr),
-    .io_enable                (io_3_enable),
     .io_reqrspLink_rspReady   (io_3_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_3_reqrspLink_reqSubmit)
   );
@@ -13786,7 +13414,6 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_4_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_4_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_4_out_tcdmReq_bits_addr),
-    .io_enable                (io_4_enable),
     .io_reqrspLink_rspReady   (io_4_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_4_reqrspLink_reqSubmit)
   );
@@ -13797,7 +13424,6 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_5_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_5_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_5_out_tcdmReq_bits_addr),
-    .io_enable                (io_5_enable),
     .io_reqrspLink_rspReady   (io_5_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_5_reqrspLink_reqSubmit)
   );
@@ -13859,7 +13485,6 @@ module snax_simbacore__C12_Reader_DataResponser(	// src/main/scala/snax/readerWr
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -13872,8 +13497,8 @@ module snax_simbacore__C12_Reader_DataResponser(	// src/main/scala/snax/readerWr
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -13886,7 +13511,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_1_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -13894,7 +13518,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_1_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_1_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_1_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_2_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -13902,7 +13525,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_2_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_2_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_2_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_3_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -13910,7 +13532,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_3_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_3_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_3_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_3_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_3_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_4_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -13918,7 +13539,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_4_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_4_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_4_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_4_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_4_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_4_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_5_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -13926,7 +13546,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_5_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_5_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_5_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_5_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_5_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_5_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -13939,7 +13558,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
@@ -13951,7 +13569,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_1_out_data_valid),
     .io_out_data_bits        (io_1_out_data_bits),
     .io_out_dataFifoPopped   (io_1_out_dataFifoPopped),
-    .io_enable               (io_1_enable),
     .io_reqrspLink_rspReady  (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_1_reqrspLink_reqSubmit)
   );
@@ -13963,7 +13580,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_2_out_data_valid),
     .io_out_data_bits        (io_2_out_data_bits),
     .io_out_dataFifoPopped   (io_2_out_dataFifoPopped),
-    .io_enable               (io_2_enable),
     .io_reqrspLink_rspReady  (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_2_reqrspLink_reqSubmit)
   );
@@ -13975,7 +13591,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_3_out_data_valid),
     .io_out_data_bits        (io_3_out_data_bits),
     .io_out_dataFifoPopped   (io_3_out_dataFifoPopped),
-    .io_enable               (io_3_enable),
     .io_reqrspLink_rspReady  (io_3_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_3_reqrspLink_reqSubmit)
   );
@@ -13987,7 +13602,6 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_4_out_data_valid),
     .io_out_data_bits        (io_4_out_data_bits),
     .io_out_dataFifoPopped   (io_4_out_dataFifoPopped),
-    .io_enable               (io_4_enable),
     .io_reqrspLink_rspReady  (io_4_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_4_reqrspLink_reqSubmit)
   );
@@ -13999,13 +13613,12 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_5_out_data_valid),
     .io_out_data_bits        (io_5_out_data_bits),
     .io_out_dataFifoPopped   (io_5_out_dataFifoPopped),
-    .io_enable               (io_5_enable),
     .io_reqrspLink_rspReady  (io_5_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_5_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_H1mmonm(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_H2grdpg(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -14113,7 +13726,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
     & _queues_3_io_deq_valid & _queues_4_io_deq_valid & _queues_5_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_5_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_H1mmonm queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H2grdpg queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -14122,7 +13735,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_H1mmonm queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H2grdpg queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -14131,7 +13744,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_H1mmonm queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H2grdpg queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -14140,7 +13753,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_H1mmonm queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H2grdpg queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -14149,7 +13762,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_3_io_deq_valid),
     .io_deq_bits  (_queues_3_io_deq_bits)
   );
-  Queue_W64_D2_H1mmonm queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H2grdpg queues_4 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_4_valid),
@@ -14158,7 +13771,7 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_4_io_deq_valid),
     .io_deq_bits  (_queues_4_io_deq_bits)
   );
-  Queue_W64_D2_H1mmonm queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_H2grdpg queues_5 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_5_valid),
@@ -14264,7 +13877,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
                  io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input  [5:0]   io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output         io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -14395,7 +14007,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit),
     .io_1_in_addr_ready         (_requestors_io_1_in_addr_ready),
@@ -14404,7 +14015,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_1_out_tcdmReq_ready     (io_tcdmReq_1_ready),
     .io_1_out_tcdmReq_valid     (io_tcdmReq_1_valid),
     .io_1_out_tcdmReq_bits_addr (io_tcdmReq_1_bits_addr),
-    .io_1_enable                (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady   (_responsers_io_1_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_1_reqrspLink_reqSubmit  (_requestors_io_1_reqrspLink_reqSubmit),
     .io_2_in_addr_ready         (_requestors_io_2_in_addr_ready),
@@ -14413,7 +14023,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_2_out_tcdmReq_ready     (io_tcdmReq_2_ready),
     .io_2_out_tcdmReq_valid     (io_tcdmReq_2_valid),
     .io_2_out_tcdmReq_bits_addr (io_tcdmReq_2_bits_addr),
-    .io_2_enable                (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_2_reqrspLink_rspReady   (_responsers_io_2_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_2_reqrspLink_reqSubmit  (_requestors_io_2_reqrspLink_reqSubmit),
     .io_3_in_addr_ready         (_requestors_io_3_in_addr_ready),
@@ -14422,7 +14031,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_3_out_tcdmReq_ready     (io_tcdmReq_3_ready),
     .io_3_out_tcdmReq_valid     (io_tcdmReq_3_valid),
     .io_3_out_tcdmReq_bits_addr (io_tcdmReq_3_bits_addr),
-    .io_3_enable                (io_readerwriterCfg_enabledChannel[3]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_3_reqrspLink_rspReady   (_responsers_io_3_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_3_reqrspLink_reqSubmit  (_requestors_io_3_reqrspLink_reqSubmit),
     .io_4_in_addr_ready         (_requestors_io_4_in_addr_ready),
@@ -14431,7 +14039,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_4_out_tcdmReq_ready     (io_tcdmReq_4_ready),
     .io_4_out_tcdmReq_valid     (io_tcdmReq_4_valid),
     .io_4_out_tcdmReq_bits_addr (io_tcdmReq_4_bits_addr),
-    .io_4_enable                (io_readerwriterCfg_enabledChannel[4]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_4_reqrspLink_rspReady   (_responsers_io_4_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_4_reqrspLink_reqSubmit  (_requestors_io_4_reqrspLink_reqSubmit),
     .io_5_in_addr_ready         (_requestors_io_5_in_addr_ready),
@@ -14440,7 +14047,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_5_out_tcdmReq_ready     (io_tcdmReq_5_ready),
     .io_5_out_tcdmReq_valid     (io_tcdmReq_5_valid),
     .io_5_out_tcdmReq_bits_addr (io_tcdmReq_5_bits_addr),
-    .io_5_enable                (io_readerwriterCfg_enabledChannel[5]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_5_reqrspLink_rspReady   (_responsers_io_5_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_5_reqrspLink_reqSubmit  (_requestors_io_5_reqrspLink_reqSubmit)
   );
@@ -14452,7 +14058,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_0_out_data_valid       (_responsers_io_0_out_data_valid),
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_0_enable               (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_1_in_tcdmRsp_valid     (io_tcdmRsp_1_valid),
@@ -14460,7 +14065,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_1_out_data_valid       (_responsers_io_1_out_data_valid),
     .io_1_out_data_bits        (_responsers_io_1_out_data_bits),
     .io_1_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_1_enable               (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady  (_responsers_io_1_reqrspLink_rspReady),
     .io_1_reqrspLink_reqSubmit (_requestors_io_1_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_2_in_tcdmRsp_valid     (io_tcdmRsp_2_valid),
@@ -14468,7 +14072,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_2_out_data_valid       (_responsers_io_2_out_data_valid),
     .io_2_out_data_bits        (_responsers_io_2_out_data_bits),
     .io_2_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_2_enable               (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_2_reqrspLink_rspReady  (_responsers_io_2_reqrspLink_rspReady),
     .io_2_reqrspLink_reqSubmit (_requestors_io_2_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_3_in_tcdmRsp_valid     (io_tcdmRsp_3_valid),
@@ -14476,7 +14079,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_3_out_data_valid       (_responsers_io_3_out_data_valid),
     .io_3_out_data_bits        (_responsers_io_3_out_data_bits),
     .io_3_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_3_enable               (io_readerwriterCfg_enabledChannel[3]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_3_reqrspLink_rspReady  (_responsers_io_3_reqrspLink_rspReady),
     .io_3_reqrspLink_reqSubmit (_requestors_io_3_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_4_in_tcdmRsp_valid     (io_tcdmRsp_4_valid),
@@ -14484,7 +14086,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_4_out_data_valid       (_responsers_io_4_out_data_valid),
     .io_4_out_data_bits        (_responsers_io_4_out_data_bits),
     .io_4_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_4_enable               (io_readerwriterCfg_enabledChannel[4]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_4_reqrspLink_rspReady  (_responsers_io_4_reqrspLink_rspReady),
     .io_4_reqrspLink_reqSubmit (_requestors_io_4_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_5_in_tcdmRsp_valid     (io_tcdmRsp_5_valid),
@@ -14492,7 +14093,6 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_5_out_data_valid       (_responsers_io_5_out_data_valid),
     .io_5_out_data_bits        (_responsers_io_5_out_data_bits),
     .io_5_out_dataFifoPopped   (_responsers_io_5_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_5_enable               (io_readerwriterCfg_enabledChannel[5]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_5_reqrspLink_rspReady  (_responsers_io_5_reqrspLink_rspReady),
     .io_5_reqrspLink_reqSubmit (_requestors_io_5_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -14630,7 +14230,7 @@ module snax_simbacore__C13_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hoodjrj(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H3pr9gl(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -14704,9 +14304,9 @@ module Queue_W20_D2_Hoodjrj(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [79:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -14732,7 +14332,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hoodjrj queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3pr9gl queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -14742,7 +14342,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hoodjrj queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3pr9gl queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -14752,7 +14352,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hoodjrj queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3pr9gl queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -14762,7 +14362,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_Hoodjrj queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H3pr9gl queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -14772,7 +14372,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_3_valid),
     .io_deq_bits  (io_out_3_bits)
   );
-  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
+  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
 endmodule
 
 module snax_simbacore__C13_Reader_AddressGenUnit(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -14805,34 +14405,34 @@ module snax_simbacore__C13_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
   output [19:0] io_addr_3_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire [19:0] _temporalOffset_T_4 =
     _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :130:71
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :129:71
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -14845,65 +14445,65 @@ module snax_simbacore__C13_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C13_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C13_Reader_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C13_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C13_Reader_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C13_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C13_Reader_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C13_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C13_Reader_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C13_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C13_Reader_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       ({io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h3,
         io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[18:0], 1'h0},
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0,
-        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :130:71, :134:67, :141:37, :152:27, :196:28
+        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :129:71, :133:67, :140:37, :151:27, :195:28
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits),
@@ -14917,14 +14517,14 @@ module snax_simbacore__C13_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
     .io_out_3_valid (_outputBuffer_io_out_3_valid),
     .io_out_3_bits  (io_addr_3_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
   assign io_bufferEmpty =
     ~(_outputBuffer_io_out_0_valid | _outputBuffer_io_out_1_valid
-      | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:{21,70}
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+      | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C13_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -14934,19 +14534,17 @@ module snax_simbacore__C13_Reader_DataRequestor(	// src/main/scala/snax/readerWr
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-                io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  input         io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_addr_ready_0 =
-    io_enable ? io_out_tcdmReq_ready & io_out_tcdmReq_valid_0 : io_reqrspLink_rspReady;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  wire io_in_addr_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/DataRequestor.scala:72:30
+  assign io_in_addr_ready = io_in_addr_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :72:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
-  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
+  assign io_reqrspLink_reqSubmit = io_in_addr_ready_0 & io_in_addr_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
 
 module snax_simbacore__C13_Reader_DataRequestors(	// src/main/scala/snax/readerWriter/DataRequestor.scala:81:7
@@ -14956,8 +14554,7 @@ module snax_simbacore__C13_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_1_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_1_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -14965,8 +14562,7 @@ module snax_simbacore__C13_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_1_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_1_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_1_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_2_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_2_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -14974,8 +14570,7 @@ module snax_simbacore__C13_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_2_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_2_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_2_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
                 io_3_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_3_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -14983,8 +14578,7 @@ module snax_simbacore__C13_Reader_DataRequestors(	// src/main/scala/snax/readerW
   input         io_3_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_3_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_3_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-                io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
@@ -14995,7 +14589,6 @@ module snax_simbacore__C13_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_enable                (io_0_enable),
     .io_reqrspLink_rspReady   (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_0_reqrspLink_reqSubmit)
   );
@@ -15006,7 +14599,6 @@ module snax_simbacore__C13_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_1_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_1_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_1_out_tcdmReq_bits_addr),
-    .io_enable                (io_1_enable),
     .io_reqrspLink_rspReady   (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_1_reqrspLink_reqSubmit)
   );
@@ -15017,7 +14609,6 @@ module snax_simbacore__C13_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_2_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_2_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_2_out_tcdmReq_bits_addr),
-    .io_enable                (io_2_enable),
     .io_reqrspLink_rspReady   (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_2_reqrspLink_reqSubmit)
   );
@@ -15028,7 +14619,6 @@ module snax_simbacore__C13_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_out_tcdmReq_ready     (io_3_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_3_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_3_out_tcdmReq_bits_addr),
-    .io_enable                (io_3_enable),
     .io_reqrspLink_rspReady   (io_3_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_3_reqrspLink_reqSubmit)
   );
@@ -15090,7 +14680,6 @@ module snax_simbacore__C13_Reader_DataResponser(	// src/main/scala/snax/readerWr
   output        io_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output [63:0] io_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
-                io_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   output        io_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
   input         io_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:32:32
 );
@@ -15103,8 +14692,8 @@ module snax_simbacore__C13_Reader_DataResponser(	// src/main/scala/snax/readerWr
     .io_tickDown (io_out_dataFifoPopped),
     .io_lastVal  (_fifoUtilizationCounter_io_lastVal)
   );
-  assign io_out_data_valid = io_enable ? io_in_tcdmRsp_valid : io_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :34:23, :37:23
-  assign io_out_data_bits = io_enable ? io_in_tcdmRsp_bits_data : 64'h0;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :33:19, :35:23, :38:22
+  assign io_out_data_valid = io_in_tcdmRsp_valid;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
+  assign io_out_data_bits = io_in_tcdmRsp_bits_data;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
   assign io_reqrspLink_rspReady =
     ~_fifoUtilizationCounter_io_lastVal | io_out_dataFifoPopped;	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7, :44:38, :51:{41,76}
 endmodule
@@ -15117,7 +14706,6 @@ module snax_simbacore__C13_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_0_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_0_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_0_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_0_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_0_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_1_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -15125,7 +14713,6 @@ module snax_simbacore__C13_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_1_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_1_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_1_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_1_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_1_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_2_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -15133,7 +14720,6 @@ module snax_simbacore__C13_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_2_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_2_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_2_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
                 io_3_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
@@ -15141,7 +14727,6 @@ module snax_simbacore__C13_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output        io_3_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output [63:0] io_3_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_3_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-                io_3_enable,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_3_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
@@ -15154,7 +14739,6 @@ module snax_simbacore__C13_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_0_out_data_valid),
     .io_out_data_bits        (io_0_out_data_bits),
     .io_out_dataFifoPopped   (io_0_out_dataFifoPopped),
-    .io_enable               (io_0_enable),
     .io_reqrspLink_rspReady  (io_0_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_0_reqrspLink_reqSubmit)
   );
@@ -15166,7 +14750,6 @@ module snax_simbacore__C13_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_1_out_data_valid),
     .io_out_data_bits        (io_1_out_data_bits),
     .io_out_dataFifoPopped   (io_1_out_dataFifoPopped),
-    .io_enable               (io_1_enable),
     .io_reqrspLink_rspReady  (io_1_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_1_reqrspLink_reqSubmit)
   );
@@ -15178,7 +14761,6 @@ module snax_simbacore__C13_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_2_out_data_valid),
     .io_out_data_bits        (io_2_out_data_bits),
     .io_out_dataFifoPopped   (io_2_out_dataFifoPopped),
-    .io_enable               (io_2_enable),
     .io_reqrspLink_rspReady  (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_2_reqrspLink_reqSubmit)
   );
@@ -15190,13 +14772,12 @@ module snax_simbacore__C13_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_out_data_valid       (io_3_out_data_valid),
     .io_out_data_bits        (io_3_out_data_bits),
     .io_out_dataFifoPopped   (io_3_out_dataFifoPopped),
-    .io_enable               (io_3_enable),
     .io_reqrspLink_rspReady  (io_3_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_3_reqrspLink_reqSubmit)
   );
 endmodule
 
-module Queue_W64_D2_Hd69gvr(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hkr9t2g(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -15296,7 +14877,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
     & _queues_3_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_3_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_Hd69gvr queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hkr9t2g queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -15305,7 +14886,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_Hd69gvr queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hkr9t2g queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -15314,7 +14895,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_Hd69gvr queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hkr9t2g queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -15323,7 +14904,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_Hd69gvr queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hkr9t2g queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -15427,7 +15008,6 @@ module snax_simbacore__C13_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
                  io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
                  io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  input  [3:0]   io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_start,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output         io_busy,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
@@ -15528,7 +15108,6 @@ module snax_simbacore__C13_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady   (_responsers_io_0_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_0_reqrspLink_reqSubmit  (_requestors_io_0_reqrspLink_reqSubmit),
     .io_1_in_addr_ready         (_requestors_io_1_in_addr_ready),
@@ -15537,7 +15116,6 @@ module snax_simbacore__C13_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_1_out_tcdmReq_ready     (io_tcdmReq_1_ready),
     .io_1_out_tcdmReq_valid     (io_tcdmReq_1_valid),
     .io_1_out_tcdmReq_bits_addr (io_tcdmReq_1_bits_addr),
-    .io_1_enable                (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady   (_responsers_io_1_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_1_reqrspLink_reqSubmit  (_requestors_io_1_reqrspLink_reqSubmit),
     .io_2_in_addr_ready         (_requestors_io_2_in_addr_ready),
@@ -15546,7 +15124,6 @@ module snax_simbacore__C13_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_2_out_tcdmReq_ready     (io_tcdmReq_2_ready),
     .io_2_out_tcdmReq_valid     (io_tcdmReq_2_valid),
     .io_2_out_tcdmReq_bits_addr (io_tcdmReq_2_bits_addr),
-    .io_2_enable                (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_2_reqrspLink_rspReady   (_responsers_io_2_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_2_reqrspLink_reqSubmit  (_requestors_io_2_reqrspLink_reqSubmit),
     .io_3_in_addr_ready         (_requestors_io_3_in_addr_ready),
@@ -15555,7 +15132,6 @@ module snax_simbacore__C13_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_3_out_tcdmReq_ready     (io_tcdmReq_3_ready),
     .io_3_out_tcdmReq_valid     (io_tcdmReq_3_valid),
     .io_3_out_tcdmReq_bits_addr (io_tcdmReq_3_bits_addr),
-    .io_3_enable                (io_readerwriterCfg_enabledChannel[3]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_3_reqrspLink_rspReady   (_responsers_io_3_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_3_reqrspLink_reqSubmit  (_requestors_io_3_reqrspLink_reqSubmit)
   );
@@ -15567,7 +15143,6 @@ module snax_simbacore__C13_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_0_out_data_valid       (_responsers_io_0_out_data_valid),
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
     .io_0_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_0_enable               (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_1_in_tcdmRsp_valid     (io_tcdmRsp_1_valid),
@@ -15575,7 +15150,6 @@ module snax_simbacore__C13_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_1_out_data_valid       (_responsers_io_1_out_data_valid),
     .io_1_out_data_bits        (_responsers_io_1_out_data_bits),
     .io_1_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_1_enable               (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_1_reqrspLink_rspReady  (_responsers_io_1_reqrspLink_rspReady),
     .io_1_reqrspLink_reqSubmit (_requestors_io_1_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_2_in_tcdmRsp_valid     (io_tcdmRsp_2_valid),
@@ -15583,7 +15157,6 @@ module snax_simbacore__C13_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_2_out_data_valid       (_responsers_io_2_out_data_valid),
     .io_2_out_data_bits        (_responsers_io_2_out_data_bits),
     .io_2_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_2_enable               (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_2_reqrspLink_rspReady  (_responsers_io_2_reqrspLink_rspReady),
     .io_2_reqrspLink_reqSubmit (_requestors_io_2_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_3_in_tcdmRsp_valid     (io_tcdmRsp_3_valid),
@@ -15591,7 +15164,6 @@ module snax_simbacore__C13_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_3_out_data_valid       (_responsers_io_3_out_data_valid),
     .io_3_out_data_bits        (_responsers_io_3_out_data_bits),
     .io_3_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_3_enable               (io_readerwriterCfg_enabledChannel[3]),	// src/main/scala/snax/readerWriter/Reader.scala:72:57
     .io_3_reqrspLink_rspReady  (_responsers_io_3_reqrspLink_rspReady),
     .io_3_reqrspLink_reqSubmit (_requestors_io_3_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
@@ -15725,7 +15297,7 @@ module snax_simbacore__C0_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Ho4ha0f(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H7olup(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -15799,9 +15371,9 @@ module Queue_W20_D2_Ho4ha0f(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C0_Writer_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C0_Writer_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -15810,7 +15382,7 @@ module snax_simbacore__C0_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Ho4ha0f queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H7olup queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -15842,28 +15414,28 @@ module snax_simbacore__C0_Writer_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -15876,70 +15448,70 @@ module snax_simbacore__C0_Writer_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C0_Writer_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C0_Writer_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C0_Writer_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C0_Writer_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C0_Writer_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C0_Writer_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C0_Writer_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C0_Writer_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C0_Writer_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C0_Writer_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C0_Writer_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -15952,16 +15524,15 @@ module snax_simbacore__C0_Writer_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  output [63:0] io_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  output [63:0] io_out_tcdmReq_bits_data	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_data_ready_0 = ~io_enable | io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_in_data_valid;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_data_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_in_data_ready = io_in_data_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  wire io_in_data_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_in_data_valid;	// src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  assign io_in_addr_ready = io_in_data_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_in_data_ready = io_in_data_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :73:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
   assign io_out_tcdmReq_bits_data = io_in_data_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
@@ -15976,8 +15547,7 @@ module snax_simbacore__C0_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  output [63:0] io_0_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output [63:0] io_0_out_tcdmReq_bits_data	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
   snax_simbacore__C0_Writer_DataRequestor DataRequestor_0 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
@@ -15990,12 +15560,11 @@ module snax_simbacore__C0_Writer_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_out_tcdmReq_bits_data (io_0_out_tcdmReq_bits_data),
-    .io_enable                (io_0_enable)
+    .io_out_tcdmReq_bits_data (io_0_out_tcdmReq_bits_data)
   );
 endmodule
 
-module Queue_W64_D2_Hvf5k64(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hsflq23(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -16079,7 +15648,7 @@ module snax_simbacore__C0_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hvf5k64 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hsflq23 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -16103,8 +15672,7 @@ module snax_simbacore__C0_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
-                io_start,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
@@ -16152,8 +15720,7 @@ module snax_simbacore__C0_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_out_tcdmReq_bits_data (io_tcdmReq_0_bits_data),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel)
+    .io_0_out_tcdmReq_bits_data (io_tcdmReq_0_bits_data)
   );
   snax_simbacore__C0_Writer_DataBuffer dataBuffer (	// src/main/scala/snax/readerWriter/Writer.scala:36:26
     .clock          (clock),
@@ -16267,7 +15834,7 @@ module snax_simbacore__C1_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hg0tjc1(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H6tb0u7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -16341,9 +15908,9 @@ module Queue_W20_D2_Hg0tjc1(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C1_Writer_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C1_Writer_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -16352,7 +15919,7 @@ module snax_simbacore__C1_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hg0tjc1 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H6tb0u7 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -16384,28 +15951,28 @@ module snax_simbacore__C1_Writer_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -16418,70 +15985,70 @@ module snax_simbacore__C1_Writer_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C1_Writer_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C1_Writer_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C1_Writer_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C1_Writer_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C1_Writer_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C1_Writer_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C1_Writer_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C1_Writer_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C1_Writer_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C1_Writer_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C1_Writer_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -16494,16 +16061,15 @@ module snax_simbacore__C1_Writer_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  output [63:0] io_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  output [63:0] io_out_tcdmReq_bits_data	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_data_ready_0 = ~io_enable | io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_in_data_valid;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_data_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_in_data_ready = io_in_data_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  wire io_in_data_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_in_data_valid;	// src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  assign io_in_addr_ready = io_in_data_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_in_data_ready = io_in_data_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :73:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
   assign io_out_tcdmReq_bits_data = io_in_data_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
@@ -16518,8 +16084,7 @@ module snax_simbacore__C1_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  output [63:0] io_0_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output [63:0] io_0_out_tcdmReq_bits_data	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
   snax_simbacore__C1_Writer_DataRequestor DataRequestor_0 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
@@ -16532,12 +16097,11 @@ module snax_simbacore__C1_Writer_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_out_tcdmReq_bits_data (io_0_out_tcdmReq_bits_data),
-    .io_enable                (io_0_enable)
+    .io_out_tcdmReq_bits_data (io_0_out_tcdmReq_bits_data)
   );
 endmodule
 
-module Queue_W64_D2_H3n9ai0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Huicv2a(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -16621,7 +16185,7 @@ module snax_simbacore__C1_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_H3n9ai0 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Huicv2a queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -16645,8 +16209,7 @@ module snax_simbacore__C1_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
-                io_start,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
@@ -16694,8 +16257,7 @@ module snax_simbacore__C1_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_out_tcdmReq_bits_data (io_tcdmReq_0_bits_data),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel)
+    .io_0_out_tcdmReq_bits_data (io_tcdmReq_0_bits_data)
   );
   snax_simbacore__C1_Writer_DataBuffer dataBuffer (	// src/main/scala/snax/readerWriter/Writer.scala:36:26
     .clock          (clock),
@@ -16809,7 +16371,7 @@ module snax_simbacore__C2_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hc04mbp(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_Hjamf4k(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -16883,9 +16445,9 @@ module Queue_W20_D2_Hc04mbp(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C2_Writer_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C2_Writer_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [19:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -16894,7 +16456,7 @@ module snax_simbacore__C2_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hc04mbp queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_Hjamf4k queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -16926,28 +16488,28 @@ module snax_simbacore__C2_Writer_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_0_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -16960,70 +16522,70 @@ module snax_simbacore__C2_Writer_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C2_Writer_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C2_Writer_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C2_Writer_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C2_Writer_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C2_Writer_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C2_Writer_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C2_Writer_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C2_Writer_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C2_Writer_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C2_Writer_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       (io_cfg_ptr + _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :152:27
+       + _counters_3_io_value),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :151:27
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
-  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:21
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
+  assign io_bufferEmpty = ~_outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:21
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C2_Writer_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -17036,16 +16598,15 @@ module snax_simbacore__C2_Writer_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  output [63:0] io_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  output [63:0] io_out_tcdmReq_bits_data	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_data_ready_0 = ~io_enable | io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_in_data_valid;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_data_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_in_data_ready = io_in_data_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  wire io_in_data_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_in_data_valid;	// src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  assign io_in_addr_ready = io_in_data_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_in_data_ready = io_in_data_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :73:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
   assign io_out_tcdmReq_bits_data = io_in_data_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
@@ -17060,8 +16621,7 @@ module snax_simbacore__C2_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_0_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  output [63:0] io_0_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output [63:0] io_0_out_tcdmReq_bits_data	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
   snax_simbacore__C2_Writer_DataRequestor DataRequestor_0 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
@@ -17074,12 +16634,11 @@ module snax_simbacore__C2_Writer_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_out_tcdmReq_bits_data (io_0_out_tcdmReq_bits_data),
-    .io_enable                (io_0_enable)
+    .io_out_tcdmReq_bits_data (io_0_out_tcdmReq_bits_data)
   );
 endmodule
 
-module Queue_W64_D2_H164e66(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hhbihq5(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -17163,7 +16722,7 @@ module snax_simbacore__C2_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_H164e66 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hhbihq5 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -17187,8 +16746,7 @@ module snax_simbacore__C2_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
                 io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
                 io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
                 io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
-  input         io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
-                io_start,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
+  input         io_start,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   output        io_busy,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   input         io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   output        io_tcdmReq_0_valid,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
@@ -17236,8 +16794,7 @@ module snax_simbacore__C2_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
     .io_0_out_tcdmReq_ready     (io_tcdmReq_0_ready),
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
-    .io_0_out_tcdmReq_bits_data (io_tcdmReq_0_bits_data),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel)
+    .io_0_out_tcdmReq_bits_data (io_tcdmReq_0_bits_data)
   );
   snax_simbacore__C2_Writer_DataBuffer dataBuffer (	// src/main/scala/snax/readerWriter/Writer.scala:36:26
     .clock          (clock),
@@ -17351,7 +16908,7 @@ module snax_simbacore__C3_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hsknts0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D2_H5kn3am(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -17425,9 +16982,9 @@ module Queue_W20_D2_Hsknts0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   assign io_deq_valid = ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:261:25, :285:19, src/main/scala/snax/utils/ComplexQueue.scala:57:28
 endmodule
 
-module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
-                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9
+module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+  input         clock,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
+                reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [79:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -17453,7 +17010,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hsknts0 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H5kn3am queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -17463,7 +17020,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hsknts0 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H5kn3am queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -17473,7 +17030,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hsknts0 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H5kn3am queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -17483,7 +17040,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_Hsknts0 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D2_H5kn3am queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -17493,7 +17050,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_3_valid),
     .io_deq_bits  (io_out_3_bits)
   );
-  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:119:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
+  assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
 endmodule
 
 module snax_simbacore__C3_Writer_AddressGenUnit(	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -17526,34 +17083,34 @@ module snax_simbacore__C3_Writer_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_3_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
-  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
-  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
-  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_2_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_1_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_1_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire [19:0] _counters_0_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
+  wire        _counters_0_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire [19:0] _temporalOffset_T_4 =
     _counters_0_io_value + _counters_1_io_value + _counters_2_io_value
-    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :130:71
-  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
-  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28, :216:38, :234:28
+    + _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :129:71
+  reg         currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
+  wire        counters_tick = currentState & _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28, :215:38, :233:28
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+      currentState <= 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     else	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       currentState <=
         io_start & (|io_cfg_temporalBounds_0) & (|io_cfg_temporalBounds_1)
         & (|io_cfg_temporalBounds_2) & (|io_cfg_temporalBounds_3)
         | ~(_counters_0_io_lastVal & _counters_1_io_lastVal & _counters_2_io_lastVal
             & _counters_3_io_lastVal & _outputBuffer_io_in_0_ready & currentState)
-        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :118:28, :216:38, :217:{17,48,73}, :218:18, :220:46, :221:5, :222:18, :224:18
+        & currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :117:28, :215:38, :216:{17,48,73}, :217:18, :219:46, :220:5, :221:18, :223:18
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
@@ -17566,65 +17123,65 @@ module snax_simbacore__C3_Writer_AddressGenUnit(	// src/main/scala/snax/readerWr
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
-        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+        currentState = 1'h0;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  snax_simbacore__C3_Writer_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C3_Writer_AddressGenUnitCounter counters_0 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:234:28
+    .io_tick    (counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:233:28
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_0),
-    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_0[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_0_io_value),
     .io_lastVal (_counters_0_io_lastVal)
   );
-  snax_simbacore__C3_Writer_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C3_Writer_AddressGenUnitCounter counters_1 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_0_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_1),
-    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_1[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_1_io_value),
     .io_lastVal (_counters_1_io_lastVal)
   );
-  snax_simbacore__C3_Writer_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C3_Writer_AddressGenUnitCounter counters_2 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_1_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_2),
-    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_2[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_2_io_value),
     .io_lastVal (_counters_2_io_lastVal)
   );
-  snax_simbacore__C3_Writer_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25
+  snax_simbacore__C3_Writer_AddressGenUnitCounter counters_3 (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
     .clock      (clock),
     .reset      (reset),
-    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:103:25, :234:28, :240:33
+    .io_tick    (_counters_2_io_lastVal & counters_tick),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25, :233:28, :239:33
     .io_reset   (io_start),
     .io_ceil    (io_cfg_temporalBounds_3),
-    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:113:21
+    .io_step    (io_cfg_temporalStrides_3[18:0]),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:112:21
     .io_value   (_counters_3_io_value),
     .io_lastVal (_counters_3_io_lastVal)
   );
-  snax_simbacore__C3_Writer_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:28
+  snax_simbacore__C3_Writer_AddressBufferFIFO outputBuffer (	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
     .clock          (clock),
     .reset          (reset),
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
-    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:216:38
+    .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
       ({io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h3,
         io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[18:0], 1'h0},
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0,
-        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :130:71, :134:67, :141:37, :152:27, :196:28
+        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :129:71, :133:67, :140:37, :151:27, :195:28
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits),
@@ -17638,14 +17195,14 @@ module snax_simbacore__C3_Writer_AddressGenUnit(	// src/main/scala/snax/readerWr
     .io_out_3_valid (_outputBuffer_io_out_3_valid),
     .io_out_3_bits  (io_addr_3_bits)
   );
-  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :216:38
+  assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
   assign io_bufferEmpty =
     ~(_outputBuffer_io_out_0_valid | _outputBuffer_io_out_1_valid
-      | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28, :212:{21,70}
-  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
-  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :118:28
+      | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
+  assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C3_Writer_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -17658,16 +17215,15 @@ module snax_simbacore__C3_Writer_DataRequestor(	// src/main/scala/snax/readerWri
   input         io_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output        io_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
   output [19:0] io_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  output [63:0] io_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
-  input         io_enable	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
+  output [63:0] io_out_tcdmReq_bits_data	// src/main/scala/snax/readerWriter/DataRequestor.scala:41:14
 );
 
-  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  wire io_in_data_ready_0 = ~io_enable | io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:45:19, :46:22, :48:22, :69:19, :70:26, :76:26
-  assign io_out_tcdmReq_valid_0 = io_enable & io_in_addr_valid & io_in_data_valid;	// src/main/scala/snax/readerWriter/DataRequestor.scala:69:19, :70:26, :76:26
-  assign io_in_addr_ready = io_in_data_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_in_data_ready = io_in_data_ready_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :45:19, :46:22, :48:22
-  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :69:19, :70:26, :76:26
+  wire io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  wire io_in_data_ready_0 = io_out_tcdmReq_ready & io_out_tcdmReq_valid_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  assign io_out_tcdmReq_valid_0 = io_in_addr_valid & io_in_data_valid;	// src/main/scala/snax/readerWriter/DataRequestor.scala:73:30
+  assign io_in_addr_ready = io_in_data_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_in_data_ready = io_in_data_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
+  assign io_out_tcdmReq_valid = io_out_tcdmReq_valid_0;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7, :73:30
   assign io_out_tcdmReq_bits_addr = io_in_addr_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
   assign io_out_tcdmReq_bits_data = io_in_data_bits;	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
 endmodule
@@ -17683,7 +17239,6 @@ module snax_simbacore__C3_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   output        io_0_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_0_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [63:0] io_0_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_0_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_1_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_1_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input  [19:0] io_1_in_addr_bits,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -17694,7 +17249,6 @@ module snax_simbacore__C3_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   output        io_1_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_1_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [63:0] io_1_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_1_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_2_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_2_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input  [19:0] io_2_in_addr_bits,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -17705,7 +17259,6 @@ module snax_simbacore__C3_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   output        io_2_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_2_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [63:0] io_2_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_2_enable,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_3_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input  [19:0] io_3_in_addr_bits,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
@@ -17715,8 +17268,7 @@ module snax_simbacore__C3_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   input         io_3_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output        io_3_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_3_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  output [63:0] io_3_out_tcdmReq_bits_data,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  input         io_3_enable	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output [63:0] io_3_out_tcdmReq_bits_data	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
   snax_simbacore__C3_Writer_DataRequestor DataRequestor_0 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
@@ -17729,8 +17281,7 @@ module snax_simbacore__C3_Writer_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_0_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_0_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_0_out_tcdmReq_bits_addr),
-    .io_out_tcdmReq_bits_data (io_0_out_tcdmReq_bits_data),
-    .io_enable                (io_0_enable)
+    .io_out_tcdmReq_bits_data (io_0_out_tcdmReq_bits_data)
   );
   snax_simbacore__C3_Writer_DataRequestor DataRequestor_1 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
     .io_in_addr_ready         (io_1_in_addr_ready),
@@ -17742,8 +17293,7 @@ module snax_simbacore__C3_Writer_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_1_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_1_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_1_out_tcdmReq_bits_addr),
-    .io_out_tcdmReq_bits_data (io_1_out_tcdmReq_bits_data),
-    .io_enable                (io_1_enable)
+    .io_out_tcdmReq_bits_data (io_1_out_tcdmReq_bits_data)
   );
   snax_simbacore__C3_Writer_DataRequestor DataRequestor_2 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
     .io_in_addr_ready         (io_2_in_addr_ready),
@@ -17755,8 +17305,7 @@ module snax_simbacore__C3_Writer_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_2_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_2_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_2_out_tcdmReq_bits_addr),
-    .io_out_tcdmReq_bits_data (io_2_out_tcdmReq_bits_data),
-    .io_enable                (io_2_enable)
+    .io_out_tcdmReq_bits_data (io_2_out_tcdmReq_bits_data)
   );
   snax_simbacore__C3_Writer_DataRequestor DataRequestor_3 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
     .io_in_addr_ready         (io_3_in_addr_ready),
@@ -17768,12 +17317,11 @@ module snax_simbacore__C3_Writer_DataRequestors(	// src/main/scala/snax/readerWr
     .io_out_tcdmReq_ready     (io_3_out_tcdmReq_ready),
     .io_out_tcdmReq_valid     (io_3_out_tcdmReq_valid),
     .io_out_tcdmReq_bits_addr (io_3_out_tcdmReq_bits_addr),
-    .io_out_tcdmReq_bits_data (io_3_out_tcdmReq_bits_data),
-    .io_enable                (io_3_enable)
+    .io_out_tcdmReq_bits_data (io_3_out_tcdmReq_bits_data)
   );
 endmodule
 
-module Queue_W64_D2_Hvc7g21(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D2_Hr476i6(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -17874,7 +17422,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W64_D2_Hvc7g21 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hr476i6 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -17884,7 +17432,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W64_D2_Hvc7g21 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hr476i6 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -17894,7 +17442,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W64_D2_Hvc7g21 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hr476i6 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -17904,7 +17452,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W64_D2_Hvc7g21 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D2_Hr476i6 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -17930,7 +17478,6 @@ module snax_simbacore__C3_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
                  io_aguCfg_temporalStrides_1,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
                  io_aguCfg_temporalStrides_2,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
                  io_aguCfg_temporalStrides_3,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
-  input  [3:0]   io_readerwriterCfg_enabledChannel,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   input          io_start,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   output         io_busy,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
   input          io_tcdmReq_0_ready,	// src/main/scala/snax/readerWriter/Writer.scala:14:14
@@ -18020,7 +17567,6 @@ module snax_simbacore__C3_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
     .io_0_out_tcdmReq_valid     (io_tcdmReq_0_valid),
     .io_0_out_tcdmReq_bits_addr (io_tcdmReq_0_bits_addr),
     .io_0_out_tcdmReq_bits_data (io_tcdmReq_0_bits_data),
-    .io_0_enable                (io_readerwriterCfg_enabledChannel[0]),	// src/main/scala/snax/readerWriter/Writer.scala:59:57
     .io_1_in_addr_ready         (_requestors_io_1_in_addr_ready),
     .io_1_in_addr_valid         (_addressgen_io_addr_1_valid),	// src/main/scala/snax/readerWriter/Writer.scala:17:26
     .io_1_in_addr_bits          (_addressgen_io_addr_1_bits),	// src/main/scala/snax/readerWriter/Writer.scala:17:26
@@ -18031,7 +17577,6 @@ module snax_simbacore__C3_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
     .io_1_out_tcdmReq_valid     (io_tcdmReq_1_valid),
     .io_1_out_tcdmReq_bits_addr (io_tcdmReq_1_bits_addr),
     .io_1_out_tcdmReq_bits_data (io_tcdmReq_1_bits_data),
-    .io_1_enable                (io_readerwriterCfg_enabledChannel[1]),	// src/main/scala/snax/readerWriter/Writer.scala:59:57
     .io_2_in_addr_ready         (_requestors_io_2_in_addr_ready),
     .io_2_in_addr_valid         (_addressgen_io_addr_2_valid),	// src/main/scala/snax/readerWriter/Writer.scala:17:26
     .io_2_in_addr_bits          (_addressgen_io_addr_2_bits),	// src/main/scala/snax/readerWriter/Writer.scala:17:26
@@ -18042,7 +17587,6 @@ module snax_simbacore__C3_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
     .io_2_out_tcdmReq_valid     (io_tcdmReq_2_valid),
     .io_2_out_tcdmReq_bits_addr (io_tcdmReq_2_bits_addr),
     .io_2_out_tcdmReq_bits_data (io_tcdmReq_2_bits_data),
-    .io_2_enable                (io_readerwriterCfg_enabledChannel[2]),	// src/main/scala/snax/readerWriter/Writer.scala:59:57
     .io_3_in_addr_ready         (_requestors_io_3_in_addr_ready),
     .io_3_in_addr_valid         (_addressgen_io_addr_3_valid),	// src/main/scala/snax/readerWriter/Writer.scala:17:26
     .io_3_in_addr_bits          (_addressgen_io_addr_3_bits),	// src/main/scala/snax/readerWriter/Writer.scala:17:26
@@ -18052,8 +17596,7 @@ module snax_simbacore__C3_Writer(	// src/main/scala/snax/readerWriter/Writer.sca
     .io_3_out_tcdmReq_ready     (io_tcdmReq_3_ready),
     .io_3_out_tcdmReq_valid     (io_tcdmReq_3_valid),
     .io_3_out_tcdmReq_bits_addr (io_tcdmReq_3_bits_addr),
-    .io_3_out_tcdmReq_bits_data (io_tcdmReq_3_bits_data),
-    .io_3_enable                (io_readerwriterCfg_enabledChannel[3])	// src/main/scala/snax/readerWriter/Writer.scala:59:57
+    .io_3_out_tcdmReq_bits_data (io_tcdmReq_3_bits_data)
   );
   snax_simbacore__C3_Writer_DataBuffer dataBuffer (	// src/main/scala/snax/readerWriter/Writer.scala:36:26
     .clock          (clock),
@@ -18684,9 +18227,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_32;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_33;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_34;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_35;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_36;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_37;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_38;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_39;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_40;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_41;	// src/main/scala/snax/streamer/Streamer.scala:106:26
@@ -18694,32 +18237,32 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_43;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_44;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_45;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_46;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_47;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_48;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_49;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_50;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_51;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_52;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_53;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_54;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_55;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_56;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_57;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_58;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_59;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_60;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_61;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_62;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_63;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_64;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_65;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_66;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_67;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_68;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_69;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_70;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_71;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_72;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_73;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_74;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_75;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_76;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_77;	// src/main/scala/snax/streamer/Streamer.scala:106:26
@@ -18735,7 +18278,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_87;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_88;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_89;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_90;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_91;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_92;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_93;	// src/main/scala/snax/streamer/Streamer.scala:106:26
@@ -18743,9 +18285,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_95;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_96;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_97;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_98;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_99;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_100;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_101;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_102;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_103;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_104;	// src/main/scala/snax/streamer/Streamer.scala:106:26
@@ -18754,8 +18296,8 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_107;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_108;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_109;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_110;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_111;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_112;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_113;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_114;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_115;	// src/main/scala/snax/streamer/Streamer.scala:106:26
@@ -18765,7 +18307,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_119;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_120;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_121;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_123;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_122;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_124;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_125;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_126;	// src/main/scala/snax/streamer/Streamer.scala:106:26
@@ -18776,6 +18318,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_131;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_132;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_133;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_134;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_135;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_136;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_137;	// src/main/scala/snax/streamer/Streamer.scala:106:26
@@ -18797,7 +18340,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_153;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_154;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_155;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_156;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_157;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_158;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_159;	// src/main/scala/snax/streamer/Streamer.scala:106:26
@@ -18808,9 +18350,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_164;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_165;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_166;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_167;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_168;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_169;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_170;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_171;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_172;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_173;	// src/main/scala/snax/streamer/Streamer.scala:106:26
@@ -18818,10 +18360,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_175;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_176;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_177;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_178;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_179;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_180;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_181;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_182;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_183;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_184;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_185;	// src/main/scala/snax/streamer/Streamer.scala:106:26
@@ -18833,27 +18375,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_191;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_192;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_193;	// src/main/scala/snax/streamer/Streamer.scala:106:26
+  wire [31:0]  _csrManager_io_readWriteRegIO_bits_194;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_195;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_196;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire [31:0]  _csrManager_io_readWriteRegIO_bits_197;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_198;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_199;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_200;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_201;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_202;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_203;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_204;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_205;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_206;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_207;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_208;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_209;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_210;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_211;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_212;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_213;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_214;	// src/main/scala/snax/streamer/Streamer.scala:106:26
-  wire [31:0]  _csrManager_io_readWriteRegIO_bits_215;	// src/main/scala/snax/streamer/Streamer.scala:106:26
   wire         streamer_config_fire = ~cstate & _csrManager_io_readWriteRegIO_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :197:38, :227:34
   wire         streamer_finish =
     ~(_reader_0_io_busy | _reader_1_io_busy | _reader_2_io_busy | _reader_3_io_busy
@@ -18898,9 +18423,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_32;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_33;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_34;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_35;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_36;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_37;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_38;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_39;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_40;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_41;	// src/main/scala/snax/streamer/Streamer.scala:309:26
@@ -18908,32 +18433,32 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_43;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_44;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_45;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_46;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_47;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_48;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_49;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_50;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_51;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_52;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_53;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_54;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_55;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_56;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_57;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_58;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_59;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_60;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_61;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_62;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_63;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_64;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_65;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_66;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_67;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_68;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_69;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_70;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_71;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_72;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_73;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_74;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_75;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_76;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_77;	// src/main/scala/snax/streamer/Streamer.scala:309:26
@@ -18949,7 +18474,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_87;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_88;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_89;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_90;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_91;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_92;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_93;	// src/main/scala/snax/streamer/Streamer.scala:309:26
@@ -18957,9 +18481,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_95;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_96;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_97;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_98;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_99;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_100;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_101;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_102;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_103;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_104;	// src/main/scala/snax/streamer/Streamer.scala:309:26
@@ -18968,8 +18492,8 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_107;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_108;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_109;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_110;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_111;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_112;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_113;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_114;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_115;	// src/main/scala/snax/streamer/Streamer.scala:309:26
@@ -18979,7 +18503,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_119;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_120;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_121;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_123;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_122;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_124;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_125;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_126;	// src/main/scala/snax/streamer/Streamer.scala:309:26
@@ -18990,6 +18514,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_131;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_132;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_133;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_134;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_135;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_136;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_137;	// src/main/scala/snax/streamer/Streamer.scala:309:26
@@ -19011,7 +18536,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_153;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_154;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_155;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_156;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_157;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_158;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_159;	// src/main/scala/snax/streamer/Streamer.scala:309:26
@@ -19022,9 +18546,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_164;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_165;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_166;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_167;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_168;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_169;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_170;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_171;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_172;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_173;	// src/main/scala/snax/streamer/Streamer.scala:309:26
@@ -19032,10 +18556,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_175;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_176;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_177;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_178;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_179;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_180;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_181;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_182;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_183;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_184;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_185;	// src/main/scala/snax/streamer/Streamer.scala:309:26
@@ -19047,27 +18571,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   reg  [31:0]  csrCfgReg_191;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_192;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_193;	// src/main/scala/snax/streamer/Streamer.scala:309:26
+  reg  [31:0]  csrCfgReg_194;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_195;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_196;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   reg  [31:0]  csrCfgReg_197;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_198;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_199;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_200;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_201;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_202;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_203;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_204;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_205;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_206;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_207;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_208;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_209;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_210;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_211;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_212;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_213;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_214;	// src/main/scala/snax/streamer/Streamer.scala:309:26
-  reg  [31:0]  csrCfgReg_215;	// src/main/scala/snax/streamer/Streamer.scala:309:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/streamer/Streamer.scala:61:7
     if (reset) begin	// src/main/scala/snax/streamer/Streamer.scala:61:7
       cstate <= 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :197:38, :235:65, :236:65
@@ -19107,9 +18614,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_32 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_33 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_34 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_35 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_36 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_37 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_38 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_39 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_40 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_41 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19117,32 +18624,32 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_43 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_44 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_45 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_46 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_47 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_48 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_49 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_50 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_51 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_52 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_53 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_54 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_55 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_56 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_57 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_58 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_59 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_60 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_61 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_62 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_63 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_64 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_65 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_66 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_67 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_68 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_69 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_70 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_71 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_72 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_73 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_74 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_75 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_76 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_77 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19158,7 +18665,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_87 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_88 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_89 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_90 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_91 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_92 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_93 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19166,9 +18672,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_95 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_96 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_97 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_98 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_99 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_100 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_101 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_102 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_103 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_104 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19177,8 +18683,8 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_107 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_108 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_109 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_110 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_111 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_112 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_113 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_114 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_115 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19188,7 +18694,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_119 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_120 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_121 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_123 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_122 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_124 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_125 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_126 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19199,6 +18705,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_131 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_132 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_133 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_134 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_135 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_136 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_137 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19220,7 +18727,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_153 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_154 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_155 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_156 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_157 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_158 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_159 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19231,9 +18737,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_164 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_165 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_166 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_167 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_168 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_169 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_170 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_171 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_172 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_173 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19241,10 +18747,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_175 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_176 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_177 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_178 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_179 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_180 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_181 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_182 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_183 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_184 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_185 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19256,27 +18762,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       csrCfgReg_191 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_192 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_193 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+      csrCfgReg_194 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_195 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_196 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       csrCfgReg_197 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_198 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_199 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_200 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_201 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_202 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_203 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_204 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_205 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_206 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_207 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_208 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_209 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_210 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_211 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_212 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_213 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_214 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-      csrCfgReg_215 <= 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
     end
     else begin	// src/main/scala/snax/streamer/Streamer.scala:61:7
       if (cstate)	// src/main/scala/snax/streamer/Streamer.scala:197:38
@@ -19323,9 +18812,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_32 <= _csrManager_io_readWriteRegIO_bits_32;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_33 <= _csrManager_io_readWriteRegIO_bits_33;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_34 <= _csrManager_io_readWriteRegIO_bits_34;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_35 <= _csrManager_io_readWriteRegIO_bits_35;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_36 <= _csrManager_io_readWriteRegIO_bits_36;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_37 <= _csrManager_io_readWriteRegIO_bits_37;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_38 <= _csrManager_io_readWriteRegIO_bits_38;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_39 <= _csrManager_io_readWriteRegIO_bits_39;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_40 <= _csrManager_io_readWriteRegIO_bits_40;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_41 <= _csrManager_io_readWriteRegIO_bits_41;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
@@ -19333,32 +18822,32 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_43 <= _csrManager_io_readWriteRegIO_bits_43;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_44 <= _csrManager_io_readWriteRegIO_bits_44;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_45 <= _csrManager_io_readWriteRegIO_bits_45;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_46 <= _csrManager_io_readWriteRegIO_bits_46;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_47 <= _csrManager_io_readWriteRegIO_bits_47;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_48 <= _csrManager_io_readWriteRegIO_bits_48;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_49 <= _csrManager_io_readWriteRegIO_bits_49;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_50 <= _csrManager_io_readWriteRegIO_bits_50;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_51 <= _csrManager_io_readWriteRegIO_bits_51;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_52 <= _csrManager_io_readWriteRegIO_bits_52;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_53 <= _csrManager_io_readWriteRegIO_bits_53;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_54 <= _csrManager_io_readWriteRegIO_bits_54;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_55 <= _csrManager_io_readWriteRegIO_bits_55;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_56 <= _csrManager_io_readWriteRegIO_bits_56;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_57 <= _csrManager_io_readWriteRegIO_bits_57;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_58 <= _csrManager_io_readWriteRegIO_bits_58;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_59 <= _csrManager_io_readWriteRegIO_bits_59;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_60 <= _csrManager_io_readWriteRegIO_bits_60;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_61 <= _csrManager_io_readWriteRegIO_bits_61;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_62 <= _csrManager_io_readWriteRegIO_bits_62;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_63 <= _csrManager_io_readWriteRegIO_bits_63;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_64 <= _csrManager_io_readWriteRegIO_bits_64;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_65 <= _csrManager_io_readWriteRegIO_bits_65;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_66 <= _csrManager_io_readWriteRegIO_bits_66;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_67 <= _csrManager_io_readWriteRegIO_bits_67;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_68 <= _csrManager_io_readWriteRegIO_bits_68;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_69 <= _csrManager_io_readWriteRegIO_bits_69;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_70 <= _csrManager_io_readWriteRegIO_bits_70;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_71 <= _csrManager_io_readWriteRegIO_bits_71;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_72 <= _csrManager_io_readWriteRegIO_bits_72;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_73 <= _csrManager_io_readWriteRegIO_bits_73;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_74 <= _csrManager_io_readWriteRegIO_bits_74;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_75 <= _csrManager_io_readWriteRegIO_bits_75;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_76 <= _csrManager_io_readWriteRegIO_bits_76;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_77 <= _csrManager_io_readWriteRegIO_bits_77;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
@@ -19374,7 +18863,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_87 <= _csrManager_io_readWriteRegIO_bits_87;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_88 <= _csrManager_io_readWriteRegIO_bits_88;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_89 <= _csrManager_io_readWriteRegIO_bits_89;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_90 <= _csrManager_io_readWriteRegIO_bits_90;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_91 <= _csrManager_io_readWriteRegIO_bits_91;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_92 <= _csrManager_io_readWriteRegIO_bits_92;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_93 <= _csrManager_io_readWriteRegIO_bits_93;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
@@ -19382,9 +18870,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_95 <= _csrManager_io_readWriteRegIO_bits_95;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_96 <= _csrManager_io_readWriteRegIO_bits_96;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_97 <= _csrManager_io_readWriteRegIO_bits_97;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_98 <= _csrManager_io_readWriteRegIO_bits_98;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_99 <= _csrManager_io_readWriteRegIO_bits_99;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_100 <= _csrManager_io_readWriteRegIO_bits_100;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_101 <= _csrManager_io_readWriteRegIO_bits_101;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_102 <= _csrManager_io_readWriteRegIO_bits_102;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_103 <= _csrManager_io_readWriteRegIO_bits_103;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_104 <= _csrManager_io_readWriteRegIO_bits_104;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
@@ -19393,8 +18881,8 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_107 <= _csrManager_io_readWriteRegIO_bits_107;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_108 <= _csrManager_io_readWriteRegIO_bits_108;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_109 <= _csrManager_io_readWriteRegIO_bits_109;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_110 <= _csrManager_io_readWriteRegIO_bits_110;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_111 <= _csrManager_io_readWriteRegIO_bits_111;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_112 <= _csrManager_io_readWriteRegIO_bits_112;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_113 <= _csrManager_io_readWriteRegIO_bits_113;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_114 <= _csrManager_io_readWriteRegIO_bits_114;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_115 <= _csrManager_io_readWriteRegIO_bits_115;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
@@ -19404,7 +18892,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_119 <= _csrManager_io_readWriteRegIO_bits_119;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_120 <= _csrManager_io_readWriteRegIO_bits_120;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_121 <= _csrManager_io_readWriteRegIO_bits_121;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_123 <= _csrManager_io_readWriteRegIO_bits_123;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_122 <= _csrManager_io_readWriteRegIO_bits_122;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_124 <= _csrManager_io_readWriteRegIO_bits_124;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_125 <= _csrManager_io_readWriteRegIO_bits_125;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_126 <= _csrManager_io_readWriteRegIO_bits_126;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
@@ -19415,6 +18903,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_131 <= _csrManager_io_readWriteRegIO_bits_131;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_132 <= _csrManager_io_readWriteRegIO_bits_132;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_133 <= _csrManager_io_readWriteRegIO_bits_133;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_134 <= _csrManager_io_readWriteRegIO_bits_134;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_135 <= _csrManager_io_readWriteRegIO_bits_135;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_136 <= _csrManager_io_readWriteRegIO_bits_136;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_137 <= _csrManager_io_readWriteRegIO_bits_137;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
@@ -19436,7 +18925,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_153 <= _csrManager_io_readWriteRegIO_bits_153;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_154 <= _csrManager_io_readWriteRegIO_bits_154;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_155 <= _csrManager_io_readWriteRegIO_bits_155;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_156 <= _csrManager_io_readWriteRegIO_bits_156;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_157 <= _csrManager_io_readWriteRegIO_bits_157;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_158 <= _csrManager_io_readWriteRegIO_bits_158;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_159 <= _csrManager_io_readWriteRegIO_bits_159;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
@@ -19447,9 +18935,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_164 <= _csrManager_io_readWriteRegIO_bits_164;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_165 <= _csrManager_io_readWriteRegIO_bits_165;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_166 <= _csrManager_io_readWriteRegIO_bits_166;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_167 <= _csrManager_io_readWriteRegIO_bits_167;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_168 <= _csrManager_io_readWriteRegIO_bits_168;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_169 <= _csrManager_io_readWriteRegIO_bits_169;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_170 <= _csrManager_io_readWriteRegIO_bits_170;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_171 <= _csrManager_io_readWriteRegIO_bits_171;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_172 <= _csrManager_io_readWriteRegIO_bits_172;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_173 <= _csrManager_io_readWriteRegIO_bits_173;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
@@ -19457,10 +18945,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_175 <= _csrManager_io_readWriteRegIO_bits_175;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_176 <= _csrManager_io_readWriteRegIO_bits_176;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_177 <= _csrManager_io_readWriteRegIO_bits_177;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_178 <= _csrManager_io_readWriteRegIO_bits_178;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_179 <= _csrManager_io_readWriteRegIO_bits_179;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_180 <= _csrManager_io_readWriteRegIO_bits_180;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_181 <= _csrManager_io_readWriteRegIO_bits_181;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_182 <= _csrManager_io_readWriteRegIO_bits_182;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_183 <= _csrManager_io_readWriteRegIO_bits_183;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_184 <= _csrManager_io_readWriteRegIO_bits_184;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_185 <= _csrManager_io_readWriteRegIO_bits_185;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
@@ -19472,27 +18960,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_191 <= _csrManager_io_readWriteRegIO_bits_191;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_192 <= _csrManager_io_readWriteRegIO_bits_192;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_193 <= _csrManager_io_readWriteRegIO_bits_193;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
+        csrCfgReg_194 <= _csrManager_io_readWriteRegIO_bits_194;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_195 <= _csrManager_io_readWriteRegIO_bits_195;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_196 <= _csrManager_io_readWriteRegIO_bits_196;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
         csrCfgReg_197 <= _csrManager_io_readWriteRegIO_bits_197;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_198 <= _csrManager_io_readWriteRegIO_bits_198;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_199 <= _csrManager_io_readWriteRegIO_bits_199;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_200 <= _csrManager_io_readWriteRegIO_bits_200;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_201 <= _csrManager_io_readWriteRegIO_bits_201;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_202 <= _csrManager_io_readWriteRegIO_bits_202;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_203 <= _csrManager_io_readWriteRegIO_bits_203;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_204 <= _csrManager_io_readWriteRegIO_bits_204;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_205 <= _csrManager_io_readWriteRegIO_bits_205;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_206 <= _csrManager_io_readWriteRegIO_bits_206;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_207 <= _csrManager_io_readWriteRegIO_bits_207;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_208 <= _csrManager_io_readWriteRegIO_bits_208;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_209 <= _csrManager_io_readWriteRegIO_bits_209;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_210 <= _csrManager_io_readWriteRegIO_bits_210;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_211 <= _csrManager_io_readWriteRegIO_bits_211;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_212 <= _csrManager_io_readWriteRegIO_bits_212;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_213 <= _csrManager_io_readWriteRegIO_bits_213;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_214 <= _csrManager_io_readWriteRegIO_bits_214;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
-        csrCfgReg_215 <= _csrManager_io_readWriteRegIO_bits_215;	// src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26
       end
     end
   end // always @(posedge, posedge)
@@ -19503,12 +18974,12 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       `FIRRTL_BEFORE_INITIAL	// src/main/scala/snax/streamer/Streamer.scala:61:7
     `endif // FIRRTL_BEFORE_INITIAL
     initial begin	// src/main/scala/snax/streamer/Streamer.scala:61:7
-      automatic logic [31:0] _RANDOM[0:217];	// src/main/scala/snax/streamer/Streamer.scala:61:7
+      automatic logic [31:0] _RANDOM[0:199];	// src/main/scala/snax/streamer/Streamer.scala:61:7
       `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/snax/streamer/Streamer.scala:61:7
         `INIT_RANDOM_PROLOG_	// src/main/scala/snax/streamer/Streamer.scala:61:7
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/streamer/Streamer.scala:61:7
-        for (logic [7:0] i = 8'h0; i < 8'hDA; i += 8'h1) begin
+        for (logic [7:0] i = 8'h0; i < 8'hC8; i += 8'h1) begin
           _RANDOM[i] = `RANDOM;	// src/main/scala/snax/streamer/Streamer.scala:61:7
         end	// src/main/scala/snax/streamer/Streamer.scala:61:7
         cstate = _RANDOM[8'h0][0];	// src/main/scala/snax/streamer/Streamer.scala:61:7, :197:38
@@ -19549,9 +19020,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_32 = {_RANDOM[8'h21][31:2], _RANDOM[8'h22][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_33 = {_RANDOM[8'h22][31:2], _RANDOM[8'h23][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_34 = {_RANDOM[8'h23][31:2], _RANDOM[8'h24][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_35 = {_RANDOM[8'h24][31:2], _RANDOM[8'h25][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_36 = {_RANDOM[8'h25][31:2], _RANDOM[8'h26][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_37 = {_RANDOM[8'h26][31:2], _RANDOM[8'h27][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_38 = {_RANDOM[8'h27][31:2], _RANDOM[8'h28][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_39 = {_RANDOM[8'h28][31:2], _RANDOM[8'h29][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_40 = {_RANDOM[8'h29][31:2], _RANDOM[8'h2A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_41 = {_RANDOM[8'h2A][31:2], _RANDOM[8'h2B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
@@ -19559,32 +19030,32 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_43 = {_RANDOM[8'h2C][31:2], _RANDOM[8'h2D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_44 = {_RANDOM[8'h2D][31:2], _RANDOM[8'h2E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_45 = {_RANDOM[8'h2E][31:2], _RANDOM[8'h2F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_46 = {_RANDOM[8'h2F][31:2], _RANDOM[8'h30][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_47 = {_RANDOM[8'h30][31:2], _RANDOM[8'h31][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_48 = {_RANDOM[8'h31][31:2], _RANDOM[8'h32][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_49 = {_RANDOM[8'h32][31:2], _RANDOM[8'h33][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_50 = {_RANDOM[8'h33][31:2], _RANDOM[8'h34][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_51 = {_RANDOM[8'h34][31:2], _RANDOM[8'h35][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_52 = {_RANDOM[8'h35][31:2], _RANDOM[8'h36][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_53 = {_RANDOM[8'h36][31:2], _RANDOM[8'h37][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_54 = {_RANDOM[8'h37][31:2], _RANDOM[8'h38][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_55 = {_RANDOM[8'h38][31:2], _RANDOM[8'h39][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_56 = {_RANDOM[8'h39][31:2], _RANDOM[8'h3A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_57 = {_RANDOM[8'h3A][31:2], _RANDOM[8'h3B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_58 = {_RANDOM[8'h3B][31:2], _RANDOM[8'h3C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_59 = {_RANDOM[8'h3C][31:2], _RANDOM[8'h3D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_60 = {_RANDOM[8'h3D][31:2], _RANDOM[8'h3E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_61 = {_RANDOM[8'h3E][31:2], _RANDOM[8'h3F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_62 = {_RANDOM[8'h3F][31:2], _RANDOM[8'h40][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_63 = {_RANDOM[8'h40][31:2], _RANDOM[8'h41][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_64 = {_RANDOM[8'h41][31:2], _RANDOM[8'h42][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_65 = {_RANDOM[8'h42][31:2], _RANDOM[8'h43][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_66 = {_RANDOM[8'h43][31:2], _RANDOM[8'h44][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_67 = {_RANDOM[8'h44][31:2], _RANDOM[8'h45][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_68 = {_RANDOM[8'h45][31:2], _RANDOM[8'h46][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_69 = {_RANDOM[8'h46][31:2], _RANDOM[8'h47][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_70 = {_RANDOM[8'h47][31:2], _RANDOM[8'h48][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_71 = {_RANDOM[8'h48][31:2], _RANDOM[8'h49][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_72 = {_RANDOM[8'h49][31:2], _RANDOM[8'h4A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_73 = {_RANDOM[8'h4A][31:2], _RANDOM[8'h4B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_74 = {_RANDOM[8'h4B][31:2], _RANDOM[8'h4C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_75 = {_RANDOM[8'h4C][31:2], _RANDOM[8'h4D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_76 = {_RANDOM[8'h4D][31:2], _RANDOM[8'h4E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_77 = {_RANDOM[8'h4E][31:2], _RANDOM[8'h4F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
@@ -19600,7 +19071,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_87 = {_RANDOM[8'h58][31:2], _RANDOM[8'h59][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_88 = {_RANDOM[8'h59][31:2], _RANDOM[8'h5A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_89 = {_RANDOM[8'h5A][31:2], _RANDOM[8'h5B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_90 = {_RANDOM[8'h5B][31:2], _RANDOM[8'h5C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_91 = {_RANDOM[8'h5C][31:2], _RANDOM[8'h5D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_92 = {_RANDOM[8'h5D][31:2], _RANDOM[8'h5E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_93 = {_RANDOM[8'h5E][31:2], _RANDOM[8'h5F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
@@ -19608,9 +19078,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_95 = {_RANDOM[8'h60][31:2], _RANDOM[8'h61][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_96 = {_RANDOM[8'h61][31:2], _RANDOM[8'h62][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_97 = {_RANDOM[8'h62][31:2], _RANDOM[8'h63][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_98 = {_RANDOM[8'h63][31:2], _RANDOM[8'h64][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_99 = {_RANDOM[8'h64][31:2], _RANDOM[8'h65][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_100 = {_RANDOM[8'h65][31:2], _RANDOM[8'h66][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_101 = {_RANDOM[8'h66][31:2], _RANDOM[8'h67][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_102 = {_RANDOM[8'h67][31:2], _RANDOM[8'h68][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_103 = {_RANDOM[8'h68][31:2], _RANDOM[8'h69][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_104 = {_RANDOM[8'h69][31:2], _RANDOM[8'h6A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
@@ -19619,8 +19089,8 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_107 = {_RANDOM[8'h6C][31:2], _RANDOM[8'h6D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_108 = {_RANDOM[8'h6D][31:2], _RANDOM[8'h6E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_109 = {_RANDOM[8'h6E][31:2], _RANDOM[8'h6F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_110 = {_RANDOM[8'h6F][31:2], _RANDOM[8'h70][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_111 = {_RANDOM[8'h70][31:2], _RANDOM[8'h71][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_112 = {_RANDOM[8'h71][31:2], _RANDOM[8'h72][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_113 = {_RANDOM[8'h72][31:2], _RANDOM[8'h73][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_114 = {_RANDOM[8'h73][31:2], _RANDOM[8'h74][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_115 = {_RANDOM[8'h74][31:2], _RANDOM[8'h75][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
@@ -19630,7 +19100,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_119 = {_RANDOM[8'h78][31:2], _RANDOM[8'h79][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_120 = {_RANDOM[8'h79][31:2], _RANDOM[8'h7A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_121 = {_RANDOM[8'h7A][31:2], _RANDOM[8'h7B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_123 = {_RANDOM[8'h7C][31:2], _RANDOM[8'h7D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_122 = {_RANDOM[8'h7B][31:2], _RANDOM[8'h7C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_124 = {_RANDOM[8'h7D][31:2], _RANDOM[8'h7E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_125 = {_RANDOM[8'h7E][31:2], _RANDOM[8'h7F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_126 = {_RANDOM[8'h7F][31:2], _RANDOM[8'h80][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
@@ -19641,6 +19111,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_131 = {_RANDOM[8'h84][31:2], _RANDOM[8'h85][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_132 = {_RANDOM[8'h85][31:2], _RANDOM[8'h86][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_133 = {_RANDOM[8'h86][31:2], _RANDOM[8'h87][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_134 = {_RANDOM[8'h87][31:2], _RANDOM[8'h88][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_135 = {_RANDOM[8'h88][31:2], _RANDOM[8'h89][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_136 = {_RANDOM[8'h89][31:2], _RANDOM[8'h8A][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_137 = {_RANDOM[8'h8A][31:2], _RANDOM[8'h8B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
@@ -19662,7 +19133,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_153 = {_RANDOM[8'h9A][31:2], _RANDOM[8'h9B][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_154 = {_RANDOM[8'h9B][31:2], _RANDOM[8'h9C][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_155 = {_RANDOM[8'h9C][31:2], _RANDOM[8'h9D][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_156 = {_RANDOM[8'h9D][31:2], _RANDOM[8'h9E][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_157 = {_RANDOM[8'h9E][31:2], _RANDOM[8'h9F][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_158 = {_RANDOM[8'h9F][31:2], _RANDOM[8'hA0][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_159 = {_RANDOM[8'hA0][31:2], _RANDOM[8'hA1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
@@ -19673,9 +19143,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_164 = {_RANDOM[8'hA5][31:2], _RANDOM[8'hA6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_165 = {_RANDOM[8'hA6][31:2], _RANDOM[8'hA7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_166 = {_RANDOM[8'hA7][31:2], _RANDOM[8'hA8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_167 = {_RANDOM[8'hA8][31:2], _RANDOM[8'hA9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_168 = {_RANDOM[8'hA9][31:2], _RANDOM[8'hAA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_169 = {_RANDOM[8'hAA][31:2], _RANDOM[8'hAB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_170 = {_RANDOM[8'hAB][31:2], _RANDOM[8'hAC][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_171 = {_RANDOM[8'hAC][31:2], _RANDOM[8'hAD][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_172 = {_RANDOM[8'hAD][31:2], _RANDOM[8'hAE][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_173 = {_RANDOM[8'hAE][31:2], _RANDOM[8'hAF][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
@@ -19683,10 +19153,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_175 = {_RANDOM[8'hB0][31:2], _RANDOM[8'hB1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_176 = {_RANDOM[8'hB1][31:2], _RANDOM[8'hB2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_177 = {_RANDOM[8'hB2][31:2], _RANDOM[8'hB3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_178 = {_RANDOM[8'hB3][31:2], _RANDOM[8'hB4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_179 = {_RANDOM[8'hB4][31:2], _RANDOM[8'hB5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_180 = {_RANDOM[8'hB5][31:2], _RANDOM[8'hB6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_181 = {_RANDOM[8'hB6][31:2], _RANDOM[8'hB7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_182 = {_RANDOM[8'hB7][31:2], _RANDOM[8'hB8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_183 = {_RANDOM[8'hB8][31:2], _RANDOM[8'hB9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_184 = {_RANDOM[8'hB9][31:2], _RANDOM[8'hBA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_185 = {_RANDOM[8'hBA][31:2], _RANDOM[8'hBB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
@@ -19698,27 +19168,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_191 = {_RANDOM[8'hC0][31:2], _RANDOM[8'hC1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_192 = {_RANDOM[8'hC1][31:2], _RANDOM[8'hC2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_193 = {_RANDOM[8'hC2][31:2], _RANDOM[8'hC3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
+        csrCfgReg_194 = {_RANDOM[8'hC3][31:2], _RANDOM[8'hC4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_195 = {_RANDOM[8'hC4][31:2], _RANDOM[8'hC5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_196 = {_RANDOM[8'hC5][31:2], _RANDOM[8'hC6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
         csrCfgReg_197 = {_RANDOM[8'hC6][31:2], _RANDOM[8'hC7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_198 = {_RANDOM[8'hC7][31:2], _RANDOM[8'hC8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_199 = {_RANDOM[8'hC8][31:2], _RANDOM[8'hC9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_200 = {_RANDOM[8'hC9][31:2], _RANDOM[8'hCA][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_201 = {_RANDOM[8'hCA][31:2], _RANDOM[8'hCB][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_202 = {_RANDOM[8'hCB][31:2], _RANDOM[8'hCC][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_203 = {_RANDOM[8'hCC][31:2], _RANDOM[8'hCD][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_204 = {_RANDOM[8'hCD][31:2], _RANDOM[8'hCE][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_205 = {_RANDOM[8'hCE][31:2], _RANDOM[8'hCF][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_206 = {_RANDOM[8'hCF][31:2], _RANDOM[8'hD0][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_207 = {_RANDOM[8'hD0][31:2], _RANDOM[8'hD1][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_208 = {_RANDOM[8'hD1][31:2], _RANDOM[8'hD2][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_209 = {_RANDOM[8'hD2][31:2], _RANDOM[8'hD3][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_210 = {_RANDOM[8'hD3][31:2], _RANDOM[8'hD4][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_211 = {_RANDOM[8'hD4][31:2], _RANDOM[8'hD5][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_212 = {_RANDOM[8'hD5][31:2], _RANDOM[8'hD6][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_213 = {_RANDOM[8'hD6][31:2], _RANDOM[8'hD7][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_214 = {_RANDOM[8'hD7][31:2], _RANDOM[8'hD8][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
-        csrCfgReg_215 = {_RANDOM[8'hD8][31:2], _RANDOM[8'hD9][1:0]};	// src/main/scala/snax/streamer/Streamer.scala:61:7, :309:26
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/streamer/Streamer.scala:61:7
         cstate = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:61:7, :125:11, :147:11, :160:11, :197:38, :235:65, :236:65
@@ -19758,9 +19211,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_32 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_33 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_34 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_35 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_36 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_37 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_38 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_39 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_40 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_41 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19768,32 +19221,32 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_43 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_44 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_45 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_46 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_47 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_48 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_49 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_50 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_51 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_52 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_53 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_54 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_55 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_56 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_57 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_58 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_59 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_60 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_61 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_62 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_63 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_64 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_65 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_66 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_67 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_68 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_69 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_70 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_71 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_72 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_73 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_74 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_75 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_76 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_77 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19809,7 +19262,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_87 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_88 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_89 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_90 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_91 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_92 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_93 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19817,9 +19269,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_95 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_96 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_97 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_98 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_99 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_100 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_101 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_102 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_103 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_104 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19828,8 +19280,8 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_107 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_108 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_109 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_110 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_111 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_112 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_113 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_114 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_115 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19839,7 +19291,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_119 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_120 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_121 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_123 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_122 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_124 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_125 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_126 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19850,6 +19302,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_131 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_132 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_133 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_134 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_135 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_136 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_137 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19871,7 +19324,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_153 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_154 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_155 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_156 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_157 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_158 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_159 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19882,9 +19334,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_164 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_165 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_166 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_167 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_168 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_169 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_170 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_171 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_172 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_173 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19892,10 +19344,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_175 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_176 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_177 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_178 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_179 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_180 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_181 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_182 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_183 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_184 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_185 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
@@ -19907,27 +19359,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
         csrCfgReg_191 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_192 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_193 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
+        csrCfgReg_194 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_195 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_196 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
         csrCfgReg_197 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_198 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_199 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_200 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_201 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_202 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_203 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_204 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_205 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_206 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_207 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_208 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_209 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_210 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_211 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_212 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_213 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_214 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
-        csrCfgReg_215 = 32'h0;	// src/main/scala/snax/streamer/Streamer.scala:297:36, :309:26
       end
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/streamer/Streamer.scala:61:7
@@ -19983,9 +19418,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_32  (_csrManager_io_readWriteRegIO_bits_32),
     .io_readWriteRegIO_bits_33  (_csrManager_io_readWriteRegIO_bits_33),
     .io_readWriteRegIO_bits_34  (_csrManager_io_readWriteRegIO_bits_34),
-    .io_readWriteRegIO_bits_35  (_csrManager_io_readWriteRegIO_bits_35),
     .io_readWriteRegIO_bits_36  (_csrManager_io_readWriteRegIO_bits_36),
     .io_readWriteRegIO_bits_37  (_csrManager_io_readWriteRegIO_bits_37),
+    .io_readWriteRegIO_bits_38  (_csrManager_io_readWriteRegIO_bits_38),
     .io_readWriteRegIO_bits_39  (_csrManager_io_readWriteRegIO_bits_39),
     .io_readWriteRegIO_bits_40  (_csrManager_io_readWriteRegIO_bits_40),
     .io_readWriteRegIO_bits_41  (_csrManager_io_readWriteRegIO_bits_41),
@@ -19993,32 +19428,32 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_43  (_csrManager_io_readWriteRegIO_bits_43),
     .io_readWriteRegIO_bits_44  (_csrManager_io_readWriteRegIO_bits_44),
     .io_readWriteRegIO_bits_45  (_csrManager_io_readWriteRegIO_bits_45),
-    .io_readWriteRegIO_bits_46  (_csrManager_io_readWriteRegIO_bits_46),
     .io_readWriteRegIO_bits_47  (_csrManager_io_readWriteRegIO_bits_47),
     .io_readWriteRegIO_bits_48  (_csrManager_io_readWriteRegIO_bits_48),
     .io_readWriteRegIO_bits_49  (_csrManager_io_readWriteRegIO_bits_49),
+    .io_readWriteRegIO_bits_50  (_csrManager_io_readWriteRegIO_bits_50),
     .io_readWriteRegIO_bits_51  (_csrManager_io_readWriteRegIO_bits_51),
     .io_readWriteRegIO_bits_52  (_csrManager_io_readWriteRegIO_bits_52),
     .io_readWriteRegIO_bits_53  (_csrManager_io_readWriteRegIO_bits_53),
     .io_readWriteRegIO_bits_54  (_csrManager_io_readWriteRegIO_bits_54),
     .io_readWriteRegIO_bits_55  (_csrManager_io_readWriteRegIO_bits_55),
     .io_readWriteRegIO_bits_56  (_csrManager_io_readWriteRegIO_bits_56),
-    .io_readWriteRegIO_bits_57  (_csrManager_io_readWriteRegIO_bits_57),
     .io_readWriteRegIO_bits_58  (_csrManager_io_readWriteRegIO_bits_58),
     .io_readWriteRegIO_bits_59  (_csrManager_io_readWriteRegIO_bits_59),
     .io_readWriteRegIO_bits_60  (_csrManager_io_readWriteRegIO_bits_60),
     .io_readWriteRegIO_bits_61  (_csrManager_io_readWriteRegIO_bits_61),
+    .io_readWriteRegIO_bits_62  (_csrManager_io_readWriteRegIO_bits_62),
     .io_readWriteRegIO_bits_63  (_csrManager_io_readWriteRegIO_bits_63),
     .io_readWriteRegIO_bits_64  (_csrManager_io_readWriteRegIO_bits_64),
     .io_readWriteRegIO_bits_65  (_csrManager_io_readWriteRegIO_bits_65),
     .io_readWriteRegIO_bits_66  (_csrManager_io_readWriteRegIO_bits_66),
     .io_readWriteRegIO_bits_67  (_csrManager_io_readWriteRegIO_bits_67),
-    .io_readWriteRegIO_bits_68  (_csrManager_io_readWriteRegIO_bits_68),
     .io_readWriteRegIO_bits_69  (_csrManager_io_readWriteRegIO_bits_69),
     .io_readWriteRegIO_bits_70  (_csrManager_io_readWriteRegIO_bits_70),
     .io_readWriteRegIO_bits_71  (_csrManager_io_readWriteRegIO_bits_71),
     .io_readWriteRegIO_bits_72  (_csrManager_io_readWriteRegIO_bits_72),
     .io_readWriteRegIO_bits_73  (_csrManager_io_readWriteRegIO_bits_73),
+    .io_readWriteRegIO_bits_74  (_csrManager_io_readWriteRegIO_bits_74),
     .io_readWriteRegIO_bits_75  (_csrManager_io_readWriteRegIO_bits_75),
     .io_readWriteRegIO_bits_76  (_csrManager_io_readWriteRegIO_bits_76),
     .io_readWriteRegIO_bits_77  (_csrManager_io_readWriteRegIO_bits_77),
@@ -20034,7 +19469,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_87  (_csrManager_io_readWriteRegIO_bits_87),
     .io_readWriteRegIO_bits_88  (_csrManager_io_readWriteRegIO_bits_88),
     .io_readWriteRegIO_bits_89  (_csrManager_io_readWriteRegIO_bits_89),
-    .io_readWriteRegIO_bits_90  (_csrManager_io_readWriteRegIO_bits_90),
     .io_readWriteRegIO_bits_91  (_csrManager_io_readWriteRegIO_bits_91),
     .io_readWriteRegIO_bits_92  (_csrManager_io_readWriteRegIO_bits_92),
     .io_readWriteRegIO_bits_93  (_csrManager_io_readWriteRegIO_bits_93),
@@ -20042,9 +19476,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_95  (_csrManager_io_readWriteRegIO_bits_95),
     .io_readWriteRegIO_bits_96  (_csrManager_io_readWriteRegIO_bits_96),
     .io_readWriteRegIO_bits_97  (_csrManager_io_readWriteRegIO_bits_97),
+    .io_readWriteRegIO_bits_98  (_csrManager_io_readWriteRegIO_bits_98),
     .io_readWriteRegIO_bits_99  (_csrManager_io_readWriteRegIO_bits_99),
     .io_readWriteRegIO_bits_100 (_csrManager_io_readWriteRegIO_bits_100),
-    .io_readWriteRegIO_bits_101 (_csrManager_io_readWriteRegIO_bits_101),
     .io_readWriteRegIO_bits_102 (_csrManager_io_readWriteRegIO_bits_102),
     .io_readWriteRegIO_bits_103 (_csrManager_io_readWriteRegIO_bits_103),
     .io_readWriteRegIO_bits_104 (_csrManager_io_readWriteRegIO_bits_104),
@@ -20053,8 +19487,8 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_107 (_csrManager_io_readWriteRegIO_bits_107),
     .io_readWriteRegIO_bits_108 (_csrManager_io_readWriteRegIO_bits_108),
     .io_readWriteRegIO_bits_109 (_csrManager_io_readWriteRegIO_bits_109),
+    .io_readWriteRegIO_bits_110 (_csrManager_io_readWriteRegIO_bits_110),
     .io_readWriteRegIO_bits_111 (_csrManager_io_readWriteRegIO_bits_111),
-    .io_readWriteRegIO_bits_112 (_csrManager_io_readWriteRegIO_bits_112),
     .io_readWriteRegIO_bits_113 (_csrManager_io_readWriteRegIO_bits_113),
     .io_readWriteRegIO_bits_114 (_csrManager_io_readWriteRegIO_bits_114),
     .io_readWriteRegIO_bits_115 (_csrManager_io_readWriteRegIO_bits_115),
@@ -20064,7 +19498,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_119 (_csrManager_io_readWriteRegIO_bits_119),
     .io_readWriteRegIO_bits_120 (_csrManager_io_readWriteRegIO_bits_120),
     .io_readWriteRegIO_bits_121 (_csrManager_io_readWriteRegIO_bits_121),
-    .io_readWriteRegIO_bits_123 (_csrManager_io_readWriteRegIO_bits_123),
+    .io_readWriteRegIO_bits_122 (_csrManager_io_readWriteRegIO_bits_122),
     .io_readWriteRegIO_bits_124 (_csrManager_io_readWriteRegIO_bits_124),
     .io_readWriteRegIO_bits_125 (_csrManager_io_readWriteRegIO_bits_125),
     .io_readWriteRegIO_bits_126 (_csrManager_io_readWriteRegIO_bits_126),
@@ -20075,6 +19509,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_131 (_csrManager_io_readWriteRegIO_bits_131),
     .io_readWriteRegIO_bits_132 (_csrManager_io_readWriteRegIO_bits_132),
     .io_readWriteRegIO_bits_133 (_csrManager_io_readWriteRegIO_bits_133),
+    .io_readWriteRegIO_bits_134 (_csrManager_io_readWriteRegIO_bits_134),
     .io_readWriteRegIO_bits_135 (_csrManager_io_readWriteRegIO_bits_135),
     .io_readWriteRegIO_bits_136 (_csrManager_io_readWriteRegIO_bits_136),
     .io_readWriteRegIO_bits_137 (_csrManager_io_readWriteRegIO_bits_137),
@@ -20096,7 +19531,6 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_153 (_csrManager_io_readWriteRegIO_bits_153),
     .io_readWriteRegIO_bits_154 (_csrManager_io_readWriteRegIO_bits_154),
     .io_readWriteRegIO_bits_155 (_csrManager_io_readWriteRegIO_bits_155),
-    .io_readWriteRegIO_bits_156 (_csrManager_io_readWriteRegIO_bits_156),
     .io_readWriteRegIO_bits_157 (_csrManager_io_readWriteRegIO_bits_157),
     .io_readWriteRegIO_bits_158 (_csrManager_io_readWriteRegIO_bits_158),
     .io_readWriteRegIO_bits_159 (_csrManager_io_readWriteRegIO_bits_159),
@@ -20107,9 +19541,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_164 (_csrManager_io_readWriteRegIO_bits_164),
     .io_readWriteRegIO_bits_165 (_csrManager_io_readWriteRegIO_bits_165),
     .io_readWriteRegIO_bits_166 (_csrManager_io_readWriteRegIO_bits_166),
-    .io_readWriteRegIO_bits_167 (_csrManager_io_readWriteRegIO_bits_167),
     .io_readWriteRegIO_bits_168 (_csrManager_io_readWriteRegIO_bits_168),
     .io_readWriteRegIO_bits_169 (_csrManager_io_readWriteRegIO_bits_169),
+    .io_readWriteRegIO_bits_170 (_csrManager_io_readWriteRegIO_bits_170),
     .io_readWriteRegIO_bits_171 (_csrManager_io_readWriteRegIO_bits_171),
     .io_readWriteRegIO_bits_172 (_csrManager_io_readWriteRegIO_bits_172),
     .io_readWriteRegIO_bits_173 (_csrManager_io_readWriteRegIO_bits_173),
@@ -20117,10 +19551,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_175 (_csrManager_io_readWriteRegIO_bits_175),
     .io_readWriteRegIO_bits_176 (_csrManager_io_readWriteRegIO_bits_176),
     .io_readWriteRegIO_bits_177 (_csrManager_io_readWriteRegIO_bits_177),
-    .io_readWriteRegIO_bits_178 (_csrManager_io_readWriteRegIO_bits_178),
     .io_readWriteRegIO_bits_179 (_csrManager_io_readWriteRegIO_bits_179),
     .io_readWriteRegIO_bits_180 (_csrManager_io_readWriteRegIO_bits_180),
     .io_readWriteRegIO_bits_181 (_csrManager_io_readWriteRegIO_bits_181),
+    .io_readWriteRegIO_bits_182 (_csrManager_io_readWriteRegIO_bits_182),
     .io_readWriteRegIO_bits_183 (_csrManager_io_readWriteRegIO_bits_183),
     .io_readWriteRegIO_bits_184 (_csrManager_io_readWriteRegIO_bits_184),
     .io_readWriteRegIO_bits_185 (_csrManager_io_readWriteRegIO_bits_185),
@@ -20132,33 +19566,16 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_readWriteRegIO_bits_191 (_csrManager_io_readWriteRegIO_bits_191),
     .io_readWriteRegIO_bits_192 (_csrManager_io_readWriteRegIO_bits_192),
     .io_readWriteRegIO_bits_193 (_csrManager_io_readWriteRegIO_bits_193),
+    .io_readWriteRegIO_bits_194 (_csrManager_io_readWriteRegIO_bits_194),
     .io_readWriteRegIO_bits_195 (_csrManager_io_readWriteRegIO_bits_195),
     .io_readWriteRegIO_bits_196 (_csrManager_io_readWriteRegIO_bits_196),
     .io_readWriteRegIO_bits_197 (_csrManager_io_readWriteRegIO_bits_197),
-    .io_readWriteRegIO_bits_198 (_csrManager_io_readWriteRegIO_bits_198),
-    .io_readWriteRegIO_bits_199 (_csrManager_io_readWriteRegIO_bits_199),
-    .io_readWriteRegIO_bits_200 (_csrManager_io_readWriteRegIO_bits_200),
-    .io_readWriteRegIO_bits_201 (_csrManager_io_readWriteRegIO_bits_201),
-    .io_readWriteRegIO_bits_202 (_csrManager_io_readWriteRegIO_bits_202),
-    .io_readWriteRegIO_bits_203 (_csrManager_io_readWriteRegIO_bits_203),
-    .io_readWriteRegIO_bits_204 (_csrManager_io_readWriteRegIO_bits_204),
-    .io_readWriteRegIO_bits_205 (_csrManager_io_readWriteRegIO_bits_205),
-    .io_readWriteRegIO_bits_206 (_csrManager_io_readWriteRegIO_bits_206),
-    .io_readWriteRegIO_bits_207 (_csrManager_io_readWriteRegIO_bits_207),
-    .io_readWriteRegIO_bits_208 (_csrManager_io_readWriteRegIO_bits_208),
-    .io_readWriteRegIO_bits_209 (_csrManager_io_readWriteRegIO_bits_209),
-    .io_readWriteRegIO_bits_210 (_csrManager_io_readWriteRegIO_bits_210),
-    .io_readWriteRegIO_bits_211 (_csrManager_io_readWriteRegIO_bits_211),
-    .io_readWriteRegIO_bits_212 (_csrManager_io_readWriteRegIO_bits_212),
-    .io_readWriteRegIO_bits_213 (_csrManager_io_readWriteRegIO_bits_213),
-    .io_readWriteRegIO_bits_214 (_csrManager_io_readWriteRegIO_bits_214),
-    .io_readWriteRegIO_bits_215 (_csrManager_io_readWriteRegIO_bits_215),
     .io_readOnlyReg_0           ({31'h0, cstate}),	// src/main/scala/snax/streamer/Streamer.scala:197:38, :305:32
     .io_readOnlyReg_1           (performance_counter)	// src/main/scala/snax/streamer/Streamer.scala:297:36
   );
   snax_simbacore__C0_Reader reader_0 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
+    .clock                       (clock),
+    .reset                       (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_0[19:0]
@@ -20199,652 +19616,670 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_10[19:0]
          : csrCfgReg_10[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_11[3:0]
-         : csrCfgReg_11[3:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_0_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_0_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_0_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_0_bits_addr),
-    .io_tcdmReq_1_ready                (io_data_tcdm_req_1_ready),
-    .io_tcdmReq_1_valid                (io_data_tcdm_req_1_valid),
-    .io_tcdmReq_1_bits_addr            (io_data_tcdm_req_1_bits_addr),
-    .io_tcdmReq_2_ready                (io_data_tcdm_req_2_ready),
-    .io_tcdmReq_2_valid                (io_data_tcdm_req_2_valid),
-    .io_tcdmReq_2_bits_addr            (io_data_tcdm_req_2_bits_addr),
-    .io_tcdmReq_3_ready                (io_data_tcdm_req_3_ready),
-    .io_tcdmReq_3_valid                (io_data_tcdm_req_3_valid),
-    .io_tcdmReq_3_bits_addr            (io_data_tcdm_req_3_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_0_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_0_bits_data),
-    .io_tcdmRsp_1_valid                (io_data_tcdm_rsp_1_valid),
-    .io_tcdmRsp_1_bits_data            (io_data_tcdm_rsp_1_bits_data),
-    .io_tcdmRsp_2_valid                (io_data_tcdm_rsp_2_valid),
-    .io_tcdmRsp_2_bits_data            (io_data_tcdm_rsp_2_bits_data),
-    .io_tcdmRsp_3_valid                (io_data_tcdm_rsp_3_valid),
-    .io_tcdmRsp_3_bits_data            (io_data_tcdm_rsp_3_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_0_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_0_io_data_valid),
-    .io_data_bits                      (_reader_0_io_data_bits)
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_0_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_0_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_0_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_0_bits_addr),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_1_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_1_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_1_bits_addr),
+    .io_tcdmReq_2_ready          (io_data_tcdm_req_2_ready),
+    .io_tcdmReq_2_valid          (io_data_tcdm_req_2_valid),
+    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_2_bits_addr),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_3_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_3_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_3_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_0_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_0_bits_data),
+    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_1_valid),
+    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_1_bits_data),
+    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_2_valid),
+    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_2_bits_data),
+    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_3_valid),
+    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_3_bits_data),
+    .io_data_ready               (_readerDatapathExtention_0_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_0_io_data_valid),
+    .io_data_bits                (_reader_0_io_data_bits)
   );
   snax_simbacore__C1_Reader reader_1 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
+    .clock                       (clock),
+    .reset                       (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_12[19:0]
-         : csrCfgReg_12[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+         ? _csrManager_io_readWriteRegIO_bits_11[19:0]
+         : csrCfgReg_11[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_spatialStrides_0
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_13[19:0]
+         : csrCfgReg_13[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_14[19:0]
          : csrCfgReg_14[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_15[19:0]
          : csrCfgReg_15[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_16[19:0]
          : csrCfgReg_16[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_17[19:0]
          : csrCfgReg_17[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_18[19:0]
          : csrCfgReg_18[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_19[19:0]
          : csrCfgReg_19[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_20[19:0]
          : csrCfgReg_20[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_21[19:0]
          : csrCfgReg_21[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_1_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_4_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_4_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_4_bits_addr),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_5_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_5_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_5_bits_addr),
+    .io_tcdmReq_2_ready          (io_data_tcdm_req_6_ready),
+    .io_tcdmReq_2_valid          (io_data_tcdm_req_6_valid),
+    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_6_bits_addr),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_7_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_7_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_7_bits_addr),
+    .io_tcdmReq_4_ready          (io_data_tcdm_req_8_ready),
+    .io_tcdmReq_4_valid          (io_data_tcdm_req_8_valid),
+    .io_tcdmReq_4_bits_addr      (io_data_tcdm_req_8_bits_addr),
+    .io_tcdmReq_5_ready          (io_data_tcdm_req_9_ready),
+    .io_tcdmReq_5_valid          (io_data_tcdm_req_9_valid),
+    .io_tcdmReq_5_bits_addr      (io_data_tcdm_req_9_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_4_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_4_bits_data),
+    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_5_valid),
+    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_5_bits_data),
+    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_6_valid),
+    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_6_bits_data),
+    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_7_valid),
+    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_7_bits_data),
+    .io_tcdmRsp_4_valid          (io_data_tcdm_rsp_8_valid),
+    .io_tcdmRsp_4_bits_data      (io_data_tcdm_rsp_8_bits_data),
+    .io_tcdmRsp_5_valid          (io_data_tcdm_rsp_9_valid),
+    .io_tcdmRsp_5_bits_data      (io_data_tcdm_rsp_9_bits_data),
+    .io_data_ready               (_readerDatapathExtention_1_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_1_io_data_valid),
+    .io_data_bits                (_reader_1_io_data_bits)
+  );
+  snax_simbacore__C2_Reader reader_2 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_22[19:0]
          : csrCfgReg_22[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_23[5:0]
-         : csrCfgReg_23[5:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_1_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_4_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_4_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_4_bits_addr),
-    .io_tcdmReq_1_ready                (io_data_tcdm_req_5_ready),
-    .io_tcdmReq_1_valid                (io_data_tcdm_req_5_valid),
-    .io_tcdmReq_1_bits_addr            (io_data_tcdm_req_5_bits_addr),
-    .io_tcdmReq_2_ready                (io_data_tcdm_req_6_ready),
-    .io_tcdmReq_2_valid                (io_data_tcdm_req_6_valid),
-    .io_tcdmReq_2_bits_addr            (io_data_tcdm_req_6_bits_addr),
-    .io_tcdmReq_3_ready                (io_data_tcdm_req_7_ready),
-    .io_tcdmReq_3_valid                (io_data_tcdm_req_7_valid),
-    .io_tcdmReq_3_bits_addr            (io_data_tcdm_req_7_bits_addr),
-    .io_tcdmReq_4_ready                (io_data_tcdm_req_8_ready),
-    .io_tcdmReq_4_valid                (io_data_tcdm_req_8_valid),
-    .io_tcdmReq_4_bits_addr            (io_data_tcdm_req_8_bits_addr),
-    .io_tcdmReq_5_ready                (io_data_tcdm_req_9_ready),
-    .io_tcdmReq_5_valid                (io_data_tcdm_req_9_valid),
-    .io_tcdmReq_5_bits_addr            (io_data_tcdm_req_9_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_4_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_4_bits_data),
-    .io_tcdmRsp_1_valid                (io_data_tcdm_rsp_5_valid),
-    .io_tcdmRsp_1_bits_data            (io_data_tcdm_rsp_5_bits_data),
-    .io_tcdmRsp_2_valid                (io_data_tcdm_rsp_6_valid),
-    .io_tcdmRsp_2_bits_data            (io_data_tcdm_rsp_6_bits_data),
-    .io_tcdmRsp_3_valid                (io_data_tcdm_rsp_7_valid),
-    .io_tcdmRsp_3_bits_data            (io_data_tcdm_rsp_7_bits_data),
-    .io_tcdmRsp_4_valid                (io_data_tcdm_rsp_8_valid),
-    .io_tcdmRsp_4_bits_data            (io_data_tcdm_rsp_8_bits_data),
-    .io_tcdmRsp_5_valid                (io_data_tcdm_rsp_9_valid),
-    .io_tcdmRsp_5_bits_data            (io_data_tcdm_rsp_9_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_1_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_1_io_data_valid),
-    .io_data_bits                      (_reader_1_io_data_bits)
-  );
-  snax_simbacore__C2_Reader reader_2 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+    .io_aguCfg_spatialStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_24[19:0]
          : csrCfgReg_24[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_spatialStrides_0
+    .io_aguCfg_temporalBounds_0
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_25[19:0]
+         : csrCfgReg_25[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_26[19:0]
          : csrCfgReg_26[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_27[19:0]
          : csrCfgReg_27[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_28[19:0]
          : csrCfgReg_28[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_29[19:0]
          : csrCfgReg_29[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_30[19:0]
          : csrCfgReg_30[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_31[19:0]
          : csrCfgReg_31[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_32[19:0]
          : csrCfgReg_32[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_2_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_10_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_10_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_10_bits_addr),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_11_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_11_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_11_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_10_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_10_bits_data),
+    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_11_valid),
+    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_11_bits_data),
+    .io_data_ready               (_readerDatapathExtention_2_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_2_io_data_valid),
+    .io_data_bits                (_reader_2_io_data_bits)
+  );
+  snax_simbacore__C3_Reader reader_3 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_33[19:0]
          : csrCfgReg_33[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_34[19:0]
-         : csrCfgReg_34[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_35[1:0]
-         : csrCfgReg_35[1:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_2_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_10_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_10_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_10_bits_addr),
-    .io_tcdmReq_1_ready                (io_data_tcdm_req_11_ready),
-    .io_tcdmReq_1_valid                (io_data_tcdm_req_11_valid),
-    .io_tcdmReq_1_bits_addr            (io_data_tcdm_req_11_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_10_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_10_bits_data),
-    .io_tcdmRsp_1_valid                (io_data_tcdm_rsp_11_valid),
-    .io_tcdmRsp_1_bits_data            (io_data_tcdm_rsp_11_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_2_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_2_io_data_valid),
-    .io_data_bits                      (_reader_2_io_data_bits)
-  );
-  snax_simbacore__C3_Reader reader_3 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_36[19:0]
          : csrCfgReg_36[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalBounds_1
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_37[19:0]
+         : csrCfgReg_37[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_2
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_38[19:0]
+         : csrCfgReg_38[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_39[19:0]
          : csrCfgReg_39[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_40[19:0]
          : csrCfgReg_40[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_41[19:0]
          : csrCfgReg_41[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_42[19:0]
          : csrCfgReg_42[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_43[19:0]
          : csrCfgReg_43[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_3_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_12_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_12_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_12_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_12_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_12_bits_data),
+    .io_data_ready               (_readerDatapathExtention_3_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_3_io_data_valid),
+    .io_data_bits                (_reader_3_io_data_bits)
+  );
+  snax_simbacore__C4_Reader reader_4 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_44[19:0]
          : csrCfgReg_44[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_45[19:0]
-         : csrCfgReg_45[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_46[19:0]
-         : csrCfgReg_46[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_47[0] : csrCfgReg_47[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_3_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_12_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_12_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_12_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_12_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_12_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_3_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_3_io_data_valid),
-    .io_data_bits                      (_reader_3_io_data_bits)
-  );
-  snax_simbacore__C4_Reader reader_4 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+         ? _csrManager_io_readWriteRegIO_bits_47[19:0]
+         : csrCfgReg_47[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_48[19:0]
          : csrCfgReg_48[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalBounds_2
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_49[19:0]
+         : csrCfgReg_49[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_3
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_50[19:0]
+         : csrCfgReg_50[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_51[19:0]
          : csrCfgReg_51[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_52[19:0]
          : csrCfgReg_52[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_53[19:0]
          : csrCfgReg_53[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_54[19:0]
          : csrCfgReg_54[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_4_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_13_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_13_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_13_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_13_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_13_bits_data),
+    .io_data_ready               (_readerDatapathExtention_4_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_4_io_data_valid),
+    .io_data_bits                (_reader_4_io_data_bits)
+  );
+  snax_simbacore__C5_Reader reader_5 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_55[19:0]
          : csrCfgReg_55[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_56[19:0]
-         : csrCfgReg_56[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_57[19:0]
-         : csrCfgReg_57[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_58[19:0]
          : csrCfgReg_58[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_59[0] : csrCfgReg_59[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_4_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_13_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_13_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_13_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_13_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_13_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_4_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_4_io_data_valid),
-    .io_data_bits                      (_reader_4_io_data_bits)
-  );
-  snax_simbacore__C5_Reader reader_5 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+    .io_aguCfg_temporalBounds_1
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_59[19:0]
+         : csrCfgReg_59[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_60[19:0]
          : csrCfgReg_60[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalBounds_3
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_61[19:0]
+         : csrCfgReg_61[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_0
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_62[19:0]
+         : csrCfgReg_62[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_63[19:0]
          : csrCfgReg_63[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_64[19:0]
          : csrCfgReg_64[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_65[19:0]
          : csrCfgReg_65[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_5_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_14_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_14_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_14_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_14_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_14_bits_data),
+    .io_data_ready               (_readerDatapathExtention_5_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_5_io_data_valid),
+    .io_data_bits                (_reader_5_io_data_bits)
+  );
+  snax_simbacore__C6_Reader reader_6 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_66[19:0]
          : csrCfgReg_66[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_67[19:0]
-         : csrCfgReg_67[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_68[19:0]
-         : csrCfgReg_68[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_69[19:0]
          : csrCfgReg_69[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_70[19:0]
          : csrCfgReg_70[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_71[0] : csrCfgReg_71[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_5_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_14_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_14_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_14_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_14_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_14_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_5_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_5_io_data_valid),
-    .io_data_bits                      (_reader_5_io_data_bits)
-  );
-  snax_simbacore__C6_Reader reader_6 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+    .io_aguCfg_temporalBounds_2
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_71[19:0]
+         : csrCfgReg_71[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_72[19:0]
          : csrCfgReg_72[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalStrides_0
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_73[19:0]
+         : csrCfgReg_73[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_1
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_74[19:0]
+         : csrCfgReg_74[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_75[19:0]
          : csrCfgReg_75[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_76[19:0]
          : csrCfgReg_76[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_6_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_15_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_15_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_15_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_15_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_15_bits_data),
+    .io_data_ready               (_readerDatapathExtention_6_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_6_io_data_valid),
+    .io_data_bits                (_reader_6_io_data_bits)
+  );
+  snax_simbacore__C7_Reader reader_7 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_77[19:0]
          : csrCfgReg_77[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_78[19:0]
-         : csrCfgReg_78[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_spatialStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_79[19:0]
          : csrCfgReg_79[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_80[19:0]
          : csrCfgReg_80[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_81[19:0]
          : csrCfgReg_81[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_82[19:0]
          : csrCfgReg_82[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire ? _csrManager_io_readWriteRegIO_bits_83[0] : csrCfgReg_83[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_6_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_15_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_15_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_15_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_15_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_15_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_6_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_6_io_data_valid),
-    .io_data_bits                      (_reader_6_io_data_bits)
-  );
-  snax_simbacore__C7_Reader reader_7 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+    .io_aguCfg_temporalBounds_3
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_83[19:0]
+         : csrCfgReg_83[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_84[19:0]
          : csrCfgReg_84[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_spatialStrides_0
+    .io_aguCfg_temporalStrides_1
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_85[19:0]
+         : csrCfgReg_85[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_86[19:0]
          : csrCfgReg_86[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_87[19:0]
          : csrCfgReg_87[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_7_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_16_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_16_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_16_bits_addr),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_17_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_17_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_17_bits_addr),
+    .io_tcdmReq_2_ready          (io_data_tcdm_req_18_ready),
+    .io_tcdmReq_2_valid          (io_data_tcdm_req_18_valid),
+    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_18_bits_addr),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_19_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_19_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_19_bits_addr),
+    .io_tcdmReq_4_ready          (io_data_tcdm_req_20_ready),
+    .io_tcdmReq_4_valid          (io_data_tcdm_req_20_valid),
+    .io_tcdmReq_4_bits_addr      (io_data_tcdm_req_20_bits_addr),
+    .io_tcdmReq_5_ready          (io_data_tcdm_req_21_ready),
+    .io_tcdmReq_5_valid          (io_data_tcdm_req_21_valid),
+    .io_tcdmReq_5_bits_addr      (io_data_tcdm_req_21_bits_addr),
+    .io_tcdmReq_6_ready          (io_data_tcdm_req_22_ready),
+    .io_tcdmReq_6_valid          (io_data_tcdm_req_22_valid),
+    .io_tcdmReq_6_bits_addr      (io_data_tcdm_req_22_bits_addr),
+    .io_tcdmReq_7_ready          (io_data_tcdm_req_23_ready),
+    .io_tcdmReq_7_valid          (io_data_tcdm_req_23_valid),
+    .io_tcdmReq_7_bits_addr      (io_data_tcdm_req_23_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_16_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_16_bits_data),
+    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_17_valid),
+    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_17_bits_data),
+    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_18_valid),
+    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_18_bits_data),
+    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_19_valid),
+    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_19_bits_data),
+    .io_tcdmRsp_4_valid          (io_data_tcdm_rsp_20_valid),
+    .io_tcdmRsp_4_bits_data      (io_data_tcdm_rsp_20_bits_data),
+    .io_tcdmRsp_5_valid          (io_data_tcdm_rsp_21_valid),
+    .io_tcdmRsp_5_bits_data      (io_data_tcdm_rsp_21_bits_data),
+    .io_tcdmRsp_6_valid          (io_data_tcdm_rsp_22_valid),
+    .io_tcdmRsp_6_bits_data      (io_data_tcdm_rsp_22_bits_data),
+    .io_tcdmRsp_7_valid          (io_data_tcdm_rsp_23_valid),
+    .io_tcdmRsp_7_bits_data      (io_data_tcdm_rsp_23_bits_data),
+    .io_data_ready               (_readerDatapathExtention_7_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_7_io_data_valid),
+    .io_data_bits                (_reader_7_io_data_bits)
+  );
+  snax_simbacore__C8_Reader reader_8 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_88[19:0]
          : csrCfgReg_88[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_89[19:0]
-         : csrCfgReg_89[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_90[19:0]
-         : csrCfgReg_90[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_91[19:0]
          : csrCfgReg_91[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_92[19:0]
          : csrCfgReg_92[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_93[19:0]
          : csrCfgReg_93[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_94[19:0]
          : csrCfgReg_94[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_95[7:0]
-         : csrCfgReg_95[7:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_7_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_16_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_16_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_16_bits_addr),
-    .io_tcdmReq_1_ready                (io_data_tcdm_req_17_ready),
-    .io_tcdmReq_1_valid                (io_data_tcdm_req_17_valid),
-    .io_tcdmReq_1_bits_addr            (io_data_tcdm_req_17_bits_addr),
-    .io_tcdmReq_2_ready                (io_data_tcdm_req_18_ready),
-    .io_tcdmReq_2_valid                (io_data_tcdm_req_18_valid),
-    .io_tcdmReq_2_bits_addr            (io_data_tcdm_req_18_bits_addr),
-    .io_tcdmReq_3_ready                (io_data_tcdm_req_19_ready),
-    .io_tcdmReq_3_valid                (io_data_tcdm_req_19_valid),
-    .io_tcdmReq_3_bits_addr            (io_data_tcdm_req_19_bits_addr),
-    .io_tcdmReq_4_ready                (io_data_tcdm_req_20_ready),
-    .io_tcdmReq_4_valid                (io_data_tcdm_req_20_valid),
-    .io_tcdmReq_4_bits_addr            (io_data_tcdm_req_20_bits_addr),
-    .io_tcdmReq_5_ready                (io_data_tcdm_req_21_ready),
-    .io_tcdmReq_5_valid                (io_data_tcdm_req_21_valid),
-    .io_tcdmReq_5_bits_addr            (io_data_tcdm_req_21_bits_addr),
-    .io_tcdmReq_6_ready                (io_data_tcdm_req_22_ready),
-    .io_tcdmReq_6_valid                (io_data_tcdm_req_22_valid),
-    .io_tcdmReq_6_bits_addr            (io_data_tcdm_req_22_bits_addr),
-    .io_tcdmReq_7_ready                (io_data_tcdm_req_23_ready),
-    .io_tcdmReq_7_valid                (io_data_tcdm_req_23_valid),
-    .io_tcdmReq_7_bits_addr            (io_data_tcdm_req_23_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_16_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_16_bits_data),
-    .io_tcdmRsp_1_valid                (io_data_tcdm_rsp_17_valid),
-    .io_tcdmRsp_1_bits_data            (io_data_tcdm_rsp_17_bits_data),
-    .io_tcdmRsp_2_valid                (io_data_tcdm_rsp_18_valid),
-    .io_tcdmRsp_2_bits_data            (io_data_tcdm_rsp_18_bits_data),
-    .io_tcdmRsp_3_valid                (io_data_tcdm_rsp_19_valid),
-    .io_tcdmRsp_3_bits_data            (io_data_tcdm_rsp_19_bits_data),
-    .io_tcdmRsp_4_valid                (io_data_tcdm_rsp_20_valid),
-    .io_tcdmRsp_4_bits_data            (io_data_tcdm_rsp_20_bits_data),
-    .io_tcdmRsp_5_valid                (io_data_tcdm_rsp_21_valid),
-    .io_tcdmRsp_5_bits_data            (io_data_tcdm_rsp_21_bits_data),
-    .io_tcdmRsp_6_valid                (io_data_tcdm_rsp_22_valid),
-    .io_tcdmRsp_6_bits_data            (io_data_tcdm_rsp_22_bits_data),
-    .io_tcdmRsp_7_valid                (io_data_tcdm_rsp_23_valid),
-    .io_tcdmRsp_7_bits_data            (io_data_tcdm_rsp_23_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_7_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_7_io_data_valid),
-    .io_data_bits                      (_reader_7_io_data_bits)
-  );
-  snax_simbacore__C8_Reader reader_8 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+         ? _csrManager_io_readWriteRegIO_bits_95[19:0]
+         : csrCfgReg_95[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_96[19:0]
          : csrCfgReg_96[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalStrides_2
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_97[19:0]
+         : csrCfgReg_97[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_3
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_98[19:0]
+         : csrCfgReg_98[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_8_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_24_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_24_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_24_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_24_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_24_bits_data),
+    .io_data_ready               (_readerDatapathExtention_8_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_8_io_data_valid),
+    .io_data_bits                (_reader_8_io_data_bits)
+  );
+  snax_simbacore__C9_Reader reader_9 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_99[19:0]
          : csrCfgReg_99[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_100[19:0]
-         : csrCfgReg_100[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_101[19:0]
-         : csrCfgReg_101[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_102[19:0]
          : csrCfgReg_102[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_103[19:0]
          : csrCfgReg_103[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_104[19:0]
          : csrCfgReg_104[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_105[19:0]
          : csrCfgReg_105[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_106[19:0]
          : csrCfgReg_106[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_107[0]
-         : csrCfgReg_107[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_8_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_24_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_24_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_24_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_24_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_24_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_8_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_8_io_data_valid),
-    .io_data_bits                      (_reader_8_io_data_bits)
-  );
-  snax_simbacore__C9_Reader reader_9 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+         ? _csrManager_io_readWriteRegIO_bits_107[19:0]
+         : csrCfgReg_107[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_108[19:0]
          : csrCfgReg_108[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_3
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_109[19:0]
+         : csrCfgReg_109[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_9_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_25_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_25_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_25_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_25_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_25_bits_data),
+    .io_data_ready               (_readerDatapathExtention_9_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_9_io_data_valid),
+    .io_data_bits                (_reader_9_io_data_bits)
+  );
+  snax_simbacore__C10_Reader reader_10 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_110[19:0]
+         : csrCfgReg_110[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_111[19:0]
-         : csrCfgReg_111[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_112[19:0]
-         : csrCfgReg_112[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_113[19:0]
          : csrCfgReg_113[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_114[19:0]
          : csrCfgReg_114[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_115[19:0]
          : csrCfgReg_115[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_116[19:0]
          : csrCfgReg_116[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_117[19:0]
          : csrCfgReg_117[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_118[19:0]
          : csrCfgReg_118[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_119[0]
-         : csrCfgReg_119[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_9_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_25_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_25_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_25_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_25_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_25_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_9_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_9_io_data_valid),
-    .io_data_bits                      (_reader_9_io_data_bits)
-  );
-  snax_simbacore__C10_Reader reader_10 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+         ? _csrManager_io_readWriteRegIO_bits_119[19:0]
+         : csrCfgReg_119[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_120[19:0]
          : csrCfgReg_120[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_10_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_26_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_26_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_26_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_26_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_26_bits_data),
+    .io_data_ready               (_readerDatapathExtention_10_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_10_io_data_valid),
+    .io_data_bits                (_reader_10_io_data_bits)
+  );
+  snax_simbacore__C11_Reader reader_11 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_123[19:0]
-         : csrCfgReg_123[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+         ? _csrManager_io_readWriteRegIO_bits_121[19:0]
+         : csrCfgReg_121[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_124[19:0]
          : csrCfgReg_124[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_125[19:0]
          : csrCfgReg_125[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_126[19:0]
          : csrCfgReg_126[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_127[19:0]
          : csrCfgReg_127[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_128[19:0]
          : csrCfgReg_128[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_129[19:0]
          : csrCfgReg_129[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_130[19:0]
          : csrCfgReg_130[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_131[0]
-         : csrCfgReg_131[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_10_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_26_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_26_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_26_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_26_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_26_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_10_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_10_io_data_valid),
-    .io_data_bits                      (_reader_10_io_data_bits)
+         ? _csrManager_io_readWriteRegIO_bits_131[19:0]
+         : csrCfgReg_131[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_11_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_27_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_27_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_27_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_27_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_27_bits_data),
+    .io_data_ready               (_readerDatapathExtention_11_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_11_io_data_valid),
+    .io_data_bits                (_reader_11_io_data_bits)
   );
-  snax_simbacore__C11_Reader reader_11 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
+  snax_simbacore__C12_Reader reader_12 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_132[19:0]
          : csrCfgReg_132[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_spatialStrides_0
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_134[19:0]
+         : csrCfgReg_134[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_135[19:0]
@@ -20877,404 +20312,322 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_142[19:0]
          : csrCfgReg_142[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_143[0]
-         : csrCfgReg_143[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_11_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_27_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_27_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_27_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_27_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_27_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_11_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_11_io_data_valid),
-    .io_data_bits                      (_reader_11_io_data_bits)
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_12_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_28_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_28_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_28_bits_addr),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_29_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_29_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_29_bits_addr),
+    .io_tcdmReq_2_ready          (io_data_tcdm_req_30_ready),
+    .io_tcdmReq_2_valid          (io_data_tcdm_req_30_valid),
+    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_30_bits_addr),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_31_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_31_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_31_bits_addr),
+    .io_tcdmReq_4_ready          (io_data_tcdm_req_32_ready),
+    .io_tcdmReq_4_valid          (io_data_tcdm_req_32_valid),
+    .io_tcdmReq_4_bits_addr      (io_data_tcdm_req_32_bits_addr),
+    .io_tcdmReq_5_ready          (io_data_tcdm_req_33_ready),
+    .io_tcdmReq_5_valid          (io_data_tcdm_req_33_valid),
+    .io_tcdmReq_5_bits_addr      (io_data_tcdm_req_33_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_28_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_28_bits_data),
+    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_29_valid),
+    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_29_bits_data),
+    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_30_valid),
+    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_30_bits_data),
+    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_31_valid),
+    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_31_bits_data),
+    .io_tcdmRsp_4_valid          (io_data_tcdm_rsp_32_valid),
+    .io_tcdmRsp_4_bits_data      (io_data_tcdm_rsp_32_bits_data),
+    .io_tcdmRsp_5_valid          (io_data_tcdm_rsp_33_valid),
+    .io_tcdmRsp_5_bits_data      (io_data_tcdm_rsp_33_bits_data),
+    .io_data_ready               (_readerDatapathExtention_12_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_12_io_data_valid),
+    .io_data_bits                (_reader_12_io_data_bits)
   );
-  snax_simbacore__C12_Reader reader_12 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
+  snax_simbacore__C13_Reader reader_13 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
+    .clock                       (clock),
+    .reset                       (reset),
     .io_aguCfg_ptr
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_144[19:0]
-         : csrCfgReg_144[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+         ? _csrManager_io_readWriteRegIO_bits_143[19:0]
+         : csrCfgReg_143[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
     .io_aguCfg_spatialStrides_0
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_145[19:0]
+         : csrCfgReg_145[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_146[19:0]
          : csrCfgReg_146[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_147[19:0]
          : csrCfgReg_147[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_148[19:0]
          : csrCfgReg_148[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_149[19:0]
          : csrCfgReg_149[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_150[19:0]
          : csrCfgReg_150[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_151[19:0]
          : csrCfgReg_151[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_152[19:0]
          : csrCfgReg_152[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_153[19:0]
          : csrCfgReg_153[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_reader_13_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_34_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_34_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_34_bits_addr),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_35_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_35_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_35_bits_addr),
+    .io_tcdmReq_2_ready          (io_data_tcdm_req_36_ready),
+    .io_tcdmReq_2_valid          (io_data_tcdm_req_36_valid),
+    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_36_bits_addr),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_37_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_37_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_37_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_34_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_34_bits_data),
+    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_35_valid),
+    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_35_bits_data),
+    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_36_valid),
+    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_36_bits_data),
+    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_37_valid),
+    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_37_bits_data),
+    .io_data_ready               (_readerDatapathExtention_13_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
+    .io_data_valid               (_reader_13_io_data_valid),
+    .io_data_bits                (_reader_13_io_data_bits)
+  );
+  snax_simbacore__C0_Writer writer_0 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_154[19:0]
          : csrCfgReg_154[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_155[5:0]
-         : csrCfgReg_155[5:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_12_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_28_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_28_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_28_bits_addr),
-    .io_tcdmReq_1_ready                (io_data_tcdm_req_29_ready),
-    .io_tcdmReq_1_valid                (io_data_tcdm_req_29_valid),
-    .io_tcdmReq_1_bits_addr            (io_data_tcdm_req_29_bits_addr),
-    .io_tcdmReq_2_ready                (io_data_tcdm_req_30_ready),
-    .io_tcdmReq_2_valid                (io_data_tcdm_req_30_valid),
-    .io_tcdmReq_2_bits_addr            (io_data_tcdm_req_30_bits_addr),
-    .io_tcdmReq_3_ready                (io_data_tcdm_req_31_ready),
-    .io_tcdmReq_3_valid                (io_data_tcdm_req_31_valid),
-    .io_tcdmReq_3_bits_addr            (io_data_tcdm_req_31_bits_addr),
-    .io_tcdmReq_4_ready                (io_data_tcdm_req_32_ready),
-    .io_tcdmReq_4_valid                (io_data_tcdm_req_32_valid),
-    .io_tcdmReq_4_bits_addr            (io_data_tcdm_req_32_bits_addr),
-    .io_tcdmReq_5_ready                (io_data_tcdm_req_33_ready),
-    .io_tcdmReq_5_valid                (io_data_tcdm_req_33_valid),
-    .io_tcdmReq_5_bits_addr            (io_data_tcdm_req_33_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_28_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_28_bits_data),
-    .io_tcdmRsp_1_valid                (io_data_tcdm_rsp_29_valid),
-    .io_tcdmRsp_1_bits_data            (io_data_tcdm_rsp_29_bits_data),
-    .io_tcdmRsp_2_valid                (io_data_tcdm_rsp_30_valid),
-    .io_tcdmRsp_2_bits_data            (io_data_tcdm_rsp_30_bits_data),
-    .io_tcdmRsp_3_valid                (io_data_tcdm_rsp_31_valid),
-    .io_tcdmRsp_3_bits_data            (io_data_tcdm_rsp_31_bits_data),
-    .io_tcdmRsp_4_valid                (io_data_tcdm_rsp_32_valid),
-    .io_tcdmRsp_4_bits_data            (io_data_tcdm_rsp_32_bits_data),
-    .io_tcdmRsp_5_valid                (io_data_tcdm_rsp_33_valid),
-    .io_tcdmRsp_5_bits_data            (io_data_tcdm_rsp_33_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_12_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_12_io_data_valid),
-    .io_data_bits                      (_reader_12_io_data_bits)
-  );
-  snax_simbacore__C13_Reader reader_13 (	// src/main/scala/snax/streamer/Streamer.scala:125:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_156[19:0]
-         : csrCfgReg_156[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_spatialStrides_0
+         ? _csrManager_io_readWriteRegIO_bits_157[19:0]
+         : csrCfgReg_157[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_158[19:0]
          : csrCfgReg_158[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_159[19:0]
          : csrCfgReg_159[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_160[19:0]
          : csrCfgReg_160[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_161[19:0]
          : csrCfgReg_161[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_162[19:0]
          : csrCfgReg_162[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_163[19:0]
          : csrCfgReg_163[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_164[19:0]
          : csrCfgReg_164[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_writer_0_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_38_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_38_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_38_bits_addr),
+    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_38_bits_data),
+    .io_data_ready               (_writer_0_io_data_ready),
+    .io_data_valid               (_writerDatapathExtention_0_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
+    .io_data_bits                (_writerDatapathExtention_0_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  );
+  snax_simbacore__C1_Writer writer_1 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_165[19:0]
          : csrCfgReg_165[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_166[19:0]
-         : csrCfgReg_166[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_167[3:0]
-         : csrCfgReg_167[3:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_reader_13_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_34_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_34_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_34_bits_addr),
-    .io_tcdmReq_1_ready                (io_data_tcdm_req_35_ready),
-    .io_tcdmReq_1_valid                (io_data_tcdm_req_35_valid),
-    .io_tcdmReq_1_bits_addr            (io_data_tcdm_req_35_bits_addr),
-    .io_tcdmReq_2_ready                (io_data_tcdm_req_36_ready),
-    .io_tcdmReq_2_valid                (io_data_tcdm_req_36_valid),
-    .io_tcdmReq_2_bits_addr            (io_data_tcdm_req_36_bits_addr),
-    .io_tcdmReq_3_ready                (io_data_tcdm_req_37_ready),
-    .io_tcdmReq_3_valid                (io_data_tcdm_req_37_valid),
-    .io_tcdmReq_3_bits_addr            (io_data_tcdm_req_37_bits_addr),
-    .io_tcdmRsp_0_valid                (io_data_tcdm_rsp_34_valid),
-    .io_tcdmRsp_0_bits_data            (io_data_tcdm_rsp_34_bits_data),
-    .io_tcdmRsp_1_valid                (io_data_tcdm_rsp_35_valid),
-    .io_tcdmRsp_1_bits_data            (io_data_tcdm_rsp_35_bits_data),
-    .io_tcdmRsp_2_valid                (io_data_tcdm_rsp_36_valid),
-    .io_tcdmRsp_2_bits_data            (io_data_tcdm_rsp_36_bits_data),
-    .io_tcdmRsp_3_valid                (io_data_tcdm_rsp_37_valid),
-    .io_tcdmRsp_3_bits_data            (io_data_tcdm_rsp_37_bits_data),
-    .io_data_ready                     (_readerDatapathExtention_13_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:147:11
-    .io_data_valid                     (_reader_13_io_data_valid),
-    .io_data_bits                      (_reader_13_io_data_bits)
-  );
-  snax_simbacore__C0_Writer writer_0 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_168[19:0]
          : csrCfgReg_168[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalBounds_1
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_169[19:0]
+         : csrCfgReg_169[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_2
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_170[19:0]
+         : csrCfgReg_170[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_171[19:0]
          : csrCfgReg_171[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_172[19:0]
          : csrCfgReg_172[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_173[19:0]
          : csrCfgReg_173[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_174[19:0]
          : csrCfgReg_174[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_175[19:0]
          : csrCfgReg_175[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_writer_1_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_39_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_39_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_39_bits_addr),
+    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_39_bits_data),
+    .io_data_ready               (_writer_1_io_data_ready),
+    .io_data_valid               (_writerDatapathExtention_1_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
+    .io_data_bits                (_writerDatapathExtention_1_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  );
+  snax_simbacore__C2_Writer writer_2 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_176[19:0]
          : csrCfgReg_176[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_177[19:0]
-         : csrCfgReg_177[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_178[19:0]
-         : csrCfgReg_178[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_179[0]
-         : csrCfgReg_179[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_writer_0_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_38_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_38_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_38_bits_addr),
-    .io_tcdmReq_0_bits_data            (io_data_tcdm_req_38_bits_data),
-    .io_data_ready                     (_writer_0_io_data_ready),
-    .io_data_valid                     (_writerDatapathExtention_0_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
-    .io_data_bits                      (_writerDatapathExtention_0_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
-  );
-  snax_simbacore__C1_Writer writer_1 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+         ? _csrManager_io_readWriteRegIO_bits_179[19:0]
+         : csrCfgReg_179[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_180[19:0]
          : csrCfgReg_180[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalBounds_2
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_181[19:0]
+         : csrCfgReg_181[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_3
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_182[19:0]
+         : csrCfgReg_182[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_183[19:0]
          : csrCfgReg_183[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_184[19:0]
          : csrCfgReg_184[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_185[19:0]
          : csrCfgReg_185[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_186[19:0]
          : csrCfgReg_186[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_writer_2_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_40_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_40_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_40_bits_addr),
+    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_40_bits_data),
+    .io_data_ready               (_writer_2_io_data_ready),
+    .io_data_valid               (_writerDatapathExtention_2_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
+    .io_data_bits                (_writerDatapathExtention_2_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
+  );
+  snax_simbacore__C3_Writer writer_3 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_aguCfg_ptr
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_187[19:0]
          : csrCfgReg_187[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_188[19:0]
-         : csrCfgReg_188[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
+    .io_aguCfg_spatialStrides_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_189[19:0]
          : csrCfgReg_189[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
+    .io_aguCfg_temporalBounds_0
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_190[19:0]
          : csrCfgReg_190[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
+    .io_aguCfg_temporalBounds_1
       (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_191[0]
-         : csrCfgReg_191[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_writer_1_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_39_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_39_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_39_bits_addr),
-    .io_tcdmReq_0_bits_data            (io_data_tcdm_req_39_bits_data),
-    .io_data_ready                     (_writer_1_io_data_ready),
-    .io_data_valid                     (_writerDatapathExtention_1_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
-    .io_data_bits                      (_writerDatapathExtention_1_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
-  );
-  snax_simbacore__C2_Writer writer_2 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
+         ? _csrManager_io_readWriteRegIO_bits_191[19:0]
+         : csrCfgReg_191[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalBounds_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_192[19:0]
          : csrCfgReg_192[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
+    .io_aguCfg_temporalBounds_3
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_193[19:0]
+         : csrCfgReg_193[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_0
+      (streamer_config_fire
+         ? _csrManager_io_readWriteRegIO_bits_194[19:0]
+         : csrCfgReg_194[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
+    .io_aguCfg_temporalStrides_1
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_195[19:0]
          : csrCfgReg_195[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
+    .io_aguCfg_temporalStrides_2
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_196[19:0]
          : csrCfgReg_196[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
+    .io_aguCfg_temporalStrides_3
       (streamer_config_fire
          ? _csrManager_io_readWriteRegIO_bits_197[19:0]
          : csrCfgReg_197[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_198[19:0]
-         : csrCfgReg_198[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_199[19:0]
-         : csrCfgReg_199[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_200[19:0]
-         : csrCfgReg_200[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_201[19:0]
-         : csrCfgReg_201[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_202[19:0]
-         : csrCfgReg_202[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_203[0]
-         : csrCfgReg_203[0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_writer_2_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_40_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_40_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_40_bits_addr),
-    .io_tcdmReq_0_bits_data            (io_data_tcdm_req_40_bits_data),
-    .io_data_ready                     (_writer_2_io_data_ready),
-    .io_data_valid                     (_writerDatapathExtention_2_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
-    .io_data_bits                      (_writerDatapathExtention_2_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
-  );
-  snax_simbacore__C3_Writer writer_3 (	// src/main/scala/snax/streamer/Streamer.scala:131:11
-    .clock                             (clock),
-    .reset                             (reset),
-    .io_aguCfg_ptr
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_204[19:0]
-         : csrCfgReg_204[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_spatialStrides_0
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_206[19:0]
-         : csrCfgReg_206[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_0
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_207[19:0]
-         : csrCfgReg_207[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_1
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_208[19:0]
-         : csrCfgReg_208[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_2
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_209[19:0]
-         : csrCfgReg_209[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalBounds_3
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_210[19:0]
-         : csrCfgReg_210[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_0
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_211[19:0]
-         : csrCfgReg_211[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_1
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_212[19:0]
-         : csrCfgReg_212[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_2
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_213[19:0]
-         : csrCfgReg_213[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_aguCfg_temporalStrides_3
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_214[19:0]
-         : csrCfgReg_214[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_readerwriterCfg_enabledChannel
-      (streamer_config_fire
-         ? _csrManager_io_readWriteRegIO_bits_215[3:0]
-         : csrCfgReg_215[3:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:106:26, :309:26, :311:30, :312:15
-    .io_start                          (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-    .io_busy                           (_writer_3_io_busy),
-    .io_tcdmReq_0_ready                (io_data_tcdm_req_41_ready),
-    .io_tcdmReq_0_valid                (io_data_tcdm_req_41_valid),
-    .io_tcdmReq_0_bits_addr            (io_data_tcdm_req_41_bits_addr),
-    .io_tcdmReq_0_bits_data            (io_data_tcdm_req_41_bits_data),
-    .io_tcdmReq_1_ready                (io_data_tcdm_req_42_ready),
-    .io_tcdmReq_1_valid                (io_data_tcdm_req_42_valid),
-    .io_tcdmReq_1_bits_addr            (io_data_tcdm_req_42_bits_addr),
-    .io_tcdmReq_1_bits_data            (io_data_tcdm_req_42_bits_data),
-    .io_tcdmReq_2_ready                (io_data_tcdm_req_43_ready),
-    .io_tcdmReq_2_valid                (io_data_tcdm_req_43_valid),
-    .io_tcdmReq_2_bits_addr            (io_data_tcdm_req_43_bits_addr),
-    .io_tcdmReq_2_bits_data            (io_data_tcdm_req_43_bits_data),
-    .io_tcdmReq_3_ready                (io_data_tcdm_req_44_ready),
-    .io_tcdmReq_3_valid                (io_data_tcdm_req_44_valid),
-    .io_tcdmReq_3_bits_addr            (io_data_tcdm_req_44_bits_addr),
-    .io_tcdmReq_3_bits_data            (io_data_tcdm_req_44_bits_data),
-    .io_data_ready                     (_writer_3_io_data_ready),
-    .io_data_valid                     (_writerDatapathExtention_3_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
-    .io_data_bits                      (_writerDatapathExtention_3_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
+    .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_busy                     (_writer_3_io_busy),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_41_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_41_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_41_bits_addr),
+    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_41_bits_data),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_42_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_42_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_42_bits_addr),
+    .io_tcdmReq_1_bits_data      (io_data_tcdm_req_42_bits_data),
+    .io_tcdmReq_2_ready          (io_data_tcdm_req_43_ready),
+    .io_tcdmReq_2_valid          (io_data_tcdm_req_43_valid),
+    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_43_bits_addr),
+    .io_tcdmReq_2_bits_data      (io_data_tcdm_req_43_bits_data),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_44_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_44_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_44_bits_addr),
+    .io_tcdmReq_3_bits_data      (io_data_tcdm_req_44_bits_data),
+    .io_data_ready               (_writer_3_io_data_ready),
+    .io_data_valid               (_writerDatapathExtention_3_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:160:11
+    .io_data_bits                (_writerDatapathExtention_3_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:160:11
   );
   snax_simbacore__DataPathExtensionHost readerDatapathExtention_0 (	// src/main/scala/snax/streamer/Streamer.scala:147:11
     .io_data_in_ready  (_readerDatapathExtention_0_io_data_in_ready),

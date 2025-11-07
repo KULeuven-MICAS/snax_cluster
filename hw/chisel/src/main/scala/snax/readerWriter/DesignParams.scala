@@ -131,12 +131,9 @@ class ReaderWriterParam(
   // Data buffer's depth
   val bufferDepth = dataBufferDepth
 
-  val csrNum =
-    2 + spatialBounds.length + 2 * temporalDimension + (if (configurableChannel) ((tcdmParam.numChannel + 31) / 32)
-                                                        else
-                                                          0) + (if (configurableByteMask) 1
-                                                                else
-                                                                  0) + (if (tcdmLogicWordSize.length > 1) 1
-                                                                        else
-                                                                          0)
+  val csrNum = 2 + spatialBounds.length +
+    2 * temporalDimension +
+    (if (configurableChannel) ((tcdmParam.numChannel + 31) / 32) else 0) +
+    (if (configurableByteMask) 1 else 0) +
+    (if (tcdmLogicWordSize.length > 1) 1 else 0)
 }

@@ -31,7 +31,7 @@ object StreamerParametersGen {
       numChannel = 4,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -45,7 +45,7 @@ object StreamerParametersGen {
       numChannel = 6,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -59,7 +59,7 @@ object StreamerParametersGen {
       numChannel = 2,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -73,7 +73,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -87,7 +87,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -101,7 +101,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -115,7 +115,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -129,7 +129,7 @@ object StreamerParametersGen {
       numChannel = 8,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -143,7 +143,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -157,7 +157,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -171,7 +171,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -185,7 +185,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -199,7 +199,7 @@ object StreamerParametersGen {
       numChannel = 6,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -213,7 +213,7 @@ object StreamerParametersGen {
       numChannel = 4,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
     )
   )
@@ -230,7 +230,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -244,7 +244,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -258,7 +258,7 @@ object StreamerParametersGen {
       numChannel = 1,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
@@ -272,7 +272,7 @@ object StreamerParametersGen {
       numChannel = 4,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
-      configurableChannel = true,
+      configurableChannel = false,
       crossClockDomain = hasCrossClockDomain
     )
   )

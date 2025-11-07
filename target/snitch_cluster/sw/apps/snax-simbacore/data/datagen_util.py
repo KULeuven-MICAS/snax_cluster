@@ -101,8 +101,5 @@ class DataGeneratorBase(ABC):
             [random.randint(0, tensor_size - 1) for _ in range(nb_test_samples)],
         )
 
-    def format_channel_enable(self, streamer_name: str, mode: int):
-        """If a streamer has more than 1 channel (memory port), it can disable some channels.
-        Here, we ignore this and set all channels to 1."""
-        channel_en = (1 << 32) - 1
-        self.format("uint32_t", f"M{mode}_{streamer_name}_en", channel_en)
+    def enable_channel(self, streamer_name: str, mode: int):
+        self.format("uint32_t", f"M{mode}_{streamer_name}_en", 1)

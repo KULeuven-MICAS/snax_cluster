@@ -15,7 +15,7 @@ DATA_SUBDIR = $(DATA_DIR)/generated
 CHISEL_SSM_DIR := $(realpath $(DATA_DIR)/../../../../../../../chisel-ssm)
 
 # Triggers datagen.py to regenerate data.h in case the raw data files (from Scala DataGenerator) have changed
-$(DATA_H): $(DATA_DIR)/datagen.py $(DATA_CFG) 
+$(DATA_H): $(DATA_DIR)/datagen.py $(DATA_DIR)/datagen_util.py $(DATA_CFG) 
 	$< --swcfg $(DATA_CFG) --hwcfg $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE) > $@
 
 $(DATA_CFG):

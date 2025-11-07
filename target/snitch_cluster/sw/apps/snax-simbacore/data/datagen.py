@@ -92,7 +92,7 @@ class DataGenerator(DataGeneratorBase):
         self.format_temporal_bounds_strides("A", mode, bounds_A, strides_A)
         # INFO [RG] Spatial stride is 1 full bank: i.e. streamer accesses multiple, sequential banks.
         self.format_spatial_stride("A", mode, BANKWIDTH // 8)
-        self.format_channel_enable("A", mode)
+        self.enable_channel("A", mode)
 
         # ------------------
         # Reader 1: weight B
@@ -104,7 +104,7 @@ class DataGenerator(DataGeneratorBase):
         ]
         self.format_spatial_stride("B", mode, BANKWIDTH // 8)
         self.format_temporal_bounds_strides("B", mode, bounds_A, strides_B)
-        self.format_channel_enable("B", mode)
+        self.enable_channel("B", mode)
 
         # -------------------
         # Writer 0: output D
@@ -113,7 +113,7 @@ class DataGenerator(DataGeneratorBase):
         strides_D = [serial_width_d / 8]
         self.format_temporal_bounds_strides("D", mode, bounds_D, strides_D)
         self.format_spatial_stride("D", mode, BANKWIDTH // 8)
-        self.format_channel_enable("D", mode)
+        self.enable_channel("D", mode)
 
         # ------------
         # Base address
@@ -169,7 +169,7 @@ class DataGenerator(DataGeneratorBase):
         ]
         self.format_temporal_bounds_strides("R0", mode, bounds_R0, strides_R0)
         self.format_spatial_stride("R0", mode, BANKWIDTH // 8)
-        self.format_channel_enable("R0", mode)
+        self.enable_channel("R0", mode)
 
         # ----------------------
         # Reader1: osCore weight
@@ -181,7 +181,7 @@ class DataGenerator(DataGeneratorBase):
         ]
         self.format_spatial_stride("R1", mode, BANKWIDTH // 8)
         self.format_temporal_bounds_strides("R1", mode, bounds_R0, strides_R1)
-        self.format_channel_enable("R1", mode)
+        self.enable_channel("R1", mode)
 
         # ---------------------------------
         # Reader 3: conv (switchCore) weight
@@ -191,7 +191,7 @@ class DataGenerator(DataGeneratorBase):
         strides_R3 = [BANKWIDTH // 8]
         self.format_spatial_stride("R3", mode, BANKWIDTH // 8)
         self.format_temporal_bounds_strides("R3", mode, bounds_R3, strides_R3)
-        self.format_channel_enable("R3", mode)
+        self.enable_channel("R3", mode)
 
         # ---------------------------------
         # Reader 4: conv (switchCore) bias
@@ -200,7 +200,7 @@ class DataGenerator(DataGeneratorBase):
         strides_R4 = [BANKWIDTH // 8]
         self.format_spatial_stride("R4", mode, BANKWIDTH // 8)
         self.format_temporal_bounds_strides("R4", mode, bounds_R4, strides_R4)
-        self.format_channel_enable("R4", mode)
+        self.enable_channel("R4", mode)
 
         # ------------------------
         # Reader 12: isCore weight
@@ -211,13 +211,13 @@ class DataGenerator(DataGeneratorBase):
             dInner // dInnerUnroll,  # K
         ]
         strides_R12 = [
-            (dInnerUnroll * nbit) // 8,  # TODO versacore heeft de strides gewisseld?
+            (dInnerUnroll * nbit) // 8,
             0,
             dModel * (dInnerUnroll * nbit) // 8,
         ]
         self.format_spatial_stride("R12", mode, BANKWIDTH // 8)
         self.format_temporal_bounds_strides("R12", mode, bounds_R12, strides_R12)
-        self.format_channel_enable("R12", mode)
+        self.enable_channel("R12", mode)
 
         # ----------------------
         # Reader 13: isCore psum
@@ -235,7 +235,7 @@ class DataGenerator(DataGeneratorBase):
         ]
         self.format_spatial_stride("R13", mode, BANKWIDTH // 8)
         self.format_temporal_bounds_strides("R13", mode, bounds_R13, strides_R13)
-        self.format_channel_enable("R13", mode)
+        self.enable_channel("R13", mode)
 
         # -------------------
         # Writer 1: output conv
@@ -246,7 +246,7 @@ class DataGenerator(DataGeneratorBase):
         self.format_temporal_bounds_strides("W1", mode, bounds_W1, strides_W1)
         # TODO What if we don't set spatial stride in 1-port streamer?
         self.format_spatial_stride("W1", mode, BANKWIDTH // 8)
-        self.format_channel_enable("W1", mode)
+        self.enable_channel("W1", mode)
 
         # -----------------------
         # Writer 3: isCore output
@@ -254,7 +254,7 @@ class DataGenerator(DataGeneratorBase):
         # Exactly the same as the psum reader
         self.format_temporal_bounds_strides("W3", mode, bounds_R13, strides_R13)
         self.format_spatial_stride("W3", mode, BANKWIDTH // 8)
-        self.format_channel_enable("W3", mode)
+        self.enable_channel("W3", mode)
 
         # ------------
         # Base address

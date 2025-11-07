@@ -37,11 +37,9 @@ void set_streamer_csr(uint32_t R0_ptr, int32_t* R0_ss, int32_t* R0_tb, int32_t* 
                       // uint32_t W2_ptr, int32_t* W2_ss, int32_t* W2_tb, int32_t* W2_ts, uint32_t W2_en,       //
                       uint32_t W3_ptr, int32_t* W3_ss, int32_t* W3_tb, int32_t* W3_ts, uint32_t W3_en);
 
-void set_simbacore_osgemm_streamer_csr(
-
-    uint32_t ptr_a, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts, uint32_t channel_en_A,  //
-    uint32_t ptr_b, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts, uint32_t channel_en_B,  //
-    uint32_t ptr_d, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts, uint32_t channel_en_D);
+void set_simbacore_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
+                                       uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
+                                       uint32_t D_ptr, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts);
 
 // Set CSR to start STREAMER
 static inline void set_simbacore_streamer_start() { write_csr(STREAMER_START_CSR, 1); }
