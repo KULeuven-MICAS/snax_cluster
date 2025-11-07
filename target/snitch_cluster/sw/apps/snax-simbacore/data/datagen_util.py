@@ -6,6 +6,7 @@
 # Author: Robin Geens <robin.geens@kuleuven.be>
 
 
+import re
 import sys
 import os
 import inspect
@@ -19,6 +20,9 @@ from snax_utils import align_wide_addr  # noqa E402
 
 DATA_OUT_DIR = os.path.join(os.path.dirname(__file__), "generated")
 NUM_LOOPS = 4  # NOTE this must match the hjson config
+BANKWIDTH = 64
+BANK_BYTES = BANKWIDTH // 8
+NB_TEST_SAMPLES = 25
 
 
 class DataGeneratorBase(ABC):
@@ -33,6 +37,7 @@ class DataGeneratorBase(ABC):
 
     def emit_header_file(self):
         self.data.append("#include <stdint.h>\n")
+        self.format("uint32_t", "nb_test_samples", NB_TEST_SAMPLES)
         self.run()
         return "\n".join(self.data)
 
@@ -103,3 +108,45 @@ class DataGeneratorBase(ABC):
 
     def enable_channel(self, streamer_name: str, mode: int):
         self.format("uint32_t", f"M{mode}_{streamer_name}_en", 1)
+
+    def disable_channel(self, streamer_name: str, mode: int):
+        self.format("uint32_t", f"M{mode}_{streamer_name}_en", 0)
+
+    def build_mode(
+        self,
+        mode: int,
+        streamers: dict[str, tuple[list[int], list[int]]],
+        scalars: dict[str, int],
+        test_data: dict[str, str],
+        tests: dict[str, int],
+    ):
+        """Process all settings of a single mode and convert them to C code.
+
+        Args:
+        - mode: mode bit
+        - streamers: dict[streamer name, (temporal bounds, temporal strides)]
+        - scalars: dict[scalar name, value]
+        - test_data: dict[tensor name, dtype]
+        - tests: dict[test name, tensor size]
+        """
+        # Iterate over all streamer names
+        assert all(re.match(r"^(R([0-9]|1[0-3])|W([0-9]|1[0-3]))$", key) for key in streamers.keys())
+        for name in [f"R{i}" for i in range(14)] + [f"W{i}" for i in range(4)]:
+            if name in streamers:
+                (bounds, strides) = streamers[name]
+                self.format_temporal_bounds_strides(name, mode, bounds, strides)
+                self.format_spatial_stride(name, mode, BANK_BYTES)
+                self.enable_channel(name, mode)
+            else:
+                self.disable_channel(name, mode)
+
+        # Format scalar values # TODO prefix with mode bit
+        for key, value in scalars.items():
+            self.format("uint32_t", key, int(value))
+
+        for tensor, size in tests.items():
+            self.format_test_samples(tensor, tensor_size=size, nb_test_samples=NB_TEST_SAMPLES)
+
+        # Read and format test data
+        for tensor, dtype in test_data.items():
+            self.read_and_format_vector(dtype, tensor)

@@ -77,10 +77,10 @@ int test_osgemm() {
 
     // Define TCDM addresses
     void* tcdm_base_ptr = snrt_l1_next();
-    uint16_t* local_a   = (uint16_t*)(tcdm_base_ptr + delta_local_a);
-    uint16_t* local_b   = (uint16_t*)(tcdm_base_ptr + delta_local_b);
-    uint16_t* local_c   = (uint16_t*)(tcdm_base_ptr + delta_local_c);
-    uint16_t* local_d   = (uint16_t*)(tcdm_base_ptr + delta_local_d);
+    uint16_t* local_a   = (uint16_t*)(tcdm_base_ptr + delta_a);
+    uint16_t* local_b   = (uint16_t*)(tcdm_base_ptr + delta_b);
+    uint16_t* local_c   = (uint16_t*)(tcdm_base_ptr + delta_c);
+    uint16_t* local_d   = (uint16_t*)(tcdm_base_ptr + delta_d);
 
     // Transfer data from L3 to L1 using DMA only
     if (snrt_is_dm_core()) {
@@ -96,9 +96,9 @@ int test_osgemm() {
     if (snrt_global_core_idx() == 0) {
         printf("Setting up Streamer and SimbaCore for OSGeMM...\n");
 
-        set_simbacore_osgemm_streamer_csr((uint32_t)local_a, M2_A_ss, M2_A_tb, M2_A_ts,   // A
-                                          (uint32_t)local_b, M2_B_ss, M2_B_tb, M2_B_ts,   // B
-                                          (uint32_t)local_d, M2_D_ss, M2_D_tb, M2_D_ts);  // D
+        set_simbacore_osgemm_streamer_csr((uint32_t)local_a, M2_R0_ss, M2_R0_tb, M2_R0_ts,   // A
+                                          (uint32_t)local_b, M2_R1_ss, M2_R1_tb, M2_R1_ts,   // B
+                                          (uint32_t)local_d, M2_W0_ss, M2_W0_tb, M2_W0_ts);  // D
 
         set_simbacore_csr(M2_OSGEMM, seqLen, dModel, dInner, 1);
         set_simbacore_streamer_start();
