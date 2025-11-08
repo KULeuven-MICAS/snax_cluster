@@ -31,19 +31,22 @@ class DataGeneratorBase(ABC):
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs
-        self.data: list[str] = []
+        self.lines_params: list[str] = []
+        self.lines_data: list[str] = []
 
     def run(self):
         pass
 
     def emit_header_file(self):
-        self.data.append("#include <stdint.h>\n")
+        """Generate all lines and return them as a string."""
+        self.lines_params.append("#include <stdint.h>\n")
         self.format("uint32_t", "nb_test_samples", NB_TEST_SAMPLES)
         self.run()
-        return "\n".join(self.data)
+
+        return "\n".join(self.lines_params + self.lines_data)
 
     def format(self, type: str, var_name: str, value: int):
-        self.data.append(format_scalar_definition(type, var_name, value))
+        self.lines_params.append(format_scalar_definition(type, var_name, value))
 
     def format_int(self, value: int):
         """Format `value` as integer. The name will be the variable name in the caller's scope."""
@@ -60,16 +63,17 @@ class DataGeneratorBase(ABC):
             self.format("uint32_t", key, value)
 
     def format_vector(self, type: str, var_name: str, value: list[int]):
-        self.data.append(format_vector_definition(type, var_name, value))
+        self.lines_data.append(format_vector_definition(type, var_name, value))
 
-    def read_and_format_vector(self, type: str, tensor_name: str):
+    def read_and_format_vector(self, mode: int, type: str, tensor_name: str):
+        """Read data from DATA_OUT_DIR and format it as a vector. Filename is M<mode>_<tensor_name>.bin."""
         try:
-            tensor_data = self._read_data_int(tensor_name)
+            tensor_data = self._read_data_int(f"M{mode}_{tensor_name}.bin")
         except FileNotFoundError as e:
             raise RuntimeError(
-                f"Error loading test data for tensor {tensor_name}: {e}. Did you run the scala data generator and is the data directory correct?"
+                f"Error loading test data for {tensor_name}: {e}. Did you run the scala data generator and is the data directory correct?"
             )
-        self.format_vector(type, tensor_name, tensor_data)
+        self.format_vector(type, f"M{mode}_{tensor_name}", tensor_data)
 
     def format_temporal_bounds_strides(self, streamer_name: str, mode: int, bounds: list[int], strides: list[int]):
         """Format temporal bounds and strides for a streamer by automatically naming the variables and adding defaults.
@@ -85,25 +89,25 @@ class DataGeneratorBase(ABC):
         #     self.format("uint32_t", f"M{mode}_{streamer_name}_tb{i}", bounds[i])
         #     self.format("uint32_t", f"M{mode}_{streamer_name}_ts{i}", strides[i])
         # Group values into array
-        self.data += [f"int32_t M{mode}_{streamer_name}_tb[] = {{{', '.join(map(str, bounds))}}};"]
-        self.data += [f"int32_t M{mode}_{streamer_name}_ts[] = {{{', '.join(map(str, strides))}}};"]
+        self.lines_params += [f"int32_t M{mode}_{streamer_name}_tb[] = {{{', '.join(map(str, bounds))}}};"]
+        self.lines_params += [f"int32_t M{mode}_{streamer_name}_ts[] = {{{', '.join(map(str, strides))}}};"]
 
     def format_spatial_stride(self, streamer_name: str, mode: int, stride: int):
         # self.format("uint32_t", f"M{mode}_{streamer_name}_ss0", stride)
-        self.data += [f"int32_t M{mode}_{streamer_name}_ss[] = {{{stride}}};"]
+        self.lines_params += [f"int32_t M{mode}_{streamer_name}_ss[] = {{{stride}}};"]
 
-    def _read_data_int(self, tensor_name: str):
+    def _read_data_int(self, filename: str):
         """Read a vec from a file."""
-        with open(os.path.join(DATA_OUT_DIR, tensor_name + ".bin"), "r") as f:
+        with open(os.path.join(DATA_OUT_DIR, filename), "r") as f:
             lines = f.readlines()
         data_lines = [line.strip() for line in lines if not line.startswith("#")]
         return [int(x) for x in data_lines]
 
-    def format_test_samples(self, tensor_name: str, tensor_size: int, nb_test_samples: int):
+    def format_test_samples(self, mode: int, tensor_name: str, tensor_size: int, nb_test_samples: int):
         """Format variables used to test only a subset of the output."""
         self.format_vector(
             "int32_t",
-            f"test_samples_{tensor_name}",
+            f"M{mode}_test_samples_{tensor_name}",
             [random.randint(0, tensor_size - 1) for _ in range(nb_test_samples)],
         )
 
@@ -124,7 +128,7 @@ class DataGeneratorBase(ABC):
         for spec in specs:
             name, length = spec
             lengths[f"length_{name}"] = length
-            deltas[f"delta_{name}"] = offset
+            deltas[f"addr_{name}"] = offset
             offset = align_wide_addr(offset + length)
         return lengths, deltas
 
@@ -156,16 +160,16 @@ class DataGeneratorBase(ABC):
             else:
                 self.disable_channel(name, mode)
 
-        # Format scalar values # TODO prefix with mode bit
+        # Format scalar values
         for key, value in scalars.items():
-            self.format("uint32_t", key, int(value))
+            self.format("uint32_t", f"M{mode}_{key}", int(value))
 
         for tensor, size in tests.items():
-            self.format_test_samples(tensor, tensor_size=size, nb_test_samples=NB_TEST_SAMPLES)
+            self.format_test_samples(mode, tensor, tensor_size=size, nb_test_samples=NB_TEST_SAMPLES)
 
         # Read and format test data
         for tensor, dtype in test_data.items():
-            self.read_and_format_vector(dtype, tensor)
+            self.read_and_format_vector(mode, dtype, tensor)
 
     def pad_to_bankwidth(self, total_size_bit: int, chunk_width: int):
         streamer_width = math.ceil(chunk_width / BANKWIDTH) * BANKWIDTH

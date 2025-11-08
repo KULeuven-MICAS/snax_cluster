@@ -30,6 +30,7 @@ class DataGenerator(DataGeneratorBase):
         self.format_params()
         self.build_OSGeMM_data()
         self.build_Phase1_data()
+        self.build_Phase2_data()
 
     def build_OSGeMM_data(self):
         mode = self.kwargs["M2_OSGEMM"]
@@ -38,7 +39,7 @@ class DataGenerator(DataGeneratorBase):
         dInner = self.kwargs["dInner"]
         Mu = self.kwargs["seqLenUnroll"]
         Nu = self.kwargs["dInnerUnroll"]
-        serial_width_d = self.kwargs["serial_width_d"]
+        oscore_serial_width = self.kwargs["oscore_serial_width"]
 
         # In VersaCore naming convention
         M = seqLen // Mu
@@ -48,7 +49,7 @@ class DataGenerator(DataGeneratorBase):
         a_array_width = Mu * NBIT
         b_array_width = Nu * NBIT
         d_array_width = Mu * Nu * NBIT
-        assert d_array_width % serial_width_d == 0, "d_array_width Must be divisible by serial_width_d"
+        assert d_array_width % oscore_serial_width == 0, "d_array_width Must be divisible by oscore_serial_width"
 
         streamers = {
             # for n in N (irrelevant dimension)
@@ -73,8 +74,8 @@ class DataGenerator(DataGeneratorBase):
                 ],
             ),
             "W0": (  # Output D
-                [(d_array_width // serial_width_d) * M * N],
-                [serial_width_d // 8],
+                [(d_array_width // oscore_serial_width) * M * N],
+                [oscore_serial_width // 8],
             ),
         }
 
