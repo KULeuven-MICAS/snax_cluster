@@ -6,6 +6,7 @@
 # Author: Robin Geens <robin.geens@kuleuven.be>
 
 
+import math
 import re
 import sys
 import os
@@ -112,6 +113,21 @@ class DataGeneratorBase(ABC):
     def disable_channel(self, streamer_name: str, mode: int):
         self.format("uint32_t", f"M{mode}_{streamer_name}_en", 0)
 
+    @staticmethod
+    def _collect_lengths_and_deltas(
+        specs: list[tuple[str, int]], base_offset: int = 0
+    ) -> tuple[dict[str, int], dict[str, int]]:
+        """Build length_/delta_ dictionaries from spec tuples. Each spec is a (name, length) tuple."""
+        lengths = {}
+        deltas = {}
+        offset = base_offset
+        for spec in specs:
+            name, length = spec
+            lengths[f"length_{name}"] = length
+            deltas[f"delta_{name}"] = offset
+            offset = align_wide_addr(offset + length)
+        return lengths, deltas
+
     def build_mode(
         self,
         mode: int,
@@ -150,3 +166,8 @@ class DataGeneratorBase(ABC):
         # Read and format test data
         for tensor, dtype in test_data.items():
             self.read_and_format_vector(dtype, tensor)
+
+    def pad_to_bankwidth(self, total_size_bit: int, chunk_width: int):
+        streamer_width = math.ceil(chunk_width / BANKWIDTH) * BANKWIDTH
+        assert total_size_bit * streamer_width % chunk_width == 0, "Total size must be a multiple of chunk width"
+        return total_size_bit * streamer_width // chunk_width

@@ -27,7 +27,7 @@ int test_phase1() {
         snrt_dma_start_1d(local_conv_bias, conv_bias, length_conv_bias);
         snrt_dma_start_1d(local_iscore_weight, iscore_weight, length_iscore_weight);
         // Input and output psums use the same address
-        snrt_dma_start_1d(local_iscore_out, iscore_bias, length_iscore_bias);
+        snrt_dma_start_1d(local_iscore_out, iscore_bias, length_iscore_out);
         snrt_dma_wait_all();
     }
 
@@ -79,13 +79,12 @@ int test_osgemm() {
     void* tcdm_base_ptr = snrt_l1_next();
     uint16_t* local_a   = (uint16_t*)(tcdm_base_ptr + delta_a);
     uint16_t* local_b   = (uint16_t*)(tcdm_base_ptr + delta_b);
-    uint16_t* local_c   = (uint16_t*)(tcdm_base_ptr + delta_c);
     uint16_t* local_d   = (uint16_t*)(tcdm_base_ptr + delta_d);
 
     // Transfer data from L3 to L1 using DMA only
     if (snrt_is_dm_core()) {
-        snrt_dma_start_1d(local_a, A, data_length_a);
-        snrt_dma_start_1d(local_b, B, data_length_b);
+        snrt_dma_start_1d(local_a, A, length_a);
+        snrt_dma_start_1d(local_b, B, length_b);
         snrt_dma_wait_all();
     }
 
@@ -109,7 +108,7 @@ int test_osgemm() {
         printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
 
         err += check_result_sample(local_d, D, test_samples_D, nb_test_samples, "out");
-        // err += check_OSGeMM_result_all(local_d, D, data_length_d);
+        // err += check_OSGeMM_result_all(local_d, D, length_d);
 
         printf("Test OSGeMM: seqLen%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
                nb_test_samples);

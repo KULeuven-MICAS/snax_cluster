@@ -38,7 +38,7 @@ make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson rtl-gen
 # (Manual verification required)
 
 # [bash|root] Generate raw test data externally via scala data generator
-cd ../chisel-ssm && sbt "test:runMain snax.DataGenerator mode=0 seqLen=64 dModel=36" && cd ../snax_cluster
+cd ../chisel-ssm && sbt "test:runMain snax.DataGenerator seqLen=64 dModel=36 dtRank=12" && cd ../snax_cluster
 
 # [snax|target] Build the software
 make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson vsim_preparation

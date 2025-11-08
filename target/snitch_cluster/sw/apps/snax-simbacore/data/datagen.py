@@ -10,17 +10,15 @@ import pathlib
 import hjson
 import sys
 import os
-import re
 
 # Add data utility path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 sys.path.append(str(pathlib.Path(__file__).resolve().parent))
-from snax_utils import align_wide_addr  # noqa: E402
 
 # try:
 #     from .datagen_util import DataGeneratorBase, BANKWIDTH  # type: ignore[import]
 # except ImportError:  # pragma: no cover - executed when run as a script
-from datagen_util import DataGeneratorBase, BANK_BYTES  # type: ignore[import]
+from datagen_util import BANKWIDTH, DataGeneratorBase, BANK_BYTES  # type: ignore[import]
 
 
 NBIT = 16  # BF16
@@ -80,28 +78,16 @@ class DataGenerator(DataGeneratorBase):
             ),
         }
 
-        data_length_a = M * K * a_array_width // 8
-        data_length_b = K * N * b_array_width // 8
-        data_length_c = M * N * d_array_width // 8
-        data_length_d = data_length_c
+        specs = [
+            ("a", M * K * a_array_width // 8),
+            ("b", K * N * b_array_width // 8),
+            # ("c", M * N * d_array_width // 8),
+            ("d", M * N * d_array_width // 8),
+        ]
+        lengths, deltas = self._collect_lengths_and_deltas(specs)
+        scalars = {**lengths, **deltas}
 
-        delta_a = 0
-        delta_b = align_wide_addr(delta_a + data_length_a)
-        delta_c = align_wide_addr(delta_b + data_length_b)
-        delta_d = align_wide_addr(delta_c + data_length_c)
-
-        scalars = {
-            "data_length_a": data_length_a,
-            "data_length_b": data_length_b,
-            "data_length_c": data_length_c,
-            "data_length_d": data_length_d,
-            "delta_a": delta_a,
-            "delta_b": delta_b,
-            "delta_c": delta_c,
-            "delta_d": delta_d,
-        }
-
-        test_data = {name: "uint16_t" for name in ("A", "B", "C", "D")}
+        test_data = {name: "uint16_t" for name in ("A", "B", "D")}
         tests = {"D": seqLen * dInner}
 
         self.build_mode(mode, streamers, scalars=scalars, test_data=test_data, tests=tests)
@@ -191,53 +177,237 @@ class DataGenerator(DataGeneratorBase):
             ),
         }
 
-        length_oscore_in = seqLen * dModel * NBIT // 8
-        length_oscore_weight = dModel * dInner * NBIT // 8
-        length_conv_weight = dInner * dConv * NBIT // 8
-        length_conv_bias = dInner * NBIT // 8
-        length_conv_out = seqLen * dInner * NBIT // 8
-        length_iscore_weight = dModel * dInner * NBIT // 8
-        length_iscore_bias = seqLen * dModel * NBIT // 8
-        length_iscore_out = seqLen * dModel * NBIT // 8
-
-        delta_oscore_in = 0
-        delta_oscore_weight = align_wide_addr(delta_oscore_in + length_oscore_in)
-        delta_conv_weight = align_wide_addr(delta_oscore_weight + length_oscore_weight)
-        delta_conv_bias = align_wide_addr(delta_conv_weight + length_conv_weight)
-        delta_conv_out = align_wide_addr(delta_conv_bias + length_conv_bias)
-        delta_iscore_weight = align_wide_addr(delta_conv_out + length_conv_out)
-        delta_iscore_out = align_wide_addr(delta_iscore_weight + length_iscore_weight)
-
-        scalars = {
-            "length_oscore_in": length_oscore_in,
-            "length_oscore_weight": length_oscore_weight,
-            "length_conv_weight": length_conv_weight,
-            "length_conv_bias": length_conv_bias,
-            "length_conv_out": length_conv_out,
-            "length_iscore_weight": length_iscore_weight,
-            "length_iscore_bias": length_iscore_bias,
-            "length_iscore_out": length_iscore_out,
-            "delta_oscore_in": delta_oscore_in,
-            "delta_oscore_weight": delta_oscore_weight,
-            "delta_conv_weight": delta_conv_weight,
-            "delta_conv_bias": delta_conv_bias,
-            "delta_conv_out": delta_conv_out,
-            "delta_iscore_weight": delta_iscore_weight,
-            "delta_iscore_out": delta_iscore_out,
-        }
+        specs = [
+            ("oscore_in", seqLen * dModel * NBIT // 8),
+            ("oscore_weight", dModel * dInner * NBIT // 8),
+            ("conv_weight", dInner * dConv * NBIT // 8),
+            ("conv_bias", dInner * NBIT // 8),
+            ("conv_out", seqLen * dInner * NBIT // 8),
+            ("iscore_weight", dModel * dInner * NBIT // 8),
+            ("iscore_out", seqLen * dModel * NBIT // 8),
+        ]
+        lengths, deltas = self._collect_lengths_and_deltas(specs)
+        scalars = {**lengths, **deltas}
 
         # Sampled outputs plus full tensor payloads.
         tests = {"conv_out": seqLen * dInner, "iscore_out": seqLen * dModel}
 
         test_data = {
-            "oscore_in": "uint16_t",
-            "oscore_weight": "uint16_t",
-            "conv_weight": "uint16_t",
-            "conv_bias": "uint16_t",
-            "conv_out": "uint16_t",
-            "iscore_weight": "uint16_t",
-            "iscore_bias": "uint16_t",
-            "iscore_out": "uint16_t",
+            name: "uint16_t"
+            for name in (
+                "oscore_in",
+                "oscore_weight",
+                "conv_weight",
+                "conv_bias",
+                "conv_out",
+                "iscore_weight",
+                "iscore_bias",
+                "iscore_out",
+            )
+        }
+
+        self.build_mode(mode, streamers, scalars=scalars, test_data=test_data, tests=tests)
+
+    def build_Phase2_data(self):
+        mode = self.kwargs["M1_PHASE2"]
+        seqLen = self.kwargs["seqLen"]
+        dModel = self.kwargs["dModel"]
+        dInner = self.kwargs["dInner"]
+        dtRank = self.kwargs["dtRank"]
+        dConv = self.kwargs["dConv"]
+        seqLenUnroll = self.kwargs["seqLenUnroll"]
+        dInnerUnroll = self.kwargs["dInnerUnroll"]
+        dtRankUnroll = self.kwargs["dtRankUnroll"]
+        convUnroll = self.kwargs["convUnroll"]
+        dState = self.kwargs["dState"]
+        delaySU = self.kwargs["delaySU"]
+        switchcore_serial_width = self.kwargs["switchcore_serial_width"]
+        oscore_serial_width = self.kwargs["oscore_serial_width"]
+        iscore_serial_width = self.kwargs["iscore_serial_width"]
+        suc_serial_width_A = self.kwargs["suc_serial_width_A"]
+        suc_serial_width_BC = self.kwargs["suc_serial_width_BC"]  # Streamer width is 2x this value!
+
+        assert convUnroll * NBIT == BANK_BYTES * 8, "switchCore output width must match 1 bank width"
+
+        suc_parallel_widthA = dState * NBIT
+        suc_parallel_widthBC = dState * NBIT
+        oscore_array_width_d = seqLenUnroll * dInnerUnroll * NBIT
+        iscore_array_width_d = seqLenUnroll * dInnerUnroll * NBIT
+
+        # Reads out a layout that is stored in convFormat, in SUC format ordering
+        bounds_conv_to_suc = [
+            (convUnroll * seqLenUnroll) // (BANKWIDTH // NBIT),  # subTileSize / (elem per transfer)
+            seqLen // seqLenUnroll,  # tiles per window
+            dInnerUnroll // convUnroll,  # subtiles per tile
+            dInner // dInnerUnroll,  # windows per tensor
+        ]
+        strides_conv_to_suc = [
+            BANK_BYTES,
+            seqLenUnroll * dInnerUnroll * NBIT // 8,  # tile size
+            convUnroll * seqLenUnroll * NBIT // 8,  # subtile size
+            seqLen * dInner * NBIT // 8,  # window size
+        ]
+
+        streamers = {
+            "R0": (  # osCore in
+                [
+                    dModel,  # K
+                    seqLen // seqLenUnroll,  # M
+                    dInner // dInnerUnroll,  # N
+                ],
+                [
+                    seqLenUnroll * NBIT // 8,
+                    dModel * seqLenUnroll * NBIT // 8,
+                    0,
+                ],
+            ),
+            "R1": (  # oscore weight
+                [
+                    dModel,  # K
+                    seqLen // seqLenUnroll,  # M
+                    dInner // dInnerUnroll,  # N
+                ],
+                [
+                    dInnerUnroll * NBIT // 8,
+                    0,
+                    dModel * dInnerUnroll * NBIT // 8,
+                ],
+            ),
+            "R2": (  #  switchCore in (deltaMinor)
+                [
+                    dtRank // dtRankUnroll,  # K
+                    seqLen,  # M
+                    dInner // convUnroll,  # N
+                ],
+                [
+                    BANK_BYTES,
+                    (dtRank // dtRankUnroll) * BANK_BYTES,
+                    0,
+                ],
+            ),
+            "R3": (  #  switchCore weight (partition 1). Weights rotate internally so no reuse in seqLen here
+                [(dtRank // dtRankUnroll) * (dInner // convUnroll)],
+                [BANK_BYTES],
+            ),
+            "R4": (  #  switchCore bias
+                [dInner // convUnroll],
+                [BANK_BYTES],
+            ),
+            "R5": (  #  switchCore weight (partition 2)
+                [(dtRank // dtRankUnroll) * (dInner // convUnroll)],
+                [BANK_BYTES],
+            ),
+            "R6": (  # SUC A
+                [dInner * (suc_parallel_widthA // suc_serial_width_A)],
+                [suc_serial_width_A // 8],
+            ),
+            "R7": (  # SUC BC
+                [
+                    (suc_parallel_widthBC // suc_serial_width_BC),
+                    seqLen,
+                    dInner // delaySU,  # Irrelevant dimension
+                ],
+                [
+                    (2 * suc_serial_width_BC) // 8,
+                    (2 * suc_parallel_widthBC) // 8,
+                    0,
+                ],
+            ),
+            "R8": ([dInner], [BANK_BYTES]),  # SUC D
+            "R9": (bounds_conv_to_suc, strides_conv_to_suc),  # SUC x.
+            "R10": (bounds_conv_to_suc, strides_conv_to_suc),  # SUC z
+            "R11": (  # iscore in. Stored in convFormat
+                [(dInner // dInnerUnroll) * (seqLen // seqLenUnroll) * (iscore_array_width_d // iscore_serial_width)],
+                [iscore_serial_width // 8],
+            ),
+            "R12": (  # iscore weight
+                [
+                    dModel,  # N
+                    seqLen // seqLenUnroll,  # M
+                    dInner // dInnerUnroll,  # K
+                ],
+                [
+                    dInnerUnroll * NBIT // 8,
+                    0,
+                    dModel * dInnerUnroll * NBIT // 8,
+                ],
+            ),
+            "R13": (  # isCore psum
+                # First inject zeros, then (K-1) times the full output matrix
+                # The initial values (C) can be at the same addresses as the output matrix
+                [
+                    (seqLen // seqLenUnroll) * dModel,  # one output matrix
+                    dInner // dInnerUnroll,  # complete reduction dimension (K)
+                ],
+                [
+                    seqLenUnroll * NBIT // 8,
+                    0,  # Go to same addresses again
+                ],
+            ),
+            "W0": (  # osCore out: writes in convFormat
+                [(oscore_array_width_d // oscore_serial_width) * (seqLen // seqLenUnroll) * (dInner // dInnerUnroll)],
+                [oscore_serial_width // 8],
+            ),
+            "W2": (  # SUC output y. Produced in SUC format, must be stored in convFormat
+                bounds_conv_to_suc,
+                strides_conv_to_suc,
+            ),
+            "W3": (  # isCore output: EXACTLY the same as psum reader R13
+                [
+                    (seqLen // seqLenUnroll) * dModel,
+                    dInner // dInnerUnroll,
+                ],
+                [
+                    seqLenUnroll * NBIT // 8,
+                    0,
+                ],
+            ),
+        }
+
+        tensor_size = seqLen * dInner * NBIT // 8
+        specs = [
+            ("oscore_in", seqLen * dModel * NBIT // 8),
+            ("oscore_weight", dModel * dInner * NBIT // 8),
+            ("z", tensor_size),
+            (
+                "dt_in",
+                self.pad_to_bankwidth(dInner * dtRank * NBIT, switchcore_serial_width) // 8,
+            ),
+            ("dt_weight_1", dInner * dConv * NBIT // 8),
+            ("dt_weight_2", dInner * (dtRankUnroll - dConv) * NBIT // 8),
+            ("dt_bias", dInner * NBIT // 8),
+            ("x", tensor_size),
+            ("A", dInner * dState * NBIT // 8),
+            ("BC", 2 * seqLen * dState * NBIT // 8),
+            ("D", dInner * NBIT // 8),
+            ("y", tensor_size),
+            ("iscore_weight", dModel * dInner * NBIT // 8),
+            ("iscore_out", seqLen * dModel * NBIT // 8),
+        ]
+
+        lengths, deltas = self._collect_lengths_and_deltas(specs)
+        scalars = {**lengths, **deltas}
+
+        tests = {"z": seqLen * dInner, "y": seqLen * dInner, "iscore_out": seqLen * dModel}
+        test_data = {
+            name: "uint16_t"
+            for name in (
+                "oscore_in",
+                "oscore_weight",
+                "oscore_expected",  # aka matrix z
+                "switchcore_in",
+                "switchcore_weight_1",
+                "switchcore_weight_2",
+                # "suc_state",
+                "suc_A",
+                "suc_BC",
+                "suc_D",
+                "suc_x",
+                "suc_expected",
+                "iscore_weight",
+                "iscore_bias",
+                "iscore_expected",
+            )
         }
 
         self.build_mode(mode, streamers, scalars=scalars, test_data=test_data, tests=tests)
