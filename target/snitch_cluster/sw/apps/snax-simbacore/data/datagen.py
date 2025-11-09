@@ -6,6 +6,7 @@
 # Author: Robin Geens <robin.geens@kuleuven.be>
 
 import argparse
+import math
 import pathlib
 import hjson
 import sys
@@ -229,11 +230,17 @@ class DataGenerator(DataGeneratorBase):
         suc_serial_width_BC = self.kwargs["suc_serial_width_BC"]  # Streamer width is 2x this value!
 
         assert convUnroll * NBIT == BANK_BYTES * 8, "switchCore output width must match 1 bank width"
+        assert dConv * NBIT == BANK_BYTES * 8, "switchCore weight width must match 1 bank width"
 
+        # TODO these should come from params
         suc_parallel_widthA = dState * NBIT
         suc_parallel_widthBC = dState * NBIT
-        oscore_array_width_d = seqLenUnroll * dInnerUnroll * NBIT
-        iscore_array_width_d = seqLenUnroll * dInnerUnroll * NBIT
+        switchcore_width_in = dtRankUnroll * NBIT  # Both serial and parallel width
+        switchcore_parallel_width_W1 = convUnroll * dConv * NBIT
+        switchcore_parallel_width_W2 = convUnroll * (dtRankUnroll - dConv) * NBIT
+        switchcore_parallel_width_bias = convUnroll * NBIT
+        oscore_parallel_width_d = seqLenUnroll * dInnerUnroll * NBIT
+        iscore_parallel_width_d = seqLenUnroll * dInnerUnroll * NBIT
 
         # Reads out a layout that is stored in convFormat, in SUC format ordering
         bounds_conv_to_suc = [
@@ -246,7 +253,7 @@ class DataGenerator(DataGeneratorBase):
             BANK_BYTES,
             seqLenUnroll * dInnerUnroll * NBIT // 8,  # tile size
             convUnroll * seqLenUnroll * NBIT // 8,  # subtile size
-            seqLen * dInner * NBIT // 8,  # window size
+            seqLen * dInnerUnroll * NBIT // 8,  # window size
         ]
 
         streamers = {
@@ -278,25 +285,33 @@ class DataGenerator(DataGeneratorBase):
                 [
                     dtRank // dtRankUnroll,  # K
                     seqLen,  # M
-                    dInner // convUnroll,  # N
+                    dInner // convUnroll,  # N (irrelevant dimension)
                 ],
                 [
-                    BANK_BYTES,
-                    (dtRank // dtRankUnroll) * BANK_BYTES,
+                    math.ceil(switchcore_width_in / BANKWIDTH) * BANK_BYTES,  # Padded with 0 in memory to match bank
+                    math.ceil(switchcore_width_in / BANKWIDTH) * BANK_BYTES * (dtRank // dtRankUnroll),
                     0,
                 ],
             ),
             "R3": (  #  switchCore weight (partition 1). Weights rotate internally so no reuse in seqLen here
-                [(dtRank // dtRankUnroll) * (dInner // convUnroll)],
-                [BANK_BYTES],
+                [
+                    (dtRank // dtRankUnroll)
+                    * (dInner // convUnroll)
+                    * (switchcore_parallel_width_W1 // switchcore_serial_width)  # serDes factor
+                ],
+                [switchcore_serial_width // 8],
             ),
             "R4": (  #  switchCore bias
-                [dInner // convUnroll],
-                [BANK_BYTES],
+                [(dInner // convUnroll) * (switchcore_parallel_width_bias // switchcore_serial_width)],
+                [switchcore_serial_width // 8],
             ),
             "R5": (  #  switchCore weight (partition 2)
-                [(dtRank // dtRankUnroll) * (dInner // convUnroll)],
-                [BANK_BYTES],
+                [
+                    (dtRank // dtRankUnroll)
+                    * (dInner // convUnroll)
+                    * (switchcore_parallel_width_W2 // switchcore_serial_width)  # serDes factor
+                ],
+                [switchcore_serial_width // 8],
             ),
             "R6": (  # SUC A
                 [dInner * (suc_parallel_widthA // suc_serial_width_A)],
@@ -314,11 +329,18 @@ class DataGenerator(DataGeneratorBase):
                     0,
                 ],
             ),
-            "R8": ([dInner], [BANK_BYTES]),  # SUC D
+            "R8": (  # SUC D
+                [dInner // (BANKWIDTH // NBIT)],
+                [BANK_BYTES],
+            ),
             "R9": (bounds_conv_to_suc, strides_conv_to_suc),  # SUC x.
             "R10": (bounds_conv_to_suc, strides_conv_to_suc),  # SUC z
             "R11": (  # iscore in. Stored in convFormat
-                [(dInner // dInnerUnroll) * (seqLen // seqLenUnroll) * (iscore_array_width_d // iscore_serial_width)],
+                [
+                    (dInner // dInnerUnroll)
+                    * (seqLen // seqLenUnroll)
+                    * (iscore_parallel_width_d // iscore_serial_width)
+                ],
                 [iscore_serial_width // 8],
             ),
             "R12": (  # iscore weight
@@ -346,7 +368,11 @@ class DataGenerator(DataGeneratorBase):
                 ],
             ),
             "W0": (  # osCore out: writes in convFormat
-                [(oscore_array_width_d // oscore_serial_width) * (seqLen // seqLenUnroll) * (dInner // dInnerUnroll)],
+                [
+                    (oscore_parallel_width_d // oscore_serial_width)
+                    * (seqLen // seqLenUnroll)
+                    * (dInner // dInnerUnroll)
+                ],
                 [oscore_serial_width // 8],
             ),
             "W2": (  # SUC output y. Produced in SUC format, must be stored in convFormat
@@ -372,10 +398,10 @@ class DataGenerator(DataGeneratorBase):
             ("z", tensor_size),
             (
                 "dt_in",
-                self.pad_to_bankwidth(dInner * dtRank * NBIT, switchcore_serial_width) // 8,
+                self.pad_to_bankwidth(total_size_bit=dInner * dtRank * NBIT, chunk_width=switchcore_width_in) // 8,
             ),
-            ("dt_weight_1", dInner * dConv * NBIT // 8),
-            ("dt_weight_2", dInner * (dtRankUnroll - dConv) * NBIT // 8),
+            ("dt_weight_1", dInner * (dtRank // dtRankUnroll) * dConv * NBIT // 8),
+            ("dt_weight_2", dInner * (dtRank // dtRankUnroll) * (dtRankUnroll - dConv) * NBIT // 8),
             ("dt_bias", dInner * NBIT // 8),
             ("x", tensor_size),
             ("A", dInner * dState * NBIT // 8),
@@ -390,15 +416,17 @@ class DataGenerator(DataGeneratorBase):
         scalars = {**lengths, **deltas}
 
         tests = {"z": seqLen * dInner, "y": seqLen * dInner, "iscore_out": seqLen * dModel}
+
         test_data = {
             name: "uint16_t"
             for name in (
                 "oscore_in",
                 "oscore_weight",
                 "oscore_expected",  # aka matrix z
-                "switchcore_in",
-                "switchcore_weight_1",
-                "switchcore_weight_2",
+                "dt_in",
+                "dt_weight_1",
+                "dt_weight_2",
+                "dt_bias",
                 # "suc_state",
                 "suc_A",
                 "suc_BC",

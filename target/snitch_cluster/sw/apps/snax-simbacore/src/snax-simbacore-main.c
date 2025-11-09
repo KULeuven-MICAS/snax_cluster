@@ -42,12 +42,21 @@ int test_phase1() {
 
             (uint32_t)ptr_oscore_in, M0_R0_ss, M0_R0_tb, M0_R0_ts, M0_R0_en,          //
             (uint32_t)ptr_oscore_weight, M0_R1_ss, M0_R1_tb, M0_R1_ts, M0_R1_en,      //
+            (uint32_t)0, 0, 0, 0, M0_R2_en,                                           // disable
             (uint32_t)ptr_conv_weight, M0_R3_ss, M0_R3_tb, M0_R3_ts, M0_R3_en,        //
             (uint32_t)ptr_conv_bias, M0_R4_ss, M0_R4_tb, M0_R4_ts, M0_R4_en,          //
+            (uint32_t)0, 0, 0, 0, M0_R5_en,                                           // disable
+            (uint32_t)0, 0, 0, 0, M0_R6_en,                                           // disable
+            (uint32_t)0, 0, 0, 0, M0_R7_en,                                           // disable
+            (uint32_t)0, 0, 0, 0, M0_R8_en,                                           // disable
+            (uint32_t)0, 0, 0, 0, M0_R9_en,                                           // disable
+            (uint32_t)0, 0, 0, 0, M0_R10_en,                                          // disable
+            (uint32_t)0, 0, 0, 0, M0_R11_en,                                          // disable
             (uint32_t)ptr_iscore_weight, M0_R12_ss, M0_R12_tb, M0_R12_ts, M0_R12_en,  //
             (uint32_t)ptr_iscore_out, M0_R13_ss, M0_R13_tb, M0_R13_ts, M0_R13_en,     // psums
-            (uint32_t)0, 0, 0, 0, 0,                                                  // disable
+            (uint32_t)0, 0, 0, 0, M0_W0_en,                                           // disable
             (uint32_t)ptr_conv_out, M0_W1_ss, M0_W1_tb, M0_W1_ts, M0_W1_en,           //
+            (uint32_t)0, 0, 0, 0, M0_W2_en,                                           // disable
             (uint32_t)ptr_iscore_out, M0_W3_ss, M0_W3_tb, M0_W3_ts, M0_W3_en          //
         );
 
@@ -66,6 +75,95 @@ int test_phase1() {
 
         printf("Test Phase1: seqLen=%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
                2 * nb_test_samples);
+    }
+
+    snrt_cluster_hw_barrier();
+    return err;
+}
+
+int test_phase2() {
+    int err = 0;
+
+    // Define TCDM addresses
+    void* tcdm_base_ptr         = snrt_l1_next();
+    uint16_t* ptr_oscore_in     = (uint16_t*)(tcdm_base_ptr + M1_addr_oscore_in);
+    uint16_t* ptr_oscore_weight = (uint16_t*)(tcdm_base_ptr + M1_addr_oscore_weight);
+    uint16_t* ptr_z             = (uint16_t*)(tcdm_base_ptr + M1_addr_z);  // osCore out
+    uint16_t* ptr_dt_in         = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_in);
+    uint16_t* ptr_dt_weight_1   = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_weight_1);
+    uint16_t* ptr_dt_weight_2   = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_weight_2);
+    uint16_t* ptr_dt_bias       = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_bias);
+    uint16_t* ptr_x             = (uint16_t*)(tcdm_base_ptr + M1_addr_x);  // from Phase1
+    uint16_t* ptr_A             = (uint16_t*)(tcdm_base_ptr + M1_addr_A);
+    uint16_t* ptr_BC            = (uint16_t*)(tcdm_base_ptr + M1_addr_BC);
+    uint16_t* ptr_D             = (uint16_t*)(tcdm_base_ptr + M1_addr_D);
+    uint16_t* ptr_y             = (uint16_t*)(tcdm_base_ptr + M1_addr_y);  // SUC out
+    uint16_t* ptr_iscore_weight = (uint16_t*)(tcdm_base_ptr + M1_addr_iscore_weight);
+    uint16_t* ptr_iscore_out    = (uint16_t*)(tcdm_base_ptr + M1_addr_iscore_out);
+
+    // Transfer data from L3 to L1 using DMA only
+    if (snrt_is_dm_core()) {
+        snrt_dma_start_1d(ptr_oscore_in, M1_oscore_in, M1_length_oscore_in);
+        snrt_dma_start_1d(ptr_oscore_weight, M1_oscore_weight, M1_length_oscore_weight);
+        snrt_dma_start_1d(ptr_dt_in, M1_dt_in, M1_length_dt_in);
+        snrt_dma_start_1d(ptr_dt_weight_1, M1_dt_weight_1, M1_length_dt_weight_1);
+        snrt_dma_start_1d(ptr_dt_weight_2, M1_dt_weight_2, M1_length_dt_weight_2);
+        snrt_dma_start_1d(ptr_dt_bias, M1_dt_bias, M1_length_dt_bias);
+        snrt_dma_start_1d(ptr_x, M1_suc_x, M1_length_x);
+        snrt_dma_start_1d(ptr_A, M1_suc_A, M1_length_A);
+        snrt_dma_start_1d(ptr_BC, M1_suc_BC, M1_length_BC);
+        snrt_dma_start_1d(ptr_D, M1_suc_D, M1_length_D);
+        snrt_dma_start_1d(ptr_iscore_weight, M1_iscore_weight, M1_length_iscore_weight);
+        snrt_dma_start_1d(ptr_iscore_out, M1_iscore_bias, M1_length_iscore_out);  // Load bias in psums
+        snrt_dma_wait_all();
+    }
+
+    snrt_cluster_hw_barrier();
+
+    // Call compute core
+    if (snrt_global_core_idx() == 0) {
+        printf("Setting up Streamer and SimbaCore for Phase2...\n");
+
+        set_streamer_csr(
+
+            (uint32_t)ptr_oscore_in, M1_R0_ss, M1_R0_tb, M1_R0_ts, M1_R0_en,          // osCore in
+            (uint32_t)ptr_oscore_weight, M1_R1_ss, M1_R1_tb, M1_R1_ts, M1_R1_en,      // oscore weight
+            (uint32_t)ptr_dt_in, M1_R2_ss, M1_R2_tb, M1_R2_ts, M1_R2_en,              // switchCore in
+            (uint32_t)ptr_dt_weight_1, M1_R3_ss, M1_R3_tb, M1_R3_ts, M1_R3_en,        // switchCore weight
+            (uint32_t)ptr_dt_bias, M1_R4_ss, M1_R4_tb, M1_R4_ts, M1_R4_en,            // switchCore bias
+            (uint32_t)ptr_dt_weight_2, M1_R5_ss, M1_R5_tb, M1_R5_ts, M1_R5_en,        // switchCore  matmul weight
+            (uint32_t)ptr_A, M1_R6_ss, M1_R6_tb, M1_R6_ts, M1_R6_en,                  //  SUC A
+            (uint32_t)ptr_BC, M1_R7_ss, M1_R7_tb, M1_R7_ts, M1_R7_en,                 // SUC BC
+            (uint32_t)ptr_D, M1_R8_ss, M1_R8_tb, M1_R8_ts, M1_R8_en,                  // SUC  D
+            (uint32_t)ptr_x, M1_R9_ss, M1_R9_tb, M1_R9_ts, M1_R9_en,                  // SUC x
+            (uint32_t)ptr_z, M1_R10_ss, M1_R10_tb, M1_R10_ts, M1_R10_en,              // SUC z = osCore out
+            (uint32_t)ptr_y, M1_R11_ss, M1_R11_tb, M1_R11_ts, M1_R11_en,              // iscore in = SUC y
+            (uint32_t)ptr_iscore_weight, M1_R12_ss, M1_R12_tb, M1_R12_ts, M1_R12_en,  // isCore weight
+            (uint32_t)ptr_iscore_out, M1_R13_ss, M1_R13_tb, M1_R13_ts, M1_R13_en,     // isCore psum
+
+            (uint32_t)ptr_z, M1_W0_ss, M1_W0_tb, M1_W0_ts, M1_W0_en,          //
+            (uint32_t)0, 0, 0, 0, M1_W1_en,                                   // disable
+            (uint32_t)ptr_y, M1_W2_ss, M1_W2_tb, M1_W2_ts, M1_W2_en,          // SUC y
+            (uint32_t)ptr_iscore_out, M1_W3_ss, M1_W3_tb, M1_W3_ts, M1_W3_en  // isCore out
+
+        );
+
+        set_simbacore_csr(M1_PHASE2, seqLen, dModel, dInner, dtRank);
+        set_simbacore_streamer_start();
+        set_simbacore_start();
+
+        // Poll until streamer and accelerator finish
+        wait_simbacore_and_streamer();
+        printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
+
+        err += check_result_sample(ptr_z, M1_oscore_expected, M1_test_samples_z, nb_test_samples, "z (osCore out)");
+        err += check_result_sample(ptr_y, M1_suc_expected, M1_test_samples_y, nb_test_samples, "SUC y");
+
+        err += check_result_sample(ptr_iscore_out, M1_iscore_expected, M1_test_samples_iscore_out, nb_test_samples,
+                                   "iscore_out");
+
+        printf("Test Phase2: seqLen=%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
+               3 * nb_test_samples);
     }
 
     snrt_cluster_hw_barrier();
@@ -120,6 +218,7 @@ int test_osgemm() {
 
 int main() {
     int err = 0;
+    err += test_phase2();
     err += test_phase1();
     err += test_osgemm();
     return err;

@@ -1,7 +1,6 @@
 // Copyright 2025 KU Leuven.
-// Solderpad Hardware License, Version 0.51, see LICENSE for details.
-// SPDX-License-Identifier: SHL-0.51
-//
+// Not released under license. All rights reserved.
+// 
 // Author: Robin Geens <robin.geens@kuleuven.be>
 
 
