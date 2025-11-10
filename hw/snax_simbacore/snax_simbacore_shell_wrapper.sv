@@ -11,33 +11,33 @@
 module snax_simbacore_shell_wrapper #(
     // NOTE these parameters can be set automatically by running update_simbacore_params.py
     // Acc2stream
-    parameter int unsigned OSCoreOutDWidth    = 64,   // 1
-    parameter int unsigned SUCoreOutYWidth    = 64,   // 1
-    parameter int unsigned SwitchCoreOutWidth = 64,   // 1
-    parameter int unsigned ISCoreOutDWidth    = 256,  // 4
+    parameter int unsigned OSCoreOutDWidth               = 64,   // 1
+    parameter int unsigned SUCoreOutYWidth               = 64,   // 1
+    parameter int unsigned SwitchCoreOutWidth            = 64,   // 1
+    parameter int unsigned ISCoreOutDWidth               = 256,  // 4
     // Stream2acc
-    parameter int unsigned OSCoreInAWidth     = 256,  // 4
-    parameter int unsigned OSCoreInBWidth     = 384,  // 6
-
-    parameter int unsigned SwitchCoreInMatmulWidth       = 96,  // 2
-    parameter int unsigned SwitchCoreInWeightWidth       = 64,  // 1
-    parameter int unsigned SwitchCoreInBiasWidth         = 64,  // 1
-    parameter int unsigned SwitchCoreInMatmulWeightWidth = 64,  // 1
-
-    parameter int unsigned SUCoreInAWidth  = 64,   // 1
-    parameter int unsigned SUCoreInBCWidth = 512,  // 8
-    parameter int unsigned SUCoreInDWidth  = 64,   // 1
-    parameter int unsigned SUCoreInXWidth  = 64,   // 1
-    parameter int unsigned SUCoreInZWidth  = 64,   // 1
-
-    parameter int unsigned ISCoreInAWidth = 64,   // 1
-    parameter int unsigned ISCoreInBWidth = 384,  // 6
-    parameter int unsigned ISCoreInCWidth = 256,  // 4
+    parameter int unsigned OSCoreInAWidth                = 256,  // 4
+    parameter int unsigned OSCoreInBWidth                = 384,  // 6
+    //  
+    parameter int unsigned SwitchCoreInMatmulWidth       = 96,   // 2
+    parameter int unsigned SwitchCoreInWeightWidth       = 64,   // 1
+    parameter int unsigned SwitchCoreInBiasWidth         = 64,   // 1
+    parameter int unsigned SwitchCoreInMatmulWeightWidth = 64,   // 1
+    // 
+    parameter int unsigned SUCoreInAWidth                = 64,   // 1
+    parameter int unsigned SUCoreInBCWidth               = 512,  // 8
+    parameter int unsigned SUCoreInDWidth                = 64,   // 1
+    parameter int unsigned SUCoreInXWidth                = 64,   // 1
+    parameter int unsigned SUCoreInZWidth                = 64,   // 1
+    //
+    parameter int unsigned ISCoreInAWidth                = 64,   // 1
+    parameter int unsigned ISCoreInBWidth                = 384,  // 6
+    parameter int unsigned ISCoreInCWidth                = 256,  // 4
     // CSR
-    parameter int unsigned RegRWCount     = 6,    // +1 for start csr
-    parameter int unsigned RegROCount     = 2,
-    parameter int unsigned RegDataWidth   = 32,
-    parameter int unsigned RegAddrWidth   = 32
+    parameter int unsigned RegRWCount                    = 6,    // +1 for start csr
+    parameter int unsigned RegROCount                    = 4,
+    parameter int unsigned RegDataWidth                  = 32,
+    parameter int unsigned RegAddrWidth                  = 32
 ) (
     //-------------------------------
     // Clocks and reset
@@ -211,7 +211,9 @@ module snax_simbacore_shell_wrapper #(
       .io_config_bits_dInner(csr_reg_set_i[4]),
 
       .io_busy_o(csr_reg_ro_set_o[0][0]),
-      .io_performance_counter(csr_reg_ro_set_o[1])
+      .io_performance_counter(csr_reg_ro_set_o[1]),
+      .io_osCoreTileCnt(csr_reg_ro_set_o[2]),
+      .io_suCoreOutCnt(csr_reg_ro_set_o[3])
   );
 
 endmodule

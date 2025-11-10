@@ -17,9 +17,9 @@ class StreamerParam(
   val readerWriterParams: Seq[ReaderWriterParam],
 
   // datapath extension params
-  val readerDatapathExtention:       Seq[Seq[HasDataPathExtension]] = Seq(Seq()),
-  val writerDatapathExtention:       Seq[Seq[HasDataPathExtension]] = Seq(Seq()),
-  val readerWriterDatapathExtention: Seq[Seq[HasDataPathExtension]] = Seq(
+  val readerDatapathExtension:       Seq[Seq[HasDataPathExtension]] = Seq(Seq()),
+  val writerDatapathExtension:       Seq[Seq[HasDataPathExtension]] = Seq(Seq()),
+  val readerwriterDatapathExtension: Seq[Seq[HasDataPathExtension]] = Seq(
     Seq()
   ),
 
@@ -102,9 +102,9 @@ object StreamerParam {
     readerParams:                  Seq[ReaderWriterParam],
     writerParams:                  Seq[ReaderWriterParam],
     readerWriterParams:            Seq[ReaderWriterParam],
-    readerDatapathExtention:       Seq[Seq[HasDataPathExtension]],
-    writerDatapathExtention:       Seq[Seq[HasDataPathExtension]],
-    readerWriterDatapathExtention: Seq[Seq[HasDataPathExtension]],
+    readerDatapathExtension:       Seq[Seq[HasDataPathExtension]],
+    writerDatapathExtension:       Seq[Seq[HasDataPathExtension]],
+    readerwriterDatapathExtension: Seq[Seq[HasDataPathExtension]],
     hasCrossClockDomain:           Boolean,
     csrAddrWidth:                  Int,
     tagName:                       String,
@@ -114,9 +114,9 @@ object StreamerParam {
       readerParams                  = readerParams,
       writerParams                  = writerParams,
       readerWriterParams            = readerWriterParams,
-      readerDatapathExtention       = readerDatapathExtention,
-      writerDatapathExtention       = writerDatapathExtention,
-      readerWriterDatapathExtention = readerWriterDatapathExtention,
+      readerDatapathExtension       = readerDatapathExtension,
+      writerDatapathExtension       = writerDatapathExtension,
+      readerwriterDatapathExtension = readerwriterDatapathExtension,
       hasCrossClockDomain           = hasCrossClockDomain,
       csrAddrWidth                  = csrAddrWidth,
       tagName                       = tagName,
