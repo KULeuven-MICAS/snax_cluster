@@ -113,7 +113,7 @@ Naming convention:
         "snax_narrow_tcdm_ports": 46, // NOTE this must match the sum of all streamer ports // TODO this fails VERY quietly
         "snax_wide_tcdm_ports": 0,
         "snax_num_rw_csr": 6, // NOTE this must match the number in Simbacore shell wrapper
-        "snax_num_ro_csr": 2,
+        "snax_num_ro_csr": 4,
         "snax_streamer_cfg": {"$ref": "#/snax_simbacore_streamer_template"}
       }
     ],
@@ -163,19 +163,22 @@ Naming convention:
     // Streamer templates
   "snax_simbacore_streamer_template": {
     "data_reader_params": {
-      // Every item is a separate streamer (separate input channel)
+      // Every item is a separate streamer. Gives the number of TCDM ports per streamer 
+      //                        0    1    2    3    4    5    6    7    8    9    10   11   12   13
       "spatial_bounds":       [[4], [6], [2], [1], [1], [1], [1], [8], [1], [1], [1], [1], [6], [4]],
       "temporal_dim":         [ 4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4 ],
-      "num_channel":          [ 4,   6,   2,   1,   1,   1,   1,   8,   1,   1,   1,   1,   6,   4 ], // Number of TCDM ports per streamer 
+      "num_channel":          [ 4,   6,   2,   1,   1,   1,   1,   8,   1,   1,   1,   1,   6,   4 ], 
       "fifo_depth":           [ 2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2 ],
-      "configurable_channel": [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ]
+      "configurable_channel": [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ],
+      "delayed_start":        [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   0,   0 ]
     },
     "data_writer_params": {
       "spatial_bounds":       [[1], [1], [1], [4]],
-      "temporal_dim":         [ 4,   4,   4,   4],
-      "num_channel":          [ 1,   1,   1,   4],
-      "fifo_depth":           [ 2,   2,   2,   2],
-      "configurable_channel": [ 0,   0,   0,   0]
+      "temporal_dim":         [ 4,   4,   4,   4 ],
+      "num_channel":          [ 1,   1,   1,   4 ],
+      "fifo_depth":           [ 2,   2,   2,   2 ],
+      "configurable_channel": [ 0,   0,   0,   0 ],
+      "delayed_start":        [ 0,   0,   0,   0 ]
     },
     "snax_library_name": "simbacore" // where to upload the regenerated streamer register header file
   }

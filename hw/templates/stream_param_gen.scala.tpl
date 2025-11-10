@@ -19,12 +19,6 @@ ${c}${', ' if not loop.last else ''}\
 package snax.streamer
  
 import snax.readerWriter._
-import snax.reqRspManager._
-import snax.utils._
- 
-import chisel3._
-import chisel3.util._
-
 // Streamer parameters
 // tcdm_size in KB
 object StreamerParametersGen {
@@ -67,6 +61,11 @@ object StreamerParametersGen {
       % else:
       configurableChannel = false,
       % endif
+      % if "delayed_start" in cfg["snax_streamer_cfg"]["data_reader_params"] and cfg["snax_streamer_cfg"]["data_reader_params"]["delayed_start"][idx]:
+      delayedStart = true,
+      % else:
+      delayedStart = false,
+      % endif
       crossClockDomain = hasCrossClockDomain
 ${'   ), ' if not loop.last else '    )'}
 % endfor
@@ -104,6 +103,11 @@ ${'   ), ' if not loop.last else '    )'}
       % else:
       configurableChannel = false,
       % endif
+      % if "delayed_start" in cfg["snax_streamer_cfg"]["data_writer_params"] and cfg["snax_streamer_cfg"]["data_writer_params"]["delayed_start"][idx]:
+      delayedStart = true,
+      % else:
+      delayedStart = false,
+      % endif
       crossClockDomain = hasCrossClockDomain
 ${'   ), ' if not loop.last else '    )'}
 % endfor
@@ -140,6 +144,11 @@ ${'   ), ' if not loop.last else '    )'}
       configurableChannel = true,
       % else:
       configurableChannel = false,
+      % endif
+      % if "delayed_start" in cfg["snax_streamer_cfg"]["data_reader_writer_params"] and cfg["snax_streamer_cfg"]["data_reader_writer_params"]["delayed_start"][idx]:
+      delayedStart = true,
+      % else:
+      delayedStart = false,
       % endif
       crossClockDomain = hasCrossClockDomain
 ${'   ), ' if not loop.last else '    )'}

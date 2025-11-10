@@ -4,7 +4,7 @@
 
 module snax_simbacore_csrman_wrapper #(
   parameter int unsigned NumRwCsr = 6,
-  parameter int unsigned NumRoCsr = 2
+  parameter int unsigned NumRoCsr = 4
 )(
   //-----------------------------
   // Clocks and reset
@@ -71,6 +71,8 @@ module snax_simbacore_csrman_wrapper #(
     .io_readWriteRegIO_bits_5      ( csr_reg_rw_set_o[5] ),
     .io_readOnlyReg_0              ( csr_reg_ro_set_i[0] ),
     .io_readOnlyReg_1              ( csr_reg_ro_set_i[1] ),
+    .io_readOnlyReg_2              ( csr_reg_ro_set_i[2] ),
+    .io_readOnlyReg_3              ( csr_reg_ro_set_i[3] ),
     .io_readWriteRegIO_valid          ( csr_reg_set_valid_o ),
     .io_readWriteRegIO_ready          ( csr_reg_set_ready_i )
 

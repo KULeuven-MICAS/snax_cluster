@@ -33,25 +33,23 @@ class StreamerParam(
 ) {
 
   // reader, writer, reader-writer number inferred paramters
-  val readerNum:       Int = readerParams.length
-  val writerNum:       Int = writerParams.length
-  val readerWriterNum: Int = readerWriterParams.length
-  val dataMoverNum:    Int =
-    readerNum + writerNum + readerWriterNum
+  val readerNum       = readerParams.length
+  val writerNum       = writerParams.length
+  val readerWriterNum = readerWriterParams.length
+  val dataMoverNum    = readerNum + writerNum + readerWriterNum
+
+  val delayedStartCount: Int = readerParams.map(_.delayedStart).count(identity) +
+    writerParams.map(_.delayedStart).count(identity) +
+    readerWriterParams.map(_.delayedStart).count(identity)
 
   // reader, writer, reader-writer tcdm ports inferred parameters
-  val readerTcdmPorts:       Seq[Int] = readerParams.map(_.aguParam.numChannel)
-  val writerTcdmPorts:       Seq[Int] = writerParams.map(_.aguParam.numChannel)
+  val readerTcdmPorts       = readerParams.map(_.aguParam.numChannel)
+  val writerTcdmPorts       = writerParams.map(_.aguParam.numChannel)
   // The tcdm ports for reader-writer, only the even index (reader's) is used
   // reader and writer share the same tcdm ports
-  val readerWriterTcdmPorts: Seq[Int] =
-    readerWriterParams
-      .map(_.aguParam.numChannel)
-      .zipWithIndex
-      .filter { case (_, index) => index % 2 == 0 }
-      .map(_._1)
-  val tcdmPortsNum:          Int      =
-    readerTcdmPorts.sum + writerTcdmPorts.sum + readerWriterTcdmPorts.sum
+  val readerWriterTcdmPorts =
+    readerWriterParams.map(_.aguParam.numChannel).zipWithIndex.filter { case (_, index) => index % 2 == 0 }.map(_._1)
+  val tcdmPortsNum          = readerTcdmPorts.sum + writerTcdmPorts.sum + readerWriterTcdmPorts.sum
 
   // inffered parameters for tcdm
   val addrWidth     = readerParams(0).tcdmParam.addrWidth

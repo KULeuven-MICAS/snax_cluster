@@ -46,10 +46,10 @@ abstract class ReaderWriterCommonIO(val param: ReaderWriterParam) extends Bundle
   val accClock        = if (param.crossClockDomain) Some(Input(Clock())) else None
 
   def connectCfgWithList(csrList: IndexedSeq[UInt]): IndexedSeq[UInt] = {
-    var remaincsrList = csrList
-    remaincsrList = aguCfg.connectWithList(remaincsrList)
-    remaincsrList = readerwriterCfg.connectWithList(remaincsrList)
-    remaincsrList
+    var remainingCsrList = csrList
+    remainingCsrList = aguCfg.connectWithList(remainingCsrList)
+    remainingCsrList = readerwriterCfg.connectWithList(remainingCsrList)
+    remainingCsrList
   }
 
   // The signal trigger the start of Address Generator. The non-empty of address generator will cause data requestor to read the data

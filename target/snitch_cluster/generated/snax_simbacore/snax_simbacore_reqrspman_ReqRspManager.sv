@@ -91,31 +91,33 @@ module snax_simbacore_reqrspman_ReqRspManager(	// src/main/scala/snax/reqRspMana
                 io_readWriteRegIO_bits_4,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
                 io_readWriteRegIO_bits_5,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
   input  [31:0] io_readOnlyReg_0,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
-                io_readOnlyReg_1	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readOnlyReg_1,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readOnlyReg_2,	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
+                io_readOnlyReg_3	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:70:19
 );
 
-  wire             io_reqRspIO_req_ready_0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:197:21, :198:27, :199:24
-  reg  [31:0]      regs_0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]      regs_1;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]      regs_2;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]      regs_3;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]      regs_4;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  reg  [31:0]      regs_5;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
-  wire             _writeReg_T = io_reqRspIO_req_ready_0 & io_reqRspIO_req_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/reqRspManager/ReqRspManager.scala:197:21, :198:27, :199:24
-  wire             readReg = _writeReg_T & ~io_reqRspIO_req_bits_write;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:{40,43}
-  wire             writeReg = _writeReg_T & io_reqRspIO_req_bits_write;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/reqRspManager/ReqRspManager.scala:83:40
-  wire             _check_acc_status_T =
+  wire              io_reqRspIO_req_ready_0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:197:21, :198:27, :199:24
+  reg  [31:0]       regs_0;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
+  reg  [31:0]       regs_1;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
+  reg  [31:0]       regs_2;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
+  reg  [31:0]       regs_3;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
+  reg  [31:0]       regs_4;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
+  reg  [31:0]       regs_5;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21
+  wire              _writeReg_T = io_reqRspIO_req_ready_0 & io_reqRspIO_req_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/reqRspManager/ReqRspManager.scala:197:21, :198:27, :199:24
+  wire              readReg = _writeReg_T & ~io_reqRspIO_req_bits_write;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:{40,43}
+  wire              writeReg = _writeReg_T & io_reqRspIO_req_bits_write;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/reqRspManager/ReqRspManager.scala:83:40
+  wire              _check_acc_status_T =
     io_reqRspIO_req_valid & io_reqRspIO_req_bits_write;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:84:40
-  wire             _io_readWriteRegIO_valid_T = io_reqRspIO_req_bits_addr == 32'h5;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:86:32
-  wire [31:0]      remainingMask =
+  wire              _io_readWriteRegIO_valid_T = io_reqRspIO_req_bits_addr == 32'h5;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:86:32
+  wire [31:0]       remainingMask =
     {{8{io_reqRspIO_req_bits_strb[3]}},
      {8{io_reqRspIO_req_bits_strb[2]}},
      {8{io_reqRspIO_req_bits_strb[1]}},
      {8{io_reqRspIO_req_bits_strb[0]}}};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:89:12, :103:40
-  wire [32:0]      _GEN = {1'h0, io_reqRspIO_req_bits_addr};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:43, :127:46
-  wire             _GEN_0 = _GEN < 33'h6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:127:46, :129:29
-  reg              readRegBusy;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:144:28
-  reg  [31:0]      readRegBuffer;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:148:30
+  wire [32:0]       _GEN = {1'h0, io_reqRspIO_req_bits_addr};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:43, :127:46
+  wire              _GEN_0 = _GEN < 33'h6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:127:46, :129:29
+  reg               readRegBusy;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:144:28
+  reg  [31:0]       readRegBuffer;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:148:30
   `ifndef SYNTHESIS	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:132:15
     always @(posedge clock) begin	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:132:15
       if (writeReg & ~_GEN_0 & ~reset & (|remainingMask)) begin	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:83:40, :103:40, :129:{29,50}, :132:15, :133:16
@@ -125,16 +127,24 @@ module snax_simbacore_reqrspman_ReqRspManager(	// src/main/scala/snax/reqRspMana
         if (`STOP_COND_)	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:132:15
           $fatal;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:132:15
       end
-      if (readReg & ~reset & (|(io_reqRspIO_req_bits_addr[31:4]))) begin	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:40, :132:15, :166:11, :167:33
+      if (readReg & ~reset & io_reqRspIO_req_bits_addr > 32'h13) begin	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:40, :132:15, :166:11, :167:33
         if (`ASSERT_VERBOSE_COND_)	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:166:11
-          $error("Assertion failed: csr read address overflow! Max allowed address is 7\n    at ReqRspManager.scala:166 assert(\n");	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:166:11
+          $error("Assertion failed: csr read address overflow! Max allowed address is 9\n    at ReqRspManager.scala:166 assert(\n");	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:166:11
         if (`STOP_COND_)	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:166:11
           $fatal;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:166:11
       end
     end // always @(posedge)
   `endif // not def SYNTHESIS
-  wire [7:0][31:0] _GEN_1 =
-    {{io_readOnlyReg_1},
+  wire [15:0][31:0] _GEN_1 =
+    {{regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {regs_0},
+     {io_readOnlyReg_3},
+     {io_readOnlyReg_2},
+     {io_readOnlyReg_1},
      {io_readOnlyReg_0},
      {regs_5},
      {regs_4},
@@ -142,8 +152,8 @@ module snax_simbacore_reqrspman_ReqRspManager(	// src/main/scala/snax/reqRspMana
      {regs_2},
      {regs_1},
      {regs_0}};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :170:33
-  wire [31:0]      _GEN_2 = _GEN_1[io_reqRspIO_req_bits_addr[2:0]];	// <stdin>:113:43, src/main/scala/snax/reqRspManager/ReqRspManager.scala:170:33
-  wire             io_reqRspIO_rsp_valid_0 = readReg | readRegBusy;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:40, :144:28, :165:17, :171:33, :172:27
+  wire [31:0]       _GEN_2 = _GEN_1[io_reqRspIO_req_bits_addr[3:0]];	// <stdin>:117:43, src/main/scala/snax/reqRspManager/ReqRspManager.scala:170:33
+  wire              io_reqRspIO_rsp_valid_0 = readReg | readRegBusy;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:40, :144:28, :165:17, :171:33, :172:27
   assign io_reqRspIO_req_ready_0 =
     ~readRegBusy
     & (~(_check_acc_status_T & _io_readWriteRegIO_valid_T & io_reqRspIO_req_bits_strb[0]

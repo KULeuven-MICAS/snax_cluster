@@ -56,7 +56,7 @@ module snax_simbacore_wrapper # (
   // Internal local parameters
   //-----------------------------
   localparam int unsigned NumRwCsr = 6;
-  localparam int unsigned NumRoCsr = 2;
+  localparam int unsigned NumRoCsr = 4;
 
   //-----------------------------
   // Accelerator ports
@@ -164,7 +164,7 @@ module snax_simbacore_wrapper # (
     // To streamer or the accelerator CSRs
     // If snax_req_addr_i <  AddrSelOffset, it points
     // to the accelerator CSR manager
-    .AddrSelOffSet        ( 201     ), // Streamer CSR number
+    .AddrSelOffSet        ( 203     ), // Streamer CSR number
     .RegDataWidth         ( RegDataWidth      ),
     .RegAddrWidth         ( RegAddrWidth      )
   ) i_snax_csr_mux_demux (

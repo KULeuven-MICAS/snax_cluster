@@ -55,7 +55,7 @@ class DataGenerator(DataGeneratorBase):
         self.suc_serial_width_A = self.kwargs["suc_serial_width_A"]
         self.suc_serial_width_BC = self.kwargs["suc_serial_width_BC"]  # Streamer width is 2x this value!
 
-    def get_safe_to_start_cnt(self):
+    def get_safe_to_start_delay(self):
         """In Phase2, the SU core reads the OS core output from memory, in a different order. The program must ensure
         that when the SU core streamer starts, all memory contents will be valid by the time they are read. The
         safe-to-start time depends on (self.seqLen, self.dModel, self.dInner), as the relative throughput of the OS and SU cores
@@ -66,8 +66,10 @@ class DataGenerator(DataGeneratorBase):
         The safe-to-start time is computed as: (time to complete one window) * max(throughput ratio, 1)
         """
         # OS core and IS core have same throughput
-        gemm_tp = 1 / ((self.seqLen // self.seqLenUnroll) * self.dModel * (self.dInner // self.dInnerUnroll))
-        suc_tp = 1 / (self.seqLen * self.dInner)
+        gemm_total_nb_tiles = (self.seqLen // self.seqLenUnroll) * (self.dInner // self.dInnerUnroll)
+        suc_total_nb_elements = self.seqLen * self.dInner
+        gemm_tp = 1 / (gemm_total_nb_tiles * self.dModel)  # dModel / tile
+        suc_tp = 1 / suc_total_nb_elements  # 1 cc / elem
 
         gemm_window_cnt = self.seqLen // self.seqLenUnroll  # expressed in OS core tiles
         suc_window_cnt = self.seqLen * self.dInnerUnroll  # expressed in SUC output elements
@@ -75,7 +77,8 @@ class DataGenerator(DataGeneratorBase):
         suc_safe_to_start = gemm_window_cnt * max(suc_tp / gemm_tp, 1)  # expressed in OS core tiles
         iscore_safe_to_start = suc_window_cnt * max(gemm_tp / suc_tp, 1)  # expressed in SUC output elements
 
-        return int(suc_safe_to_start), int(iscore_safe_to_start)
+        # Make sure the delay does not exceed the total number of tiles or elements
+        return int(min(suc_safe_to_start, gemm_total_nb_tiles)), int(min(iscore_safe_to_start, suc_total_nb_elements))
 
     def build_OSGeMM_data(self):
         mode = self.kwargs["M2_OSGEMM"]
@@ -434,8 +437,13 @@ class DataGenerator(DataGeneratorBase):
         ]
 
         lengths, deltas = self._collect_lengths_and_deltas(specs)
-        suc_start_cnt, iscore_start_cnt = self.get_safe_to_start_cnt()
-        scalars = {**lengths, **deltas, "suc_start_cnt": suc_start_cnt, "iscore_start_cnt": iscore_start_cnt}
+        suc_start_cnt, iscore_start_cnt = self.get_safe_to_start_delay()
+        scalars = {
+            **lengths,
+            **deltas,
+            "R10_start_cnt": suc_start_cnt,  # R10 is SUC input z: comes from OS core
+            "R11_start_cnt": iscore_start_cnt,  # R11 is IS core input, comes from SUC output y
+        }
 
         tests = {
             "z": self.seqLen * self.dInner,

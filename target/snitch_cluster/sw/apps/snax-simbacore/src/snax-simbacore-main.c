@@ -60,16 +60,14 @@ int test_phase1() {
             (uint32_t)ptr_iscore_out, M0_W3_ss, M0_W3_tb, M0_W3_ts, M0_W3_en          //
         );
 
-        set_simbacore_csr(M0_PHASE1, seqLen, dModel, dInner, 1);
-        set_simbacore_streamer_start();
+        set_simbacore_csr(M0_PHASE1, seqLen, dModel, dInner, dtRank);
         set_simbacore_start();
-
-        // Poll until streamer and accelerator finish
+        set_simbacore_streamer_start(M0_R10_en, 0, M0_R11_en, 0);
         wait_simbacore_and_streamer();
         printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
 
         err += check_result_sample(ptr_conv_out, M0_conv_out, M0_test_samples_conv_out, nb_test_samples, "conv_out");
-        // err += check_result_all(ptr_conv_out, conv_out, length_conv_out);
+
         err += check_result_sample(ptr_iscore_out, M0_iscore_out, M0_test_samples_iscore_out, nb_test_samples,
                                    "iscore_out");
 
@@ -149,10 +147,8 @@ int test_phase2() {
         );
 
         set_simbacore_csr(M1_PHASE2, seqLen, dModel, dInner, dtRank);
-        set_simbacore_streamer_start();
-        set_simbacore_start();
-
-        // Poll until streamer and accelerator finish
+        set_simbacore_start();  // Start SimbaCore first: otherwise delayed streamer cannot start
+        set_simbacore_streamer_start(M1_R10_en, M1_R10_start_cnt, M1_R11_en, M1_R11_start_cnt);
         wait_simbacore_and_streamer();
         printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
 
@@ -198,10 +194,8 @@ int test_osgemm() {
                                           (uint32_t)ptr_d, M2_W0_ss, M2_W0_tb, M2_W0_ts);  // D
 
         set_simbacore_csr(M2_OSGEMM, seqLen, dModel, dInner, 1);
-        set_simbacore_streamer_start();
+        set_simbacore_streamer_start(M2_R10_en, 0, M2_R11_en, 0);
         set_simbacore_start();
-
-        // Poll until streamer and accelerator finish
         wait_simbacore_and_streamer();
         printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
 
@@ -218,8 +212,8 @@ int test_osgemm() {
 
 int main() {
     int err = 0;
-    err += test_phase2();
     err += test_phase1();
+    err += test_phase2();
     err += test_osgemm();
     return err;
 }

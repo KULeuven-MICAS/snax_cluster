@@ -171,6 +171,18 @@ def streamer_csr_num(acc_cfgs):
                 for i in range(len(acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["configurable_channel"]))
             )
 
+    delayed_start_csr_num = 0
+    if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
+        delayed_start_csr_num += sum(acc_cfgs["snax_streamer_cfg"]["data_reader_params"].get("delayed_start", []))
+
+    if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
+        delayed_start_csr_num += sum(acc_cfgs["snax_streamer_cfg"]["data_writer_params"].get("delayed_start", []))
+
+    if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
+        delayed_start_csr_num += sum(
+            acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"].get("delayed_start", [])
+        )
+
     streamer_csr_num = (
         # Total temporal loop dimensions and strides
         2 * num_t_loop_dim  # Number of temporal strides and loopbounds
@@ -178,6 +190,7 @@ def streamer_csr_num(acc_cfgs):
         + 2 * num_data_mover  # Number of base pointers, 2 for each
         + num_configurable_channel  # Number of configurable channels
         + address_remapper_csr_num  # Number of address remapper
+        + delayed_start_csr_num  # Individual delayed start registers
         + 1  # Performance counter
         + 1  # Busy register
         + 1  # Start register
@@ -554,10 +567,11 @@ def main():
         for i in range(num_cores):
             narrow_ports += 1  # core connection (no ssr assumed)
             if "snax_acc_cfg" in cfg_cores[i]:
-                for acc in cfg_cores[i]['snax_acc_cfg']:
-                    assert 'snax_narrow_tcdm_ports' in acc, \
-                        "Please specify snax_narrow_tcdm_ports in the accelerator configuration"
-                    narrow_ports += int(acc['snax_narrow_tcdm_ports'])
+                for acc in cfg_cores[i]["snax_acc_cfg"]:
+                    assert (
+                        "snax_narrow_tcdm_ports" in acc
+                    ), "Please specify snax_narrow_tcdm_ports in the accelerator configuration"
+                    narrow_ports += int(acc["snax_narrow_tcdm_ports"])
             if "snax_xdma_cfg" in cfg_cores[i]:
                 narrow_ports += 16
         cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"] = narrow_ports
@@ -591,7 +605,7 @@ def main():
             + str(0)
             + " --hw-target-dir "
             + str(args.gen_path),
-            gen_path=""
+            gen_path="",
         )
 
     # ---------------------------------------

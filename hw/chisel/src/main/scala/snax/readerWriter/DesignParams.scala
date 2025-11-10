@@ -110,7 +110,8 @@ class ReaderWriterParam(
   dataBufferDepth:          Int       = 8,
   val configurableChannel:  Boolean   = false,
   val configurableByteMask: Boolean   = false,
-  val crossClockDomain:     Boolean   = false
+  val crossClockDomain:     Boolean   = false,
+  val delayedStart:         Boolean   = false
 ) {
   val aguParam = AddressGenUnitParam(
     spatialBounds     = spatialBounds,
@@ -130,8 +131,8 @@ class ReaderWriterParam(
 
   // Data buffer's depth
   val bufferDepth = dataBufferDepth
-
-  val csrNum = 2 + spatialBounds.length +
+  // NOTE the delayed start CSR is not included here: it is owned by the top-level Streamer
+  val csrNum      = 2 + spatialBounds.length +
     2 * temporalDimension +
     (if (configurableChannel) ((tcdmParam.numChannel + 31) / 32) else 0) +
     (if (configurableByteMask) 1 else 0) +

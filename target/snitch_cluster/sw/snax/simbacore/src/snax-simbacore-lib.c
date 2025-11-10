@@ -49,25 +49,25 @@ void set_simbacore_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A
 
 void set_streamer_csr(
 
-    uint32_t R0_ptr, int32_t* R0_ss, int32_t* R0_tb, int32_t* R0_ts, uint32_t R0_en,       // osCore in
-    uint32_t R1_ptr, int32_t* R1_ss, int32_t* R1_tb, int32_t* R1_ts, uint32_t R1_en,       // oscore weight
-    uint32_t R2_ptr, int32_t* R2_ss, int32_t* R2_tb, int32_t* R2_ts, uint32_t R2_en,       // switchCore/ in
-    uint32_t R3_ptr, int32_t* R3_ss, int32_t* R3_tb, int32_t* R3_ts, uint32_t R3_en,       // switchCore weight
-    uint32_t R4_ptr, int32_t* R4_ss, int32_t* R4_tb, int32_t* R4_ts, uint32_t R4_en,       // switchCore bias
-    uint32_t R5_ptr, int32_t* R5_ss, int32_t* R5_tb, int32_t* R5_ts, uint32_t R5_en,       // switchCore  matmul weight
-    uint32_t R6_ptr, int32_t* R6_ss, int32_t* R6_tb, int32_t* R6_ts, uint32_t R6_en,       //  SUC A
-    uint32_t R7_ptr, int32_t* R7_ss, int32_t* R7_tb, int32_t* R7_ts, uint32_t R7_en,       // SUC BC
-    uint32_t R8_ptr, int32_t* R8_ss, int32_t* R8_tb, int32_t* R8_ts, uint32_t R8_en,       // SUC  D
-    uint32_t R9_ptr, int32_t* R9_ss, int32_t* R9_tb, int32_t* R9_ts, uint32_t R9_en,       // SUC x
-    uint32_t R10_ptr, int32_t* R10_ss, int32_t* R10_tb, int32_t* R10_ts, uint32_t R10_en,  // SUC z
-    uint32_t R11_ptr, int32_t* R11_ss, int32_t* R11_tb, int32_t* R11_ts, uint32_t R11_en,  // iscore in
-    uint32_t R12_ptr, int32_t* R12_ss, int32_t* R12_tb, int32_t* R12_ts, uint32_t R12_en,  // isCore weight
-    uint32_t R13_ptr, int32_t* R13_ss, int32_t* R13_tb, int32_t* R13_ts, uint32_t R13_en,  // isCore psum
+    uint32_t R0_ptr, int32_t* R0_ss, int32_t* R0_tb, int32_t* R0_ts, bool R0_en,       // osCore in
+    uint32_t R1_ptr, int32_t* R1_ss, int32_t* R1_tb, int32_t* R1_ts, bool R1_en,       // oscore weight
+    uint32_t R2_ptr, int32_t* R2_ss, int32_t* R2_tb, int32_t* R2_ts, bool R2_en,       // switchCore/ in
+    uint32_t R3_ptr, int32_t* R3_ss, int32_t* R3_tb, int32_t* R3_ts, bool R3_en,       // switchCore weight
+    uint32_t R4_ptr, int32_t* R4_ss, int32_t* R4_tb, int32_t* R4_ts, bool R4_en,       // switchCore bias
+    uint32_t R5_ptr, int32_t* R5_ss, int32_t* R5_tb, int32_t* R5_ts, bool R5_en,       // switchCore  matmul weight
+    uint32_t R6_ptr, int32_t* R6_ss, int32_t* R6_tb, int32_t* R6_ts, bool R6_en,       //  SUC A
+    uint32_t R7_ptr, int32_t* R7_ss, int32_t* R7_tb, int32_t* R7_ts, bool R7_en,       // SUC BC
+    uint32_t R8_ptr, int32_t* R8_ss, int32_t* R8_tb, int32_t* R8_ts, bool R8_en,       // SUC  D
+    uint32_t R9_ptr, int32_t* R9_ss, int32_t* R9_tb, int32_t* R9_ts, bool R9_en,       // SUC x
+    uint32_t R10_ptr, int32_t* R10_ss, int32_t* R10_tb, int32_t* R10_ts, bool R10_en,  // SUC z
+    uint32_t R11_ptr, int32_t* R11_ss, int32_t* R11_tb, int32_t* R11_ts, bool R11_en,  // iscore in
+    uint32_t R12_ptr, int32_t* R12_ss, int32_t* R12_tb, int32_t* R12_ts, bool R12_en,  // isCore weight
+    uint32_t R13_ptr, int32_t* R13_ss, int32_t* R13_tb, int32_t* R13_ts, bool R13_en,  // isCore psum
 
-    uint32_t W0_ptr, int32_t* W0_ss, int32_t* W0_tb, int32_t* W0_ts, uint32_t W0_en,  // osCore out
-    uint32_t W1_ptr, int32_t* W1_ss, int32_t* W1_tb, int32_t* W1_ts, uint32_t W1_en,  // switchCore out
-    uint32_t W2_ptr, int32_t* W2_ss, int32_t* W2_tb, int32_t* W2_ts, uint32_t W2_en,  // SUC out
-    uint32_t W3_ptr, int32_t* W3_ss, int32_t* W3_tb, int32_t* W3_ts, uint32_t W3_en   // isCore out
+    uint32_t W0_ptr, int32_t* W0_ss, int32_t* W0_tb, int32_t* W0_ts, bool W0_en,  // osCore out
+    uint32_t W1_ptr, int32_t* W1_ss, int32_t* W1_tb, int32_t* W1_ts, bool W1_en,  // switchCore out
+    uint32_t W2_ptr, int32_t* W2_ss, int32_t* W2_tb, int32_t* W2_ts, bool W2_en,  // SUC out
+    uint32_t W3_ptr, int32_t* W3_ss, int32_t* W3_tb, int32_t* W3_ts, bool W3_en   // isCore out
 ) {
     if (R0_en) {
         write_csr(BASE_PTR_READER_0_LOW, R0_ptr);
@@ -240,11 +240,30 @@ void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t
     write_csr(DT_RANK, dtRank);
 }
 
+// Start the Streamer, including the two delayed Streamers (R10 and R11).
+void set_simbacore_streamer_start(bool R10_en, uint32_t R10_start_cnt, bool R11_en, uint32_t R11_start_cnt) {
+    write_csr(STREAMER_START_CSR, 1);
+
+    if (R10_en) {
+        while (read_csr(R10_DELAY_GAUGE) < R10_start_cnt);
+        write_csr(DELAYED_START_READER_10, 1);
+    }
+    printf("Streamer R10 can start\n");
+
+    if (R11_en) {
+        while (read_csr(R11_DELAY_GAUGE) < R11_start_cnt);
+        write_csr(DELAYED_START_READER_11, 1);
+    }
+    printf("Streamer R11 can start\n");
+}
+
 // Stall until Streamer and GEMM accelerator finish
 void wait_simbacore_and_streamer() {
-    printf("Waiting for Streamers and SimbaCore to finish...\n");
+    printf("Waiting for SimbaCore to finish...\n");
     write_csr(STREAMER_START_CSR, 0);
     write_csr(STREAMER_START_CSR, 0);
+    write_csr(DELAYED_START_READER_10, 0);
+    write_csr(DELAYED_START_READER_11, 0);
     write_csr(SIMBACORE_START, 0);
     while (read_csr(SIMBACORE_BUSY));  // 1185 = 0x4a1
     printf("SimbaCore has finished. Polling Streamers...\n");

@@ -99,10 +99,10 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   val reader_extension_csr        = get_extension_list_csr_num(param.readerDatapathExtension)
   val writer_extension_csr        = get_extension_list_csr_num(param.writerDatapathExtension)
   val reader_writer_extension_csr = get_extension_list_csr_num(param.readerwriterDatapathExtension)
+  val csrNumDelayedStart          = param.delayedStartCount
 
-  // extra one is the start csr
-  val csrNumReadWrite =
-    reader_csr + writer_csr + reader_writer_csr + reader_extension_csr + writer_extension_csr + reader_writer_extension_csr + 1
+  val csrNumReadWrite = reader_csr + writer_csr + reader_writer_csr + reader_extension_csr + writer_extension_csr +
+    reader_writer_extension_csr + csrNumDelayedStart + 1 // +1 for the global start csr
 
   // csrManager instantiation
   val csrManager = Module(
@@ -222,42 +222,81 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   )
   dontTouch(streamer_finish)
 
+  val delayedStartCsrBaseIndex    = csrNumReadWrite - (csrNumDelayedStart + 1)
+  val delayedStreamersHaveStarted =
+    if (csrNumDelayedStart > 0) RegInit(VecInit(Seq.fill(csrNumDelayedStart)(false.B)))
+    else Wire(Vec(0, Bool()))
+  val delayedStartPulses          =
+    if (csrNumDelayedStart > 0) WireInit(VecInit(Seq.fill(csrNumDelayedStart)(false.B)))
+    else Wire(Vec(0, Bool()))
+
+    for (i <- 0 until csrNumDelayedStart) {
+      val currentStartCSR = csrManager.io.readWriteRegIO.bits(delayedStartCsrBaseIndex + i)(0)
+      delayedStartPulses(i) := currentStartCSR && !delayedStreamersHaveStarted(i) && streamer_busy
+      when(streamer_busy && currentStartCSR) {
+        delayedStreamersHaveStarted(i) := true.B
+      }.elsewhen(streamer_ready) {
+        delayedStreamersHaveStarted(i) := false.B
+      }
+
+    }
+
   // --------------------------------------------------------------------------------
   // -----------------------data movers start-----------------------------------------
   // --------------------------------------------------------------------------------
 
-  // one clock cycle delay for the start signal to store the configuration first
-  for (i <- 0 until param.dataMoverNum) {
-    if (i < param.readerNum) {
-      reader(i).io.start := streamer_config_fire
+  var delayedStartIdx = 0
+
+  for (i <- 0 until param.readerNum) {
+    val startPulse = if (param.readerParams(i).delayedStart) {
+      val pulse = delayedStartPulses(delayedStartIdx)
+      delayedStartIdx += 1
+      pulse
     } else {
-      if (i < param.readerNum + param.writerNum) {
-        writer(i - param.readerNum).io.start := streamer_config_fire
-      } else {
-        reader_writer_idx = (i - param.readerNum - param.writerNum) / 2
-        reader_writer(
-          reader_writer_idx
-        ).io.readerInterface.start := streamer_config_fire
-        reader_writer(
-          reader_writer_idx
-        ).io.writerInterface.start := streamer_config_fire
-      }
+      streamer_config_fire
     }
+    reader(i).io.start := startPulse
   }
+
+  for (i <- 0 until param.writerNum) {
+    val startPulse = if (param.writerParams(i).delayedStart) {
+      val pulse = delayedStartPulses(delayedStartIdx)
+      delayedStartIdx += 1
+      pulse
+    } else {
+      streamer_config_fire
+    }
+    writer(i).io.start := startPulse
+  }
+
+  for (i <- 0 until param.readerWriterNum) {
+    val startPulse = if (param.readerWriterParams(i).delayedStart) {
+      val pulse = delayedStartPulses(delayedStartIdx)
+      delayedStartIdx += 1
+      pulse
+    } else {
+      streamer_config_fire
+    }
+    if (i % 2 == 0) { reader_writer(i / 2).io.readerInterface.start := startPulse }
+    else { reader_writer(i / 2).io.writerInterface.start := startPulse }
+  }
+
+  require(delayedStartIdx == csrNumDelayedStart, s"delayed start CSR count $delayedStartIdx != $csrNumDelayedStart")
 
   // --------------------------------------------------------------------------------
   // -----------------------extension start-----------------------------------------
   // --------------------------------------------------------------------------------
 
   for (i <- 0 until param.readerDatapathExtension.length)
-    readerDatapathExtension(i).io.start := streamer_config_fire
+    readerDatapathExtension(i).io.start := reader(i).io.start
 
   for (i <- 0 until param.writerDatapathExtension.length)
-    writerDatapathExtension(i).io.start := streamer_config_fire
+    writerDatapathExtension(i).io.start := writer(i).io.start
 
-  for (i <- 0 until param.readerwriterDatapathExtension.length)
-    readerwriterDatapathExtension(i).io.start := streamer_config_fire
-
+  for (i <- 0 until param.readerwriterDatapathExtension.length) {
+    if (i % 2 == 0) readerwriterDatapathExtension(i).io.start := reader_writer(i / 2).io.readerInterface.start
+    else readerwriterDatapathExtension(i).io.start := reader_writer(i / 2).io.writerInterface.start
+  }
   // --------------------------------------------------------------------------------
   // ---------------------- csr manager connection----------------------------------------------
   // --------------------------------------------------------------------------------
@@ -289,9 +328,7 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   // store the configuration csr for each data mover when config fire
   val csrCfgReg = RegInit(VecInit(Seq.fill(csrNumReadWrite)(0.U(32.W))))
   val csrCfg    = Wire(Vec(csrNumReadWrite, UInt(32.W)))
-  when(streamer_config_fire) {
-    csrCfgReg := csrManager.io.readWriteRegIO.bits
-  }
+  when(streamer_config_fire) { csrCfgReg := csrManager.io.readWriteRegIO.bits }
   csrCfg := Mux(streamer_config_fire, csrManager.io.readWriteRegIO.bits, csrCfgReg)
 
   // --------------------------------------------------------------------------------
@@ -323,8 +360,11 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   for (i <- 0 until param.readerwriterDatapathExtension.length)
     remainingCSR = readerwriterDatapathExtension(i).io.connectCfgWithList(remainingCSR)
 
-  // 1 left csr for start signal
-  require(remainingCSR.length == 1)
+  // left csr for individual start controls and the global start
+  require(
+    remainingCSR.length == csrNumDelayedStart + 1,
+    f"remainingCSR.length ${remainingCSR.length} != ${csrNumDelayedStart + 1}"
+  )
 
   // --------------------------------------------------------------------------------
   // ---------------------- data reader/writer <> TCDM connection-------------------
@@ -586,6 +626,36 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
 
   // start csr
   csrMap += "// Other register\n"
+  if (csrNumDelayedStart > 0) {
+    csrMap += "// Individual start registers\n"
+    var emittedStart = 0
+    for (i <- 0 until param.readerNum) {
+      if (param.readerParams(i).delayedStart) {
+        csrMap += s"#define DELAYED_START_READER_${i} $csrBase\n"
+        csrBase += 1
+        emittedStart += 1
+      }
+    }
+    for (i <- 0 until param.writerNum) {
+      if (param.writerParams(i).delayedStart) {
+        csrMap += s"#define DELAYED_START_WRITER_${i} $csrBase\n"
+        csrBase += 1
+        emittedStart += 1
+      }
+    }
+    for (i <- 0 until param.readerWriterNum) {
+      if (param.readerWriterParams(i).delayedStart) {
+        csrMap += s"#define DELAYED_START_READER_WRITER_${i} $csrBase\n"
+        csrBase += 1
+        emittedStart += 1
+      }
+    }
+    assert(
+      emittedStart == csrNumDelayedStart,
+      s"separate start CSR base mismatch: expected $csrNumDelayedStart, emitted $emittedStart"
+    )
+  }
+
   csrMap += "// Status register\n"
   csrMap += s"#define STREAMER_START_CSR $csrBase\n"
   csrBase += 1
@@ -598,17 +668,16 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   // streamer performance counter csr
   csrMap += s"#define STREAMER_PERFORMANCE_COUNTER_CSR $csrBase\n"
 
-  val macro_dir = param.headerFilepath + "/streamer_csr_addr_map.h"
-//   val macro_template =
-//     s"""// Copyright 2024 KU Leuven.
-// // Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// // SPDX-License-Identifier: Apache-2.0
-// //
-// // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
-// // This file is generated by Streamer module in hw/chisel to map the CSR address of Streamer automatically, do not modify it manually
-// // Generated at ${java.time.Instant.now()}
+  val macro_dir      = param.headerFilepath + "/streamer_csr_addr_map.h"
+  val macro_template = s"""// Copyright 2024 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
+// This file is generated by Streamer module in hw/chisel to map the CSR address of Streamer automatically, do not modify it manually
+// Generated at ${java.time.Instant.now()}
 
-// """ ++ csrMap
+""" ++ csrMap
 
   java.nio.file.Files.write(
     java.nio.file.Paths.get(macro_dir),
@@ -651,7 +720,7 @@ object StreamerGen {
     }
 
     // Process the input
-    var result = processInput(parsedStreamerCfg)
+    val result = processInput(parsedStreamerCfg)
 
     // Parse the JSON string
     // Function to find a specific string and return the string in between the first leftStr and the corresponding rightStr
