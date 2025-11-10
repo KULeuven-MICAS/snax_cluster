@@ -724,6 +724,8 @@ DmaXbarCfg.NoMstPorts
   assign ext_dma_req.q.addr = tcdm_addr_t'(ext_dma_req_q_addr_nontrunc);
   assign ext_dma_req.q.amo  = reqrsp_pkg::AMONone;
   assign ext_dma_req.q.user = '0;
+  // Assign high priority to iDMA requests to avoid deadlocks
+  assign ext_dma_req.q.user.tcdm_priority = 1'b1;
 
   // Convert iDMA Wide Request to narrow requests suitable for sparse interconnect:
   // Narrow requests:
