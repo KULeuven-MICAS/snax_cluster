@@ -25,6 +25,7 @@ class AddressGenUnitParam(
   val addressWidth:      Int,
   val numChannel:        Int,
   val outputBufferDepth: Int,
+  val fixedCacheDepth:   Int,
   val tcdmSize:          Int,
   val tcdmPhysWordSize:  Int,
   val tcdmLogicWordSize: Seq[Int]
@@ -46,6 +47,7 @@ object AddressGenUnitParam {
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
       outputBufferDepth = outputBufferDepth,
+      fixedCacheDepth = 0x100, // Placeholder, will be configured later
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = tcdmPhysWordSize,
       tcdmLogicWordSize = tcdmLogicWordSize
@@ -64,6 +66,7 @@ object AddressGenUnitParam {
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
       outputBufferDepth = outputBufferDepth,
+      fixedCacheDepth = 0x100, // Placeholder, will be configured later
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = 256,
       tcdmLogicWordSize = Seq(256)
@@ -81,6 +84,7 @@ object AddressGenUnitParam {
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
       outputBufferDepth = outputBufferDepth,
+      fixedCacheDepth = 0x100, // Placeholder, will be configured later
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = 256,
       tcdmLogicWordSize = Seq(256)

@@ -140,10 +140,25 @@ class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
   outputDataRepeat.io.repeat_times := Mux(io.aguCfg.temporalStrides(0) === 0.U, io.aguCfg.temporalBounds(0), 1.U)
   outputDataRepeat.io.start := io.start
 
+  // Data Buffer <> Fixed Level Cache
+  val fixedCache = Module(
+    new FixedLevelCache(
+      fixedCacheDepth = 1024,
+      fixedCacheWidth = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
+      isReader        = true
+    )
+  )
+  fixedCache.io.fixedLevelCacheRequest <> addressgen.io.fixedCacheInstruction
+  fixedCache.io.dataInTCDM <> dataBuffer.io.out.head
+  val fixedCacheDataOut = fixedCache.io.dataOut
+  outputDataRepeat.io.in <> fixedCacheDataOut
+
+
+
   // DataBuffer <> Output
   if (param.crossClockDomain == false) {
     // Condition 1: When there is no clock crossing
-    dataBuffer.io.out.head <> outputDataRepeat.io.in
+    fixedCacheDataOut <> outputDataRepeat.io.in
   } else {
     // Condition 2: When there is clock crossing
     val clockDomainCrosser = Module(
@@ -154,11 +169,11 @@ class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
     )
     clockDomainCrosser.io.enq.clock := clock
     clockDomainCrosser.io.deq.clock := io.accClock.get
-    dataBuffer.io.out.head <> clockDomainCrosser.io.enq.data
-    outputDataRepeat.io.in <> clockDomainCrosser.io.deq.data
+    fixedCacheDataOut <> clockDomainCrosser.io.enq.data
+    outputDataRepeat.io.in <> clockDomainCrosser.io.deq.data  
   }
   // Busy Signal
-  io.busy := addressgen.io.busy | (~addressgen.io.bufferEmpty)
+  io.busy := addressgen.io.busy | (~addressgen.io.bufferEmpty) | fixedCache.io.busy
 
   // The debug signal from the dataBuffer to see if AGU and requestor / responser work correctly: It should be high when valid signal at the combined output is low
   io.bufferEmpty := dataBuffer.io.allEmpty

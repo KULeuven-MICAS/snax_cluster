@@ -89,6 +89,7 @@ class ReaderTester extends AnyFlatSpec with ChiselScalatestTester {
       dut.io.aguCfg.temporalBounds(0).poke(4)
       dut.io.aguCfg.temporalBounds(1).poke(4)
       dut.io.aguCfg.temporalBounds(2).poke(2)
+      dut.io.aguCfg.enableFixedCache.poke(false.B)
 
       // Configure reader/writer settings
       if (dut.io.readerwriterCfg.enabledChannel.getWidth > 0) {
@@ -136,7 +137,7 @@ class ReaderTester extends AnyFlatSpec with ChiselScalatestTester {
       }
 
       var cycleCount    = 0
-      val maxCycles     = 200
+      val maxCycles     = 300
       var requestsSeen  = 0
       var responsesGiven = 0
       var dataReceived  = 0

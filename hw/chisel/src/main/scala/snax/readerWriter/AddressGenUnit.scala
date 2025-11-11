@@ -20,6 +20,7 @@ import snax.utils._
   */
 class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
   val ptr               = UInt(param.addressWidth.W)
+  val enableFixedCache  = Bool() // bit 0 from csr
   val spatialStrides    = Vec(param.spatialBounds.length, UInt(param.addressWidth.W))
   val temporalBounds    = Vec(param.temporalDimension, UInt(param.addressWidth.W))
   val temporalStrides   = Vec(param.temporalDimension, UInt(param.addressWidth.W))
@@ -58,6 +59,14 @@ class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
   }
 }
 
+class FixedCacheInstructionIO(fixedCacheDepth: Int) extends Bundle {
+  val index = UInt(log2Ceil(fixedCacheDepth).W)
+  // Indicate whether fixed cache is used 
+  val useCache = Bool()
+  // When the fixed cache must be updated, this signal becomes high
+  val updateCache = Bool()
+}
+
 /** AGU is the module to automatically generate the address for all ports.
   * @input
   *   cfg The description of the Address Generation Task. It is normally configured by CSR manager
@@ -86,6 +95,7 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
     // The calculated address. This equals to # of output channels (64-bit narrow TCDM)
     val addr        =
       Vec(param.numChannel, Decoupled(UInt(param.addressWidth.W)))
+    val fixedCacheInstruction = Decoupled(new FixedCacheInstructionIO(param.fixedCacheDepth))
   })
 
   require(param.spatialBounds.reduce(_ * _) <= param.numChannel)
@@ -97,6 +107,9 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
   }
 
   override val desiredName = s"${moduleNamePrefix}_AddressGenUnit"
+
+
+
 
   // Create counters for each dimension
   val counters = for (i <- 0 until param.temporalDimension) yield {
@@ -125,6 +138,35 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
       override val desiredName = s"${moduleNamePrefix}_AddressBufferFIFO"
     }
   )
+
+  // Use Fixed Cache when critical loop is not zero, update when necessary
+  val criticalLoopFinder = Module(
+    new CriticalLoopFinder(
+      param.temporalDimension,
+      param.addressWidth,
+      param.fixedCacheDepth
+    )
+  )
+  criticalLoopFinder.io.temporalBounds := io.cfg.temporalBounds
+  criticalLoopFinder.io.temporalStrides := io.cfg.temporalStrides
+
+  val countersIsZero = VecInit(counters.map(_.io.isZero))
+  
+  val newUseCache = io.cfg.enableFixedCache
+  val newUpdateCache = countersIsZero(criticalLoopFinder.io.criticalLoop)
+
+  val fixedCacheCounter = Module(
+    new ProgrammableCounter(
+      log2Ceil(param.fixedCacheDepth),
+      hasCeil = true,
+      s"${moduleNamePrefix}_FixedCacheCounter"
+    )
+  )
+  fixedCacheCounter.io.reset := io.start
+  fixedCacheCounter.io.ceil  := criticalLoopFinder.io.fixedCachePeriod
+  fixedCacheCounter.io.step  := 1.U
+
+  val newIndex = fixedCacheCounter.io.value
 
   // Calculate the current base address: the first stride need to be left-shifted
   val temporalOffset = VecInit(counters.map(_.io.value)).reduceTree(_ + _)
@@ -208,8 +250,21 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
   // Connect the outputs of the buffer out
   outputBuffer.io.out.zip(io.addr).foreach { case (a, b) => a <> b }
 
+  
+
+  // Make a Queue for the fixed cache index output
+  val fixedCacheInstructionBuffer = Module(new Queue(new FixedCacheInstructionIO(param.fixedCacheDepth), param.outputBufferDepth) {
+    override val desiredName = s"${moduleNamePrefix}_FixedCacheIndexBufferFIFO"
+  }
+  )
+  fixedCacheInstructionBuffer.io.enq.bits.index       := newIndex
+  fixedCacheInstructionBuffer.io.enq.bits.useCache    := newUseCache
+  fixedCacheInstructionBuffer.io.enq.bits.updateCache := newUpdateCache
+  io.fixedCacheInstruction <> fixedCacheInstructionBuffer.io.deq
+
   // Connect io.bufferEmpty signal: If all output is 0, then all addresses are empty, which means io.bufferEmpty should be high
-  io.bufferEmpty := ~(outputBuffer.io.out.map(i => i.valid).reduce(_ | _))
+  io.bufferEmpty := ~(outputBuffer.io.out.map(i => i.valid).reduce(_ | _)) && (fixedCacheInstructionBuffer.io.deq.valid === false.B || ~newUseCache)
+
 
   // The FSM to record if the AddressGenUnit is busy
   val sIDLE :: sBUSY :: Nil = Enum(2)
@@ -217,7 +272,7 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
   when(io.start && io.cfg.temporalBounds.map(_ =/= 0.U).reduce(_ && _)) { // The cfg is valid, and the start signal is high
     currentState := sBUSY
   }.elsewhen(
-    counters.map(_.io.lastVal).reduce(_ & _) && outputBuffer.io.in.head.fire
+    counters.map(_.io.lastVal).reduce(_ & _) && ((!newUseCache && outputBuffer.io.in.head.fire) || (newUseCache && fixedCacheInstructionBuffer.io.enq.fire))
   ) { // The output FIFO already accept the result
     currentState := sIDLE
   }.otherwise {
@@ -225,13 +280,14 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
   }
 
   // When the AGU becomes busy, the valid signal is pulled up to put address in the fifo
-  outputBuffer.io.in.head.valid := currentState === sBUSY
+  outputBuffer.io.in.head.valid := currentState === sBUSY && (newUpdateCache || !newUseCache) && (outputBuffer.io.in.head.ready && fixedCacheInstructionBuffer.io.enq.ready) //Put the address into FIFO only when the fixed cache needs to be updated
+  fixedCacheInstructionBuffer.io.enq.valid := currentState === sBUSY && newUseCache && (outputBuffer.io.in.head.ready && fixedCacheInstructionBuffer.io.enq.ready)
   // io.busy also determined by currentState
   io.busy                       := currentState === sBUSY
 
   // Temporal bounds' tick signal (enable signal)
   val counters_tick =
-    currentState === sBUSY && outputBuffer.io.in.head.fire // FIFO still have the space to take the new address
+    currentState === sBUSY && ((newUpdateCache && outputBuffer.io.in.head.fire) || (fixedCacheInstructionBuffer.io.enq.fire) || (!newUseCache && outputBuffer.io.in.head.fire)) // FIFO still have the space to take the new address
   // First counter's tick is connected to the start signal
   counters.head.io.tick    := counters_tick
   // Other counters' tick is connected to the previous counter's lastVal & counters_tick
@@ -240,4 +296,5 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
       a.io.tick := b.io.lastVal && counters_tick
     }
   }
+  fixedCacheCounter.io.tick  := counters_tick
 }

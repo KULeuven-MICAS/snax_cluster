@@ -92,6 +92,7 @@ class ProgrammableCounter(width: Int, hasCeil: Boolean = true, moduleName: Strin
 
     val value   = Output(UInt(width.W))
     val lastVal = Output(Bool())
+    val isZero  = Output(Bool())
   })
   val nextValue            = Wire(UInt(width.W))
   val value                = RegNext(nextValue, 0.U)
@@ -107,6 +108,7 @@ class ProgrammableCounter(width: Int, hasCeil: Boolean = true, moduleName: Strin
     smallCounter.io.reset := io.reset
     smallCounter.io.ceil  := io.ceil
     io.lastVal            := smallCounter.io.lastVal
+    io.isZero             := smallCounter.io.value === 0.U
   }
 
   nextValue := {
