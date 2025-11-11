@@ -89,7 +89,7 @@ class ReaderTester extends AnyFlatSpec with ChiselScalatestTester {
       dut.io.aguCfg.temporalBounds(0).poke(4)
       dut.io.aguCfg.temporalBounds(1).poke(4)
       dut.io.aguCfg.temporalBounds(2).poke(2)
-      dut.io.aguCfg.enableFixedCache.poke(false.B)
+      dut.io.aguCfg.enableFixedCache.poke(true.B)
 
       // Configure reader/writer settings
       if (dut.io.readerwriterCfg.enabledChannel.getWidth > 0) {
