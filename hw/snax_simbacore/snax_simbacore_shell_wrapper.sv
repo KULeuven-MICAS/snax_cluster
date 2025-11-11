@@ -34,7 +34,7 @@ module snax_simbacore_shell_wrapper #(
     parameter int unsigned ISCoreInBWidth                = 384,  // 6
     parameter int unsigned ISCoreInCWidth                = 256,  // 4
     // CSR
-    parameter int unsigned RegRWCount                    = 6,    // +1 for start csr
+    parameter int unsigned RegRWCount                    = 7,    // +1 for start csr
     parameter int unsigned RegROCount                    = 4,
     parameter int unsigned RegDataWidth                  = 32,
     parameter int unsigned RegAddrWidth                  = 32
@@ -209,6 +209,7 @@ module snax_simbacore_shell_wrapper #(
       .io_config_bits_dModel(csr_reg_set_i[2]),
       .io_config_bits_dtRank(csr_reg_set_i[3]),
       .io_config_bits_dInner(csr_reg_set_i[4]),
+      .io_config_bits_dFinal(csr_reg_set_i[5]),
 
       .io_busy_o(csr_reg_ro_set_o[0][0]),
       .io_performance_counter(csr_reg_ro_set_o[1]),

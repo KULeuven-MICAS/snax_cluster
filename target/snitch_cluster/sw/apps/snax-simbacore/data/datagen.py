@@ -42,6 +42,7 @@ class DataGenerator(DataGeneratorBase):
         self.dtRank = self.kwargs["dtRank"]
         self.dConv = self.kwargs["dConv"]
         self.dState = self.kwargs["dState"]
+        self.xProjDim = self.kwargs["xProjDim"]
         # HW dimensions
         self.seqLenUnroll = self.kwargs["seqLenUnroll"]
         self.dInnerUnroll = self.kwargs["dInnerUnroll"]
@@ -177,21 +178,21 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R12": (  # iscore weight
                 [
-                    self.dModel,  # N
+                    self.xProjDim,  # N
                     self.seqLen // self.seqLenUnroll,  # M
                     self.dInner // self.dInnerUnroll,  # K
                 ],
                 [
                     self.dInnerUnroll * NBIT // 8,
                     0,
-                    self.dModel * self.dInnerUnroll * NBIT // 8,
+                    self.xProjDim * self.dInnerUnroll * NBIT // 8,
                 ],
             ),
             "R13": (  # isCore psum
                 # First inject zeros, then (K-1) times the full output matrix
                 # The initial values (C) can be at the same addresses as the output matrix
                 [
-                    (self.seqLen // self.seqLenUnroll) * self.dModel,  # one output matrix
+                    (self.seqLen // self.seqLenUnroll) * self.xProjDim,  # one output matrix
                     self.dInner // self.dInnerUnroll,  # complete reduction dimension (K)
                 ],
                 [
@@ -205,7 +206,7 @@ class DataGenerator(DataGeneratorBase):
             ),
             "W3": (  # isCore output: EXACTLY the same as psum reader R13
                 [
-                    (self.seqLen // self.seqLenUnroll) * self.dModel,
+                    (self.seqLen // self.seqLenUnroll) * self.xProjDim,
                     self.dInner // self.dInnerUnroll,
                 ],
                 [
@@ -221,14 +222,14 @@ class DataGenerator(DataGeneratorBase):
             ("conv_weight", self.dInner * self.dConv * NBIT // 8),
             ("conv_bias", self.dInner * NBIT // 8),
             ("conv_out", self.seqLen * self.dInner * NBIT // 8),
-            ("iscore_weight", self.dModel * self.dInner * NBIT // 8),
-            ("iscore_out", self.seqLen * self.dModel * NBIT // 8),
+            ("iscore_weight", self.dInner * self.xProjDim * NBIT // 8),
+            ("iscore_out", self.seqLen * self.xProjDim * NBIT // 8),
         ]
         lengths, deltas = self._collect_lengths_and_deltas(specs)
         scalars = {**lengths, **deltas}
 
         # Sampled outputs plus full tensor payloads.
-        tests = {"conv_out": self.seqLen * self.dInner, "iscore_out": self.seqLen * self.dModel}
+        tests = {"conv_out": self.seqLen * self.dInner, "iscore_out": self.seqLen * self.xProjDim}
 
         test_data = {
             name: "uint16_t"
@@ -353,7 +354,7 @@ class DataGenerator(DataGeneratorBase):
                 [self.dInner // (BANKWIDTH // NBIT)],
                 [BANK_BYTES],
             ),
-            "R9": (bounds_conv_to_suc, strides_conv_to_suc),  # SUC x.
+            "R9": (bounds_conv_to_suc, strides_conv_to_suc),  # SUC x
             "R10": (bounds_conv_to_suc, strides_conv_to_suc),  # SUC z
             "R11": (  # iscore in. Stored in convFormat
                 [

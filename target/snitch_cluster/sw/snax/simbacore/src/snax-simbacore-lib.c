@@ -232,17 +232,20 @@ void set_streamer_csr(
     }
 }
 
-void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank) {
+void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank,
+                       uint32_t dFinal) {
     write_csr(MODE, mode);
     write_csr(SEQ_LEN, seqLen);
     write_csr(D_MODEL, dModel);
     write_csr(D_INNER, dInner);
     write_csr(DT_RANK, dtRank);
+    write_csr(D_FINAL, dFinal);
 }
 
 // Start the Streamer, including the two delayed Streamers (R10 and R11).
-void set_simbacore_streamer_start(bool R10_en, uint32_t R10_start_cnt, bool R11_en, uint32_t R11_start_cnt) {
-    write_csr(STREAMER_START_CSR, 1);
+void start_simbacore_and_streamers(bool R10_en, uint32_t R10_start_cnt, bool R11_en, uint32_t R11_start_cnt) {
+    _set_streamer_start();
+    _set_simbacore_start();  // SimbaCore must start before the delayed streamers can start
 
     if (R10_en) {
         while (read_csr(R10_DELAY_GAUGE) < R10_start_cnt);
@@ -261,22 +264,13 @@ void set_simbacore_streamer_start(bool R10_en, uint32_t R10_start_cnt, bool R11_
 void wait_simbacore_and_streamer() {
     printf("Waiting for SimbaCore to finish...\n");
     write_csr(STREAMER_START_CSR, 0);
-    write_csr(STREAMER_START_CSR, 0);
+    write_csr(SIMBACORE_START, 0);
     write_csr(DELAYED_START_READER_10, 0);
     write_csr(DELAYED_START_READER_11, 0);
-    write_csr(SIMBACORE_START, 0);
     while (read_csr(SIMBACORE_BUSY));  // 1185 = 0x4a1
-    printf("SimbaCore has finished. Polling Streamers...\n");
+    printf("SimbaCore has finished. Waiting for Streamers...\n");
     while (read_csr(STREAMER_BUSY_CSR));  // 1177 = 0x499
     printf("Streamers and SimbaCore have finished\n");
-}
-
-void wait_simbacore() {
-    printf("Waiting for SimbaCore to finish...\n");
-    write_csr(SIMBACORE_START, 0);
-    write_csr(SIMBACORE_START, 0);
-    while (read_csr(SIMBACORE_BUSY));
-    printf("SimbaCore has finished\n");
 }
 
 // Read performance counter of the Streamer, a read-only CSR

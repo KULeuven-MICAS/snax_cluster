@@ -18,13 +18,14 @@
 #define D_MODEL (SIMBACORE_CSR_ADDR_BASE + 2)
 #define DT_RANK (SIMBACORE_CSR_ADDR_BASE + 3)
 #define D_INNER (SIMBACORE_CSR_ADDR_BASE + 4)
-#define SIMBACORE_START (SIMBACORE_CSR_ADDR_BASE + 5)
+#define D_FINAL (SIMBACORE_CSR_ADDR_BASE + 5)
+#define SIMBACORE_START (SIMBACORE_CSR_ADDR_BASE + 6)
 
 // SimbaCore read-only CSR
-#define SIMBACORE_BUSY (SIMBACORE_CSR_ADDR_BASE + 6)
-#define SIMBACORE_PERFORMANCE_COUNTER (SIMBACORE_CSR_ADDR_BASE + 7)
-#define R10_DELAY_GAUGE (SIMBACORE_CSR_ADDR_BASE + 8)  // Number of tiles that have been streamed out of osCore
-#define R11_DELAY_GAUGE (SIMBACORE_CSR_ADDR_BASE + 9)  // Number of elements that have been streamed out of SUC
+#define SIMBACORE_BUSY (SIMBACORE_CSR_ADDR_BASE + 7)
+#define SIMBACORE_PERFORMANCE_COUNTER (SIMBACORE_CSR_ADDR_BASE + 8)
+#define R10_DELAY_GAUGE (SIMBACORE_CSR_ADDR_BASE + 9)   // Number of tiles that have been streamed out of osCore
+#define R11_DELAY_GAUGE (SIMBACORE_CSR_ADDR_BASE + 10)  // Number of elements that have been streamed out of SUC
 
 void set_streamer_csr(uint32_t R0_ptr, int32_t* R0_ss, int32_t* R0_tb, int32_t* R0_ts, bool R0_en,       //
                       uint32_t R1_ptr, int32_t* R1_ss, int32_t* R1_tb, int32_t* R1_ts, bool R1_en,       //
@@ -50,18 +51,18 @@ void set_simbacore_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A
                                        uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
                                        uint32_t D_ptr, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts);
 
-void set_simbacore_streamer_start(bool R10_en, uint32_t R10_start_cnt, bool R11_en, uint32_t R11_start_cnt);
+// Set GEMM configuration CSR. dFinal is the IScore output dimension (either xProjDim or dModel)
+void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank,
+                       uint32_t dFinal);
 
-// Set GEMM configuration CSR
-void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank);
+// Set CSR to start SimbaCore
+static inline void _set_simbacore_start() { write_csr(SIMBACORE_START, 1); }
 
-// Set CSR to start GEMM
-static inline void set_simbacore_start() { write_csr(SIMBACORE_START, 1); }
+static inline void _set_streamer_start() { write_csr(STREAMER_START_CSR, 1); }
+void start_simbacore_and_streamers(bool R10_en, uint32_t R10_start_cnt, bool R11_en, uint32_t R11_start_cnt);
 
 // Poll until Streamer and SimbaCore accelerator finish
 void wait_simbacore_and_streamer();
-
-void wait_simbacore();
 
 // Read performance counter of the Streamer, a read-only CSR
 uint32_t read_streamer_perf_counter();

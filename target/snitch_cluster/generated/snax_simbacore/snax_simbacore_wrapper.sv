@@ -55,7 +55,7 @@ module snax_simbacore_wrapper # (
   //-----------------------------
   // Internal local parameters
   //-----------------------------
-  localparam int unsigned NumRwCsr = 6;
+  localparam int unsigned NumRwCsr = 7;
   localparam int unsigned NumRoCsr = 4;
 
   //-----------------------------
