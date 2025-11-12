@@ -415,6 +415,7 @@ module snitch_cluster
   typedef struct packed {
     logic [CoreIDWidth-1:0] core_id;
     bit                     is_core;
+    logic                   tcdm_priority;
   } tcdm_user_t;
 
   // Regbus peripherals.

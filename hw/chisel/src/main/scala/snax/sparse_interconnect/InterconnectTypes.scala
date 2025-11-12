@@ -20,17 +20,17 @@ object AmoOp extends ChiselEnum {
 
 /** TCDM Request Type */
 class TcdmReq(
-  addrWidth: Int,
-  dataWidth: Int,
-  strbWidth: Int,
-  userWidth: Int
+  addrWidth:     Int,
+  dataWidth:     Int,
+  strbWidth:     Int,
+  priorityWidth: Int
 ) extends Bundle {
-  val addr  = UInt(addrWidth.W)
-  val write = Bool()
-  val amo   = AmoOp()
-  val data  = UInt(dataWidth.W)
-  val strb  = UInt(strbWidth.W)
-  val user  = UInt(userWidth.W)
+  val addr     = UInt(addrWidth.W)
+  val write    = Bool()
+  val amo      = AmoOp()
+  val data     = UInt(dataWidth.W)
+  val strb     = UInt(strbWidth.W)
+  val priority = UInt(priorityWidth.W)
 }
 
 /** TCDM Response Type */
