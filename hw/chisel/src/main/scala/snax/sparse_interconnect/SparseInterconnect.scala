@@ -11,13 +11,13 @@ class SparseInterconnect(
   tcdmAddrWidth: Int,
   dataWidth:     Int,
   strbWidth:     Int,
-  userWidth:     Int,
+  priorityWidth: Int,
   sparse_config: SparseConfig
 ) extends Module {
   val io = IO(new Bundle {
-    val tcdmReqs = Vec(NumInp, Flipped(Decoupled(new TcdmReq(tcdmAddrWidth, dataWidth, strbWidth, userWidth))))
+    val tcdmReqs = Vec(NumInp, Flipped(Decoupled(new TcdmReq(tcdmAddrWidth, dataWidth, strbWidth, priorityWidth))))
     val tcdmRsps = Vec(NumInp, Decoupled(new TcdmRsp(dataWidth)))
-    val memReqs  = Vec(NumOut, Decoupled(new TcdmReq(memAddrWidth, dataWidth, strbWidth, userWidth)))
+    val memReqs  = Vec(NumOut, Decoupled(new TcdmReq(memAddrWidth, dataWidth, strbWidth, priorityWidth)))
     val memRsps  = Vec(NumOut, Flipped(Decoupled(new TcdmRsp(dataWidth))))
   })
 
@@ -43,7 +43,7 @@ class SparseInterconnect(
   // one arbitration module per output memory bank
   val arbiters = Seq.fill(NumOut)(
     Module(
-      new ArbitrationTree(sparse_config.inputsPerBank, memAddrWidth, dataWidth, strbWidth, userWidth)
+      new ArbitrationTree(sparse_config.inputsPerBank, memAddrWidth, dataWidth, strbWidth, priorityWidth)
     )
   )
 
@@ -135,8 +135,8 @@ object SparseInterconnectGen {
     val strbWidth     = parsedArgs.get("strbWidth").map(_.toInt).getOrElse {
       throw new IllegalArgumentException("strbWidth argument is required")
     }
-    val userWidth     = parsedArgs.get("userWidth").map(_.toInt).getOrElse {
-      throw new IllegalArgumentException("userWidth argument is required")
+    val priorityWidth = parsedArgs.get("priorityWidth").map(_.toInt).getOrElse {
+      throw new IllegalArgumentException("priorityWidth argument is required")
     }
 
     // Parse the sparse configuration string
@@ -158,7 +158,7 @@ object SparseInterconnectGen {
         tcdmAddrWidth,
         dataWidth,
         strbWidth,
-        userWidth,
+        priorityWidth,
         sparseConfig
       ),
       Array("--target-dir", outPath)

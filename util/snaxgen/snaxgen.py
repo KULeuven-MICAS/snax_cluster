@@ -684,6 +684,9 @@ def main():
         # finally, the AXI connection
         narrow_ports += 1
         sparse_config.append((1, 1))
+        # then, the iDMA connection
+        narrow_ports += 8
+        sparse_config.append((8, 8))
         cfg["cluster"]["sparse_interconnect_cfg"] = {}
         cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"] = narrow_ports
         cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"] = int(cfg["cluster"]["tcdm"]["banks"])
@@ -732,8 +735,8 @@ def main():
             + str(cfg["cluster"]["data_width"])
             + " --strbWidth "
             + str(int(cfg["cluster"]["data_width"] / 8))
-            + " --userWidth "
-            + str(0)
+            + " --priorityWidth "
+            + str(1)
             + " --sparseConfig "
             + f"\"{cfg['cluster']['sparse_interconnect_cfg']['sparse_config']}\""
             + " --hw-target-dir "
