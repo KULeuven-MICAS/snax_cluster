@@ -694,10 +694,14 @@ def emit_matmul_data(**kwargs):
     delta_local_a = 0
     delta_local_a = align_wide_addr(delta_local_a, kwargs["granularity_a"] * 8)
     delta_local_b = K * M * (meshRow * tileSize * a_len / 8)
-    # the address alignment for B is 128 bytes in the new sparse interconnect as the data granularity now is 16*64 bits!!!
+    # the address alignment for B is 128 bytes
+    # in the new sparse interconnect
+    # as the data granularity now is 16*64 bits!!!
     delta_local_b = align_wide_addr(delta_local_b, kwargs["granularity_b"] * 8)
     delta_local_c = delta_local_b + K * N * (meshCol * tileSize * b_len / 8)
-    # the address alignment for B is 32 bytes in the new sparse interconnect as the data granularity now is 4*64 bits!!!
+    # the address alignment for B is 32 bytes
+    # in the new sparse interconnect
+    # as the data granularity now is 4*64 bits!!!
     delta_local_c = align_wide_addr(delta_local_c, kwargs["granularity_c"] * 8)
 
     if stationary == output_stationary:
