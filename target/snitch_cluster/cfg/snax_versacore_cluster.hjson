@@ -267,6 +267,7 @@ Naming convention:
             {
                 HasVerilogMemset: {}
             }
+            reader_extensions:{}
         }
         xdma: true
         xssr: false
