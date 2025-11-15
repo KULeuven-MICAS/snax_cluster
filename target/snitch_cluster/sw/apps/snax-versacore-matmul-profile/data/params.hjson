@@ -7,11 +7,11 @@
   // gemm configurations
   array_shape: 1,
   data_type: 0,
-  transposed_A: 0,
+  transposed_A: 1,
   transposed_B: 0,
-  K: 4,
-  N: 2,
-  M: 3,
+  K: 1,
+  N: 3,
+  M: 2,
   channel_en_C: 1,
   // 0 for output, 1 for weight, 2 for input
   stationary: 0,

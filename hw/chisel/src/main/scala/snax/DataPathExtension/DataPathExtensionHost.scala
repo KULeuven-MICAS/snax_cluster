@@ -56,7 +56,7 @@ class DataPathExtensionHost(
       case (item, index) => {
         require(
           item.extensionParam.dataWidth == dataWidth,
-          "Data width of the extension does not match the host"
+          "Data width of the extension does not match the host, item.extensionParam.dataWidth = " + item.extensionParam.dataWidth.toString + ", dataWidth = " + dataWidth.toString
         )
 
         // Instantiate the extension
