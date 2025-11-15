@@ -1,5 +1,7 @@
 package snax.DataPathExtension
 
+import scala.math.min
+
 import chisel3._
 import chisel3.util._
 
@@ -40,8 +42,8 @@ class HasTransposer(row: Seq[Int], col: Seq[Int], elementWidth: Seq[Int], dataWi
 }
 
 class TransposerUnit(row: Int, col: Int, ioWidth: Int, elementWidth: Int) extends Module {
-  val elementPerTransfer   = ioWidth / elementWidth
-  val transferPerTranspose = row * col / elementPerTransfer
+  val elementPerTransfer   = min(ioWidth, row * col * elementWidth) / elementWidth
+  val transferPerTranspose = (row * col + elementPerTransfer - 1) / elementPerTransfer
   val transposedRow        = col
   val transposedCol        = row
   val io                   = IO(new Bundle {
