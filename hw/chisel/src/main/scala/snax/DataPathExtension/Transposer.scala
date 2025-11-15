@@ -59,9 +59,7 @@ class TransposerUnit(row: Int, col: Int, ioWidth: Int, elementWidth: Int) extend
       matrixOutput(j)(i) := matrixInput(i)(j)
     }
   }
-    println(
-      s"TransposerUnit: row=$row, col=$col, elementWidth=$elementWidth, ioWidth=$ioWidth, transferPerTranspose=$transferPerTranspose"
-    )
+
   if (transferPerTranspose == 1) {
     io.out.bits  := matrixOutput.asTypeOf(chiselTypeOf(io.out.bits))
     matrixInput  := io.in.bits.asTypeOf(chiselTypeOf(matrixInput))

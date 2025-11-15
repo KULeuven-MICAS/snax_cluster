@@ -1,6 +1,7 @@
 package snax.DataPathExtension
 import scala.util.Random
 
+import chiseltest._
 import snax.DataPathExtension.HasTransposer
 
 class TransposerTester extends DataPathExtensionTester {
@@ -62,7 +63,7 @@ class TransposerRow1Col8Ewidth8Dwidth2048Tester extends DataPathExtensionTester(
   val inputData  = collection.mutable.Buffer[BigInt]()
   val outputData = collection.mutable.Buffer[BigInt]()
 
-  for (_ <- 0 until 1) {
+  for (_ <- 0 until 128) {
     val inputMatrix: Array[Array[Int]] = Array.fill(1, 8)(Random.nextInt(1 << 8))
     inputData.append(BigInt(inputMatrix.flatten.map { i => f"$i%02X" }.reverse.reduce(_ + _), 16))
 
@@ -119,8 +120,8 @@ class TransposerRow8Col8Ewidth8Dwidth2048Tester extends DataPathExtensionTester 
   val output_data_vec = outputData.toSeq
 }
 
-class TransposerRow8Col64Ewidth8Dwidth4096Tester extends DataPathExtensionTester {
-  
+class TransposerRow8Col64Ewidth8Dwidth4096Tester extends DataPathExtensionTester(TreadleBackendAnnotation) {
+
   override lazy val hasExtension = new HasTransposer(row = Seq(8), col = Seq(64), elementWidth = Seq(8), dataWidth = 4096)
 
   val csr_vec = Seq()
