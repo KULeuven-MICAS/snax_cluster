@@ -7,8 +7,13 @@ import chisel3.util._
 
 import snax.utils._
 
-class HasTransposer(row: Seq[Int], col: Seq[Int], elementWidth: Seq[Int], dataWidth: Int = 0, support_multi_transfer: Boolean = false)
-    extends HasDataPathExtension {
+class HasTransposer(
+  row:                    Seq[Int],
+  col:                    Seq[Int],
+  elementWidth:           Seq[Int],
+  dataWidth:              Int     = 0,
+  support_multi_transfer: Boolean = false
+) extends HasDataPathExtension {
   // The length of row, col, and elementWidth should be the same
   require(row.length == col.length && col.length == elementWidth.length)
 
@@ -16,7 +21,6 @@ class HasTransposer(row: Seq[Int], col: Seq[Int], elementWidth: Seq[Int], dataWi
     case 0 =>
       val products =
         row.zip(col).zip(elementWidth).map { case ((r, c), e) => r * c * e }
-
       if (!support_multi_transfer)
         products.max
       else

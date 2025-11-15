@@ -8,10 +8,10 @@ import chisel3.util._
 
 import play.api.libs.json._
 import snax.DataPathExtension._
-import snax.reqRspManager._
 import snax.readerWriter._
+import snax.reqRspManager.ReqRspManager
+import snax.reqRspManager.SnaxReqRspIO
 import snax.utils._
-import snax.reqRspManager.{ReqRspManager, SnaxReqRspIO}
 
 // data to accelerator interface generator
 // a vector of decoupled interface with configurable number and configurable width for each port
