@@ -6,7 +6,6 @@
 # Author: Robin Geens <robin.geens@kuleuven.be>
 
 import argparse
-import math
 import pathlib
 import hjson
 import sys
@@ -16,9 +15,6 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 sys.path.append(str(pathlib.Path(__file__).resolve().parent))
 
-# try:
-#     from .datagen_util import DataGeneratorBase, BANKWIDTH  # type: ignore[import]
-# except ImportError:  # pragma: no cover - executed when run as a script
 from datagen_util import BANKWIDTH, DataGeneratorBase, BANK_BYTES  # type: ignore[import]
 
 
@@ -55,6 +51,7 @@ class DataGenerator(DataGeneratorBase):
         self.iscore_serial_width = self.kwargs["iscore_serial_width"]
         self.suc_serial_width_A = self.kwargs["suc_serial_width_A"]
         self.suc_serial_width_BC = self.kwargs["suc_serial_width_BC"]  # Streamer width is 2x this value!
+        self.switchcore_width_in = self.kwargs["switchcore_width_in"]
 
     def get_safe_to_start_delay(self):
         """In Phase2, the SU core reads the OS core output from memory, in a different order. The program must ensure
@@ -252,11 +249,10 @@ class DataGenerator(DataGeneratorBase):
 
         assert self.convUnroll * NBIT == BANK_BYTES * 8, "switchCore output width must match 1 bank width"
         assert self.dConv * NBIT == BANK_BYTES * 8, "switchCore weight width must match 1 bank width"
+        assert self.dtRank * NBIT % self.switchcore_width_in == 0, "dtRank must be divisible by switchCore elem/cc in"
 
-        # TODO these should come from params
         suc_parallel_widthA = self.dState * NBIT
         suc_parallel_widthBC = self.dState * NBIT
-        switchcore_width_in = self.dtRankUnroll * NBIT  # Both serial and parallel width
         switchcore_parallel_width_W1 = self.convUnroll * self.dConv * NBIT
         switchcore_parallel_width_W2 = self.convUnroll * (self.dtRankUnroll - self.dConv) * NBIT
         switchcore_parallel_width_bias = self.convUnroll * NBIT
@@ -304,13 +300,14 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R2": (  #  switchCore in (deltaMinor)
                 [
-                    self.dtRank // self.dtRankUnroll,  # K
+                    self.dtRank * NBIT // self.switchcore_width_in,  # K
+                    # self.dtRank // self.extend_unroll_factor_to_bankwidth(self.dtRankUnroll, NBIT),  # K
                     self.seqLen,  # M
                     self.dInner // self.convUnroll,  # N (irrelevant dimension)
                 ],
                 [
-                    math.ceil(switchcore_width_in / BANKWIDTH) * BANK_BYTES,  # Padded with 0 in memory to match bank
-                    math.ceil(switchcore_width_in / BANKWIDTH) * BANK_BYTES * (self.dtRank // self.dtRankUnroll),
+                    (self.switchcore_width_in // 8),
+                    self.dtRank * NBIT // 8,  # One full row
                     0,
                 ],
             ),
@@ -417,11 +414,7 @@ class DataGenerator(DataGeneratorBase):
             ("oscore_in", self.seqLen * self.dModel * NBIT // 8),
             ("oscore_weight", self.dModel * self.dInner * NBIT // 8),
             ("z", tensor_size),
-            (
-                "dt_in",
-                self.pad_to_bankwidth(total_size_bit=self.dInner * self.dtRank * NBIT, chunk_width=switchcore_width_in)
-                // 8,
-            ),
+            ("dt_in", self.dInner * self.dtRank * NBIT // 8),
             ("dt_weight_1", self.dInner * (self.dtRank // self.dtRankUnroll) * self.dConv * NBIT // 8),
             (
                 "dt_weight_2",

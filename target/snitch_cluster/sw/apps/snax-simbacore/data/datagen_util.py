@@ -171,7 +171,15 @@ class DataGeneratorBase(ABC):
         for tensor, dtype in test_data.items():
             self.read_and_format_vector(mode, dtype, tensor)
 
-    def pad_to_bankwidth(self, total_size_bit: int, chunk_width: int):
-        streamer_width = math.ceil(chunk_width / BANKWIDTH) * BANKWIDTH
-        assert total_size_bit * streamer_width % chunk_width == 0, "Total size must be a multiple of chunk width"
-        return total_size_bit * streamer_width // chunk_width
+    # def pad_to_bankwidth(self, total_size_bit: int, chunk_width: int):
+    #     """ """
+    #     streamer_width = math.ceil(chunk_width / BANKWIDTH) * BANKWIDTH
+    #     assert total_size_bit * streamer_width % chunk_width == 0, "Total size must be a multiple of chunk width"
+    #     return total_size_bit * streamer_width // chunk_width
+
+    def extend_unroll_factor_to_bankwidth(self, unroll_factor: int, elem_width: int):
+        """Returns the smallest number greater than or equal unroll_factor, such that this number times elem_width is a multiple of bankwidth.
+
+        Should be used when the input has a DecoupledDownsizer
+        """
+        return math.ceil(unroll_factor * elem_width / BANKWIDTH) * BANKWIDTH // elem_width

@@ -13,10 +13,7 @@ class TransposeMux(params: ReshufflerParams) extends Module {
     val transpose = Input(Bool())
   })
 
-  require(
-    params.transposeInWidth == 512 && 512 == params.transposeOutWidth,
-    "transposeInWidth must be 512 for now"
-  )
+  require(params.transposeInWidth == 512 && 512 == params.transposeOutWidth, "transposeInWidth must be 512 for now")
 
   // data logic
   // add reg for one cycle delay

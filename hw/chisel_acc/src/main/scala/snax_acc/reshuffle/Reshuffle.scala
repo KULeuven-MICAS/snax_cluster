@@ -56,9 +56,7 @@ class Reshuffler(params: ReshufflerParams) extends Module with RequireAsyncReset
   val lane = Seq.fill(params.poolLaneLen)(Module(new MAXPoolPE(params)))
 
   // result from different MAXPoolPEs
-  val result = Wire(
-    Vec(params.poolLaneLen, SInt(params.outputWidth.W))
-  )
+  val result = Wire(Vec(params.poolLaneLen, SInt(params.outputWidth.W)))
 
   val pe_input_fire         = WireInit(0.B)
   val pe_input_fire_counter = RegInit(0.U(params.sizeConfigWidth.W))
