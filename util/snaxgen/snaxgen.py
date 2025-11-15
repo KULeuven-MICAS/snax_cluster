@@ -281,6 +281,11 @@ def streamer_csr_num(acc_cfgs):
         if acc_cfgs["snax_streamer_cfg"]["has_transpose"]:
             streamer_csr_num += 2
 
+    # Note: this only works for transposer with multiple possible shapes and for both two streamers have the extension!
+    if "has_flexible_transpose" in acc_cfgs["snax_streamer_cfg"]:
+        if acc_cfgs["snax_streamer_cfg"]["has_flexible_transpose"]:
+            streamer_csr_num += 4
+
     if "has_C_broadcast" in acc_cfgs["snax_streamer_cfg"]:
         if acc_cfgs["snax_streamer_cfg"]["has_C_broadcast"]:
             streamer_csr_num += 1

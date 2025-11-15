@@ -940,6 +940,10 @@ object StreamerGen {
           case _ => Seq.empty
         }
 
+      println(
+        s"Generating datapath extension for streamer with input: $readerDatapathExtentionStr"
+      )
+
       var readerDatapathExtentionPerStreamer = Seq[HasDataPathExtension]()
       val toolbox                            = currentMirror.mkToolBox()
 
