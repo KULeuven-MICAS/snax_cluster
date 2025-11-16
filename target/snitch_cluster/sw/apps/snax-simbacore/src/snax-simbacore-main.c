@@ -70,6 +70,8 @@ int test_phase2() {
     uint16_t* ptr_z             = (uint16_t*)(tcdm_base_ptr + M1_addr_z);  // osCore out
     uint16_t* ptr_dt_in         = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_BC);
     uint16_t* ptr_BC            = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_BC + M1_dt_to_BC_offset);  //
+    // TODO test of dit hetzelfde is
+    // uint16_t* ptr_BC            = (void*)ptr_dt_in + M1_dt_to_BC_offset);  //
     uint16_t* ptr_dt_weight_1   = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_weight_1);
     uint16_t* ptr_dt_weight_2   = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_weight_2);
     uint16_t* ptr_dt_bias       = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_bias);
@@ -184,11 +186,11 @@ int test_phase1_and_2() {
     uint16_t* ptr_iscore_out_P1    = (uint16_t*)(tcdm_base_ptr + M0_addr_iscore_out);  // holds the psums
 
     // Phase 2
-    void* phase2_base_ptr          = (ptr_iscore_out_P1 + M0_length_iscore_out);
+    void* phase2_base_ptr          = ((void*)ptr_iscore_out_P1 + M0_length_iscore_out);
     uint16_t* ptr_oscore_weight_P2 = (uint16_t*)(phase2_base_ptr + M1_addr_oscore_weight);
     uint16_t* ptr_z                = (uint16_t*)(phase2_base_ptr + M1_addr_z);  // osCore out
-    uint16_t* ptr_dt_in            = (uint16_t*)(phase2_base_ptr + M1_addr_dt_BC);
-    uint16_t* ptr_BC               = ptr_dt_in + M1_dt_to_BC_offset;
+    uint16_t* ptr_dt_in            = ptr_iscore_out_P1;
+    uint16_t* ptr_BC               = (void*)ptr_dt_in + M1_dt_to_BC_offset;
     uint16_t* ptr_dt_weight_1      = (uint16_t*)(phase2_base_ptr + M1_addr_dt_weight_1);
     uint16_t* ptr_dt_weight_2      = (uint16_t*)(phase2_base_ptr + M1_addr_dt_weight_2);
     uint16_t* ptr_dt_bias          = (uint16_t*)(phase2_base_ptr + M1_addr_dt_bias);
@@ -198,6 +200,27 @@ int test_phase1_and_2() {
     uint16_t* ptr_y                = (uint16_t*)(phase2_base_ptr + M1_addr_y);  // SUC out
     uint16_t* ptr_iscore_weight_P2 = (uint16_t*)(phase2_base_ptr + M1_addr_iscore_weight);
     uint16_t* ptr_iscore_out_P2    = (uint16_t*)(phase2_base_ptr + M1_addr_iscore_out);
+
+    printf("ptr_oscore_in        = %lu\n", (unsigned long)ptr_oscore_in);
+    printf("ptr_oscore_weight_P1 = %lu\n", (unsigned long)ptr_oscore_weight_P1);
+    printf("ptr_conv_weight      = %lu\n", (unsigned long)ptr_conv_weight);
+    printf("ptr_conv_bias        = %lu\n", (unsigned long)ptr_conv_bias);
+    printf("ptr_conv_out         = %lu\n", (unsigned long)ptr_conv_out);
+    printf("ptr_iscore_weight_P1 = %lu\n", (unsigned long)ptr_iscore_weight_P1);
+    printf("ptr_iscore_out_P1    = %lu\n", (unsigned long)ptr_iscore_out_P1);
+    printf("ptr_oscore_weight_P2 = %lu\n", (unsigned long)ptr_oscore_weight_P2);
+    printf("ptr_z                = %lu\n", (unsigned long)ptr_z);
+    printf("ptr_dt_in            = %lu\n", (unsigned long)ptr_dt_in);
+    printf("ptr_BC               = %lu\n", (unsigned long)ptr_BC);
+    printf("ptr_dt_weight_1      = %lu\n", (unsigned long)ptr_dt_weight_1);
+    printf("ptr_dt_weight_2      = %lu\n", (unsigned long)ptr_dt_weight_2);
+    printf("ptr_dt_bias          = %lu\n", (unsigned long)ptr_dt_bias);
+    printf("ptr_x                = %lu\n", (unsigned long)ptr_x);
+    printf("ptr_A                = %lu\n", (unsigned long)ptr_A);
+    printf("ptr_D                = %lu\n", (unsigned long)ptr_D);
+    printf("ptr_y                = %lu\n", (unsigned long)ptr_y);
+    printf("ptr_iscore_weight_P2 = %lu\n", (unsigned long)ptr_iscore_weight_P2);
+    printf("ptr_iscore_out_P2    = %lu\n", (unsigned long)ptr_iscore_out_P2);
 
     // Transfer Phase1 data
     if (snrt_is_dm_core()) {
@@ -278,8 +301,9 @@ int test_phase1_and_2() {
 
 int main() {
     int err = 0;
+    err += test_phase1_and_2();
+    err += test_phase1();
     err += test_phase2();
-    // err += test_phase1();
     // err += test_osgemm();
     return err;
 }
