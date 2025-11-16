@@ -301,15 +301,17 @@ class DataGenerator(DataGeneratorBase):
             "R2": (  #  switchCore in (deltaMinor)
                 [
                     self.dtRank * NBIT // self.switchcore_width_in,  # K
-                    # self.dtRank // self.extend_unroll_factor_to_bankwidth(self.dtRankUnroll, NBIT),  # K
-                    self.seqLen,  # M
+                    self.seqLenUnroll,
+                    self.seqLen // self.seqLenUnroll,
                     self.dInner // self.convUnroll,  # N (irrelevant dimension)
                 ],
                 [
-                    (self.switchcore_width_in // 8),
-                    self.dtRank * NBIT // 8,  # One full row
+                    (self.switchcore_width_in // 8) * self.seqLenUnroll,
+                    BANK_BYTES,
+                    self.seqLenUnroll * self.xProjDim * NBIT // 8,  # TODO should this not be *seqLenUnroll?
                     0,
                 ],
+                self.seqLenUnroll * BANK_BYTES,  # Spatial stride
             ),
             "R3": (  #  switchCore weight (partition 1). Weights rotate internally so no reuse in self.seqLen here
                 [
@@ -335,17 +337,20 @@ class DataGenerator(DataGeneratorBase):
                 [self.dInner * (suc_parallel_widthA // self.suc_serial_width_A)],
                 [self.suc_serial_width_A // 8],
             ),
-            "R7": (  # SUC BC
+            "R7": (  # SUC BC. Packed together with dt
                 [
-                    (suc_parallel_widthBC // self.suc_serial_width_BC),
-                    self.seqLen,
+                    (2 * self.dState * NBIT) // (2 * self.suc_serial_width_BC),  #
+                    self.seqLenUnroll,
+                    self.seqLen // self.seqLenUnroll,
                     self.dInner // self.delaySU,  # Irrelevant dimension
                 ],
                 [
-                    (2 * self.suc_serial_width_BC) // 8,
-                    (2 * suc_parallel_widthBC) // 8,
+                    (2 * self.suc_serial_width_BC // 8) * self.seqLenUnroll,
+                    BANK_BYTES,
+                    self.seqLenUnroll * self.xProjDim * NBIT // 8,
                     0,
                 ],
+                self.seqLenUnroll * BANK_BYTES,  # Spatial stride
             ),
             "R8": (  # SUC D
                 [self.dInner // (BANKWIDTH // NBIT)],
@@ -414,7 +419,8 @@ class DataGenerator(DataGeneratorBase):
             ("oscore_in", self.seqLen * self.dModel * NBIT // 8),
             ("oscore_weight", self.dModel * self.dInner * NBIT // 8),
             ("z", tensor_size),
-            ("dt_in", self.dInner * self.dtRank * NBIT // 8),
+            # ("dt_in", self.dInner * self.dtRank * NBIT // 8),
+            ("dt_BC", self.seqLen * self.xProjDim * NBIT // 8),
             ("dt_weight_1", self.dInner * (self.dtRank // self.dtRankUnroll) * self.dConv * NBIT // 8),
             (
                 "dt_weight_2",
@@ -423,7 +429,7 @@ class DataGenerator(DataGeneratorBase):
             ("dt_bias", self.dInner * NBIT // 8),
             ("x", tensor_size),
             ("A", self.dInner * self.dState * NBIT // 8),
-            ("BC", 2 * self.seqLen * self.dState * NBIT // 8),
+            # ("BC", 2 * self.seqLen * self.dState * NBIT // 8),
             ("D", self.dInner * NBIT // 8),
             ("y", tensor_size),
             ("iscore_weight", self.dModel * self.dInner * NBIT // 8),
@@ -437,6 +443,7 @@ class DataGenerator(DataGeneratorBase):
             **deltas,
             "R10_start_cnt": suc_start_cnt,  # R10 is SUC input z: comes from OS core
             "R11_start_cnt": iscore_start_cnt,  # R11 is IS core input, comes from SUC output y
+            "dt_to_BC_offset": self.seqLenUnroll * self.dtRank * NBIT // 8,  # First BC value in dt_BC tensor
         }
 
         tests = {
@@ -451,13 +458,12 @@ class DataGenerator(DataGeneratorBase):
                 "oscore_in",
                 "oscore_weight",
                 "oscore_expected",  # aka matrix z
-                "dt_in",
+                "dt_BC",
                 "dt_weight_1",
                 "dt_weight_2",
                 "dt_bias",
                 # "suc_state",
                 "suc_A",
-                "suc_BC",
                 "suc_D",
                 "suc_x",
                 "suc_expected",

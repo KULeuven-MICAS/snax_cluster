@@ -135,7 +135,7 @@ class DataGeneratorBase(ABC):
     def build_mode(
         self,
         mode: int,
-        streamers: dict[str, tuple[list[int], list[int]]],
+        streamers: dict[str, tuple[list[int], list[int]]] | dict[str, tuple[list[int], list[int], int]],
         scalars: dict[str, int],
         test_data: dict[str, str],
         tests: dict[str, int],
@@ -153,9 +153,13 @@ class DataGeneratorBase(ABC):
         assert all(re.match(r"^(R([0-9]|1[0-3])|W([0-9]|1[0-3]))$", key) for key in streamers.keys())
         for name in [f"R{i}" for i in range(14)] + [f"W{i}" for i in range(4)]:
             if name in streamers:
-                (bounds, strides) = streamers[name]
+                if len(streamers[name]) == 2:
+                    (bounds, strides) = streamers[name]
+                    spatial_stride = BANK_BYTES  # Default
+                elif len(streamers[name]) == 3:
+                    (bounds, strides, spatial_stride) = streamers[name]
                 self.format_temporal_bounds_strides(name, mode, bounds, strides)
-                self.format_spatial_stride(name, mode, BANK_BYTES)
+                self.format_spatial_stride(name, mode, spatial_stride)
                 self.enable_channel(name, mode)
             else:
                 self.disable_channel(name, mode)

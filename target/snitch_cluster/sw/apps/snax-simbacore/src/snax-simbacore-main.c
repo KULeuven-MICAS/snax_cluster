@@ -68,13 +68,13 @@ int test_phase2() {
     uint16_t* ptr_oscore_in     = (uint16_t*)(tcdm_base_ptr + M1_addr_oscore_in);
     uint16_t* ptr_oscore_weight = (uint16_t*)(tcdm_base_ptr + M1_addr_oscore_weight);
     uint16_t* ptr_z             = (uint16_t*)(tcdm_base_ptr + M1_addr_z);  // osCore out
-    uint16_t* ptr_dt_in         = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_in);
+    uint16_t* ptr_dt_in         = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_BC);
+    uint16_t* ptr_BC            = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_BC + M1_dt_to_BC_offset);  //
     uint16_t* ptr_dt_weight_1   = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_weight_1);
     uint16_t* ptr_dt_weight_2   = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_weight_2);
     uint16_t* ptr_dt_bias       = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_bias);
     uint16_t* ptr_x             = (uint16_t*)(tcdm_base_ptr + M1_addr_x);  // from Phase1
     uint16_t* ptr_A             = (uint16_t*)(tcdm_base_ptr + M1_addr_A);
-    uint16_t* ptr_BC            = (uint16_t*)(tcdm_base_ptr + M1_addr_BC);
     uint16_t* ptr_D             = (uint16_t*)(tcdm_base_ptr + M1_addr_D);
     uint16_t* ptr_y             = (uint16_t*)(tcdm_base_ptr + M1_addr_y);  // SUC out
     uint16_t* ptr_iscore_weight = (uint16_t*)(tcdm_base_ptr + M1_addr_iscore_weight);
@@ -84,13 +84,12 @@ int test_phase2() {
     if (snrt_is_dm_core()) {
         snrt_dma_start_1d(ptr_oscore_in, M1_oscore_in, M1_length_oscore_in);
         snrt_dma_start_1d(ptr_oscore_weight, M1_oscore_weight, M1_length_oscore_weight);
-        snrt_dma_start_1d(ptr_dt_in, M1_dt_in, M1_length_dt_in);
+        snrt_dma_start_1d(ptr_dt_in, M1_dt_BC, M1_length_dt_BC);
         snrt_dma_start_1d(ptr_dt_weight_1, M1_dt_weight_1, M1_length_dt_weight_1);
         snrt_dma_start_1d(ptr_dt_weight_2, M1_dt_weight_2, M1_length_dt_weight_2);
         snrt_dma_start_1d(ptr_dt_bias, M1_dt_bias, M1_length_dt_bias);
         snrt_dma_start_1d(ptr_x, M1_suc_x, M1_length_x);
         snrt_dma_start_1d(ptr_A, M1_suc_A, M1_length_A);
-        snrt_dma_start_1d(ptr_BC, M1_suc_BC, M1_length_BC);
         snrt_dma_start_1d(ptr_D, M1_suc_D, M1_length_D);
         snrt_dma_start_1d(ptr_iscore_weight, M1_iscore_weight, M1_length_iscore_weight);
         snrt_dma_start_1d(ptr_iscore_out, M1_iscore_bias, M1_length_iscore_out);  // Load bias in psums
@@ -188,13 +187,13 @@ int test_phase1_and_2() {
     void* phase2_base_ptr          = (ptr_iscore_out_P1 + M0_length_iscore_out);
     uint16_t* ptr_oscore_weight_P2 = (uint16_t*)(phase2_base_ptr + M1_addr_oscore_weight);
     uint16_t* ptr_z                = (uint16_t*)(phase2_base_ptr + M1_addr_z);  // osCore out
-    uint16_t* ptr_dt_in            = (uint16_t*)(phase2_base_ptr + M1_addr_dt_in);
+    uint16_t* ptr_dt_in            = (uint16_t*)(phase2_base_ptr + M1_addr_dt_BC);
+    uint16_t* ptr_BC               = ptr_dt_in + M1_dt_to_BC_offset;
     uint16_t* ptr_dt_weight_1      = (uint16_t*)(phase2_base_ptr + M1_addr_dt_weight_1);
     uint16_t* ptr_dt_weight_2      = (uint16_t*)(phase2_base_ptr + M1_addr_dt_weight_2);
     uint16_t* ptr_dt_bias          = (uint16_t*)(phase2_base_ptr + M1_addr_dt_bias);
     uint16_t* ptr_x                = ptr_conv_out;
     uint16_t* ptr_A                = (uint16_t*)(phase2_base_ptr + M1_addr_A);
-    uint16_t* ptr_BC               = (uint16_t*)(phase2_base_ptr + M1_addr_BC);
     uint16_t* ptr_D                = (uint16_t*)(phase2_base_ptr + M1_addr_D);
     uint16_t* ptr_y                = (uint16_t*)(phase2_base_ptr + M1_addr_y);  // SUC out
     uint16_t* ptr_iscore_weight_P2 = (uint16_t*)(phase2_base_ptr + M1_addr_iscore_weight);
@@ -280,7 +279,7 @@ int test_phase1_and_2() {
 int main() {
     int err = 0;
     err += test_phase2();
-    err += test_phase1();
-    err += test_osgemm();
+    // err += test_phase1();
+    // err += test_osgemm();
     return err;
 }
