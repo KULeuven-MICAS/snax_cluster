@@ -698,61 +698,54 @@ def sumpool_golden(
                 output[i // m_stride, j // n_stride, c] = sum_value
     return output
 
+
 def int32_to_fp16_golden(x: int) -> int:
     """
     Convert signed int32 to IEEE 754 half-precision (binary16).
     Returns a 16-bit UNSIGNED integer (0..65535).
     """
+    x = int(x)
+    # Handle signed → absolute value
+    sign = 1 if x < 0 else 0
+    abs_val = abs(x)  # Python ints are unbounded, this covers Int.MinValue case too
 
-    # Handle zero
-    if x == 0:
-        return 0
+    if abs_val == 0:
+        return sign << 15
 
-    # Sign
-    sign = 0
-    if x < 0:
-        sign = 1
-        x = -x
+    # Find MSB index (equivalent to 63 - Long.numberOfLeadingZeros(abs))
+    msb_index = abs_val.bit_length() - 1
 
-    # Convert to 32-bit float using Python
-    f = float(x)
+    exp_unbiased = msb_index
+    exp_bias = 15
+    exp_raw = exp_unbiased + exp_bias
 
-    # Extract IEEE-754 single precision bits
-    import struct
-    bits = struct.unpack('>I', struct.pack('>f', f))[0]
-
-    sign32 = (bits >> 31) & 1
-    exp32  = (bits >> 23) & 0xFF
-    frac32 = bits & 0x7FFFFF
-
-    # Reuse sign32 instead of Python float sign
-    sign = sign32
-
-    # IEEE-754 conversion (float32 → float16)
-    exp16 = exp32 - 127 + 15
-
-    if exp16 <= 0:
-        # Denormal handling
-        if exp16 < -10:
-            return sign << 15
-        frac = (frac32 | 0x800000) >> (1 - exp16 + 13)
-        return (sign << 15) | frac
-
-    elif exp16 >= 31:
-        # Overflow → INF
+    # Overflow → ±Inf
+    if exp_raw >= 31:
         return (sign << 15) | (0x1F << 10)
 
-    # Normal case
-    frac16 = frac32 >> 13
+    # Normalize abs (shift so MSB goes to bit 31)
+    shift_amt = 31 - msb_index
+    mag_norm = (abs_val << shift_amt) & 0xFFFFFFFF
 
-    # Round to nearest-even
-    if (frac32 >> 12) & 1:
-        if (frac32 & 0xFFF) != 0:
-            frac16 += 1
-            if frac16 == 0x400:
-                frac16 = 0
-                exp16 += 1
-                if exp16 >= 31:
-                    return (sign << 15) | (0x1F << 10)
+    # Extract fraction + GRS
+    frac = (mag_norm >> 21) & 0x3FF
+    guard = ((mag_norm >> 20) & 1) != 0
+    round_bit = ((mag_norm >> 19) & 1) != 0
+    sticky = (mag_norm & ((1 << 19) - 1)) != 0
+    lsb = (frac & 1) != 0
 
-    return (sign << 15) | (exp16 << 10) | (frac16 & 0x3FF)
+    increment = guard and (round_bit or sticky or lsb)
+
+    frac_rounded = frac + (1 if increment else 0)
+    exp_field = exp_raw
+
+    # Mantissa overflow
+    if frac_rounded == 1024:
+        frac_rounded = 0
+        exp_field += 1
+
+    # Overflow to Inf
+    if exp_field >= 31:
+        return (sign << 15) | (0x1F << 10)
+
+    return (sign << 15) | (exp_field << 10) | frac_rounded

@@ -942,7 +942,7 @@ def emit_matmul_data(**kwargs):
                 multiplier,
             )
         )
-    output_matrix = np.array(output_matrix, dtype=np.int8)
+    output_matrix = np.array(output_matrix, dtype=np.uint8)
 
     data_str += [format_vector_definition("int8_t", "D_quantized", output_matrix)]
 
@@ -961,7 +961,7 @@ def emit_matmul_data(**kwargs):
 
     for data_element in D:
         fp_output_matrix.append(int32_to_fp16_golden(data_element))
-    fp_output_matrix = np.array(fp_output_matrix, dtype=np.int16)
+    fp_output_matrix = np.array(fp_output_matrix, dtype=np.uint16)
 
     data_str += [format_vector_definition("int16_t", "D_int32tofp16", fp_output_matrix)]
 

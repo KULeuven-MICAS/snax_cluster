@@ -292,10 +292,6 @@ def streamer_csr_num(acc_cfgs):
         if acc_cfgs["snax_streamer_cfg"]["has_rescaledown"]:
             streamer_csr_num += 5
 
-    if "has_int32_to_fp16_converter" in acc_cfgs["snax_streamer_cfg"]:
-        if acc_cfgs["snax_streamer_cfg"]["has_int32_to_fp16_converter"]:
-            streamer_csr_num += 1
-
     if "has_C_broadcast" in acc_cfgs["snax_streamer_cfg"]:
         if acc_cfgs["snax_streamer_cfg"]["has_C_broadcast"]:
             streamer_csr_num += 1

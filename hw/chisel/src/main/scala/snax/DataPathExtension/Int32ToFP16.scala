@@ -104,7 +104,7 @@ class Int32ToFp16Converter(dataWidth: Int = 512, in_elementWidth: Int = 32, out_
   val numPEs = dataWidth / 32
 
   val counter = Module(new snax.utils.BasicCounter(log2Ceil(in_elementWidth / out_elementWidth)) {
-    override val desiredName = "Int32ToFp16Converter"
+    override val desiredName = "Int32ToFp16Converter" + "_counter"
   })
   counter.io.ceil := (in_elementWidth / out_elementWidth).asUInt
   counter.io.reset := ext_start_i
@@ -123,9 +123,7 @@ class Int32ToFp16Converter(dataWidth: Int = 512, in_elementWidth: Int = 32, out_
 
   // Extract each 32-bit block from ext_data_i
   for (i <- 0 until numPEs) {
-    val hi = 32 * (i + 1) - 1
-    val lo = 32 * i
-    pe_inputs(i) := ext_data_i.bits(hi, lo).asSInt
+    pe_inputs(i) := ext_data_i.bits(32 * (i + 1) - 1, 32 * i).asSInt
   }
 
   // Connect PEs
@@ -149,13 +147,12 @@ class Int32ToFp16Converter(dataWidth: Int = 512, in_elementWidth: Int = 32, out_
       }
     }
   }
-  ext_data_o.bits := Cat((regs ++ pe_outputs).reverse).asTypeOf(ext_data_o.bits)
+  ext_data_o.bits := Cat(pe_outputs.reverse ++ regs.reverse).asTypeOf(ext_data_o.bits)
 
   // Pass through valid/ready signals
   ext_data_o.valid := ext_data_i.fire && counter.io.value === ((in_elementWidth / out_elementWidth).U - 1.U)
   ext_data_i.ready := ext_data_o.ready
 
-  ext_busy_o := false.B
 }
 
 class HasInt32ToFp16Converter(dataWidth: Int = 512) extends HasDataPathExtension {
@@ -165,7 +162,7 @@ class HasInt32ToFp16Converter(dataWidth: Int = 512) extends HasDataPathExtension
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
       moduleName = s"Int32ToFp16Converter_${dataWidth}",
-      userCsrNum = 1,
+      userCsrNum = 0,
       dataWidth  = dataWidth
     )
 

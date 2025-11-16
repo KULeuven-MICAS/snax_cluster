@@ -82,7 +82,7 @@ def bytes_to_doubles(byte_array):
     # Unpack the byte array into a list of doubles
     doubles = []
     for i in range(num_doubles):
-        double_bytes = byte_array[i * double_size : (i + 1) * double_size]
+        double_bytes = byte_array[i * double_size: (i + 1) * double_size]
         double = struct.unpack("<d", double_bytes)[0]
         doubles.append(double)
     return doubles
@@ -95,7 +95,7 @@ def bytes_to_uint32s(byte_array):
     # Unpack the byte array into a list of uints
     uints = []
     for i in range(num_uints):
-        uint32_bytes = byte_array[i * uint32_size : (i + 1) * uint32_size]
+        uint32_bytes = byte_array[i * uint32_size: (i + 1) * uint32_size]
         uint = struct.unpack("<I", uint32_bytes)[0]
         uints.append(uint)
     return uints

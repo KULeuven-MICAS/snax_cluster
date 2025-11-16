@@ -185,12 +185,11 @@ void set_versacore_streamer_csr(
 #endif
 
 #ifdef READER_WRITER_EXTENSION_1_CSR_BASE
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE, quantization_enable);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE, (int32tofp16_enable << 1) | quantization_enable);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, input_zp_i);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, multiplier_i);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 4, shift_i);
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 5, int32tofp16_enable);
 #endif
 
 #else
