@@ -73,8 +73,10 @@ int main() {
             set_addr_remap_index_C, channel_en_C,
 
             delta_local_d, D32slstride, D32tlbound, D32tlstride,
-            set_addr_remap_index_D32, channel_en_D, array_shape, quantization_enable, shift_i, multiplier_i,
-            input_zp_i, output_zp_i);
+            set_addr_remap_index_D32, channel_en_D, array_shape,
+
+            quantization_enable, shift_i, multiplier_i, input_zp_i,
+            output_zp_i);
 
         // Set GEMMX configuration CSR
         uint32_t subtraction_setting =
@@ -101,13 +103,12 @@ int main() {
 
         // Result check
         if (quantization_enable == 0)
-            err += check_versacore_result_D32(
-                (int32_t *)local_d, (int32_t *)D, d_data_length, false);
-        else{
+            err += check_versacore_result_D32((int32_t *)local_d, (int32_t *)D,
+                                              d_data_length, false);
+        else {
             err += check_versacore_result_D32(
                 (int8_t *)local_d, (int8_t *)D_quantized, d_data_length, false);
         }
-        
 
         printf(
             "Array shape: %d, meshRow %d, tileSize %d, meshCol %d, stationary: "

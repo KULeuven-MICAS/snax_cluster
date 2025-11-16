@@ -74,7 +74,8 @@ class RescaleDownEfficientPE(
   io.data_o := intervalled_out.asSInt
 }
 
-class HasRescaleDownEfficient(in_elementWidth: Int = 32, out_elementWidth: Int = 8, dataWidth: Int = 512) extends HasDataPathExtension {
+class HasRescaleDownEfficient(in_elementWidth: Int = 32, out_elementWidth: Int = 8, dataWidth: Int = 512)
+    extends HasDataPathExtension {
   implicit val extensionParam:          DataPathExtensionParam =
     new DataPathExtensionParam(
       moduleName = "RescaleDownEfficient",
