@@ -638,13 +638,13 @@ def emit_matmul_data(**kwargs):
             data_str += [
                 format_scalar_definition("int32_t", "D32tlstride1", D32tlstride1)
             ]
-            D32tlbound2 = M * N / (D32tlbound1)
+            D32tlbound2 = 1
             data_str += [
                 format_scalar_definition("int32_t", "D32tlbound2", D32tlbound2)
             ]
             data_str += [
                 format_scalar_definition(
-                    "int32_t", "D32tlstride2", D32tlbound1 * D32tlstride1
+                    "int32_t", "D32tlstride2", 0
                 )
             ]
         else:

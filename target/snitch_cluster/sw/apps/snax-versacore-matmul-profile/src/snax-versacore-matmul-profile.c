@@ -100,8 +100,14 @@ int main() {
         wait_versacore_and_streamer();
 
         // Result check
-        err += check_versacore_result_D32((int8_t *)local_d, (int8_t *)D,
-                                          d_data_length, false);
+        if (quantization_enable == 0)
+            err += check_versacore_result_D32(
+                (int32_t *)local_d, (int32_t *)D, d_data_length, false);
+        else{
+            err += check_versacore_result_D32(
+                (int8_t *)local_d, (int8_t *)D_quantized, d_data_length, false);
+        }
+        
 
         printf(
             "Array shape: %d, meshRow %d, tileSize %d, meshCol %d, stationary: "
