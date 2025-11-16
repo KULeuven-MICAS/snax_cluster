@@ -9,13 +9,12 @@ package snax.DataPathExtension
 import chisel3._
 import chisel3.util._
 
-/**
-  * Int32ToFp16
+/** Int32ToFp16
   *
   * Converts a signed 32-bit integer (SInt) to IEEE-754 half-precision float (UInt(16.W)).
-  * - Rounds to nearest, ties to even.
-  * - Saturates to +/- Infinity on overflow.
-  * - Zero maps exactly to +0 or -0 (sign bit from input).
+  *   - Rounds to nearest, ties to even.
+  *   - Saturates to +/- Infinity on overflow.
+  *   - Zero maps exactly to +0 or -0 (sign bit from input).
   */
 class Int32ToFp16 extends Module {
   val io = IO(new Bundle {
@@ -24,8 +23,8 @@ class Int32ToFp16 extends Module {
   })
 
   // Constants for fp16
-  val expBias = 15.U(5.W)   // bias for 5-bit exponent
-  val infExp  = 31.U(5.W)   // exponent field for Inf/NaN (11111b)
+  val expBias = 15.U(5.W) // bias for 5-bit exponent
+  val infExp  = 31.U(5.W) // exponent field for Inf/NaN (11111b)
 
   val sign = io.in(31)
   val abs  = Mux(io.in < 0.S, (-io.in).asUInt, io.in.asUInt)
@@ -36,28 +35,28 @@ class Int32ToFp16 extends Module {
   when(abs === 0.U) {
     // ±0
     result := Cat(sign, 0.U(15.W))
-  } .otherwise {
+  }.otherwise {
     // -----------------------------
     // 1) Find MSB index of abs
     // -----------------------------
     // msbIndex in [0..31], 0 = LSB, 31 = MSB
     val rev      = Reverse(abs)
-    val lsbIndex = PriorityEncoder(rev)       // index of first 1 in reversed
-    val msbIndex = 31.U - lsbIndex           // index of highest 1 in original
+    val lsbIndex = PriorityEncoder(rev) // index of first 1 in reversed
+    val msbIndex = 31.U - lsbIndex      // index of highest 1 in original
 
     // Unbiased exponent (actual power of two for normalized 1.x * 2^exp)
-    val expUnbiased = msbIndex                // 0..31, 5 bits
+    val expUnbiased = msbIndex // 0..31, 5 bits
 
     // -----------------------------
     // 2) Normalize magnitude
     // -----------------------------
-    val shiftAmt = 31.U - msbIndex            // how much to left-shift so MSB -> bit 31
+    val shiftAmt = 31.U - msbIndex // how much to left-shift so MSB -> bit 31
     val magNorm  = (abs << shiftAmt)(31, 0)
 
     // -----------------------------
     // 3) Extract fraction + Guard/Round/Sticky
     // -----------------------------
-    val frac     = magNorm(30, 21)            // 10 fraction bits
+    val frac     = magNorm(30, 21) // 10 fraction bits
     val guard    = magNorm(20)
     val roundBit = magNorm(19)
     val sticky   = magNorm(18, 0).orR
@@ -69,14 +68,14 @@ class Int32ToFp16 extends Module {
     // 4) Rounding: use wider adder to detect mantissa carry
     // -----------------------------
     // 11-bit sum: [carry | 10-bit fraction]
-    val fracPlus       = Cat(0.U(1.W), frac) + increment
-    val mantOverflow   = fracPlus(10)         // carry out
-    val fracRounded    = Mux(mantOverflow, 0.U(10.W), fracPlus(9, 0))
+    val fracPlus     = Cat(0.U(1.W), frac) + increment
+    val mantOverflow = fracPlus(10) // carry out
+    val fracRounded  = Mux(mantOverflow, 0.U(10.W), fracPlus(9, 0))
 
     // -----------------------------
     // 5) Exponent with bias + mantissa overflow adjustment
     // -----------------------------
-    val expPreWide     = expUnbiased +& expBias // 6-bit result
+    val expPreWide     = expUnbiased +& expBias                    // 6-bit result
     val expIncWide     = expPreWide + 1.U
     val expRoundedWide = Mux(mantOverflow, expIncWide, expPreWide) // 6 bits
 
@@ -88,7 +87,7 @@ class Int32ToFp16 extends Module {
     when(overflow) {
       // Saturate to +/- Infinity
       result := Cat(sign, Fill(5, 1.U(1.W)), 0.U(10.W))
-    } .otherwise {
+    }.otherwise {
       val expField = expRoundedWide(4, 0) // take lower 5 bits
       result := Cat(sign, expField, fracRounded)
     }
@@ -96,6 +95,3 @@ class Int32ToFp16 extends Module {
 
   io.out := result
 }
-
-
-
