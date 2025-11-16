@@ -5,6 +5,9 @@
 // Cluster configuration for a matmul testbench system.
 {
   // gemm configurations
+  granularity_a: 1,
+  granularity_b: 16,
+  granularity_c: 4,
   array_shape: 1,
   data_type: 0,
   transposed_A: 1,
@@ -15,4 +18,5 @@
   channel_en_C: 1,
   // 0 for output, 1 for weight, 2 for input
   stationary: 0,
+  quantization: 1,
 }
