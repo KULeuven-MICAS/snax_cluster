@@ -14,6 +14,7 @@ import sys
 import os
 import math
 import struct
+import random
 
 # Add data utility path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
@@ -24,6 +25,7 @@ from snax_utils import (  # noqa E402
     block_gemm_golden_model,
     block_gemm_golden_model_fp8,
     align_wide_addr,
+    postprocessing_simd_golden_model_V3,
 )  # noqa E402
 
 np.random.seed(42)
@@ -248,18 +250,6 @@ def emit_matmul_data(**kwargs):
     a_len = snax_acc_cfg["snax_versacore_input_a_element_width"][data_type]
     b_len = snax_acc_cfg["snax_versacore_input_b_element_width"][data_type]
     c_len = snax_acc_cfg["snax_versacore_input_c_element_width"][data_type]
-
-    # For FP8 data type, we need to handle floating point values
-    if (
-        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
-    ):  # FP8 data type
-        A_MIN, A_MAX = -10.0, 10.0  # FP8 range
-        B_MIN, B_MAX = -10.0, 10.0  # FP8 range
-        C_MIN, C_MAX = -10.0, 10.0  # FP32 range for accumulation
-    else:  # Integer data types
-        A_MIN, A_MAX = signed_int_range(a_len)
-        B_MIN, B_MAX = signed_int_range(b_len)
-        C_MIN, C_MAX = signed_int_range(c_len)
 
     a_array_width = snax_acc_cfg["snax_versacore_array_input_a_width"]
     b_array_width = snax_acc_cfg["snax_versacore_array_input_b_width"]
@@ -574,23 +564,50 @@ def emit_matmul_data(**kwargs):
     # streamer D settings
     # -----------------------------------------------------------
     # spatial settings
+
+    non_quantization_d_len = c_len
+    quantization_d_len = 8
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
-    if meshCol * meshRow * c_len >= snax_versacore_serial_c_d_width:
-        d_spatial_bound_0 = snax_versacore_serial_c_d_width / bankWidth
-    else:
-        d_spatial_bound_0 = meshCol * meshRow * c_len / bankWidth
-    # temporal settings
     data_str += [
         format_scalar_definition(
-            "int32_t",
-            "D32tlbound0",
-            max(
-                1,
-                meshCol * meshRow * c_len / snax_versacore_serial_c_d_width,
-            ),
+            "int32_t", "quantization_enable", kwargs["quantization"]
         )
     ]
-    # assert(meshCol * meshRow * c_len >= snax_versacore_serial_c_d_width)
+    if kwargs["quantization"] == 1:
+        actual_d_width = snax_versacore_serial_c_d_width
+    elif meshCol * meshRow * non_quantization_d_len >= snax_versacore_serial_c_d_width:
+        actual_d_width = snax_versacore_serial_c_d_width
+    else:
+        actual_d_width = meshCol * meshRow * non_quantization_d_len
+
+    d_spatial_bound_0 = actual_d_width / bankWidth
+
+    # temporal settings
+    if kwargs["quantization"] == 1:
+        if meshCol * meshRow * quantization_d_len > snax_versacore_serial_c_d_width:
+            D32tlbound0 = (
+                meshCol * meshRow * quantization_d_len / snax_versacore_serial_c_d_width
+            )
+        else:
+            D32tlbound0 = 1
+            assert (
+                kwargs["M"]
+                * kwargs["N"]
+                * meshRow
+                * meshCol
+                * quantization_d_len
+                % snax_versacore_serial_c_d_width
+                == 0
+            ), "The quantization extension cannot output correct result."
+    elif meshCol * meshRow * non_quantization_d_len > snax_versacore_serial_c_d_width:
+        D32tlbound0 = (
+            meshCol * meshRow * non_quantization_d_len / snax_versacore_serial_c_d_width
+        )
+    else:
+        D32tlbound0 = 1
+
+    data_str += [format_scalar_definition("int32_t", "D32tlbound0", D32tlbound0)]
+
     data_str += [
         format_scalar_definition(
             "int32_t", "D32tlstride0", d_spatial_bound_0 * (bankWidth / 8)
@@ -598,33 +615,68 @@ def emit_matmul_data(**kwargs):
     ]
 
     if stationary == output_stationary:
-
-        data_str += [format_scalar_definition("int32_t", "D32tlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "D32tlstride1", c_len * meshRow * meshCol / 8
+        if kwargs["quantization"] == 1:
+            output_matrix_per_store = (
+                1
+                if meshCol * meshRow * quantization_d_len
+                > snax_versacore_serial_c_d_width
+                else snax_versacore_serial_c_d_width
+                / (meshCol * meshRow * quantization_d_len)
             )
-        ]
-        data_str += [format_scalar_definition("int32_t", "D32tlbound2", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "D32tlstride2",
-                N * c_len * meshRow * meshCol / 8,
+            data_str += [
+                format_scalar_definition(
+                    "int32_t", "output_matrix_per_store", output_matrix_per_store
+                )
+            ]
+            D32tlbound1 = N * M / output_matrix_per_store
+            data_str += [
+                format_scalar_definition("int32_t", "D32tlbound1", D32tlbound1)
+            ]
+            D32tlstride1 = (
+                output_matrix_per_store * quantization_d_len * meshRow * meshCol / 8
             )
-        ]
+            data_str += [
+                format_scalar_definition("int32_t", "D32tlstride1", D32tlstride1)
+            ]
+            D32tlbound2 = M * N / (D32tlbound1)
+            data_str += [
+                format_scalar_definition("int32_t", "D32tlbound2", D32tlbound2)
+            ]
+            data_str += [
+                format_scalar_definition(
+                    "int32_t", "D32tlstride2", D32tlbound1 * D32tlstride1
+                )
+            ]
+        else:
+            data_str += [format_scalar_definition("int32_t", "D32tlbound1", N)]
+            data_str += [
+                format_scalar_definition(
+                    "int32_t",
+                    "D32tlstride1",
+                    non_quantization_d_len * meshRow * meshCol / 8,
+                )
+            ]
+            data_str += [format_scalar_definition("int32_t", "D32tlbound2", M)]
+            data_str += [
+                format_scalar_definition(
+                    "int32_t",
+                    "D32tlstride2",
+                    N * non_quantization_d_len * meshRow * meshCol / 8,
+                )
+            ]
 
         # D is not used in this case
         data_str += [format_scalar_definition("int32_t", "D32tlbound3", 1)]
         data_str += [format_scalar_definition("int32_t", "D32tlstride3", 0)]
 
     elif stationary == weight_stationary:
+        assert kwargs["quantization"] == 0, "invalid configuration"
         data_str += [format_scalar_definition("int32_t", "D32tlbound1", M)]
         data_str += [
             format_scalar_definition(
                 "int32_t",
                 "D32tlstride1",
-                N * c_len * meshRow * meshCol / 8,
+                N * non_quantization_d_len * meshRow * meshCol / 8,
             )
         ]
         data_str += [format_scalar_definition("int32_t", "D32tlbound2", K)]
@@ -640,15 +692,18 @@ def emit_matmul_data(**kwargs):
             format_scalar_definition(
                 "int32_t",
                 "D32tlstride3",
-                c_len * meshRow * meshCol / 8,
+                non_quantization_d_len * meshRow * meshCol / 8,
             )
         ]
 
     elif stationary == input_stationary:
+        assert kwargs["quantization"] == 0, "invalid configuration"
         data_str += [format_scalar_definition("int32_t", "D32tlbound1", N)]
         data_str += [
             format_scalar_definition(
-                "int32_t", "D32tlstride1", c_len * meshRow * meshCol / 8
+                "int32_t",
+                "D32tlstride1",
+                non_quantization_d_len * meshRow * meshCol / 8,
             )
         ]
         data_str += [format_scalar_definition("int32_t", "D32tlbound2", K)]
@@ -658,7 +713,7 @@ def emit_matmul_data(**kwargs):
             format_scalar_definition(
                 "int32_t",
                 "D32tlstride3",
-                N * c_len * meshRow * meshCol / 8,
+                N * non_quantization_d_len * meshRow * meshCol / 8,
             )
         ]
 
@@ -667,13 +722,14 @@ def emit_matmul_data(**kwargs):
     )
 
     channel_en_D = [0] * D_enabled_channel_CSR_num
-    channel_en_D_bits = max(
-        1,
-        min(
-            int(math.ceil(meshRow * meshCol * c_len / bankWidth)),
+    if kwargs["quantization"] == 1:
+        channel_en_D_bits = int(math.ceil(snax_versacore_serial_c_d_width / bankWidth))
+    else:
+        channel_en_D_bits = min(
+            int(math.ceil(meshRow * meshCol * non_quantization_d_len / bankWidth)),
             int(math.ceil(snax_versacore_serial_c_d_width / bankWidth)),
-        ),
-    )
+        )
+
     channel_en_D = gen_channel_enable_CSR(
         channel_en_D,
         channel_en_D_bits,
@@ -682,10 +738,12 @@ def emit_matmul_data(**kwargs):
         "int32_t channel_en_D[] = { " + ", ".join(map(str, channel_en_D)) + " };"
     ]
 
-    d_data_length = M * N * meshRow * meshCol
-    data_str += [
-        format_scalar_definition("int32_t", "d_data_length", d_data_length * c_len / 8)
-    ]
+    d_data_length = (
+        M * N * meshRow * meshCol * quantization_d_len / 8
+        if kwargs["quantization"] == 1
+        else M * N * meshRow * meshCol * non_quantization_d_len / 8
+    )
+    data_str += [format_scalar_definition("int32_t", "d_data_length", d_data_length)]
 
     # -----------------------------------------------------------
     # -------------------------base address----------------------
@@ -732,6 +790,20 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int8_t", "subtraction_a", subtraction_a)]
     data_str += [format_scalar_definition("int8_t", "subtraction_b", subtraction_b)]
 
+    # For FP8 data type, we need to handle floating point values
+    if (
+        snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
+    ):  # FP8 data type
+        A_MIN, A_MAX = -10.0, 10.0  # FP8 range
+        B_MIN, B_MAX = -10.0, 10.0  # FP8 range
+        C_MIN, C_MAX = -10.0, 10.0  # FP32 range for accumulation
+    else:  # Integer data types
+        # A_MIN, A_MAX = signed_int_range(a_len)
+        # B_MIN, B_MAX = signed_int_range(b_len)
+        A_MIN, A_MAX = 0, 1  # limit the range to avoid overflow
+        B_MIN, B_MAX = 0, 1  # limit the range to avoid overflow
+        C_MIN, C_MAX = -8388608, 8388609  # large enough to avoid overflow
+
     # Generate test data based on data type
     if (
         snax_acc_cfg["snax_versacore_input_a_data_type"][data_type] == "Float"
@@ -757,7 +829,6 @@ def emit_matmul_data(**kwargs):
             C = np.random.uniform(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(
                 -1
             )
-            # C = np.random.uniform(1, 1, size=(M, N, meshRow, meshCol)).reshape(-1)
         else:
             C = np.zeros((M, N, meshRow, meshCol)).reshape(-1)
 
@@ -845,6 +916,40 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_B", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_C", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_D32", 0)]
+
+    # test data for quantization
+    # Make random parameters for the TOSA.Rescale operation
+    shift_i = random.randint(24, 48)
+    multiplier = 1140768826 * 2 // (2 ** (48 - shift_i))
+    max_in_range = 8388608
+    input_zp_i = random.randint(-10000000, 10000000) // (2 ** (48 - shift_i))
+    output_zp_i = random.randint(-3, 3)
+
+    data_str += [format_scalar_definition("uint32_t", "shift_i", shift_i)]
+    data_str += [format_scalar_definition("uint32_t", "multiplier_i", multiplier)]
+    data_str += [format_scalar_definition("int32_t", "input_zp_i", input_zp_i)]
+    data_str += [format_scalar_definition("int32_t", "output_zp_i", output_zp_i)]
+
+    output_matrix = []
+
+    for data_element in D:
+        output_matrix.append(
+            # V3 Holds the approximation of the TOSA.Rescale operation.
+            # use V2 for the exact model
+            postprocessing_simd_golden_model_V3(
+                data_element,
+                input_zp_i,
+                output_zp_i,
+                shift_i,
+                max_in_range,
+                -max_in_range,
+                True,
+                multiplier,
+            )
+        )
+    output_matrix = np.array(output_matrix, dtype=np.int8)
+
+    data_str += [format_vector_definition("int8_t", "D_quantized", output_matrix)]
 
     data_str = "\n\n".join(data_str)
 

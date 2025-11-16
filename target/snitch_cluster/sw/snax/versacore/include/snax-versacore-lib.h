@@ -47,7 +47,8 @@ void set_versacore_streamer_csr(
 
     int32_t delta_local_d32, int32_t* D32slstride, int32_t* D32tlbound,
     int32_t* D32tlstride, int32_t set_addr_remap_index_D32,
-    int32_t* channel_en_D, int32_t array_shape);
+    int32_t* channel_en_D, int32_t array_shape, uint32_t quantization_enable, uint32_t shift_i, uint32_t multiplier_i,
+    int32_t input_zp_i, int32_t output_zp_i);
 
 // Set CSR to start STREAMER
 inline void set_versacore_streamer_start() { csrw_ss(STREAMER_START_CSR, 1); }

@@ -378,8 +378,10 @@ Naming convention:
                     64
                 ]
             ]
+            datapath_extensions: [{},{HasRescaleDownEfficient: {in_elementWidth: 32, out_elementWidth: 8, dataWidth:1024}}]
         }
         has_flexible_transpose: true,
+        has_rescaledown: true,
         snax_library_name: versacore
     }
 }

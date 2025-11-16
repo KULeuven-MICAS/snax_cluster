@@ -29,7 +29,8 @@ void set_versacore_streamer_csr(
 
     int32_t delta_local_d32, int32_t* D32slstride, int32_t* D32tlbound,
     int32_t* D32tlstride, int32_t set_addr_remap_index_D32,
-    int32_t* channel_en_D, int32_t array_shape) {
+    int32_t* channel_en_D, int32_t array_shape, uint32_t quantization_enable, uint32_t shift_i, uint32_t multiplier_i,
+    int32_t input_zp_i, int32_t output_zp_i) {
 #ifdef SNAX_VERSACORE_OUTPUT_STATIONARY_ONLY
 
     // ----------------------------------A-----------------------------------
@@ -182,6 +183,14 @@ void set_versacore_streamer_csr(
     csrw_ss(READER_EXTENSION_1_CSR_BASE + 1, array_shape);
 #endif
 
+#ifdef READER_WRITER_EXTENSION_1_CSR_BASE
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE, quantization_enable);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, input_zp_i);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, multiplier_i);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 4, shift_i);
+#endif
+
 #else
     // ----------------------------------A-----------------------------------
     // ----------------------------------A-----------------------------------
@@ -323,11 +332,21 @@ void set_versacore_streamer_csr(
 
     // set the transpose
 #ifdef READER_EXTENSION_0_CSR_BASE
-    csrw_ss(READER_EXTENSION_0_CSR_BASE, transpose_A == 1 ? 0 : 1);
+    csrw_ss(READER_EXTENSION_0_CSR_BASE, transpose_A == 1 ? 1 : 0);
+    csrw_ss(READER_EXTENSION_0_CSR_BASE + 1, array_shape);
 #endif
 
 #ifdef READER_EXTENSION_1_CSR_BASE
-    csrw_ss(READER_EXTENSION_1_CSR_BASE, transpose_B == 1 ? 0 : 1);
+    csrw_ss(READER_EXTENSION_1_CSR_BASE, transpose_B == 1 ? 1 : 0);
+    csrw_ss(READER_EXTENSION_1_CSR_BASE + 1, array_shape);
+#endif
+
+#ifdef READER_WRITER_EXTENSION_1_CSR_BASE
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE, quantization_enable);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, input_zp_i);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, multiplier_i);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 4, shift_i);
 #endif
 
 #endif
