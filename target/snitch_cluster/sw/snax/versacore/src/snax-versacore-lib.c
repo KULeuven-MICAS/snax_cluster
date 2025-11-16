@@ -29,7 +29,7 @@ void set_versacore_streamer_csr(
 
     int32_t delta_local_d32, int32_t* D32slstride, int32_t* D32tlbound,
     int32_t* D32tlstride, int32_t set_addr_remap_index_D32,
-    int32_t* channel_en_D) {
+    int32_t* channel_en_D, int32_t array_shape) {
 #ifdef SNAX_VERSACORE_OUTPUT_STATIONARY_ONLY
 
     // ----------------------------------A-----------------------------------
@@ -173,11 +173,13 @@ void set_versacore_streamer_csr(
 
     // set the transpose
 #ifdef READER_EXTENSION_0_CSR_BASE
-    csrw_ss(READER_EXTENSION_0_CSR_BASE, transpose_A == 1 ? 0 : 1);
+    csrw_ss(READER_EXTENSION_0_CSR_BASE, transpose_A == 1 ? 1 : 0);
+    csrw_ss(READER_EXTENSION_0_CSR_BASE + 1, array_shape);
 #endif
 
 #ifdef READER_EXTENSION_1_CSR_BASE
-    csrw_ss(READER_EXTENSION_1_CSR_BASE, transpose_B == 1 ? 0 : 1);
+    csrw_ss(READER_EXTENSION_1_CSR_BASE, transpose_B == 1 ? 1 : 0);
+    csrw_ss(READER_EXTENSION_1_CSR_BASE + 1, array_shape);
 #endif
 
 #else

@@ -266,29 +266,8 @@ Naming convention:
             writer_extensions:
             {
                 HasVerilogMemset: {}
-                HasTransposer:
-                {
-                    row:
-                    [
-                        8
-                        8
-                    ]
-                    col:
-                    [
-                        8
-                        8
-                    ]
-                    elementWidth:
-                    [
-                        8
-                        16
-                    ]
-                }
             }
-            reader_extensions:
-            {
-                HasMaxPool: {}
-            }
+            reader_extensions:{}
         }
         xdma: true
         xssr: false
@@ -353,6 +332,7 @@ Naming convention:
                     64
                 ]
             ]
+            datapath_extensions: [{HasTransposer: {row:[32, 1, 4, 8, 4], col:[4, 8, 8, 8, 64], elementWidth:[8, 8, 8, 8, 8], dataWidth:2048}}, {HasTransposer: {row:[4, 8, 8, 8, 64], col:[32, 64, 64, 64, 4], elementWidth:[8, 8, 8, 8, 8], dataWidth:4096}}]
         }
         data_reader_writer_params:
         {
@@ -399,6 +379,7 @@ Naming convention:
                 ]
             ]
         }
+        has_flexible_transpose: true,
         snax_library_name: versacore
     }
 }

@@ -352,12 +352,7 @@ def emit_matmul_data(**kwargs):
 
     A_enabled_channel_CSR_num = int(math.ceil(a_array_width / bankWidth / 32))
     channel_en_A = [0] * A_enabled_channel_CSR_num
-    # related to if this is a wide channel or not
-    # if wide, must be divisible by 8
-    # if narrow, must be divisible by 1
-    channel_en_A_bits = max(
-        8, int((meshRow * tileSize * a_len / bankWidth + 7) // 8 * 8)
-    )
+    channel_en_A_bits = max(1, int(math.ceil(meshRow * tileSize * a_len / bankWidth)))
     channel_en_A = gen_channel_enable_CSR(
         channel_en_A,
         channel_en_A_bits,
@@ -441,9 +436,7 @@ def emit_matmul_data(**kwargs):
 
     B_enabled_channel_CSR_num = int(math.ceil(b_array_width / bankWidth / 32))
     channel_en_B = [0] * B_enabled_channel_CSR_num
-    channel_en_B_bits = max(
-        8, int((meshCol * tileSize * b_len / bankWidth + 7) // 8 * 8)
-    )
+    channel_en_B_bits = max(1, int(math.ceil(meshCol * tileSize * b_len / bankWidth)))
     channel_en_B = gen_channel_enable_CSR(
         channel_en_B,
         channel_en_B_bits,
@@ -556,7 +549,13 @@ def emit_matmul_data(**kwargs):
     channel_en_C = [0] * C_enabled_channel_CSR_num
 
     if enable_full_C == 1:
-        channel_en_C_bits = int((meshRow * meshCol * c_len / bankWidth + 7) // 8 * 8)
+        channel_en_C_bits = max(
+            1,
+            min(
+                int(math.ceil(meshRow * meshCol * c_len / bankWidth)),
+                int(math.ceil(snax_versacore_serial_c_d_width / bankWidth)),
+            ),
+        )
     else:
         channel_en_C_bits = 0
 
@@ -668,7 +667,13 @@ def emit_matmul_data(**kwargs):
     )
 
     channel_en_D = [0] * D_enabled_channel_CSR_num
-    channel_en_D_bits = int((meshRow * meshCol * c_len / bankWidth + 7) // 8 * 8)
+    channel_en_D_bits = max(
+        1,
+        min(
+            int(math.ceil(meshRow * meshCol * c_len / bankWidth)),
+            int(math.ceil(snax_versacore_serial_c_d_width / bankWidth)),
+        ),
+    )
     channel_en_D = gen_channel_enable_CSR(
         channel_en_D,
         channel_en_D_bits,
@@ -687,10 +692,17 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
 
     delta_local_a = 0
+    delta_local_a = align_wide_addr(delta_local_a, kwargs["granularity_a"] * 8)
     delta_local_b = K * M * (meshRow * tileSize * a_len / 8)
-    delta_local_b = align_wide_addr(delta_local_b)
+    # the address alignment for B is 128 bytes
+    # in the new sparse interconnect
+    # as the data granularity now is 16*64 bits!!!
+    delta_local_b = align_wide_addr(delta_local_b, kwargs["granularity_b"] * 8)
     delta_local_c = delta_local_b + K * N * (meshCol * tileSize * b_len / 8)
-    delta_local_c = align_wide_addr(delta_local_c)
+    # the address alignment for B is 32 bytes
+    # in the new sparse interconnect
+    # as the data granularity now is 4*64 bits!!!
+    delta_local_c = align_wide_addr(delta_local_c, kwargs["granularity_c"] * 8)
 
     if stationary == output_stationary:
         delta_local_d = delta_local_c

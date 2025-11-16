@@ -281,6 +281,13 @@ def streamer_csr_num(acc_cfgs):
         if acc_cfgs["snax_streamer_cfg"]["has_transpose"]:
             streamer_csr_num += 2
 
+    # Note: this only works for transposer
+    # with multiple possible shapes and
+    # for both two streamers have the extension!
+    if "has_flexible_transpose" in acc_cfgs["snax_streamer_cfg"]:
+        if acc_cfgs["snax_streamer_cfg"]["has_flexible_transpose"]:
+            streamer_csr_num += 4
+
     if "has_C_broadcast" in acc_cfgs["snax_streamer_cfg"]:
         if acc_cfgs["snax_streamer_cfg"]["has_C_broadcast"]:
             streamer_csr_num += 1
@@ -587,9 +594,9 @@ def main():
                 chisel_path=chisel_acc_path,
                 chisel_param="snax_acc.versacore.VersaCoreGen"
                 + " --versacoreCfg "
-                + hjson.dumpsJSON(obj=snax_versacore_cfg, separators=(",", ":")).replace(
-                    " ", ""
-                ),
+                + hjson.dumpsJSON(
+                    obj=snax_versacore_cfg, separators=(",", ":")
+                ).replace(" ", ""),
                 gen_path=" --hw-target-dir " + rtl_target_path,
             )
         elif acc_cfgs[i]["snax_acc_name"] == "snax_data_reshuffler":
@@ -649,14 +656,16 @@ def main():
             + "_xdma/"
             + " --sw-target-dir "
             + args.gen_path
-            + "../sw/snax/xdma/include/snax-xdma-addr.h"
+            + "../sw/snax/xdma/include/snax-xdma-addr.h",
         )
 
     # ---------------------------------------
     # Generating Sparse Interconnect
     # ---------------------------------------
-    if "sparse_interconnect" in cfg["cluster"]["tcdm"] and \
-            cfg["cluster"]["tcdm"]["sparse_interconnect"]:
+    if (
+        "sparse_interconnect" in cfg["cluster"]["tcdm"]
+        and cfg["cluster"]["tcdm"]["sparse_interconnect"]
+    ):
         print("------------------------------------------------")
         print("    Generating Sparse Interconnect")
         print("------------------------------------------------")
@@ -666,14 +675,15 @@ def main():
         narrow_ports = 0
         for i in range(num_cores):
             if "snax_acc_cfg" in cfg_cores[i]:
-                for acc in cfg_cores[i]['snax_acc_cfg']:
-                    assert 'snax_tcdm_ports' in acc, \
-                        "Please specify snax_tcdm_ports in the accelerator configuration"
-                    narrow_ports += int(acc['snax_tcdm_ports'])
+                for acc in cfg_cores[i]["snax_acc_cfg"]:
+                    assert (
+                        "snax_tcdm_ports" in acc
+                    ), "Please specify snax_tcdm_ports in the accelerator configuration"
+                    narrow_ports += int(acc["snax_tcdm_ports"])
                     if "sparse_interconnect_config" in acc:
                         sparse_config.extend(acc["sparse_interconnect_config"])
                     else:
-                        sparse_config.append((int(acc['snax_tcdm_ports']), 1))
+                        sparse_config.append((int(acc["snax_tcdm_ports"]), 1))
             if "snax_xdma_cfg" in cfg_cores[i]:
                 narrow_ports += 16
                 sparse_config.append((16, 1))
@@ -686,8 +696,12 @@ def main():
         sparse_config.append((1, 1))
         cfg["cluster"]["sparse_interconnect_cfg"] = {}
         cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"] = narrow_ports
-        cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"] = int(cfg["cluster"]["tcdm"]["banks"])
-        cfg["cluster"]["sparse_interconnect_cfg"]["sparse_config"] = json.dumps(sparse_config)
+        cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"] = int(
+            cfg["cluster"]["tcdm"]["banks"]
+        )
+        cfg["cluster"]["sparse_interconnect_cfg"]["sparse_config"] = json.dumps(
+            sparse_config
+        )
 
         tpl_rtl_wrapper_file = args.tpl_path + "sparse_interconnect_wrapper.sv.tpl"
 
@@ -738,7 +752,7 @@ def main():
             + f"\"{cfg['cluster']['sparse_interconnect_cfg']['sparse_config']}\""
             + " --hw-target-dir "
             + str(args.gen_path),
-            gen_path=""
+            gen_path="",
         )
 
     # ---------------------------------------
