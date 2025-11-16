@@ -26,6 +26,7 @@ from snax_utils import (  # noqa E402
     block_gemm_golden_model_fp8,
     align_wide_addr,
     postprocessing_simd_golden_model_V3,
+    int32_to_fp16_golden,
 )  # noqa E402
 
 np.random.seed(42)
@@ -565,15 +566,15 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
     # spatial settings
 
-    non_quantization_d_len = c_len
+    non_quantization_d_len = c_len if kwargs["int32tofp16_enable"] == 0 else 16
     quantization_d_len = 8
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
     data_str += [
         format_scalar_definition(
-            "int32_t", "quantization_enable", kwargs["quantization"]
+            "int32_t", "quantization_enable", kwargs["quantization_enable"]
         )
     ]
-    if kwargs["quantization"] == 1:
+    if kwargs["quantization_enable"] == 1:
         actual_d_width = snax_versacore_serial_c_d_width
     elif meshCol * meshRow * non_quantization_d_len >= snax_versacore_serial_c_d_width:
         actual_d_width = snax_versacore_serial_c_d_width
@@ -583,7 +584,7 @@ def emit_matmul_data(**kwargs):
     d_spatial_bound_0 = actual_d_width / bankWidth
 
     # temporal settings
-    if kwargs["quantization"] == 1:
+    if kwargs["quantization_enable"] == 1:
         if meshCol * meshRow * quantization_d_len > snax_versacore_serial_c_d_width:
             D32tlbound0 = (
                 meshCol * meshRow * quantization_d_len / snax_versacore_serial_c_d_width
@@ -615,7 +616,7 @@ def emit_matmul_data(**kwargs):
     ]
 
     if stationary == output_stationary:
-        if kwargs["quantization"] == 1:
+        if kwargs["quantization_enable"] == 1:
             output_matrix_per_store = (
                 1
                 if meshCol * meshRow * quantization_d_len
@@ -642,11 +643,7 @@ def emit_matmul_data(**kwargs):
             data_str += [
                 format_scalar_definition("int32_t", "D32tlbound2", D32tlbound2)
             ]
-            data_str += [
-                format_scalar_definition(
-                    "int32_t", "D32tlstride2", 0
-                )
-            ]
+            data_str += [format_scalar_definition("int32_t", "D32tlstride2", 0)]
         else:
             data_str += [format_scalar_definition("int32_t", "D32tlbound1", N)]
             data_str += [
@@ -670,7 +667,7 @@ def emit_matmul_data(**kwargs):
         data_str += [format_scalar_definition("int32_t", "D32tlstride3", 0)]
 
     elif stationary == weight_stationary:
-        assert kwargs["quantization"] == 0, "invalid configuration"
+        assert kwargs["quantization_enable"] == 0, "invalid configuration"
         data_str += [format_scalar_definition("int32_t", "D32tlbound1", M)]
         data_str += [
             format_scalar_definition(
@@ -697,7 +694,7 @@ def emit_matmul_data(**kwargs):
         ]
 
     elif stationary == input_stationary:
-        assert kwargs["quantization"] == 0, "invalid configuration"
+        assert kwargs["quantization_enable"] == 0, "invalid configuration"
         data_str += [format_scalar_definition("int32_t", "D32tlbound1", N)]
         data_str += [
             format_scalar_definition(
@@ -722,7 +719,7 @@ def emit_matmul_data(**kwargs):
     )
 
     channel_en_D = [0] * D_enabled_channel_CSR_num
-    if kwargs["quantization"] == 1:
+    if kwargs["quantization_enable"] == 1:
         channel_en_D_bits = int(math.ceil(snax_versacore_serial_c_d_width / bankWidth))
     else:
         channel_en_D_bits = min(
@@ -740,7 +737,7 @@ def emit_matmul_data(**kwargs):
 
     d_data_length = (
         M * N * meshRow * meshCol * quantization_d_len / 8
-        if kwargs["quantization"] == 1
+        if kwargs["quantization_enable"] == 1
         else M * N * meshRow * meshCol * non_quantization_d_len / 8
     )
     data_str += [format_scalar_definition("int32_t", "d_data_length", d_data_length)]
@@ -798,11 +795,9 @@ def emit_matmul_data(**kwargs):
         B_MIN, B_MAX = -10.0, 10.0  # FP8 range
         C_MIN, C_MAX = -10.0, 10.0  # FP32 range for accumulation
     else:  # Integer data types
-        # A_MIN, A_MAX = signed_int_range(a_len)
-        # B_MIN, B_MAX = signed_int_range(b_len)
-        A_MIN, A_MAX = 0, 1  # limit the range to avoid overflow
-        B_MIN, B_MAX = 0, 1  # limit the range to avoid overflow
-        C_MIN, C_MAX = -8388608, 8388609  # large enough to avoid overflow
+        A_MIN, A_MAX = signed_int_range(a_len)
+        B_MIN, B_MAX = signed_int_range(b_len)
+        C_MIN, C_MAX = -(2**10), 2**10  # large enough to avoid overflow
 
     # Generate test data based on data type
     if (
@@ -950,6 +945,25 @@ def emit_matmul_data(**kwargs):
     output_matrix = np.array(output_matrix, dtype=np.int8)
 
     data_str += [format_vector_definition("int8_t", "D_quantized", output_matrix)]
+
+    # Int32 to FP16 conversion
+    data_str += [
+        format_scalar_definition(
+            "int32_t", "int32tofp16_enable", kwargs["int32tofp16_enable"]
+        )
+    ]
+
+    assert (
+        kwargs["quantization_enable"] + kwargs["int32tofp16_enable"] <= 1
+    ), "Only one of quantization and int32 to fp16 conversion can be enabled."
+
+    fp_output_matrix = []
+
+    for data_element in D:
+        fp_output_matrix.append(int32_to_fp16_golden(data_element))
+    fp_output_matrix = np.array(fp_output_matrix, dtype=np.int16)
+
+    data_str += [format_vector_definition("int16_t", "D_int32tofp16", fp_output_matrix)]
 
     data_str = "\n\n".join(data_str)
 

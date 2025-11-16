@@ -697,3 +697,62 @@ def sumpool_golden(
                 sum_value = int(np.sum(kernel_region))
                 output[i // m_stride, j // n_stride, c] = sum_value
     return output
+
+def int32_to_fp16_golden(x: int) -> int:
+    """
+    Convert signed int32 to IEEE 754 half-precision (binary16).
+    Returns a 16-bit UNSIGNED integer (0..65535).
+    """
+
+    # Handle zero
+    if x == 0:
+        return 0
+
+    # Sign
+    sign = 0
+    if x < 0:
+        sign = 1
+        x = -x
+
+    # Convert to 32-bit float using Python
+    f = float(x)
+
+    # Extract IEEE-754 single precision bits
+    import struct
+    bits = struct.unpack('>I', struct.pack('>f', f))[0]
+
+    sign32 = (bits >> 31) & 1
+    exp32  = (bits >> 23) & 0xFF
+    frac32 = bits & 0x7FFFFF
+
+    # Reuse sign32 instead of Python float sign
+    sign = sign32
+
+    # IEEE-754 conversion (float32 → float16)
+    exp16 = exp32 - 127 + 15
+
+    if exp16 <= 0:
+        # Denormal handling
+        if exp16 < -10:
+            return sign << 15
+        frac = (frac32 | 0x800000) >> (1 - exp16 + 13)
+        return (sign << 15) | frac
+
+    elif exp16 >= 31:
+        # Overflow → INF
+        return (sign << 15) | (0x1F << 10)
+
+    # Normal case
+    frac16 = frac32 >> 13
+
+    # Round to nearest-even
+    if (frac32 >> 12) & 1:
+        if (frac32 & 0xFFF) != 0:
+            frac16 += 1
+            if frac16 == 0x400:
+                frac16 = 0
+                exp16 += 1
+                if exp16 >= 31:
+                    return (sign << 15) | (0x1F << 10)
+
+    return (sign << 15) | (exp16 << 10) | (frac16 & 0x3FF)

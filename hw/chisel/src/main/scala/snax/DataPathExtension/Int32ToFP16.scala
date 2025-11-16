@@ -16,7 +16,7 @@ import chisel3.util._
   *   - Saturates to +/- Infinity on overflow.
   *   - Zero maps exactly to +0 or -0 (sign bit from input).
   */
-class Int32ToFp16 extends Module {
+class Int32ToFp16PE extends Module {
   val io = IO(new Bundle {
     val in  = Input(SInt(32.W))
     val out = Output(UInt(16.W)) // IEEE-754 fp16
@@ -94,4 +94,64 @@ class Int32ToFp16 extends Module {
   }
 
   io.out := result
+}
+
+class Int32ToFp16Converter(dataWidth: Int = 512)
+                          (implicit extensionParam: DataPathExtensionParam)
+  extends DataPathExtension {
+
+  require(dataWidth % 32 == 0, "dataWidth must be multiple of 32")
+  val numPEs = dataWidth / 32
+
+  val peArray = Seq.fill(numPEs) {
+    Module(new Int32ToFp16PE() {
+      override def desiredName = extensionParam.moduleName + "_int32_to_fp16_pe"
+    })
+  }
+
+  // Correct wire declarations
+  val pe_inputs  = Wire(Vec(numPEs, SInt(32.W)))
+  val pe_outputs = Wire(Vec(numPEs, UInt(16.W)))
+
+  // Extract each 32-bit block from ext_data_i
+  for (i <- 0 until numPEs) {
+    val hi = 32*(i+1) - 1
+    val lo = 32*i
+    pe_inputs(i) := ext_data_i.bits(hi, lo).asSInt
+  }
+
+  // Connect PEs
+  for (i <- 0 until numPEs) {
+    peArray(i).io.in  := pe_inputs(i)
+    pe_outputs(i)     := peArray(i).io.out
+  }
+
+  // Pack 16-bit FP outputs back into the unified bus
+  ext_data_o.bits := Cat(pe_outputs.reverse)
+
+  // Pass through valid/ready signals
+  ext_data_o.valid := ext_data_i.valid
+  ext_data_i.ready := ext_data_o.ready
+
+  ext_busy_o := false.B
+}
+
+class HasInt32ToFp16Converter(dataWidth: Int = 512)
+    extends HasDataPathExtension {
+  // The length of row, col, and elementWidth should be the same
+  require(dataWidth % 32 == 0, "dataWidth must be multiple of 32")
+
+  implicit val extensionParam: DataPathExtensionParam =
+    new DataPathExtensionParam(
+      moduleName = s"Int32ToFp16Converter_${dataWidth}",
+      userCsrNum = 1,
+      dataWidth  = dataWidth
+    )
+
+  def instantiate(clusterName: String): Int32ToFp16Converter =
+    Module(
+      new Int32ToFp16Converter(dataWidth) {
+        override def desiredName = clusterName + namePostfix
+      }
+    )
 }
