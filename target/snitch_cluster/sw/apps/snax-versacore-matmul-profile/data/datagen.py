@@ -566,28 +566,28 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
     # spatial settings
 
-    non_quantization_d_len = c_len if kwargs["int32tofp16_enable"] == 0 else 16
-    quantization_d_len = 8
+    non_datapath_extension_d_len = c_len
+    datapath_extension_d_len = 8 if kwargs["quantization_enable"] == 1 else 16
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
     data_str += [
         format_scalar_definition(
             "int32_t", "quantization_enable", kwargs["quantization_enable"]
         )
     ]
-    if kwargs["quantization_enable"] == 1:
+    if kwargs["quantization_enable"] == 1 or kwargs["int32tofp16_enable"] == 1:
         actual_d_width = snax_versacore_serial_c_d_width
-    elif meshCol * meshRow * non_quantization_d_len >= snax_versacore_serial_c_d_width:
+    elif meshCol * meshRow * non_datapath_extension_d_len >= snax_versacore_serial_c_d_width:
         actual_d_width = snax_versacore_serial_c_d_width
     else:
-        actual_d_width = meshCol * meshRow * non_quantization_d_len
+        actual_d_width = meshCol * meshRow * non_datapath_extension_d_len
 
     d_spatial_bound_0 = actual_d_width / bankWidth
 
     # temporal settings
-    if kwargs["quantization_enable"] == 1:
-        if meshCol * meshRow * quantization_d_len > snax_versacore_serial_c_d_width:
+    if kwargs["quantization_enable"] == 1 or kwargs["int32tofp16_enable"] == 1:
+        if meshCol * meshRow * datapath_extension_d_len > snax_versacore_serial_c_d_width:
             D32tlbound0 = (
-                meshCol * meshRow * quantization_d_len / snax_versacore_serial_c_d_width
+                meshCol * meshRow * datapath_extension_d_len / snax_versacore_serial_c_d_width
             )
         else:
             D32tlbound0 = 1
@@ -596,13 +596,13 @@ def emit_matmul_data(**kwargs):
                 * kwargs["N"]
                 * meshRow
                 * meshCol
-                * quantization_d_len
+                * datapath_extension_d_len
                 % snax_versacore_serial_c_d_width
                 == 0
             ), "The quantization extension cannot output correct result."
-    elif meshCol * meshRow * non_quantization_d_len > snax_versacore_serial_c_d_width:
+    elif meshCol * meshRow * non_datapath_extension_d_len > snax_versacore_serial_c_d_width:
         D32tlbound0 = (
-            meshCol * meshRow * non_quantization_d_len / snax_versacore_serial_c_d_width
+            meshCol * meshRow * non_datapath_extension_d_len / snax_versacore_serial_c_d_width
         )
     else:
         D32tlbound0 = 1
@@ -616,13 +616,13 @@ def emit_matmul_data(**kwargs):
     ]
 
     if stationary == output_stationary:
-        if kwargs["quantization_enable"] == 1:
+        if kwargs["quantization_enable"] == 1 or kwargs["int32tofp16_enable"] == 1:
             output_matrix_per_store = (
                 1
-                if meshCol * meshRow * quantization_d_len
+                if meshCol * meshRow * datapath_extension_d_len
                 > snax_versacore_serial_c_d_width
                 else snax_versacore_serial_c_d_width
-                / (meshCol * meshRow * quantization_d_len)
+                / (meshCol * meshRow * datapath_extension_d_len)
             )
             data_str += [
                 format_scalar_definition(
@@ -634,7 +634,7 @@ def emit_matmul_data(**kwargs):
                 format_scalar_definition("int32_t", "D32tlbound1", D32tlbound1)
             ]
             D32tlstride1 = (
-                output_matrix_per_store * quantization_d_len * meshRow * meshCol / 8
+                output_matrix_per_store * datapath_extension_d_len * meshRow * meshCol / 8
             )
             data_str += [
                 format_scalar_definition("int32_t", "D32tlstride1", D32tlstride1)
@@ -650,7 +650,7 @@ def emit_matmul_data(**kwargs):
                 format_scalar_definition(
                     "int32_t",
                     "D32tlstride1",
-                    non_quantization_d_len * meshRow * meshCol / 8,
+                    non_datapath_extension_d_len * meshRow * meshCol / 8,
                 )
             ]
             data_str += [format_scalar_definition("int32_t", "D32tlbound2", M)]
@@ -658,7 +658,7 @@ def emit_matmul_data(**kwargs):
                 format_scalar_definition(
                     "int32_t",
                     "D32tlstride2",
-                    N * non_quantization_d_len * meshRow * meshCol / 8,
+                    N * non_datapath_extension_d_len * meshRow * meshCol / 8,
                 )
             ]
 
@@ -673,7 +673,7 @@ def emit_matmul_data(**kwargs):
             format_scalar_definition(
                 "int32_t",
                 "D32tlstride1",
-                N * non_quantization_d_len * meshRow * meshCol / 8,
+                N * non_datapath_extension_d_len * meshRow * meshCol / 8,
             )
         ]
         data_str += [format_scalar_definition("int32_t", "D32tlbound2", K)]
@@ -689,7 +689,7 @@ def emit_matmul_data(**kwargs):
             format_scalar_definition(
                 "int32_t",
                 "D32tlstride3",
-                non_quantization_d_len * meshRow * meshCol / 8,
+                non_datapath_extension_d_len * meshRow * meshCol / 8,
             )
         ]
 
@@ -700,7 +700,7 @@ def emit_matmul_data(**kwargs):
             format_scalar_definition(
                 "int32_t",
                 "D32tlstride1",
-                non_quantization_d_len * meshRow * meshCol / 8,
+                non_datapath_extension_d_len * meshRow * meshCol / 8,
             )
         ]
         data_str += [format_scalar_definition("int32_t", "D32tlbound2", K)]
@@ -710,7 +710,7 @@ def emit_matmul_data(**kwargs):
             format_scalar_definition(
                 "int32_t",
                 "D32tlstride3",
-                N * non_quantization_d_len * meshRow * meshCol / 8,
+                N * non_datapath_extension_d_len * meshRow * meshCol / 8,
             )
         ]
 
@@ -719,11 +719,11 @@ def emit_matmul_data(**kwargs):
     )
 
     channel_en_D = [0] * D_enabled_channel_CSR_num
-    if kwargs["quantization_enable"] == 1:
+    if kwargs["quantization_enable"] == 1 or kwargs["int32tofp16_enable"] == 1:
         channel_en_D_bits = int(math.ceil(snax_versacore_serial_c_d_width / bankWidth))
     else:
         channel_en_D_bits = min(
-            int(math.ceil(meshRow * meshCol * non_quantization_d_len / bankWidth)),
+            int(math.ceil(meshRow * meshCol * non_datapath_extension_d_len / bankWidth)),
             int(math.ceil(snax_versacore_serial_c_d_width / bankWidth)),
         )
 
@@ -736,9 +736,9 @@ def emit_matmul_data(**kwargs):
     ]
 
     d_data_length = (
-        M * N * meshRow * meshCol * quantization_d_len / 8
-        if kwargs["quantization_enable"] == 1
-        else M * N * meshRow * meshCol * non_quantization_d_len / 8
+        M * N * meshRow * meshCol * datapath_extension_d_len / 8
+        if kwargs["quantization_enable"] == 1 or kwargs["int32tofp16_enable"] == 1
+        else M * N * meshRow * meshCol * non_datapath_extension_d_len / 8
     )
     data_str += [format_scalar_definition("int32_t", "d_data_length", d_data_length)]
 

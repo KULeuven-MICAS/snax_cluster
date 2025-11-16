@@ -18,5 +18,6 @@
   channel_en_C: 1,
   // 0 for output, 1 for weight, 2 for input
   stationary: 0,
-  quantization: 1,
+  quantization_enable: 0,
+  int32tofp16_enable: 1,
 }

@@ -68,7 +68,7 @@ class Int32ToFp16Spec extends AnyFlatSpec with ChiselScalatestTester {
   // TESTS
   // -----------------------------
   it should "convert int32 to fp16 correctly for several values" in {
-    test(new Int32ToFp16) { dut =>
+    test(new Int32ToFp16PE) { dut =>
       val testValues = Seq(
         0, 1, -1,
         123, -123,
@@ -91,7 +91,7 @@ class Int32ToFp16Spec extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   it should "pass 10k randomized tests" in {
-    test(new Int32ToFp16) { dut =>
+    test(new Int32ToFp16PE) { dut =>
       val rand = new scala.util.Random(0)
       for (_ <- 0 until 10000) {
         val v = rand.nextInt()

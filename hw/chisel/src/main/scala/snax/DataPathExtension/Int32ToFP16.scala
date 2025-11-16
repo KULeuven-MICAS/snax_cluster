@@ -96,12 +96,20 @@ class Int32ToFp16PE extends Module {
   io.out := result
 }
 
-class Int32ToFp16Converter(dataWidth: Int = 512)
-                          (implicit extensionParam: DataPathExtensionParam)
-  extends DataPathExtension {
+class Int32ToFp16Converter(dataWidth: Int = 512, in_elementWidth: Int = 32, out_elementWidth: Int = 16)(implicit
+  extensionParam: DataPathExtensionParam
+) extends DataPathExtension {
 
   require(dataWidth % 32 == 0, "dataWidth must be multiple of 32")
   val numPEs = dataWidth / 32
+
+  val counter = Module(new snax.utils.BasicCounter(log2Ceil(in_elementWidth / out_elementWidth)) {
+    override val desiredName = "Int32ToFp16Converter"
+  })
+  counter.io.ceil := (in_elementWidth / out_elementWidth).asUInt
+  counter.io.reset := ext_start_i
+  counter.io.tick  := ext_data_i.fire
+  ext_busy_o       := counter.io.value =/= 0.U(1.W)
 
   val peArray = Seq.fill(numPEs) {
     Module(new Int32ToFp16PE() {
@@ -115,29 +123,42 @@ class Int32ToFp16Converter(dataWidth: Int = 512)
 
   // Extract each 32-bit block from ext_data_i
   for (i <- 0 until numPEs) {
-    val hi = 32*(i+1) - 1
-    val lo = 32*i
+    val hi = 32 * (i + 1) - 1
+    val lo = 32 * i
     pe_inputs(i) := ext_data_i.bits(hi, lo).asSInt
   }
 
   // Connect PEs
   for (i <- 0 until numPEs) {
-    peArray(i).io.in  := pe_inputs(i)
-    pe_outputs(i)     := peArray(i).io.out
+    peArray(i).io.in := pe_inputs(i)
+    pe_outputs(i)    := peArray(i).io.out
   }
 
-  // Pack 16-bit FP outputs back into the unified bus
-  ext_data_o.bits := Cat(pe_outputs.reverse)
+  // store outputs in registers until all outputs are ready
+  val regs = RegInit(
+    VecInit(
+      Seq.fill((extensionParam.dataWidth / out_elementWidth) - (extensionParam.dataWidth / in_elementWidth))(
+        0.U(out_elementWidth.W)
+      )
+    )
+  )
+  for (i <- 0 until numPEs) {
+    when(ext_data_i.fire) {
+      when(counter.io.value =/= ((in_elementWidth / out_elementWidth).U - 1.U)) {
+        regs(counter.io.value * (extensionParam.dataWidth / in_elementWidth).U + i.U) := pe_outputs(i)
+      }
+    }
+  }
+  ext_data_o.bits := Cat((regs ++ pe_outputs).reverse).asTypeOf(ext_data_o.bits)
 
   // Pass through valid/ready signals
-  ext_data_o.valid := ext_data_i.valid
+  ext_data_o.valid := ext_data_i.fire && counter.io.value === ((in_elementWidth / out_elementWidth).U - 1.U)
   ext_data_i.ready := ext_data_o.ready
 
   ext_busy_o := false.B
 }
 
-class HasInt32ToFp16Converter(dataWidth: Int = 512)
-    extends HasDataPathExtension {
+class HasInt32ToFp16Converter(dataWidth: Int = 512) extends HasDataPathExtension {
   // The length of row, col, and elementWidth should be the same
   require(dataWidth % 32 == 0, "dataWidth must be multiple of 32")
 
