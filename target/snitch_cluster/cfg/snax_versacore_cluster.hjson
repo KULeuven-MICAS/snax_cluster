@@ -332,7 +332,7 @@ Naming convention:
                     64
                 ]
             ]
-            datapath_extensions: [{HasTransposer: {row:[32, 1, 4, 8, 4], col:[4, 8, 8, 8, 64], elementWidth:[8, 8, 8, 8, 8]}}, {HasTransposer: {row:[4, 8, 8, 8, 64], col:[32, 64, 64, 64, 4], elementWidth:[8, 8, 8, 8, 8]}}]
+            datapath_extensions: [{HasTransposer: {row:[32, 1, 4, 8, 4], col:[4, 8, 8, 8, 64], elementWidth:[8, 8, 8, 8, 8], dataWidth:2048}}, {HasTransposer: {row:[4, 8, 8, 8, 64], col:[32, 64, 64, 64, 4], elementWidth:[8, 8, 8, 8, 8], dataWidth:4096}}]
         }
         data_reader_writer_params:
         {

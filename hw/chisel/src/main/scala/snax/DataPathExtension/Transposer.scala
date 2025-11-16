@@ -12,7 +12,7 @@ class HasTransposer(
   col:                    Seq[Int],
   elementWidth:           Seq[Int],
   dataWidth:              Int     = 0,
-  support_multi_transfer: Boolean = false
+  support_multi_transfer: Boolean = true
 ) extends HasDataPathExtension {
   // The length of row, col, and elementWidth should be the same
   require(row.length == col.length && col.length == elementWidth.length)
