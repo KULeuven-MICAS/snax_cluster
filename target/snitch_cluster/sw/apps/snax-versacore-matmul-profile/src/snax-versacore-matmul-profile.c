@@ -75,8 +75,8 @@ int main() {
             delta_local_d, D32slstride, D32tlbound, D32tlstride,
             set_addr_remap_index_D32, channel_en_D, array_shape,
 
-            quantization_enable, shift_i, multiplier_i, input_zp_i,
-            output_zp_i);
+            quantization_enable, shift_i, multiplier_i, input_zp_i, output_zp_i,
+            int32tofp16_enable);
 
         // Set GEMMX configuration CSR
         uint32_t subtraction_setting =
@@ -102,12 +102,16 @@ int main() {
         wait_versacore_and_streamer();
 
         // Result check
-        if (quantization_enable == 0)
+        if (quantization_enable == 0 && int32tofp16_enable == 0)
             err += check_versacore_result_D32((int32_t *)local_d, (int32_t *)D,
                                               d_data_length, false);
-        else {
+        else if (quantization_enable == 1 && int32tofp16_enable == 0) {
             err += check_versacore_result_D32(
                 (int8_t *)local_d, (int8_t *)D_quantized, d_data_length, false);
+        } else if (int32tofp16_enable == 1) {
+            err += check_versacore_result_D32((int8_t *)local_d,
+                                              (int8_t *)D_int32tofp16,
+                                              d_data_length, false);
         }
 
         printf(

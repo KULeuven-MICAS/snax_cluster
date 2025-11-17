@@ -31,7 +31,7 @@ void set_versacore_streamer_csr(
     int32_t* D32tlstride, int32_t set_addr_remap_index_D32,
     int32_t* channel_en_D, int32_t array_shape, uint32_t quantization_enable,
     uint32_t shift_i, uint32_t multiplier_i, int32_t input_zp_i,
-    int32_t output_zp_i) {
+    int32_t output_zp_i, int32_t int32tofp16_enable) {
 #ifdef SNAX_VERSACORE_OUTPUT_STATIONARY_ONLY
 
     // ----------------------------------A-----------------------------------
@@ -185,7 +185,8 @@ void set_versacore_streamer_csr(
 #endif
 
 #ifdef READER_WRITER_EXTENSION_1_CSR_BASE
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE, quantization_enable);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE,
+            (int32tofp16_enable << 1) | quantization_enable);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, input_zp_i);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, multiplier_i);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
