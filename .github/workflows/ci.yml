@@ -372,7 +372,7 @@ jobs:
         run: |
           export JAVA_OPTS="-Xmx8G -Xms4G"
           make -C target/snitch_cluster rtl-gen \
-          CFG_OVERRIDE=cfg/snax_versacore_cluster.hjson
+          CFG_OVERRIDE=cfg/snax_versacore_to_cluster.hjson
 
   snax-xdma-cluster-vlt-generic:
     name: Simulate SW on XDMA cluster w/ Verilator (Generic LLVM)

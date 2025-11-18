@@ -21,10 +21,10 @@ Naming convention:
     }
     cluster:
     {
-        name: snax_versacore_cluster
+        name: snax_versacore_to_cluster
         bender_target:
         [
-            snax_versacore_cluster
+            snax_versacore_to_cluster
             sparse_interconnect
         ]
         boot_addr: 4096
@@ -253,7 +253,7 @@ Naming convention:
         {
             bender_target:
             [
-                snax_versacore_cluster_xdma
+                snax_versacore_to_cluster_xdma
             ]
             cfg_io_width: 32
             max_multicast: 16
@@ -383,6 +383,6 @@ Naming convention:
         has_flexible_transpose: true,
         has_rescaledown: true,
         has_int32_to_fp16_converter: true,
-        snax_library_name: versacore
+        snax_library_name: versacore-to
     }
 }

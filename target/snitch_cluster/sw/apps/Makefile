@@ -67,9 +67,9 @@ SUBDIRS += snax-xdma-rescale-down
 SUBDIRS += snax-xdma-rescale-up
 SUBDIRS += snax-xdma-avgpool
 endif
-ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_cluster.hjson)
-SUBDIRS += snax-versacore-matmul
-SUBDIRS += snax-versacore-matmul-profile
+ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_to_cluster.hjson)
+SUBDIRS += snax-versacore-to-matmul
+SUBDIRS += snax-versacore-to-matmul-profile
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-maxpool
 SUBDIRS += snax-xdma-transpose
