@@ -374,7 +374,7 @@ jobs:
           CFG_OVERRIDE=cfg/snax_versacore_to_cluster.hjson
 
   sw-versacore-dse-cluster-vlt-generic:
-    name: Build KUL-dse-cluster-1D HW w/ Verilator (Generic LLVM)
+    name: Run versacore dse configuration w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2

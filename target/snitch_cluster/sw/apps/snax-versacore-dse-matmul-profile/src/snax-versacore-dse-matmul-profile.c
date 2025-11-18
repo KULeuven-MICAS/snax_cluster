@@ -6,7 +6,7 @@
 
 #include "data.h"
 
-#include "snax-versacore-lib.h"
+#include "snax-versacore-dse-lib.h"
 
 int main() {
     // Set err value for checking
