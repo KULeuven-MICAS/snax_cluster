@@ -6,7 +6,7 @@
 
 #include "data.h"
 
-#include "snax-versacore-lib.h"
+#include "snax-versacore-to-lib.h"
 
 // This test only test on the output stationary dataflow
 int main() {
