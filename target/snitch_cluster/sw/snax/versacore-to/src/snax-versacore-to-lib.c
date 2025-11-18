@@ -32,7 +32,6 @@ void set_versacore_streamer_csr(
     int32_t* channel_en_D, int32_t array_shape, uint32_t quantization_enable,
     uint32_t shift_i, uint32_t multiplier_i, int32_t input_zp_i,
     int32_t output_zp_i, int32_t int32tofp16_enable) {
-
     // ----------------------------------A-----------------------------------
     // ----------------------------------A-----------------------------------
     // ----------------------------------A-----------------------------------
@@ -191,7 +190,6 @@ void set_versacore_streamer_csr(
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 4, shift_i);
 #endif
-
 }
 
 // Set GEMM configuration CSR
