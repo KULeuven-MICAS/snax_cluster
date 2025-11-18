@@ -75,6 +75,9 @@ SUBDIRS += snax-xdma-maxpool
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-reshape-comparison
 endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_dse_cluster.hjson)
+SUBDIRS += snax-versacore-dse-matmul-profile
+endif
 SUBDIRS += snax-multi-cluster-playground
 ifeq ($(CFG_OVERRIDE), cfg/snax_hypercorex_cluster.hjson)
 SUBDIRS += snax-hypercorex/test-csr
