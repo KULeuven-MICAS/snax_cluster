@@ -750,8 +750,8 @@ def main():
             + str(cfg["cluster"]["data_width"])
             + " --strbWidth "
             + str(int(cfg["cluster"]["data_width"] / 8))
-            + " --userWidth "
-            + str(0)
+            + " --priorityWidth "
+            + str(1)
             + " --sparseConfig "
             + f"\"{cfg['cluster']['sparse_interconnect_cfg']['sparse_config']}\""
             + " --hw-target-dir "
