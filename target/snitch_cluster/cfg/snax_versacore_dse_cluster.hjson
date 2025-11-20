@@ -137,20 +137,20 @@ Naming convention:
                 [
                     snax_versacore
                 ]
-                snax_tcdm_ports: 560
+                snax_tcdm_ports: 80
                 sparse_interconnect_config:
                 [
                     [
                         32
-                        16
+                        32
                     ]
                     [
-                        512
+                        32
                         32
                     ]
                     [
                         16
-                        64
+                        128
                     ]
                 ]
                 snax_num_rw_csr: 7
@@ -192,11 +192,11 @@ Naming convention:
                     SInt
                 ]
                 snax_versacore_array_input_a_width: 2048
-                snax_versacore_array_input_b_width: 32768
+                snax_versacore_array_input_b_width: 2048
                 snax_versacore_array_input_c_width: 8192
                 snax_versacore_array_output_d_width: 8192
                 snax_versacore_serial_a_width: 2048
-                snax_versacore_serial_b_width: 32768
+                snax_versacore_serial_b_width: 2048
                 snax_versacore_serial_c_d_width: 1024
                 snax_versacore_adder_tree_delay: 2
                 snax_versacore_spatial_unrolling:
@@ -206,11 +206,6 @@ Naming convention:
                             16
                             16
                             16
-                        ]
-                        [
-                            1
-                            128
-                            32
                         ]
                     ]
                 ]
@@ -222,6 +217,9 @@ Naming convention:
                 {
                     $ref: "#/snax_versacore_streamer_template"
                 }
+                granularity_a: 32
+                granularity_b: 32
+                granularity_c_d: 128
             }
         ]
         snax_use_custom_ports: false
@@ -283,7 +281,7 @@ Naming convention:
                     32
                 ]
                 [
-                    512
+                    32
                 ]
             ]
             temporal_dim:
@@ -294,7 +292,7 @@ Naming convention:
             num_channel:
             [
                 32
-                512
+                32
             ]
             fifo_depth:
             [
