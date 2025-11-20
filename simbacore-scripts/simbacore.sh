@@ -40,8 +40,11 @@ make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson rtl-gen
 # [bash|root] Generate raw test data externally via scala data generator
 cd ../chisel-ssm && sbt "test:runMain simbacore.DataGenerator seqLen=64 dModel=36 dtRank=24" && cd ../snax_cluster
 
-# [snax|target] Build the software
+# When adding extra external sv sources, add to bender.yaml and run `bender update`
+# Then, remove the vsim work folder and run this
 make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson vsim_preparation
+
+# [snax|target] Build the software
 make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson sw -j 
 
 # [bash|target] Create QuestaSim binary and run programs

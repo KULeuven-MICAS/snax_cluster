@@ -81,6 +81,10 @@ class DataGeneratorBase(ABC):
 
         The naming is, e.g., M0_R3_tb or M2_W1_ts. tb = temporal bounds, ts = temporal strides.
         """
+        assert all(
+            s % BANK_BYTES == 0 for s in strides
+        ), f"M{mode} {streamer_name}: Temporal strides {strides} not aligned to bank width"
+
         # Extend with defaults
         bounds = bounds + [1] * (NUM_LOOPS - len(bounds))
         strides = strides + [0] * (NUM_LOOPS - len(strides))

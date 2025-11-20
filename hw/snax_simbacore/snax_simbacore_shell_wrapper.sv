@@ -16,28 +16,29 @@ module snax_simbacore_shell_wrapper #(
     parameter int unsigned SwitchCoreOutWidth            = 64,   // 1
     parameter int unsigned ISCoreOutDWidth               = 256,  // 4
     // Stream2acc
-    parameter int unsigned OSCoreInAWidth                = 256,  // 4
-    parameter int unsigned OSCoreInBWidth                = 384,  // 6
+    parameter int unsigned OSCoreInAWidth                = 128,  // 2
+    parameter int unsigned OSCoreInBWidth                = 192,  // 3
     //  
-    parameter int unsigned SwitchCoreInMatmulWidth       = 128,  // 2
+    parameter int unsigned SwitchCoreInMatmulWidth       = 64,   // 1
     parameter int unsigned SwitchCoreInWeightWidth       = 64,   // 1
     parameter int unsigned SwitchCoreInBiasWidth         = 64,   // 1
     parameter int unsigned SwitchCoreInMatmulWeightWidth = 64,   // 1
     // 
     parameter int unsigned SUCoreInAWidth                = 64,   // 1
-    parameter int unsigned SUCoreInBCWidth               = 512,  // 8
+    parameter int unsigned SUCoreInBCWidth               = 256,  // 4
     parameter int unsigned SUCoreInDWidth                = 64,   // 1
     parameter int unsigned SUCoreInXWidth                = 64,   // 1
     parameter int unsigned SUCoreInZWidth                = 64,   // 1
     //
     parameter int unsigned ISCoreInAWidth                = 64,   // 1
-    parameter int unsigned ISCoreInBWidth                = 384,  // 6
+    parameter int unsigned ISCoreInBWidth                = 192,  // 3
     parameter int unsigned ISCoreInCWidth                = 256,  // 4
     // CSR
     parameter int unsigned RegRWCount                    = 7,    // +1 for start csr
     parameter int unsigned RegROCount                    = 4,
     parameter int unsigned RegDataWidth                  = 32,
-    parameter int unsigned RegAddrWidth                  = 32
+    parameter int unsigned RegAddrWidth                  = 32,
+    parameter int unsigned ModeWidth                     = 2     // 1
 ) (
     //-------------------------------
     // Clocks and reset
@@ -204,7 +205,7 @@ module snax_simbacore_shell_wrapper #(
       // CSR
       .io_config_ready(csr_reg_set_ready_o),
       .io_config_valid(csr_reg_set_valid_i),
-      .io_config_bits_mode(csr_reg_set_i[0]),
+      .io_config_bits_mode(csr_reg_set_i[0][ModeWidth-1:0]),
       .io_config_bits_seqLen(csr_reg_set_i[1]),
       .io_config_bits_dModel(csr_reg_set_i[2]),
       .io_config_bits_dtRank(csr_reg_set_i[3]),

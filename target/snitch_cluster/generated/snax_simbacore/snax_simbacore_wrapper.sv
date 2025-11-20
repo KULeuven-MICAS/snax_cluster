@@ -15,7 +15,7 @@ module snax_simbacore_wrapper # (
   parameter type         tcdm_rsp_t         = logic,
   // Reconfigurable parameters
   parameter int unsigned DataWidth          = 64,
-  parameter int unsigned SnaxTcdmPorts      = 45,
+  parameter int unsigned SnaxTcdmPorts      = 32,
   // Addr width is pre-computed in the generator
   // TCDMAddrWidth = log2(TCDMBankNum * TCDMDepth * (TCDMDataWidth/8))
   parameter int unsigned TCDMAddrWidth      = 20,
@@ -82,15 +82,15 @@ module snax_simbacore_wrapper # (
   logic acc2stream_3_ready;
 
   // Ports from streamer to accelerator by reader data movers
-  logic [255:0] stream2acc_0_data;
+  logic [127:0] stream2acc_0_data;
   logic stream2acc_0_valid;
   logic stream2acc_0_ready;
 
-  logic [383:0] stream2acc_1_data;
+  logic [191:0] stream2acc_1_data;
   logic stream2acc_1_valid;
   logic stream2acc_1_ready;
 
-  logic [127:0] stream2acc_2_data;
+  logic [63:0] stream2acc_2_data;
   logic stream2acc_2_valid;
   logic stream2acc_2_ready;
 
@@ -110,7 +110,7 @@ module snax_simbacore_wrapper # (
   logic stream2acc_6_valid;
   logic stream2acc_6_ready;
 
-  logic [511:0] stream2acc_7_data;
+  logic [255:0] stream2acc_7_data;
   logic stream2acc_7_valid;
   logic stream2acc_7_ready;
 
@@ -130,7 +130,7 @@ module snax_simbacore_wrapper # (
   logic stream2acc_11_valid;
   logic stream2acc_11_ready;
 
-  logic [383:0] stream2acc_12_data;
+  logic [191:0] stream2acc_12_data;
   logic stream2acc_12_valid;
   logic stream2acc_12_ready;
 

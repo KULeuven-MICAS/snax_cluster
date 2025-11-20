@@ -377,6 +377,7 @@ sources:
       - ../chisel-ssm/chisel-float/src/main/resources/common_block/lzc.sv
       - ../chisel-ssm/chisel-float/src/main/resources/common_block/fpnew_classifier.sv
       - ../chisel-ssm/chisel-float/src/main/resources/common_block/fpnew_rounding.sv
+      - ../chisel-ssm/chisel-float/src/main/resources/fp_convert.sv
       - ../chisel-ssm/chisel-float/src/main/resources/fp_add.sv
       - ../chisel-ssm/chisel-float/src/main/resources/fp_mul.sv
       - ../chisel-ssm/chisel-float/src/main/resources/fp_fma.sv

@@ -33,6 +33,7 @@ PORT_MAPPING: Dict[str, str] = {
     "ISCoreInBWidth": "io_isCore_in_b_bits",
     "ISCoreInCWidth": "io_isCore_in_c_bits",
     "ISCoreOutDWidth": "io_isCore_out_d_bits",
+    "ModeWidth": "io_config_bits_mode",
 }
 
 BANK_WIDTH = 64
@@ -102,7 +103,7 @@ def parse_simbacore(simbacore_path: Path) -> Dict[str, int]:
         # Process port names (handle comma-separated names)
         names_part = " ".join(tokens)
         for name in (n.strip().rstrip(",") for n in names_part.split(",") if n.strip()):
-            if name.endswith("_bits"):
+            if "_bits" in name:
                 port_widths[name] = width
 
     # Infer widths from body for unresolved ports

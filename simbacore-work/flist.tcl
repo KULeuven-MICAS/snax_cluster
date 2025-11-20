@@ -993,6 +993,7 @@ if {0 == [analyze -format sv \
         "$ROOT/../chisel-ssm/chisel-float/src/main/resources/common_block/lzc.sv" \
         "$ROOT/../chisel-ssm/chisel-float/src/main/resources/common_block/fpnew_classifier.sv" \
         "$ROOT/../chisel-ssm/chisel-float/src/main/resources/common_block/fpnew_rounding.sv" \
+        "$ROOT/../chisel-ssm/chisel-float/src/main/resources/fp_convert.sv" \
         "$ROOT/../chisel-ssm/chisel-float/src/main/resources/fp_add.sv" \
         "$ROOT/../chisel-ssm/chisel-float/src/main/resources/fp_mul.sv" \
         "$ROOT/../chisel-ssm/chisel-float/src/main/resources/fp_fma.sv" \

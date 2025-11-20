@@ -18,7 +18,8 @@ sys.path.append(str(pathlib.Path(__file__).resolve().parent))
 from datagen_util import BANKWIDTH, DataGeneratorBase, BANK_BYTES  # type: ignore[import]
 
 
-NBIT = 16  # BF16
+BF16 = 16
+FP8 = 8
 
 
 class DataGenerator(DataGeneratorBase):
@@ -47,11 +48,11 @@ class DataGenerator(DataGeneratorBase):
         self.delaySU = self.kwargs["delaySU"]
         # HW widths
         self.oscore_serial_width = self.kwargs["oscore_serial_width"]
-        self.switchcore_serial_width = self.kwargs["switchcore_serial_width"]
+        self.switchcore_width = self.kwargs["switchcore_width"]
         self.iscore_serial_width = self.kwargs["iscore_serial_width"]
         self.suc_serial_width_A = self.kwargs["suc_serial_width_A"]
         self.suc_serial_width_BC = self.kwargs["suc_serial_width_BC"]  # Streamer width is 2x this value!
-        self.switchcore_width_in = self.kwargs["switchcore_width_in"]
+        self.switchcore_width = self.kwargs["switchcore_width"]
 
     def get_safe_to_start_delay(self):
         """In Phase2, the SU core reads the OS core output from memory, in a different order. The program must ensure
@@ -88,9 +89,9 @@ class DataGenerator(DataGeneratorBase):
         K = self.dModel
         N = self.dInner // Nu
 
-        a_array_width = Mu * NBIT
-        b_array_width = Nu * NBIT
-        d_array_width = Mu * Nu * NBIT
+        a_in_width = Mu * FP8
+        b_in_width = Nu * FP8
+        d_array_width = Mu * Nu * FP8
         assert d_array_width % self.oscore_serial_width == 0, "d_array_width Must be divisible by oscore_serial_width"
 
         streamers = {
@@ -102,17 +103,17 @@ class DataGenerator(DataGeneratorBase):
             "R0": (  # Input A
                 [K, M, N],
                 [
-                    a_array_width // 8,
-                    K * a_array_width // 8,
+                    a_in_width // 8,
+                    K * a_in_width // 8,
                     0,
                 ],
             ),
             "R1": (  # Input B
                 [K, M, N],
                 [
-                    b_array_width // 8,
+                    b_in_width // 8,
                     0,  # M is irrelevant
-                    K * b_array_width // 8,
+                    K * b_in_width // 8,
                 ],
             ),
             "W0": (  # Output D
@@ -122,15 +123,15 @@ class DataGenerator(DataGeneratorBase):
         }
 
         specs = [
-            ("a", M * K * a_array_width // 8),
-            ("b", K * N * b_array_width // 8),
+            ("a", M * K * a_in_width // 8),
+            ("b", K * N * b_in_width // 8),
             # ("c", M * N * d_array_width // 8),
             ("d", M * N * d_array_width // 8),
         ]
         lengths, deltas = self._collect_lengths_and_deltas(specs)
         scalars = {**lengths, **deltas}
 
-        test_data = {name: "uint16_t" for name in ("A", "B", "D")}
+        test_data = {name: "uint8_t" for name in ("A", "B", "D")}
         tests = {"D": self.seqLen * self.dInner}
 
         self.build_mode(mode, streamers, scalars=scalars, test_data=test_data, tests=tests)
@@ -138,7 +139,7 @@ class DataGenerator(DataGeneratorBase):
     def build_Phase1_data(self):
         mode = self.kwargs["M0_PHASE1"]
 
-        assert self.convUnroll * NBIT == BANK_BYTES * 8, "switchCore output width must match 1 bank width"
+        assert self.switchcore_width == BANKWIDTH
 
         streamers = {
             "R0": (  # osCore in
@@ -148,8 +149,8 @@ class DataGenerator(DataGeneratorBase):
                     self.dInner // self.dInnerUnroll,  # N
                 ],
                 [
-                    self.seqLenUnroll * NBIT // 8,
-                    self.dModel * self.seqLenUnroll * NBIT // 8,
+                    self.seqLenUnroll * FP8 // 8,
+                    self.dModel * self.seqLenUnroll * FP8 // 8,
                     0,
                 ],
             ),
@@ -160,17 +161,17 @@ class DataGenerator(DataGeneratorBase):
                     self.dInner // self.dInnerUnroll,  # N
                 ],
                 [
-                    self.dInnerUnroll * NBIT // 8,
+                    self.dInnerUnroll * FP8 // 8,
                     0,
-                    self.dModel * self.dInnerUnroll * NBIT // 8,
+                    self.dModel * self.dInnerUnroll * FP8 // 8,
                 ],
             ),
-            "R3": (  #  conv (switchCore) weight: layout is row-major [se.dInner, dConv]
-                [self.dConv * self.dInner // self.convUnroll],
+            "R3": (  #  conv (switchCore) weight: layout is row-major [dInner, dConv]
+                [self.dConv * self.dInner * FP8 // BANKWIDTH],
                 [BANK_BYTES],
             ),
             "R4": (  #  conv (switchCore) bias: layout is row-major [dInner]
-                [self.dInner // self.convUnroll],
+                [self.dInner * FP8 // BANKWIDTH],
                 [BANK_BYTES],
             ),
             "R12": (  # iscore weight
@@ -180,9 +181,9 @@ class DataGenerator(DataGeneratorBase):
                     self.dInner // self.dInnerUnroll,  # K
                 ],
                 [
-                    self.dInnerUnroll * NBIT // 8,
+                    self.dInnerUnroll * FP8 // 8,
                     0,
-                    self.xProjDim * self.dInnerUnroll * NBIT // 8,
+                    self.xProjDim * self.dInnerUnroll * FP8 // 8,
                 ],
             ),
             "R13": (  # isCore psum
@@ -193,13 +194,13 @@ class DataGenerator(DataGeneratorBase):
                     self.dInner // self.dInnerUnroll,  # complete reduction dimension (K)
                 ],
                 [
-                    self.seqLenUnroll * NBIT // 8,
+                    self.seqLenUnroll * BF16 // 8,
                     0,  # Go to same addresses again
                 ],
             ),
             "W1": (  # conv output
-                [self.seqLen * self.dInner // self.convUnroll],
-                [self.convUnroll * NBIT // 8],
+                [self.seqLen * self.dInner * FP8 // BANKWIDTH],
+                [BANK_BYTES],
             ),
             "W3": (  # isCore output: EXACTLY the same as psum reader R13
                 [
@@ -207,20 +208,21 @@ class DataGenerator(DataGeneratorBase):
                     self.dInner // self.dInnerUnroll,
                 ],
                 [
-                    self.seqLenUnroll * NBIT // 8,
+                    self.seqLenUnroll * BF16 // 8,
                     0,
                 ],
             ),
         }
 
         specs = [
-            ("oscore_in", self.seqLen * self.dModel * NBIT // 8),
-            ("oscore_weight", self.dModel * self.dInner * NBIT // 8),
-            ("conv_weight", self.dInner * self.dConv * NBIT // 8),
-            ("conv_bias", self.dInner * NBIT // 8),
-            ("conv_out", self.seqLen * self.dInner * NBIT // 8),
-            ("iscore_weight", self.dInner * self.xProjDim * NBIT // 8),
-            ("iscore_out", self.seqLen * self.xProjDim * NBIT // 8),
+            ("oscore_in", self.seqLen * self.dModel * FP8 // 8),
+            ("oscore_weight", self.dModel * self.dInner * FP8 // 8),
+            ("conv_weight", self.dInner * self.dConv * FP8 // 8),
+            ("conv_bias", self.dInner * FP8 // 8),
+            ("conv_out", self.seqLen * self.dInner * FP8 // 8),
+            ("iscore_weight", self.dInner * self.xProjDim * FP8 // 8),
+            # Reserve space for BF16 psums. On the final iteration, only first half will contain valid data
+            ("iscore_out", self.seqLen * self.xProjDim * BF16 // 8),
         ]
         lengths, deltas = self._collect_lengths_and_deltas(specs)
         scalars = {**lengths, **deltas}
@@ -229,7 +231,7 @@ class DataGenerator(DataGeneratorBase):
         tests = {"conv_out": self.seqLen * self.dInner, "iscore_out": self.seqLen * self.xProjDim}
 
         test_data = {
-            name: "uint16_t"
+            name: "uint8_t"
             for name in (
                 "oscore_in",
                 "oscore_weight",
@@ -247,30 +249,31 @@ class DataGenerator(DataGeneratorBase):
     def build_Phase2_data(self):
         mode = self.kwargs["M1_PHASE2"]
 
-        assert self.convUnroll * NBIT == BANK_BYTES * 8, "switchCore output width must match 1 bank width"
-        assert self.dConv * NBIT == BANK_BYTES * 8, "switchCore weight width must match 1 bank width"
-        assert self.dtRank * NBIT % self.switchcore_width_in == 0, "dtRank must be divisible by switchCore elem/cc in"
+        # assert self.convUnroll * FP8 == BANK_BYTES * 8, "switchCore output width must match 1 bank width"
+        # assert self.dConv * FP8 == BANK_BYTES * 8, "switchCore weight width must match 1 bank width"
+        assert self.dtRank * FP8 % self.switchcore_width == 0, "dtRank must be divisible by switchCore elem/cc in"
+        assert self.switchcore_width == BANKWIDTH, "switchcore_width must match bank width"
 
-        suc_parallel_widthA = self.dState * NBIT
-        suc_parallel_widthBC = self.dState * NBIT
-        switchcore_parallel_width_W1 = self.convUnroll * self.dConv * NBIT
-        switchcore_parallel_width_W2 = self.convUnroll * (self.dtRankUnroll - self.dConv) * NBIT
-        switchcore_parallel_width_bias = self.convUnroll * NBIT
-        oscore_parallel_width_d = self.seqLenUnroll * self.dInnerUnroll * NBIT
-        iscore_parallel_width_d = self.seqLenUnroll * self.dInnerUnroll * NBIT
+        suc_parallel_widthA = self.dState * FP8
+        # suc_parallel_widthBC = self.dState * FP8
+        switchcore_parallel_width_W1 = self.convUnroll * self.dConv * FP8
+        switchcore_parallel_width_W2 = self.convUnroll * (self.dtRankUnroll - self.dConv) * FP8
+        # switchcore_parallel_width_bias = self.convUnroll * FP8
+        oscore_parallel_width_d = self.seqLenUnroll * self.dInnerUnroll * FP8
+        iscore_parallel_width_d = self.seqLenUnroll * self.dInnerUnroll * FP8
 
         # Reads out a layout that is stored in convFormat, in SUC format ordering
         bounds_conv_to_suc = [
-            (self.convUnroll * self.seqLenUnroll) // (BANKWIDTH // NBIT),  # subTileSize / (elem per transfer)
+            (self.convUnroll * self.seqLenUnroll) // (BANKWIDTH // FP8),  # subTileSize / (elem per transfer)
             self.seqLen // self.seqLenUnroll,  # tiles per window
             self.dInnerUnroll // self.convUnroll,  # subtiles per tile
             self.dInner // self.dInnerUnroll,  # windows per tensor
         ]
         strides_conv_to_suc = [
             BANK_BYTES,
-            self.seqLenUnroll * self.dInnerUnroll * NBIT // 8,  # tile size
-            self.convUnroll * self.seqLenUnroll * NBIT // 8,  # subtile size
-            self.seqLen * self.dInnerUnroll * NBIT // 8,  # window size
+            self.seqLenUnroll * self.dInnerUnroll * FP8 // 8,  # tile size
+            self.convUnroll * self.seqLenUnroll * FP8 // 8,  # subtile size
+            self.seqLen * self.dInnerUnroll * FP8 // 8,  # window size
         ]
 
         streamers = {
@@ -281,8 +284,8 @@ class DataGenerator(DataGeneratorBase):
                     self.dInner // self.dInnerUnroll,  # N
                 ],
                 [
-                    self.seqLenUnroll * NBIT // 8,
-                    self.dModel * self.seqLenUnroll * NBIT // 8,
+                    self.seqLenUnroll * FP8 // 8,
+                    self.dModel * self.seqLenUnroll * FP8 // 8,
                     0,
                 ],
             ),
@@ -293,45 +296,45 @@ class DataGenerator(DataGeneratorBase):
                     self.dInner // self.dInnerUnroll,  # N
                 ],
                 [
-                    self.dInnerUnroll * NBIT // 8,
+                    self.dInnerUnroll * FP8 // 8,
                     0,
-                    self.dModel * self.dInnerUnroll * NBIT // 8,
+                    self.dModel * self.dInnerUnroll * FP8 // 8,
                 ],
             ),
-            "R2": (  #  switchCore in (deltaMinor)
+            "R2": (  # switchCore in (deltaMinor)
                 [
-                    self.dtRank * NBIT // self.switchcore_width_in,  # K
+                    self.dtRank * FP8 // self.switchcore_width,  # K
                     self.seqLenUnroll,
                     self.seqLen // self.seqLenUnroll,
                     self.dInner // self.convUnroll,  # N (irrelevant dimension)
                 ],
                 [
-                    (self.switchcore_width_in // 8) * self.seqLenUnroll,
+                    (self.switchcore_width // 8) * self.seqLenUnroll,
                     BANK_BYTES,
-                    self.seqLenUnroll * self.xProjDim * NBIT // 8,  # TODO should this not be *seqLenUnroll?
+                    self.seqLenUnroll * self.xProjDim * FP8 // 8,
                     0,
                 ],
                 self.seqLenUnroll * BANK_BYTES,  # Spatial stride
             ),
-            "R3": (  #  switchCore weight (partition 1). Weights rotate internally so no reuse in self.seqLen here
+            "R3": (  # switchCore weight (partition 1). Weights rotate internally so no reuse in self.seqLen here
                 [
                     (self.dtRank // self.dtRankUnroll)
                     * (self.dInner // self.convUnroll)
-                    * (switchcore_parallel_width_W1 // self.switchcore_serial_width)  # serDes factor
+                    * (switchcore_parallel_width_W1 // self.switchcore_width)  # serDes factor
                 ],
-                [self.switchcore_serial_width // 8],
+                [self.switchcore_width // 8],
             ),
             "R4": (  #  switchCore bias
-                [(self.dInner // self.convUnroll) * (switchcore_parallel_width_bias // self.switchcore_serial_width)],
-                [self.switchcore_serial_width // 8],
+                [(self.dInner * FP8) // self.switchcore_width],
+                [self.switchcore_width // 8],
             ),
             "R5": (  #  switchCore weight (partition 2)
                 [
                     (self.dtRank // self.dtRankUnroll)
                     * (self.dInner // self.convUnroll)
-                    * (switchcore_parallel_width_W2 // self.switchcore_serial_width)  # serDes factor
+                    * (switchcore_parallel_width_W2 // self.switchcore_width)  # serDes factor
                 ],
-                [self.switchcore_serial_width // 8],
+                [self.switchcore_width // 8],
             ),
             "R6": (  # SUC A
                 [self.dInner * (suc_parallel_widthA // self.suc_serial_width_A)],
@@ -339,7 +342,7 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R7": (  # SUC BC. Packed together with dt
                 [
-                    (2 * self.dState * NBIT) // (2 * self.suc_serial_width_BC),  #
+                    (2 * self.dState * FP8) // (2 * self.suc_serial_width_BC),  #
                     self.seqLenUnroll,
                     self.seqLen // self.seqLenUnroll,
                     self.dInner // self.delaySU,  # Irrelevant dimension
@@ -347,13 +350,13 @@ class DataGenerator(DataGeneratorBase):
                 [
                     (2 * self.suc_serial_width_BC // 8) * self.seqLenUnroll,
                     BANK_BYTES,
-                    self.seqLenUnroll * self.xProjDim * NBIT // 8,
+                    self.seqLenUnroll * self.xProjDim * FP8 // 8,
                     0,
                 ],
                 self.seqLenUnroll * BANK_BYTES,  # Spatial stride
             ),
             "R8": (  # SUC D
-                [self.dInner // (BANKWIDTH // NBIT)],
+                [self.dInner * FP8 // BANKWIDTH],
                 [BANK_BYTES],
             ),
             "R9": (bounds_conv_to_suc, strides_conv_to_suc),  # SUC x
@@ -373,9 +376,9 @@ class DataGenerator(DataGeneratorBase):
                     self.dInner // self.dInnerUnroll,  # K
                 ],
                 [
-                    self.dInnerUnroll * NBIT // 8,
+                    self.dInnerUnroll * FP8 // 8,
                     0,
-                    self.dModel * self.dInnerUnroll * NBIT // 8,
+                    self.dModel * self.dInnerUnroll * FP8 // 8,
                 ],
             ),
             "R13": (  # isCore psum
@@ -386,7 +389,7 @@ class DataGenerator(DataGeneratorBase):
                     self.dInner // self.dInnerUnroll,  # complete reduction dimension (K)
                 ],
                 [
-                    self.seqLenUnroll * NBIT // 8,
+                    self.seqLenUnroll * BF16 // 8,
                     0,  # Go to same addresses again
                 ],
             ),
@@ -408,32 +411,32 @@ class DataGenerator(DataGeneratorBase):
                     self.dInner // self.dInnerUnroll,
                 ],
                 [
-                    self.seqLenUnroll * NBIT // 8,
+                    self.seqLenUnroll * BF16 // 8,
                     0,
                 ],
             ),
         }
 
-        tensor_size = self.seqLen * self.dInner * NBIT // 8
+        tensor_size = self.seqLen * self.dInner * FP8 // 8
         specs = [
-            ("oscore_in", self.seqLen * self.dModel * NBIT // 8),
-            ("oscore_weight", self.dModel * self.dInner * NBIT // 8),
+            ("oscore_in", self.seqLen * self.dModel * FP8 // 8),
+            ("oscore_weight", self.dModel * self.dInner * FP8 // 8),
             ("z", tensor_size),
-            # ("dt_in", self.dInner * self.dtRank * NBIT // 8),
-            ("dt_BC", self.seqLen * self.xProjDim * NBIT // 8),
-            ("dt_weight_1", self.dInner * (self.dtRank // self.dtRankUnroll) * self.dConv * NBIT // 8),
+            # ("dt_in", self.dInner * self.dtRank * FP8 // 8),
+            ("dt_BC", self.seqLen * self.xProjDim * FP8 // 8),
+            ("dt_weight_1", self.dInner * (self.dtRank // self.dtRankUnroll) * self.dConv * FP8 // 8),
             (
                 "dt_weight_2",
-                self.dInner * (self.dtRank // self.dtRankUnroll) * (self.dtRankUnroll - self.dConv) * NBIT // 8,
+                self.dInner * (self.dtRank // self.dtRankUnroll) * (self.dtRankUnroll - self.dConv) * FP8 // 8,
             ),
-            ("dt_bias", self.dInner * NBIT // 8),
+            ("dt_bias", self.dInner * FP8 // 8),
             ("x", tensor_size),
-            ("A", self.dInner * self.dState * NBIT // 8),
-            # ("BC", 2 * self.seqLen * self.dState * NBIT // 8),
-            ("D", self.dInner * NBIT // 8),
+            ("A", self.dInner * self.dState * FP8 // 8),
+            # ("BC", 2 * self.seqLen * self.dState * FP8 // 8),
+            ("D", self.dInner * FP8 // 8),
             ("y", tensor_size),
-            ("iscore_weight", self.dModel * self.dInner * NBIT // 8),
-            ("iscore_out", self.seqLen * self.dModel * NBIT // 8),
+            ("iscore_weight", self.dModel * self.dInner * FP8 // 8),
+            ("iscore_out", self.seqLen * self.dModel * BF16 // 8),
         ]
 
         lengths, deltas = self._collect_lengths_and_deltas(specs)
@@ -443,7 +446,7 @@ class DataGenerator(DataGeneratorBase):
             **deltas,
             "R10_start_cnt": suc_start_cnt,  # R10 is SUC input z: comes from OS core
             "R11_start_cnt": iscore_start_cnt,  # R11 is IS core input, comes from SUC output y
-            "dt_to_BC_offset": self.seqLenUnroll * self.dtRank * NBIT // 8,  # First BC value in dt_BC tensor
+            "dt_to_BC_offset": self.seqLenUnroll * self.dtRank * FP8 // 8,  # First BC value in dt_BC tensor
         }
 
         tests = {
@@ -453,7 +456,7 @@ class DataGenerator(DataGeneratorBase):
         }
 
         test_data = {
-            name: "uint16_t"
+            name: "uint8_t"
             for name in (
                 "oscore_in",
                 "oscore_weight",

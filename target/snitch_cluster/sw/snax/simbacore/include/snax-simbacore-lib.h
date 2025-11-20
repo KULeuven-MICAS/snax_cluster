@@ -70,6 +70,6 @@ uint32_t read_streamer_perf_counter();
 // Read performance counter of GEMM, a read-only CSR
 uint32_t read_simbacore_perf_counter();
 
-uint32_t check_result_all(uint16_t* output, uint16_t* output_golden, int32_t data_length);
-uint32_t check_result_sample(uint16_t* output, uint16_t* output_golden, int32_t* sample_indices,
+uint32_t check_result_all(uint8_t* output, uint8_t* output_golden, int32_t data_length);
+uint32_t check_result_sample(uint8_t* output, uint8_t* output_golden, int32_t* sample_indices,
                              int32_t test_sample_count, const char* tensor_name);

@@ -10,14 +10,14 @@ int test_phase1() {
     int err = 0;
 
     // Define TCDM addresses
-    void* tcdm_base_ptr         = snrt_l1_next();
-    uint16_t* ptr_oscore_in     = (uint16_t*)(tcdm_base_ptr + M0_addr_oscore_in);
-    uint16_t* ptr_oscore_weight = (uint16_t*)(tcdm_base_ptr + M0_addr_oscore_weight);
-    uint16_t* ptr_conv_weight   = (uint16_t*)(tcdm_base_ptr + M0_addr_conv_weight);
-    uint16_t* ptr_conv_bias     = (uint16_t*)(tcdm_base_ptr + M0_addr_conv_bias);
-    uint16_t* ptr_conv_out      = (uint16_t*)(tcdm_base_ptr + M0_addr_conv_out);
-    uint16_t* ptr_iscore_weight = (uint16_t*)(tcdm_base_ptr + M0_addr_iscore_weight);
-    uint16_t* ptr_iscore_out    = (uint16_t*)(tcdm_base_ptr + M0_addr_iscore_out);  // holds the psums
+    void* tcdm_base_ptr        = snrt_l1_next();
+    uint8_t* ptr_oscore_in     = (uint8_t*)(tcdm_base_ptr + M0_addr_oscore_in);
+    uint8_t* ptr_oscore_weight = (uint8_t*)(tcdm_base_ptr + M0_addr_oscore_weight);
+    uint8_t* ptr_conv_weight   = (uint8_t*)(tcdm_base_ptr + M0_addr_conv_weight);
+    uint8_t* ptr_conv_bias     = (uint8_t*)(tcdm_base_ptr + M0_addr_conv_bias);
+    uint8_t* ptr_conv_out      = (uint8_t*)(tcdm_base_ptr + M0_addr_conv_out);
+    uint8_t* ptr_iscore_weight = (uint8_t*)(tcdm_base_ptr + M0_addr_iscore_weight);
+    uint16_t* ptr_iscore_out   = (uint16_t*)(tcdm_base_ptr + M0_addr_iscore_out);  // holds the psums
 
     // Transfer data from L3 to L1 using DMA only
     if (snrt_is_dm_core()) {
@@ -49,7 +49,8 @@ int test_phase1() {
         err += check_result_sample(ptr_conv_out, M0_conv_out, M0_test_samples_conv_out,  //
                                    nb_test_samples, "conv_out");
 
-        err += check_result_sample(ptr_iscore_out, M0_iscore_out, M0_test_samples_iscore_out,  //
+        // Outputs are packed as FP8
+        err += check_result_sample((uint8_t*)ptr_iscore_out, M0_iscore_out, M0_test_samples_iscore_out,  //
                                    nb_test_samples, "iscore_out");
 
         printf("Test Phase1: seqLen=%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
@@ -64,23 +65,23 @@ int test_phase2() {
     int err = 0;
 
     // Define TCDM addresses
-    void* tcdm_base_ptr         = snrt_l1_next();
-    uint16_t* ptr_oscore_in     = (uint16_t*)(tcdm_base_ptr + M1_addr_oscore_in);
-    uint16_t* ptr_oscore_weight = (uint16_t*)(tcdm_base_ptr + M1_addr_oscore_weight);
-    uint16_t* ptr_z             = (uint16_t*)(tcdm_base_ptr + M1_addr_z);  // osCore out
-    uint16_t* ptr_dt_in         = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_BC);
-    uint16_t* ptr_BC            = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_BC + M1_dt_to_BC_offset);  //
+    void* tcdm_base_ptr        = snrt_l1_next();
+    uint8_t* ptr_oscore_in     = (uint8_t*)(tcdm_base_ptr + M1_addr_oscore_in);
+    uint8_t* ptr_oscore_weight = (uint8_t*)(tcdm_base_ptr + M1_addr_oscore_weight);
+    uint8_t* ptr_z             = (uint8_t*)(tcdm_base_ptr + M1_addr_z);  // osCore out
+    uint8_t* ptr_dt_in         = (uint8_t*)(tcdm_base_ptr + M1_addr_dt_BC);
+    uint8_t* ptr_BC            = (uint8_t*)(tcdm_base_ptr + M1_addr_dt_BC + M1_dt_to_BC_offset);  //
     // TODO test of dit hetzelfde is
-    // uint16_t* ptr_BC            = (void*)ptr_dt_in + M1_dt_to_BC_offset);  //
-    uint16_t* ptr_dt_weight_1   = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_weight_1);
-    uint16_t* ptr_dt_weight_2   = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_weight_2);
-    uint16_t* ptr_dt_bias       = (uint16_t*)(tcdm_base_ptr + M1_addr_dt_bias);
-    uint16_t* ptr_x             = (uint16_t*)(tcdm_base_ptr + M1_addr_x);  // from Phase1
-    uint16_t* ptr_A             = (uint16_t*)(tcdm_base_ptr + M1_addr_A);
-    uint16_t* ptr_D             = (uint16_t*)(tcdm_base_ptr + M1_addr_D);
-    uint16_t* ptr_y             = (uint16_t*)(tcdm_base_ptr + M1_addr_y);  // SUC out
-    uint16_t* ptr_iscore_weight = (uint16_t*)(tcdm_base_ptr + M1_addr_iscore_weight);
-    uint16_t* ptr_iscore_out    = (uint16_t*)(tcdm_base_ptr + M1_addr_iscore_out);
+    // uint8_t* ptr_BC            = (void*)ptr_dt_in + M1_dt_to_BC_offset);  //
+    uint8_t* ptr_dt_weight_1   = (uint8_t*)(tcdm_base_ptr + M1_addr_dt_weight_1);
+    uint8_t* ptr_dt_weight_2   = (uint8_t*)(tcdm_base_ptr + M1_addr_dt_weight_2);
+    uint8_t* ptr_dt_bias       = (uint8_t*)(tcdm_base_ptr + M1_addr_dt_bias);
+    uint8_t* ptr_x             = (uint8_t*)(tcdm_base_ptr + M1_addr_x);  // from Phase1
+    uint8_t* ptr_A             = (uint8_t*)(tcdm_base_ptr + M1_addr_A);
+    uint8_t* ptr_D             = (uint8_t*)(tcdm_base_ptr + M1_addr_D);
+    uint8_t* ptr_y             = (uint8_t*)(tcdm_base_ptr + M1_addr_y);  // SUC out
+    uint8_t* ptr_iscore_weight = (uint8_t*)(tcdm_base_ptr + M1_addr_iscore_weight);
+    uint16_t* ptr_iscore_out   = (uint16_t*)(tcdm_base_ptr + M1_addr_iscore_out);
 
     // Transfer data from L3 to L1 using DMA only
     if (snrt_is_dm_core()) {
@@ -117,7 +118,7 @@ int test_phase2() {
                                    nb_test_samples, "z (osCore out)");
         err += check_result_sample(ptr_y, M1_suc_expected, M1_test_samples_y,  //
                                    nb_test_samples, "SUC y");
-        err += check_result_sample(ptr_iscore_out, M1_iscore_expected,  //
+        err += check_result_sample((uint8_t*)ptr_iscore_out, M1_iscore_expected,  //
                                    M1_test_samples_iscore_out, nb_test_samples, "iscore_out");
 
         printf("Test Phase2: seqLen=%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
@@ -133,9 +134,9 @@ int test_osgemm() {
 
     // Define TCDM addresses
     void* tcdm_base_ptr = snrt_l1_next();
-    uint16_t* ptr_a     = (uint16_t*)(tcdm_base_ptr + M2_addr_a);
-    uint16_t* ptr_b     = (uint16_t*)(tcdm_base_ptr + M2_addr_b);
-    uint16_t* ptr_d     = (uint16_t*)(tcdm_base_ptr + M2_addr_d);
+    uint8_t* ptr_a      = (uint8_t*)(tcdm_base_ptr + M2_addr_a);
+    uint8_t* ptr_b      = (uint8_t*)(tcdm_base_ptr + M2_addr_b);
+    uint8_t* ptr_d      = (uint8_t*)(tcdm_base_ptr + M2_addr_d);
 
     // Transfer data from L3 to L1 using DMA only
     if (snrt_is_dm_core()) {
@@ -177,50 +178,29 @@ int test_phase1_and_2() {
     // Allocation. Let's start by naively allocating space for each individual tensor.
     void* tcdm_base_ptr = snrt_l1_next();
     // Phase 1
-    uint16_t* ptr_oscore_in        = (uint16_t*)(tcdm_base_ptr + M0_addr_oscore_in);
-    uint16_t* ptr_oscore_weight_P1 = (uint16_t*)(tcdm_base_ptr + M0_addr_oscore_weight);
-    uint16_t* ptr_conv_weight      = (uint16_t*)(tcdm_base_ptr + M0_addr_conv_weight);
-    uint16_t* ptr_conv_bias        = (uint16_t*)(tcdm_base_ptr + M0_addr_conv_bias);
-    uint16_t* ptr_conv_out         = (uint16_t*)(tcdm_base_ptr + M0_addr_conv_out);
-    uint16_t* ptr_iscore_weight_P1 = (uint16_t*)(tcdm_base_ptr + M0_addr_iscore_weight);
-    uint16_t* ptr_iscore_out_P1    = (uint16_t*)(tcdm_base_ptr + M0_addr_iscore_out);  // holds the psums
+    uint8_t* ptr_oscore_in        = (uint8_t*)(tcdm_base_ptr + M0_addr_oscore_in);
+    uint8_t* ptr_oscore_weight_P1 = (uint8_t*)(tcdm_base_ptr + M0_addr_oscore_weight);
+    uint8_t* ptr_conv_weight      = (uint8_t*)(tcdm_base_ptr + M0_addr_conv_weight);
+    uint8_t* ptr_conv_bias        = (uint8_t*)(tcdm_base_ptr + M0_addr_conv_bias);
+    uint8_t* ptr_conv_out         = (uint8_t*)(tcdm_base_ptr + M0_addr_conv_out);
+    uint8_t* ptr_iscore_weight_P1 = (uint8_t*)(tcdm_base_ptr + M0_addr_iscore_weight);
+    uint16_t* ptr_iscore_out_P1   = (uint16_t*)(tcdm_base_ptr + M0_addr_iscore_out);  // holds the psums
 
     // Phase 2
-    void* phase2_base_ptr          = ((void*)ptr_iscore_out_P1 + M0_length_iscore_out);
-    uint16_t* ptr_oscore_weight_P2 = (uint16_t*)(phase2_base_ptr + M1_addr_oscore_weight);
-    uint16_t* ptr_z                = (uint16_t*)(phase2_base_ptr + M1_addr_z);  // osCore out
-    uint16_t* ptr_dt_in            = ptr_iscore_out_P1;
-    uint16_t* ptr_BC               = (void*)ptr_dt_in + M1_dt_to_BC_offset;
-    uint16_t* ptr_dt_weight_1      = (uint16_t*)(phase2_base_ptr + M1_addr_dt_weight_1);
-    uint16_t* ptr_dt_weight_2      = (uint16_t*)(phase2_base_ptr + M1_addr_dt_weight_2);
-    uint16_t* ptr_dt_bias          = (uint16_t*)(phase2_base_ptr + M1_addr_dt_bias);
-    uint16_t* ptr_x                = ptr_conv_out;
-    uint16_t* ptr_A                = (uint16_t*)(phase2_base_ptr + M1_addr_A);
-    uint16_t* ptr_D                = (uint16_t*)(phase2_base_ptr + M1_addr_D);
-    uint16_t* ptr_y                = (uint16_t*)(phase2_base_ptr + M1_addr_y);  // SUC out
-    uint16_t* ptr_iscore_weight_P2 = (uint16_t*)(phase2_base_ptr + M1_addr_iscore_weight);
-    uint16_t* ptr_iscore_out_P2    = (uint16_t*)(phase2_base_ptr + M1_addr_iscore_out);
-
-    printf("ptr_oscore_in        = %lu\n", (unsigned long)ptr_oscore_in);
-    printf("ptr_oscore_weight_P1 = %lu\n", (unsigned long)ptr_oscore_weight_P1);
-    printf("ptr_conv_weight      = %lu\n", (unsigned long)ptr_conv_weight);
-    printf("ptr_conv_bias        = %lu\n", (unsigned long)ptr_conv_bias);
-    printf("ptr_conv_out         = %lu\n", (unsigned long)ptr_conv_out);
-    printf("ptr_iscore_weight_P1 = %lu\n", (unsigned long)ptr_iscore_weight_P1);
-    printf("ptr_iscore_out_P1    = %lu\n", (unsigned long)ptr_iscore_out_P1);
-    printf("ptr_oscore_weight_P2 = %lu\n", (unsigned long)ptr_oscore_weight_P2);
-    printf("ptr_z                = %lu\n", (unsigned long)ptr_z);
-    printf("ptr_dt_in            = %lu\n", (unsigned long)ptr_dt_in);
-    printf("ptr_BC               = %lu\n", (unsigned long)ptr_BC);
-    printf("ptr_dt_weight_1      = %lu\n", (unsigned long)ptr_dt_weight_1);
-    printf("ptr_dt_weight_2      = %lu\n", (unsigned long)ptr_dt_weight_2);
-    printf("ptr_dt_bias          = %lu\n", (unsigned long)ptr_dt_bias);
-    printf("ptr_x                = %lu\n", (unsigned long)ptr_x);
-    printf("ptr_A                = %lu\n", (unsigned long)ptr_A);
-    printf("ptr_D                = %lu\n", (unsigned long)ptr_D);
-    printf("ptr_y                = %lu\n", (unsigned long)ptr_y);
-    printf("ptr_iscore_weight_P2 = %lu\n", (unsigned long)ptr_iscore_weight_P2);
-    printf("ptr_iscore_out_P2    = %lu\n", (unsigned long)ptr_iscore_out_P2);
+    void* phase2_base_ptr         = ((void*)ptr_iscore_out_P1 + M0_length_iscore_out);
+    uint8_t* ptr_oscore_weight_P2 = (uint8_t*)(phase2_base_ptr + M1_addr_oscore_weight);
+    uint8_t* ptr_z                = (uint8_t*)(phase2_base_ptr + M1_addr_z);  // osCore out
+    uint8_t* ptr_dt_in            = (uint8_t*)ptr_iscore_out_P1;
+    uint8_t* ptr_BC               = (void*)ptr_dt_in + M1_dt_to_BC_offset;
+    uint8_t* ptr_dt_weight_1      = (uint8_t*)(phase2_base_ptr + M1_addr_dt_weight_1);
+    uint8_t* ptr_dt_weight_2      = (uint8_t*)(phase2_base_ptr + M1_addr_dt_weight_2);
+    uint8_t* ptr_dt_bias          = (uint8_t*)(phase2_base_ptr + M1_addr_dt_bias);
+    uint8_t* ptr_x                = ptr_conv_out;
+    uint8_t* ptr_A                = (uint8_t*)(phase2_base_ptr + M1_addr_A);
+    uint8_t* ptr_D                = (uint8_t*)(phase2_base_ptr + M1_addr_D);
+    uint8_t* ptr_y                = (uint8_t*)(phase2_base_ptr + M1_addr_y);  // SUC out
+    uint8_t* ptr_iscore_weight_P2 = (uint8_t*)(phase2_base_ptr + M1_addr_iscore_weight);
+    uint16_t* ptr_iscore_out_P2   = (uint16_t*)(phase2_base_ptr + M1_addr_iscore_out);
 
     // Transfer Phase1 data
     if (snrt_is_dm_core()) {
@@ -250,7 +230,7 @@ int test_phase1_and_2() {
         err += check_result_sample(ptr_conv_out, M0_conv_out, M0_test_samples_conv_out,  //
                                    nb_test_samples, "conv_out");
 
-        err += check_result_sample(ptr_iscore_out_P1, M0_iscore_out, M0_test_samples_iscore_out,  //
+        err += check_result_sample((uint8_t*)ptr_iscore_out_P1, M0_iscore_out, M0_test_samples_iscore_out,  //
                                    nb_test_samples, "iscore_out");
     }
 
@@ -288,7 +268,7 @@ int test_phase1_and_2() {
                                    nb_test_samples, "z (osCore out)");
         err += check_result_sample(ptr_y, M1_suc_expected, M1_test_samples_y,  //
                                    nb_test_samples, "SUC y");
-        err += check_result_sample(ptr_iscore_out_P2, M1_iscore_expected,  //
+        err += check_result_sample((uint8_t*)ptr_iscore_out_P2, M1_iscore_expected,  //
                                    M1_test_samples_iscore_out, nb_test_samples, "iscore_out");
 
         printf("Test Phase2: seqLen=%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
@@ -302,8 +282,8 @@ int test_phase1_and_2() {
 int main() {
     int err = 0;
     err += test_phase1_and_2();
-    err += test_phase1();
-    err += test_phase2();
+    // err += test_phase2();
     // err += test_osgemm();
+    // err += test_phase1();
     return err;
 }

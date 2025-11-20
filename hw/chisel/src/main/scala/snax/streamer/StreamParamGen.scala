@@ -16,36 +16,6 @@ object StreamerParametersGen {
   def readerParams = Seq(
     new ReaderWriterParam(
       spatialBounds = List(
-        4
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 4,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = false,
-      delayedStart = false,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
-        6
-      ),
-      temporalDimension = 4,
-      tcdmDataWidth = 64,
-      tcdmSize = 1024,
-      tcdmLogicWordSize = Seq(256),
-      numChannel = 6,
-      addressBufferDepth = 2,
-      dataBufferDepth = 2,
-      configurableChannel = false,
-      delayedStart = false,
-      crossClockDomain = hasCrossClockDomain
-   ), 
-    new ReaderWriterParam(
-      spatialBounds = List(
         2
       ),
       temporalDimension = 4,
@@ -61,13 +31,13 @@ object StreamerParametersGen {
    ), 
     new ReaderWriterParam(
       spatialBounds = List(
-        1
+        3
       ),
       temporalDimension = 4,
       tcdmDataWidth = 64,
       tcdmSize = 1024,
       tcdmLogicWordSize = Seq(256),
-      numChannel = 1,
+      numChannel = 3,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
       configurableChannel = false,
@@ -121,13 +91,43 @@ object StreamerParametersGen {
    ), 
     new ReaderWriterParam(
       spatialBounds = List(
-        8
+        1
       ),
       temporalDimension = 4,
       tcdmDataWidth = 64,
       tcdmSize = 1024,
       tcdmLogicWordSize = Seq(256),
-      numChannel = 8,
+      numChannel = 1,
+      addressBufferDepth = 2,
+      dataBufferDepth = 2,
+      configurableChannel = false,
+      delayedStart = false,
+      crossClockDomain = hasCrossClockDomain
+   ), 
+    new ReaderWriterParam(
+      spatialBounds = List(
+        1
+      ),
+      temporalDimension = 4,
+      tcdmDataWidth = 64,
+      tcdmSize = 1024,
+      tcdmLogicWordSize = Seq(256),
+      numChannel = 1,
+      addressBufferDepth = 2,
+      dataBufferDepth = 2,
+      configurableChannel = false,
+      delayedStart = false,
+      crossClockDomain = hasCrossClockDomain
+   ), 
+    new ReaderWriterParam(
+      spatialBounds = List(
+        4
+      ),
+      temporalDimension = 4,
+      tcdmDataWidth = 64,
+      tcdmSize = 1024,
+      tcdmLogicWordSize = Seq(256),
+      numChannel = 4,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
       configurableChannel = false,
@@ -196,13 +196,13 @@ object StreamerParametersGen {
    ), 
     new ReaderWriterParam(
       spatialBounds = List(
-        6
+        3
       ),
       temporalDimension = 4,
       tcdmDataWidth = 64,
       tcdmSize = 1024,
       tcdmLogicWordSize = Seq(256),
-      numChannel = 6,
+      numChannel = 3,
       addressBufferDepth = 2,
       dataBufferDepth = 2,
       configurableChannel = false,

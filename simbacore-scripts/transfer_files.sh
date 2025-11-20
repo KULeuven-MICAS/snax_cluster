@@ -39,6 +39,23 @@ if [ -s "$INCLUDE_FILES" ]; then
     cat "$INCLUDE_FILES" >> "$TEMP_FILE"
 fi
 
+# Add all .svh files from hw directory tree
+HW_SVH_FILES="/tmp/hw_svh_files_$$.txt"
+HW_DIR="$ROOT_PATH/hw"
+if [ -d "$HW_DIR" ]; then
+    echo "Adding .svh files from hw directory..."
+    find "$HW_DIR" -type f -name "*.svh" 2>/dev/null > "$HW_SVH_FILES"
+    if [ -s "$HW_SVH_FILES" ]; then
+        hw_svh_count=$(wc -l < "$HW_SVH_FILES")
+        echo "Found $hw_svh_count .svh files under hw/"
+        cat "$HW_SVH_FILES" >> "$TEMP_FILE"
+    else
+        rm -f "$HW_SVH_FILES"
+    fi
+fi
+
+sort -u "$TEMP_FILE" -o "$TEMP_FILE"
+
 file_count=$(wc -l < "$TEMP_FILE")
 echo "Total files to transfer: $file_count"
 
@@ -159,4 +176,4 @@ echo "put \"$TEMP_FLIST\" \"$REMOTE_DIR/flist.tcl\"" | sftp -b - "$REMOTE_USER@$
 echo "Successfully transferred $count files to $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR. Remote flist.tcl ROOT set to: /home/$REMOTE_USER/$REMOTE_DIR"
 
 # Clean up
-rm -f "$TEMP_FILE" "$SFTP_BATCH" "$TEMP_FLIST" "$DIRS_CREATED" "$ALL_DIRS" "$DIRS_TO_CREATE" "$INCLUDE_FILES"
+rm -f "$TEMP_FILE" "$SFTP_BATCH" "$TEMP_FLIST" "$DIRS_CREATED" "$ALL_DIRS" "$DIRS_TO_CREATE" "$INCLUDE_FILES" "$HW_SVH_FILES"
