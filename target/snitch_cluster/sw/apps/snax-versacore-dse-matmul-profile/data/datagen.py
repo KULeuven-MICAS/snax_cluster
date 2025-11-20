@@ -687,19 +687,29 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
 
     delta_local_a = 0
-    delta_local_a = align_wide_addr(delta_local_a, snax_acc_cfg["granularity_a"] * bankWidth / 8)
+    delta_local_a = align_wide_addr(
+        delta_local_a, snax_acc_cfg["granularity_a"] * bankWidth / 8
+    )
     delta_local_b = K * M * (meshRow * tileSize * a_len / 8)
-    delta_local_b = align_wide_addr(delta_local_b, snax_acc_cfg["granularity_b"] * bankWidth / 8)
+    delta_local_b = align_wide_addr(
+        delta_local_b, snax_acc_cfg["granularity_b"] * bankWidth / 8
+    )
     delta_local_c = delta_local_b + K * N * (meshCol * tileSize * b_len / 8)
-    delta_local_c = align_wide_addr(delta_local_c, snax_acc_cfg["granularity_c_d"] * bankWidth / 8)
+    delta_local_c = align_wide_addr(
+        delta_local_c, snax_acc_cfg["granularity_c_d"] * bankWidth / 8
+    )
     if stationary == output_stationary:
         delta_local_d = delta_local_c
-        delta_local_d = align_wide_addr(delta_local_d, snax_acc_cfg["granularity_c_d"] * bankWidth / 8)
+        delta_local_d = align_wide_addr(
+            delta_local_d, snax_acc_cfg["granularity_c_d"] * bankWidth / 8
+        )
     elif stationary == weight_stationary:
         delta_local_d = delta_local_c
     elif stationary == input_stationary:
         delta_local_d = delta_local_c
-        delta_local_d = align_wide_addr(delta_local_d, snax_acc_cfg["granularity_c_d"] * bankWidth / 8)
+        delta_local_d = align_wide_addr(
+            delta_local_d, snax_acc_cfg["granularity_c_d"] * bankWidth / 8
+        )
 
     data_str += [format_scalar_definition("int32_t", "delta_local_a", delta_local_a)]
     data_str += [format_scalar_definition("int32_t", "delta_local_b", delta_local_b)]
