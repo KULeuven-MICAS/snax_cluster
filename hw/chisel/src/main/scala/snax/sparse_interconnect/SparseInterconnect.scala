@@ -32,6 +32,13 @@ class SparseInterconnect(
   val bankSelect = Wire(Vec(NumInp, UInt(log2Ceil(NumOut).W)))
   for (i <- 0 until NumInp) {
     bankSelect(i) := io.tcdmReqs(i).bits.addr(bankSelectWidth + byteOffsetWidth - 1, byteOffsetWidth)
+
+    val (port, index) = sparse_config.getPortAndIndex(i);
+    val granularity   = sparse_config.ports(port).access_granularity.U;
+    // Assert legal bank indexing
+    when(io.tcdmReqs(i).valid) {
+      assert((bankSelect(i) % granularity) === (index.U % granularity), "Illegal bank access detected");
+    }
   }
 
   // Determines the success of each request

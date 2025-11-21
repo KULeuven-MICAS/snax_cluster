@@ -119,7 +119,7 @@
             snax_acc_name: "snax_streamer_gemmX",
             bender_target: ["snax_gemmX"],
             snax_tcdm_ports: 32,
-            sparse_config: [[8, 1], [24, 8]],
+            sparse_interconnect_config: [[8, 1], [24, 8]],
             snax_wide_tcdm_ports: 0,
             snax_num_rw_csr: 19,
             snax_num_ro_csr: 2,
