@@ -47,7 +47,6 @@ class SparseConfig(val ports: Seq[SparsePortDefinition])                {
   def get_global_idx(sparse_idx: Int, bank: Int): Int        = {
     return get_global_idx_list(bank)(sparse_idx);
   };
-
 };
 
 object SparseConfig {
