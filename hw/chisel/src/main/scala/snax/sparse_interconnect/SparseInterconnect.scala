@@ -37,7 +37,7 @@ class SparseInterconnect(
     val granularity   = sparse_config.ports(port).access_granularity.U;
     // Assert legal bank indexing
     when(io.tcdmReqs(i).valid) {
-      assert( (bankSelect(i) % granularity) === (index.U % granularity), "Illegal bank access detected");
+      assert((bankSelect(i) % granularity) === (index.U % granularity), "Illegal bank access detected");
     }
   }
 
