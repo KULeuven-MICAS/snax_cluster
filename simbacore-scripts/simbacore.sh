@@ -61,7 +61,7 @@ make traces
 ###########################
 
 # [bash|root] Generate flist from bender
-bender script synopsys -t synthesis -t snax_simbacore -t snax_simbacore_cluster > simbacore-work/flist.tcl
+bender script synopsys -t synthesis -t snax_simbacore -t snax_simbacore_cluster  > simbacore-work/flist.tcl
 
 # [bash|root] Run Design Compiler (e.g., check with elaborate)
 cd simbacore-work && dcnxt_shell -64bit -f dc.tcl > dc.log

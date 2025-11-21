@@ -324,7 +324,7 @@ module snax_simbacore_cluster_wrapper (
   localparam int unsigned NumSequencerInstr       [2] = '{16, 16};
   localparam int unsigned NumSsrs                 [2] = '{1, 1};
   localparam int unsigned SsrMuxRespDepth         [2] = '{4, 4};
-  localparam int unsigned SnaxNarrowTcdmPorts     [2] = '{32, 16};
+  localparam int unsigned SnaxNarrowTcdmPorts     [2] = '{32, 0};
   localparam int unsigned SnaxWideTcdmPorts       [2] = '{0, 0};
 
   //-----------------------------
@@ -356,8 +356,8 @@ module snax_simbacore_cluster_wrapper (
   //-----------------------------
   // SNAX TCDM wires
   //-----------------------------
-  snax_simbacore_cluster_pkg::tcdm_req_t [47:0] snax_tcdm_req;
-  snax_simbacore_cluster_pkg::tcdm_rsp_t [47:0] snax_tcdm_rsp;
+  snax_simbacore_cluster_pkg::tcdm_req_t [31:0] snax_tcdm_req;
+  snax_simbacore_cluster_pkg::tcdm_rsp_t [31:0] snax_tcdm_rsp;
 
   //-----------------------------
   // SNAX Multiaccelerator MUX
@@ -369,24 +369,6 @@ module snax_simbacore_cluster_wrapper (
   //-----------------------------
   logic [snax_simbacore_cluster_pkg::NrCores-1:0] snax_barrier;
 
-  //-----------------------------
-  // XDMA Wire
-  //-----------------------------
-
-  // We need both wide and narrow links
-  // The wide links are for the data
-  // The narrow links are for the configurations
-
-  // Wide links
-  snax_simbacore_cluster_pkg::wide_out_req_t    xdma_wide_out_req;
-  snax_simbacore_cluster_pkg::wide_out_resp_t   xdma_wide_out_resp;
-  snax_simbacore_cluster_pkg::wide_in_req_t     xdma_wide_in_req;
-  snax_simbacore_cluster_pkg::wide_in_resp_t    xdma_wide_in_resp;
-  // Narrow links
-  snax_simbacore_cluster_pkg::narrow_out_req_t  xdma_narrow_out_req;
-  snax_simbacore_cluster_pkg::narrow_out_resp_t xdma_narrow_out_resp;
-  snax_simbacore_cluster_pkg::narrow_in_req_t   xdma_narrow_in_req;
-  snax_simbacore_cluster_pkg::narrow_in_resp_t  xdma_narrow_in_resp;
 
 
 
@@ -435,7 +417,7 @@ module snax_simbacore_cluster_wrapper (
     .Xfrep (2'b00),
     .SnaxNarrowTcdmPorts (SnaxNarrowTcdmPorts),
     .SnaxWideTcdmPorts (SnaxWideTcdmPorts),
-    .TotalSnaxNarrowTcdmPorts(48),
+    .TotalSnaxNarrowTcdmPorts(32),
     .TotalSnaxWideTcdmPorts(0),
     .SnaxUseCustomPorts (2'b00),
     .FPUImplementation (snax_simbacore_cluster_pkg::FPUImplementation),
@@ -555,14 +537,14 @@ module snax_simbacore_cluster_wrapper (
     //-----------------------------
     // XDMA
     //-----------------------------
-    .xdma_wide_out_req_o     (xdma_wide_out_req   ),
-    .xdma_wide_out_resp_i    (xdma_wide_out_resp  ),
-    .xdma_wide_in_req_i      (xdma_wide_in_req    ),
-    .xdma_wide_in_resp_o     (xdma_wide_in_resp   ),
-    .xdma_narrow_out_req_o   (xdma_narrow_out_req ),
-    .xdma_narrow_out_resp_i  (xdma_narrow_out_resp),
-    .xdma_narrow_in_req_i    (xdma_narrow_in_req  ),
-    .xdma_narrow_in_resp_o   (xdma_narrow_in_resp ),
+    .xdma_wide_out_req_o     (                    ),
+    .xdma_wide_out_resp_i    ('0                  ),
+    .xdma_wide_in_req_i      ('0                  ),
+    .xdma_wide_in_resp_o     (                    ),
+    .xdma_narrow_out_req_o   (                    ),
+    .xdma_narrow_out_resp_i  ('0                  ),
+    .xdma_narrow_in_req_i    ('0                  ),
+    .xdma_narrow_in_resp_o   (                    ),
     //-----------------------------
     // Wide AXI ports
     //-----------------------------
@@ -619,79 +601,18 @@ module snax_simbacore_cluster_wrapper (
 
   // ------------------------- Accelerator Set for Core 1 -------------------------
   // This is an accelerator set controlled by 1 Snitch core
-  // Instantiation of xdma wrapper
-  snax_simbacore_cluster_xdma_wrapper # (
-    .tcdm_req_t         ( snax_simbacore_cluster_pkg::tcdm_req_t        ),
-    .tcdm_rsp_t         ( snax_simbacore_cluster_pkg::tcdm_rsp_t        ),
-    .wide_slv_id_t      ( snax_simbacore_cluster_pkg::wide_out_id_t     ),
-    .wide_out_req_t     ( snax_simbacore_cluster_pkg::wide_in_req_t     ),
-    .wide_out_resp_t    ( snax_simbacore_cluster_pkg::wide_in_resp_t    ),
-    .wide_in_req_t      ( snax_simbacore_cluster_pkg::wide_out_req_t    ),
-    .wide_in_resp_t     ( snax_simbacore_cluster_pkg::wide_out_resp_t   ),
-    .narrow_slv_id_t    ( snax_simbacore_cluster_pkg::narrow_out_id_t   ),
-    .narrow_out_req_t   ( snax_simbacore_cluster_pkg::narrow_in_req_t   ),
-    .narrow_out_resp_t  ( snax_simbacore_cluster_pkg::narrow_in_resp_t  ),
-    .narrow_in_req_t    ( snax_simbacore_cluster_pkg::narrow_out_req_t  ),
-    .narrow_in_resp_t   ( snax_simbacore_cluster_pkg::narrow_out_resp_t ),
 
-    .ClusterBaseAddr  ( snax_simbacore_cluster_pkg::ClusterBaseAddr),
-    .ClusterAddressSpace(48'h400000),
-    .MMIOSize(16)
-  ) i_snax_core_1_xdma  (
-    //-----------------------------
-    // Clock and reset
-    //-----------------------------
-    .clk_i            ( clk_i  ),
-    .rst_ni           ( rst_ni ),
-    //-----------------------------
-    // Cluster Base Address
-    //-----------------------------
-    .cluster_base_addr_i( cluster_base_addr_i ),
-    //-----------------------------
-    // CSR  format control ports
-    //-----------------------------
-    // Request
-    .csr_req_bits_data_i  ( snax_csr_req_data [1] ),
-    .csr_req_bits_strb_i   ( '1 ),
-    .csr_req_bits_addr_i  ( snax_csr_req_addr [1] ),
-    .csr_req_bits_write_i ( snax_csr_req_write[1] ),
-    .csr_req_valid_i ( snax_csr_req_valid[1] ),
-    .csr_req_ready_o ( snax_csr_req_ready[1] ),
-    // Response
-    .csr_rsp_bits_data_o  ( snax_csr_rsp_data [1] ),
-    .csr_rsp_valid_o ( snax_csr_rsp_valid[1] ),
-    .csr_rsp_ready_i ( snax_csr_rsp_ready[1] ),
-    //-----------------------------
-    // Hardware barrier is not supported by xdma at the moment
-    //-----------------------------
-
-    //-----------------------------
-    // XDMA Intercluster Ports
-    //-----------------------------
-    // Wide ports for the data
-    .xdma_wide_out_req_o   (xdma_wide_in_req    ),
-    .xdma_wide_out_resp_i  (xdma_wide_in_resp   ),
-    .xdma_wide_in_req_i    (xdma_wide_out_req   ),
-    .xdma_wide_in_resp_o   (xdma_wide_out_resp  ),
-    // Narrow ports for the control
-    .xdma_narrow_out_req_o (xdma_narrow_in_req  ),
-    .xdma_narrow_out_resp_i(xdma_narrow_in_resp ),
-    .xdma_narrow_in_req_i  (xdma_narrow_out_req ),
-    .xdma_narrow_in_resp_o (xdma_narrow_out_resp),
-    //-----------------------------
-    // TCDM ports
-    //-----------------------------
-    .tcdm_req_o  ( snax_tcdm_req[47:32] ),
-    .tcdm_rsp_i  ( snax_tcdm_rsp[47:32] )
-  );
-
-  // Tie unused custom instruction ports to 0
+  // If no accelerator is connected to Snitch core
+  // Tie SNAX custom ports to 0
   assign snax_qready  [1] = '0;
   assign snax_resp    [1] = '0;
   assign snax_pvalid  [1] = '0;
+  // Tie CSR ports to 0
+  assign snax_csr_rsp_data [ 1] = '0;
+  assign snax_csr_rsp_valid [1] = '0;
+  assign snax_csr_req_ready [1] = '0;
   // Tie barrier to 0
   assign snax_barrier [1] = '0;
-
 
 
 endmodule

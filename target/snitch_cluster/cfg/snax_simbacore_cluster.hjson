@@ -130,20 +130,21 @@ Naming convention:
   },
   "dma_core_template": {
     "isa": "rv32ima",
-    "snax_xdma_cfg": {
-      "bender_target": ["snax_simbacore_cluster_xdma"],
-      "cfg_io_width": 32,
-      "max_multicast": 16, // TODO how to set all of this?
-      "max_dimension": 5,
-      "max_mem_size": 4096,
-      "reader_buffer": 12,
-      "writer_buffer": 12,
-      "reader_agu_temporal_dimension": 5,
-      "writer_agu_temporal_dimension": 5,
-        writer_extensions: {},
-        reader_extensions: {},
-    },
-    "xdma": true,
+    // Disable full XDMA because we only have one cluster
+    // "snax_xdma_cfg": {
+    //   "bender_target": ["snax_simbacore_cluster_xdma"],
+    //   "cfg_io_width": 32,
+    //   "max_multicast": 16, 
+    //   "max_dimension": 5,
+    //   "max_mem_size": 4096,
+    //   "reader_buffer": 12,
+    //   "writer_buffer": 12,
+    //   "reader_agu_temporal_dimension": 5,
+    //   "writer_agu_temporal_dimension": 5,
+    //     writer_extensions: {},
+    //     reader_extensions: {},
+    // },
+    "xdma": true, // This is not Yunhao's XDMA but the Snitch one! 
     "xssr": false,
     "xfrep": false,
     "xf16": false,
@@ -180,6 +181,6 @@ Naming convention:
       "configurable_channel": [ 0,   0,   0,   0 ],
       "delayed_start":        [ 0,   0,   0,   0 ]
     },
-    "snax_library_name": "simbacore" // where to upload the regenerated streamer register header file
+    "snax_library_name": "simbacore" 
   }
 }
