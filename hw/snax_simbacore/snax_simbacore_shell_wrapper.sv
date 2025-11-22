@@ -38,7 +38,7 @@ module snax_simbacore_shell_wrapper #(
     parameter int unsigned RegROCount                    = 4,
     parameter int unsigned RegDataWidth                  = 32,
     parameter int unsigned RegAddrWidth                  = 32,
-    parameter int unsigned ModeWidth                     = 2     // 1
+    parameter int unsigned ModeWidth                     = 12    // 1
 ) (
     //-------------------------------
     // Clocks and reset

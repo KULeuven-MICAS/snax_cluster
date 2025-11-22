@@ -39,6 +39,7 @@ make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson rtl-gen
 
 # [bash|root] Generate raw test data externally via scala data generator
 cd ../chisel-ssm && sbt "test:runMain simbacore.DataGenerator seqLen=64 dModel=36 dtRank=24" && cd ../snax_cluster
+cd ../chisel-ssm && sbt "test:runMain simbacore.DataGenerator seqLen=128 dModel=240 dtRank=24" && cd ../snax_cluster
 
 # When adding extra external sv sources, add to bender.yaml and run `bender update`
 # Then, remove the vsim work folder and run this
@@ -73,4 +74,4 @@ cd simbacore-work && dcnxt_shell -64bit -f dc.tcl > dc.log
 
 # Current flaws in this flow:
 # 1) Raw test data generation via scala generator is part of the sw makefile, but cannot be executed in the snax podman shell
-# 3) 
+

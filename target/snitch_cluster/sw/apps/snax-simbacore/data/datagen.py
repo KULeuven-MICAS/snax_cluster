@@ -80,7 +80,8 @@ class DataGenerator(DataGeneratorBase):
         return int(min(suc_safe_to_start, gemm_total_nb_tiles)), int(min(iscore_safe_to_start, suc_total_nb_elements))
 
     def build_OSGeMM_data(self):
-        mode = self.kwargs["M2_OSGEMM"]
+        mode_id = 3
+        assert f"M{mode_id}_OSGEMM" in self.kwargs, "verify mode_id"
         Mu = self.seqLenUnroll
         Nu = self.dInnerUnroll
 
@@ -134,11 +135,11 @@ class DataGenerator(DataGeneratorBase):
         test_data = {name: "uint8_t" for name in ("A", "B", "D")}
         tests = {"D": self.seqLen * self.dInner}
 
-        self.build_mode(mode, streamers, scalars=scalars, test_data=test_data, tests=tests)
+        self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests)
 
     def build_Phase1_data(self):
-        mode = self.kwargs["M0_PHASE1"]
-
+        mode_id = 1
+        assert f"M{mode_id}_PHASE1" in self.kwargs, "verify mode_id"
         assert self.switchcore_width == BANKWIDTH
 
         streamers = {
@@ -244,10 +245,11 @@ class DataGenerator(DataGeneratorBase):
             )
         }
 
-        self.build_mode(mode, streamers, scalars=scalars, test_data=test_data, tests=tests)
+        self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests)
 
     def build_Phase2_data(self):
-        mode = self.kwargs["M1_PHASE2"]
+        mode_id = 2
+        assert f"M{mode_id}_PHASE2" in self.kwargs, "verify mode_id"
 
         # assert self.convUnroll * FP8 == BANK_BYTES * 8, "switchCore output width must match 1 bank width"
         # assert self.dConv * FP8 == BANK_BYTES * 8, "switchCore weight width must match 1 bank width"
@@ -476,7 +478,7 @@ class DataGenerator(DataGeneratorBase):
             )
         }
 
-        self.build_mode(mode, streamers, scalars=scalars, test_data=test_data, tests=tests)
+        self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests)
 
 
 def main():

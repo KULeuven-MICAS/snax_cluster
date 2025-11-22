@@ -65,17 +65,17 @@ class DataGeneratorBase(ABC):
     def format_vector(self, type: str, var_name: str, value: list[int]):
         self.lines_data.append(format_vector_definition(type, var_name, value))
 
-    def read_and_format_vector(self, mode: int, type: str, tensor_name: str):
-        """Read data from DATA_OUT_DIR and format it as a vector. Filename is M<mode>_<tensor_name>.bin."""
+    def read_and_format_vector(self, mode_id: int, type: str, tensor_name: str):
+        """Read data from DATA_OUT_DIR and format it as a vector. Filename is M<mode_id>_<tensor_name>.bin."""
         try:
-            tensor_data = self._read_data_int(f"M{mode}_{tensor_name}.bin")
+            tensor_data = self._read_data_int(f"M{mode_id}_{tensor_name}.bin")
         except FileNotFoundError as e:
             raise RuntimeError(
                 f"Error loading test data for {tensor_name}: {e}. Did you run the scala data generator and is the data directory correct?"
             )
-        self.format_vector(type, f"M{mode}_{tensor_name}", tensor_data)
+        self.format_vector(type, f"M{mode_id}_{tensor_name}", tensor_data)
 
-    def format_temporal_bounds_strides(self, streamer_name: str, mode: int, bounds: list[int], strides: list[int]):
+    def format_temporal_bounds_strides(self, streamer_name: str, mode_id: int, bounds: list[int], strides: list[int]):
         """Format temporal bounds and strides for a streamer by automatically naming the variables and adding defaults.
         bounds are from inner to outer loop.
 
@@ -83,22 +83,22 @@ class DataGeneratorBase(ABC):
         """
         assert all(
             s % BANK_BYTES == 0 for s in strides
-        ), f"M{mode} {streamer_name}: Temporal strides {strides} not aligned to bank width"
+        ), f"M{mode_id} {streamer_name}: Temporal strides {strides} not aligned to bank width"
 
         # Extend with defaults
         bounds = bounds + [1] * (NUM_LOOPS - len(bounds))
         strides = strides + [0] * (NUM_LOOPS - len(strides))
         # Save each bound/stride as a separate variable
         # for i in range(NUM_LOOPS):
-        #     self.format("uint32_t", f"M{mode}_{streamer_name}_tb{i}", bounds[i])
-        #     self.format("uint32_t", f"M{mode}_{streamer_name}_ts{i}", strides[i])
+        #     self.format("uint32_t", f"M{mode_id}_{streamer_name}_tb{i}", bounds[i])
+        #     self.format("uint32_t", f"M{mode_id}_{streamer_name}_ts{i}", strides[i])
         # Group values into array
-        self.lines_params += [f"int32_t M{mode}_{streamer_name}_tb[] = {{{', '.join(map(str, bounds))}}};"]
-        self.lines_params += [f"int32_t M{mode}_{streamer_name}_ts[] = {{{', '.join(map(str, strides))}}};"]
+        self.lines_params += [f"int32_t M{mode_id}_{streamer_name}_tb[] = {{{', '.join(map(str, bounds))}}};"]
+        self.lines_params += [f"int32_t M{mode_id}_{streamer_name}_ts[] = {{{', '.join(map(str, strides))}}};"]
 
-    def format_spatial_stride(self, streamer_name: str, mode: int, stride: int):
-        # self.format("uint32_t", f"M{mode}_{streamer_name}_ss0", stride)
-        self.lines_params += [f"int32_t M{mode}_{streamer_name}_ss[] = {{{stride}}};"]
+    def format_spatial_stride(self, streamer_name: str, mode_id: int, stride: int):
+        # self.format("uint32_t", f"M{mode_id}_{streamer_name}_ss0", stride)
+        self.lines_params += [f"int32_t M{mode_id}_{streamer_name}_ss[] = {{{stride}}};"]
 
     def _read_data_int(self, filename: str):
         """Read a vec from a file."""
@@ -107,19 +107,19 @@ class DataGeneratorBase(ABC):
         data_lines = [line.strip() for line in lines if not line.startswith("#")]
         return [int(x) for x in data_lines]
 
-    def format_test_samples(self, mode: int, tensor_name: str, tensor_size: int, nb_test_samples: int):
+    def format_test_samples(self, mode_id: int, tensor_name: str, tensor_size: int, nb_test_samples: int):
         """Format variables used to test only a subset of the output."""
         self.format_vector(
             "int32_t",
-            f"M{mode}_test_samples_{tensor_name}",
+            f"M{mode_id}_test_samples_{tensor_name}",
             [random.randint(0, tensor_size - 1) for _ in range(nb_test_samples)],
         )
 
-    def enable_channel(self, streamer_name: str, mode: int):
-        self.format("uint32_t", f"M{mode}_{streamer_name}_en", 1)
+    def enable_channel(self, streamer_name: str, mode_id: int):
+        self.format("uint32_t", f"M{mode_id}_{streamer_name}_en", 1)
 
-    def disable_channel(self, streamer_name: str, mode: int):
-        self.format("uint32_t", f"M{mode}_{streamer_name}_en", 0)
+    def disable_channel(self, streamer_name: str, mode_id: int):
+        self.format("uint32_t", f"M{mode_id}_{streamer_name}_en", 0)
 
     @staticmethod
     def _collect_lengths_and_deltas(
@@ -138,7 +138,7 @@ class DataGeneratorBase(ABC):
 
     def build_mode(
         self,
-        mode: int,
+        mode_id: int,
         streamers: dict[str, tuple[list[int], list[int]]] | dict[str, tuple[list[int], list[int], int]],
         scalars: dict[str, int],
         test_data: dict[str, str],
@@ -147,7 +147,7 @@ class DataGeneratorBase(ABC):
         """Process all settings of a single mode and convert them to C code.
 
         Args:
-        - mode: mode bit
+        - mode_id: digit to identify the mode
         - streamers: dict[streamer name, (temporal bounds, temporal strides)]
         - scalars: dict[scalar name, value]
         - test_data: dict[tensor name, dtype]
@@ -162,22 +162,22 @@ class DataGeneratorBase(ABC):
                     spatial_stride = BANK_BYTES  # Default
                 elif len(streamers[name]) == 3:
                     (bounds, strides, spatial_stride) = streamers[name]
-                self.format_temporal_bounds_strides(name, mode, bounds, strides)
-                self.format_spatial_stride(name, mode, spatial_stride)
-                self.enable_channel(name, mode)
+                self.format_temporal_bounds_strides(name, mode_id, bounds, strides)
+                self.format_spatial_stride(name, mode_id, spatial_stride)
+                self.enable_channel(name, mode_id)
             else:
-                self.disable_channel(name, mode)
+                self.disable_channel(name, mode_id)
 
         # Format scalar values
         for key, value in scalars.items():
-            self.format("uint32_t", f"M{mode}_{key}", int(value))
+            self.format("uint32_t", f"M{mode_id}_{key}", int(value))
 
         for tensor, size in tests.items():
-            self.format_test_samples(mode, tensor, tensor_size=size, nb_test_samples=NB_TEST_SAMPLES)
+            self.format_test_samples(mode_id, tensor, tensor_size=size, nb_test_samples=NB_TEST_SAMPLES)
 
         # Read and format test data
         for tensor, dtype in test_data.items():
-            self.read_and_format_vector(mode, dtype, tensor)
+            self.read_and_format_vector(mode_id, dtype, tensor)
 
     # def pad_to_bankwidth(self, total_size_bit: int, chunk_width: int):
     #     """ """
