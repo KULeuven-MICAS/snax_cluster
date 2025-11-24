@@ -443,7 +443,7 @@ class SnitchCluster(Generator):
         #     log.error("RVD needs RVF")
         # elif cfg.en_rvd and not cfg.data_width == 64:
         #     log.error("RVD needs 64 bit data buses")
-        elif (self.cfg["tcdm"]["size"] % self.cfg["tcdm"]["banks"]) != 0:
+        elif ((self.cfg["tcdm"]["size"] * 1024) % self.cfg["tcdm"]["banks"]) != 0:
             log.error(
                 "The total size of the TCDM must be divisible by the requested amount of banks."  # noqa E501
             )
