@@ -42,6 +42,7 @@ logic [${cfg["sparse_interconnect_cfg"]["NumOut"]}-1:0][3:0] mem_req_o_amo;
 
 % for idx in range(cfg["sparse_interconnect_cfg"]["NumOut"]):
     assign mem_req_o[${idx}].q.amo = amo_op_e'(mem_req_o_amo[${idx}]);
+    assign mem_req_o[${idx}].q.user = '0;
 % endfor
 
 
