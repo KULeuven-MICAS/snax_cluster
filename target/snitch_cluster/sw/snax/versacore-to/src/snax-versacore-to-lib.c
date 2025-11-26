@@ -6,7 +6,6 @@
 
 #include "snax-versacore-to-lib.h"
 #include <stdbool.h>
-#include "snax_versacore_stationarity.h"
 #include "snrt.h"
 #include "stdint.h"
 #include "streamer_csr_addr_map.h"
@@ -31,7 +30,8 @@ void set_versacore_streamer_csr(
     int32_t* D32tlstride, int32_t set_addr_remap_index_D32,
     int32_t* channel_en_D, int32_t array_shape, uint32_t quantization_enable,
     uint32_t shift_i, uint32_t multiplier_i, int32_t input_zp_i,
-    int32_t output_zp_i, int32_t int32tofp16_enable) {
+    int32_t output_zp_i, int32_t int32tofp16_enable, int32_t int4_a_enable,
+    int32_t int4_b_enable) {
     // ----------------------------------A-----------------------------------
     // ----------------------------------A-----------------------------------
     // ----------------------------------A-----------------------------------
@@ -173,12 +173,18 @@ void set_versacore_streamer_csr(
 
     // set the transpose
 #ifdef READER_EXTENSION_0_CSR_BASE
-    csrw_ss(READER_EXTENSION_0_CSR_BASE, transpose_A == 1 ? 1 : 0);
+    uint32_t cfgA = ((int4_a_enable & 0x1) << 1) |  // bit 1
+                    (transpose_A & 0x1);            // bit 0
+
+    csrw_ss(READER_EXTENSION_0_CSR_BASE, cfgA);
     csrw_ss(READER_EXTENSION_0_CSR_BASE + 1, array_shape);
 #endif
 
 #ifdef READER_EXTENSION_1_CSR_BASE
-    csrw_ss(READER_EXTENSION_1_CSR_BASE, transpose_B == 1 ? 1 : 0);
+    uint32_t cfgB = ((int4_b_enable & 0x1) << 1) |  // bit 1
+                    (transpose_B & 0x1);            // bit 0
+
+    csrw_ss(READER_EXTENSION_1_CSR_BASE, cfgB);
     csrw_ss(READER_EXTENSION_1_CSR_BASE + 1, array_shape);
 #endif
 
