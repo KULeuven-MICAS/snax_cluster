@@ -248,15 +248,29 @@ def emit_matmul_data(**kwargs):
         2
     ]
 
-    a_len = snax_acc_cfg["snax_versacore_input_a_element_width"][data_type] if kwargs["int4_a_enable"] == 0 else 4
-    b_len = snax_acc_cfg["snax_versacore_input_b_element_width"][data_type] if kwargs["int4_b_enable"] == 0 else 4
+    a_len = (
+        snax_acc_cfg["snax_versacore_input_a_element_width"][data_type]
+        if kwargs["int4_a_enable"] == 0
+        else 4
+    )
+    b_len = (
+        snax_acc_cfg["snax_versacore_input_b_element_width"][data_type]
+        if kwargs["int4_b_enable"] == 0
+        else 4
+    )
     c_len = snax_acc_cfg["snax_versacore_input_c_element_width"][data_type]
 
     if kwargs["int4_a_enable"] == 1 or kwargs["int4_b_enable"] == 1:
-        assert kwargs["array_shape"] == 4, "Int4 A and B input is only supported in array shape 4"
+        assert (
+            kwargs["array_shape"] == 4
+        ), "Int4 A and B input is only supported in array shape 4"
 
-    data_str += [format_scalar_definition("uint32_t", "int4_a_enable", kwargs["int4_a_enable"])]
-    data_str += [format_scalar_definition("uint32_t", "int4_b_enable", kwargs["int4_b_enable"])]
+    data_str += [
+        format_scalar_definition("uint32_t", "int4_a_enable", kwargs["int4_a_enable"])
+    ]
+    data_str += [
+        format_scalar_definition("uint32_t", "int4_b_enable", kwargs["int4_b_enable"])
+    ]
 
     a_array_width = snax_acc_cfg["snax_versacore_array_input_a_width"]
     b_array_width = snax_acc_cfg["snax_versacore_array_input_b_width"]
@@ -573,7 +587,12 @@ def emit_matmul_data(**kwargs):
     # spatial settings
 
     non_datapath_extension_d_len = c_len
-    datapath_extension_d_len = 8 if kwargs["quantization_enable"] == 1 else 16
+    if kwargs["quantization_enable"] == 1:
+        datapath_extension_d_len = 8
+    elif kwargs["int32tofp16_enable"] == 1:
+        datapath_extension_d_len = 16
+    else:
+        datapath_extension_d_len = c_len
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
     data_str += [
         format_scalar_definition(
@@ -582,7 +601,10 @@ def emit_matmul_data(**kwargs):
     ]
     if kwargs["quantization_enable"] == 1 or kwargs["int32tofp16_enable"] == 1:
         actual_d_width = snax_versacore_serial_c_d_width
-    elif meshCol * meshRow * non_datapath_extension_d_len >= snax_versacore_serial_c_d_width:
+    elif (
+        meshCol * meshRow * non_datapath_extension_d_len
+        >= snax_versacore_serial_c_d_width
+    ):
         actual_d_width = snax_versacore_serial_c_d_width
     else:
         actual_d_width = meshCol * meshRow * non_datapath_extension_d_len
@@ -591,9 +613,15 @@ def emit_matmul_data(**kwargs):
 
     # temporal settings
     if kwargs["quantization_enable"] == 1 or kwargs["int32tofp16_enable"] == 1:
-        if meshCol * meshRow * datapath_extension_d_len > snax_versacore_serial_c_d_width:
+        if (
+            meshCol * meshRow * datapath_extension_d_len
+            > snax_versacore_serial_c_d_width
+        ):
             D32tlbound0 = (
-                meshCol * meshRow * datapath_extension_d_len / snax_versacore_serial_c_d_width
+                meshCol
+                * meshRow
+                * datapath_extension_d_len
+                / snax_versacore_serial_c_d_width
             )
         else:
             D32tlbound0 = 1
@@ -606,9 +634,15 @@ def emit_matmul_data(**kwargs):
                 % snax_versacore_serial_c_d_width
                 == 0
             ), "The quantization extension cannot output correct result."
-    elif meshCol * meshRow * non_datapath_extension_d_len > snax_versacore_serial_c_d_width:
+    elif (
+        meshCol * meshRow * non_datapath_extension_d_len
+        > snax_versacore_serial_c_d_width
+    ):
         D32tlbound0 = (
-            meshCol * meshRow * non_datapath_extension_d_len / snax_versacore_serial_c_d_width
+            meshCol
+            * meshRow
+            * non_datapath_extension_d_len
+            / snax_versacore_serial_c_d_width
         )
     else:
         D32tlbound0 = 1
@@ -640,7 +674,11 @@ def emit_matmul_data(**kwargs):
                 format_scalar_definition("int32_t", "D32tlbound1", D32tlbound1)
             ]
             D32tlstride1 = (
-                output_matrix_per_store * datapath_extension_d_len * meshRow * meshCol / 8
+                output_matrix_per_store
+                * datapath_extension_d_len
+                * meshRow
+                * meshCol
+                / 8
             )
             data_str += [
                 format_scalar_definition("int32_t", "D32tlstride1", D32tlstride1)
@@ -729,7 +767,9 @@ def emit_matmul_data(**kwargs):
         channel_en_D_bits = int(math.ceil(snax_versacore_serial_c_d_width / bankWidth))
     else:
         channel_en_D_bits = min(
-            int(math.ceil(meshRow * meshCol * non_datapath_extension_d_len / bankWidth)),
+            int(
+                math.ceil(meshRow * meshCol * non_datapath_extension_d_len / bankWidth)
+            ),
             int(math.ceil(snax_versacore_serial_c_d_width / bankWidth)),
         )
 

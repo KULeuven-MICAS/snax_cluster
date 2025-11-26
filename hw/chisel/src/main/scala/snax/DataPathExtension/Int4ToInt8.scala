@@ -53,7 +53,7 @@ class IntlowToInthighConverter (dataWidth: Int = 512, in_elementWidth: Int = 4, 
   ext_data_o.bits := Cat(pe_outputs.reverse).asTypeOf(ext_data_o.bits)
 
   // Pass through valid/ready signals
-  ext_data_o.valid := ext_data_i.fire
+  ext_data_o.valid := ext_data_i.valid
   ext_data_i.ready := ext_data_o.ready
   ext_busy_o       := 0.U(1.W)
 }
