@@ -76,7 +76,7 @@ int main() {
             set_addr_remap_index_D32, channel_en_D, array_shape,
 
             quantization_enable, shift_i, multiplier_i, input_zp_i, output_zp_i,
-            int32tofp16_enable);
+            int32tofp16_enable, int4_a_enable, int4_b_enable);
 
         // Set GEMMX configuration CSR
         uint32_t subtraction_setting =

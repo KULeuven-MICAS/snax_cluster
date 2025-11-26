@@ -248,9 +248,15 @@ def emit_matmul_data(**kwargs):
         2
     ]
 
-    a_len = snax_acc_cfg["snax_versacore_input_a_element_width"][data_type]
-    b_len = snax_acc_cfg["snax_versacore_input_b_element_width"][data_type]
+    a_len = snax_acc_cfg["snax_versacore_input_a_element_width"][data_type] if kwargs["int4_a_enable"] == 0 else 4
+    b_len = snax_acc_cfg["snax_versacore_input_b_element_width"][data_type] if kwargs["int4_b_enable"] == 0 else 4
     c_len = snax_acc_cfg["snax_versacore_input_c_element_width"][data_type]
+
+    if kwargs["int4_a_enable"] == 1 or kwargs["int4_b_enable"] == 1:
+        assert kwargs["array_shape"] == 4, "Int4 A and B input is only supported in array shape 4"
+
+    data_str += [format_scalar_definition("uint32_t", "int4_a_enable", kwargs["int4_a_enable"])]
+    data_str += [format_scalar_definition("uint32_t", "int4_b_enable", kwargs["int4_b_enable"])]
 
     a_array_width = snax_acc_cfg["snax_versacore_array_input_a_width"]
     b_array_width = snax_acc_cfg["snax_versacore_array_input_b_width"]
@@ -747,17 +753,17 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
 
     delta_local_a = 0
-    delta_local_a = align_wide_addr(delta_local_a, kwargs["granularity_a"] * 8)
+    delta_local_a = align_wide_addr(delta_local_a, snax_acc_cfg["granularity_a"] * 8)
     delta_local_b = K * M * (meshRow * tileSize * a_len / 8)
     # the address alignment for B is 128 bytes
     # in the new sparse interconnect
     # as the data granularity now is 16*64 bits!!!
-    delta_local_b = align_wide_addr(delta_local_b, kwargs["granularity_b"] * 8)
+    delta_local_b = align_wide_addr(delta_local_b, snax_acc_cfg["granularity_b"] * 8)
     delta_local_c = delta_local_b + K * N * (meshCol * tileSize * b_len / 8)
     # the address alignment for B is 32 bytes
     # in the new sparse interconnect
     # as the data granularity now is 4*64 bits!!!
-    delta_local_c = align_wide_addr(delta_local_c, kwargs["granularity_c"] * 8)
+    delta_local_c = align_wide_addr(delta_local_c, snax_acc_cfg["granularity_c_d"] * 8)
 
     if stationary == output_stationary:
         delta_local_d = delta_local_c
@@ -831,7 +837,11 @@ def emit_matmul_data(**kwargs):
 
     else:  # Integer data types
         A = np.random.randint(A_MIN, A_MAX, size=(M, K, meshRow, tileSize)).reshape(-1)
-        if a_len == 8:
+        if a_len == 4:
+            data_str += [format_vector_definition("int8_t", "A_orginal_4bits", A)]
+            A_packed = pack_signed_nbit(A, bit_width=4, pack_per_byte=2)
+            data_str += [format_vector_definition("int8_t", "A", A_packed)]
+        elif a_len == 8:
             data_str += [format_vector_definition("int8_t", "A", A)]
         elif a_len == 16:
             data_str += [format_vector_definition("int16_t", "A", A)]
