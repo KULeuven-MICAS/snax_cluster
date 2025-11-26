@@ -100,7 +100,7 @@ class Int32ToFp16Converter(
   dataWidth:          Int      = 512,
   in_elementWidth:    Int      = 32,
   out_elementWidth:   Int      = 16,
-  extra_loops_choice: Seq[Int] = Seq(1, 2) // 
+  extra_loops_choice: Seq[Int] = Seq(1, 2) //
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
 
@@ -128,9 +128,10 @@ class Int32ToFp16Converter(
   // create ROM for extra_loops_choice
   val extra_loops_rom = VecInit(extra_loops_choice.map(_.U))
   // get extra_loop from csr
-  val extra_loop      = extra_loops_rom(ext_csr_i(0)).asUInt // number of batches needed to get a full dataWidth conversion output
+  val extra_loop      =
+    extra_loops_rom(ext_csr_i(0)).asUInt // number of batches needed to get a full dataWidth conversion output
   // conversion numbers to get the effective dataWidth output if all PEs are used
-  val numConversions  = (in_elementWidth / out_elementWidth).U
+  val numConversions = (in_elementWidth / out_elementWidth).U
 
   // the total number of conversions needed to get the full dataWidth output
   counter.io.ceil  := numConversions * extra_loop
@@ -156,11 +157,11 @@ class Int32ToFp16Converter(
   val effectivePEs = (numPEs.U) / extra_loop
 
   for (i <- 0 until numPEs) {
-    when(i.U < effectivePEs){
+    when(i.U < effectivePEs) {
       pe_inputs(i)     := ext_data_i.bits(32 * (i + 1) - 1, 32 * i).asSInt
       peArray(i).io.in := pe_inputs(i)
       pe_outputs(i)    := peArray(i).io.out
-    }.otherwise{
+    }.otherwise {
       pe_inputs(i)     := 0.S(32.W)
       peArray(i).io.in := 0.S(32.W)
       pe_outputs(i)    := 0.U(16.W)
@@ -186,8 +187,8 @@ class Int32ToFp16Converter(
   val phase   = counter.io.value % numConversions // which phase we are in
   val batchId = counter.io.value / numConversions // which batch of outputs
 
-  val update_previous_regs = ext_data_i.fire && (counter.io.value =/= (numConversions * extra_loop - 1.U))
-  val update_final_regs = ext_data_i.valid && (counter.io.value === (numConversions * extra_loop - 1.U))
+  val update_previous_regs = ext_data_i.fire  && (counter.io.value =/= (numConversions * extra_loop - 1.U))
+  val update_final_regs    = ext_data_i.valid && (counter.io.value === (numConversions * extra_loop - 1.U))
 
   for (i <- 0 until numPEs) {
     // dynamic index in regs for this PE
@@ -197,7 +198,7 @@ class Int32ToFp16Converter(
     val useThisPE = i.U < effectivePEs
 
     when((update_previous_regs || update_final_regs) && useThisPE) {
-        regs(reg_index) := pe_outputs(i)
+      regs(reg_index) := pe_outputs(i)
     }
   }
 
@@ -207,7 +208,7 @@ class Int32ToFp16Converter(
   // concatenate all regs to form output
   ext_data_o.bits := Cat(regs.reverse).asTypeOf(ext_data_o.bits)
 
-  val data_valid = RegNext(update_final_regs)
+  val data_valid      = RegNext(update_final_regs)
   val keep_data_valid = RegInit(false.B)
   keep_data_valid := ext_data_o.valid && !ext_data_o.ready
 

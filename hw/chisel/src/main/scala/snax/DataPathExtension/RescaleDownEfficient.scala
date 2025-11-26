@@ -74,25 +74,10 @@ class RescaleDownEfficientPE(
   io.data_o := intervalled_out.asSInt
 }
 
-class HasRescaleDownEfficient(in_elementWidth: Int = 32, out_elementWidth: Int = 8, dataWidth: Int = 512)
-    extends HasDataPathExtension {
-  implicit val extensionParam:          DataPathExtensionParam =
-    new DataPathExtensionParam(
-      moduleName = "RescaleDownEfficient",
-      userCsrNum = 4,
-      dataWidth  = dataWidth
-    )
-  def instantiate(clusterName: String): RescaleDownEfficient   =
-    Module(
-      new RescaleDownEfficient(in_elementWidth, out_elementWidth) {
-        override def desiredName = clusterName + namePostfix
-      }
-    )
-}
-
 class RescaleDownEfficient(
-  in_elementWidth:  Int = 32,
-  out_elementWidth: Int = 8
+  in_elementWidth:    Int      = 32,
+  out_elementWidth:   Int      = 8,
+  extra_loops_choice: Seq[Int] = Seq(1, 2) //
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
   // Efficient Version of RescaleDown with optimizations for area efficiency
@@ -106,10 +91,17 @@ class RescaleDownEfficient(
     s"RescaleDown: in_elementWidth ($in_elementWidth) must be a multiple of out_elementWidth ($out_elementWidth)"
   )
 
-  val counter = Module(new snax.utils.BasicCounter(log2Ceil(in_elementWidth / out_elementWidth)) {
+  //
+  val counter = Module(new snax.utils.BasicCounter(log2Ceil(in_elementWidth / out_elementWidth * 32)) {
     override val desiredName = "RescaleDownCounter"
   })
-  counter.io.ceil := (in_elementWidth / out_elementWidth).asUInt
+
+  // create ROM for extra_loops_choice
+  val extra_loops_rom = VecInit(extra_loops_choice.map(_.U))
+  val extra_loop      = extra_loops_rom(ext_csr_i(0)).asUInt
+  val numConversions  = (in_elementWidth / out_elementWidth).U
+  //
+  counter.io.ceil  := numConversions * extra_loop
   counter.io.reset := ext_start_i
   counter.io.tick  := ext_data_i.fire
   ext_busy_o       := counter.io.value =/= 0.U(1.W)
@@ -158,13 +150,24 @@ class RescaleDownEfficient(
 
   val regs = RegInit(
     VecInit(
-      Seq.fill((extensionParam.dataWidth / out_elementWidth) - (extensionParam.dataWidth / in_elementWidth))(
+      Seq.fill((extensionParam.dataWidth / out_elementWidth))(
         0.S(out_elementWidth.W)
       )
     )
   )
 
-  val out_wires = Wire(Vec(extensionParam.dataWidth / in_elementWidth, SInt(out_elementWidth.W)))
+  // -------------------------
+  // Per-phase indexing
+  // -------------------------
+  // for batch, upper loop
+  // for phase, inner loop
+  val phase   = counter.io.value % numConversions // which phase we are in
+  val batchId = counter.io.value / numConversions // which batch of outputs
+
+  val update_previous_regs = ext_data_i.fire  && (counter.io.value =/= (numConversions * extra_loop - 1.U))
+  val update_final_regs    = ext_data_i.valid && (counter.io.value === (numConversions * extra_loop - 1.U))
+  val numPEs               = extensionParam.dataWidth / 32
+  val effectivePEs         = (numPEs.U) / extra_loop
 
   val PEs = for (i <- 0 until extensionParam.dataWidth / in_elementWidth) yield {
     val PE = Module(new RescaleDownEfficientPE(in_elementWidth = in_elementWidth, out_elementWidth = out_elementWidth) {
@@ -185,15 +188,45 @@ class RescaleDownEfficient(
     PE.io.double_rounding_account := double_rounding_account.asSInt
     PE.io.thirty_one_minus_shifts := thirty_one_minus_shifts.asSInt
 
-    when(ext_data_i.fire) {
-      when(counter.io.value =/= ((in_elementWidth / out_elementWidth).U - 1.U)) {
-        regs(counter.io.value * (extensionParam.dataWidth / in_elementWidth).U + i.U) := PE.io.data_o.asSInt
-      }
+    // dynamic index in regs for this PE
+    val reg_index = batchId * numConversions * effectivePEs + phase * effectivePEs + i.U
+
+    // Only the first 'effectivePEs' PEs store into regs in each phase
+    val useThisPE = i.U < effectivePEs
+
+    when((update_previous_regs || update_final_regs) && useThisPE) {
+      regs(reg_index) := PE.io.data_o.asSInt
     }
-    out_wires(i) := PE.io.data_o.asSInt
   }
 
-  ext_data_o.bits  := VecInit(regs ++ out_wires).asTypeOf(ext_data_o.bits)
-  ext_data_o.valid := ext_data_i.fire && counter.io.value === ((in_elementWidth / out_elementWidth).U - 1.U)
-  ext_data_i.ready := ext_data_o.ready // Check if this can be more efficient
+  // -------------------------
+  // Output construction
+  // -------------------------
+  // concatenate all regs to form output
+  ext_data_o.bits := Cat(regs.reverse).asTypeOf(ext_data_o.bits)
+
+  val data_valid      = RegNext(update_final_regs)
+  val keep_data_valid = RegInit(false.B)
+  keep_data_valid := ext_data_o.valid && !ext_data_o.ready
+
+  ext_data_o.valid := data_valid || keep_data_valid
+
+  ext_data_i.ready := !(ext_data_o.valid && !ext_data_o.ready) && !keep_data_valid
+
+}
+
+class HasRescaleDownEfficient(in_elementWidth: Int = 32, out_elementWidth: Int = 8, dataWidth: Int = 512)
+    extends HasDataPathExtension {
+  implicit val extensionParam:          DataPathExtensionParam =
+    new DataPathExtensionParam(
+      moduleName = "RescaleDownEfficient",
+      userCsrNum = 4,
+      dataWidth  = dataWidth
+    )
+  def instantiate(clusterName: String): RescaleDownEfficient   =
+    Module(
+      new RescaleDownEfficient(in_elementWidth, out_elementWidth) {
+        override def desiredName = clusterName + namePostfix
+      }
+    )
 }
