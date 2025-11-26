@@ -174,7 +174,7 @@ void set_versacore_streamer_csr(
     // set the transpose
 #ifdef READER_EXTENSION_0_CSR_BASE
     uint32_t cfgA = ((transpose_A & 0x1) << 1) |  // bit 1
-                    (int4_a_enable & 0x1);            // bit 0
+                    (int4_a_enable & 0x1);        // bit 0
 
     csrw_ss(READER_EXTENSION_0_CSR_BASE, cfgA);
     csrw_ss(READER_EXTENSION_0_CSR_BASE + 1, array_shape);
@@ -182,7 +182,7 @@ void set_versacore_streamer_csr(
 
 #ifdef READER_EXTENSION_1_CSR_BASE
     uint32_t cfgB = ((transpose_B & 0x1) << 1) |  // bit 1
-                    (int4_b_enable & 0x1);            // bit 0
+                    (int4_b_enable & 0x1);        // bit 0
 
     csrw_ss(READER_EXTENSION_1_CSR_BASE, cfgB);
     csrw_ss(READER_EXTENSION_1_CSR_BASE + 1, array_shape);
