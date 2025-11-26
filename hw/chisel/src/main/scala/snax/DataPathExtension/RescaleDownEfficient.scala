@@ -98,7 +98,7 @@ class RescaleDownEfficient(
 
   // create ROM for extra_loops_choice
   val extra_loops_rom = VecInit(extra_loops_choice.map(_.U))
-  val extra_loop      = extra_loops_rom(ext_csr_i(0)).asUInt
+  val extra_loop      = extra_loops_rom(ext_csr_i(4)).asUInt
   val numConversions  = (in_elementWidth / out_elementWidth).U
   //
   counter.io.ceil  := numConversions * extra_loop
@@ -220,7 +220,7 @@ class HasRescaleDownEfficient(in_elementWidth: Int = 32, out_elementWidth: Int =
   implicit val extensionParam:          DataPathExtensionParam =
     new DataPathExtensionParam(
       moduleName = "RescaleDownEfficient",
-      userCsrNum = 4,
+      userCsrNum = 5,
       dataWidth  = dataWidth
     )
   def instantiate(clusterName: String): RescaleDownEfficient   =

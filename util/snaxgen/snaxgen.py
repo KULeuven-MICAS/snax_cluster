@@ -294,7 +294,7 @@ def streamer_csr_num(acc_cfgs):
 
     if "has_rescaledown" in acc_cfgs["snax_streamer_cfg"]:
         if acc_cfgs["snax_streamer_cfg"]["has_rescaledown"]:
-            streamer_csr_num += 5
+            streamer_csr_num += 6
 
     if "has_C_broadcast" in acc_cfgs["snax_streamer_cfg"]:
         if acc_cfgs["snax_streamer_cfg"]["has_C_broadcast"]:
