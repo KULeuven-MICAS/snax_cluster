@@ -173,16 +173,16 @@ void set_versacore_streamer_csr(
 
     // set the transpose
 #ifdef READER_EXTENSION_0_CSR_BASE
-    uint32_t cfgA = ((int4_a_enable & 0x1) << 1) |  // bit 1
-                    (transpose_A & 0x1);            // bit 0
+    uint32_t cfgA = ((transpose_A & 0x1) << 1) |  // bit 1
+                    (int4_a_enable & 0x1);            // bit 0
 
     csrw_ss(READER_EXTENSION_0_CSR_BASE, cfgA);
     csrw_ss(READER_EXTENSION_0_CSR_BASE + 1, array_shape);
 #endif
 
 #ifdef READER_EXTENSION_1_CSR_BASE
-    uint32_t cfgB = ((int4_b_enable & 0x1) << 1) |  // bit 1
-                    (transpose_B & 0x1);            // bit 0
+    uint32_t cfgB = ((transpose_B & 0x1) << 1) |  // bit 1
+                    (int4_b_enable & 0x1);            // bit 0
 
     csrw_ss(READER_EXTENSION_1_CSR_BASE, cfgB);
     csrw_ss(READER_EXTENSION_1_CSR_BASE + 1, array_shape);
@@ -195,6 +195,13 @@ void set_versacore_streamer_csr(
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, multiplier_i);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 4, shift_i);
+    // where needs to have another extra loop
+    if (array_shape == 4) {
+        // for rescale-down per output channel
+        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 5, 1);
+    } else {
+        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 5, 0);
+    }
 #endif
 }
 
