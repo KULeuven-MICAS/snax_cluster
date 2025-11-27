@@ -75,6 +75,130 @@ class RescaleDownEfficientPE(
 }
 
 class RescaleDownEfficient(
+  in_elementWidth:  Int = 32,
+  out_elementWidth: Int = 8
+)(implicit extensionParam: DataPathExtensionParam)
+    extends DataPathExtension {
+  // Efficient Version of RescaleDown with optimizations for area efficiency
+  require(
+    extensionParam.dataWidth % in_elementWidth == 0,
+    s"RescaleDown: dataWidth (${extensionParam.dataWidth}) must be a multiple of in_elementWidth ($in_elementWidth)"
+  )
+
+  require(
+    in_elementWidth % out_elementWidth == 0,
+    s"RescaleDown: in_elementWidth ($in_elementWidth) must be a multiple of out_elementWidth ($out_elementWidth)"
+  )
+
+  val counter = Module(new snax.utils.BasicCounter(log2Ceil(in_elementWidth / out_elementWidth)) {
+    override val desiredName = "RescaleDownCounter"
+  })
+  counter.io.ceil := (in_elementWidth / out_elementWidth).asUInt
+  counter.io.reset := ext_start_i
+  counter.io.tick  := ext_data_i.fire
+  ext_busy_o       := counter.io.value =/= 0.U(1.W)
+
+  val input_zp   = Wire(UInt(32.W))
+  val multiplier = Wire(UInt(32.W))
+  val output_zp  = Wire(UInt(32.W))
+  val shift      = Wire(UInt(32.W))
+
+  input_zp   := ext_csr_i(0).asUInt // TODO : should be SInt, but doesnt allow me to
+  multiplier := ext_csr_i(1).asUInt
+  output_zp  := ext_csr_i(2).asUInt
+  shift      := ext_csr_i(3).asUInt
+
+  // Determine the pre-shifts and post-shifts for the multiplier and input data.
+  // Multiplier pre-shift is the same for all PEs, input data pre-shift is different for each PE.
+  val used_bits_in_multiplier = Wire(UInt(6.W))
+  used_bits_in_multiplier := 32.U - PriorityEncoder(multiplier.asBools.reverse) // +1 to have ceil functionality
+
+  val full_bits_to_shift_input      = Wire(SInt(6.W))
+  val bits_to_shift_input           = Wire(UInt(5.W))
+  val full_bits_to_shift_multiplier = Wire(SInt(6.W))
+  val bits_to_shift_multiplier      = Wire(UInt(5.W))
+  full_bits_to_shift_input := (9.S + Cat(0.U(1.W), shift).asSInt - Cat(0.U(1.W), used_bits_in_multiplier).asSInt - 16.S)
+  bits_to_shift_input      := Mux(full_bits_to_shift_input < 0.S, 0.U, full_bits_to_shift_input.asUInt)
+  full_bits_to_shift_multiplier := (used_bits_in_multiplier - 16.U).asSInt
+  bits_to_shift_multiplier      := Mux(full_bits_to_shift_multiplier < 0.S, 0.U, full_bits_to_shift_multiplier.asUInt)
+
+  val pre_shifted_multiplier = Wire(UInt(16.W))
+  pre_shifted_multiplier := multiplier >> bits_to_shift_multiplier
+
+  val post_shift = Wire(UInt(5.W))
+  post_shift := shift - bits_to_shift_input - bits_to_shift_multiplier
+
+  val double_rounding_account = Wire(SInt(32.W))
+  val thirty_one_minus_shifts = Wire(SInt(6.W))
+  thirty_one_minus_shifts := (31.S - Cat(0.U(1.W), bits_to_shift_input).asSInt - Cat(
+    0.U(1.W),
+    bits_to_shift_multiplier
+  ).asSInt)
+  when(thirty_one_minus_shifts > 1.S) {
+    double_rounding_account := (1.S << (thirty_one_minus_shifts.asUInt - 1.U)).asSInt
+  }.otherwise {
+    double_rounding_account := 0.S
+  }
+
+  val regs = RegInit(
+    VecInit(
+      Seq.fill((extensionParam.dataWidth / out_elementWidth) - (extensionParam.dataWidth / in_elementWidth))(
+        0.S(out_elementWidth.W)
+      )
+    )
+  )
+
+  val out_wires = Wire(Vec(extensionParam.dataWidth / in_elementWidth, SInt(out_elementWidth.W)))
+
+  val PEs = for (i <- 0 until extensionParam.dataWidth / in_elementWidth) yield {
+    val PE = Module(new RescaleDownEfficientPE(in_elementWidth = in_elementWidth, out_elementWidth = out_elementWidth) {
+      // override val desiredName = "RescaleDownEfficientPE"
+    })
+    PE.io.data_i.valid        := ext_data_i.fire // check if this should be here (i dont think it should, but it works)
+    PE.io.data_i.bits         := ext_data_i
+      .bits(
+        (i + 1) * in_elementWidth - 1,
+        i * in_elementWidth
+      )
+      .asSInt
+    PE.io.input_zp            := input_zp.asSInt
+    PE.io.bits_to_shift_input := bits_to_shift_input.asUInt
+    PE.io.pre_shifted_multiplier  := pre_shifted_multiplier.asUInt
+    PE.io.output_zp               := output_zp.asSInt
+    PE.io.post_shift              := post_shift.asUInt
+    PE.io.double_rounding_account := double_rounding_account.asSInt
+    PE.io.thirty_one_minus_shifts := thirty_one_minus_shifts.asSInt
+
+    when(ext_data_i.fire) {
+      when(counter.io.value =/= ((in_elementWidth / out_elementWidth).U - 1.U)) {
+        regs(counter.io.value * (extensionParam.dataWidth / in_elementWidth).U + i.U) := PE.io.data_o.asSInt
+      }
+    }
+    out_wires(i) := PE.io.data_o.asSInt
+  }
+
+  ext_data_o.bits  := VecInit(regs ++ out_wires).asTypeOf(ext_data_o.bits)
+  ext_data_o.valid := ext_data_i.fire && counter.io.value === ((in_elementWidth / out_elementWidth).U - 1.U)
+  ext_data_i.ready := ext_data_o.ready // Check if this can be more efficient
+}
+
+class HasRescaleDownEfficient(in_elementWidth: Int = 32, out_elementWidth: Int = 8, dataWidth: Int = 512)
+    extends HasDataPathExtension {
+  implicit val extensionParam:          DataPathExtensionParam =
+    new DataPathExtensionParam(
+      moduleName = "RescaleDownEfficient",
+      userCsrNum = 4,
+      dataWidth  = dataWidth
+    )
+  def instantiate(clusterName: String): RescaleDownEfficient   =
+    Module(
+      new RescaleDownEfficient(in_elementWidth, out_elementWidth) {
+        override def desiredName = clusterName + namePostfix
+      }
+    )
+}
+
+class RescaleDownEfficientDynamic(
   in_elementWidth:    Int      = 32,
   out_elementWidth:   Int      = 8,
   extra_loops_choice: Seq[Int] = Seq(1, 2) //
@@ -215,17 +339,17 @@ class RescaleDownEfficient(
 
 }
 
-class HasRescaleDownEfficient(in_elementWidth: Int = 32, out_elementWidth: Int = 8, dataWidth: Int = 512)
+class HasRescaleDownEfficientDynamic(in_elementWidth: Int = 32, out_elementWidth: Int = 8, dataWidth: Int = 512)
     extends HasDataPathExtension {
-  implicit val extensionParam:          DataPathExtensionParam =
+  implicit val extensionParam:          DataPathExtensionParam      =
     new DataPathExtensionParam(
       moduleName = "RescaleDownEfficient",
       userCsrNum = 5,
       dataWidth  = dataWidth
     )
-  def instantiate(clusterName: String): RescaleDownEfficient   =
+  def instantiate(clusterName: String): RescaleDownEfficientDynamic =
     Module(
-      new RescaleDownEfficient(in_elementWidth, out_elementWidth) {
+      new RescaleDownEfficientDynamic(in_elementWidth, out_elementWidth) {
         override def desiredName = clusterName + namePostfix
       }
     )
