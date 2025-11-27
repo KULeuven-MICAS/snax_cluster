@@ -335,7 +335,7 @@ Naming convention:
                     64
                 ]
             ]
-            datapath_extensions: [{HasTransposer: {row:[32, 1, 4, 8, 4], col:[4, 8, 8, 8, 64], elementWidth:[8, 8, 8, 8, 8], dataWidth:2048}, HasIntlowToInthighConverter: {dataWidth:2048}}, {HasTransposer: {row:[4, 8, 8, 8, 64], col:[32, 64, 64, 64, 4], elementWidth:[8, 8, 8, 8, 8], dataWidth:4096}, HasIntlowToInthighConverter: {dataWidth:4096}}]
+            datapath_extensions: [{HasIntlowToInthighConverter: {dataWidth:2048}, HasTransposer: {row:[32, 1, 4, 8, 4], col:[4, 8, 8, 8, 64], elementWidth:[8, 8, 8, 8, 8], dataWidth:2048}}, { HasIntlowToInthighConverter: {dataWidth:4096}, HasTransposer: {row:[4, 8, 8, 8, 64], col:[32, 64, 64, 64, 4], elementWidth:[8, 8, 8, 8, 8], dataWidth:4096}}]
         }
         data_reader_writer_params:
         {
@@ -381,11 +381,11 @@ Naming convention:
                     64
                 ]
             ]
-            datapath_extensions: [{},{HasRescaleDownEfficient: {in_elementWidth: 32, out_elementWidth: 8, dataWidth:1024}, HasInt32ToFp16Converter: {dataWidth: 1024}}]
+            datapath_extensions: [{},{HasRescaleDownEfficientDynamic: {in_elementWidth: 32, out_elementWidth: 8, dataWidth:1024}, HasInt32ToFp16Converter: {dataWidth: 1024}}]
         }
         has_flexible_transpose: true,
         has_int4toint8: true,
-        has_rescaledown: true,
+        has_rescaledown_dynamic: true,
         has_int32_to_fp16_converter: true,
         snax_library_name: versacore-to
     }

@@ -7,8 +7,8 @@
   // gemm configurations
   array_shape: 4,
   data_type: 0,
-  transposed_A: 0,
-  transposed_B: 0,
+  transposed_A: 1,
+  transposed_B: 1,
   int4_a_enable: 1,
   int4_b_enable: 1,
   K: 1,
@@ -18,5 +18,5 @@
   // 0 for output, 1 for weight, 2 for input
   stationary: 0,
   quantization_enable: 0,
-  int32tofp16_enable: 0,
+  int32tofp16_enable: 1,
 }

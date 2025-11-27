@@ -843,7 +843,7 @@ def emit_matmul_data(**kwargs):
     else:  # Integer data types
         A_MIN, A_MAX = signed_int_range(a_len)
         B_MIN, B_MAX = signed_int_range(b_len)
-        C_MIN, C_MAX = -(2**10), 2**10  # large enough to avoid overflow
+        C_MIN, C_MAX = -2**20, 2**20  # large enough to avoid overflow
 
     # Generate test data based on data type
     if (

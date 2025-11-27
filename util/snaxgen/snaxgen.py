@@ -288,9 +288,13 @@ def streamer_csr_num(acc_cfgs):
         if acc_cfgs["snax_streamer_cfg"]["has_flexible_transpose"]:
             streamer_csr_num += 4
 
-    if "has_rescaledown" in acc_cfgs["snax_streamer_cfg"]:
-        if acc_cfgs["snax_streamer_cfg"]["has_rescaledown"]:
-            streamer_csr_num += 5
+    if "has_int32_to_fp16_converter" in acc_cfgs["snax_streamer_cfg"]:
+        if acc_cfgs["snax_streamer_cfg"]["has_int32_to_fp16_converter"]:
+            streamer_csr_num += 1
+
+    if "has_rescaledown_dynamic" in acc_cfgs["snax_streamer_cfg"]:
+        if acc_cfgs["snax_streamer_cfg"]["has_rescaledown_dynamic"]:
+            streamer_csr_num += 6
 
     if "has_C_broadcast" in acc_cfgs["snax_streamer_cfg"]:
         if acc_cfgs["snax_streamer_cfg"]["has_C_broadcast"]:
