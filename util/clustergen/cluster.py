@@ -56,9 +56,7 @@ class Generator(object):
     snitch_cluster_folder = file_path / "../../hw/snitch_cluster"
     template_folder = file_path / "../../hw/templates"
 
-    templates = TemplateLookup(
-        directories=[snitch_cluster_folder, template_folder], output_encoding="utf-8"
-    )
+    templates = TemplateLookup(directories=[snitch_cluster_folder, template_folder], output_encoding="utf-8")
     """
     Generator class which contains common component to
     generate different systems.
@@ -84,9 +82,7 @@ class Generator(object):
     def validate(self, cfg):
         # Validate the schema. This can fail.
         try:
-            DefaultValidatingDraft7Validator(
-                self.root_schema, resolver=self.resolver
-            ).validate(cfg)
+            DefaultValidatingDraft7Validator(self.root_schema, resolver=self.resolver).validate(cfg)
         except ValidationError as e:
             print(e)
             exit(e)
@@ -148,9 +144,7 @@ class PMACfg(object):
         mask_addr_space = (1 << addr_width) - 1
         mask = mask_addr_space & ~(length - 1)
         is_mask_aligned = (~mask & base) == 0
-        if (
-            (not is_length_power_of_two) or (mask == 0) or (not is_mask_aligned)
-        ):  # noqa E501
+        if (not is_length_power_of_two) or (mask == 0) or (not is_mask_aligned):  # noqa E501
             exit(
                 "Cacheable regions must have a \
                  power-of-two length aligned to their base."
@@ -177,9 +171,7 @@ class SnitchCluster(Generator):
         The constructor checks conforms
         to the cluster schema and constructs a `cfg` object.
         """
-        super().__init__(
-            Path(__file__).parent / "../../docs/schema/snitch_cluster.schema.json"
-        )  # noqa E501
+        super().__init__(Path(__file__).parent / "../../docs/schema/snitch_cluster.schema.json")  # noqa E501
         self.mems = set()
         self.mems_desc = dict()
         self.validate(cfg)
@@ -203,23 +195,17 @@ class SnitchCluster(Generator):
     def render_wrapper(self):
         """Render the cluster wrapper"""
         cfg_template = self.templates.get_template(self.files["wrapper"])
-        return cfg_template.render_unicode(
-            cfg=self.cfg, to_sv_hex=to_sv_hex, disclaimer=self.DISCLAIMER
-        )
+        return cfg_template.render_unicode(cfg=self.cfg, to_sv_hex=to_sv_hex, disclaimer=self.DISCLAIMER)
 
     def render_mem_impl(self):
         """Render the cluster memory compiler input"""
         cfg_template = self.templates.get_template(self.files["mem_impl"])
-        return cfg_template.render_unicode(
-            cfg=self.cfg, to_sv_hex=to_sv_hex, disclaimer=self.DISCLAIMER
-        )
+        return cfg_template.render_unicode(cfg=self.cfg, to_sv_hex=to_sv_hex, disclaimer=self.DISCLAIMER)
 
     def render_mem_spec(self):
         """Render the cluster memory compiler input"""
         cfg_template = self.templates.get_template(self.files["mem_spec"])
-        return cfg_template.render_unicode(
-            cfg=self.cfg, to_sv_hex=to_sv_hex, disclaimer=self.DISCLAIMER
-        )
+        return cfg_template.render_unicode(cfg=self.cfg, to_sv_hex=to_sv_hex, disclaimer=self.DISCLAIMER)
 
     def add_mem(
         self,
@@ -288,31 +274,20 @@ class SnitchCluster(Generator):
     def calc_cache_sizes(self):
         # Calculate TCDM parameters
         tcdm_bytes = self.cfg["data_width"] // 8
-        self.cfg["tcdm"]["depth"] = (
-            self.cfg["tcdm"]["size"] * 1024 // (self.cfg["tcdm"]["banks"] * tcdm_bytes)
-        )
+        self.cfg["tcdm"]["depth"] = self.cfg["tcdm"]["size"] * 1024 // (self.cfg["tcdm"]["banks"] * tcdm_bytes)
         # Calc icache parameters
         for i, hive in enumerate(self.cfg["hives"]):
             cl_bytes = self.cfg["hives"][i]["icache"]["cacheline"] // 8
             self.cfg["hives"][i]["icache"]["depth"] = (
-                self.cfg["hives"][i]["icache"]["size"]
-                * 1024
-                // self.cfg["hives"][i]["icache"]["sets"]
-                // cl_bytes
+                self.cfg["hives"][i]["icache"]["size"] * 1024 // self.cfg["hives"][i]["icache"]["sets"] // cl_bytes
             )
             # tag width
             self.tag_width = (
-                self.cfg["addr_width"]
-                - clog2(hive["icache"]["cacheline"] // 8)
-                - clog2(hive["icache"]["depth"])
-                + 3
+                self.cfg["addr_width"] - clog2(hive["icache"]["cacheline"] // 8) - clog2(hive["icache"]["depth"]) + 3
             )
 
             self.cfg["tag_width"] = (
-                self.cfg["addr_width"]
-                - clog2(hive["icache"]["cacheline"] // 8)
-                - clog2(hive["icache"]["depth"])
-                + 3
+                self.cfg["addr_width"] - clog2(hive["icache"]["cacheline"] // 8) - clog2(hive["icache"]["depth"]) + 3
             )
 
     def parse_pma_cfg(self, pma_cfg):
@@ -324,20 +299,14 @@ class SnitchCluster(Generator):
                 self.cfg["pmas"]["cached"].append((pma[1], pma[2]))
 
     def parse_isect_ssr(self, ssr, core):
-        ssr.update(
-            {"isect_master": False, "isect_master_idx": False, "isect_slave": False}
-        )  # noqa E501
+        ssr.update({"isect_master": False, "isect_master_idx": False, "isect_slave": False})  # noqa E501
         if core["ssr_intersection"]:
             ssr_isect_triple = core["ssr_intersection_triple"]
             if ssr["reg_idx"] in ssr_isect_triple[0:2]:
                 if not ssr["indirection"]:
-                    raise ValueError(
-                        "An intersection master SSR must be indirection-capable"
-                    )  # noqa E501
+                    raise ValueError("An intersection master SSR must be indirection-capable")  # noqa E501
                 ssr["isect_master"] = True
-                ssr["isect_master_idx"] = (
-                    ssr["reg_idx"] == ssr_isect_triple[1]
-                )  # noqa E501
+                ssr["isect_master_idx"] = ssr["reg_idx"] == ssr_isect_triple[1]  # noqa E501
             if ssr["reg_idx"] == ssr_isect_triple[2]:
                 # Required for indirector generation, but not functional
                 ssr["indirection"] = True
@@ -356,9 +325,7 @@ class SnitchCluster(Generator):
                 core["isa_parsed"] = parse_isa_string(core["isa"])
 
                 # Enforce consistent config if no SSRs
-                if (
-                    not core["xssr"] or "ssrs" not in core or not len(core["ssrs"])
-                ):  # noqa E501
+                if not core["xssr"] or "ssrs" not in core or not len(core["ssrs"]):  # noqa E501
                     core["xssr"] = False
                     core["ssrs"] = []
                 # Assign SSR register indices and intersection roles
@@ -373,9 +340,7 @@ class SnitchCluster(Generator):
                     if ssr["pointer_width"] is None:
                         ssr["pointer_width"] = 10 + clog2(self.cfg["tcdm"]["size"])
                     if ssr["index_width"] is None:
-                        ssr["index_width"] = ssr["pointer_width"] - clog2(
-                            self.cfg["data_width"] / 8
-                        )
+                        ssr["index_width"] = ssr["pointer_width"] - clog2(self.cfg["data_width"] / 8)
                 # Sort SSRs by register indices (required by decoding logic)
                 core["ssrs"].sort(key=lambda x: x["reg_idx"])
                 # Minimum 1 element to avoid
@@ -400,13 +365,8 @@ class SnitchCluster(Generator):
             if self.cfg["cores"][core_id]["snax_acc_cfg"][0]:
                 # Cycle through the accelerators list
                 for acc_id in range(len(self.cfg["cores"][core_id]["snax_acc_cfg"])):
-                    if (
-                        "snax_streamer_cfg"
-                        in self.cfg["cores"][core_id]["snax_acc_cfg"][acc_id]
-                    ):
-                        streamer_csr_test = streamer_csr_num(
-                            self.cfg["cores"][core_id]["snax_acc_cfg"][acc_id]
-                        )
+                    if "snax_streamer_cfg" in self.cfg["cores"][core_id]["snax_acc_cfg"][acc_id]:
+                        streamer_csr_test = streamer_csr_num(self.cfg["cores"][core_id]["snax_acc_cfg"][acc_id])
                         streamer_csr_acc_num_list.append(streamer_csr_test)
             # Append the set into the global list
             streamer_csr_num_list.append(streamer_csr_acc_num_list)
@@ -415,7 +375,7 @@ class SnitchCluster(Generator):
 
     def parse_tcdm_topology(self):
         # Get tcdm topology
-        if ("sparse_interconnect_cfg" not in self.cfg):
+        if "sparse_interconnect_cfg" not in self.cfg:
             self.cfg["tcdm"]["topology"] = "snitch_pkg::LogarithmicInterconnect"
         else:
             self.cfg["tcdm"]["topology"] = "snitch_pkg::SparseInterconnect"
@@ -425,9 +385,7 @@ class SnitchCluster(Generator):
         """Perform more advanced validation, i.e., sanity check parameters."""
         if int(self.cfg["addr_width"]) < 30:
             log.error("`addr_width` must be greater or equal to 30.")
-        elif not (
-            (int(self.cfg["data_width"]) == 32) or (int(self.cfg["data_width"]) == 64)
-        ):
+        elif not ((int(self.cfg["data_width"]) == 32) or (int(self.cfg["data_width"]) == 64)):
             log.error("`data_width` must be 32 or 64 bit")
         elif int(self.cfg["dma_data_width"]) <= 0:
             log.error("`dma_data_width` must be set")
@@ -443,12 +401,11 @@ class SnitchCluster(Generator):
         #     log.error("RVD needs RVF")
         # elif cfg.en_rvd and not cfg.data_width == 64:
         #     log.error("RVD needs 64 bit data buses")
-        elif (self.cfg["tcdm"]["size"] % self.cfg["tcdm"]["banks"]) != 0:
-            log.error(
-                "The total size of the TCDM must be divisible by the requested amount of banks."  # noqa E501
-            )
-        elif is_pow2(self.cfg["tcdm"]["size"]):
-            log.error("The TCDM size must be a power of two.")
+        # tcdm size is in kiB
+        elif (self.cfg["tcdm"]["size"] * 1024 % self.cfg["tcdm"]["banks"]) != 0:
+            log.error("The total size of the TCDM must be divisible by the requested amount of banks.")  # noqa E501
+        # elif is_pow2(self.cfg["tcdm"]["size"] * 1024):
+        #     log.error("The TCDM size must be a power of two.")
         elif is_pow2(self.cfg["tcdm"]["banks"]):
             log.error("The amount of banks must be a power of two.")
         else:
@@ -470,12 +427,8 @@ class SnitchClusterTB(Generator):
     """
 
     def __init__(self, cfg):
-        schema = (
-            Path(__file__).parent / "../../docs/schema/snitch_cluster_tb.schema.json"
-        )  # noqa E501
-        remote_schemas = [
-            Path(__file__).parent / "../../docs/schema/snitch_cluster.schema.json"
-        ]  # noqa E501
+        schema = Path(__file__).parent / "../../docs/schema/snitch_cluster_tb.schema.json"  # noqa E501
+        remote_schemas = [Path(__file__).parent / "../../docs/schema/snitch_cluster.schema.json"]  # noqa E501
         super().__init__(schema, remote_schemas)
         # Validate the schema.
         self.validate(cfg)
@@ -506,9 +459,7 @@ class SnitchClusterTB(Generator):
     def render_linker_script(self):
         """Generate a linker script for the cluster testbench"""
         cfg_template = self.templates.get_template("test/link.ld.tpl")
-        return cfg_template.render_unicode(
-            cfg=self.cfg, l1_region=self.cluster.l1_region()
-        )
+        return cfg_template.render_unicode(cfg=self.cfg, l1_region=self.cluster.l1_region())
 
     def render_bootdata(self):
         """Generate a C file with boot information for the cluster testbench"""

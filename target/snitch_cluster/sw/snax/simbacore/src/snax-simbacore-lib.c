@@ -323,3 +323,23 @@ uint32_t check_result_sample(uint8_t* output, uint8_t* output_golden, int32_t* s
     }
     return err;
 }
+
+// Check some samples interpreting the buffers as uint16_t elements
+uint32_t check_result_sample_u16(uint16_t* output, uint16_t* output_golden, int32_t* sample_indices,
+                                 int32_t test_sample_count, const char* tensor_name) {
+    uint32_t err = 0;
+    printf("Checking results (u16): sampling %d elements\n", test_sample_count);
+
+    for (int i = 0; i < test_sample_count; i++) {
+        int sample_index      = sample_indices[i];
+        uint16_t output_value = output[sample_index];
+        uint16_t golden_value = output_golden[sample_index];
+        if (output_value != golden_value) {
+            err++;
+            printf("FAIL %s[%d] = %u,\tref = %u\n", tensor_name, sample_index, output_value, golden_value);
+        } else {
+            printf("PASS %s[%d] = %u,\tref = %u\n", tensor_name, sample_index, output_value, golden_value);
+        }
+    }
+    return err;
+}

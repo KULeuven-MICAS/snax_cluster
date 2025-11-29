@@ -7,3 +7,6 @@
 [submodule "hw/chisel_acc/subprojects/chisel-float"]
 	path = hw/chisel_acc/subprojects/chisel-float
 	url = https://github.com/KULeuven-MICAS/chisel-float.git
+[submodule "chisel-ssm"]
+	path = chisel-ssm
+	url = https://github.com/RobinGeens/chisel-ssm.git

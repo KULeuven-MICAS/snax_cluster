@@ -3,6 +3,9 @@
 
 set -e
 
+# Step 0: initialize submodules
+git submodule update --init --recursive 
+
 #####################
 # Step 1: Prepare RTL
 #####################
@@ -37,7 +40,7 @@ make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson rtl-gen
 # Make sure the config in target/snitch_cluster/sw/apps/snax-simbacore/data/params.hjson is valid
 # (Manual verification required)
 
-# [bash|root] Generate raw test data externally via scala data generator
+# [bash|root] Generate raw test data via scala data generator
 cd ../chisel-ssm && sbt "test:runMain simbacore.DataGenerator seqLen=64 dModel=36 dtRank=24" && cd ../snax_cluster
 cd ../chisel-ssm && sbt "test:runMain simbacore.DataGenerator seqLen=128 dModel=240 dtRank=24" && cd ../snax_cluster
 

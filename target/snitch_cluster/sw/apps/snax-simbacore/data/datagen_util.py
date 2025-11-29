@@ -19,7 +19,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
 from snax_utils import align_wide_addr  # noqa E402
 
-DATA_OUT_DIR = os.path.join(os.path.dirname(__file__), "generated")
+DATA_OUT_DIR = os.path.join(os.path.dirname(__file__), "../../../../../../chisel-ssm/generated/data") # Must match makefile dir
 NUM_LOOPS = 4  # NOTE this must match the hjson config
 BANKWIDTH = 64
 BANK_BYTES = BANKWIDTH // 8

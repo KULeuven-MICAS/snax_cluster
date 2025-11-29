@@ -10,6 +10,7 @@ val chiselVersion = "6.4.0"
 lazy val chisel       = ProjectRef(file("hw/chisel"), "chisel")
 lazy val chisel_acc   = ProjectRef(file("hw/chisel_acc"), "chisel_acc")
 lazy val chisel_float = ProjectRef(file("hw/chisel_acc/subprojects/chisel-float"), "chisel_float")
+lazy val chisel_ssm   = ProjectRef(file("chisel-ssm"), "chisel_ssm")
 
 lazy val root = (project in file("."))
   .settings(
@@ -30,4 +31,4 @@ lazy val root = (project in file("."))
       "org.chipsalliance" % "chisel-plugin" % chiselVersion cross CrossVersion.full
     )
   )
-  .dependsOn(chisel_float, chisel, chisel_acc)
+  .dependsOn(chisel_float, chisel, chisel_acc, chisel_ssm)
