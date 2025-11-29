@@ -7,12 +7,17 @@ import os
 import re
 import math
 from pathlib import Path
+import subprocess
 from typing import Dict
 
 # Use pathlib for cleaner path handling
-SCRIPT_DIR = Path(__file__).parent
-SIMBACORE_PATH = SCRIPT_DIR / "../../chisel-ssm/generated/SimbaCore/SimbaCore.sv"
-WRAPPER_PATH = SCRIPT_DIR / "../hw/snax_simbacore/snax_simbacore_shell_wrapper.sv"
+
+try:
+    chisel_ssm_path = subprocess.check_output(["bender", "path", "chisel-ssm"], text=True).strip()
+except Exception as e:
+    raise RuntimeError(f"Error getting chisel-ssm path through bender: {e}")
+SIMBACORE_PATH = Path(chisel_ssm_path) / "generated/SimbaCore/SimbaCore.sv"
+WRAPPER_PATH = Path(__file__).parent / "../hw/snax_simbacore/snax_simbacore_shell_wrapper.sv"
 
 PORT_MAPPING: Dict[str, str] = {
     "OSCoreInAWidth": "io_osCore_in_a_bits",

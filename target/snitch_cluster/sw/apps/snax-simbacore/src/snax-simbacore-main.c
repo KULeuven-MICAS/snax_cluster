@@ -338,8 +338,8 @@ int test_simd_cmul() {
 
 int main() {
     int err = 0;
-    err += test_simd_cmul();
-    // err += test_phase1_and_2();
+    err += test_phase1_and_2();
+    // err += test_simd_cmul();
     // err += test_phase2();
     // err += test_osgemm();
     // err += test_phase1();

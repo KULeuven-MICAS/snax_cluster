@@ -19,7 +19,14 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
 from snax_utils import align_wide_addr  # noqa E402
 
-DATA_OUT_DIR = os.path.join(os.path.dirname(__file__), "../../../../../../chisel-ssm/generated/data") # Must match makefile dir
+import subprocess
+
+try:
+    chisel_ssm_path = subprocess.check_output(["bender", "path", "chisel-ssm"], text=True).strip()
+except Exception as e:
+    raise RuntimeError(f"Error getting chisel-ssm path through bender: {e}")
+
+GEN_DATA_DIR = os.path.join(chisel_ssm_path, "generated", "data")
 NUM_LOOPS = 4  # NOTE this must match the hjson config
 BANKWIDTH = 64
 BANK_BYTES = BANKWIDTH // 8
@@ -66,7 +73,7 @@ class DataGeneratorBase(ABC):
         self.lines_data.append(format_vector_definition(type, var_name, value))
 
     def read_and_format_vector(self, mode_id: int, type: str, tensor_name: str):
-        """Read data from DATA_OUT_DIR and format it as a vector. Filename is M<mode_id>_<tensor_name>.bin."""
+        """Read data from GEN_DATA_DIR and format it as a vector. Filename is M<mode_id>_<tensor_name>.bin."""
         try:
             tensor_data = self._read_data_int(f"M{mode_id}_{tensor_name}.bin")
         except FileNotFoundError as e:
@@ -102,7 +109,7 @@ class DataGeneratorBase(ABC):
 
     def _read_data_int(self, filename: str):
         """Read a vec from a file."""
-        with open(os.path.join(DATA_OUT_DIR, filename), "r") as f:
+        with open(os.path.join(GEN_DATA_DIR, filename), "r") as f:
             lines = f.readlines()
         data_lines = [line.strip() for line in lines if not line.startswith("#")]
         return [int(x) for x in data_lines]

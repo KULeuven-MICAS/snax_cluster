@@ -5,14 +5,12 @@
 # Robin Geens <robin.geens@esat.kuleuven.be>
 
 # Usage of absolute paths is required to externally include this Makefile
+CFG_OVERRIDE ?= cfg/snax_simbacore_cluster.hjson
 MK_DIR   := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 CURR_DIR := $(realpath $(MK_DIR))
-CHISEL_SSM_DIR := $(realpath $(MK_DIR)/../../../../../../chisel-ssm)
-# Currently, we let the data generator depend only on the DataGenerator.scala file
-CHISEL_SSM_SOURCES := $(CHISEL_SSM_DIR)/src/test/scala/simbacore/DataGenerator.scala
-DATA_DIR := $(realpath $(CHISEL_SSM_DIR)/generated/data)
-DATA_CFG ?= $(DATA_DIR)/params.hjson # Generated file in chisel-ssm: contains generated workload dimensions
-CFG_OVERRIDE ?= cfg/snax_simbacore_cluster.hjson
+CHISEL_SSM := $(shell bender path chisel-ssm)
+# Generated file in chisel-ssm: contains generated workload dimensions
+DATA_CFG ?= $(CHISEL_SSM)/generated/data/params.hjson
 
 DATA_H = $(CURR_DIR)/data.h
 
@@ -20,16 +18,11 @@ DATA_H = $(CURR_DIR)/data.h
 $(DATA_H): $(CURR_DIR)/datagen.py $(CURR_DIR)/datagen_util.py $(DATA_CFG) 
 	$< --swcfg $(DATA_CFG) --hwcfg $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE) > $@
 
-# NOTE the workload dimensions are hardcoded here
-$(DATA_CFG): $(CHISEL_SSM_SOURCES)
-	@cd $(CHISEL_SSM_DIR) && sbt "test:runMain simbacore.DataGenerator seqLen=64 dModel=36 dtRank=24"
+# TODO fetch desired workload dimensions from some config insatead of hardcoding them here
+$(DATA_CFG): 
+	@cd $(CHISEL_SSM) && sbt "test:runMain simbacore.DataGenerator seqLen=64 dModel=36 dtRank=24"
 	@touch $@
 
-$(CHISEL_SSM_SOURCES):
-	@if [ ! -f "$@" ]; then \
-		echo "Initializing/updating chisel-ssm submodule..."; \
-		git -C $(CHISEL_SSM_DIR)/.. submodule update --init --recursive -- $(notdir $(CHISEL_SSM_DIR)); \
-	fi
 
 .PHONY: clean-data clean
 

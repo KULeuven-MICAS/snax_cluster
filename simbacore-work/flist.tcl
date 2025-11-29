@@ -85,6 +85,7 @@ if {0 == [analyze -format sv \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/exp_backoff.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/fifo_v3.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/gray_to_binary.sv" \
+        "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/heaviside.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/isochronous_4phase_handshake.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/isochronous_spill_register.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/lfsr.sv" \
@@ -96,6 +97,7 @@ if {0 == [analyze -format sv \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/plru_tree.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/passthrough_stream_fifo.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/popcount.sv" \
+        "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/ring_buffer.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/rr_arb_tree.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/rstgen_bypass.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/serial_deglitch.sv" \
@@ -115,9 +117,11 @@ if {0 == [analyze -format sv \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/unread.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/read.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/addr_decode_dync.sv" \
+        "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/boxcar.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/cdc_2phase.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/cdc_4phase.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/clk_int_div_static.sv" \
+        "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/trip_counter.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/addr_decode.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/addr_decode_napot.sv" \
         "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/src/multiaddr_decode.sv" \
@@ -308,80 +312,6 @@ if {0 == [analyze -format sv \
 ]} {return 1}
 
 set search_path $search_path_initial
-lappend search_path "$ROOT/.bender/git/checkouts/hwpe-ctrl-078b13d4b656e469/rtl"
-
-if {0 == [analyze -format sv \
-    -define { \
-        TARGET_SNAX_SIMBACORE \
-        TARGET_SNAX_SIMBACORE_CLUSTER \
-        TARGET_SYNOPSYS \
-        TARGET_SYNTHESIS \
-    } \
-    [list \
-        "$ROOT/.bender/git/checkouts/hwpe-ctrl-078b13d4b656e469/rtl/hwpe_ctrl_interfaces.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-ctrl-078b13d4b656e469/rtl/hwpe_ctrl_package.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-ctrl-078b13d4b656e469/rtl/hwpe_ctrl_regfile_latch.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-ctrl-078b13d4b656e469/rtl/hwpe_ctrl_partial_mult.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-ctrl-078b13d4b656e469/rtl/hwpe_ctrl_seq_mult.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-ctrl-078b13d4b656e469/rtl/hwpe_ctrl_uloop.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-ctrl-078b13d4b656e469/rtl/hwpe_ctrl_regfile_latch_test_wrap.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-ctrl-078b13d4b656e469/rtl/hwpe_ctrl_regfile.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-ctrl-078b13d4b656e469/rtl/hwpe_ctrl_slave.sv" \
-    ]
-]} {return 1}
-
-set search_path $search_path_initial
-lappend search_path "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl"
-
-if {0 == [analyze -format sv \
-    -define { \
-        TARGET_SNAX_SIMBACORE \
-        TARGET_SNAX_SIMBACORE_CLUSTER \
-        TARGET_SYNOPSYS \
-        TARGET_SYNTHESIS \
-    } \
-    [list \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/hwpe_stream_package.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/hwpe_stream_interfaces.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/basic/hwpe_stream_assign.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/basic/hwpe_stream_buffer.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/basic/hwpe_stream_demux_static.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/basic/hwpe_stream_deserialize.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/basic/hwpe_stream_fence.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/basic/hwpe_stream_merge.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/basic/hwpe_stream_mux_static.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/basic/hwpe_stream_serialize.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/basic/hwpe_stream_split.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/fifo/hwpe_stream_fifo_ctrl.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/fifo/hwpe_stream_fifo_scm.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/streamer/hwpe_stream_addressgen.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/streamer/hwpe_stream_addressgen_v2.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/streamer/hwpe_stream_addressgen_v3.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/streamer/hwpe_stream_sink_realign.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/streamer/hwpe_stream_source_realign.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/streamer/hwpe_stream_strbgen.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/streamer/hwpe_stream_streamer_queue.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/tcdm/hwpe_stream_tcdm_assign.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/tcdm/hwpe_stream_tcdm_mux.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/tcdm/hwpe_stream_tcdm_mux_static.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/tcdm/hwpe_stream_tcdm_reorder.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/tcdm/hwpe_stream_tcdm_reorder_static.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/fifo/hwpe_stream_fifo_earlystall.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/fifo/hwpe_stream_fifo_earlystall_sidech.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/fifo/hwpe_stream_fifo_scm_test_wrap.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/fifo/hwpe_stream_fifo_sidech.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/fifo/hwpe_stream_fifo.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/tcdm/hwpe_stream_tcdm_fifo_load_sidech.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/fifo/hwpe_stream_fifo_passthrough.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/streamer/hwpe_stream_source.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/tcdm/hwpe_stream_tcdm_fifo.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/tcdm/hwpe_stream_tcdm_fifo_load.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/tcdm/hwpe_stream_tcdm_fifo_store.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-stream-b9a93a56b69d7039/rtl/streamer/hwpe_stream_sink.sv" \
-    ]
-]} {return 1}
-
-set search_path $search_path_initial
 
 if {0 == [analyze -format sv \
     -define { \
@@ -435,6 +365,28 @@ if {0 == [analyze -format sv \
         "$ROOT/.bender/git/checkouts/axi_riscv_atomics-360637610c0ab464/src/axi_riscv_amos_wrap.sv" \
         "$ROOT/.bender/git/checkouts/axi_riscv_atomics-360637610c0ab464/src/axi_riscv_atomics_wrap.sv" \
         "$ROOT/.bender/git/checkouts/axi_riscv_atomics-360637610c0ab464/src/axi_riscv_atomics_structs.sv" \
+    ]
+]} {return 1}
+
+set search_path $search_path_initial
+
+if {0 == [analyze -format sv \
+    -define { \
+        TARGET_SNAX_SIMBACORE \
+        TARGET_SNAX_SIMBACORE_CLUSTER \
+        TARGET_SYNOPSYS \
+        TARGET_SYNTHESIS \
+    } \
+    [list \
+        "$ROOT/.bender/git/checkouts/chisel-ssm-e1328542adea6475/chisel-float/src/main/resources/common_block/fpnew_pkg_snax.sv" \
+        "$ROOT/.bender/git/checkouts/chisel-ssm-e1328542adea6475/chisel-float/src/main/resources/common_block/lzc.sv" \
+        "$ROOT/.bender/git/checkouts/chisel-ssm-e1328542adea6475/chisel-float/src/main/resources/common_block/fpnew_classifier.sv" \
+        "$ROOT/.bender/git/checkouts/chisel-ssm-e1328542adea6475/chisel-float/src/main/resources/common_block/fpnew_rounding.sv" \
+        "$ROOT/.bender/git/checkouts/chisel-ssm-e1328542adea6475/chisel-float/src/main/resources/fp_convert.sv" \
+        "$ROOT/.bender/git/checkouts/chisel-ssm-e1328542adea6475/chisel-float/src/main/resources/fp_add.sv" \
+        "$ROOT/.bender/git/checkouts/chisel-ssm-e1328542adea6475/chisel-float/src/main/resources/fp_mul.sv" \
+        "$ROOT/.bender/git/checkouts/chisel-ssm-e1328542adea6475/chisel-float/src/main/resources/fp_fma.sv" \
+        "$ROOT/.bender/git/checkouts/chisel-ssm-e1328542adea6475/generated/SimbaCore/SimbaCore.sv" \
     ]
 ]} {return 1}
 
@@ -509,27 +461,6 @@ if {0 == [analyze -format sv \
 ]} {return 1}
 
 set search_path $search_path_initial
-lappend search_path "$ROOT/.bender/git/checkouts/hwpe-mac-engine-2e73b3bfb9f7ed43/rtl"
-
-if {0 == [analyze -format sv \
-    -define { \
-        TARGET_SNAX_SIMBACORE \
-        TARGET_SNAX_SIMBACORE_CLUSTER \
-        TARGET_SYNOPSYS \
-        TARGET_SYNTHESIS \
-    } \
-    [list \
-        "$ROOT/.bender/git/checkouts/hwpe-mac-engine-2e73b3bfb9f7ed43/rtl/mac_package.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-mac-engine-2e73b3bfb9f7ed43/rtl/mac_engine.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-mac-engine-2e73b3bfb9f7ed43/rtl/mac_fsm.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-mac-engine-2e73b3bfb9f7ed43/rtl/mac_streamer.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-mac-engine-2e73b3bfb9f7ed43/rtl/mac_ctrl.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-mac-engine-2e73b3bfb9f7ed43/rtl/mac_top.sv" \
-        "$ROOT/.bender/git/checkouts/hwpe-mac-engine-2e73b3bfb9f7ed43/wrap/mac_top_wrap.sv" \
-    ]
-]} {return 1}
-
-set search_path $search_path_initial
 lappend search_path "$ROOT/.bender/git/checkouts/apb-0b8df27abad700ff/include"
 lappend search_path "$ROOT/.bender/git/checkouts/axi-10c18867bc585e38/include"
 lappend search_path "$ROOT/.bender/git/checkouts/common_cells-02aa01ee4a3b2e52/include"
@@ -546,7 +477,7 @@ if {0 == [analyze -format sv \
         "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/src/reg_intf.sv" \
         "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/vendor/lowrisc_opentitan/src/prim_subreg_arb.sv" \
         "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/vendor/lowrisc_opentitan/src/prim_subreg_ext.sv" \
-        "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/src/apb_to_reg.sv" \
+        "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/src/apb_to_reg_v2.sv" \
         "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/src/axi_lite_to_reg.sv" \
         "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/src/axi_to_reg_v2.sv" \
         "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/src/periph_to_reg.sv" \
@@ -563,6 +494,7 @@ if {0 == [analyze -format sv \
         "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/src/reg_uniform.sv" \
         "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/vendor/lowrisc_opentitan/src/prim_subreg_shadow.sv" \
         "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/vendor/lowrisc_opentitan/src/prim_subreg.sv" \
+        "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/src/deprecated/apb_to_reg.sv" \
         "$ROOT/.bender/git/checkouts/register_interface-f4ec7adf92a180e1/src/deprecated/axi_to_reg.sv" \
     ]
 ]} {return 1}
@@ -989,15 +921,6 @@ if {0 == [analyze -format sv \
         TARGET_SYNTHESIS \
     } \
     [list \
-        "$ROOT/../chisel-ssm/chisel-float/src/main/resources/common_block/fpnew_pkg_snax.sv" \
-        "$ROOT/../chisel-ssm/chisel-float/src/main/resources/common_block/lzc.sv" \
-        "$ROOT/../chisel-ssm/chisel-float/src/main/resources/common_block/fpnew_classifier.sv" \
-        "$ROOT/../chisel-ssm/chisel-float/src/main/resources/common_block/fpnew_rounding.sv" \
-        "$ROOT/../chisel-ssm/chisel-float/src/main/resources/fp_convert.sv" \
-        "$ROOT/../chisel-ssm/chisel-float/src/main/resources/fp_add.sv" \
-        "$ROOT/../chisel-ssm/chisel-float/src/main/resources/fp_mul.sv" \
-        "$ROOT/../chisel-ssm/chisel-float/src/main/resources/fp_fma.sv" \
-        "$ROOT/../chisel-ssm/generated/SimbaCore/SimbaCore.sv" \
         "$ROOT/hw/snax_simbacore/snax_simbacore_shell_wrapper.sv" \
         "$ROOT/target/snitch_cluster/generated/snax_simbacore/snax_simbacore_reqrspman_ReqRspManager.sv" \
         "$ROOT/target/snitch_cluster/generated/snax_simbacore/snax_simbacore_Streamer.sv" \
