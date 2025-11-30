@@ -44,13 +44,15 @@ make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson sw -j
 
 # [bash|target] Create QuestaSim binary and run programs
 make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson bin/snitch_cluster.vsim 
-# [bash|target] Run no-op test program just to see if snitch core is alive
-bin/snitch_cluster.vsim sw/apps/nop/build/nop.elf | tee vsim.log 
-# [bash|target] Run SimbaCore test program
-bin/snitch_cluster.vsim sw/apps/snax-simbacore/build/snax-simbacore-main.elf | tee vsim.log
-# [bash|target] Run SimbaCore test program in GUI (with VNC)
-bin/snitch_cluster.vsim.gui sw/apps/snax-simbacore/build/snax-simbacore-main.elf 
 
+# [bash|target] Run SimbaCore test programs
+bin/snitch_cluster.vsim sw/apps/nop/build/nop.elf | tee vsim.log 
+bin/snitch_cluster.vsim sw/apps/snax-simbacore-main/build/snax-simbacore-main.elf | tee vsim.log
+bin/snitch_cluster.vsim sw/apps/snax-simbacore-osgemm/build/snax-simbacore-osgemm.elf | tee vsim.log
+
+# Debug
+# [bash|target] Run SimbaCore test program in GUI (with VNC)
+bin/snitch_cluster.vsim.gui sw/apps/snax-simbacore-main/build/snax-simbacore-main.elf 
 # [snax|target] Make traces (from .dasm to .txt)
 make traces
 

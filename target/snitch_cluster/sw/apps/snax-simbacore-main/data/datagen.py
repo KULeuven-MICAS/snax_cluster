@@ -15,24 +15,20 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 sys.path.append(str(pathlib.Path(__file__).resolve().parent))
 
-from datagen_util import BANKWIDTH, DataGeneratorBase, BANK_BYTES  # type: ignore[import]
-
-
-BF16 = 16
-FP8 = 8
+from datagen_base import BANKWIDTH, DataGeneratorBase, BANK_BYTES, FP8, BF16  # type: ignore[import]
+from datagen_cli import main as datagen_cli_main  # type: ignore[import]
 
 
 class DataGenerator(DataGeneratorBase):
 
     def run(self):
         self.save_params()
-        self.format_params()
-        self.build_OSGeMM_data()
         self.build_Phase1_data()
         self.build_Phase2_data()
         self.build_SIMD_CMUL()
 
     def save_params(self):
+        """Saves params to self as shorthand notation"""
         # Algorithm
         self.seqLen = self.kwargs["seqLen"]
         self.dModel = self.kwargs["dModel"]
@@ -79,64 +75,6 @@ class DataGenerator(DataGeneratorBase):
 
         # Make sure the delay does not exceed the total number of tiles or elements
         return int(min(suc_safe_to_start, gemm_total_nb_tiles)), int(min(iscore_safe_to_start, suc_total_nb_elements))
-
-    def build_OSGeMM_data(self):
-        mode_id = 3
-        assert f"M{mode_id}_OSGEMM" in self.kwargs, "verify mode_id"
-        Mu = self.seqLenUnroll
-        Nu = self.dInnerUnroll
-
-        # In VersaCore naming convention
-        M = self.seqLen // Mu
-        K = self.dModel
-        N = self.dInner // Nu
-
-        a_in_width = Mu * FP8
-        b_in_width = Nu * FP8
-        d_array_width = Mu * Nu * FP8
-        assert d_array_width % self.oscore_serial_width == 0, "d_array_width Must be divisible by oscore_serial_width"
-
-        streamers = {
-            # for n in N (irrelevant dimension)
-            #   for m in M
-            #     for k in K
-            #         parfor s in (tileSize / bankWidth)
-            #             addr = k * tile_size + m * K * tile_size + s * bankWidth
-            "R0": (  # Input A
-                [K, M, N],
-                [
-                    a_in_width // 8,
-                    K * a_in_width // 8,
-                    0,
-                ],
-            ),
-            "R1": (  # Input B
-                [K, M, N],
-                [
-                    b_in_width // 8,
-                    0,  # M is irrelevant
-                    K * b_in_width // 8,
-                ],
-            ),
-            "W0": (  # Output D
-                [(d_array_width // self.oscore_serial_width) * M * N],
-                [self.oscore_serial_width // 8],
-            ),
-        }
-
-        specs = [
-            ("a", M * K * a_in_width // 8),
-            ("b", K * N * b_in_width // 8),
-            # ("c", M * N * d_array_width // 8),
-            ("d", M * N * d_array_width // 8),
-        ]
-        lengths, deltas = self._collect_lengths_and_deltas(specs)
-        scalars = {**lengths, **deltas}
-
-        test_data = {name: "uint8_t" for name in ("A", "B", "D")}
-        tests = {"D": self.seqLen * self.dInner}
-
-        self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests)
 
     def build_Phase1_data(self):
         mode_id = 1
@@ -508,37 +446,5 @@ class DataGenerator(DataGeneratorBase):
         self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Generate data for kernels")
-    parser.add_argument(
-        "--swcfg",
-        type=pathlib.Path,
-        required=True,
-        help="Select param config file kernel",
-    )
-    parser.add_argument(
-        "--hwcfg",
-        type=pathlib.Path,
-        required=True,
-        help="Select hardware config file kernel",
-    )
-    args = parser.parse_args()
-
-    # Load param config file
-    with args.swcfg.open() as f:
-        param = hjson.loads(f.read())
-
-    # Load hardware config file # NOTE not used
-    # with args.hwcfg.open() as f:
-    #     hw = hjson.loads(f.read())
-
-    # Merge dictionaries (hw overrides param in case of conflicts)
-    merged_config = {**param}  # , **hw}
-
-    # Emit header file
-    generator = DataGenerator(**merged_config)
-    print(generator.emit_header_file())
-
-
 if __name__ == "__main__":
-    main()
+    datagen_cli_main(DataGenerator)

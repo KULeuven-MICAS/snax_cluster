@@ -15,7 +15,7 @@ DATA_CFG ?= $(CHISEL_SSM)/generated/data/params.hjson
 DATA_H = $(CURR_DIR)/data.h
 
 # Triggers datagen.py to regenerate data.h in case the raw data files (from Scala DataGenerator) have changed
-$(DATA_H): $(CURR_DIR)/datagen.py $(CURR_DIR)/datagen_util.py $(DATA_CFG) 
+$(DATA_H): $(CURR_DIR)/datagen.py $(CURR_DIR)/datagen_cli.py $(CURR_DIR)/datagen_base.py $(DATA_CFG) 
 	$< --swcfg $(DATA_CFG) --hwcfg $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE) > $@
 
 # TODO fetch desired workload dimensions from some config insatead of hardcoding them here

@@ -31,6 +31,8 @@ NUM_LOOPS = 4  # NOTE this must match the hjson config
 BANKWIDTH = 64
 BANK_BYTES = BANKWIDTH // 8
 NB_TEST_SAMPLES = 25
+BF16 = 16
+FP8 = 8
 
 
 class DataGeneratorBase(ABC):
@@ -47,6 +49,7 @@ class DataGeneratorBase(ABC):
     def emit_header_file(self):
         """Generate all lines and return them as a string."""
         self.lines_params.append("#include <stdint.h>\n")
+        self.format_params()
         self.format("uint32_t", "nb_test_samples", NB_TEST_SAMPLES)
         self.run()
 

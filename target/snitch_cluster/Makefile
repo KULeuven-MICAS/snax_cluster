@@ -69,6 +69,17 @@ STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamP
 # SNAX Generations #
 ####################
 
+# Track important dependency files for incremental RTL generation
+BENDER_LOCK := $(ROOT)/Bender.lock
+BENDER_LOCK_HASH := $(GENERATED_DIR)/bender_lock.hash
+# Generator sources
+WRAPPER_GEN_SRC ?= $(shell find $(ROOT)/util/snaxgen -type f -name '*.py' 2>/dev/null)
+# Template and input files used by generators
+SNAX_TPL_FILES ?= $(shell find $(SNAX_TPL_PATH) -type f 2>/dev/null)
+SNAX_TEST_FILES ?= $(shell find $(SNAX_TEST_PATH) -type f 2>/dev/null)
+SNAX_CHISEL_FILES ?= $(shell find $(ROOT)/hw/chisel/src -type f -name '*.scala' 2>/dev/null)
+RTL_GEN_STAMP := $(GENERATED_DIR)/.rtl_gen.stamp
+
 # Adds targets from the generated bender target file
 VSIM_BENDER := $(VSIM_BENDER) $(shell cat $(GENERATED_DIR)/bender_targets.tmp)
 VLT_BENDER  := $(VLT_BENDER)  $(shell cat $(GENERATED_DIR)/bender_targets.tmp)
@@ -78,24 +89,18 @@ SYN_BENDER  := $(SYN_BENDER)  $(shell cat $(GENERATED_DIR)/bender_targets.tmp)
 # List manual conditions for different configurations
 
 ifeq (${CFG_OVERRIDE}, cfg/snax_mac_cluster.hjson)
-
 	BYPASS_ACCGEN = true
-
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax_mac_mult_cluster.hjson)
-
 	BYPASS_ACCGEN = true
-
 endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snitch_cluster.hjson)
-
 	BYPASS_ACCGEN = true
-
 endif
 
-.PHONY: rtl-snax-gen rtl-gen
+.PHONY: rtl-gen
 
 rtl-snax-gen: | $(GENERATED_DIR)
 	@echo "-------------------------------------------------------------"
@@ -119,9 +124,36 @@ rtl-cluster-gen: | $(GENERATED_DIR)
 	$(CLUSTER_GEN) -c ${CFG_OVERRIDE} -o $(GENERATED_DIR) --wrapper
 
 $(GENERATED_DIR)/bender_targets.tmp: | $(GENERATED_DIR)
-	${WRAPPER_GEN} --cfg_path="$(CFG_FILE)" --get_bender_targets > $(GENERATED_DIR)/bender_targets.tmp
+	@tmp_file="$@.tmp"; \
+	${WRAPPER_GEN} --cfg_path="$(CFG_FILE)" --get_bender_targets > "$$tmp_file"; \
+	if [ -f "$@" ] && cmp -s "$$tmp_file" "$@"; then \
+		rm -f "$$tmp_file"; \
+	else \
+		mv -f "$$tmp_file" "$@"; \
+	fi
 
 rtl-gen: $(GENERATED_DIR)/bender_targets.tmp rtl-snax-gen rtl-cluster-gen
+rtl-gen-no-rebuild: $(RTL_GEN_STAMP)
+
+# Track Bender.lock content (not timestamp) to trigger rebuilds only on real changes
+$(BENDER_LOCK_HASH): | $(GENERATED_DIR)
+	@tmp_file="$@.tmp"; \
+	if [ -f "$(BENDER_LOCK)" ]; then \
+		hash_val=$$(sha256sum "$(BENDER_LOCK)" | awk '{print $$1}'); \
+	else \
+		hash_val="absent"; \
+	fi; \
+	printf "%s\n" "$$hash_val" > "$$tmp_file"; \
+	if [ -f "$@" ] && cmp -s "$$tmp_file" "$@"; then \
+		rm -f "$$tmp_file"; \
+	else \
+		mv -f "$$tmp_file" "$@"; \
+	fi
+
+# Incremental/stamp target: only regenerate RTL when inputs changed
+$(RTL_GEN_STAMP): $(CFG) $(WRAPPER_GEN) $(WRAPPER_GEN_SRC) $(CLUSTER_GEN) $(CLUSTER_GEN_SRC) $(SNAX_TPL_FILES) $(SNAX_TEST_FILES) $(GENERATED_DIR)/bender_targets.tmp $(BENDER_LOCK_HASH) | $(GENERATED_DIR)
+	$(MAKE) rtl-snax-gen rtl-cluster-gen
+	@touch $@
 
 VSIM_BENDER += -t QUESTA_SIM
 
