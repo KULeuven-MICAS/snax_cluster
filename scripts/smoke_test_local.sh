@@ -24,7 +24,12 @@ SUMMARY_FILE="${RUN_DIR}/summary.txt"
 BUILD_LOG="${RUN_DIR}/build.log"
 
 # 1) Build process → build.log
-bash "${ROOT_DIR}/scripts/build.sh" > "${BUILD_LOG}" 2>&1 || true
+build_rc=0
+if bash "${ROOT_DIR}/scripts/build_sim.sh" > "${BUILD_LOG}" 2>&1; then
+  :
+else
+  build_rc=$?
+fi
 
 # 2) Define tests (name:elf-path relative to ${TARGET_DIR})
 declare -a TESTS=(
@@ -38,6 +43,11 @@ pushd "${TARGET_DIR}" >/dev/null
 {
   echo "Timestamp (UTC): $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
   echo "Commit: ${COMMIT_HASH}"
+  if [ "${build_rc}" -eq 0 ]; then
+    echo "Build: ✅ SUCCESS"
+  else
+    echo "Build: ❌ FAILED (rc=${build_rc})"
+  fi
   echo "Tests:"
 } > "${SUMMARY_FILE}"
 
@@ -46,12 +56,22 @@ for entry in "${TESTS[@]}"; do
   elf_rel="${entry#*:}"
   test_log="${RUN_DIR}/${name}.log"
   "${VSIM_BIN}" "${elf_rel}" > "${test_log}" 2>&1
-
+  
   rc=$?
-  # Interpret exit code as number of errors (0 = pass). If timeout (124), count as 9999.
-  if [ "${rc}" -eq 124 ]; then
+  errors=""
+  # Try to parse simulator-reported errors from the log
+  parsed_errors="$(sed -n 's/.*Finished with exit code[[:space:]]\+\([0-9]\+\).*/\1/p' "${test_log}" | tail -n1)"
+  if [ -z "${parsed_errors}" ]; then
+    # Fallback pattern present in some logs: "Errors: N"
+    parsed_errors="$(sed -n 's/.*Errors:[[:space:]]\+\([0-9]\+\).*/\1/p' "${test_log}" | tail -n1)"
+  fi
+  if [ -n "${parsed_errors}" ]; then
+    errors="${parsed_errors}"
+  elif [ "${rc}" -eq 124 ]; then
+    # If timeout (124), count as a large number.
     errors=9999
   else
+    # Fall back to process return code.
     errors="${rc}"
   fi
 

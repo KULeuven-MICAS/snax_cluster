@@ -284,17 +284,6 @@ sources:
   - target: snax_simbacore
     dependencies: [chisel-ssm]
     files:
-      # FP units
-      # - chisel-ssm/chisel-float/src/main/resources/common_block/fpnew_pkg_snax.sv
-      # - chisel-ssm/chisel-float/src/main/resources/common_block/lzc.sv
-      # - chisel-ssm/chisel-float/src/main/resources/common_block/fpnew_classifier.sv
-      # - chisel-ssm/chisel-float/src/main/resources/common_block/fpnew_rounding.sv
-      # - chisel-ssm/chisel-float/src/main/resources/fp_convert.sv
-      # - chisel-ssm/chisel-float/src/main/resources/fp_add.sv
-      # - chisel-ssm/chisel-float/src/main/resources/fp_mul.sv
-      # - chisel-ssm/chisel-float/src/main/resources/fp_fma.sv
-      # Level 0
-      # - chisel-ssm/generated/SimbaCore/SimbaCore.sv
       - hw/snax_simbacore/snax_simbacore_shell_wrapper.sv
       - target/snitch_cluster/generated/snax_simbacore/snax_simbacore_reqrspman_ReqRspManager.sv
       - target/snitch_cluster/generated/snax_simbacore/snax_simbacore_Streamer.sv
