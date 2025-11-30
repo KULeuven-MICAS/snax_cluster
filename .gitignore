@@ -48,3 +48,5 @@ wlft*
 test_run_dir
 target/streams/
 target/scala*
+smoke_test_out/
+
