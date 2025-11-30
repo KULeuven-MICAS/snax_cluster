@@ -3,9 +3,11 @@ repos:
     hooks:
       - id: run-simbacore-tests
         name: Run SimbaCore smoke tests (post-commit)
-        entry: bash scripts/run-tests.sh
+        entry: bash scripts/run-tests-bg.sh
         language: system
         pass_filenames: false
+        always_run: true
+        verbose: true
         stages: [post-commit]
 
 
