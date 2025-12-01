@@ -51,6 +51,10 @@ void set_simbacore_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A
                                        uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
                                        uint32_t D_ptr, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts);
 
+void set_simbacore_isgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
+                                       uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
+                                       uint32_t CD_ptr, int32_t* CD_ss, int32_t* CD_tb, int32_t* CD_ts);
+
 // Set GEMM configuration CSR. dFinal is the IScore output dimension (either xProjDim or dModel)
 void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank,
                        uint32_t dFinal);

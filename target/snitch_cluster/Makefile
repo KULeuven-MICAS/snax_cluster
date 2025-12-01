@@ -136,7 +136,7 @@ rtl-gen: $(GENERATED_DIR)/bender_targets.tmp rtl-snax-gen rtl-cluster-gen
 rtl-gen-no-rebuild: $(RTL_GEN_STAMP)
 
 # Track Bender.lock content (not timestamp) to trigger rebuilds only on real changes
-$(BENDER_LOCK_HASH): | $(GENERATED_DIR)
+$(BENDER_LOCK_HASH): FORCE | $(GENERATED_DIR)
 	@tmp_file="$@.tmp"; \
 	if [ -f "$(BENDER_LOCK)" ]; then \
 		hash_val=$$(sha256sum "$(BENDER_LOCK)" | awk '{print $$1}'); \
@@ -303,7 +303,7 @@ TARGET_C_HDRS = $(addprefix $(TARGET_C_HDRS_DIR)/,$(CLUSTER_GEN_HEADERS) $(REGGE
 
 .PHONY: sw clean-headers clean-sw
 
-sw: $(TARGET_C_HDRS)
+sw: $(TARGET_C_HDRS) $(BENDER_LOCK_HASH) $(BENDER_LOCK)
 	$(MAKE) -C $(SW_DIR) CFG_OVERRIDE=$(CFG_OVERRIDE)
 
 clean-headers:

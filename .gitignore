@@ -4,6 +4,7 @@ logs
 project
 global-logging
 work
+compile_commands.json
 Bender.lock
 .bender/
 .vscode/

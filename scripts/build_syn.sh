@@ -9,7 +9,7 @@ set -e
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
 
-bender update
+bender update --fetch
 
 podman run --rm -i -v "$(pwd)":"$(pwd)" -w "$(pwd)" ghcr.io/kuleuven-micas/snax:main bash -s <<'IN_CONTAINER'
 set -e

@@ -40,6 +40,7 @@ declare -a TESTS=(
   "nop"
   "snax-simbacore-main"
   "snax-simbacore-osgemm"
+  "snax-simbacore-isgemm"
 )
 
 pushd "${TARGET_DIR}" >/dev/null

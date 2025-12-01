@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include "streamer_csr_addr_map.h"
 
-// Shorthand function to set only the streamers used in OSGeMM (mode 2)
+// Shorthand function to set only the streamers used in OSGeMM
 void set_simbacore_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
                                        uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
                                        uint32_t D_ptr, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts) {
@@ -47,6 +47,51 @@ void set_simbacore_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A
     write_csr(T_BOUND_BASE_WRITER_3, 0);
 }
 
+// Shorthand function to set only the streamers used in ISGEMM
+void set_simbacore_isgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
+                                       uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
+                                       uint32_t CD_ptr, int32_t* CD_ss, int32_t* CD_tb, int32_t* CD_ts) {
+    // iscore input R11
+    write_csr(BASE_PTR_READER_11_LOW, A_ptr);
+    for (int i = 0; i < S_STRIDE_NUM_READER_11; i++) csrw_ss(S_STRIDE_BASE_READER_11 + i, A_ss[i]);
+    for (int i = 0; i < T_BOUND_NUM_READER_11; i++) csrw_ss(T_BOUND_BASE_READER_11 + i, A_tb[i]);
+    for (int i = 0; i < T_STRIDE_NUM_READER_11; i++) csrw_ss(T_STRIDE_BASE_READER_11 + i, A_ts[i]);
+
+    // iscore weight R12
+    write_csr(BASE_PTR_READER_12_LOW, B_ptr);
+    for (int i = 0; i < S_STRIDE_NUM_READER_12; i++) csrw_ss(S_STRIDE_BASE_READER_12 + i, B_ss[i]);
+    for (int i = 0; i < T_BOUND_NUM_READER_12; i++) csrw_ss(T_BOUND_BASE_READER_12 + i, B_tb[i]);
+    for (int i = 0; i < T_STRIDE_NUM_READER_12; i++) csrw_ss(T_STRIDE_BASE_READER_12 + i, B_ts[i]);
+
+    // iscore bias/psum R13
+    write_csr(BASE_PTR_READER_13_LOW, CD_ptr);
+    for (int i = 0; i < S_STRIDE_NUM_READER_13; i++) csrw_ss(S_STRIDE_BASE_READER_13 + i, CD_ss[i]);
+    for (int i = 0; i < T_BOUND_NUM_READER_13; i++) csrw_ss(T_BOUND_BASE_READER_13 + i, CD_tb[i]);
+    for (int i = 0; i < T_STRIDE_NUM_READER_13; i++) csrw_ss(T_STRIDE_BASE_READER_13 + i, CD_ts[i]);
+
+    // iscore output W3
+    write_csr(BASE_PTR_WRITER_3_LOW, CD_ptr);
+    for (int i = 0; i < S_STRIDE_NUM_WRITER_3; i++) csrw_ss(S_STRIDE_BASE_WRITER_3 + i, CD_ss[i]);
+    for (int i = 0; i < T_BOUND_NUM_WRITER_3; i++) csrw_ss(T_BOUND_BASE_WRITER_3 + i, CD_tb[i]);
+    for (int i = 0; i < T_STRIDE_NUM_WRITER_3; i++) csrw_ss(T_STRIDE_BASE_WRITER_3 + i, CD_ts[i]);
+
+    // Disable all other streamers by setting bound to 0
+    write_csr(T_BOUND_BASE_READER_0, 0);
+    write_csr(T_BOUND_BASE_READER_1, 0);
+    write_csr(T_BOUND_BASE_READER_2, 0);
+    write_csr(T_BOUND_BASE_READER_3, 0);
+    write_csr(T_BOUND_BASE_READER_4, 0);
+    write_csr(T_BOUND_BASE_READER_5, 0);
+    write_csr(T_BOUND_BASE_READER_6, 0);
+    write_csr(T_BOUND_BASE_READER_7, 0);
+    write_csr(T_BOUND_BASE_READER_8, 0);
+    write_csr(T_BOUND_BASE_READER_9, 0);
+    write_csr(T_BOUND_BASE_READER_10, 0);
+    write_csr(T_BOUND_BASE_WRITER_0, 0);
+    write_csr(T_BOUND_BASE_WRITER_1, 0);
+    write_csr(T_BOUND_BASE_WRITER_2, 0);
+}
+
 void set_streamer_csr(
 
     uint32_t R0_ptr, int32_t* R0_ss, int32_t* R0_tb, int32_t* R0_ts, bool R0_en,       // osCore in
@@ -55,9 +100,9 @@ void set_streamer_csr(
     uint32_t R3_ptr, int32_t* R3_ss, int32_t* R3_tb, int32_t* R3_ts, bool R3_en,       // switchCore weight
     uint32_t R4_ptr, int32_t* R4_ss, int32_t* R4_tb, int32_t* R4_ts, bool R4_en,       // switchCore bias
     uint32_t R5_ptr, int32_t* R5_ss, int32_t* R5_tb, int32_t* R5_ts, bool R5_en,       // switchCore  matmul weight
-    uint32_t R6_ptr, int32_t* R6_ss, int32_t* R6_tb, int32_t* R6_ts, bool R6_en,       //  SUC A
+    uint32_t R6_ptr, int32_t* R6_ss, int32_t* R6_tb, int32_t* R6_ts, bool R6_en,       // SUC A
     uint32_t R7_ptr, int32_t* R7_ss, int32_t* R7_tb, int32_t* R7_ts, bool R7_en,       // SUC BC
-    uint32_t R8_ptr, int32_t* R8_ss, int32_t* R8_tb, int32_t* R8_ts, bool R8_en,       // SUC  D
+    uint32_t R8_ptr, int32_t* R8_ss, int32_t* R8_tb, int32_t* R8_ts, bool R8_en,       // SUC D
     uint32_t R9_ptr, int32_t* R9_ss, int32_t* R9_tb, int32_t* R9_ts, bool R9_en,       // SUC x
     uint32_t R10_ptr, int32_t* R10_ss, int32_t* R10_tb, int32_t* R10_ts, bool R10_en,  // SUC z
     uint32_t R11_ptr, int32_t* R11_ss, int32_t* R11_tb, int32_t* R11_ts, bool R11_en,  // iscore in
@@ -250,14 +295,14 @@ void start_simbacore_and_streamers(bool R10_en, uint32_t R10_start_cnt, bool R11
     if (R10_en) {
         while (read_csr(R10_DELAY_GAUGE) < R10_start_cnt);
         write_csr(DELAYED_START_READER_10, 1);
+        printf("Streamer R10 can start\n");
     }
-    printf("Streamer R10 can start\n");
 
     if (R11_en) {
         while (read_csr(R11_DELAY_GAUGE) < R11_start_cnt);
         write_csr(DELAYED_START_READER_11, 1);
+        printf("Streamer R11 can start\n");
     }
-    printf("Streamer R11 can start\n");
 }
 
 // Stall until Streamer and GEMM accelerator finish

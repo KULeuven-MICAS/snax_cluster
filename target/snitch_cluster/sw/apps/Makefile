@@ -67,10 +67,6 @@ SUBDIRS += snax-xdma-rescale-down
 SUBDIRS += snax-xdma-rescale-up
 SUBDIRS += snax-xdma-avgpool
 endif
-ifeq ($(CFG_OVERRIDE), cfg/snax_simbacore_cluster.hjson)
-SUBDIRS += snax-simbacore-main
-SUBDIRS += snax-simbacore-osgemm
-endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_cluster.hjson)
 SUBDIRS += snax-versacore-matmul
 SUBDIRS += snax-versacore-matmul-profile
@@ -98,6 +94,12 @@ SUBDIRS += snax-hypercorex/lang-recog-long
 SUBDIRS += snax-hypercorex/vec-compress
 endif
 
+# SimbaCore tests and programs
+ifeq ($(CFG_OVERRIDE), cfg/snax_simbacore_cluster.hjson)
+SUBDIRS += snax-simbacore-main
+SUBDIRS += snax-simbacore-osgemm
+SUBDIRS += snax-simbacore-isgemm
+endif
 
 .PHONY: all clean $(SUBDIRS)
 
