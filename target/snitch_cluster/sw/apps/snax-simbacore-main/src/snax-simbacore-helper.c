@@ -1,7 +1,7 @@
 // Copyright 2025 KU Leuven.
 // Not released under license. All rights reserved.
 //
-// Author : Robin Geens <robin.geens@kuleuven.be>
+// Author: Robin Geens <robin.geens@kuleuven.be>
 
 #include "data.h"
 #include "snax-simbacore-lib.h"

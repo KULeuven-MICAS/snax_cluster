@@ -1,7 +1,7 @@
 // Copyright 2025 KU Leuven.
 // Not released under license. All rights reserved.
 //
-// Author : Robin Geens <robin.geens@kuleuven.be>
+// Author: Robin Geens <robin.geens@kuleuven.be>
 
 #include "data.h"
 #include "snax-simbacore-lib.h"
@@ -30,9 +30,9 @@ int test_isgemm() {
     if (snrt_global_core_idx() == 0) {
         printf("Setting up Streamer and SimbaCore for ISGEMM...\n");
 
-        set_simbacore_isgemm_streamer_csr((uint32_t)ptr_a, M4_R11_ss, M4_R11_tb, M4_R11_ts,  // A
-                                          (uint32_t)ptr_b, M4_R12_ss, M4_R12_tb, M4_R12_ts,  // B
-                                          (uint32_t)ptr_cd, M4_W3_ss, M4_W3_tb, M4_W3_ts);   // C/D
+        set_isgemm_streamer_csr((uint32_t)ptr_a, M4_R11_ss, M4_R11_tb, M4_R11_ts,  // A
+                                (uint32_t)ptr_b, M4_R12_ss, M4_R12_tb, M4_R12_ts,  // B
+                                (uint32_t)ptr_cd, M4_W3_ss, M4_W3_tb, M4_W3_ts);   // C/D
 
         set_simbacore_csr(M4_ISGEMM, seqLen, dModel, dInner, dtRank, dModel);
         start_simbacore_and_streamers(M4_R10_en, 0, M4_R11_en, 0);

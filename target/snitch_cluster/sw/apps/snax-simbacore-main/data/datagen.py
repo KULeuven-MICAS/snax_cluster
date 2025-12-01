@@ -5,9 +5,7 @@
 #
 # Author: Robin Geens <robin.geens@kuleuven.be>
 
-import argparse
 import pathlib
-import hjson
 import sys
 import os
 
@@ -25,7 +23,6 @@ class DataGenerator(DataGeneratorBase):
         self.save_params()
         self.build_Phase1_data()
         self.build_Phase2_data()
-        self.build_SIMD_CMUL()
 
     def save_params(self):
         """Saves params to self as shorthand notation"""
@@ -416,32 +413,6 @@ class DataGenerator(DataGeneratorBase):
                 "iscore_expected",
             )
         }
-
-        self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests)
-
-    def build_SIMD_CMUL(self):
-        mode_id = 5
-        assert f"M{mode_id}_SIMD_CMUL" in self.kwargs, "verify mode_id"
-
-        # This must be equal to the other ports as well. Can we assert this?
-        width = 2 * self.suc_serial_width_BC
-        assert width == BF16 * self.seqLenUnroll
-
-        # We defined L/2 complex values in the scala generator
-        bounds_and_stries = ([self.seqLen * BF16 // width], [width // 8])
-
-        streamers = {
-            "R7": bounds_and_stries,  # Input A (real and imag are interleaved)
-            "R13": bounds_and_stries,  # Input B
-            "W3": bounds_and_stries,  # Output
-        }
-
-        specs = [(tensor_name, self.seqLen * BF16 // 8) for tensor_name in ("cmul_a", "cmul_b", "cmul_out")]
-
-        lengths, deltas = self._collect_lengths_and_deltas(specs)
-        scalars = {**lengths, **deltas}
-        tests = {"cmul_out": self.seqLen}
-        test_data = {name: "uint16_t" for name in ("cmul_a", "cmul_b", "cmul_out")}
 
         self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests)
 

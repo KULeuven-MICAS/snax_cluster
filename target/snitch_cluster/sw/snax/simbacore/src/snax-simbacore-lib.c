@@ -1,16 +1,16 @@
 // Copyright 2025 KU Leuven.
 // Not released under license. All rights reserved.
 //
-// Author : Robin Geens <robin.geens@kuleuven.be>
+// Author: Robin Geens <robin.geens@kuleuven.be>
 
 #include "snax-simbacore-lib.h"
 #include <stdint.h>
 #include "streamer_csr_addr_map.h"
 
 // Shorthand function to set only the streamers used in OSGeMM
-void set_simbacore_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
-                                       uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
-                                       uint32_t D_ptr, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts) {
+void set_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
+                             uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
+                             uint32_t D_ptr, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts) {
     // osCore input R0
     write_csr(BASE_PTR_READER_0_LOW, A_ptr);
     for (int i = 0; i < S_STRIDE_NUM_READER_0; i++) csrw_ss(S_STRIDE_BASE_READER_0 + i, A_ss[i]);
@@ -48,9 +48,9 @@ void set_simbacore_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A
 }
 
 // Shorthand function to set only the streamers used in ISGEMM
-void set_simbacore_isgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
-                                       uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
-                                       uint32_t CD_ptr, int32_t* CD_ss, int32_t* CD_tb, int32_t* CD_ts) {
+void set_isgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
+                             uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
+                             uint32_t CD_ptr, int32_t* CD_ss, int32_t* CD_tb, int32_t* CD_ts) {
     // iscore input R11
     write_csr(BASE_PTR_READER_11_LOW, A_ptr);
     for (int i = 0; i < S_STRIDE_NUM_READER_11; i++) csrw_ss(S_STRIDE_BASE_READER_11 + i, A_ss[i]);
@@ -87,6 +87,46 @@ void set_simbacore_isgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A
     write_csr(T_BOUND_BASE_READER_8, 0);
     write_csr(T_BOUND_BASE_READER_9, 0);
     write_csr(T_BOUND_BASE_READER_10, 0);
+    write_csr(T_BOUND_BASE_WRITER_0, 0);
+    write_csr(T_BOUND_BASE_WRITER_1, 0);
+    write_csr(T_BOUND_BASE_WRITER_2, 0);
+}
+
+// Shorthand function to set only the streamers used in SIMD
+void set_simd_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
+                           uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
+                           uint32_t C_ptr, int32_t* C_ss, int32_t* C_tb, int32_t* C_ts) {
+    // Route input A to SUC BC: R7
+    write_csr(BASE_PTR_READER_7_LOW, A_ptr);
+    for (int i = 0; i < S_STRIDE_NUM_READER_7; i++) csrw_ss(S_STRIDE_BASE_READER_7 + i, A_ss[i]);
+    for (int i = 0; i < T_BOUND_NUM_READER_7; i++) csrw_ss(T_BOUND_BASE_READER_7 + i, A_tb[i]);
+    for (int i = 0; i < T_STRIDE_NUM_READER_7; i++) csrw_ss(T_STRIDE_BASE_READER_7 + i, A_ts[i]);
+
+    // Route input B to iscore psum: R13
+    write_csr(BASE_PTR_READER_13_LOW, B_ptr);
+    for (int i = 0; i < S_STRIDE_NUM_READER_13; i++) csrw_ss(S_STRIDE_BASE_READER_13 + i, B_ss[i]);
+    for (int i = 0; i < T_BOUND_NUM_READER_13; i++) csrw_ss(T_BOUND_BASE_READER_13 + i, B_tb[i]);
+    for (int i = 0; i < T_STRIDE_NUM_READER_13; i++) csrw_ss(T_STRIDE_BASE_READER_13 + i, B_ts[i]);
+
+    // Route output C to iscore out: W3
+    write_csr(BASE_PTR_WRITER_3_LOW, C_ptr);
+    for (int i = 0; i < S_STRIDE_NUM_WRITER_3; i++) csrw_ss(S_STRIDE_BASE_WRITER_3 + i, C_ss[i]);
+    for (int i = 0; i < T_BOUND_NUM_WRITER_3; i++) csrw_ss(T_BOUND_BASE_WRITER_3 + i, C_tb[i]);
+    for (int i = 0; i < T_STRIDE_NUM_WRITER_3; i++) csrw_ss(T_STRIDE_BASE_WRITER_3 + i, C_ts[i]);
+
+    // Disable all other streamers by setting bound to 0
+    write_csr(T_BOUND_BASE_READER_0, 0);
+    write_csr(T_BOUND_BASE_READER_1, 0);
+    write_csr(T_BOUND_BASE_READER_2, 0);
+    write_csr(T_BOUND_BASE_READER_3, 0);
+    write_csr(T_BOUND_BASE_READER_4, 0);
+    write_csr(T_BOUND_BASE_READER_5, 0);
+    write_csr(T_BOUND_BASE_READER_6, 0);
+    write_csr(T_BOUND_BASE_READER_8, 0);
+    write_csr(T_BOUND_BASE_READER_9, 0);
+    write_csr(T_BOUND_BASE_READER_10, 0);
+    write_csr(T_BOUND_BASE_READER_11, 0);
+    write_csr(T_BOUND_BASE_READER_12, 0);
     write_csr(T_BOUND_BASE_WRITER_0, 0);
     write_csr(T_BOUND_BASE_WRITER_1, 0);
     write_csr(T_BOUND_BASE_WRITER_2, 0);
@@ -359,11 +399,11 @@ uint32_t check_result_sample(uint8_t* output, uint8_t* output_golden, int32_t* s
         int sample_index     = sample_indices[i];
         uint8_t output_value = output[sample_index];
         uint8_t golden_value = output_golden[sample_index];
-        if (output_value != golden_value) {
+        if (output_value == golden_value || (output_value == 0 && golden_value == 128)) {  // 0 == -0
+            printf("PASS %s[%d] = %d,\tref = %d\n", tensor_name, sample_index, output_value, golden_value);
+        } else {
             err++;
             printf("FAIL %s[%d] = %d,\tref = %d\n", tensor_name, sample_index, output_value, golden_value);
-        } else {
-            printf("PASS %s[%d] = %d,\tref = %d\n", tensor_name, sample_index, output_value, golden_value);
         }
     }
     return err;

@@ -1,7 +1,7 @@
 // Copyright 2025 KU Leuven.
 // Not released under license. All rights reserved.
 //
-// Author : Robin Geens <robin.geens@kuleuven.be>
+// Author: Robin Geens <robin.geens@kuleuven.be>
 
 #include <stdbool.h>
 
@@ -47,13 +47,17 @@ void set_streamer_csr(uint32_t R0_ptr, int32_t* R0_ss, int32_t* R0_tb, int32_t* 
                       uint32_t W2_ptr, int32_t* W2_ss, int32_t* W2_tb, int32_t* W2_ts, bool W2_en,  //
                       uint32_t W3_ptr, int32_t* W3_ss, int32_t* W3_tb, int32_t* W3_ts, bool W3_en);
 
-void set_simbacore_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
-                                       uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
-                                       uint32_t D_ptr, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts);
+void set_osgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
+                             uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
+                             uint32_t D_ptr, int32_t* D_ss, int32_t* D_tb, int32_t* D_ts);
 
-void set_simbacore_isgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
-                                       uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
-                                       uint32_t CD_ptr, int32_t* CD_ss, int32_t* CD_tb, int32_t* CD_ts);
+void set_isgemm_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
+                             uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
+                             uint32_t CD_ptr, int32_t* CD_ss, int32_t* CD_tb, int32_t* CD_ts);
+
+void set_simd_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t* A_ts,  //
+                           uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
+                           uint32_t C_ptr, int32_t* C_ss, int32_t* C_tb, int32_t* C_ts);
 
 // Set GEMM configuration CSR. dFinal is the IScore output dimension (either xProjDim or dModel)
 void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank,

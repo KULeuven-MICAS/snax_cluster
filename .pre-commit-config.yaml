@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: run-simbacore-tests
         name: Run SimbaCore regression tests (post-commit)
-        entry: bash scripts/regression_test_local_bg.sh
+        entry: bash scripts/regression_test_bg.sh
         language: system
         pass_filenames: false
         always_run: true

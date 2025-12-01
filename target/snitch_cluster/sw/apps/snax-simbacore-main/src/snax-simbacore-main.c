@@ -1,7 +1,7 @@
 // Copyright 2025 KU Leuven.
 // Not released under license. All rights reserved.
 //
-// Author : Robin Geens <robin.geens@kuleuven.be>
+// Author: Robin Geens <robin.geens@kuleuven.be>
 
 #include "snax-simbacore-helper.c"
 #include "snax-simbacore-lib.h"
@@ -129,7 +129,6 @@ int test_phase2() {
     return err;
 }
 
-
 int test_phase1_and_2() {
     int err = 0;
 
@@ -237,69 +236,10 @@ int test_phase1_and_2() {
     return err;
 }
 
-int test_simd_cmul() {
-    int err = 0;
-
-    // Define TCDM addresses
-    void* tcdm_base_ptr = snrt_l1_next();
-    uint16_t* ptr_a     = (uint16_t*)(tcdm_base_ptr + M5_addr_cmul_a);
-    uint16_t* ptr_b     = (uint16_t*)(tcdm_base_ptr + M5_addr_cmul_b);
-    uint16_t* ptr_out   = (uint16_t*)(tcdm_base_ptr + M5_addr_cmul_out);
-
-    // Transfer data from L3 to L1 using DMA only
-    if (snrt_is_dm_core()) {
-        snrt_dma_start_1d(ptr_a, M5_cmul_a, M5_length_cmul_a);
-        snrt_dma_start_1d(ptr_b, M5_cmul_b, M5_length_cmul_b);
-        snrt_dma_wait_all();
-    }
-
-    snrt_cluster_hw_barrier();
-
-    // Call compute core
-    if (snrt_global_core_idx() == 0) {
-        set_streamer_csr(
-
-            (uint32_t)0, 0, 0, 0, M5_R0_en,                               //
-            (uint32_t)0, 0, 0, 0, M5_R1_en,                               //
-            (uint32_t)0, 0, 0, 0, M5_R2_en,                               //
-            (uint32_t)0, 0, 0, 0, M5_R3_en,                               //
-            (uint32_t)0, 0, 0, 0, M5_R4_en,                               //
-            (uint32_t)0, 0, 0, 0, M5_R5_en,                               //
-            (uint32_t)0, 0, 0, 0, M5_R6_en,                               //
-            (uint32_t)ptr_a, M5_R7_ss, M5_R7_tb, M5_R7_ts, M5_R7_en,      // SUC BC
-            (uint32_t)0, 0, 0, 0, M5_R8_en,                               //
-            (uint32_t)0, 0, 0, 0, M5_R9_en,                               //
-            (uint32_t)0, 0, 0, 0, M5_R10_en,                              //
-            (uint32_t)0, 0, 0, 0, M5_R11_en,                              //
-            (uint32_t)0, 0, 0, 0, M5_R12_en,                              //
-            (uint32_t)ptr_b, M5_R13_ss, M5_R13_tb, M5_R13_ts, M5_R13_en,  // isCore psum
-
-            (uint32_t)0, 0, 0, 0, M5_W0_en,                            //
-            (uint32_t)0, 0, 0, 0, M5_W1_en,                            //
-            (uint32_t)0, 0, 0, 0, M5_W2_en,                            //
-            (uint32_t)ptr_out, M5_W3_ss, M5_W3_tb, M5_W3_ts, M5_W3_en  // isCore out
-        );
-        set_simbacore_csr(M5_SIMD_CMUL, seqLen, dModel, dInner, dtRank, 1);
-        start_simbacore_and_streamers(M5_R10_en, 0, M5_R11_en, 0);
-        wait_simbacore_and_streamer();
-        printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
-
-        err += check_result_sample_u16(ptr_out, M5_cmul_out, M5_test_samples_cmul_out,  //
-                                       nb_test_samples, "out");
-
-        printf("Test SIMD_CMUL: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err, nb_test_samples);
-    }
-
-    snrt_cluster_hw_barrier();
-    return err;
-}
-
 int main() {
     int err = 0;
     err += test_phase1_and_2();
-    // err += test_simd_cmul();
     // err += test_phase2();
-    // err += test_osgemm();
     // err += test_phase1();
     return err;
 }

@@ -41,14 +41,14 @@ declare -a TESTS=(
   "snax-simbacore-main"
   "snax-simbacore-osgemm"
   "snax-simbacore-isgemm"
+  "snax-simbacore-simd-cmul"
 )
 
 pushd "${TARGET_DIR}" >/dev/null
 
 { # Summary header
   echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S')"
-  echo "Commit: ${COMMIT_HASH}"
-  echo "Message: ${COMMIT_MSG}"
+  echo "Commit: (${COMMIT_HASH}) \"${COMMIT_MSG}\""
   if [ "${build_rc}" -eq 0 ]; then
     echo "Build: ✅ SUCCESS"
   else

@@ -1,7 +1,7 @@
 // Copyright 2025 KU Leuven.
 // Not released under license. All rights reserved.
 //
-// Author : Robin Geens <robin.geens@kuleuven.be>
+// Author: Robin Geens <robin.geens@kuleuven.be>
 
 #include "data.h"
 #include "snax-simbacore-lib.h"
@@ -29,9 +29,9 @@ int test_osgemm() {
     if (snrt_global_core_idx() == 0) {
         printf("Setting up Streamer and SimbaCore for OSGeMM...\n");
 
-        set_simbacore_osgemm_streamer_csr((uint32_t)ptr_a, M3_R0_ss, M3_R0_tb, M3_R0_ts,   // A
-                                          (uint32_t)ptr_b, M3_R1_ss, M3_R1_tb, M3_R1_ts,   // B
-                                          (uint32_t)ptr_d, M3_W0_ss, M3_W0_tb, M3_W0_ts);  // D
+        set_osgemm_streamer_csr((uint32_t)ptr_a, M3_R0_ss, M3_R0_tb, M3_R0_ts,   // A
+                                (uint32_t)ptr_b, M3_R1_ss, M3_R1_tb, M3_R1_ts,   // B
+                                (uint32_t)ptr_d, M3_W0_ss, M3_W0_tb, M3_W0_ts);  // D
 
         set_simbacore_csr(M3_OSGEMM, seqLen, dModel, dInner, dtRank, 1);
         start_simbacore_and_streamers(M3_R10_en, 0, M3_R11_en, 0);
