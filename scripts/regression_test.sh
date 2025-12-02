@@ -41,7 +41,7 @@ declare -a TESTS=(
   "snax-simbacore-main"
   "snax-simbacore-osgemm"
   "snax-simbacore-isgemm"
-  "snax-simbacore-simd-cmul"
+  "snax-simbacore-simd"
 )
 
 pushd "${TARGET_DIR}" >/dev/null

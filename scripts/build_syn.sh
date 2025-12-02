@@ -19,6 +19,6 @@ IN_CONTAINER
 
 # Make flists
 mkdir -p scripts_generated
-bender script synopsys -t tech_cells_generic_exclude_tc_sram -t synthesis -t snax_simbacore -t snax_simbacore_cluster  > scripts_generated/flist-dc.tcl
+bender script synopsys -t tech_cells_generic_exclude_tc_sram -t synthesis -t snax_simbacore -t snax_simbacore_cluster > scripts_generated/flist-dc.tcl
 bender script genus -t tech_cells_generic_exclude_tc_sram -t synthesis -t snax_simbacore -t snax_simbacore_cluster  > scripts_generated/flist-genus.tcl
 

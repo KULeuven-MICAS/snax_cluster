@@ -16,7 +16,7 @@ set -e
 cd target/snitch_cluster
 make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson vsim_preparation
 make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson rtl-gen-no-rebuild
-make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson sw -j
+make CFG_OVERRIDE=cfg/snax_simbacore_cluster.hjson sw
 IN_CONTAINER
 
 # Make simulator

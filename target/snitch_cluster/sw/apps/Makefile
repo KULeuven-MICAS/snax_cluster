@@ -99,7 +99,7 @@ ifeq ($(CFG_OVERRIDE), cfg/snax_simbacore_cluster.hjson)
 SUBDIRS += snax-simbacore-main
 SUBDIRS += snax-simbacore-osgemm
 SUBDIRS += snax-simbacore-isgemm
-SUBDIRS += snax-simbacore-simd-cmul
+SUBDIRS += snax-simbacore-simd
 endif
 
 .PHONY: all clean $(SUBDIRS)

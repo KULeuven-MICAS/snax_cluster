@@ -5,7 +5,7 @@
 # Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 # Robin Geens <robin.geens@esat.kuleuven.be>
 
-APP = snax-simbacore-simd-cmul
+APP = snax-simbacore-simd
 
 INCDIRS = data \
           ../../snax/simbacore/include
@@ -17,7 +17,7 @@ SIMBACORE_LIB_OBJ := $(SIMBACORE_LIB_DIR)/build/snax-simbacore-lib.o
 # Include this binary in the final build
 RISCV_LDFLAGS += $(SIMBACORE_LIB_OBJ)
 
-SRCS = src/snax-simbacore-simd-cmul.c
+SRCS = src/snax-simbacore-simd.c
 
 include ../common.mk
 include ./data/Makefile

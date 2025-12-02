@@ -21,20 +21,20 @@ from datagen_cli import main as datagen_cli_main  # type: ignore[import]
 class DataGenerator(DataGeneratorBase):
 
     def run(self):
-        self.build_SIMD_CMUL()
+        self.build_SIMD()
 
-    def build_SIMD_CMUL(self):
-        mode_id = 5
-        assert f"M{mode_id}_SIMD_CMUL" in self.kwargs, "verify mode_id"
+    def build_SIMD(self):
+        mode_id = 5  # also mode 6, 7, 8
+        assert f"M{mode_id}_SIMD_ADD" in self.kwargs, "verify mode_id"
 
-        seqLen = self.kwargs["seqLen"]
+        dataLength = self.kwargs["seqLen"] * self.kwargs["dModel"]  # Same as in scala generator
         width = 2 * self.kwargs["suc_serial_width_BC"]
 
         # This must be equal to the other ports as well. Can we assert this?
         assert width == BF16 * self.kwargs["seqLenUnroll"]
 
         # We defined L/2 complex values in the scala generator
-        bounds_and_strides = ([seqLen * BF16 // width], [width // 8])
+        bounds_and_strides = ([dataLength * BF16 // width], [width // 8])
 
         streamers = {
             "R7": bounds_and_strides,  # Input A (real and imag are interleaved)
@@ -42,12 +42,15 @@ class DataGenerator(DataGeneratorBase):
             "W3": bounds_and_strides,  # Output
         }
 
-        specs = [(tensor_name, seqLen * BF16 // 8) for tensor_name in ("cmul_a", "cmul_b", "cmul_out")]
+        specs = [
+            (tensor_name, dataLength * BF16 // 8)
+            for tensor_name in ("in_a", "in_b", "add_out", "sub_out", "mul_out", "cmul_out")
+        ]
 
         lengths, deltas = self._collect_lengths_and_deltas(specs)
         scalars = {**lengths, **deltas}
-        tests = {"cmul_out": seqLen}
-        test_data = {name: "uint16_t" for name in ("cmul_a", "cmul_b", "cmul_out")}
+        tests = {"out": dataLength}
+        test_data = {name: "uint16_t" for name in ("simd_a", "simd_b", "add_out", "sub_out", "mul_out", "cmul_out")}
 
         self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests)
 

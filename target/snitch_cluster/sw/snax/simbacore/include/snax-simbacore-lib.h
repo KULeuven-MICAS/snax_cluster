@@ -59,6 +59,9 @@ void set_simd_streamer_csr(uint32_t A_ptr, int32_t* A_ss, int32_t* A_tb, int32_t
                            uint32_t B_ptr, int32_t* B_ss, int32_t* B_tb, int32_t* B_ts,  //
                            uint32_t C_ptr, int32_t* C_ss, int32_t* C_tb, int32_t* C_ts);
 
+// Only stets the mode: rest is not used for SIMD
+static inline void set_simbacore_simd_csr(uint32_t mode) { write_csr(MODE, mode); }
+
 // Set GEMM configuration CSR. dFinal is the IScore output dimension (either xProjDim or dModel)
 void set_simbacore_csr(uint32_t mode, uint32_t seqLen, uint32_t dModel, uint32_t dInner, uint32_t dtRank,
                        uint32_t dFinal);
