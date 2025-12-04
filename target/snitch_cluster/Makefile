@@ -416,7 +416,7 @@ bin/snitch_cluster.vcs: ${VCS_SOURCES} ${TB_SRCS} $(TB_CC_SOURCES) $(TB_ASM_SOUR
 
 gen-syn:
 	mkdir -p $(SYN_BUILDDIR)
-	${BENDER} script synopsys ${SYN_BENDER} > $(SYN_BUILDDIR)/$(SYN_FLIST)
+	${BENDER} script genus ${SYN_BENDER} > $(SYN_BUILDDIR)/$(SYN_FLIST)
 	sed -i '2c\set ROOT "$(SYN_ROOT)"' $(SYN_BUILDDIR)/$(SYN_FLIST)
 	chmod +x $(SYN_BUILDDIR)/$(SYN_FLIST)
 
