@@ -21,6 +21,10 @@ from datagen_cli import main as datagen_cli_main  # type: ignore[import]
 
 
 class DataGenerator(DataGeneratorBase):
+    APP_NAME = "isgemm"
+
+    def __init__(self, **kwargs):
+        super().__init__(self.APP_NAME, **kwargs)
 
     def run(self):
         self.build_isgemm_data()
@@ -30,19 +34,12 @@ class DataGenerator(DataGeneratorBase):
         assert f"M{mode_id}_ISGEMM" in self.kwargs, f"verify mode_id {mode_id} for ISGEMM"
         seqLenUnroll = self.kwargs["seqLenUnroll"]
         dInnerUnroll = self.kwargs["dInnerUnroll"]
-        seqLen = self.kwargs["seqLen"]
-        dModel = self.kwargs["dModel"]
-        dInner = self.kwargs["dInner"]
+        seqLen = self.kwargs["dim0"]
+        dInner = self.kwargs["dim1"]
+        dModel = self.kwargs["dim2"]
         iscore_serial_width = self.kwargs["iscore_serial_width"]
 
-        # In VersaCore naming convention
-        M = seqLen // seqLenUnroll
-        K = dInner // dInnerUnroll
-        N = dModel
-
         a_in_width = seqLenUnroll * dInnerUnroll * FP8
-        b_in_width = dInnerUnroll * FP8
-        d_array_width = seqLenUnroll * BF16
         assert a_in_width % iscore_serial_width == 0, "a_in_width must be divisible by iscore_serial_width"
 
         # First inject zeros, then (K-1) times the full output matrix

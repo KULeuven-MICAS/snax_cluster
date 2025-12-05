@@ -18,6 +18,10 @@ from datagen_cli import main as datagen_cli_main  # type: ignore[import]
 
 
 class DataGenerator(DataGeneratorBase):
+    APP_NAME = "main"
+
+    def __init__(self, **kwargs):
+        super().__init__(self.APP_NAME, **kwargs)
 
     def run(self):
         self.save_params()
@@ -414,7 +418,7 @@ class DataGenerator(DataGeneratorBase):
             )
         }
 
-        self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests)
+        self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests, app_name=self.APP_NAME)
 
 
 if __name__ == "__main__":

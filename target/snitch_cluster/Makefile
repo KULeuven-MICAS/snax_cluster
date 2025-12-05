@@ -133,7 +133,7 @@ $(GENERATED_DIR)/bender_targets.tmp: | $(GENERATED_DIR)
 	fi
 
 rtl-gen: $(GENERATED_DIR)/bender_targets.tmp rtl-snax-gen rtl-cluster-gen
-rtl-gen-no-rebuild: $(RTL_GEN_STAMP)
+rtl-gen-no-rebuild: $(RTL_GEN_STAMP) $(CFG_OVERRIDE)
 
 # Track Bender.lock content (not timestamp) to trigger rebuilds only on real changes
 $(BENDER_LOCK_HASH): FORCE | $(GENERATED_DIR)

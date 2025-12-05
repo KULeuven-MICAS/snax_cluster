@@ -34,7 +34,7 @@ int test_isgemm() {
                                 (uint32_t)ptr_b, M4_R12_ss, M4_R12_tb, M4_R12_ts,  // B
                                 (uint32_t)ptr_cd, M4_W3_ss, M4_W3_tb, M4_W3_ts);   // C/D
 
-        set_simbacore_csr(M4_ISGEMM, seqLen, dModel, dInner, dtRank, dModel);
+        set_simbacore_csr(M4_ISGEMM, dim0, 1, dim1, 1, dim2);
         start_simbacore_and_streamers(M4_R10_en, 0, M4_R11_en, 0);
         wait_simbacore_and_streamer();
         printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
@@ -43,8 +43,8 @@ int test_isgemm() {
         err += check_result_sample((uint8_t*)ptr_cd, M4_D, M4_test_samples_D,  //
                                    nb_test_samples, "out");
 
-        printf("Test isgemm: seqLen%d, dModel=%d. %s: %u/%d errors.\n", seqLen, dModel, err ? "FAIL" : "PASS", err,
-               nb_test_samples);
+        printf("Test ISGEMM: dim0=%d, dim1=%d, dim2=%d\n", dim0, dim1, dim2);
+        printf("%s: %u/%d errors.\n", err ? "FAIL" : "PASS", err, nb_test_samples);
     }
 
     snrt_cluster_hw_barrier();

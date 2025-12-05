@@ -21,6 +21,10 @@ from datagen_cli import main as datagen_cli_main  # type: ignore[import]
 
 
 class DataGenerator(DataGeneratorBase):
+    APP_NAME = "osgemm"
+
+    def __init__(self, **kwargs):
+        super().__init__(self.APP_NAME, **kwargs)
 
     def run(self):
         self.build_osgemm_data()
@@ -30,9 +34,9 @@ class DataGenerator(DataGeneratorBase):
         assert f"M{mode_id}_OSGEMM" in self.kwargs, f"verify mode_id {mode_id} for OSGEMM"
         Mu = self.kwargs["seqLenUnroll"]
         Nu = self.kwargs["dInnerUnroll"]
-        seqLen = self.kwargs["seqLen"]
-        dModel = self.kwargs["dModel"]
-        dInner = self.kwargs["dInner"]
+        seqLen = self.kwargs["dim0"]
+        dModel = self.kwargs["dim1"]
+        dInner = self.kwargs["dim2"]
         oscore_serial_width = self.kwargs["oscore_serial_width"]
 
         # In VersaCore naming convention

@@ -31,7 +31,7 @@ dependencies:
   riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg,          version:  0.8.0   }
   cluster_icache:     { git:  https://github.com/KULeuven-MICAS/cluster_icache,     rev: main }
   xdma_axi_adapter:   { git: https://github.com/KULeuven-MICAS/xdma_axi_adapter.git, rev: main }
-  chisel-ssm:          { git: https://github.com/RobinGeens/chisel-ssm.git, rev: main }
+  chisel-ssm:          { git: https://github.com/RobinGeens/chisel-ssm.git, rev: dev }
 
 vendor_package:
   - name: musl

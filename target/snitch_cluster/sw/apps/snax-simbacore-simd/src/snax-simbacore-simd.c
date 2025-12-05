@@ -70,7 +70,8 @@ int test_simd() {
         err += check_result_sample_u16(ptr_out_mul, M5_mul_out, M5_test_samples_out,  //
                                        nb_test_samples, "MUL");
 
-        printf("Test SIMD: %s: %u/%d errors.\n", err ? "FAIL" : "PASS", err, 4 * nb_test_samples);
+        printf("Test SIMD: numElem=%d\n", numElem);
+        printf("%s: %u/%d errors.\n", err ? "FAIL" : "PASS", err, 4 * nb_test_samples);
     }
 
     snrt_cluster_hw_barrier();
