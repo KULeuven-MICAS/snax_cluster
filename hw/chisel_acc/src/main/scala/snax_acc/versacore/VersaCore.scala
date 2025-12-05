@@ -70,7 +70,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   val nstate                = WireInit(sIDLE)
 
   // signals for state transition
-  val config_fire     = WireInit(0.B)
+  val config_fire      = WireInit(0.B)
   val versacore_finish = WireInit(0.B)
 
   val zeroLoopBoundCase = io.ctrl.bits.fsmCfg.a_b_input_times_one_output === 0.U
@@ -96,7 +96,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
     }
   }
 
-  config_fire  := io.ctrl.fire && cstate === sIDLE
+  config_fire   := io.ctrl.fire && cstate === sIDLE
   io.ctrl.ready := cstate === sIDLE
 
   val csrReg = RegInit(0.U.asTypeOf(new VersaCoreCfg(params)))
@@ -173,9 +173,9 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   val A_s2p = Module(
     new SerialToParallel(
       ParallelAndSerialConverterParams(
-        parallelWidth  = params.arrayInputAWidth,
-        serialWidth    = params.serialInputADataWidth,
-        earlyTerminate = true,
+        parallelWidth           = params.arrayInputAWidth,
+        serialWidth             = params.serialInputADataWidth,
+        earlyTerminate          = true,
         allowedTerminateFactors = Seq(1)
       )
     )
@@ -184,9 +184,9 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   val B_s2p = Module(
     new SerialToParallel(
       ParallelAndSerialConverterParams(
-        parallelWidth  = params.arrayInputBWidth,
-        serialWidth    = params.serialInputBDataWidth,
-        earlyTerminate = true,
+        parallelWidth           = params.arrayInputBWidth,
+        serialWidth             = params.serialInputBDataWidth,
+        earlyTerminate          = true,
         allowedTerminateFactors = Seq(1)
       )
     )
@@ -335,63 +335,63 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   // serial_parallel C/D data converters starts
   // ---------------------------------
 // Max ratios for the converters
-val ratioC = params.arrayInputCWidth  / params.serialInputCDataWidth
-val ratioD = params.arrayOutputDWidth / params.serialOutputDDataWidth
+  val ratioC = params.arrayInputCWidth / params.serialInputCDataWidth
+  val ratioD = params.arrayOutputDWidth / params.serialOutputDDataWidth
 
 // Allowed terminate factors for D (ParallelToSerial)
-val allowedTerminateFactorsD: Seq[Int] = {
-  val perShapeFactors =
-    params.arrayDim.zipWithIndex.flatMap { case (shapes, dataTypeIdx) =>
-      val outputTypeD = params.outputTypeD(dataTypeIdx)
-      shapes.map { dim =>
-        val realBandwidth = dim(0) * dim(2) * outputTypeD.width
-        // you already ensured divisibility when > serialOutputDDataWidth
-        val words = math.max(1, realBandwidth / params.serialOutputDDataWidth)
+  val allowedTerminateFactorsD: Seq[Int] = {
+    val perShapeFactors =
+      params.arrayDim.zipWithIndex.flatMap { case (shapes, dataTypeIdx) =>
+        val outputTypeD = params.outputTypeD(dataTypeIdx)
+        shapes.map { dim =>
+          val realBandwidth = dim(0) * dim(2) * outputTypeD.width
+          // you already ensured divisibility when > serialOutputDDataWidth
+          val words         = math.max(1, realBandwidth / params.serialOutputDDataWidth)
 
-        require(
-          words <= ratioD,
-          s"Computed terminate factor $words exceeds max ratio $ratioD " +
-            s"for D at dataTypeIdx=$dataTypeIdx, dim=$dim"
-        )
+          require(
+            words <= ratioD,
+            s"Computed terminate factor $words exceeds max ratio $ratioD " +
+              s"for D at dataTypeIdx=$dataTypeIdx, dim=$dim"
+          )
 
-        words
+          words
+        }
       }
-    }
 
-  // Include the full ratio as well, and deduplicate/sort for sanity
-  (perShapeFactors :+ ratioD).distinct.sorted
-}
+    // Include the full ratio as well, and deduplicate/sort for sanity
+    (perShapeFactors :+ ratioD).distinct.sorted
+  }
 
 // Allowed terminate factors for C (SerialToParallel)
 // Adjust `inputTypeC` to the actual type array you have for C.
-val allowedTerminateFactorsC: Seq[Int] = {
-  val perShapeFactors =
-    params.arrayDim.zipWithIndex.flatMap { case (shapes, dataTypeIdx) =>
-      val inputTypeC = params.inputTypeC(dataTypeIdx) // or reuse outputTypeD if appropriate
-      shapes.map { dim =>
-        val realBandwidth = dim(0) * dim(2) * inputTypeC.width
-        val words = math.max(1, realBandwidth / params.serialInputCDataWidth)
+  val allowedTerminateFactorsC: Seq[Int] = {
+    val perShapeFactors =
+      params.arrayDim.zipWithIndex.flatMap { case (shapes, dataTypeIdx) =>
+        val inputTypeC = params.inputTypeC(dataTypeIdx) // or reuse outputTypeD if appropriate
+        shapes.map { dim =>
+          val realBandwidth = dim(0) * dim(2) * inputTypeC.width
+          val words         = math.max(1, realBandwidth / params.serialInputCDataWidth)
 
-        require(
-          words <= ratioC,
-          s"Computed terminate factor $words exceeds max ratio $ratioC " +
-            s"for C at dataTypeIdx=$dataTypeIdx, dim=$dim"
-        )
+          require(
+            words <= ratioC,
+            s"Computed terminate factor $words exceeds max ratio $ratioC " +
+              s"for C at dataTypeIdx=$dataTypeIdx, dim=$dim"
+          )
 
-        words
+          words
+        }
       }
-    }
 
-  (perShapeFactors :+ ratioC).distinct.sorted
-}
+    (perShapeFactors :+ ratioC).distinct.sorted
+  }
 
   // C32 serial to parallel converter
   val C_s2p = Module(
     new SerialToParallel(
       ParallelAndSerialConverterParams(
-        parallelWidth  = params.arrayInputCWidth,
-        serialWidth    = params.serialInputCDataWidth,
-        earlyTerminate = true,
+        parallelWidth           = params.arrayInputCWidth,
+        serialWidth             = params.serialInputCDataWidth,
+        earlyTerminate          = true,
         allowedTerminateFactors = allowedTerminateFactorsC
       )
     )
@@ -401,9 +401,9 @@ val allowedTerminateFactorsC: Seq[Int] = {
   val D_p2s = Module(
     new ParallelToSerial(
       ParallelAndSerialConverterParams(
-        parallelWidth  = params.arrayOutputDWidth,
-        serialWidth    = params.serialOutputDDataWidth,
-        earlyTerminate = true,
+        parallelWidth           = params.arrayOutputDWidth,
+        serialWidth             = params.serialOutputDDataWidth,
+        earlyTerminate          = true,
         allowedTerminateFactors = allowedTerminateFactorsD
       )
     )
@@ -444,10 +444,10 @@ val allowedTerminateFactorsC: Seq[Int] = {
     )
 
   C_s2p.io.terminate_factor.get := input_c_serial_factor
-  C_s2p.io.start               := config_fire
+  C_s2p.io.start                := config_fire
 
   D_p2s.io.terminate_factor.get := output_d_serial_factor
-  D_p2s.io.start               := config_fire
+  D_p2s.io.start                := config_fire
 
   io.data.in_c <> C_s2p.io.in
   io.data.out_d <> D_p2s.io.out

@@ -14,7 +14,6 @@ class ParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester {
     test(
       new ParallelToSerial(ParallelAndSerialConverterParams(parallelWidth, serialWidth))
     ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-
       // Default values
       dut.io.in.valid.poke(false.B)
       dut.io.out.ready.poke(false.B)
@@ -74,12 +73,11 @@ class SerialToParallelSpec extends AnyFlatSpec with ChiselScalatestTester with M
     test(
       new SerialToParallel(
         ParallelAndSerialConverterParams(
-          serialWidth   = 8,  // 8 bits per serial input
-          parallelWidth = 32  // 32 bits parallel output
+          serialWidth   = 8, // 8 bits per serial input
+          parallelWidth = 32 // 32 bits parallel output
         )
       )
     ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-
       // Initial defaults
       dut.io.in.valid.poke(false.B)
       dut.io.out.ready.poke(false.B)
@@ -137,18 +135,15 @@ class SerialToParallelSpec extends AnyFlatSpec with ChiselScalatestTester with M
   }
 }
 
-class SerialToParallelEarlyTerminateSpec
-    extends AnyFlatSpec
-    with ChiselScalatestTester
-    with Matchers {
+class SerialToParallelEarlyTerminateSpec extends AnyFlatSpec with ChiselScalatestTester with Matchers {
 
   behavior of "SerialToParallel with earlyTerminate"
 
   it should "operate normally when terminate_factor equals the full ratio" in {
     val params = ParallelAndSerialConverterParams(
-      serialWidth            = 8,
-      parallelWidth          = 32,
-      earlyTerminate         = true,
+      serialWidth             = 8,
+      parallelWidth           = 32,
+      earlyTerminate          = true,
       allowedTerminateFactors = Seq(4) // ratio = 32 / 8 = 4
     )
 
@@ -208,9 +203,9 @@ class SerialToParallelEarlyTerminateSpec
 
   it should "assert at runtime when terminate_factor is not allowed" in {
     val params = ParallelAndSerialConverterParams(
-      serialWidth            = 8,
-      parallelWidth          = 32,
-      earlyTerminate         = true,
+      serialWidth             = 8,
+      parallelWidth           = 32,
+      earlyTerminate          = true,
       allowedTerminateFactors = Seq(4) // only 4 is allowed
     )
 
@@ -229,9 +224,15 @@ class SerialToParallelEarlyTerminateSpec
   }
 }
 
-object ParallelToSerialConverterEmitter   extends App {
+object ParallelToSerialConverterEmitter extends App {
   println(emitVerilog(new ParallelToSerial(ParallelAndSerialConverterParams(16, 4))))
+}
+object ParallelToSerialConverterEmitter extends App {
+  println(emitVerilog(new ParallelToSerial(ParallelAndSerialConverterParams(16, 16))))
 }
 object SerialToParallelConverterEmitter extends App {
   println(emitVerilog(new SerialToParallel(ParallelAndSerialConverterParams(16, 4))))
+}
+object SerialToParallelConverterEmitter extends App {
+  println(emitVerilog(new SerialToParallel(ParallelAndSerialConverterParams(16, 16))))
 }

@@ -15,9 +15,9 @@ import chisel3.util._
   *   A sequence of allowed termination factors (not enforced in this implementation).
   */
 case class ParallelAndSerialConverterParams(
-  parallelWidth:  Int,
-  serialWidth:    Int,
-  earlyTerminate: Boolean = false,
+  parallelWidth:           Int,
+  serialWidth:             Int,
+  earlyTerminate:          Boolean  = false,
   allowedTerminateFactors: Seq[Int] = Seq()
 ) {
   if (parallelWidth > serialWidth) {
@@ -27,16 +27,19 @@ case class ParallelAndSerialConverterParams(
     )
   }
 
-  require(
-    serialWidth <= 2048,
-    "serialWidth must be less than or equal to 2048."
-  )
-
   if (earlyTerminate) {
     require(
       allowedTerminateFactors.nonEmpty,
       "allowedTerminateFactors must be non-empty when earlyTerminate = true."
     )
+    // Ensure all allowed factors are valid
+    val maxFactor = parallelWidth / serialWidth
+    allowedTerminateFactors.foreach { f =>
+      require(
+        f >= 1 && f <= maxFactor,
+        s"Each allowed termination factor must be between 1 and $maxFactor."
+      )
+    }
   }
 
 }
@@ -54,7 +57,7 @@ class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module w
 
   val ratio: Int = p.parallelWidth / p.serialWidth
   assert(ratio >= 1, "The ratio of parallelWidth to serialWidth must be at least 1.")
-  val inBitsSeq    = Wire(Vec(ratio, UInt(p.serialWidth.W)))
+  val inBitsSeq = Wire(Vec(ratio, UInt(p.serialWidth.W)))
   inBitsSeq := VecInit(
     Seq.tabulate(ratio) { i =>
       io.in.bits((i + 1) * p.serialWidth - 1, i * p.serialWidth)
@@ -67,7 +70,7 @@ class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module w
 
   // Validate terminate_factor if early termination is enabled at runtime
   if (p.earlyTerminate) {
-    val tf = io.terminate_factor.get
+    val tf        = io.terminate_factor.get
     val isAllowed = p.allowedTerminateFactors
       .map(f => tf === f.U)
       .reduce(_ || _) // since allowedFactors non-empty if earlyTerminate
@@ -77,14 +80,15 @@ class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module w
   val counter = Module(new BasicCounter(width = log2Ceil(ratio), hasCeil = true))
   if (p.earlyTerminate) {
     counter.io.ceilOpt.get := io.terminate_factor.get
-  }else{
+  } else {
     counter.io.ceilOpt.get := ratio.U
   }
   counter.io.reset := io.start
-  counter.io.tick  := io.out.fire
+  counter.io.tick := io.out.fire
 
-  io.out.bits := MuxLookup(counter.io.value, 0.U.asTypeOf(UInt(p.serialWidth.W)))(storedData.zipWithIndex.map { case (i, j) =>
-    j.U -> i
+  io.out.bits := MuxLookup(counter.io.value, 0.U.asTypeOf(UInt(p.serialWidth.W)))(storedData.zipWithIndex.map {
+    case (i, j) =>
+      j.U -> i
   })
 
   when(counter.io.value === 0.U) {
@@ -97,8 +101,8 @@ class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module w
 
 }
 
-
-/** A module that collects multiple serial inputs (via Decoupled I/O) and outputs them as a single parallel word (also Decoupled I/O).
+/** A module that collects multiple serial inputs (via Decoupled I/O) and outputs them as a single parallel word (also
+  * Decoupled I/O).
   */
 class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
@@ -114,7 +118,7 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
   val storeData = Wire(Vec(ratio - 1, Bool()))
 
   val outBitsSeq = Wire(Vec(ratio, UInt(p.serialWidth.W)))
-  io.out.bits := outBitsSeq.asTypeOf(io.out.bits)
+  io.out.bits     := outBitsSeq.asTypeOf(io.out.bits)
   outBitsSeq.dropRight(1).zip(storeData).foreach { case (out, enable) =>
     out := RegEnable(io.in.bits, enable)
   }
@@ -122,7 +126,7 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
 
   // Validate terminate_factor if early termination is enabled at runtime
   if (p.earlyTerminate) {
-    val tf = io.terminate_factor.get
+    val tf        = io.terminate_factor.get
     val isAllowed = p.allowedTerminateFactors
       .map(f => tf === f.U)
       .reduce(_ || _) // since allowedFactors non-empty if earlyTerminate
@@ -132,11 +136,11 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
   val counter = Module(new BasicCounter(width = log2Ceil(ratio), hasCeil = true))
   if (p.earlyTerminate) {
     counter.io.ceilOpt.get := io.terminate_factor.get
-  }else{
+  } else {
     counter.io.ceilOpt.get := ratio.U
   }
   counter.io.reset := io.start
-  counter.io.tick  := io.in.fire
+  counter.io.tick := io.in.fire
 
   storeData.zipWithIndex.foreach({ case (a, b) => a := counter.io.value === b.U })
 
