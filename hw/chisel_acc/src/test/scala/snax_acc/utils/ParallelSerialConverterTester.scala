@@ -94,7 +94,10 @@ class SerialToParallelSpec extends AnyFlatSpec with ChiselScalatestTester with M
 
         // LSB comes from the first byte, MSB from the last
         val expectedParallel =
-          (bytes(3) << 24) | (bytes(2) << 16) | (bytes(1) << 8) | bytes(0)
+          (((bytes(3).toLong & 0xffL) << 24) |
+            ((bytes(2).toLong & 0xffL) << 16) |
+            ((bytes(1).toLong & 0xffL) << 8) |
+            ((bytes(0).toLong & 0xffL))) & 0xffffffffL
 
         for ((b, idx) <- bytes.zipWithIndex) {
           val last = idx == bytes.length - 1
@@ -152,6 +155,7 @@ class SerialToParallelEarlyTerminateSpec extends AnyFlatSpec with ChiselScalates
       dut.io.in.valid.poke(false.B)
       dut.io.out.ready.poke(false.B)
       dut.io.start.poke(false.B)
+      dut.io.terminate_factor.get.poke(4.U)
       dut.clock.step()
 
       // Pulse start to initialise the counter
@@ -166,7 +170,10 @@ class SerialToParallelEarlyTerminateSpec extends AnyFlatSpec with ChiselScalates
       def sendFrame(bytes: Seq[Int]): Unit = {
         require(bytes.length == 4)
         val expected =
-          (bytes(3) << 24) | (bytes(2) << 16) | (bytes(1) << 8) | bytes(0)
+          (((bytes(3).toLong & 0xffL) << 24) |
+            ((bytes(2).toLong & 0xffL) << 16) |
+            ((bytes(1).toLong & 0xffL) << 8) |
+            ((bytes(0).toLong & 0xffL))) & 0xffffffffL
 
         for ((b, idx) <- bytes.zipWithIndex) {
           val last = idx == bytes.length - 1
@@ -224,15 +231,15 @@ class SerialToParallelEarlyTerminateSpec extends AnyFlatSpec with ChiselScalates
   }
 }
 
-object ParallelToSerialConverterEmitter extends App {
+object ParallelToSerialConverterEmitter1 extends App {
   println(emitVerilog(new ParallelToSerial(ParallelAndSerialConverterParams(16, 4))))
 }
-object ParallelToSerialConverterEmitter extends App {
+object ParallelToSerialConverterEmitter2 extends App {
   println(emitVerilog(new ParallelToSerial(ParallelAndSerialConverterParams(16, 16))))
 }
-object SerialToParallelConverterEmitter extends App {
+object SerialToParallelConverterEmitter1 extends App {
   println(emitVerilog(new SerialToParallel(ParallelAndSerialConverterParams(16, 4))))
 }
-object SerialToParallelConverterEmitter extends App {
+object SerialToParallelConverterEmitter2 extends App {
   println(emitVerilog(new SerialToParallel(ParallelAndSerialConverterParams(16, 16))))
 }
