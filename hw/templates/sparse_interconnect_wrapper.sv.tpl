@@ -83,6 +83,7 @@ SparseInterconnect sparse_interconnect_i (
         .io_memReqs_${idx}_bits_amo   ( mem_req_o_amo[${idx}] ),
         .io_memReqs_${idx}_bits_data  ( mem_req_o[${idx}].q.data  ),
         .io_memReqs_${idx}_bits_strb  ( mem_req_o[${idx}].q.strb  ),
+        .io_memReqs_${idx}_bits_priority  ( ),
     % endfor
     // user signal not used
     // .io_memReqs_${idx}_bits_user  ( mem_req_o[${idx}].q.user  ),
