@@ -25,6 +25,7 @@ class AddressGenUnitParam(
   val addressWidth:      Int,
   val numChannel:        Int,
   val outputBufferDepth: Int,
+  val fixedCacheDepth:   Int,
   val tcdmSize:          Int,
   val tcdmPhysWordSize:  Int,
   val tcdmLogicWordSize: Seq[Int]
@@ -45,7 +46,8 @@ object AddressGenUnitParam {
       temporalDimension = temporalDimension,
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
-      outputBufferDepth = outputBufferDepth,
+      outputBufferDepth = 0x4, //Placeholder until i know how to dynamically change this back to outputBufferDepth
+      fixedCacheDepth = 0x100, // Placeholder, will be configured later
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = tcdmPhysWordSize,
       tcdmLogicWordSize = tcdmLogicWordSize
@@ -63,7 +65,8 @@ object AddressGenUnitParam {
       temporalDimension = temporalDimension,
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
-      outputBufferDepth = outputBufferDepth,
+      outputBufferDepth = 0x4, //Placeholder until i know how to dynamically change this back to outputBufferDepth
+      fixedCacheDepth = 0x100, // Placeholder, will be configured later
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = 256,
       tcdmLogicWordSize = Seq(256)
@@ -80,7 +83,8 @@ object AddressGenUnitParam {
       temporalDimension = temporalDimension,
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
-      outputBufferDepth = outputBufferDepth,
+      outputBufferDepth = 0x4, //Placeholder until i know how to dynamically change this back to outputBufferDepth
+      fixedCacheDepth = 0x100, // Placeholder, will be configured later
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = 256,
       tcdmLogicWordSize = Seq(256)

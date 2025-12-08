@@ -391,6 +391,7 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
     remainingCSR = reader(i).io.connectCfgWithList(
       remainingCSR
     )
+    reader(i).io.aguCfg.enableFixedCache := true.B
   }
 
   // writer
@@ -398,6 +399,7 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
     remainingCSR = writer(i).io.connectCfgWithList(
       remainingCSR
     )
+    writer(i).io.aguCfg.enableFixedCache := false.B
   }
 
   // reader_writer
@@ -411,6 +413,8 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
         remainingCSR
       )
     }
+    reader_writer(i / 2).io.readerInterface.aguCfg.enableFixedCache := false.B
+    reader_writer(i / 2).io.writerInterface.aguCfg.enableFixedCache := false.B
   }
 
   // connect the csr configuration to the extension

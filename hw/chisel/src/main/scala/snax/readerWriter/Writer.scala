@@ -47,6 +47,8 @@ class Writer(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
   addressgen.io.cfg   := io.aguCfg
   addressgen.io.start := io.start
 
+  addressgen.io.fixedCacheInstruction.ready := true.B
+
   // addrgen <> requestors
   requestors.io.zip(addressgen.io.addr).foreach {
     case (requestor, addrgen) => {

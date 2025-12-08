@@ -209,6 +209,8 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
       writerParam = writerparam
     )
   )
+  io.localXDMACfg.readerCfg.aguCfg.enableFixedCache := false.B
+  io.localXDMACfg.writerCfg.aguCfg.enableFixedCache := false.B
 
   override val desiredName = s"${clusterName}_xdma_ctrl"
 
@@ -261,9 +263,13 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   val preRoute_src_local = Wire(
     Decoupled(new XDMACfgIO(readerparam))
   )
+  preRoute_src_local.bits.aguCfg.enableFixedCache := false.B
+  
   val preRoute_dst_local = Wire(
     Decoupled(new XDMACfgIO(writerparam))
   )
+  preRoute_dst_local.bits.aguCfg.enableFixedCache := false.B
+
   var remainingCSR       = csrManager.io.readWriteRegIO.bits.toIndexedSeq
 
   // Connect readerPtr + writerPtr with the CSR list
