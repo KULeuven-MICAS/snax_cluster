@@ -9,11 +9,13 @@ import snax.utils._
   * io.in.ResponsorReady: Some(Bool()) or None io.out: Toward TCDM, see Xiaoling's definition to compatible with her
   * wrapper: TypeDefine.scala
   */
-class DataRequestorIO(tcdmDataWidth: Int, tcdmAddressWidth: Int, isReader: Boolean) extends Bundle {
+class DataRequestorIO(tcdmDataWidth: Int, tcdmAddressWidth: Int, isReader: Boolean, withPriority: Boolean)
+    extends Bundle {
   val in = new Bundle {
-    val addr = Flipped(Decoupled(UInt(tcdmAddressWidth.W)))
-    val data = if (!isReader) Some(Flipped(Decoupled(UInt(tcdmDataWidth.W)))) else None
-    val strb = Input(UInt((tcdmDataWidth / 8).W))
+    val addr     = Flipped(Decoupled(UInt(tcdmAddressWidth.W)))
+    val data     = if (!isReader) Some(Flipped(Decoupled(UInt(tcdmDataWidth.W)))) else None
+    val strb     = Input(UInt((tcdmDataWidth / 8).W))
+    val priority = if (withPriority) Some(Input(Bool())) else None
   }
 
   val out        = new Bundle {
@@ -33,12 +35,13 @@ class DataRequestor(
   tcdmDataWidth:    Int,
   tcdmAddressWidth: Int,
   isReader:         Boolean,
-  moduleNamePrefix: String = "unnamed_cluster"
+  moduleNamePrefix: String  = "unnamed_cluster",
+  withPriority:     Boolean = false
 ) extends Module
     with RequireAsyncReset {
   override val desiredName = s"${moduleNamePrefix}_DataRequestor"
 
-  val io = IO(new DataRequestorIO(tcdmDataWidth, tcdmAddressWidth, isReader))
+  val io = IO(new DataRequestorIO(tcdmDataWidth, tcdmAddressWidth, isReader, withPriority))
   // address queue is popped out if responser is ready and current is acknowldged by the tcdm
   // Or this channel is disabled
   // Because if enable is 0, Reader will always write 0 to databuffer and writer does nothing at all, so the address is popped out if there is place to write 0 (reader case) or unconditionally (writer case)
@@ -55,6 +58,12 @@ class DataRequestor(
   // If is writer, data is poped out with address (synchronous)
   if (!isReader) {
     io.in.data.get.ready := io.in.addr.ready
+  }
+
+  if (withPriority) {
+    io.out.tcdmReq.bits.priority := io.in.priority.get
+  } else {
+    io.out.tcdmReq.bits.priority := false.B
   }
 
   // If is reader, the mask is always 1 because tcdm ignore it;
@@ -83,14 +92,15 @@ class DataRequestors(
   tcdmAddressWidth: Int,
   isReader:         Boolean,
   numChannel:       Int,
-  moduleNamePrefix: String = "unnamed_cluster"
+  moduleNamePrefix: String  = "unnamed_cluster",
+  withPriority:     Boolean = false
 ) extends Module
     with RequireAsyncReset {
   override val desiredName = s"${moduleNamePrefix}_DataRequestors"
   val io                   = IO(
     Vec(
       numChannel,
-      new DataRequestorIO(tcdmDataWidth, tcdmAddressWidth, isReader)
+      new DataRequestorIO(tcdmDataWidth, tcdmAddressWidth, isReader, withPriority)
     )
   )
   // new DataRequestorsIO(tcdmDataWidth, tcdmAddressWidth, isReader, numChannel)
@@ -100,7 +110,8 @@ class DataRequestors(
         tcdmDataWidth,
         tcdmAddressWidth,
         isReader,
-        moduleNamePrefix = moduleNamePrefix
+        moduleNamePrefix = moduleNamePrefix,
+        withPriority     = withPriority
       )
     )
 
