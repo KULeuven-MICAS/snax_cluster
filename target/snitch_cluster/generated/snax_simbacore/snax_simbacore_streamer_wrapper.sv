@@ -160,6 +160,7 @@ module snax_simbacore_streamer_wrapper #(
       tcdm_req_o[i].q.strb         = tcdm_req_strb   [i];
       tcdm_req_o[i].q.user.core_id = '0;
       tcdm_req_o[i].q.user.is_core = '0;
+      tcdm_req_o[i].q.user.tcdm_priority = '0;
       tcdm_req_o[i].q_valid        = tcdm_req_q_valid[i];
 
       tcdm_rsp_q_ready[i] = tcdm_rsp_i[i].q_ready;

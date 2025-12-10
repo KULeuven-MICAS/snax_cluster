@@ -5,4 +5,4 @@
 # Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
 runs:
-  - elf: apps/snax-versacore-matmul/build/snax-versacore-matmul.elf
+  - elf: apps/snax-versacore-dse-matmul-profile/build/snax-versacore-dse-matmul-profile.elf

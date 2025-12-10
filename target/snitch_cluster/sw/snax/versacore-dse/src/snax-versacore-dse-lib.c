@@ -4,7 +4,7 @@
 //
 // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
-#include "snax-versacore-lib.h"
+#include "snax-versacore-dse-lib.h"
 #include <stdbool.h>
 #include "snax_versacore_stationarity.h"
 #include "snrt.h"

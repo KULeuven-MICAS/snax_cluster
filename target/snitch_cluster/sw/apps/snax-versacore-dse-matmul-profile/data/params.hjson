@@ -5,7 +5,7 @@
 // Cluster configuration for a matmul testbench system.
 {
   // gemm configurations
-  array_shape: 1,
+  array_shape: 0,
   data_type: 0,
   transposed_A: 0,
   transposed_B: 0,

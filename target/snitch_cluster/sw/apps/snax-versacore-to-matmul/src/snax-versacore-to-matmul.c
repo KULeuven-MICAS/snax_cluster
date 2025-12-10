@@ -6,7 +6,7 @@
 
 #include "data.h"
 
-#include "snax-versacore-lib.h"
+#include "snax-versacore-to-lib.h"
 
 // This test only test on the output stationary dataflow
 int main() {
@@ -45,18 +45,18 @@ int main() {
     if (snrt_global_core_idx() == 0) {
         // Set the CSR for the Streamer
         int32_t Aslstride[] = {Aslstride0};
-        int32_t Atlbound[] = {Atlbound0, Atlbound1, Atlbound2, Atlbound3, Atlbound4, Atlbound5};
+        int32_t Atlbound[]  = {Atlbound0, Atlbound1, Atlbound2, Atlbound3, Atlbound4, Atlbound5};
         int32_t Atlstride[] = {Atlstride0, Atlstride1, Atlstride2, Atlstride3, Atlstride4, Atlstride5};
         int32_t Bslstride[] = {Bslstride0};
-        int32_t Btlbound[] = {Btlbound0, Btlbound1, Btlbound2};
+        int32_t Btlbound[]  = {Btlbound0, Btlbound1, Btlbound2};
         int32_t Btlstride[] = {Btlstride0, Btlstride1, Btlstride2};
 
         int32_t Cslstride[] = {Cslstride0};
-        int32_t Ctlbound[] = {Ctlbound0, Ctlbound1, Ctlbound2, Ctlbound3};
+        int32_t Ctlbound[]  = {Ctlbound0, Ctlbound1, Ctlbound2, Ctlbound3};
         int32_t Ctlstride[] = {Ctlstride0, Ctlstride1, Ctlstride2, Ctlstride3};
 
         int32_t D32slstride[] = {D32slstride0};
-        int32_t D32tlbound[] = {D32tlbound0, D32tlbound1, D32tlbound2, D32tlbound3};
+        int32_t D32tlbound[]  = {D32tlbound0, D32tlbound1, D32tlbound2, D32tlbound3};
         int32_t D32tlstride[] = {D32tlstride0, D32tlstride1, D32tlstride2, D32tlstride3};
 
         // --------------------------------------------------
@@ -71,7 +71,8 @@ int main() {
 
             delta_local_c, Cslstride, Ctlbound, Ctlstride, set_addr_remap_index_C, channel_en_C,
 
-            delta_local_d, D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32, channel_en_D);
+            delta_local_d, D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32, channel_en_D, array_shape, 0,
+            0, 0, 0, 0, 0, 0, 0);
 
         // Set GEMMX configuration CSR
         uint32_t subtraction_setting = gen_subtraction_config(subtraction_a, subtraction_b);
@@ -123,7 +124,8 @@ int main() {
 
             delta_local_c, Cslstride, Ctlbound, Ctlstride, set_addr_remap_index_C, channel_en_C,
 
-            delta_local_d, D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32, channel_en_D);
+            delta_local_d, D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32, channel_en_D, array_shape, 0,
+            0, 0, 0, 0, 0, 0, 0);
 
         // Set GEMMX configuration CSR
         if (stationary == 0) {
@@ -177,7 +179,8 @@ int main() {
 
             delta_local_c, Cslstride, Ctlbound, Ctlstride, set_addr_remap_index_C, channel_en_C,
 
-            delta_local_d, D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32, channel_en_D);
+            delta_local_d, D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32, channel_en_D, array_shape, 0,
+            0, 0, 0, 0, 0, 0, 0);
 
         if (stationary == 0) {
             // Set CSR for output-stationary
@@ -218,7 +221,8 @@ int main() {
 
             delta_local_c, Cslstride, Ctlbound, Ctlstride, set_addr_remap_index_C, channel_en_C,
 
-            delta_local_d, D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32, channel_en_D);
+            delta_local_d, D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32, channel_en_D, array_shape, 0,
+            0, 0, 0, 0, 0, 0, 0);
 
         if (stationary == 0) {
             // Set CSR for output-stationary
@@ -262,7 +266,8 @@ int main() {
 
             delta_local_c, Cslstride, Ctlbound, Ctlstride, set_addr_remap_index_C, channel_en_C,
 
-            delta_local_d, D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32, channel_en_D);
+            delta_local_d, D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32, channel_en_D, array_shape, 0,
+            0, 0, 0, 0, 0, 0, 0);
 
         // Set GEMMX configuration CSR
         if (stationary == 0) {

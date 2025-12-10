@@ -72,35 +72,35 @@ class BlockGemmRescaleSIMD(params: BlockGemmRescaleSIMDParams) extends Module wi
   // C32 serial to parallel converter
   val C32_s2p = Module(
     new SerialToParallel(
-      SerialToParallelParams(
+      ParallelAndSerialConverterParams(
         parallelWidth = params.gemmParams.dataWidthC * params.gemmParams.meshRow * params.gemmParams.meshCol,
         serialWidth   = params.C32_D32_width
       )
     )
   )
-  C32_s2p.io.enable := io.ctrl.busy_o
+  C32_s2p.io.start := io.ctrl.gemm_ctrl.fire
 
   // D3232 parallel to serial converter
   val D32_p2s = Module(
     new ParallelToSerial(
-      ParallelToSerialParams(
+      ParallelAndSerialConverterParams(
         parallelWidth = params.gemmParams.dataWidthC * params.gemmParams.meshRow * params.gemmParams.meshCol,
         serialWidth   = params.C32_D32_width
       )
     )
   )
-  D32_p2s.io.enable := io.ctrl.busy_o
+  D32_p2s.io.start := io.ctrl.gemm_ctrl.fire
 
   // D8 parallel to serial converter
   val D8_p2s = Module(
     new ParallelToSerial(
-      ParallelToSerialParams(
+      ParallelAndSerialConverterParams(
         parallelWidth = params.rescaleSIMDParams.dataLen * params.rescaleSIMDParams.outputType,
         serialWidth   = params.D8_width
       )
     )
   )
-  D8_p2s.io.enable := io.ctrl.busy_o
+  D8_p2s.io.start := io.ctrl.gemm_ctrl.fire
 
   // data converter connection
   io.data.gemm_data.c_serial_i <> C32_s2p.io.in

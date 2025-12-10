@@ -190,7 +190,7 @@ add wave -noupdate -expand -label sim:/tb_bin/i_dut/i_snax_simbacore_cluster/i_s
 add wave -noupdate -expand -label sim:/tb_bin/i_dut/i_snax_simbacore_cluster/i_snax_core_0_acc_0_snax_simbacore/i_snax_simbacore_shell_wrapper/inst_SimbaCore/coupler/Group1 -group {Region: sim:/tb_bin/i_dut/i_snax_simbacore_cluster/i_snax_core_0_acc_0_snax_simbacore/i_snax_simbacore_shell_wrapper/inst_SimbaCore/coupler} /tb_bin/i_dut/i_snax_simbacore_cluster/i_snax_core_0_acc_0_snax_simbacore/i_snax_simbacore_shell_wrapper/inst_SimbaCore/coupler/io_out1_ready
 add wave -noupdate -expand -label sim:/tb_bin/i_dut/i_snax_simbacore_cluster/i_snax_core_0_acc_0_snax_simbacore/i_snax_simbacore_shell_wrapper/inst_SimbaCore/coupler/Group1 -group {Region: sim:/tb_bin/i_dut/i_snax_simbacore_cluster/i_snax_core_0_acc_0_snax_simbacore/i_snax_simbacore_shell_wrapper/inst_SimbaCore/coupler} /tb_bin/i_dut/i_snax_simbacore_cluster/i_snax_core_0_acc_0_snax_simbacore/i_snax_simbacore_shell_wrapper/inst_SimbaCore/coupler/io_out2_ready
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {148731153 ps} 0}
+WaveRestoreCursors {{Cursor 1} {237924347 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 233
 configure wave -valuecolwidth 137
@@ -206,4 +206,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {116024832 ps} {364791090 ps}
+WaveRestoreZoom {224731203 ps} {275939479 ps}

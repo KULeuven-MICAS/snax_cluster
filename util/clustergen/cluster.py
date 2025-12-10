@@ -374,11 +374,11 @@ class SnitchCluster(Generator):
         self.cfg["streamer_csr_num_list"] = streamer_csr_num_list
 
     def parse_tcdm_topology(self):
-        # Get tcdm topology
-        if "sparse_interconnect_cfg" not in self.cfg:
-            self.cfg["tcdm"]["topology"] = "snitch_pkg::LogarithmicInterconnect"
-        else:
+        # Default to sparse interconnect
+        if "sparse_interconnect" in self.cfg["tcdm"] and self.cfg["tcdm"]["sparse_interconnect"]:
             self.cfg["tcdm"]["topology"] = "snitch_pkg::SparseInterconnect"
+        else:
+            self.cfg["tcdm"]["topology"] = "snitch_pkg::LogarithmicInterconnect"
 
     def cfg_validate(self):
         failed = True

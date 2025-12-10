@@ -19,7 +19,9 @@ def emit_license():
 
 def variable_attributes(alignment=None, section=None):
     attributes = ""
+    attributes = ""
     if alignment:
+        attributes = f"__attribute__ ((aligned ({alignment})))"
         attributes = f"__attribute__ ((aligned ({alignment})))"
     if section:
         attributes += f' __attribute__ ((section ("{section}")))'
@@ -42,6 +44,8 @@ def format_vector_definition(type, uid, vector, alignment=None, section=None):
     attributes = variable_attributes(alignment, section)
     s = f"{type} {uid}[{len(vector)}] {attributes} = " + "{"
     for el in vector:
+        if type != "char":
+            el_str = f"{el}"
         if type != "char":
             el_str = f"{el}"
         else:
@@ -90,6 +94,7 @@ def bytes_to_doubles(byte_array):
 
 
 def bytes_to_uint32s(byte_array):
+    uint32_size = struct.calcsize("I")  # Size of a uint32 in bytes
     uint32_size = struct.calcsize("I")  # Size of a uint32 in bytes
     num_uints = len(byte_array) // uint32_size
 
