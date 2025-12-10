@@ -399,7 +399,10 @@ uint32_t check_result_sample(uint8_t* output, uint8_t* output_golden, int32_t* s
         int sample_index     = sample_indices[i];
         uint8_t output_value = output[sample_index];
         uint8_t golden_value = output_golden[sample_index];
-        if (output_value == golden_value || (output_value == 0 && golden_value == 128)) {  // 0 == -0
+        if (output_value == golden_value ||                //
+            (output_value == 0 && golden_value == 128) ||  // 0 == -0
+            (output_value == 128 && golden_value == 0))    // -0 == 0
+        {
             printf("PASS %s[%d] = %d,\tref = %d\n", tensor_name, sample_index, output_value, golden_value);
         } else {
             err++;

@@ -130,20 +130,6 @@ Naming convention:
   },
   "dma_core_template": {
     "isa": "rv32ima",
-    // Disable full XDMA because we only have one cluster
-    // "snax_xdma_cfg": {
-    //   "bender_target": ["snax_simbacore_cluster_xdma"],
-    //   "cfg_io_width": 32,
-    //   "max_multicast": 16, 
-    //   "max_dimension": 5,
-    //   "max_mem_size": 4096,
-    //   "reader_buffer": 12,
-    //   "writer_buffer": 12,
-    //   "reader_agu_temporal_dimension": 5,
-    //   "writer_agu_temporal_dimension": 5,
-    //     writer_extensions: {},
-    //     reader_extensions: {},
-    // },
     "xdma": true, // This is not Yunhao's XDMA but the Snitch one! 
     "xssr": false,
     "xfrep": false,
@@ -169,7 +155,7 @@ Naming convention:
       "spatial_bounds":       [[2], [3], [1], [1], [1], [1], [1], [4], [1], [1], [1], [1], [3], [4]],
       "temporal_dim":         [ 4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4 ],
       "num_channel":          [ 2,   3,   1,   1,   1,   1,   1,   4,   1,   1,   1,   1,   3,   4 ], 
-      "fifo_depth":           [ 8,   8,   8,   8,   8,   8,   8,   4,   8,   8,   8,   8,   8,   8 ],
+      "fifo_depth":           [ 9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9 ],
       "configurable_channel": [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ],
       "delayed_start":        [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   0,   0 ]
     },
@@ -177,7 +163,7 @@ Naming convention:
       "spatial_bounds":       [[1], [1], [1], [4]],
       "temporal_dim":         [ 4,   4,   4,   4 ],
       "num_channel":          [ 1,   1,   1,   4 ],
-      "fifo_depth":           [ 8,   8,   8,   8 ],
+      "fifo_depth":           [ 9,   9,   9,   9 ],
       "configurable_channel": [ 0,   0,   0,   0 ],
       "delayed_start":        [ 0,   0,   0,   0 ]
     },

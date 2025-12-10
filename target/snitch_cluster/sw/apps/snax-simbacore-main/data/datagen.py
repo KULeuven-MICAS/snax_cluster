@@ -71,8 +71,8 @@ class DataGenerator(DataGeneratorBase):
         gemm_window_cnt = self.seqLen // self.seqLenUnroll  # expressed in OS core tiles
         suc_window_cnt = self.seqLen * self.dInnerUnroll  # expressed in SUC output elements
 
-        suc_safe_to_start = gemm_window_cnt * max(suc_tp / gemm_tp, 1)  # expressed in OS core tiles
-        iscore_safe_to_start = suc_window_cnt * max(gemm_tp / suc_tp, 1)  # expressed in SUC output elements
+        suc_safe_to_start = gemm_window_cnt + gemm_total_nb_tiles * max(suc_tp / gemm_tp, 1)  # [tiles]
+        iscore_safe_to_start = suc_window_cnt + suc_total_nb_elements * max(gemm_tp / suc_tp, 1)  # [elements]
 
         # Make sure the delay does not exceed the total number of tiles or elements
         return int(min(suc_safe_to_start, gemm_total_nb_tiles)), int(min(iscore_safe_to_start, suc_total_nb_elements))
