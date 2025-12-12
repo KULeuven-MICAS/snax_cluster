@@ -115,14 +115,6 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
 
   val ratio: Int = p.parallelWidth / p.serialWidth
   assert(ratio >= 1, "The ratio of parallelWidth to serialWidth must be at least 1.")
-  val storeData = Wire(Vec(ratio - 1, Bool()))
-
-  val outBitsSeq = Wire(Vec(ratio, UInt(p.serialWidth.W)))
-  io.out.bits     := outBitsSeq.asTypeOf(io.out.bits)
-  outBitsSeq.dropRight(1).zip(storeData).foreach { case (out, enable) =>
-    out := RegEnable(io.in.bits, enable)
-  }
-  outBitsSeq.last := io.in.bits
 
   // Validate terminate_factor if early termination is enabled at runtime
   if (p.earlyTerminate) {
@@ -133,7 +125,15 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
     assert(isAllowed, s"terminate_factor must be one of ${p.allowedTerminateFactors.mkString(", ")}")
   }
 
-  val counter = Module(new BasicCounter(width = log2Ceil(ratio), hasCeil = true))
+  val storeData = Wire(Vec(ratio, Bool()))
+
+  val outBitsSeq = Wire(Vec(ratio, UInt(p.serialWidth.W)))
+  io.out.bits     := outBitsSeq.asTypeOf(io.out.bits)
+  outBitsSeq.zip(storeData).foreach { case (out, enable) =>
+    out := RegEnable(io.in.bits, enable)
+  }
+
+  val counter = Module(new BasicCounter(width = log2Ceil(ratio) + 1, hasCeil = true))
   if (p.earlyTerminate) {
     counter.io.ceilOpt.get := io.terminate_factor.get
   } else {
@@ -142,7 +142,7 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
   counter.io.reset := io.start
   counter.io.tick := io.in.fire
 
-  storeData.zipWithIndex.foreach({ case (a, b) => a := counter.io.value === b.U })
+  storeData.zipWithIndex.foreach({ case (a, b) => a := counter.io.value === b.U && io.in.fire })
 
   val runtime_ratio = WireDefault(ratio.U)
   if (p.earlyTerminate) {
@@ -150,11 +150,12 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
   } else {
     runtime_ratio := ratio.U
   }
-  when(counter.io.value === (runtime_ratio - 1.U)) {
-    io.out.valid := io.in.valid
-    io.in.ready  := io.out.ready
-  } otherwise {
-    io.out.valid := false.B
-    io.in.ready  := true.B
-  }
+
+  val last_data_write_fire = RegNext(counter.io.value === (runtime_ratio - 1.U) && io.in.fire, false.B)
+  val output_stall = io.out.valid && ~io.out.ready
+
+  io.out.valid := last_data_write_fire || RegNext(output_stall, false.B)
+
+  io.in.ready := ~output_stall
+
 }
