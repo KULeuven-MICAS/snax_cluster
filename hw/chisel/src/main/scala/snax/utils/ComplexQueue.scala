@@ -13,10 +13,18 @@ import chisel3.util._
   *   the depth of the FIFO If inputWidth is smaller than outputWidth, then it will be the first option If inputWidth is
   *   larger than outputWidth, then it will be the second option No matter which case, the big width one should equal to
   *   integer times of the small width one
+  * @param priority_empty:
+  *   Set to true if this streamer should request priority when it is nearly empty (= reading from tcdm) Set to false if
+  *   this streamer should request priority when it is nearly full (= writing to tcdm)
   */
 
-class ComplexQueueConcat(inputWidth: Int, outputWidth: Int, depth: Int, pipe: Boolean = false)
-    extends Module
+class ComplexQueueConcat(
+  inputWidth:     Int,
+  outputWidth:    Int,
+  depth:          Int,
+  pipe:           Boolean = false,
+  priority_empty: Boolean = true
+) extends Module
     with RequireAsyncReset {
   val bigWidth   = Seq(inputWidth, outputWidth).max
   val smallWidth = Seq(inputWidth, outputWidth).min
@@ -35,7 +43,7 @@ class ComplexQueueConcat(inputWidth: Int, outputWidth: Int, depth: Int, pipe: Bo
   require(depth > 0)
 
   val io = IO(new Bundle {
-    val in       = Flipped(
+    val in         = Flipped(
       Vec(
         {
           if (inputWidth == bigWidth) 1 else numChannel
@@ -43,14 +51,15 @@ class ComplexQueueConcat(inputWidth: Int, outputWidth: Int, depth: Int, pipe: Bo
         Decoupled(UInt(inputWidth.W))
       )
     )
-    val out      = Vec(
+    val out        = Vec(
       {
         if (outputWidth == bigWidth) 1 else numChannel
       },
       Decoupled(UInt(outputWidth.W))
     )
-    val allEmpty = Output(Bool())
-    val anyFull  = Output(Bool())
+    val allEmpty   = Output(Bool())
+    val anyFull    = Output(Bool())
+    val priorities = Output(Vec(numChannel, Bool()))
   })
 
   val queues = for (i <- 0 until numChannel) yield {
@@ -58,6 +67,18 @@ class ComplexQueueConcat(inputWidth: Int, outputWidth: Int, depth: Int, pipe: Bo
       override val desiredName = queueModuleName
     })
     queue
+  }
+
+  if (priority_empty) {
+    // a queue can assert tcdm priority if it is empty or if it will be empty in the next cycle. (read but not write)
+    io.priorities.zip(queues).foreach { case (prio, queue) =>
+      prio := queue.io.count === 0.U || (queue.io.count === 1.U && queue.io.deq.fire && ~queue.io.enq.fire)
+    }
+  } else {
+    // a queue can assert tcdm priority if it is full or if it will be full in the next cycle. (write but not read)
+    io.priorities.zip(queues).foreach { case (prio, queue) =>
+      prio := queue.io.count === (depth).U || (queue.io.count === (depth - 1).U && queue.io.enq.fire && ~queue.io.deq.fire)
+    }
   }
 
   if (io.in.length != 1 || (io.in.length == 1 && io.out.length == 1)) {

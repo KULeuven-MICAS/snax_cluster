@@ -35,7 +35,8 @@ class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
       tcdmAddressWidth = param.tcdmParam.addrWidth,
       numChannel       = param.tcdmParam.numChannel,
       isReader         = true,
-      moduleNamePrefix = s"${moduleNamePrefix}_Reader"
+      moduleNamePrefix = s"${moduleNamePrefix}_Reader",
+      withPriority     = true
     )
   )
 
@@ -104,6 +105,13 @@ class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
     case (requestor, responser) => {
       requestor.reqrspLink.rspReady.get := responser.reqrspLink.rspReady
       responser.reqrspLink.reqSubmit    := requestor.reqrspLink.reqSubmit.get
+    }
+  }
+
+  // Req <> DataBuffer Priorities
+  requestors.io.zip(dataBuffer.io.priorities).foreach {
+    case (requestor, priority) => {
+      requestor.in.priority.foreach { _ := priority }
     }
   }
 
