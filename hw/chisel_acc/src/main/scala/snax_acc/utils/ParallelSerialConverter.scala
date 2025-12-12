@@ -144,7 +144,13 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
 
   storeData.zipWithIndex.foreach({ case (a, b) => a := counter.io.value === b.U })
 
-  when(counter.io.value === (ratio - 1).U) {
+  val runtime_ratio = WireDefault(ratio.U)
+  if (p.earlyTerminate) {
+    runtime_ratio := io.terminate_factor.get
+  } else {
+    runtime_ratio := ratio.U
+  }
+  when(counter.io.value === (runtime_ratio - 1.U)) {
     io.out.valid := io.in.valid
     io.in.ready  := io.out.ready
   } otherwise {
