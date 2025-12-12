@@ -260,10 +260,10 @@ def emit_matmul_data(**kwargs):
     )
     c_len = snax_acc_cfg["snax_versacore_input_c_element_width"][data_type]
 
-    if kwargs["int4_a_enable"] == 1 or kwargs["int4_b_enable"] == 1:
-        assert (
-            kwargs["array_shape"] == 4
-        ), "Int4 A and B input is only supported in array shape 4"
+    # if kwargs["int4_a_enable"] == 1 or kwargs["int4_b_enable"] == 1:
+    #     assert (
+    #         kwargs["array_shape"] == 4
+    #     ), "Int4 A and B input is only supported in array shape 4"
 
     data_str += [
         format_scalar_definition("uint32_t", "int4_a_enable", kwargs["int4_a_enable"])
