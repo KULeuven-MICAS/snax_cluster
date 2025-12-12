@@ -128,7 +128,7 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
   val storeData = Wire(Vec(ratio, Bool()))
 
   val outBitsSeq = Wire(Vec(ratio, UInt(p.serialWidth.W)))
-  io.out.bits     := outBitsSeq.asTypeOf(io.out.bits)
+  io.out.bits := outBitsSeq.asTypeOf(io.out.bits)
   outBitsSeq.zip(storeData).foreach { case (out, enable) =>
     out := RegEnable(io.in.bits, enable)
   }
@@ -152,7 +152,7 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
   }
 
   val last_data_write_fire = RegNext(counter.io.value === (runtime_ratio - 1.U) && io.in.fire, false.B)
-  val output_stall = io.out.valid && ~io.out.ready
+  val output_stall         = io.out.valid && ~io.out.ready
 
   io.out.valid := last_data_write_fire || RegNext(output_stall, false.B)
 
