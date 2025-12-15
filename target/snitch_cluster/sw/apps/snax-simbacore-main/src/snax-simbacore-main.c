@@ -239,7 +239,7 @@ int test_phase1_and_2() {
 int main() {
     int err = 0;
     err += test_phase1_and_2();
-    // err += test_phase2();
-    // err += test_phase1();
+    err += test_phase1();
+    err += test_phase2();
     return err;
 }

@@ -364,7 +364,7 @@ class DataGenerator(DataGeneratorBase):
             ("oscore_in", self.seqLen * self.dModel * FP8 // 8),
             ("oscore_weight", self.dModel * self.dInner * FP8 // 8),
             ("z", tensor_size),
-            # ("dt_in", self.dInner * self.dtRank * FP8 // 8),
+            # ("dt_BC_dummy", dummyFillBC),
             ("dt_BC", self.seqLen * self.xProjDim * FP8 // 8),
             ("dt_weight_1", self.dInner * (self.dtRank // self.dtRankUnroll) * self.dConv * FP8 // 8),
             (

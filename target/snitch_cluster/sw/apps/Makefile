@@ -95,6 +95,7 @@ SUBDIRS += snax-simbacore-main
 SUBDIRS += snax-simbacore-osgemm
 SUBDIRS += snax-simbacore-isgemm
 SUBDIRS += snax-simbacore-simd
+SUBDIRS += snax-simbacore-main-full
 endif
 
 .PHONY: all clean $(SUBDIRS)
