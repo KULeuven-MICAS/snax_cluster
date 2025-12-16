@@ -111,9 +111,9 @@ Naming convention:
       {
         snax_acc_name: "snax_simbacore",
         bender_target: ["snax_simbacore"],
-        snax_tcdm_ports: 32, // Must match the sum of all streamer ports // ! this fails VERY quietly
+        snax_tcdm_ports: 34, // Must match the sum of all streamer ports // ! this fails VERY quietly
         //                             R0      R1       R2-6    R7      R8-11   R12     R13     W0-3     W4
-        sparse_interconnect_config:  [[2, 2], [3, 1],  [5, 1], [4, 1], [4, 1], [3, 1], [4, 4], [3, 1], [4, 4]],
+        sparse_interconnect_config:  [[2, 2], [4, 1],  [5, 1], [4, 1], [4, 1], [4, 1], [4, 4], [3, 1], [4, 4]],
         snax_wide_tcdm_ports: 0,
         snax_num_rw_csr: 7, // Must match the number in Simbacore shell wrapper
         snax_num_ro_csr: 4,
@@ -155,9 +155,9 @@ Naming convention:
     data_reader_params: {
       // Every item is a separate streamer. Gives the number of TCDM ports per streamer 
       //                      0    1    2    3    4    5    6    7    8    9    10   11   12   13
-      spatial_bounds:       [[2], [3], [1], [1], [1], [1], [1], [4], [1], [1], [1], [1], [3], [4]],
+      spatial_bounds:       [[2], [4], [1], [1], [1], [1], [1], [4], [1], [1], [1], [1], [4], [4]],
       temporal_dim:         [ 4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4 ],
-      num_channel:          [ 2,   3,   1,   1,   1,   1,   1,   4,   1,   1,   1,   1,   3,   4 ], 
+      num_channel:          [ 2,   4,   1,   1,   1,   1,   1,   4,   1,   1,   1,   1,   4,   4 ], 
       fifo_depth:           [ 9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9 ],
       configurable_channel: [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ],
       delayed_start:        [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   0,   0 ]

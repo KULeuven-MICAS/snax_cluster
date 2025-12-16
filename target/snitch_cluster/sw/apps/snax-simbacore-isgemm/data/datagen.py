@@ -40,7 +40,15 @@ class DataGenerator(DataGeneratorBase):
         iscore_serial_width = self.kwargs["iscore_serial_width"]
 
         a_in_width = seqLenUnroll * dInnerUnroll * FP8
+        b_in_width = self.kwargs["gemm_weight_width"]
+        b_array_width = dInnerUnroll * FP8
         assert a_in_width % iscore_serial_width == 0, "a_in_width must be divisible by iscore_serial_width"
+
+        # We transfer more bits in less cycles due to downsizer
+        b_downsize_factor = b_in_width / b_array_width  # >= 1
+        downsized_dModel = int(dModel / b_downsize_factor)
+        assert downsized_dModel == dModel / b_downsize_factor, f"{dModel / b_downsize_factor} must be an integer"
+        assert downsized_dModel * b_in_width == dModel * b_array_width
 
         # First inject zeros, then (K-1) times the full output matrix
         # The initial values (C) can be at the same addresses as the output matrix
@@ -62,14 +70,14 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R12": (  # iscore weight
                 [
-                    dModel,  # N
+                    downsized_dModel,  # N
                     seqLen // seqLenUnroll,  # M
                     dInner // dInnerUnroll,  # K
                 ],
                 [
-                    dInnerUnroll * FP8 // 8,
+                    b_in_width // 8,
                     0,
-                    dModel * dInnerUnroll * FP8 // 8,
+                    downsized_dModel * b_in_width // 8,
                 ],
             ),
             "R13": psum_bounds_and_strides,

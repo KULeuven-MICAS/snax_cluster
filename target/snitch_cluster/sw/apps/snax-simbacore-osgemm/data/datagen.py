@@ -39,15 +39,22 @@ class DataGenerator(DataGeneratorBase):
         dInner = self.kwargs["dim2"]
         oscore_serial_width = self.kwargs["oscore_serial_width"]
 
+        a_in_width = Mu * FP8
+        b_in_width = self.kwargs["gemm_weight_width"]
+        b_array_width = Nu * FP8
+        d_array_width = Mu * Nu * FP8
+        assert d_array_width % oscore_serial_width == 0, "d_array_width Must be divisible by oscore_serial_width"
+
+        b_downsize_factor = b_in_width / b_array_width  # >= 1
+
         # In VersaCore naming convention
         M = seqLen // Mu
         K = dModel
         N = dInner // Nu
-
-        a_in_width = Mu * FP8
-        b_in_width = Nu * FP8
-        d_array_width = Mu * Nu * FP8
-        assert d_array_width % oscore_serial_width == 0, "d_array_width Must be divisible by oscore_serial_width"
+        # We transfer more bits in less cycles due to downsizer
+        downsized_K = int(K / b_downsize_factor)
+        assert downsized_K == K / b_downsize_factor, f"downsized_K {K / b_downsize_factor} must be an integer"
+        assert downsized_K * b_in_width == K * b_array_width
 
         streamers = {
             # for n in N (irrelevant dimension)
@@ -64,11 +71,11 @@ class DataGenerator(DataGeneratorBase):
                 ],
             ),
             "R1": (  # Input B
-                [K, M, N],
+                [downsized_K, M, N],
                 [
                     b_in_width // 8,
                     0,  # M is irrelevant
-                    K * b_in_width // 8,
+                    downsized_K * b_in_width // 8,
                 ],
             ),
             "W0": (  # Output D
@@ -79,7 +86,7 @@ class DataGenerator(DataGeneratorBase):
 
         specs = [
             ("a", M * K * a_in_width // 8),
-            ("b", K * N * b_in_width // 8),
+            ("b", K * N * b_array_width // 8),
             # ("c", M * N * d_array_width // 8),
             ("d", M * N * d_array_width // 8),
         ]

@@ -34,6 +34,7 @@ This is entirely managed by Robin.
 [bash|target] Run SimbaCore test program in GUI (with VNC)
 
 - `bin/snitch_cluster.vsim.gui sw/apps/snax-simbacore-main/build/snax-simbacore-main.elf`
+- `bin/snitch_cluster.vsim.gui sw/apps/snax-simbacore-osgemm/build/snax-simbacore-osgemm.elf`
 - `bin/snitch_cluster.vsim.gui sw/apps/snax-simbacore-isgemm/build/snax-simbacore-isgemm.elf`
 
 [snax|target] Make traces (from .dasm to .txt)

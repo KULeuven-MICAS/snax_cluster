@@ -51,6 +51,13 @@ class DataGenerator(DataGeneratorBase):
         self.suc_serial_width_A = self.kwargs["suc_serial_width_A"]
         self.suc_serial_width_BC = self.kwargs["suc_serial_width_BC"]  # Streamer width is 2x this value!
         self.switchcore_width = self.kwargs["switchcore_width"]
+        self.gemm_weight_width = self.kwargs["gemm_weight_width"]
+        self.weight_downsize_factor = self.gemm_weight_width / (self.dInnerUnroll * FP8)  # >= 1
+        # Derived
+        self.downsized_dModel = int(self.dModel / self.weight_downsize_factor)
+        self.downsized_xProjDim = int(self.xProjDim / self.weight_downsize_factor)
+        assert self.downsized_dModel * self.gemm_weight_width == self.dModel * (self.dInnerUnroll * FP8)
+        assert self.downsized_xProjDim * self.gemm_weight_width == self.xProjDim * (self.dInnerUnroll * FP8)
 
     def get_safe_to_start_delay(self):
         """In Phase2, the SU core reads the OS core output from memory, in a different order. The program must ensure
@@ -97,14 +104,14 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R1": (  # oscore weight
                 [
-                    self.dModel,  # K
+                    self.downsized_dModel,  # K
                     self.seqLen // self.seqLenUnroll,  # M
                     self.dInner // self.dInnerUnroll,  # N
                 ],
                 [
-                    self.dInnerUnroll * FP8 // 8,
+                    self.gemm_weight_width // 8,
                     0,
-                    self.dModel * self.dInnerUnroll * FP8 // 8,
+                    self.downsized_dModel * self.gemm_weight_width // 8,
                 ],
             ),
             "R3": (  #  conv (switchCore) weight: layout is row-major [dInner, dConv]
@@ -117,14 +124,14 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R12": (  # iscore weight
                 [
-                    self.xProjDim,  # N
+                    self.downsized_xProjDim,  # N
                     self.seqLen // self.seqLenUnroll,  # M
                     self.dInner // self.dInnerUnroll,  # K
                 ],
                 [
-                    self.dInnerUnroll * FP8 // 8,
+                    self.gemm_weight_width // 8,
                     0,
-                    self.xProjDim * self.dInnerUnroll * FP8 // 8,
+                    self.downsized_xProjDim * self.gemm_weight_width // 8,
                 ],
             ),
             "R13": (  # isCore psum
@@ -233,14 +240,14 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R1": (  # oscore weight
                 [
-                    self.dModel,  # K
+                    self.downsized_dModel,  # K
                     self.seqLen // self.seqLenUnroll,  # M
                     self.dInner // self.dInnerUnroll,  # N
                 ],
                 [
-                    self.dInnerUnroll * FP8 // 8,
+                    self.gemm_weight_width // 8,
                     0,
-                    self.dModel * self.dInnerUnroll * FP8 // 8,
+                    self.downsized_dModel * self.gemm_weight_width // 8,
                 ],
             ),
             "R2": (  # switchCore in (deltaMinor)
@@ -313,14 +320,14 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R12": (  # iscore weight
                 [
-                    self.dModel,  # N
+                    self.downsized_dModel,  # N
                     self.seqLen // self.seqLenUnroll,  # M
                     self.dInner // self.dInnerUnroll,  # K
                 ],
                 [
-                    self.dInnerUnroll * FP8 // 8,
+                    self.gemm_weight_width // 8,
                     0,
-                    self.dModel * self.dInnerUnroll * FP8 // 8,
+                    self.downsized_dModel * self.gemm_weight_width // 8,
                 ],
             ),
             "R13": (  # isCore psum

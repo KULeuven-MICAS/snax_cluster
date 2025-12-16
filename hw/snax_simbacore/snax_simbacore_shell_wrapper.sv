@@ -17,7 +17,7 @@ module snax_simbacore_shell_wrapper #(
     parameter int unsigned ISCoreOutDWidth               = 256,  // 4
     // Stream2acc
     parameter int unsigned OSCoreInAWidth                = 128,  // 2
-    parameter int unsigned OSCoreInBWidth                = 192,  // 3
+    parameter int unsigned OSCoreInBWidth                = 256,  // 4
     //  
     parameter int unsigned SwitchCoreInMatmulWidth       = 64,   // 1
     parameter int unsigned SwitchCoreInWeightWidth       = 64,   // 1
@@ -31,7 +31,7 @@ module snax_simbacore_shell_wrapper #(
     parameter int unsigned SUCoreInZWidth                = 64,   // 1
     //
     parameter int unsigned ISCoreInAWidth                = 64,   // 1
-    parameter int unsigned ISCoreInBWidth                = 192,  // 3
+    parameter int unsigned ISCoreInBWidth                = 256,  // 4
     parameter int unsigned ISCoreInCWidth                = 256,  // 4
     // CSR
     parameter int unsigned RegRWCount                    = 7,    // +1 for start csr

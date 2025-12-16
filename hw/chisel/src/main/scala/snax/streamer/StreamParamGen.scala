@@ -31,13 +31,13 @@ object StreamerParametersGen {
    ), 
     new ReaderWriterParam(
       spatialBounds = List(
-        3
+        4
       ),
       temporalDimension = 4,
       tcdmDataWidth = 64,
       tcdmSize = 1024,
       tcdmLogicWordSize = Seq(256),
-      numChannel = 3,
+      numChannel = 4,
       addressBufferDepth = 9,
       dataBufferDepth = 9,
       configurableChannel = false,
@@ -196,13 +196,13 @@ object StreamerParametersGen {
    ), 
     new ReaderWriterParam(
       spatialBounds = List(
-        3
+        4
       ),
       temporalDimension = 4,
       tcdmDataWidth = 64,
       tcdmSize = 1024,
       tcdmLogicWordSize = Seq(256),
-      numChannel = 3,
+      numChannel = 4,
       addressBufferDepth = 9,
       dataBufferDepth = 9,
       configurableChannel = false,
