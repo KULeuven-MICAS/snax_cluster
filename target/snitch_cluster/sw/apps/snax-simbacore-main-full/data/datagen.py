@@ -22,7 +22,13 @@ _snax_simbacore_main_datagen = importlib.util.module_from_spec(_spec)
 assert _spec is not None and _spec.loader is not None
 _spec.loader.exec_module(_snax_simbacore_main_datagen)
 
-DataGenerator = _snax_simbacore_main_datagen.DataGenerator
+
+class DataGenerator(_snax_simbacore_main_datagen.DataGenerator):
+    """Reuses snax-simbacore-main DataGenerator but overrides APP_NAME so data from generated/data/main-full will be
+    used."""
+
+    APP_NAME = "main-full"
+
 
 from datagen_cli import main as datagen_cli_main  # type: ignore[import]
 

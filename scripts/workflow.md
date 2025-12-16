@@ -29,6 +29,7 @@ This is entirely managed by Robin.
 - `bin/snitch_cluster.vsim sw/apps/snax-simbacore-osgemm/build/snax-simbacore-osgemm.elf | tee vsim.log`
 - `bin/snitch_cluster.vsim sw/apps/snax-simbacore-isgemm/build/snax-simbacore-isgemm.elf | tee vsim.log`
 - `bin/snitch_cluster.vsim sw/apps/snax-simbacore-simd/build/snax-simbacore-simd.elf | tee vsim.log`
+- `bin/snitch_cluster.vsim sw/apps/snax-simbacore-main-full/build/snax-simbacore-main-full.elf | tee vsim.log`
 
 [bash|target] Run SimbaCore test program in GUI (with VNC)
 

@@ -38,10 +38,11 @@ fi
 # Define tests (names only; ELF at sw/apps/[name]/build/[name].elf)
 declare -a TESTS=(
   "nop"
+  "snax-simbacore-main"
   "snax-simbacore-osgemm"
   "snax-simbacore-isgemm"
   "snax-simbacore-simd"
-  "snax-simbacore-main"
+  "snax-simbacore-main-full"
 )
 
 pushd "${TARGET_DIR}" >/dev/null
