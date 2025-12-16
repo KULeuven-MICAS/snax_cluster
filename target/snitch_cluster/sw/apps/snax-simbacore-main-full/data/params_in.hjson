@@ -1,5 +1,5 @@
 {
-    "seqLen": 64,
-    "dModel": 48,
+    "seqLen": 96,
+    "dModel": 264,
     "dtRank": 24
 }
