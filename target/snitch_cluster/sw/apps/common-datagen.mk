@@ -37,7 +37,7 @@ $(CLUSTER_DIR)/generated/bender_lock.hash:
 
 $(DATA_H): $(DATAGEN_PY) $(DATAGEN_DEPS) $(DATA_CFG)
 	@echo "Generating data.h from $(DATA_CFG) with $(DATAGEN_PY)"
-	$(DATAGEN_PY) --swcfg $(DATA_CFG) --hwcfg $(CLUSTER_DIR)/$(CFG_OVERRIDE) > $@
+	$(DATAGEN_PY) --swcfg $(DATA_CFG) > $@
 
 
 $(DATA_CFG): $(CLUSTER_DIR)/generated/bender_lock.hash $(WORKLOAD_PARAMS)
