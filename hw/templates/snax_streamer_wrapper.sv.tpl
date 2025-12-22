@@ -120,6 +120,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
   logic [TCDMNumPorts-1:0][                3:0] tcdm_req_amo;
   logic [TCDMNumPorts-1:0][  TCDMDataWidth-1:0] tcdm_req_data;
   logic [TCDMNumPorts-1:0][TCDMDataWidth/8-1:0] tcdm_req_strb;
+  logic [TCDMNumPorts-1:0]                      tcdm_req_priority;
   //Note that tcdm_req_user_core_id_i is 5 bits based on Snitch definition
   logic [TCDMNumPorts-1:0][                4:0] tcdm_req_user_core_id;
   logic [TCDMNumPorts-1:0]                      tcdm_req_user_is_core;
@@ -150,7 +151,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
       tcdm_req_o[i].q.strb         = tcdm_req_strb   [i];
       tcdm_req_o[i].q.user.core_id = '0;
       tcdm_req_o[i].q.user.is_core = '0;
-      tcdm_req_o[i].q.user.tcdm_priority = '0;
+      tcdm_req_o[i].q.user.tcdm_priority = tcdm_req_priority [i];
       tcdm_req_o[i].q_valid        = tcdm_req_q_valid[i];
 
       tcdm_rsp_q_ready[i] = tcdm_rsp_i[i].q_ready;
@@ -158,11 +159,11 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
       tcdm_rsp_data   [i] = tcdm_rsp_i[i].p.data ;
     end
   end
-  
+
 
   // Streamer module that is generated
   // with template mechanics
-  ${cfg["tag_name"]}_Streamer i_${cfg["tag_name"]}_streamer_top (	
+  ${cfg["tag_name"]}_Streamer i_${cfg["tag_name"]}_streamer_top (
     //-----------------------------
     // Clocks and reset
     //-----------------------------
@@ -233,6 +234,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
     .io_data_tcdm_req_${idx}_bits_write ( tcdm_req_write  [${idx}] ),
     .io_data_tcdm_req_${idx}_bits_data  ( tcdm_req_data   [${idx}] ),
     .io_data_tcdm_req_${idx}_bits_strb  ( tcdm_req_strb   [${idx}] ),
+    .io_data_tcdm_req_${idx}_bits_priority  ( tcdm_req_priority   [${idx}] ),
 
 % endfor
     //-----------------------------
@@ -247,7 +249,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
     .io_csr_req_ready      ( csr_req_ready_o      ),
 
     // Response
-    .io_csr_rsp_bits_data  ( csr_rsp_bits_data_o  ),	
+    .io_csr_rsp_bits_data  ( csr_rsp_bits_data_o  ),
     .io_csr_rsp_valid      ( csr_rsp_valid_o      ),
     .io_csr_rsp_ready      ( csr_rsp_ready_i      )
   );

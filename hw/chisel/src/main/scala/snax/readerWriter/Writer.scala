@@ -29,16 +29,18 @@ class Writer(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
       tcdmAddressWidth = param.tcdmParam.addrWidth,
       numChannel       = param.tcdmParam.numChannel,
       isReader         = false,
-      moduleNamePrefix = s"${moduleNamePrefix}_Writer"
+      moduleNamePrefix = s"${moduleNamePrefix}_Writer",
+      withPriority     = param.bufferDepth > 1
     )
   )
 
   val dataBuffer = Module(
     new ComplexQueueConcat(
-      inputWidth  = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
-      outputWidth = param.tcdmParam.dataWidth,
-      depth       = param.bufferDepth,
-      pipe        = false
+      inputWidth     = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
+      outputWidth    = param.tcdmParam.dataWidth,
+      depth          = param.bufferDepth,
+      pipe           = false,
+      priority_empty = false
     ) {
       override val desiredName = s"${moduleNamePrefix}_Writer_DataBuffer"
     }
@@ -83,6 +85,13 @@ class Writer(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
   requestors.io.zip(dataBuffer.io.out).foreach {
     case (requestor, dataBuffer) => {
       requestor.in.data.get <> dataBuffer
+    }
+  }
+
+  // Req <> DataBuffer Priorities
+  requestors.io.zip(dataBuffer.io.priorities).foreach {
+    case (requestor, priority) => {
+      requestor.in.priority.foreach { _ := priority }
     }
   }
 
