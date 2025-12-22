@@ -36,7 +36,7 @@ class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
       numChannel       = param.tcdmParam.numChannel,
       isReader         = true,
       moduleNamePrefix = s"${moduleNamePrefix}_Reader",
-      withPriority     = true
+      withPriority     = param.bufferDepth > 1
     )
   )
 

@@ -30,7 +30,7 @@ class Writer(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
       numChannel       = param.tcdmParam.numChannel,
       isReader         = false,
       moduleNamePrefix = s"${moduleNamePrefix}_Writer",
-      withPriority     = true
+      withPriority     = param.bufferDepth > 1
     )
   )
 
