@@ -22,6 +22,7 @@
 /// Snitch Cluster Top-Level.
 module snitch_cluster
   import snitch_pkg::*;
+  import csr_snax_def::*;
 #(
     /// Width of physical address.
     parameter int unsigned PhysicalAddrWidth = 48,
@@ -193,6 +194,8 @@ module snitch_cluster
     // Accelerator typedef
     parameter type acc_req_t = logic,
     parameter type acc_resp_t = logic,
+    parameter type csr_req_t = logic,
+    parameter type csr_rsp_t = logic,
     parameter type tcdm_req_t = logic,
     parameter type tcdm_rsp_t = logic,
     // Memory latency parameter. Most of the memories have a read latency of 1. In
@@ -248,23 +251,26 @@ module snitch_cluster
     /// SNAX Custom Instruction Ports
     /// Request for custom instruction format
     output acc_req_t [NrCores-1:0] snax_req_o,
-    output logic [NrCores-1:0] snax_qvalid_o,
-    input logic [NrCores-1:0] snax_qready_i,
+    output logic     [NrCores-1:0] snax_qvalid_o,
+    input logic      [NrCores-1:0] snax_qready_i,
     /// Response for custom instruction format
     input acc_resp_t [NrCores-1:0] snax_resp_i,
-    input logic [NrCores-1:0] snax_pvalid_i,
-    output logic [NrCores-1:0] snax_pready_o,
+    input logic      [NrCores-1:0] snax_pvalid_i,
+    output logic     [NrCores-1:0] snax_pready_o,
     /// SNAX CSR Ports
     /// Request for CSR format
-    output logic [NrCores-1:0][31:0] snax_csr_req_bits_data_o,
-    output logic [NrCores-1:0][31:0] snax_csr_req_bits_addr_o,
-    output logic [NrCores-1:0] snax_csr_req_bits_write_o,
-    output logic [NrCores-1:0] snax_csr_req_valid_o,
-    input logic [NrCores-1:0] snax_csr_req_ready_i,
+    output csr_req_t [NrCores-1:0] snax_csr_req_o,
+    output logic     [NrCores-1:0] snax_csr_req_acc_valid_o,
+    input logic      [NrCores-1:0] snax_csr_req_acc_ready_i,
+    output logic     [NrCores-1:0] snax_csr_req_top_valid_o,
+    input logic      [NrCores-1:0] snax_csr_req_top_ready_i,
     /// Response for CSR format
-    input logic [NrCores-1:0][31:0] snax_csr_rsp_bits_data_i,
-    input logic [NrCores-1:0] snax_csr_rsp_valid_i,
-    output logic [NrCores-1:0] snax_csr_rsp_ready_o,
+    input csr_rsp_t  [NrCores-1:0] snax_csr_rsp_acc_i,
+    input logic      [NrCores-1:0] snax_csr_rsp_acc_valid_i,
+    output logic     [NrCores-1:0] snax_csr_rsp_acc_ready_o,
+    input csr_rsp_t  [NrCores-1:0] snax_csr_rsp_top_i,
+    input logic      [NrCores-1:0] snax_csr_rsp_top_valid_i,
+    output logic     [NrCores-1:0] snax_csr_rsp_top_ready_o,
     /// SNAX barrier port
     input logic [NrCores-1:0] snax_barrier_i,
     /// SNAX TCDM ports
@@ -945,17 +951,23 @@ DmaXbarCfg.NoMstPorts
   acc_resp_t [NrCores-1:0]       snax_resp;
   logic      [NrCores-1:0]       snax_pvalid;
   logic      [NrCores-1:0]       snax_pready;
+  // We have two ways for the SNAX CSR:
+  // 1) to acc
+  // 2) to top
+  // For the request, we only have one data but two valids and readys
+  // For the response, we have two data/valids/readys
+  csr_req_t                 [NrCores-1:0]            snax_csr_req;
+  logic                     [NrCores-1:0]            snax_csr_req_acc_valid;
+  logic                     [NrCores-1:0]            snax_csr_req_acc_ready;
+  logic                     [NrCores-1:0]            snax_csr_req_top_valid;
+  logic                     [NrCores-1:0]            snax_csr_req_top_ready;
 
-  logic      [NrCores-1:0][31:0] snax_csr_req_bits_data;
-  logic      [NrCores-1:0][31:0] snax_csr_req_bits_addr;
-  logic      [NrCores-1:0]       snax_csr_req_bits_write;
-  logic      [NrCores-1:0]       snax_csr_req_valid;
-  logic      [NrCores-1:0]       snax_csr_req_ready;
-
-  logic      [NrCores-1:0][31:0] snax_csr_rsp_bits_data;
-  logic      [NrCores-1:0]       snax_csr_rsp_valid;
-  logic      [NrCores-1:0]       snax_csr_rsp_ready;
-
+  csr_rsp_t                 [NrCores-1:0]            snax_csr_rsp_acc;
+  logic                     [NrCores-1:0]            snax_csr_rsp_acc_valid;
+  logic                     [NrCores-1:0]            snax_csr_rsp_acc_ready;
+  csr_rsp_t                 [NrCores-1:0]            snax_csr_rsp_top;
+  logic                     [NrCores-1:0]            snax_csr_rsp_top_valid;
+  logic                     [NrCores-1:0]            snax_csr_rsp_top_ready;
   // Re-mapping of custom instruction ports
   for (genvar i = 0; i < NrCores; i++) begin : gen_snax_control_connection
 
@@ -975,16 +987,17 @@ DmaXbarCfg.NoMstPorts
 
         // Unused SNAX CSR ports
         // Request
-        snax_csr_req_bits_data_o[i]  = '0;
-        snax_csr_req_bits_addr_o[i]  = '0;
-        snax_csr_req_bits_write_o[i] = '0;
-        snax_csr_req_valid_o[i]      = '0;
+        snax_csr_req[i]              = '0;
+
+        snax_csr_req_acc_valid_o[i]      = '0;
+        snax_csr_req_top_valid_o[i]      = '0;
         // snax_csr_req_ready     = unconnected
 
         // Response
         // snax_csr_rsp_bits_data_i  = unconnected
         // snax_csr_rsp_valid_i      = unconnected
-        snax_csr_rsp_ready_o[i]      = '0;
+        snax_csr_rsp_acc_ready_o[i]      = '0;
+        snax_csr_rsp_top_ready_o[i]      = '0;
       end
 
     end else begin : gen_snax_use_csr_ports
@@ -999,19 +1012,6 @@ DmaXbarCfg.NoMstPorts
         // snax_resp     = unconnected
         // snax_pvalid   = unconnected
         snax_pready_o[i]             = '0;
-
-        // SNAX CSR ports
-        // Request
-        snax_csr_req_bits_data_o[i]  = snax_csr_req_bits_data[i];
-        snax_csr_req_bits_addr_o[i]  = snax_csr_req_bits_addr[i];
-        snax_csr_req_bits_write_o[i] = snax_csr_req_bits_write[i];
-        snax_csr_req_valid_o[i]      = snax_csr_req_valid[i];
-        snax_csr_req_ready[i]        = snax_csr_req_ready_i[i];
-
-        // Response
-        snax_csr_rsp_bits_data[i]    = snax_csr_rsp_bits_data_i[i];
-        snax_csr_rsp_valid[i]        = snax_csr_rsp_valid_i[i];
-        snax_csr_rsp_ready_o[i]      = snax_csr_rsp_ready[i];
       end
 
       snax_intf_translator #(
@@ -1019,7 +1019,7 @@ DmaXbarCfg.NoMstPorts
           .acc_rsp_t    (acc_resp_t),
           // Careful! Sensitive parameter that depends
           // On the offset of where the CSRs are placed
-          .CsrAddrOffset(32'h3c0)
+          .CsrAddrOffset(csr_snax_def::CSR_SNAX_BEGIN)
       ) i_snax_intf_translator (
           //-------------------------------
           // Clocks and reset
@@ -1042,16 +1042,18 @@ DmaXbarCfg.NoMstPorts
           // Simplified CSR control ports
           //-----------------------------
           // Request
-          .snax_csr_req_bits_data_o (snax_csr_req_bits_data[i]),
-          .snax_csr_req_bits_addr_o (snax_csr_req_bits_addr[i]),
-          .snax_csr_req_bits_write_o(snax_csr_req_bits_write[i]),
-          .snax_csr_req_valid_o     (snax_csr_req_valid[i]),
-          .snax_csr_req_ready_i     (snax_csr_req_ready[i]),
-
+          .snax_csr_req_o               (snax_csr_req[i]),
+          .snax_csr_req_acc_valid_o     (snax_csr_req_acc_valid_o[i]),
+          .snax_csr_req_acc_ready_i     (snax_csr_req_acc_ready_i[i]),
+          .snax_csr_req_top_valid_o     (snax_csr_req_top_valid_o[i]),
+          .snax_csr_req_top_ready_i     (snax_csr_req_top_ready_i[i]),
           // Response
-          .snax_csr_rsp_bits_data_i(snax_csr_rsp_bits_data[i]),
-          .snax_csr_rsp_valid_i    (snax_csr_rsp_valid[i]),
-          .snax_csr_rsp_ready_o    (snax_csr_rsp_ready[i])
+          .snax_csr_rsp_acc_i          (snax_csr_rsp_acc_i[i]),
+          .snax_csr_rsp_acc_valid_i    (snax_csr_rsp_acc_valid_i[i]),
+          .snax_csr_rsp_acc_ready_o    (snax_csr_rsp_acc_ready_o[i]),
+          .snax_csr_rsp_top_i          (snax_csr_rsp_top_i[i]),
+          .snax_csr_rsp_top_valid_i    (snax_csr_rsp_top_valid_i[i]),
+          .snax_csr_rsp_top_ready_o    (snax_csr_rsp_top_ready_o[i])
       );
     end
   end

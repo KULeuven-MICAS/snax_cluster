@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: SHL-0.51
 
 // Ryan Antonio <ryan.antonio@esat.kuleuven.be>
-
+// Fanchen Kong <fanchen.kong@kuleuven.be>
 //-------------------------------
 // SNAX interface translator for converting
 // Snitch accelerator ports to
@@ -12,10 +12,12 @@
 
 import riscv_instr::*;
 import reqrsp_pkg::*;
-
+import csr_snax_def::*;
 module snax_intf_translator #(
   parameter type                        acc_req_t = logic,
   parameter type                        acc_rsp_t = logic,
+  parameter type                        csr_req_t = logic,
+  parameter type                        csr_rsp_t = logic,
   // Careful! Sensitive parameter that depends
   // On the offset of where the CSRs are placed
   parameter int unsigned                NumOutstandingLoads = 4,
@@ -44,17 +46,21 @@ module snax_intf_translator #(
   //-----------------------------
   // Simplified CSR control ports
   //-----------------------------
+  // [0] To ACC
+  // [1] To Top-level
   // Request
-  output logic [31:0] snax_csr_req_bits_data_o,
-  output logic [31:0] snax_csr_req_bits_addr_o,
-  output logic        snax_csr_req_bits_write_o,
-  output logic        snax_csr_req_valid_o,
-  input  logic        snax_csr_req_ready_i,
-
+  output csr_req_t         snax_csr_req_o,
+  output logic             snax_csr_req_acc_valid_o,
+  input  logic             snax_csr_req_acc_ready_i,
+  output logic             snax_csr_req_top_valid_o,
+  input  logic             snax_csr_req_top_ready_i,
   // Response
-  input  logic [31:0] snax_csr_rsp_bits_data_i,
-  input  logic        snax_csr_rsp_valid_i,
-  output logic        snax_csr_rsp_ready_o
+  input  csr_rsp_t         snax_csr_rsp_acc_i,
+  input  logic             snax_csr_rsp_acc_valid_i,
+  output logic             snax_csr_rsp_acc_ready_o,
+  input  csr_rsp_t         snax_csr_rsp_top_i,
+  input  logic             snax_csr_rsp_top_valid_i,
+  output logic             snax_csr_rsp_top_ready_o
 
 );
 
@@ -80,11 +86,24 @@ module snax_intf_translator #(
     end
   end
 
-  assign snax_csr_req_bits_data_o  = snax_req_i.data_arga[31:0];
-  assign snax_csr_req_bits_addr_o  = snax_req_i.data_argb - CsrAddrOffset;
-  assign snax_csr_req_bits_write_o = write_csr;
-  assign snax_csr_req_valid_o      = snax_qvalid_i;
-  assign snax_qready_o             = snax_csr_req_ready_i;
+  // We need a demux to split the requests
+  logic snax_csr_req_sel;
+  assign snax_csr_req_sel = (snax_req_i.data_argb[11:0]==CSR_SNAX_READ_TASK_READY_QUEUE) ||
+                            (snax_req_i.data_argb[11:0]==CSR_SNAX_WRITE_TASK_DONE_QUEUE);
+  stream_demux #(
+    .N_OUP(2)
+  ) i_snax_csr_req_demux (
+    .inp_valid_i ( snax_qvalid_i        ),
+    .inp_ready_o ( snax_qready_o        ),
+    .oup_sel_i   ( snax_csr_req_sel     ),
+    .oup_valid_o ( {snax_csr_req_top_valid_o, snax_csr_req_acc_valid_o}  ),
+    .oup_ready_i ( {snax_csr_req_top_ready_i, snax_csr_req_acc_ready_i}  )
+  );
+
+  assign snax_csr_req_o.data  = snax_req_i.data_arga[31:0];
+  assign snax_csr_req_o.addr  = snax_req_i.data_argb - CsrAddrOffset;
+  assign snax_csr_req_o.write = write_csr;
+
 
   //-------------------------------
   // Response handler
@@ -134,14 +153,31 @@ module snax_intf_translator #(
 
   // Ready only when snax is ready and fifo is not full
   assign snax_csr_rsp_ready_o = snax_pready_i && !rsp_fifo_full;
-  // pvalid is high always when p_valid is high
-  assign snax_pvalid_o        = snax_csr_rsp_valid_i;
-  // Data is always pass through too
-  assign snax_resp_o.data     = snax_csr_rsp_bits_data_i;
+
+  // We need a mux to select between the two response sources (ACC or Top-level)
+  // The selection is based on the fifo out signal
+  logic snax_csr_rsp_sel;
+  assign snax_csr_rsp_sel = (rsp_fifo_out.data_argb[11:0]==CSR_SNAX_READ_TASK_READY_QUEUE) ||
+                            (rsp_fifo_out.data_argb[11:0]==CSR_SNAX_WRITE_TASK_DONE_QUEUE);
+  csr_rsp_t snax_csr_rsp;
+  stream_mux #(
+    .DATA_T   ( csr_rsp_t ),
+    .N_INP    ( 2         )
+  ) i_snax_csr_rsp_mux (
+    .inp_data_i ( {snax_csr_rsp_top_i, snax_csr_rsp_acc_i}                ),
+    .inp_valid_i( {snax_csr_rsp_top_valid_i, snax_csr_rsp_acc_valid_i}    ),
+    .inp_ready_o( {snax_csr_rsp_top_ready_o, snax_csr_rsp_acc_ready_o}    ),
+    .inp_sel_i  ( snax_csr_rsp_sel        ),
+    .oup_data_o ( snax_csr_rsp            ),
+    .oup_valid_o( snax_pvalid_o           ),
+    .oup_ready_i( snax_pready_i           )
+  );
+
+  assign snax_resp_o.data     = snax_csr_rsp.data;
   // If fifo is not empty, use the one from the FIFO
   // Else just make it pass through
   assign snax_resp_o.id       = (!rsp_fifo_empty) ? rsp_fifo_out.id: snax_req_i.id;
-  // Leave this as always error for now
+  // Leave this as always no error for now
   assign snax_resp_o.error    = 1'b0;
 
 endmodule
