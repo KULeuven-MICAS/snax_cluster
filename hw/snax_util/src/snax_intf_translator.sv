@@ -125,11 +125,11 @@ module snax_intf_translator #(
   // and when the fifo is not full!
   assign rsp_fifo_push =   snax_qvalid_i
                         && !write_csr
-                        && !snax_csr_rsp_valid_i
+                        && !snax_pvalid_o
                         && !rsp_fifo_full;
 
   // We pop when the response is valid and the fifo is not empty
-  assign rsp_fifo_pop  =   snax_csr_rsp_valid_i
+  assign rsp_fifo_pop  =   snax_pvalid_o
                         && !rsp_fifo_empty;
 
   // Buffer for aligning request id

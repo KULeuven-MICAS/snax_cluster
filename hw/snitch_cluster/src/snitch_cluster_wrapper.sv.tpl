@@ -164,7 +164,7 @@ package ${cfg['name']}_pkg;
   } csr_req_t;
   typedef struct packed {
     data_t   data;
-  } csr_rsp_t
+  } csr_rsp_t;
 
 
   // Function pre-calculations
@@ -331,7 +331,7 @@ module ${cfg['name']}_wrapper (
   output ${cfg['pkg_name']}::csr_req_t  [${cfg['pkg_name']}::NrCores-1:0]       csr_req_o,
   output logic                          [${cfg['pkg_name']}::NrCores-1:0]       csr_req_valid_o,
   input  logic                          [${cfg['pkg_name']}::NrCores-1:0]       csr_req_ready_i,
-  input  ${cfg['pkg_name']}::csr_resp_t [${cfg['pkg_name']}::NrCores-1:0]       csr_resp_i,
+  input  ${cfg['pkg_name']}::csr_rsp_t  [${cfg['pkg_name']}::NrCores-1:0]       csr_resp_i,
   input  logic                          [${cfg['pkg_name']}::NrCores-1:0]       csr_resp_valid_i,
   output logic                          [${cfg['pkg_name']}::NrCores-1:0]       csr_resp_ready_o,                                              
   //-----------------------------
