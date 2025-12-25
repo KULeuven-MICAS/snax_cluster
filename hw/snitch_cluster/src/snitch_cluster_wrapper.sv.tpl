@@ -929,9 +929,9 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     // CSR  format control ports
     //-----------------------------
     // Request
-    .snax_req_data_i  ( snax_csr_req[${idx}].data      ),
-    .snax_req_addr_i  ( snax_csr_req[${idx}].addr      ),
-    .snax_req_write_i ( snax_csr_req[${idx}].write     ),
+    .snax_req_data_i  ( snax_csr_req[${idx}].data            ),
+    .snax_req_addr_i  ( snax_csr_req[${idx}].addr[31:0]      ),
+    .snax_req_write_i ( snax_csr_req[${idx}].write           ),
     .snax_req_valid_i ( snax_csr_req_acc_valid[${idx}] ),
     .snax_req_ready_o ( snax_csr_req_acc_ready[${idx}] ),
     // Response
@@ -1001,7 +1001,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     // Request
     .csr_req_bits_data_i  ( snax_csr_req[${idx}].data      ),
     .csr_req_bits_strb_i  ( '1 ),
-    .csr_req_bits_addr_i  ( snax_csr_req[${idx}].addr      ),
+    .csr_req_bits_addr_i  ( snax_csr_req[${idx}].addr[31:0]),
     .csr_req_bits_write_i ( snax_csr_req[${idx}].write     ),
     .csr_req_valid_i      ( snax_csr_req_acc_valid[${idx}] ),
     .csr_req_ready_o      ( snax_csr_req_acc_ready[${idx}] ),
