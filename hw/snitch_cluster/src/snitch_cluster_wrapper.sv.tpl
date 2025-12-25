@@ -158,12 +158,12 @@ package ${cfg['name']}_pkg;
 
   // CSR Req/Rsp interface
   typedef struct packed {
-    addr_t   addr;
-    data_t   data;
-    logic    write;
+    addr_t         addr;
+    logic [31:0]   data;
+    logic          write;
   } csr_req_t;
   typedef struct packed {
-    data_t   data;
+    logic [31:0]   data;
   } csr_rsp_t;
 
 
