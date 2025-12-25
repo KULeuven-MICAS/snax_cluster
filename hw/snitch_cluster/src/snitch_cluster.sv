@@ -1017,6 +1017,8 @@ DmaXbarCfg.NoMstPorts
       snax_intf_translator #(
           .acc_req_t    (acc_req_t),
           .acc_rsp_t    (acc_resp_t),
+          .csr_req_t    (csr_req_t),
+          .csr_rsp_t    (csr_rsp_t),
           // Careful! Sensitive parameter that depends
           // On the offset of where the CSRs are placed
           .CsrAddrOffset(csr_snax_def::CSR_SNAX_BEGIN)
