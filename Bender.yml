@@ -472,3 +472,19 @@ sources:
   - target: snax_test_harness
     files:
       - target/snitch_cluster/test/testharness.sv
+
+  #---------------------------
+  # SNAX FPGA Prototyping
+  #---------------------------
+  - target: snax_fpga
+    files:
+      # spm_interface
+      # Level 1
+      - hw/spm_interface/src/spm_interface.sv
+      - hw/spm_interface/src/spm_rmw_adapter.sv
+      # Level 2
+      - hw/spm_interface/src/spm_1p_adv_mem_wrapper.sv
+      - hw/spm_interface/src/spm_1p_adv.sv
+      # wrapper of the cluster
+      - target/snitch_cluster/fpga/axi_flat.sv
+      - target/snitch_cluster/fpga/snax_xilinx.sv
