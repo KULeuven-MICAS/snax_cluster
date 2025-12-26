@@ -951,23 +951,6 @@ DmaXbarCfg.NoMstPorts
   acc_resp_t [NrCores-1:0]       snax_resp;
   logic      [NrCores-1:0]       snax_pvalid;
   logic      [NrCores-1:0]       snax_pready;
-  // We have two ways for the SNAX CSR:
-  // 1) to acc
-  // 2) to top
-  // For the request, we only have one data but two valids and readys
-  // For the response, we have two data/valids/readys
-  csr_req_t                 [NrCores-1:0]            snax_csr_req;
-  logic                     [NrCores-1:0]            snax_csr_req_acc_valid;
-  logic                     [NrCores-1:0]            snax_csr_req_acc_ready;
-  logic                     [NrCores-1:0]            snax_csr_req_top_valid;
-  logic                     [NrCores-1:0]            snax_csr_req_top_ready;
-
-  csr_rsp_t                 [NrCores-1:0]            snax_csr_rsp_acc;
-  logic                     [NrCores-1:0]            snax_csr_rsp_acc_valid;
-  logic                     [NrCores-1:0]            snax_csr_rsp_acc_ready;
-  csr_rsp_t                 [NrCores-1:0]            snax_csr_rsp_top;
-  logic                     [NrCores-1:0]            snax_csr_rsp_top_valid;
-  logic                     [NrCores-1:0]            snax_csr_rsp_top_ready;
   // Re-mapping of custom instruction ports
   for (genvar i = 0; i < NrCores; i++) begin : gen_snax_control_connection
 
@@ -987,7 +970,7 @@ DmaXbarCfg.NoMstPorts
 
         // Unused SNAX CSR ports
         // Request
-        snax_csr_req[i]              = '0;
+        snax_csr_req_o[i]              = '0;
 
         snax_csr_req_acc_valid_o[i]      = '0;
         snax_csr_req_top_valid_o[i]      = '0;
@@ -1044,7 +1027,7 @@ DmaXbarCfg.NoMstPorts
           // Simplified CSR control ports
           //-----------------------------
           // Request
-          .snax_csr_req_o               (snax_csr_req[i]),
+          .snax_csr_req_o               (snax_csr_req_o[i]),
           .snax_csr_req_acc_valid_o     (snax_csr_req_acc_valid_o[i]),
           .snax_csr_req_acc_ready_i     (snax_csr_req_acc_ready_i[i]),
           .snax_csr_req_top_valid_o     (snax_csr_req_top_valid_o[i]),
