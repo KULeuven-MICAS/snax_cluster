@@ -14,173 +14,162 @@ Naming convention:
 **/
 
 {
-  "nr_s1_quadrant": 1,
-  "s1_quadrant": {
-    "nr_clusters": 1
+  nr_s1_quadrant: 1,
+  s1_quadrant: {
+    nr_clusters: 1
   },
-  "cluster": {
-    "name": "snax_simbacore_cluster",
-    "bender_target": ["snax_simbacore_cluster"],
-    "boot_addr": 4096,
-    "cluster_base_addr": 268435456,
-    "cluster_base_offset": 4194304,
-    "cluster_base_hartid": 0,
-    "addr_width": 48,
-    "data_width": 64,
-    "user_width": 3,
-    "tcdm": {
-      "size": 1024, // kB
-      "banks": 32
+  cluster: {
+    name: "snax_simbacore_cluster",
+    bender_target: ["snax_simbacore_cluster", "sparse_interconnect"],
+    boot_addr: 4096,
+    cluster_base_addr: 268435456,
+    cluster_base_offset: 4194304,
+    cluster_base_hartid: 0,
+    addr_width: 48,
+    data_width: 64,
+    user_width: 3,
+    tcdm: {
+      size: 1024, // kB
+      banks: 32,
+      sparse_interconnect: true
     },
-    "cluster_periph_size": 64,
-    "zero_mem_size": 64,
-    "dma_data_width": 512,
-    "dma_axi_req_fifo_depth": 16,
-    "dma_req_fifo_depth": 3,
-    "observable_pin_width": 3,
+    cluster_periph_size: 64,
+    zero_mem_size: 64,
+    dma_data_width: 512,
+    dma_axi_req_fifo_depth: 16,
+    dma_req_fifo_depth: 3,
+    observable_pin_width: 3,
     // Hemaia
-    "narrow_trans": 4,
-    "wide_trans": 32,
-    "dma_user_width": 1,
-    "enable_debug": false, // of Snitch
-    "vm_support": false, // Snitch core internal virtual memory
-    "sram_cfg_expose": true,
-    "sram_cfg_fields": {
-      "ema": 3,
-      "emaw": 2,
-      "emas": 1
+    narrow_trans: 4,
+    wide_trans: 32,
+    dma_user_width: 1,
+    enable_debug: false, // of Snitch
+    vm_support: false, // Snitch core internal virtual memory
+    sram_cfg_expose: true,
+    sram_cfg_fields: {
+      ema: 3,
+      emaw: 2,
+      emas: 1
     },
-    "timing": {
-      "lat_comp_fp32": 3,
-      "lat_comp_fp64": 3,
-      "lat_comp_fp16": 2,
-      "lat_comp_fp16_alt": 2,
-      "lat_comp_fp8": 1,
-      "lat_comp_fp8_alt": 1,
-      "lat_noncomp": 1,
-      "lat_conv": 1,
-      "lat_sdotp": 2,
-      "fpu_pipe_config": "BEFORE",
-      "narrow_xbar_latency": "CUT_ALL_PORTS",
-      "wide_xbar_latency": "CUT_ALL_PORTS",
+    timing: {
+      lat_comp_fp32: 3,
+      lat_comp_fp64: 3,
+      lat_comp_fp16: 2,
+      lat_comp_fp16_alt: 2,
+      lat_comp_fp8: 1,
+      lat_comp_fp8_alt: 1,
+      lat_noncomp: 1,
+      lat_conv: 1,
+      lat_sdotp: 2,
+      fpu_pipe_config: "BEFORE",
+      narrow_xbar_latency: "CUT_ALL_PORTS",
+      wide_xbar_latency: "CUT_ALL_PORTS",
         // Isolate the core.
-      "register_core_req": true,
-      "register_core_rsp": true,
-      "register_offload_req": true,
-      "register_offload_rsp": true,
-      "register_ext_narrow": true,
-      "register_ext_wide": true
+      register_core_req: true,
+      register_core_rsp: true,
+      register_offload_req: true,
+      register_offload_rsp: true,
+      register_ext_narrow: true,
+      register_ext_wide: true
     },
-    "hives": [
+    hives: [
       {
-        "icache": {
-          "size": 8, // kB
-          "sets": 2, // number of ways
-          "cacheline": 256 // word size in bits
+        icache: {
+          size: 8, // kB
+          sets: 2, // number of ways
+          cacheline: 256 // word size in bits
         },
-        "cores": [
-          {"$ref": "#/snax_simbacore_core_template"},
-          {"$ref": "#/dma_core_template"}
+        cores: [
+          {$ref: "#/snax_simbacore_core_template"},
+          {$ref: "#/dma_core_template"}
         ]
       }
     ]
   },
-  "dram": {
-    "address": 2147483648,
-    "length": 2147483648
+  dram: {
+    address: 2147483648,
+    length: 2147483648
   },
-  "peripherals": {
-    "clint": {
-      "address": 4294901760,
-      "length": 4096
+  peripherals: {
+    clint: {
+      address: 4294901760,
+      length: 4096
     }
   },
-  "snax_simbacore_core_template": {
-    "isa": "rv32ima",
-    "xssr": false,
-    "xfrep": false,
-    "xdma": false,
-    "xf16": false,
-    "xf16alt": false,
-    "xf8": false,
-    "xf8alt": false,
-    "xfdotp": false,
-    "xfvec": false,
-    "snax_acc_cfg": [
+  snax_simbacore_core_template: {
+    isa: "rv32ima",
+    xssr: false,
+    xfrep: false,
+    xdma: false,
+    xf16: false,
+    xf16alt: false,
+    xf8: false,
+    xf8alt: false,
+    xfdotp: false,
+    xfvec: false,
+    snax_acc_cfg: [
       {
-        "snax_acc_name": "snax_simbacore",
-        "bender_target": ["snax_simbacore"],
-        "snax_narrow_tcdm_ports": 32,// Must match the sum of all streamer ports // ! this fails VERY quietly
-        "snax_wide_tcdm_ports": 0,
-        "snax_num_rw_csr": 7, // Must match the number in Simbacore shell wrapper
-        "snax_num_ro_csr": 4,
-        "snax_streamer_cfg": {"$ref": "#/snax_simbacore_streamer_template"}
+        snax_acc_name: "snax_simbacore",
+        bender_target: ["snax_simbacore"],
+        snax_tcdm_ports: 34, // Must match the sum of all streamer ports // ! this fails VERY quietly
+        //                             R0      R1       R2-6    R7      R8-11   R12     R13     W0-3     W4
+        sparse_interconnect_config:  [[2, 2], [4, 4],  [5, 1], [4, 1], [4, 1], [4, 4], [4, 4], [3, 1], [4, 4]],
+        snax_wide_tcdm_ports: 0,
+        snax_num_rw_csr: 7, // Must match the number in Simbacore shell wrapper
+        snax_num_ro_csr: 4,
+        snax_streamer_cfg: {$ref: "#/snax_simbacore_streamer_template"}
       }
     ],
-    "snax_use_custom_ports": false,
-    "num_int_outstanding_loads": 1,
-    "num_int_outstanding_mem": 4,
-    "num_fp_outstanding_loads": 4,
-    "num_fp_outstanding_mem": 4,
-    "num_sequencer_instructions": 16,
-    "num_dtlb_entries": 1,
-    "num_itlb_entries": 1 
+    snax_use_custom_ports: false,
+    num_int_outstanding_loads: 1,
+    num_int_outstanding_mem: 4,
+    num_fp_outstanding_loads: 4,
+    num_fp_outstanding_mem: 4,
+    num_sequencer_instructions: 16,
+    num_dtlb_entries: 1,
+    num_itlb_entries: 1 
     // Enable division/square root unit 
     Xdiv_sqrt: true,
   },
-  "dma_core_template": {
-    "isa": "rv32ima",
-    // Disable full XDMA because we only have one cluster
-    // "snax_xdma_cfg": {
-    //   "bender_target": ["snax_simbacore_cluster_xdma"],
-    //   "cfg_io_width": 32,
-    //   "max_multicast": 16, 
-    //   "max_dimension": 5,
-    //   "max_mem_size": 4096,
-    //   "reader_buffer": 12,
-    //   "writer_buffer": 12,
-    //   "reader_agu_temporal_dimension": 5,
-    //   "writer_agu_temporal_dimension": 5,
-    //     writer_extensions: {},
-    //     reader_extensions: {},
-    // },
-    "xdma": true, // This is not Yunhao's XDMA but the Snitch one! 
-    "xssr": false,
-    "xfrep": false,
-    "xf16": false,
-    "xf16alt": false,
-    "xf8": false,
-    "xf8alt": false,
-    "xfdotp": false,
-    "xfvec": false,
-    "num_int_outstanding_loads": 1,
-    "num_int_outstanding_mem": 4,
-    "num_fp_outstanding_loads": 4,
-    "num_fp_outstanding_mem": 4,
-    "num_sequencer_instructions": 16,
-    "num_dtlb_entries": 1,
-    "num_itlb_entries": 1
+  dma_core_template: {
+    isa: "rv32ima",
+    xdma: true, // This is not Yunhao's XDMA but the Snitch one! 
+    xssr: false,
+    xfrep: false,
+    xf16: false,
+    xf16alt: false,
+    xf8: false,
+    xf8alt: false,
+    xfdotp: false,
+    xfvec: false,
+    num_int_outstanding_loads: 1,
+    num_int_outstanding_mem: 4,
+    num_fp_outstanding_loads: 4,
+    num_fp_outstanding_mem: 4,
+    num_sequencer_instructions: 16,
+    num_dtlb_entries: 1,
+    num_itlb_entries: 1
   },
     // Streamer templates
-  "snax_simbacore_streamer_template": {
-    "data_reader_params": {
+  snax_simbacore_streamer_template: {
+    data_reader_params: {
       // Every item is a separate streamer. Gives the number of TCDM ports per streamer 
-      //                        0    1    2    3    4    5    6    7    8    9    10   11   12   13
-      "spatial_bounds":       [[2], [3], [1], [1], [1], [1], [1], [4], [1], [1], [1], [1], [3], [4]],
-      "temporal_dim":         [ 4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4 ],
-      "num_channel":          [ 2,   3,   1,   1,   1,   1,   1,   4,   1,   1,   1,   1,   3,   4 ], 
-      "fifo_depth":           [ 2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2,   2 ],
-      "configurable_channel": [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ],
-      "delayed_start":        [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   0,   0 ]
+      //                      0    1    2    3    4    5    6    7    8    9    10   11   12   13
+      spatial_bounds:       [[2], [4], [1], [1], [1], [1], [1], [4], [1], [1], [1], [1], [4], [4]],
+      temporal_dim:         [ 4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4,   4 ],
+      num_channel:          [ 2,   4,   1,   1,   1,   1,   1,   4,   1,   1,   1,   1,   4,   4 ], 
+      fifo_depth:           [ 9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9,   9 ],
+      configurable_channel: [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 ],
+      delayed_start:        [ 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   0,   0 ]
     },
-    "data_writer_params": {
-      "spatial_bounds":       [[1], [1], [1], [4]],
-      "temporal_dim":         [ 4,   4,   4,   4 ],
-      "num_channel":          [ 1,   1,   1,   4 ],
-      "fifo_depth":           [ 2,   2,   2,   2 ],
-      "configurable_channel": [ 0,   0,   0,   0 ],
-      "delayed_start":        [ 0,   0,   0,   0 ]
+    data_writer_params: {
+      spatial_bounds:       [[1], [1], [1], [4]],
+      temporal_dim:         [ 4,   4,   4,   4 ],
+      num_channel:          [ 1,   1,   1,   4 ],
+      fifo_depth:           [ 9,   9,   9,   9 ],
+      configurable_channel: [ 0,   0,   0,   0 ],
+      delayed_start:        [ 0,   0,   0,   0 ]
     },
-    "snax_library_name": "simbacore" 
+    snax_library_name: "simbacore" 
   }
 }

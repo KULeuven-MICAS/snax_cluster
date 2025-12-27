@@ -12,7 +12,7 @@ module snax_simbacore_streamer_wrapper #(
   parameter type         tcdm_rsp_t    = logic,
   // Parameters related to TCDM
   parameter int unsigned TCDMDataWidth = 64,
-  parameter int unsigned TCDMNumPorts  = 32,
+  parameter int unsigned TCDMNumPorts  = 34,
   parameter int unsigned TCDMAddrWidth = 20
 )(
   //-----------------------------
@@ -46,7 +46,7 @@ module snax_simbacore_streamer_wrapper #(
   output logic stream2acc_0_valid_o,
   input  logic stream2acc_0_ready_i,
 
-  output logic [191:0] stream2acc_1_data_o,
+  output logic [255:0] stream2acc_1_data_o,
   output logic stream2acc_1_valid_o,
   input  logic stream2acc_1_ready_i,
 
@@ -90,7 +90,7 @@ module snax_simbacore_streamer_wrapper #(
   output logic stream2acc_11_valid_o,
   input  logic stream2acc_11_ready_i,
 
-  output logic [191:0] stream2acc_12_data_o,
+  output logic [255:0] stream2acc_12_data_o,
   output logic stream2acc_12_valid_o,
   input  logic stream2acc_12_ready_i,
 
@@ -160,6 +160,7 @@ module snax_simbacore_streamer_wrapper #(
       tcdm_req_o[i].q.strb         = tcdm_req_strb   [i];
       tcdm_req_o[i].q.user.core_id = '0;
       tcdm_req_o[i].q.user.is_core = '0;
+      tcdm_req_o[i].q.user.tcdm_priority = '0;
       tcdm_req_o[i].q_valid        = tcdm_req_q_valid[i];
 
       tcdm_rsp_q_ready[i] = tcdm_rsp_i[i].q_ready;
@@ -388,6 +389,14 @@ module snax_simbacore_streamer_wrapper #(
     .io_data_tcdm_rsp_31_valid      ( tcdm_rsp_p_valid[31] ),
     .io_data_tcdm_req_31_ready      ( tcdm_rsp_q_ready[31] ),
 
+    .io_data_tcdm_rsp_32_bits_data  ( tcdm_rsp_data   [32] ),
+    .io_data_tcdm_rsp_32_valid      ( tcdm_rsp_p_valid[32] ),
+    .io_data_tcdm_req_32_ready      ( tcdm_rsp_q_ready[32] ),
+
+    .io_data_tcdm_rsp_33_bits_data  ( tcdm_rsp_data   [33] ),
+    .io_data_tcdm_rsp_33_valid      ( tcdm_rsp_p_valid[33] ),
+    .io_data_tcdm_req_33_ready      ( tcdm_rsp_q_ready[33] ),
+
     // Response
     .io_data_tcdm_req_0_valid      ( tcdm_req_q_valid[0] ),
     .io_data_tcdm_req_0_bits_addr  ( tcdm_req_addr   [0] ),
@@ -580,6 +589,18 @@ module snax_simbacore_streamer_wrapper #(
     .io_data_tcdm_req_31_bits_write ( tcdm_req_write  [31] ),
     .io_data_tcdm_req_31_bits_data  ( tcdm_req_data   [31] ),
     .io_data_tcdm_req_31_bits_strb  ( tcdm_req_strb   [31] ),
+
+    .io_data_tcdm_req_32_valid      ( tcdm_req_q_valid[32] ),
+    .io_data_tcdm_req_32_bits_addr  ( tcdm_req_addr   [32] ),
+    .io_data_tcdm_req_32_bits_write ( tcdm_req_write  [32] ),
+    .io_data_tcdm_req_32_bits_data  ( tcdm_req_data   [32] ),
+    .io_data_tcdm_req_32_bits_strb  ( tcdm_req_strb   [32] ),
+
+    .io_data_tcdm_req_33_valid      ( tcdm_req_q_valid[33] ),
+    .io_data_tcdm_req_33_bits_addr  ( tcdm_req_addr   [33] ),
+    .io_data_tcdm_req_33_bits_write ( tcdm_req_write  [33] ),
+    .io_data_tcdm_req_33_bits_data  ( tcdm_req_data   [33] ),
+    .io_data_tcdm_req_33_bits_strb  ( tcdm_req_strb   [33] ),
 
     //-----------------------------
     // CSR control ports

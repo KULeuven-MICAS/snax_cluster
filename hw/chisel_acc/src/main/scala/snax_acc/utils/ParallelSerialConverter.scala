@@ -9,233 +9,146 @@ import chisel3.util._
   *   The total width of the parallel input data.
   * @param serialWidth
   *   The width of each output serial chunk, must divide parallelWidth evenly.
+  * @param earlyTerminate
+  *   Whether to support early termination of the serialization process.
+  * @param allowedTerminateFactors
+  *   A sequence of allowed termination factors (not enforced in this implementation).
   */
-case class ParallelToSerialParams(
-  parallelWidth:  Int,
-  serialWidth:    Int,
-  earlyTerminate: Boolean = false
+case class ParallelAndSerialConverterParams(
+  parallelWidth:           Int,
+  serialWidth:             Int,
+  earlyTerminate:          Boolean  = false,
+  allowedTerminateFactors: Seq[Int] = Seq()
 ) {
   if (parallelWidth > serialWidth) {
     require(
       parallelWidth % serialWidth == 0,
       "parallelWidth must be an integer multiple of serialWidth."
     )
+  }
+
+  if (earlyTerminate) {
+    require(
+      allowedTerminateFactors.nonEmpty,
+      "allowedTerminateFactors must be non-empty when earlyTerminate = true."
+    )
+    // Ensure all allowed factors are valid
+    val maxFactor = parallelWidth / serialWidth
+    allowedTerminateFactors.foreach { f =>
+      require(
+        f >= 1 && f <= maxFactor,
+        s"Each allowed termination factor must be between 1 and $maxFactor."
+      )
+    }
   }
 
 }
 
 /** A module that sends a parallel input (via Decoupled I/O) out as multiple serial chunks (also Decoupled I/O).
   */
-class ParallelToSerial(val p: ParallelToSerialParams) extends Module {
+class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val in               = Flipped(Decoupled(UInt(p.parallelWidth.W)))
     val terminate_factor =
       if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
     val out              = Decoupled(UInt(p.serialWidth.W))
-    val enable           = Input(Bool())
+    val start            = Input(Bool())
   })
 
-  if (p.parallelWidth > p.serialWidth) {
-    // Calculate how many serial chunks form one parallel word.
-    val factor = p.parallelWidth / p.serialWidth
-
-    if (p.earlyTerminate) {
-      assert(
-        io.terminate_factor.getOrElse(factor.U) <= factor.U,
-        "terminate_factor must be less than or equal to the number of chunks."
-      )
+  val ratio: Int = p.parallelWidth / p.serialWidth
+  assert(ratio >= 1, "The ratio of parallelWidth to serialWidth must be at least 1.")
+  val inBitsSeq = Wire(Vec(ratio, UInt(p.serialWidth.W)))
+  inBitsSeq := VecInit(
+    Seq.tabulate(ratio) { i =>
+      io.in.bits((i + 1) * p.serialWidth - 1, i * p.serialWidth)
     }
+  )
 
-    // Shift register to hold the parallel data while serializing.
-    if (p.parallelWidth <= 2048) {} else {
-      // If the parallelWidth is greater than 2048, we need to use several smaller shift register
-      require(
-        p.parallelWidth % 2048 == 0,
-        "parallelWidth must be an integer multiple of 2048."
-      )
-    }
+  val storedData = Seq(inBitsSeq(0)) ++ inBitsSeq.drop(1).map { i =>
+    RegEnable(i, io.in.fire)
+  }
 
-    val numRegs  = math.max(1, p.parallelWidth / 2048) // Number of registers
-    val shiftReg = RegInit(VecInit(Seq.fill(numRegs)(0.U(2048.W))))
+  // Validate terminate_factor if early termination is enabled at runtime
+  if (p.earlyTerminate) {
+    val tf        = io.terminate_factor.get
+    val isAllowed = p.allowedTerminateFactors
+      .map(f => tf === f.U)
+      .reduce(_ || _) // since allowedFactors non-empty if earlyTerminate
+    assert(isAllowed, s"terminate_factor must be one of ${p.allowedTerminateFactors.mkString(", ")}")
+  }
 
-    // Counts how many chunks remain to be sent.
-    val count = RegInit(0.U(log2Ceil(factor + 1).W))
-
-    // Accept a new parallel word only if we have nothing left to send.
-    io.in.ready := (count === 0.U) && io.enable
-
-    // Once we get a new parallel word, store it and prepare to send.
-    // store in the vector of regs
-    if (p.parallelWidth <= 2048) {
-      when(io.in.fire) {
-        shiftReg(0) := io.in.bits
-      }
-        .elsewhen(io.out.fire) {
-          shiftReg(0) := shiftReg(0) >> p.serialWidth.U
-        }
-    } else {
-      when(io.in.fire) {
-        for (i <- 0 until numRegs) {
-          shiftReg(i) := io.in.bits(i * 2048 + 2047, i * 2048)
-        }
-      }.elsewhen(io.out.fire) {
-        for (i <- 0 until numRegs) {
-          if (i == numRegs - 1) {
-            // If we are at the last register, we need to shift in zeros
-            shiftReg(i) := Cat(
-              0.U(p.serialWidth.W),
-              shiftReg(i)(2047, p.serialWidth)
-            )
-          } else {
-            // Otherwise, shift in the next register
-            shiftReg(i) := Cat(
-              shiftReg(i + 1)(p.serialWidth - 1, 0),
-              shiftReg(i)(2047, p.serialWidth)
-            )
-          }
-        }
-      }
-    }
-
-    // On handshake, shift to the next chunk and decrement count.
-    when(io.in.fire) {
-      if (p.earlyTerminate) {
-        count := io.terminate_factor.getOrElse(factor.U)
-      } else {
-        count := factor.U
-      }
-    }.elsewhen(io.out.fire) {
-      count := count - 1.U
-    }
-
-    // The output is valid if there are chunks left to send.
-    io.out.valid := (count > 0.U)
-    // The current chunk to send is the least significant bits of shiftReg.
-    io.out.bits  := shiftReg(0)(p.serialWidth - 1, 0)
+  val counter = Module(new BasicCounter(width = log2Ceil(ratio), hasCeil = true))
+  if (p.earlyTerminate) {
+    counter.io.ceilOpt.get := io.terminate_factor.get
   } else {
+    counter.io.ceilOpt.get := ratio.U
+  }
+  counter.io.reset := io.start
+  counter.io.tick := io.out.fire
+
+  io.out.bits := MuxLookup(counter.io.value, 0.U.asTypeOf(UInt(p.serialWidth.W)))(storedData.zipWithIndex.map {
+    case (i, j) =>
+      j.U -> i
+  })
+
+  when(counter.io.value === 0.U) {
     io.out.valid := io.in.valid
-    io.out.bits  := io.in.bits
-    io.in.ready  := io.out.ready && io.enable
+    io.in.ready  := io.out.ready
+  } otherwise {
+    io.out.valid := true.B
+    io.in.ready  := false.B
   }
 
-}
-
-/** Parameter class for SerialToParallel.
-  *
-  * @param serialWidth
-  *   The width of each incoming serial data chunk.
-  * @param parallelWidth
-  *   The total width of the parallel output data. Must be a multiple of serialWidth.
-  */
-case class SerialToParallelParams(
-  serialWidth:    Int,
-  parallelWidth:  Int,
-  earlyTerminate: Boolean = false
-) {
-  if (parallelWidth > serialWidth) {
-    require(
-      parallelWidth % serialWidth == 0,
-      "parallelWidth must be an integer multiple of serialWidth."
-    )
-  }
 }
 
 /** A module that collects multiple serial inputs (via Decoupled I/O) and outputs them as a single parallel word (also
   * Decoupled I/O).
-  *
-  * This version defers output by one clock after receiving the final serial chunk, ensuring that the shift register
-  * contains the correct concatenated data.
   */
-class SerialToParallel(val p: SerialToParallelParams) extends Module {
+class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val in               = Flipped(Decoupled(UInt(p.serialWidth.W)))
     val terminate_factor =
       if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
     val out              = Decoupled(UInt(p.parallelWidth.W))
-    val enable           = Input(Bool())
+    val start            = Input(Bool())
   })
 
-  if (p.parallelWidth > p.serialWidth) {
-    // Number of input chunks required to form one parallel output
-    val factor: Int = p.parallelWidth / p.serialWidth
+  val ratio: Int = p.parallelWidth / p.serialWidth
+  assert(ratio >= 1, "The ratio of parallelWidth to serialWidth must be at least 1.")
+  val storeData = Wire(Vec(ratio - 1, Bool()))
 
-    if (p.earlyTerminate) {
-      assert(
-        io.terminate_factor.getOrElse(factor.U) <= factor.U,
-        "terminate_factor must be less than or equal to the number of chunks."
-      )
-    }
+  val outBitsSeq = Wire(Vec(ratio, UInt(p.serialWidth.W)))
+  io.out.bits     := outBitsSeq.asTypeOf(io.out.bits)
+  outBitsSeq.dropRight(1).zip(storeData).foreach { case (out, enable) =>
+    out := RegEnable(io.in.bits, enable)
+  }
+  outBitsSeq.last := io.in.bits
 
-    // Registers to track incoming data and chunk count
-    val numRegs  = math.max(1, p.parallelWidth / 2048) // Number of registers
-    val shiftReg = RegInit(VecInit(Seq.fill(numRegs)(0.U(2048.W))))
-    val count    = RegInit(0.U(log2Ceil(factor + 1).W))
+  // Validate terminate_factor if early termination is enabled at runtime
+  if (p.earlyTerminate) {
+    val tf        = io.terminate_factor.get
+    val isAllowed = p.allowedTerminateFactors
+      .map(f => tf === f.U)
+      .reduce(_ || _) // since allowedFactors non-empty if earlyTerminate
+    assert(isAllowed, s"terminate_factor must be one of ${p.allowedTerminateFactors.mkString(", ")}")
+  }
 
-    if (p.earlyTerminate) {
-      io.in.ready := count =/= io.terminate_factor.getOrElse(factor.U) && io.enable
-    } else {
-      io.in.ready := count =/= factor.U && io.enable
-    }
-
-    when(io.in.fire && count === 0.U) {
-      // If we're at the first chunk, reset the shift register
-      for (i <- 0 until numRegs) {
-        if (i == numRegs - 1) {
-          shiftReg(i) := Cat(io.in.bits, 0.U((2048 - p.serialWidth).W))
-        } else {
-          shiftReg(i) := 0.U
-        }
-      }
-    }.elsewhen(io.in.fire && count =/= 0.U) {
-      // Shift in the new serial bits at a position based on the count
-      for (i <- 0 until numRegs) {
-        if (i == numRegs - 1) {
-          shiftReg(i) := Cat(io.in.bits, shiftReg(i)(2047, p.serialWidth))
-        } else {
-          shiftReg(i) := Cat(
-            shiftReg(i + 1)(p.serialWidth - 1, 0),
-            shiftReg(i)(2047, p.serialWidth)
-          )
-        }
-      }
-    }
-
-    when(io.out.fire) {
-      count := 0.U
-    }.elsewhen(io.in.fire) {
-      count := count + 1.U
-    }
-
-    if (p.earlyTerminate) {
-      io.out.valid := count === io.terminate_factor.getOrElse(factor.U)
-    } else {
-      io.out.valid := count === factor.U
-    }
-
-    // Concatenate the shift register contents to form the parallel output
-    val effectiveBits = io.terminate_factor.getOrElse(factor.U) * p.serialWidth.U
-    val totalBits     = numRegs.U * 2048.U
-    if (p.earlyTerminate) {
-      if (p.parallelWidth <= 2048) {
-        val outMask = (1.U << effectiveBits) - 1.U
-        val shifted = shiftReg(0) >> (2048.U - effectiveBits)
-        io.out.bits := shifted & outMask
-      } else {
-        val fullData = Cat(shiftReg.reverse)
-        val outMask  = (1.U << effectiveBits) - 1.U
-        val shifted  = fullData >> (totalBits - effectiveBits)
-        io.out.bits := shifted & outMask
-      }
-    } else {
-      if (p.parallelWidth <= 2048) {
-        io.out.bits := shiftReg(0)(2047, 2047 - p.parallelWidth + 1)
-      } else {
-        io.out.bits := Cat(shiftReg.reverse)
-      }
-    }
+  val counter = Module(new BasicCounter(width = log2Ceil(ratio), hasCeil = true))
+  if (p.earlyTerminate) {
+    counter.io.ceilOpt.get := io.terminate_factor.get
   } else {
+    counter.io.ceilOpt.get := ratio.U
+  }
+  counter.io.reset := io.start
+  counter.io.tick := io.in.fire
+
+  storeData.zipWithIndex.foreach({ case (a, b) => a := counter.io.value === b.U })
+
+  when(counter.io.value === (ratio - 1).U) {
     io.out.valid := io.in.valid
-    io.out.bits  := io.in.bits
-    io.in.ready  := io.out.ready && io.enable
+    io.in.ready  := io.out.ready
+  } otherwise {
+    io.out.valid := false.B
+    io.in.ready  := true.B
   }
 }

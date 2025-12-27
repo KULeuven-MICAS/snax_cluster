@@ -772,7 +772,7 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
      {regs_2},
      {regs_1},
      {regs_0}};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :170:33
-  wire [31:0]        _GEN_2 = _GEN_1[io_reqRspIO_req_bits_addr[7:0]];	// <stdin>:2911:43, src/main/scala/snax/reqRspManager/ReqRspManager.scala:170:33
+  wire [31:0]        _GEN_2 = _GEN_1[io_reqRspIO_req_bits_addr[7:0]];	// <stdin>:2961:43, src/main/scala/snax/reqRspManager/ReqRspManager.scala:170:33
   wire               io_reqRspIO_rsp_valid_0 = readReg | readRegBusy;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:40, :144:28, :165:17, :171:33, :172:27
   assign io_reqRspIO_req_ready_0 =
     ~readRegBusy
@@ -1248,408 +1248,408 @@ module snax_simbacore_ReqRspManager(	// src/main/scala/snax/reqRspManager/ReqRsp
          {regs_0}};	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:55
       _regs_T_6 =
         _GEN_3[io_reqRspIO_req_bits_addr[7:0]] & ~remainingMask
-        | io_reqRspIO_req_bits_data & remainingMask;	// <stdin>:2471:26, src/main/scala/snax/reqRspManager/ReqRspManager.scala:103:40, :130:{55,57,64,76}
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h0)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+        | io_reqRspIO_req_bits_data & remainingMask;	// <stdin>:2521:26, src/main/scala/snax/reqRspManager/ReqRspManager.scala:103:40, :130:{55,57,64,76}
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h0)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_0 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_1 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_2 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_3 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_4 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_5 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_6 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_7 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_8 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_9 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_10 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_11 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_12 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hD)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_13 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hE)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hE)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_14 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hF)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hF)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_15 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h10)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h10)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_16 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h11)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h11)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_17 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h12)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h12)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_18 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h13)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h13)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_19 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h14)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h14)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_20 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h15)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h15)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_21 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h16)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h16)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_22 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h17)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h17)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_23 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h18)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h18)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_24 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h19)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h19)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_25 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1A)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1A)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_26 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1B)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1B)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_27 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1C)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1C)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_28 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1D)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1D)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_29 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1E)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1E)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_30 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1F)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h1F)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_31 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h20)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h20)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_32 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h21)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h21)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_33 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h22)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h22)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_34 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h23)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h23)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_35 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h24)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h24)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_36 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h25)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h25)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_37 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h26)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h26)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_38 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h27)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h27)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_39 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h28)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h28)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_40 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h29)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h29)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_41 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2A)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2A)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_42 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2B)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2B)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_43 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2C)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2C)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_44 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2D)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2D)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_45 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2E)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2E)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_46 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2F)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h2F)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_47 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h30)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h30)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_48 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h31)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h31)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_49 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h32)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h32)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_50 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h33)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h33)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_51 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h34)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h34)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_52 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h35)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h35)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_53 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h36)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h36)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_54 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h37)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h37)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_55 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h38)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h38)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_56 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h39)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h39)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_57 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3A)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3A)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_58 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3B)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3B)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_59 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3C)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3C)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_60 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3D)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3D)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_61 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3E)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3E)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_62 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3F)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h3F)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_63 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h40)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h40)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_64 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h41)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h41)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_65 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h42)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h42)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_66 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h43)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h43)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_67 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h44)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h44)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_68 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h45)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h45)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_69 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h46)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h46)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_70 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h47)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h47)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_71 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h48)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h48)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_72 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h49)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h49)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_73 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4A)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4A)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_74 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4B)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4B)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_75 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4C)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4C)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_76 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4D)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4D)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_77 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4E)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4E)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_78 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4F)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h4F)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_79 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h50)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h50)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_80 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h51)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h51)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_81 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h52)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h52)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_82 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h53)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h53)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_83 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h54)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h54)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_84 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h55)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h55)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_85 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h56)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h56)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_86 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h57)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h57)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_87 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h58)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h58)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_88 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h59)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h59)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_89 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5A)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5A)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_90 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5B)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5B)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_91 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5C)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5C)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_92 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5D)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5D)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_93 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5E)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5E)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_94 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5F)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h5F)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_95 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h60)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h60)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_96 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h61)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h61)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_97 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h62)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h62)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_98 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h63)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h63)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_99 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h64)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h64)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_100 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h65)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h65)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_101 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h66)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h66)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_102 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h67)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h67)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_103 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h68)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h68)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_104 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h69)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h69)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_105 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6A)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6A)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_106 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6B)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6B)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_107 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6C)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6C)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_108 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6D)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6D)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_109 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6E)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6E)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_110 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6F)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h6F)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_111 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h70)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h70)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_112 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h71)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h71)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_113 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h72)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h72)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_114 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h73)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h73)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_115 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h74)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h74)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_116 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h75)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h75)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_117 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h76)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h76)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_118 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h77)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h77)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_119 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h78)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h78)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_120 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h79)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h79)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_121 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7A)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7A)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_122 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7B)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7B)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_123 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7C)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7C)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_124 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7D)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7D)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_125 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7E)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7E)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_126 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7F)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h7F)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_127 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h80)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h80)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_128 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h81)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h81)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_129 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h82)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h82)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_130 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h83)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h83)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_131 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h84)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h84)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_132 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h85)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h85)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_133 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h86)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h86)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_134 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h87)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h87)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_135 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h88)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h88)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_136 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h89)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h89)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_137 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8A)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8A)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_138 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8B)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8B)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_139 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8C)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8C)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_140 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8D)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8D)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_141 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8E)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8E)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_142 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8F)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h8F)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_143 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h90)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h90)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_144 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h91)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h91)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_145 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h92)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h92)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_146 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h93)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h93)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_147 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h94)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h94)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_148 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h95)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h95)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_149 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h96)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h96)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_150 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h97)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h97)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_151 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h98)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h98)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_152 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h99)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h99)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_153 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9A)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9A)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_154 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9B)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9B)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_155 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9C)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9C)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_156 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9D)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9D)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_157 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9E)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9E)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_158 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9F)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'h9F)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_159 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA0)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA0)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_160 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA1)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA1)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_161 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA2)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA2)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_162 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA3)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA3)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_163 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA4)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA4)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_164 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA5)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA5)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_165 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA6)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA6)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_166 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA7)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA7)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_167 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA8)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA8)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_168 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA9)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hA9)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_169 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAA)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAA)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_170 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAB)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAB)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_171 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAC)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAC)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_172 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAD)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAD)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_173 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAE)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAE)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_174 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAF)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hAF)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_175 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB0)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB0)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_176 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB1)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB1)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_177 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB2)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB2)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_178 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB3)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB3)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_179 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB4)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB4)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_180 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB5)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB5)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_181 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB6)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB6)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_182 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB7)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB7)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_183 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB8)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB8)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_184 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB9)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hB9)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_185 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBA)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBA)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_186 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBB)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBB)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_187 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBC)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBC)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_188 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBD)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBD)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_189 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBE)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBE)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_190 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBF)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hBF)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_191 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC0)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC0)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_192 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC1)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC1)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_193 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC2)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC2)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_194 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC3)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC3)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_195 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC4)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC4)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_196 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC5)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC5)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_197 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC6)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC6)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_198 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC7)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC7)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_199 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
-      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC8)	// <stdin>:2468:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
+      if (writeReg & _GEN_0 & io_reqRspIO_req_bits_addr[7:0] == 8'hC8)	// <stdin>:2518:21, src/main/scala/snax/reqRspManager/ReqRspManager.scala:59:7, :79:21, :83:40, :102:18, :129:{29,50}, :130:30
         regs_200 <= _regs_T_6;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:79:21, :130:64
       readRegBusy <= io_reqRspIO_rsp_valid_0 & ~io_reqRspIO_rsp_ready;	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:144:28, :145:{40,43}, :165:17, :171:33, :172:27
       if (readReg)	// src/main/scala/snax/reqRspManager/ReqRspManager.scala:82:40
@@ -2384,18 +2384,18 @@ module snax_simbacore__C0_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
 endmodule
 
 // VCS coverage exclude_file
-module ram_2x20(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-  input         R0_addr,
-                R0_en,
+module ram_9x20(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+  input  [3:0]  R0_addr,
+  input         R0_en,
                 R0_clk,
   output [19:0] R0_data,
-  input         W0_addr,
-                W0_en,
+  input  [3:0]  W0_addr,
+  input         W0_en,
                 W0_clk,
   input  [19:0] W0_data
 );
 
-  reg [19:0] Memory[0:1];	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+  reg [19:0] Memory[0:8];	// src/main/scala/chisel3/util/Decoupled.scala:256:91
   always @(posedge W0_clk) begin	// src/main/scala/chisel3/util/Decoupled.scala:256:91
     if (W0_en & 1'h1)	// src/main/scala/chisel3/util/Decoupled.scala:256:91
       Memory[W0_addr] <= W0_data;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
@@ -2405,9 +2405,9 @@ module ram_2x20(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
     initial begin	// src/main/scala/chisel3/util/Decoupled.scala:256:91
       `INIT_RANDOM_PROLOG_	// src/main/scala/chisel3/util/Decoupled.scala:256:91
       `ifdef RANDOMIZE_MEM_INIT	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-        for (logic [1:0] i = 2'h0; i < 2'h2; i += 2'h1) begin
+        for (logic [3:0] i = 4'h0; i < 4'h9; i += 4'h1) begin
           _RANDOM_MEM = `RANDOM;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-          Memory[i[0]] = _RANDOM_MEM[19:0];	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+          Memory[i] = _RANDOM_MEM[19:0];	// src/main/scala/chisel3/util/Decoupled.scala:256:91
         end	// src/main/scala/chisel3/util/Decoupled.scala:256:91
       `endif // RANDOMIZE_MEM_INIT
     end // initial
@@ -2415,7 +2415,7 @@ module ram_2x20(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
   assign R0_data = R0_en ? Memory[R0_addr] : 20'bx;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
 endmodule
 
-module Queue_W20_D2_Hgniq5k(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hlh8ka9(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -2426,26 +2426,34 @@ module Queue_W20_D2_Hgniq5k(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -2461,13 +2469,13 @@ module Queue_W20_D2_Hgniq5k(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -2475,12 +2483,12 @@ module Queue_W20_D2_Hgniq5k(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -2507,7 +2515,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   wire _queues_0_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire enq_all_ready = _queues_0_io_enq_ready & _queues_1_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_1_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hgniq5k queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hlh8ka9 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -2517,7 +2525,7 @@ module snax_simbacore__C0_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hgniq5k queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hlh8ka9 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -2731,21 +2739,21 @@ module snax_simbacore__C0_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -2759,16 +2767,16 @@ module snax_simbacore__C0_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C0_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -2841,18 +2849,18 @@ module snax_simbacore__C0_Reader_DataResponsers(	// src/main/scala/snax/readerWr
 endmodule
 
 // VCS coverage exclude_file
-module ram_2x64(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-  input         R0_addr,
-                R0_en,
+module ram_9x64(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+  input  [3:0]  R0_addr,
+  input         R0_en,
                 R0_clk,
   output [63:0] R0_data,
-  input         W0_addr,
-                W0_en,
+  input  [3:0]  W0_addr,
+  input         W0_en,
                 W0_clk,
   input  [63:0] W0_data
 );
 
-  reg [63:0] Memory[0:1];	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+  reg [63:0] Memory[0:8];	// src/main/scala/chisel3/util/Decoupled.scala:256:91
   always @(posedge W0_clk) begin	// src/main/scala/chisel3/util/Decoupled.scala:256:91
     if (W0_en & 1'h1)	// src/main/scala/chisel3/util/Decoupled.scala:256:91
       Memory[W0_addr] <= W0_data;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
@@ -2862,11 +2870,11 @@ module ram_2x64(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
     initial begin	// src/main/scala/chisel3/util/Decoupled.scala:256:91
       `INIT_RANDOM_PROLOG_	// src/main/scala/chisel3/util/Decoupled.scala:256:91
       `ifdef RANDOMIZE_MEM_INIT	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-        for (logic [1:0] i = 2'h0; i < 2'h2; i += 2'h1) begin
+        for (logic [3:0] i = 4'h0; i < 4'h9; i += 4'h1) begin
           for (logic [6:0] j = 7'h0; j < 7'h40; j += 7'h20) begin
             _RANDOM_MEM[j +: 32] = `RANDOM;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
           end	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-          Memory[i[0]] = _RANDOM_MEM;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+          Memory[i] = _RANDOM_MEM;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
         end	// src/main/scala/chisel3/util/Decoupled.scala:256:91
       `endif // RANDOMIZE_MEM_INIT
     end // initial
@@ -2874,7 +2882,7 @@ module ram_2x64(	// src/main/scala/chisel3/util/Decoupled.scala:256:91
   assign R0_data = R0_en ? Memory[R0_addr] : 64'bx;	// src/main/scala/chisel3/util/Decoupled.scala:256:91
 endmodule
 
-module Queue_W64_D2_H3gc70h(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Hi8rjvf(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -2884,26 +2892,34 @@ module Queue_W64_D2_H3gc70h(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -2919,13 +2935,13 @@ module Queue_W64_D2_H3gc70h(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -2933,12 +2949,12 @@ module Queue_W64_D2_H3gc70h(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -2964,7 +2980,7 @@ module snax_simbacore__C0_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   wire [63:0] _queues_0_io_deq_bits;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire        deq_all_valid = _queues_0_io_deq_valid & _queues_1_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_1_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_H3gc70h queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hi8rjvf queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -2973,7 +2989,7 @@ module snax_simbacore__C0_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_H3gc70h queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hi8rjvf queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -3298,7 +3314,7 @@ module snax_simbacore__C1_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hvj8957(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hjcv8rd(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -3309,26 +3325,34 @@ module Queue_W20_D2_Hvj8957(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -3344,13 +3368,13 @@ module Queue_W20_D2_Hvj8957(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -3358,12 +3382,12 @@ module Queue_W20_D2_Hvj8957(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -3377,7 +3401,7 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
                 reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
-  input  [59:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  input  [79:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_out_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   output        io_out_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   output [19:0] io_out_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -3386,44 +3410,59 @@ module snax_simbacore__C1_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_1_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_out_2_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   output        io_out_2_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
-  output [19:0] io_out_2_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  output [19:0] io_out_2_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  input         io_out_3_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  output        io_out_3_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  output [19:0] io_out_3_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
+  wire _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire _queues_2_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire _queues_1_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire _queues_0_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire enq_all_ready =
-    _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
-  wire _queues_2_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hvj8957 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+    _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
+    & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
+  wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
+  Queue_W20_D9_Hjcv8rd queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
-    .io_enq_valid (_queues_2_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
+    .io_enq_valid (_queues_3_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
     .io_enq_bits  (io_in_0_bits[19:0]),	// src/main/scala/snax/utils/ComplexQueue.scala:77:16
     .io_deq_ready (io_out_0_ready),
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hvj8957 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hjcv8rd queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
-    .io_enq_valid (_queues_2_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
+    .io_enq_valid (_queues_3_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
     .io_enq_bits  (io_in_0_bits[39:20]),	// src/main/scala/snax/utils/ComplexQueue.scala:77:16
     .io_deq_ready (io_out_1_ready),
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hvj8957 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hjcv8rd queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
-    .io_enq_valid (_queues_2_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
+    .io_enq_valid (_queues_3_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
     .io_enq_bits  (io_in_0_bits[59:40]),	// src/main/scala/snax/utils/ComplexQueue.scala:77:16
     .io_deq_ready (io_out_2_ready),
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
+  );
+  Queue_W20_D9_Hjcv8rd queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+    .clock        (clock),
+    .reset        (reset),
+    .io_enq_ready (_queues_3_io_enq_ready),
+    .io_enq_valid (_queues_3_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
+    .io_enq_bits  (io_in_0_bits[79:60]),	// src/main/scala/snax/utils/ComplexQueue.scala:77:16
+    .io_deq_ready (io_out_3_ready),
+    .io_deq_valid (io_out_3_valid),
+    .io_deq_bits  (io_out_3_bits)
   );
   assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
 endmodule
@@ -3452,13 +3491,17 @@ module snax_simbacore__C1_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
   output [19:0] io_addr_1_bits,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
   input         io_addr_2_ready,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
   output        io_addr_2_valid,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
-  output [19:0] io_addr_2_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
+  output [19:0] io_addr_2_bits,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
+  input         io_addr_3_ready,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
+  output        io_addr_3_valid,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
+  output [19:0] io_addr_3_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
   wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
   wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
   wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
   wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
   wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
@@ -3549,9 +3592,10 @@ module snax_simbacore__C1_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
     .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
-      ({io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[18:0], 1'h0},
+      ({io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h3,
+        io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[18:0], 1'h0},
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0,
-        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :129:71, :140:37, :151:27, :195:28
+        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :129:71, :133:67, :140:37, :151:27, :195:28
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits),
@@ -3560,15 +3604,19 @@ module snax_simbacore__C1_Reader_AddressGenUnit(	// src/main/scala/snax/readerWr
     .io_out_1_bits  (io_addr_1_bits),
     .io_out_2_ready (io_addr_2_ready),
     .io_out_2_valid (_outputBuffer_io_out_2_valid),
-    .io_out_2_bits  (io_addr_2_bits)
+    .io_out_2_bits  (io_addr_2_bits),
+    .io_out_3_ready (io_addr_3_ready),
+    .io_out_3_valid (_outputBuffer_io_out_3_valid),
+    .io_out_3_bits  (io_addr_3_bits)
   );
   assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
   assign io_bufferEmpty =
     ~(_outputBuffer_io_out_0_valid | _outputBuffer_io_out_1_valid
-      | _outputBuffer_io_out_2_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
+      | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
   assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
   assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
   assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C1_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -3615,7 +3663,15 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
   output        io_2_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_2_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  output        io_2_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output        io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+                io_3_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input  [19:0] io_3_in_addr_bits,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output        io_3_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output [19:0] io_3_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output        io_3_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
   snax_simbacore__C1_Reader_DataRequestor DataRequestor_0 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
@@ -3648,6 +3704,16 @@ module snax_simbacore__C1_Reader_DataRequestors(	// src/main/scala/snax/readerWr
     .io_reqrspLink_rspReady   (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_2_reqrspLink_reqSubmit)
   );
+  snax_simbacore__C1_Reader_DataRequestor DataRequestor_3 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
+    .io_in_addr_ready         (io_3_in_addr_ready),
+    .io_in_addr_valid         (io_3_in_addr_valid),
+    .io_in_addr_bits          (io_3_in_addr_bits),
+    .io_out_tcdmReq_ready     (io_3_out_tcdmReq_ready),
+    .io_out_tcdmReq_valid     (io_3_out_tcdmReq_valid),
+    .io_out_tcdmReq_bits_addr (io_3_out_tcdmReq_bits_addr),
+    .io_reqrspLink_rspReady   (io_3_reqrspLink_rspReady),
+    .io_reqrspLink_reqSubmit  (io_3_reqrspLink_reqSubmit)
+  );
 endmodule
 
 module snax_simbacore__C1_Reader_FifoUtilizationCounter(	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -3658,21 +3724,21 @@ module snax_simbacore__C1_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -3686,16 +3752,16 @@ module snax_simbacore__C1_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C1_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -3747,7 +3813,14 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   output [63:0] io_2_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-  input         io_2_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  input         io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+                io_3_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  input  [63:0] io_3_in_tcdmRsp_bits_data,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  output        io_3_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  output [63:0] io_3_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  input         io_3_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  output        io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  input         io_3_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
 
   snax_simbacore__C1_Reader_DataResponser DataResponser_0 (	// src/main/scala/snax/readerWriter/DataResponser.scala:69:24
@@ -3783,9 +3856,20 @@ module snax_simbacore__C1_Reader_DataResponsers(	// src/main/scala/snax/readerWr
     .io_reqrspLink_rspReady  (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_2_reqrspLink_reqSubmit)
   );
+  snax_simbacore__C1_Reader_DataResponser DataResponser_3 (	// src/main/scala/snax/readerWriter/DataResponser.scala:69:24
+    .clock                   (clock),
+    .reset                   (reset),
+    .io_in_tcdmRsp_valid     (io_3_in_tcdmRsp_valid),
+    .io_in_tcdmRsp_bits_data (io_3_in_tcdmRsp_bits_data),
+    .io_out_data_valid       (io_3_out_data_valid),
+    .io_out_data_bits        (io_3_out_data_bits),
+    .io_out_dataFifoPopped   (io_3_out_dataFifoPopped),
+    .io_reqrspLink_rspReady  (io_3_reqrspLink_rspReady),
+    .io_reqrspLink_reqSubmit (io_3_reqrspLink_reqSubmit)
+  );
 endmodule
 
-module Queue_W64_D2_Hd07n5u(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_H155m6n(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -3795,26 +3879,34 @@ module Queue_W64_D2_Hd07n5u(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -3830,13 +3922,13 @@ module Queue_W64_D2_Hd07n5u(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -3844,12 +3936,12 @@ module Queue_W64_D2_Hd07n5u(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -3866,11 +3958,15 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   input  [63:0]  io_in_1_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input          io_in_2_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [63:0]  io_in_2_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  input          io_in_3_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  input  [63:0]  io_in_3_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input          io_out_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   output         io_out_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
-  output [191:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  output [255:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
+  wire        _queues_3_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  wire [63:0] _queues_3_io_deq_bits;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire        _queues_2_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire [63:0] _queues_2_io_deq_bits;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire        _queues_1_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
@@ -3878,38 +3974,51 @@ module snax_simbacore__C1_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   wire        _queues_0_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire [63:0] _queues_0_io_deq_bits;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire        deq_all_valid =
-    _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
-  wire        _queues_2_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_Hd07n5u queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+    _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
+    & _queues_3_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
+  wire        _queues_3_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
+  Queue_W64_D9_H155m6n queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
     .io_enq_bits  (io_in_0_bits),
-    .io_deq_ready (_queues_2_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
+    .io_deq_ready (_queues_3_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_Hd07n5u queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_H155m6n queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
     .io_enq_bits  (io_in_1_bits),
-    .io_deq_ready (_queues_2_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
+    .io_deq_ready (_queues_3_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_Hd07n5u queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_H155m6n queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
     .io_enq_bits  (io_in_2_bits),
-    .io_deq_ready (_queues_2_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
+    .io_deq_ready (_queues_3_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
+  Queue_W64_D9_H155m6n queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+    .clock        (clock),
+    .reset        (reset),
+    .io_enq_valid (io_in_3_valid),
+    .io_enq_bits  (io_in_3_bits),
+    .io_deq_ready (_queues_3_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
+    .io_deq_valid (_queues_3_io_deq_valid),
+    .io_deq_bits  (_queues_3_io_deq_bits)
+  );
   assign io_out_0_valid = deq_all_valid;	// src/main/scala/snax/readerWriter/Reader.scala:46:9, src/main/scala/snax/utils/ComplexQueue.scala:89:61
   assign io_out_0_bits =
-    {_queues_2_io_deq_bits, _queues_1_io_deq_bits, _queues_0_io_deq_bits};	// src/main/scala/snax/readerWriter/Reader.scala:46:9, src/main/scala/snax/utils/ComplexQueue.scala:57:23, :95:10
+    {_queues_3_io_deq_bits,
+     _queues_2_io_deq_bits,
+     _queues_1_io_deq_bits,
+     _queues_0_io_deq_bits};	// src/main/scala/snax/readerWriter/Reader.scala:46:9, src/main/scala/snax/utils/ComplexQueue.scala:57:23, :95:10
 endmodule
 
 module snax_simbacore__C1_Reader_DataRepeatCounter(	// src/main/scala/snax/utils/HandShakeRepeater.scala:16:9
@@ -3963,10 +4072,10 @@ module snax_simbacore__C1_Reader_RepeatHandshake(	// src/main/scala/snax/readerW
                  reset,	// src/main/scala/snax/readerWriter/Reader.scala:123:9
   output         io_in_ready,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
   input          io_in_valid,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
-  input  [191:0] io_in_bits,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
+  input  [255:0] io_in_bits,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
   input          io_out_ready,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
   output         io_out_valid,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
-  output [191:0] io_out_bits,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
+  output [255:0] io_out_bits,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
   input  [19:0]  io_repeat_times,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
   input          io_start	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
 );
@@ -4010,20 +4119,25 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
   input          io_tcdmReq_2_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output         io_tcdmReq_2_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output [19:0]  io_tcdmReq_2_bits_addr,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input          io_tcdmReq_3_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  output         io_tcdmReq_3_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  output [19:0]  io_tcdmReq_3_bits_addr,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmRsp_0_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input  [63:0]  io_tcdmRsp_0_bits_data,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmRsp_1_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input  [63:0]  io_tcdmRsp_1_bits_data,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmRsp_2_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input  [63:0]  io_tcdmRsp_2_bits_data,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input          io_tcdmRsp_3_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input  [63:0]  io_tcdmRsp_3_bits_data,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_data_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output         io_data_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  output [191:0] io_data_bits	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  output [255:0] io_data_bits	// src/main/scala/snax/readerWriter/Reader.scala:18:14
 );
 
   wire         _outputDataRepeat_io_in_ready;	// src/main/scala/snax/readerWriter/Reader.scala:122:32
   wire         _dataBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/Reader.scala:45:26
-  wire [191:0] _dataBuffer_io_out_0_bits;	// src/main/scala/snax/readerWriter/Reader.scala:45:26
+  wire [255:0] _dataBuffer_io_out_0_bits;	// src/main/scala/snax/readerWriter/Reader.scala:45:26
   wire         _responsers_io_0_out_data_valid;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
   wire [63:0]  _responsers_io_0_out_data_bits;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
   wire         _responsers_io_0_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
@@ -4033,12 +4147,17 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
   wire         _responsers_io_2_out_data_valid;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
   wire [63:0]  _responsers_io_2_out_data_bits;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
   wire         _responsers_io_2_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+  wire         _responsers_io_3_out_data_valid;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+  wire [63:0]  _responsers_io_3_out_data_bits;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+  wire         _responsers_io_3_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
   wire         _requestors_io_0_in_addr_ready;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _requestors_io_0_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _requestors_io_1_in_addr_ready;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _requestors_io_1_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _requestors_io_2_in_addr_ready;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _requestors_io_2_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
+  wire         _requestors_io_3_in_addr_ready;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
+  wire         _requestors_io_3_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _addressgen_io_busy;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
   wire         _addressgen_io_bufferEmpty;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
   wire         _addressgen_io_addr_0_valid;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
@@ -4047,8 +4166,10 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
   wire [19:0]  _addressgen_io_addr_1_bits;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
   wire         _addressgen_io_addr_2_valid;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
   wire [19:0]  _addressgen_io_addr_2_bits;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
+  wire         _addressgen_io_addr_3_valid;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
+  wire [19:0]  _addressgen_io_addr_3_bits;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
   wire         _outputDataRepeat_io_repeat_times_T = io_aguCfg_temporalStrides_0 == 20'h0;	// src/main/scala/snax/readerWriter/Reader.scala:59:37
-  wire         _responsers_io_2_out_dataFifoPopped_T =
+  wire         _responsers_io_3_out_dataFifoPopped_T =
     _outputDataRepeat_io_in_ready & _dataBuffer_io_out_0_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/Reader.scala:45:26, :122:32
   snax_simbacore__C1_Reader_AddressGenUnit addressgen (	// src/main/scala/snax/readerWriter/Reader.scala:21:26
     .clock                    (clock),
@@ -4075,7 +4196,10 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_addr_1_bits           (_addressgen_io_addr_1_bits),
     .io_addr_2_ready          (_requestors_io_2_in_addr_ready),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_addr_2_valid          (_addressgen_io_addr_2_valid),
-    .io_addr_2_bits           (_addressgen_io_addr_2_bits)
+    .io_addr_2_bits           (_addressgen_io_addr_2_bits),
+    .io_addr_3_ready          (_requestors_io_3_in_addr_ready),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
+    .io_addr_3_valid          (_addressgen_io_addr_3_valid),
+    .io_addr_3_bits           (_addressgen_io_addr_3_bits)
   );
   snax_simbacore__C1_Reader_DataRequestors requestors (	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_0_in_addr_ready         (_requestors_io_0_in_addr_ready),
@@ -4101,7 +4225,15 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_2_out_tcdmReq_valid     (io_tcdmReq_2_valid),
     .io_2_out_tcdmReq_bits_addr (io_tcdmReq_2_bits_addr),
     .io_2_reqrspLink_rspReady   (_responsers_io_2_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
-    .io_2_reqrspLink_reqSubmit  (_requestors_io_2_reqrspLink_reqSubmit)
+    .io_2_reqrspLink_reqSubmit  (_requestors_io_2_reqrspLink_reqSubmit),
+    .io_3_in_addr_ready         (_requestors_io_3_in_addr_ready),
+    .io_3_in_addr_valid         (_addressgen_io_addr_3_valid),	// src/main/scala/snax/readerWriter/Reader.scala:21:26
+    .io_3_in_addr_bits          (_addressgen_io_addr_3_bits),	// src/main/scala/snax/readerWriter/Reader.scala:21:26
+    .io_3_out_tcdmReq_ready     (io_tcdmReq_3_ready),
+    .io_3_out_tcdmReq_valid     (io_tcdmReq_3_valid),
+    .io_3_out_tcdmReq_bits_addr (io_tcdmReq_3_bits_addr),
+    .io_3_reqrspLink_rspReady   (_responsers_io_3_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+    .io_3_reqrspLink_reqSubmit  (_requestors_io_3_reqrspLink_reqSubmit)
   );
   snax_simbacore__C1_Reader_DataResponsers responsers (	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .clock                     (clock),
@@ -4110,23 +4242,30 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_0_in_tcdmRsp_bits_data (io_tcdmRsp_0_bits_data),
     .io_0_out_data_valid       (_responsers_io_0_out_data_valid),
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
-    .io_0_out_dataFifoPopped   (_responsers_io_2_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_0_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_1_in_tcdmRsp_valid     (io_tcdmRsp_1_valid),
     .io_1_in_tcdmRsp_bits_data (io_tcdmRsp_1_bits_data),
     .io_1_out_data_valid       (_responsers_io_1_out_data_valid),
     .io_1_out_data_bits        (_responsers_io_1_out_data_bits),
-    .io_1_out_dataFifoPopped   (_responsers_io_2_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_1_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_1_reqrspLink_rspReady  (_responsers_io_1_reqrspLink_rspReady),
     .io_1_reqrspLink_reqSubmit (_requestors_io_1_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_2_in_tcdmRsp_valid     (io_tcdmRsp_2_valid),
     .io_2_in_tcdmRsp_bits_data (io_tcdmRsp_2_bits_data),
     .io_2_out_data_valid       (_responsers_io_2_out_data_valid),
     .io_2_out_data_bits        (_responsers_io_2_out_data_bits),
-    .io_2_out_dataFifoPopped   (_responsers_io_2_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_2_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_2_reqrspLink_rspReady  (_responsers_io_2_reqrspLink_rspReady),
-    .io_2_reqrspLink_reqSubmit (_requestors_io_2_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
+    .io_2_reqrspLink_reqSubmit (_requestors_io_2_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
+    .io_3_in_tcdmRsp_valid     (io_tcdmRsp_3_valid),
+    .io_3_in_tcdmRsp_bits_data (io_tcdmRsp_3_bits_data),
+    .io_3_out_data_valid       (_responsers_io_3_out_data_valid),
+    .io_3_out_data_bits        (_responsers_io_3_out_data_bits),
+    .io_3_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_3_reqrspLink_rspReady  (_responsers_io_3_reqrspLink_rspReady),
+    .io_3_reqrspLink_reqSubmit (_requestors_io_3_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
   snax_simbacore__C1_Reader_DataBuffer dataBuffer (	// src/main/scala/snax/readerWriter/Reader.scala:45:26
     .clock          (clock),
@@ -4137,6 +4276,8 @@ module snax_simbacore__C1_Reader(	// src/main/scala/snax/readerWriter/Reader.sca
     .io_in_1_bits   (_responsers_io_1_out_data_bits),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_in_2_valid  (_responsers_io_2_out_data_valid),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_in_2_bits   (_responsers_io_2_out_data_bits),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+    .io_in_3_valid  (_responsers_io_3_out_data_valid),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+    .io_in_3_bits   (_responsers_io_3_out_data_bits),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_out_0_ready (_outputDataRepeat_io_in_ready),	// src/main/scala/snax/readerWriter/Reader.scala:122:32
     .io_out_0_valid (_dataBuffer_io_out_0_valid),
     .io_out_0_bits  (_dataBuffer_io_out_0_bits)
@@ -4256,7 +4397,7 @@ module snax_simbacore__C2_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hv04m0q(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hem7sr1(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -4267,26 +4408,34 @@ module Queue_W20_D2_Hv04m0q(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -4302,13 +4451,13 @@ module Queue_W20_D2_Hv04m0q(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -4316,12 +4465,12 @@ module Queue_W20_D2_Hv04m0q(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -4341,7 +4490,7 @@ module snax_simbacore__C2_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hv04m0q queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hem7sr1 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -4524,21 +4673,21 @@ module snax_simbacore__C2_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -4552,16 +4701,16 @@ module snax_simbacore__C2_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C2_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -4615,7 +4764,7 @@ module snax_simbacore__C2_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hlos997(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_H1dpe1a(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -4625,26 +4774,34 @@ module Queue_W64_D2_Hlos997(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -4660,13 +4817,13 @@ module Queue_W64_D2_Hlos997(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -4674,12 +4831,12 @@ module Queue_W64_D2_Hlos997(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -4697,7 +4854,7 @@ module snax_simbacore__C2_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hlos997 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_H1dpe1a queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -4985,7 +5142,7 @@ module snax_simbacore__C3_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H40l56l(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_H7qqekh(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -4996,26 +5153,34 @@ module Queue_W20_D2_H40l56l(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -5031,13 +5196,13 @@ module Queue_W20_D2_H40l56l(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -5045,12 +5210,12 @@ module Queue_W20_D2_H40l56l(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -5070,7 +5235,7 @@ module snax_simbacore__C3_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H40l56l queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_H7qqekh queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -5253,21 +5418,21 @@ module snax_simbacore__C3_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -5281,16 +5446,16 @@ module snax_simbacore__C3_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C3_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -5344,7 +5509,7 @@ module snax_simbacore__C3_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_H6av1v3(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Hkcvekt(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -5354,26 +5519,34 @@ module Queue_W64_D2_H6av1v3(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -5389,13 +5562,13 @@ module Queue_W64_D2_H6av1v3(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -5403,12 +5576,12 @@ module Queue_W64_D2_H6av1v3(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -5426,7 +5599,7 @@ module snax_simbacore__C3_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_H6av1v3 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hkcvekt queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -5714,7 +5887,7 @@ module snax_simbacore__C4_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hdlpdrt(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_H2nv4jf(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -5725,26 +5898,34 @@ module Queue_W20_D2_Hdlpdrt(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -5760,13 +5941,13 @@ module Queue_W20_D2_Hdlpdrt(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -5774,12 +5955,12 @@ module Queue_W20_D2_Hdlpdrt(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -5799,7 +5980,7 @@ module snax_simbacore__C4_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hdlpdrt queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_H2nv4jf queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -5982,21 +6163,21 @@ module snax_simbacore__C4_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -6010,16 +6191,16 @@ module snax_simbacore__C4_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C4_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -6073,7 +6254,7 @@ module snax_simbacore__C4_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hmd2b91(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Hifc1dt(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -6083,26 +6264,34 @@ module Queue_W64_D2_Hmd2b91(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -6118,13 +6307,13 @@ module Queue_W64_D2_Hmd2b91(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -6132,12 +6321,12 @@ module Queue_W64_D2_Hmd2b91(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -6155,7 +6344,7 @@ module snax_simbacore__C4_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hmd2b91 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hifc1dt queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -6443,7 +6632,7 @@ module snax_simbacore__C5_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H16rv3q(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_H6o0hav(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -6454,26 +6643,34 @@ module Queue_W20_D2_H16rv3q(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -6489,13 +6686,13 @@ module Queue_W20_D2_H16rv3q(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -6503,12 +6700,12 @@ module Queue_W20_D2_H16rv3q(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -6528,7 +6725,7 @@ module snax_simbacore__C5_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H16rv3q queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_H6o0hav queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -6711,21 +6908,21 @@ module snax_simbacore__C5_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -6739,16 +6936,16 @@ module snax_simbacore__C5_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C5_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -6802,7 +6999,7 @@ module snax_simbacore__C5_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hqmu2of(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_H4v65av(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -6812,26 +7009,34 @@ module Queue_W64_D2_Hqmu2of(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -6847,13 +7052,13 @@ module Queue_W64_D2_Hqmu2of(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -6861,12 +7066,12 @@ module Queue_W64_D2_Hqmu2of(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -6884,7 +7089,7 @@ module snax_simbacore__C5_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hqmu2of queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_H4v65av queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -7172,7 +7377,7 @@ module snax_simbacore__C6_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hjhebj5(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hh9qbp4(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -7183,26 +7388,34 @@ module Queue_W20_D2_Hjhebj5(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -7218,13 +7431,13 @@ module Queue_W20_D2_Hjhebj5(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -7232,12 +7445,12 @@ module Queue_W20_D2_Hjhebj5(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -7257,7 +7470,7 @@ module snax_simbacore__C6_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hjhebj5 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hh9qbp4 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -7440,21 +7653,21 @@ module snax_simbacore__C6_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -7468,16 +7681,16 @@ module snax_simbacore__C6_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C6_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -7531,7 +7744,7 @@ module snax_simbacore__C6_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_H3mptm7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_H9aj5c9(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -7541,26 +7754,34 @@ module Queue_W64_D2_H3mptm7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -7576,13 +7797,13 @@ module Queue_W64_D2_H3mptm7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -7590,12 +7811,12 @@ module Queue_W64_D2_H3mptm7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -7613,7 +7834,7 @@ module snax_simbacore__C6_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_H3mptm7 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_H9aj5c9 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -7901,7 +8122,7 @@ module snax_simbacore__C7_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hse1vkr(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hub7ovh(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -7912,26 +8133,34 @@ module Queue_W20_D2_Hse1vkr(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -7947,13 +8176,13 @@ module Queue_W20_D2_Hse1vkr(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -7961,12 +8190,12 @@ module Queue_W20_D2_Hse1vkr(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -8003,7 +8232,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hse1vkr queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hub7ovh queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -8013,7 +8242,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hse1vkr queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hub7ovh queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -8023,7 +8252,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hse1vkr queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hub7ovh queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -8033,7 +8262,7 @@ module snax_simbacore__C7_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_Hse1vkr queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hub7ovh queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -8303,21 +8532,21 @@ module snax_simbacore__C7_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -8331,16 +8560,16 @@ module snax_simbacore__C7_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C7_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -8448,7 +8677,7 @@ module snax_simbacore__C7_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hsetot(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Hmqjpif(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -8458,26 +8687,34 @@ module Queue_W64_D2_Hsetot(	// src/main/scala/snax/utils/ComplexQueue.scala:57:2
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -8493,13 +8730,13 @@ module Queue_W64_D2_Hsetot(	// src/main/scala/snax/utils/ComplexQueue.scala:57:2
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -8507,12 +8744,12 @@ module Queue_W64_D2_Hsetot(	// src/main/scala/snax/utils/ComplexQueue.scala:57:2
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -8548,7 +8785,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
     & _queues_3_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_3_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_Hsetot queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hmqjpif queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -8557,7 +8794,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_Hsetot queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hmqjpif queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -8566,7 +8803,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_Hsetot queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hmqjpif queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -8575,7 +8812,7 @@ module snax_simbacore__C7_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_Hsetot queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hmqjpif queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -8968,7 +9205,7 @@ module snax_simbacore__C8_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hmrp5a7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hi38dcb(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -8979,26 +9216,34 @@ module Queue_W20_D2_Hmrp5a7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -9014,13 +9259,13 @@ module Queue_W20_D2_Hmrp5a7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -9028,12 +9273,12 @@ module Queue_W20_D2_Hmrp5a7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -9053,7 +9298,7 @@ module snax_simbacore__C8_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hmrp5a7 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hi38dcb queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -9236,21 +9481,21 @@ module snax_simbacore__C8_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -9264,16 +9509,16 @@ module snax_simbacore__C8_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C8_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -9327,7 +9572,7 @@ module snax_simbacore__C8_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hj6f5a0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Hfkp2hi(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -9337,26 +9582,34 @@ module Queue_W64_D2_Hj6f5a0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -9372,13 +9625,13 @@ module Queue_W64_D2_Hj6f5a0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -9386,12 +9639,12 @@ module Queue_W64_D2_Hj6f5a0(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -9409,7 +9662,7 @@ module snax_simbacore__C8_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hj6f5a0 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hfkp2hi queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -9697,7 +9950,7 @@ module snax_simbacore__C9_Reader_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Htu6ib4(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hbg3nb(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -9708,26 +9961,34 @@ module Queue_W20_D2_Htu6ib4(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -9743,13 +10004,13 @@ module Queue_W20_D2_Htu6ib4(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -9757,12 +10018,12 @@ module Queue_W20_D2_Htu6ib4(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -9782,7 +10043,7 @@ module snax_simbacore__C9_Reader_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Htu6ib4 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hbg3nb queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -9965,21 +10226,21 @@ module snax_simbacore__C9_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -9993,16 +10254,16 @@ module snax_simbacore__C9_Reader_FifoUtilizationCounter(	// src/main/scala/snax/
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C9_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -10056,7 +10317,7 @@ module snax_simbacore__C9_Reader_DataResponsers(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hlpjjkn(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Hvhipd7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -10066,26 +10327,34 @@ module Queue_W64_D2_Hlpjjkn(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -10101,13 +10370,13 @@ module Queue_W64_D2_Hlpjjkn(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -10115,12 +10384,12 @@ module Queue_W64_D2_Hlpjjkn(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -10138,7 +10407,7 @@ module snax_simbacore__C9_Reader_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hlpjjkn queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hvhipd7 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -10426,7 +10695,7 @@ module snax_simbacore__C10_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hqp97a8(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hngj9ht(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -10437,26 +10706,34 @@ module Queue_W20_D2_Hqp97a8(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -10472,13 +10749,13 @@ module Queue_W20_D2_Hqp97a8(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -10486,12 +10763,12 @@ module Queue_W20_D2_Hqp97a8(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -10511,7 +10788,7 @@ module snax_simbacore__C10_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hqp97a8 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hngj9ht queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -10694,21 +10971,21 @@ module snax_simbacore__C10_Reader_FifoUtilizationCounter(	// src/main/scala/snax
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -10722,16 +10999,16 @@ module snax_simbacore__C10_Reader_FifoUtilizationCounter(	// src/main/scala/snax
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C10_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -10785,7 +11062,7 @@ module snax_simbacore__C10_Reader_DataResponsers(	// src/main/scala/snax/readerW
   );
 endmodule
 
-module Queue_W64_D2_Hpfn10b(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Hf6lbbp(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -10795,26 +11072,34 @@ module Queue_W64_D2_Hpfn10b(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -10830,13 +11115,13 @@ module Queue_W64_D2_Hpfn10b(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -10844,12 +11129,12 @@ module Queue_W64_D2_Hpfn10b(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -10867,7 +11152,7 @@ module snax_simbacore__C10_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hpfn10b queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hf6lbbp queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -11155,7 +11440,7 @@ module snax_simbacore__C11_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hiq83o1(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hmhpkcb(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -11166,26 +11451,34 @@ module Queue_W20_D2_Hiq83o1(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -11201,13 +11494,13 @@ module Queue_W20_D2_Hiq83o1(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -11215,12 +11508,12 @@ module Queue_W20_D2_Hiq83o1(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -11240,7 +11533,7 @@ module snax_simbacore__C11_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hiq83o1 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hmhpkcb queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -11423,21 +11716,21 @@ module snax_simbacore__C11_Reader_FifoUtilizationCounter(	// src/main/scala/snax
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -11451,16 +11744,16 @@ module snax_simbacore__C11_Reader_FifoUtilizationCounter(	// src/main/scala/snax
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C11_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -11514,7 +11807,7 @@ module snax_simbacore__C11_Reader_DataResponsers(	// src/main/scala/snax/readerW
   );
 endmodule
 
-module Queue_W64_D2_Hpb0nom(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Hc5abd9(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -11524,26 +11817,34 @@ module Queue_W64_D2_Hpb0nom(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -11559,13 +11860,13 @@ module Queue_W64_D2_Hpb0nom(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -11573,12 +11874,12 @@ module Queue_W64_D2_Hpb0nom(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -11596,7 +11897,7 @@ module snax_simbacore__C11_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hpb0nom queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hc5abd9 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -11884,7 +12185,7 @@ module snax_simbacore__C12_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hl05ma7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hfa3qq3(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -11895,26 +12196,34 @@ module Queue_W20_D2_Hl05ma7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -11930,13 +12239,13 @@ module Queue_W20_D2_Hl05ma7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -11944,12 +12253,12 @@ module Queue_W20_D2_Hl05ma7(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -11963,7 +12272,7 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
                 reset,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9
   output        io_in_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_in_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
-  input  [59:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  input  [79:0] io_in_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_out_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   output        io_out_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   output [19:0] io_out_0_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
@@ -11972,44 +12281,59 @@ module snax_simbacore__C12_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
   output [19:0] io_out_1_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input         io_out_2_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   output        io_out_2_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
-  output [19:0] io_out_2_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  output [19:0] io_out_2_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  input         io_out_3_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  output        io_out_3_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  output [19:0] io_out_3_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
+  wire _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire _queues_2_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire _queues_1_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire _queues_0_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire enq_all_ready =
-    _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
-  wire _queues_2_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hl05ma7 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+    _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
+    & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
+  wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
+  Queue_W20_D9_Hfa3qq3 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
-    .io_enq_valid (_queues_2_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
+    .io_enq_valid (_queues_3_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
     .io_enq_bits  (io_in_0_bits[19:0]),	// src/main/scala/snax/utils/ComplexQueue.scala:77:16
     .io_deq_ready (io_out_0_ready),
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hl05ma7 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hfa3qq3 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
-    .io_enq_valid (_queues_2_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
+    .io_enq_valid (_queues_3_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
     .io_enq_bits  (io_in_0_bits[39:20]),	// src/main/scala/snax/utils/ComplexQueue.scala:77:16
     .io_deq_ready (io_out_1_ready),
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hl05ma7 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hfa3qq3 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
-    .io_enq_valid (_queues_2_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
+    .io_enq_valid (_queues_3_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
     .io_enq_bits  (io_in_0_bits[59:40]),	// src/main/scala/snax/utils/ComplexQueue.scala:77:16
     .io_deq_ready (io_out_2_ready),
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
+  );
+  Queue_W20_D9_Hfa3qq3 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+    .clock        (clock),
+    .reset        (reset),
+    .io_enq_ready (_queues_3_io_enq_ready),
+    .io_enq_valid (_queues_3_io_enq_valid_T),	// src/main/scala/snax/utils/ComplexQueue.scala:72:57
+    .io_enq_bits  (io_in_0_bits[79:60]),	// src/main/scala/snax/utils/ComplexQueue.scala:77:16
+    .io_deq_ready (io_out_3_ready),
+    .io_deq_valid (io_out_3_valid),
+    .io_deq_bits  (io_out_3_bits)
   );
   assign io_in_0_ready = enq_all_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:118:9, src/main/scala/snax/utils/ComplexQueue.scala:69:61
 endmodule
@@ -12038,13 +12362,17 @@ module snax_simbacore__C12_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
   output [19:0] io_addr_1_bits,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
   input         io_addr_2_ready,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
   output        io_addr_2_valid,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
-  output [19:0] io_addr_2_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
+  output [19:0] io_addr_2_bits,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
+  input         io_addr_3_ready,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
+  output        io_addr_3_valid,	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
+  output [19:0] io_addr_3_bits	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:78:14
 );
 
   wire        _outputBuffer_io_in_0_ready;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
   wire        _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
   wire        _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
   wire        _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
+  wire        _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:117:28
   wire [19:0] _counters_3_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire        _counters_3_io_lastVal;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
   wire [19:0] _counters_2_io_value;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:102:25
@@ -12135,9 +12463,10 @@ module snax_simbacore__C12_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
     .io_in_0_ready  (_outputBuffer_io_in_0_ready),
     .io_in_0_valid  (currentState),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:215:38
     .io_in_0_bits
-      ({io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[18:0], 1'h0},
+      ({io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0 * 20'h3,
+        io_cfg_ptr + _temporalOffset_T_4 + {io_cfg_spatialStrides_0[18:0], 1'h0},
         io_cfg_ptr + _temporalOffset_T_4 + io_cfg_spatialStrides_0,
-        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :129:71, :140:37, :151:27, :195:28
+        io_cfg_ptr + _temporalOffset_T_4}),	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :129:71, :133:67, :140:37, :151:27, :195:28
     .io_out_0_ready (io_addr_0_ready),
     .io_out_0_valid (_outputBuffer_io_out_0_valid),
     .io_out_0_bits  (io_addr_0_bits),
@@ -12146,15 +12475,19 @@ module snax_simbacore__C12_Reader_AddressGenUnit(	// src/main/scala/snax/readerW
     .io_out_1_bits  (io_addr_1_bits),
     .io_out_2_ready (io_addr_2_ready),
     .io_out_2_valid (_outputBuffer_io_out_2_valid),
-    .io_out_2_bits  (io_addr_2_bits)
+    .io_out_2_bits  (io_addr_2_bits),
+    .io_out_3_ready (io_addr_3_ready),
+    .io_out_3_valid (_outputBuffer_io_out_3_valid),
+    .io_out_3_bits  (io_addr_3_bits)
   );
   assign io_busy = currentState;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :215:38
   assign io_bufferEmpty =
     ~(_outputBuffer_io_out_0_valid | _outputBuffer_io_out_1_valid
-      | _outputBuffer_io_out_2_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
+      | _outputBuffer_io_out_2_valid | _outputBuffer_io_out_3_valid);	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28, :211:{21,70}
   assign io_addr_0_valid = _outputBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
   assign io_addr_1_valid = _outputBuffer_io_out_1_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
   assign io_addr_2_valid = _outputBuffer_io_out_2_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
+  assign io_addr_3_valid = _outputBuffer_io_out_3_valid;	// src/main/scala/snax/readerWriter/AddressGenUnit.scala:75:7, :117:28
 endmodule
 
 module snax_simbacore__C12_Reader_DataRequestor(	// src/main/scala/snax/readerWriter/DataRequestor.scala:32:7
@@ -12201,7 +12534,15 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
   output        io_2_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   output [19:0] io_2_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
   input         io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
-  output        io_2_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output        io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+                io_3_in_addr_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_in_addr_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input  [19:0] io_3_in_addr_bits,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_out_tcdmReq_ready,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output        io_3_out_tcdmReq_valid,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output [19:0] io_3_out_tcdmReq_bits_addr,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  input         io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
+  output        io_3_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataRequestor.scala:90:32
 );
 
   snax_simbacore__C12_Reader_DataRequestor DataRequestor_0 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
@@ -12234,6 +12575,16 @@ module snax_simbacore__C12_Reader_DataRequestors(	// src/main/scala/snax/readerW
     .io_reqrspLink_rspReady   (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit  (io_2_reqrspLink_reqSubmit)
   );
+  snax_simbacore__C12_Reader_DataRequestor DataRequestor_3 (	// src/main/scala/snax/readerWriter/DataRequestor.scala:98:24
+    .io_in_addr_ready         (io_3_in_addr_ready),
+    .io_in_addr_valid         (io_3_in_addr_valid),
+    .io_in_addr_bits          (io_3_in_addr_bits),
+    .io_out_tcdmReq_ready     (io_3_out_tcdmReq_ready),
+    .io_out_tcdmReq_valid     (io_3_out_tcdmReq_valid),
+    .io_out_tcdmReq_bits_addr (io_3_out_tcdmReq_bits_addr),
+    .io_reqrspLink_rspReady   (io_3_reqrspLink_rspReady),
+    .io_reqrspLink_reqSubmit  (io_3_reqrspLink_reqSubmit)
+  );
 endmodule
 
 module snax_simbacore__C12_Reader_FifoUtilizationCounter(	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -12244,21 +12595,21 @@ module snax_simbacore__C12_Reader_FifoUtilizationCounter(	// src/main/scala/snax
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -12272,16 +12623,16 @@ module snax_simbacore__C12_Reader_FifoUtilizationCounter(	// src/main/scala/snax
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C12_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -12333,7 +12684,14 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
   output [63:0] io_2_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   input         io_2_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
   output        io_2_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
-  input         io_2_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  input         io_2_reqrspLink_reqSubmit,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+                io_3_in_tcdmRsp_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  input  [63:0] io_3_in_tcdmRsp_bits_data,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  output        io_3_out_data_valid,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  output [63:0] io_3_out_data_bits,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  input         io_3_out_dataFifoPopped,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  output        io_3_reqrspLink_rspReady,	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
+  input         io_3_reqrspLink_reqSubmit	// src/main/scala/snax/readerWriter/DataResponser.scala:63:32
 );
 
   snax_simbacore__C12_Reader_DataResponser DataResponser_0 (	// src/main/scala/snax/readerWriter/DataResponser.scala:69:24
@@ -12369,9 +12727,20 @@ module snax_simbacore__C12_Reader_DataResponsers(	// src/main/scala/snax/readerW
     .io_reqrspLink_rspReady  (io_2_reqrspLink_rspReady),
     .io_reqrspLink_reqSubmit (io_2_reqrspLink_reqSubmit)
   );
+  snax_simbacore__C12_Reader_DataResponser DataResponser_3 (	// src/main/scala/snax/readerWriter/DataResponser.scala:69:24
+    .clock                   (clock),
+    .reset                   (reset),
+    .io_in_tcdmRsp_valid     (io_3_in_tcdmRsp_valid),
+    .io_in_tcdmRsp_bits_data (io_3_in_tcdmRsp_bits_data),
+    .io_out_data_valid       (io_3_out_data_valid),
+    .io_out_data_bits        (io_3_out_data_bits),
+    .io_out_dataFifoPopped   (io_3_out_dataFifoPopped),
+    .io_reqrspLink_rspReady  (io_3_reqrspLink_rspReady),
+    .io_reqrspLink_reqSubmit (io_3_reqrspLink_reqSubmit)
+  );
 endmodule
 
-module Queue_W64_D2_Hlguu9d(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Halcn30(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -12381,26 +12750,34 @@ module Queue_W64_D2_Hlguu9d(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -12416,13 +12793,13 @@ module Queue_W64_D2_Hlguu9d(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -12430,12 +12807,12 @@ module Queue_W64_D2_Hlguu9d(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -12452,11 +12829,15 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
   input  [63:0]  io_in_1_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input          io_in_2_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input  [63:0]  io_in_2_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  input          io_in_3_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  input  [63:0]  io_in_3_bits,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   input          io_out_0_ready,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
   output         io_out_0_valid,	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
-  output [191:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
+  output [255:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
+  wire        _queues_3_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  wire [63:0] _queues_3_io_deq_bits;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire        _queues_2_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire [63:0] _queues_2_io_deq_bits;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire        _queues_1_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
@@ -12464,38 +12845,51 @@ module snax_simbacore__C12_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
   wire        _queues_0_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire [63:0] _queues_0_io_deq_bits;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
   wire        deq_all_valid =
-    _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
-  wire        _queues_2_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_Hlguu9d queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+    _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
+    & _queues_3_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
+  wire        _queues_3_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
+  Queue_W64_D9_Halcn30 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
     .io_enq_bits  (io_in_0_bits),
-    .io_deq_ready (_queues_2_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
+    .io_deq_ready (_queues_3_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_Hlguu9d queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Halcn30 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
     .io_enq_bits  (io_in_1_bits),
-    .io_deq_ready (_queues_2_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
+    .io_deq_ready (_queues_3_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_Hlguu9d queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Halcn30 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
     .io_enq_bits  (io_in_2_bits),
-    .io_deq_ready (_queues_2_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
+    .io_deq_ready (_queues_3_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
+  Queue_W64_D9_Halcn30 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+    .clock        (clock),
+    .reset        (reset),
+    .io_enq_valid (io_in_3_valid),
+    .io_enq_bits  (io_in_3_bits),
+    .io_deq_ready (_queues_3_io_deq_ready_T),	// src/main/scala/snax/utils/ComplexQueue.scala:92:57
+    .io_deq_valid (_queues_3_io_deq_valid),
+    .io_deq_bits  (_queues_3_io_deq_bits)
+  );
   assign io_out_0_valid = deq_all_valid;	// src/main/scala/snax/readerWriter/Reader.scala:46:9, src/main/scala/snax/utils/ComplexQueue.scala:89:61
   assign io_out_0_bits =
-    {_queues_2_io_deq_bits, _queues_1_io_deq_bits, _queues_0_io_deq_bits};	// src/main/scala/snax/readerWriter/Reader.scala:46:9, src/main/scala/snax/utils/ComplexQueue.scala:57:23, :95:10
+    {_queues_3_io_deq_bits,
+     _queues_2_io_deq_bits,
+     _queues_1_io_deq_bits,
+     _queues_0_io_deq_bits};	// src/main/scala/snax/readerWriter/Reader.scala:46:9, src/main/scala/snax/utils/ComplexQueue.scala:57:23, :95:10
 endmodule
 
 module snax_simbacore__C12_Reader_DataRepeatCounter(	// src/main/scala/snax/utils/HandShakeRepeater.scala:16:9
@@ -12549,10 +12943,10 @@ module snax_simbacore__C12_Reader_RepeatHandshake(	// src/main/scala/snax/reader
                  reset,	// src/main/scala/snax/readerWriter/Reader.scala:123:9
   output         io_in_ready,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
   input          io_in_valid,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
-  input  [191:0] io_in_bits,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
+  input  [255:0] io_in_bits,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
   input          io_out_ready,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
   output         io_out_valid,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
-  output [191:0] io_out_bits,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
+  output [255:0] io_out_bits,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
   input  [19:0]  io_repeat_times,	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
   input          io_start	// src/main/scala/snax/utils/HandShakeRepeater.scala:8:14
 );
@@ -12596,20 +12990,25 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
   input          io_tcdmReq_2_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output         io_tcdmReq_2_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output [19:0]  io_tcdmReq_2_bits_addr,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input          io_tcdmReq_3_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  output         io_tcdmReq_3_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  output [19:0]  io_tcdmReq_3_bits_addr,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmRsp_0_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input  [63:0]  io_tcdmRsp_0_bits_data,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmRsp_1_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input  [63:0]  io_tcdmRsp_1_bits_data,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_tcdmRsp_2_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input  [63:0]  io_tcdmRsp_2_bits_data,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input          io_tcdmRsp_3_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  input  [63:0]  io_tcdmRsp_3_bits_data,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   input          io_data_ready,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
   output         io_data_valid,	// src/main/scala/snax/readerWriter/Reader.scala:18:14
-  output [191:0] io_data_bits	// src/main/scala/snax/readerWriter/Reader.scala:18:14
+  output [255:0] io_data_bits	// src/main/scala/snax/readerWriter/Reader.scala:18:14
 );
 
   wire         _outputDataRepeat_io_in_ready;	// src/main/scala/snax/readerWriter/Reader.scala:122:32
   wire         _dataBuffer_io_out_0_valid;	// src/main/scala/snax/readerWriter/Reader.scala:45:26
-  wire [191:0] _dataBuffer_io_out_0_bits;	// src/main/scala/snax/readerWriter/Reader.scala:45:26
+  wire [255:0] _dataBuffer_io_out_0_bits;	// src/main/scala/snax/readerWriter/Reader.scala:45:26
   wire         _responsers_io_0_out_data_valid;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
   wire [63:0]  _responsers_io_0_out_data_bits;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
   wire         _responsers_io_0_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
@@ -12619,12 +13018,17 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
   wire         _responsers_io_2_out_data_valid;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
   wire [63:0]  _responsers_io_2_out_data_bits;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
   wire         _responsers_io_2_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+  wire         _responsers_io_3_out_data_valid;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+  wire [63:0]  _responsers_io_3_out_data_bits;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+  wire         _responsers_io_3_reqrspLink_rspReady;	// src/main/scala/snax/readerWriter/Reader.scala:35:26
   wire         _requestors_io_0_in_addr_ready;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _requestors_io_0_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _requestors_io_1_in_addr_ready;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _requestors_io_1_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _requestors_io_2_in_addr_ready;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _requestors_io_2_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
+  wire         _requestors_io_3_in_addr_ready;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
+  wire         _requestors_io_3_reqrspLink_reqSubmit;	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   wire         _addressgen_io_busy;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
   wire         _addressgen_io_bufferEmpty;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
   wire         _addressgen_io_addr_0_valid;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
@@ -12633,8 +13037,10 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
   wire [19:0]  _addressgen_io_addr_1_bits;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
   wire         _addressgen_io_addr_2_valid;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
   wire [19:0]  _addressgen_io_addr_2_bits;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
+  wire         _addressgen_io_addr_3_valid;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
+  wire [19:0]  _addressgen_io_addr_3_bits;	// src/main/scala/snax/readerWriter/Reader.scala:21:26
   wire         _outputDataRepeat_io_repeat_times_T = io_aguCfg_temporalStrides_0 == 20'h0;	// src/main/scala/snax/readerWriter/Reader.scala:59:37
-  wire         _responsers_io_2_out_dataFifoPopped_T =
+  wire         _responsers_io_3_out_dataFifoPopped_T =
     _outputDataRepeat_io_in_ready & _dataBuffer_io_out_0_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/readerWriter/Reader.scala:45:26, :122:32
   snax_simbacore__C12_Reader_AddressGenUnit addressgen (	// src/main/scala/snax/readerWriter/Reader.scala:21:26
     .clock                    (clock),
@@ -12661,7 +13067,10 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_addr_1_bits           (_addressgen_io_addr_1_bits),
     .io_addr_2_ready          (_requestors_io_2_in_addr_ready),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_addr_2_valid          (_addressgen_io_addr_2_valid),
-    .io_addr_2_bits           (_addressgen_io_addr_2_bits)
+    .io_addr_2_bits           (_addressgen_io_addr_2_bits),
+    .io_addr_3_ready          (_requestors_io_3_in_addr_ready),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
+    .io_addr_3_valid          (_addressgen_io_addr_3_valid),
+    .io_addr_3_bits           (_addressgen_io_addr_3_bits)
   );
   snax_simbacore__C12_Reader_DataRequestors requestors (	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_0_in_addr_ready         (_requestors_io_0_in_addr_ready),
@@ -12687,7 +13096,15 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_2_out_tcdmReq_valid     (io_tcdmReq_2_valid),
     .io_2_out_tcdmReq_bits_addr (io_tcdmReq_2_bits_addr),
     .io_2_reqrspLink_rspReady   (_responsers_io_2_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
-    .io_2_reqrspLink_reqSubmit  (_requestors_io_2_reqrspLink_reqSubmit)
+    .io_2_reqrspLink_reqSubmit  (_requestors_io_2_reqrspLink_reqSubmit),
+    .io_3_in_addr_ready         (_requestors_io_3_in_addr_ready),
+    .io_3_in_addr_valid         (_addressgen_io_addr_3_valid),	// src/main/scala/snax/readerWriter/Reader.scala:21:26
+    .io_3_in_addr_bits          (_addressgen_io_addr_3_bits),	// src/main/scala/snax/readerWriter/Reader.scala:21:26
+    .io_3_out_tcdmReq_ready     (io_tcdmReq_3_ready),
+    .io_3_out_tcdmReq_valid     (io_tcdmReq_3_valid),
+    .io_3_out_tcdmReq_bits_addr (io_tcdmReq_3_bits_addr),
+    .io_3_reqrspLink_rspReady   (_responsers_io_3_reqrspLink_rspReady),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+    .io_3_reqrspLink_reqSubmit  (_requestors_io_3_reqrspLink_reqSubmit)
   );
   snax_simbacore__C12_Reader_DataResponsers responsers (	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .clock                     (clock),
@@ -12696,23 +13113,30 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_0_in_tcdmRsp_bits_data (io_tcdmRsp_0_bits_data),
     .io_0_out_data_valid       (_responsers_io_0_out_data_valid),
     .io_0_out_data_bits        (_responsers_io_0_out_data_bits),
-    .io_0_out_dataFifoPopped   (_responsers_io_2_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_0_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_0_reqrspLink_rspReady  (_responsers_io_0_reqrspLink_rspReady),
     .io_0_reqrspLink_reqSubmit (_requestors_io_0_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_1_in_tcdmRsp_valid     (io_tcdmRsp_1_valid),
     .io_1_in_tcdmRsp_bits_data (io_tcdmRsp_1_bits_data),
     .io_1_out_data_valid       (_responsers_io_1_out_data_valid),
     .io_1_out_data_bits        (_responsers_io_1_out_data_bits),
-    .io_1_out_dataFifoPopped   (_responsers_io_2_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_1_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_1_reqrspLink_rspReady  (_responsers_io_1_reqrspLink_rspReady),
     .io_1_reqrspLink_reqSubmit (_requestors_io_1_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
     .io_2_in_tcdmRsp_valid     (io_tcdmRsp_2_valid),
     .io_2_in_tcdmRsp_bits_data (io_tcdmRsp_2_bits_data),
     .io_2_out_data_valid       (_responsers_io_2_out_data_valid),
     .io_2_out_data_bits        (_responsers_io_2_out_data_bits),
-    .io_2_out_dataFifoPopped   (_responsers_io_2_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_2_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_2_reqrspLink_rspReady  (_responsers_io_2_reqrspLink_rspReady),
-    .io_2_reqrspLink_reqSubmit (_requestors_io_2_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
+    .io_2_reqrspLink_reqSubmit (_requestors_io_2_reqrspLink_reqSubmit),	// src/main/scala/snax/readerWriter/Reader.scala:24:26
+    .io_3_in_tcdmRsp_valid     (io_tcdmRsp_3_valid),
+    .io_3_in_tcdmRsp_bits_data (io_tcdmRsp_3_bits_data),
+    .io_3_out_data_valid       (_responsers_io_3_out_data_valid),
+    .io_3_out_data_bits        (_responsers_io_3_out_data_bits),
+    .io_3_out_dataFifoPopped   (_responsers_io_3_out_dataFifoPopped_T),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+    .io_3_reqrspLink_rspReady  (_responsers_io_3_reqrspLink_rspReady),
+    .io_3_reqrspLink_reqSubmit (_requestors_io_3_reqrspLink_reqSubmit)	// src/main/scala/snax/readerWriter/Reader.scala:24:26
   );
   snax_simbacore__C12_Reader_DataBuffer dataBuffer (	// src/main/scala/snax/readerWriter/Reader.scala:45:26
     .clock          (clock),
@@ -12723,6 +13147,8 @@ module snax_simbacore__C12_Reader(	// src/main/scala/snax/readerWriter/Reader.sc
     .io_in_1_bits   (_responsers_io_1_out_data_bits),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_in_2_valid  (_responsers_io_2_out_data_valid),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_in_2_bits   (_responsers_io_2_out_data_bits),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+    .io_in_3_valid  (_responsers_io_3_out_data_valid),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
+    .io_in_3_bits   (_responsers_io_3_out_data_bits),	// src/main/scala/snax/readerWriter/Reader.scala:35:26
     .io_out_0_ready (_outputDataRepeat_io_in_ready),	// src/main/scala/snax/readerWriter/Reader.scala:122:32
     .io_out_0_valid (_dataBuffer_io_out_0_valid),
     .io_out_0_bits  (_dataBuffer_io_out_0_bits)
@@ -12842,7 +13268,7 @@ module snax_simbacore__C13_Reader_AddressGenUnitCounter(	// src/main/scala/snax/
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hd2pqaa(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hkdlsaj(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -12853,26 +13279,34 @@ module Queue_W20_D2_Hd2pqaa(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -12888,13 +13322,13 @@ module Queue_W20_D2_Hd2pqaa(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -12902,12 +13336,12 @@ module Queue_W20_D2_Hd2pqaa(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -12944,7 +13378,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_Hd2pqaa queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hkdlsaj queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -12954,7 +13388,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_Hd2pqaa queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hkdlsaj queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -12964,7 +13398,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_Hd2pqaa queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hkdlsaj queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -12974,7 +13408,7 @@ module snax_simbacore__C13_Reader_AddressBufferFIFO(	// src/main/scala/snax/read
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_Hd2pqaa queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hkdlsaj queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -13244,21 +13678,21 @@ module snax_simbacore__C13_Reader_FifoUtilizationCounter(	// src/main/scala/snax
   output io_lastVal	// src/main/scala/snax/utils/Counter.scala:44:14
 );
 
-  reg [1:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
+  reg [3:0] value;	// src/main/scala/snax/utils/Counter.scala:60:26
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-      value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+      value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     else if (io_tickUp ^ io_tickDown) begin	// src/main/scala/snax/utils/Counter.scala:56:24
       if (io_tickUp) begin	// src/main/scala/snax/utils/Counter.scala:44:14
-        if (value[1])	// src/main/scala/snax/utils/Counter.scala:60:26, :69:23
-          value <= 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        if (value < 4'h9)	// src/main/scala/snax/utils/Counter.scala:60:26, :69:{23,33}, :71:51, :79:36
+          value <= value + 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
         else	// src/main/scala/snax/utils/Counter.scala:69:23
-          value <= value + 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:46
+          value <= 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
       end
       else if (|value)	// src/main/scala/snax/utils/Counter.scala:60:26, :71:23
-        value <= value - 2'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
+        value <= value - 4'h1;	// src/main/scala/snax/utils/Counter.scala:60:26, :71:36
       else	// src/main/scala/snax/utils/Counter.scala:71:23
-        value <= 2'h2;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
+        value <= 4'h9;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:36
     end
   end // always @(posedge, posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
@@ -13272,16 +13706,16 @@ module snax_simbacore__C13_Reader_FifoUtilizationCounter(	// src/main/scala/snax
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = _RANDOM[/*Zero width*/ 1'b0][1:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
+        value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26
       `endif // RANDOMIZE_REG_INIT
       if (reset)	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
-        value = 2'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
+        value = 4'h0;	// src/main/scala/snax/utils/Counter.scala:60:26, :69:16
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_lastVal = value == 2'h2;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
+  assign io_lastVal = value == 4'h9;	// src/main/scala/snax/readerWriter/DataResponser.scala:44:43, src/main/scala/snax/utils/Counter.scala:60:26, :69:33, :71:51, :79:{24,36}
 endmodule
 
 module snax_simbacore__C13_Reader_DataResponser(	// src/main/scala/snax/readerWriter/DataResponser.scala:28:7
@@ -13389,7 +13823,7 @@ module snax_simbacore__C13_Reader_DataResponsers(	// src/main/scala/snax/readerW
   );
 endmodule
 
-module Queue_W64_D2_H6qttrm(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Hariree(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 io_enq_valid,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -13399,26 +13833,34 @@ module Queue_W64_D2_H6qttrm(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -13434,13 +13876,13 @@ module Queue_W64_D2_H6qttrm(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -13448,12 +13890,12 @@ module Queue_W64_D2_H6qttrm(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -13489,7 +13931,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     _queues_0_io_deq_valid & _queues_1_io_deq_valid & _queues_2_io_deq_valid
     & _queues_3_io_deq_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :89:61
   wire        _queues_3_io_deq_ready_T = deq_all_valid & io_out_0_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:89:61, :92:57
-  Queue_W64_D2_H6qttrm queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hariree queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_0_valid),
@@ -13498,7 +13940,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_0_io_deq_valid),
     .io_deq_bits  (_queues_0_io_deq_bits)
   );
-  Queue_W64_D2_H6qttrm queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hariree queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_1_valid),
@@ -13507,7 +13949,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_1_io_deq_valid),
     .io_deq_bits  (_queues_1_io_deq_bits)
   );
-  Queue_W64_D2_H6qttrm queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hariree queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_2_valid),
@@ -13516,7 +13958,7 @@ module snax_simbacore__C13_Reader_DataBuffer(	// src/main/scala/snax/readerWrite
     .io_deq_valid (_queues_2_io_deq_valid),
     .io_deq_bits  (_queues_2_io_deq_bits)
   );
-  Queue_W64_D2_H6qttrm queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hariree queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_valid (io_in_3_valid),
@@ -13909,7 +14351,7 @@ module snax_simbacore__C0_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_Hul09uo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_H55vqih(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -13920,26 +14362,34 @@ module Queue_W20_D2_Hul09uo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -13955,13 +14405,13 @@ module Queue_W20_D2_Hul09uo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -13969,12 +14419,12 @@ module Queue_W20_D2_Hul09uo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -13994,7 +14444,7 @@ module snax_simbacore__C0_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_Hul09uo queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_H55vqih queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -14176,7 +14626,7 @@ module snax_simbacore__C0_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Htp7299(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Ho8vo4q(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -14187,25 +14637,33 @@ module Queue_W64_D2_Htp7299(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire full = ptr_match & maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24
-  wire do_enq = ~full & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :262:24, :286:19
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       full = ptr_match & maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24
+  wire       do_enq = ~full & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :262:24, :286:19
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -14221,13 +14679,13 @@ module Queue_W64_D2_Htp7299(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -14235,12 +14693,12 @@ module Queue_W64_D2_Htp7299(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -14260,7 +14718,7 @@ module snax_simbacore__C0_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Htp7299 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Ho8vo4q queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -14446,7 +14904,7 @@ module snax_simbacore__C1_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H8og2cj(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_H7dlrfo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -14457,26 +14915,34 @@ module Queue_W20_D2_H8og2cj(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -14492,13 +14958,13 @@ module Queue_W20_D2_H8og2cj(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -14506,12 +14972,12 @@ module Queue_W20_D2_H8og2cj(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -14531,7 +14997,7 @@ module snax_simbacore__C1_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H8og2cj queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_H7dlrfo queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -14713,7 +15179,7 @@ module snax_simbacore__C1_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hdpom5n(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Ho1ne8k(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -14724,25 +15190,33 @@ module Queue_W64_D2_Hdpom5n(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire full = ptr_match & maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24
-  wire do_enq = ~full & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :262:24, :286:19
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       full = ptr_match & maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24
+  wire       do_enq = ~full & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :262:24, :286:19
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -14758,13 +15232,13 @@ module Queue_W64_D2_Hdpom5n(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -14772,12 +15246,12 @@ module Queue_W64_D2_Hdpom5n(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -14797,7 +15271,7 @@ module snax_simbacore__C1_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_Hdpom5n queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Ho1ne8k queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -14983,7 +15457,7 @@ module snax_simbacore__C2_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H41vrna(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_H5td89n(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -14994,26 +15468,34 @@ module Queue_W20_D2_H41vrna(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -15029,13 +15511,13 @@ module Queue_W20_D2_H41vrna(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -15043,12 +15525,12 @@ module Queue_W20_D2_H41vrna(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -15068,7 +15550,7 @@ module snax_simbacore__C2_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
   output [19:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W20_D2_H41vrna queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_H5td89n queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -15250,7 +15732,7 @@ module snax_simbacore__C2_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_H3h37jl(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_Hs3hkih(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -15261,25 +15743,33 @@ module Queue_W64_D2_H3h37jl(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire full = ptr_match & maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24
-  wire do_enq = ~full & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :262:24, :286:19
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       full = ptr_match & maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24
+  wire       do_enq = ~full & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :262:24, :286:19
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -15295,13 +15785,13 @@ module Queue_W64_D2_H3h37jl(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -15309,12 +15799,12 @@ module Queue_W64_D2_H3h37jl(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -15334,7 +15824,7 @@ module snax_simbacore__C2_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
   output [63:0] io_out_0_bits	// src/main/scala/snax/utils/ComplexQueue.scala:37:14
 );
 
-  Queue_W64_D2_H3h37jl queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_Hs3hkih queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (io_in_0_ready),
@@ -15520,7 +16010,7 @@ module snax_simbacore__C3_Writer_AddressGenUnitCounter(	// src/main/scala/snax/u
   assign io_lastVal = _smallCounter_io_lastVal;	// src/main/scala/snax/utils/Counter.scala:83:7, :102:30
 endmodule
 
-module Queue_W20_D2_H9c1m23(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W20_D9_Hab2krs(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -15531,26 +16021,34 @@ module Queue_W20_D2_H9c1m23(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [19:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  wire io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
+  wire       io_enq_ready_0;	// src/main/scala/chisel3/util/Decoupled.scala:286:16, :306:{24,39}
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       do_enq = io_enq_ready_0 & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :286:16, :306:{24,39}
   assign io_enq_ready_0 = io_deq_ready | ~(ptr_match & maybe_full);	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24, :286:{16,19}, :306:{24,39}
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -15566,13 +16064,13 @@ module Queue_W20_D2_H9c1m23(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -15580,12 +16078,12 @@ module Queue_W20_D2_H9c1m23(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x20 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -15622,7 +16120,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W20_D2_H9c1m23 queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hab2krs queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -15632,7 +16130,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W20_D2_H9c1m23 queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hab2krs queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -15642,7 +16140,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W20_D2_H9c1m23 queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hab2krs queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -15652,7 +16150,7 @@ module snax_simbacore__C3_Writer_AddressBufferFIFO(	// src/main/scala/snax/reade
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W20_D2_H9c1m23 queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W20_D9_Hab2krs queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -15933,7 +16431,7 @@ module snax_simbacore__C3_Writer_DataRequestors(	// src/main/scala/snax/readerWr
   );
 endmodule
 
-module Queue_W64_D2_Hf82cjo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
+module Queue_W64_D9_H70qq7b(	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   input         clock,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
                 reset,	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
   output        io_enq_ready,	// src/main/scala/chisel3/util/Decoupled.scala:255:14
@@ -15944,25 +16442,33 @@ module Queue_W64_D2_Hf82cjo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
   output [63:0] io_deq_bits	// src/main/scala/chisel3/util/Decoupled.scala:255:14
 );
 
-  reg  wrap;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40
-  reg  maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
-  wire ptr_match = wrap == wrap_1;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
-  wire empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
-  wire full = ptr_match & maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24
-  wire do_enq = ~full & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :262:24, :286:19
+  reg  [3:0] enq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg  [3:0] deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40
+  reg        maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27
+  wire       ptr_match = enq_ptr_value == deq_ptr_value;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:260:33
+  wire       empty = ptr_match & ~maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :261:{25,28}
+  wire       full = ptr_match & maybe_full;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, :260:33, :262:24
+  wire       do_enq = ~full & io_enq_valid;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :262:24, :286:19
   always @(posedge clock or posedge reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-      wrap_1 <= 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+      enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+      deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
       maybe_full <= 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
     end
     else begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
       automatic logic do_deq = io_deq_ready & ~empty;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :261:25, :285:19
-      if (do_enq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap <= wrap - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
-      if (do_deq)	// src/main/scala/chisel3/util/Decoupled.scala:51:35
-        wrap_1 <= wrap_1 - 1'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      if (do_enq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (enq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          enq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          enq_ptr_value <= enq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
+      if (do_deq) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
+        if (deq_ptr_value == 4'h8)	// src/main/scala/chisel3/util/Counter.scala:61:40, :73:24
+          deq_ptr_value <= 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        else	// src/main/scala/chisel3/util/Counter.scala:73:24
+          deq_ptr_value <= deq_ptr_value + 4'h1;	// src/main/scala/chisel3/util/Counter.scala:61:40, :77:24
+      end
       if (~(do_enq == do_deq))	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27, :276:{15,27}, :277:16
         maybe_full <= do_enq;	// src/main/scala/chisel3/util/Decoupled.scala:51:35, :259:27
     end
@@ -15978,13 +16484,13 @@ module Queue_W64_D2_Hf82cjo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
         _RANDOM[/*Zero width*/ 1'b0] = `RANDOM;	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = _RANDOM[/*Zero width*/ 1'b0][0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = _RANDOM[/*Zero width*/ 1'b0][1];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        maybe_full = _RANDOM[/*Zero width*/ 1'b0][2];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][3:0];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        deq_ptr_value = _RANDOM[/*Zero width*/ 1'b0][7:4];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        maybe_full = _RANDOM[/*Zero width*/ 1'b0][8];	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
-        wrap_1 = 1'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40, src/main/scala/snax/utils/ComplexQueue.scala:57:28
+        enq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
+        deq_ptr_value = 4'h0;	// src/main/scala/chisel3/util/Counter.scala:61:40
         maybe_full = 1'h0;	// src/main/scala/chisel3/util/Decoupled.scala:259:27, src/main/scala/snax/utils/ComplexQueue.scala:57:28
       end
     end // initial
@@ -15992,12 +16498,12 @@ module Queue_W64_D2_Hf82cjo(	// src/main/scala/snax/utils/ComplexQueue.scala:57:
       `FIRRTL_AFTER_INITIAL	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  ram_2x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
-    .R0_addr (wrap_1),	// src/main/scala/chisel3/util/Counter.scala:61:40
+  ram_9x64 ram_ext (	// src/main/scala/chisel3/util/Decoupled.scala:256:91
+    .R0_addr (deq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .R0_en   (1'h1),	// src/main/scala/snax/utils/ComplexQueue.scala:57:28
     .R0_clk  (clock),
     .R0_data (io_deq_bits),
-    .W0_addr (wrap),	// src/main/scala/chisel3/util/Counter.scala:61:40
+    .W0_addr (enq_ptr_value),	// src/main/scala/chisel3/util/Counter.scala:61:40
     .W0_en   (do_enq),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .W0_clk  (clock),
     .W0_data (io_enq_bits)
@@ -16034,7 +16540,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     _queues_0_io_enq_ready & _queues_1_io_enq_ready & _queues_2_io_enq_ready
     & _queues_3_io_enq_ready;	// src/main/scala/snax/utils/ComplexQueue.scala:57:23, :69:61
   wire _queues_3_io_enq_valid_T = enq_all_ready & io_in_0_valid;	// src/main/scala/snax/utils/ComplexQueue.scala:69:61, :72:57
-  Queue_W64_D2_Hf82cjo queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_H70qq7b queues_0 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_0_io_enq_ready),
@@ -16044,7 +16550,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (io_out_0_valid),
     .io_deq_bits  (io_out_0_bits)
   );
-  Queue_W64_D2_Hf82cjo queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_H70qq7b queues_1 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_1_io_enq_ready),
@@ -16054,7 +16560,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (io_out_1_valid),
     .io_deq_bits  (io_out_1_bits)
   );
-  Queue_W64_D2_Hf82cjo queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_H70qq7b queues_2 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_2_io_enq_ready),
@@ -16064,7 +16570,7 @@ module snax_simbacore__C3_Writer_DataBuffer(	// src/main/scala/snax/readerWriter
     .io_deq_valid (io_out_2_valid),
     .io_deq_bits  (io_out_2_bits)
   );
-  Queue_W64_D2_Hf82cjo queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
+  Queue_W64_D9_H70qq7b queues_3 (	// src/main/scala/snax/utils/ComplexQueue.scala:57:23
     .clock        (clock),
     .reset        (reset),
     .io_enq_ready (_queues_3_io_enq_ready),
@@ -16249,10 +16755,10 @@ endmodule
 module snax_simbacore__DataPathExtensionHost_1(	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:37:7
   output         io_data_in_ready,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
   input          io_data_in_valid,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
-  input  [191:0] io_data_in_bits,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
+  input  [255:0] io_data_in_bits,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
   input          io_data_out_ready,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
   output         io_data_out_valid,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
-  output [191:0] io_data_out_bits	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
+  output [255:0] io_data_out_bits	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
 );
 
   assign io_data_in_ready = io_data_out_ready;	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:37:7
@@ -16267,20 +16773,6 @@ module snax_simbacore__DataPathExtensionHost_2(	// src/main/scala/snax/DataPathE
   input         io_data_out_ready,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
   output        io_data_out_valid,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
   output [63:0] io_data_out_bits	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
-);
-
-  assign io_data_in_ready = io_data_out_ready;	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:37:7
-  assign io_data_out_valid = io_data_in_valid;	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:37:7
-  assign io_data_out_bits = io_data_in_bits;	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:37:7
-endmodule
-
-module snax_simbacore__DataPathExtensionHost_7(	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:37:7
-  output         io_data_in_ready,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
-  input          io_data_in_valid,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
-  input  [255:0] io_data_in_bits,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
-  input          io_data_out_ready,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
-  output         io_data_out_valid,	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
-  output [255:0] io_data_out_bits	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:46:32
 );
 
   assign io_data_in_ready = io_data_out_ready;	// src/main/scala/snax/DataPathExtension/DataPathExtensionHost.scala:37:7
@@ -16305,7 +16797,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   output [255:0] io_data_streamer2accelerator_data_13_bits,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   input          io_data_streamer2accelerator_data_12_ready,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   output         io_data_streamer2accelerator_data_12_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
-  output [191:0] io_data_streamer2accelerator_data_12_bits,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output [255:0] io_data_streamer2accelerator_data_12_bits,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   input          io_data_streamer2accelerator_data_11_ready,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   output         io_data_streamer2accelerator_data_11_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   output [63:0]  io_data_streamer2accelerator_data_11_bits,	// src/main/scala/snax/streamer/Streamer.scala:67:14
@@ -16338,7 +16830,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   output [63:0]  io_data_streamer2accelerator_data_2_bits,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   input          io_data_streamer2accelerator_data_1_ready,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   output         io_data_streamer2accelerator_data_1_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
-  output [191:0] io_data_streamer2accelerator_data_1_bits,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output [255:0] io_data_streamer2accelerator_data_1_bits,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   input          io_data_streamer2accelerator_data_0_ready,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   output         io_data_streamer2accelerator_data_0_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   output [127:0] io_data_streamer2accelerator_data_0_bits,	// src/main/scala/snax/streamer/Streamer.scala:67:14
@@ -16546,6 +17038,18 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   output         io_data_tcdm_req_31_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   output [63:0]  io_data_tcdm_req_31_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   output [7:0]   io_data_tcdm_req_31_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  input          io_data_tcdm_req_32_ready,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output         io_data_tcdm_req_32_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output [19:0]  io_data_tcdm_req_32_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output         io_data_tcdm_req_32_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output [63:0]  io_data_tcdm_req_32_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output [7:0]   io_data_tcdm_req_32_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  input          io_data_tcdm_req_33_ready,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output         io_data_tcdm_req_33_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output [19:0]  io_data_tcdm_req_33_bits_addr,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output         io_data_tcdm_req_33_bits_write,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output [63:0]  io_data_tcdm_req_33_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  output [7:0]   io_data_tcdm_req_33_bits_strb,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   input          io_data_tcdm_rsp_0_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   input  [63:0]  io_data_tcdm_rsp_0_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   input          io_data_tcdm_rsp_1_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
@@ -16609,7 +17113,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   input          io_data_tcdm_rsp_30_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   input  [63:0]  io_data_tcdm_rsp_30_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:67:14
   input          io_data_tcdm_rsp_31_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
-  input  [63:0]  io_data_tcdm_rsp_31_bits_data	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  input  [63:0]  io_data_tcdm_rsp_31_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  input          io_data_tcdm_rsp_32_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  input  [63:0]  io_data_tcdm_rsp_32_bits_data,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  input          io_data_tcdm_rsp_33_valid,	// src/main/scala/snax/streamer/Streamer.scala:67:14
+  input  [63:0]  io_data_tcdm_rsp_33_bits_data	// src/main/scala/snax/streamer/Streamer.scala:67:14
 );
 
   reg          state;	// src/main/scala/snax/streamer/Streamer.scala:199:38
@@ -16648,7 +17156,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [255:0] _reader_13_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:127:11
   wire         _reader_12_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:127:11
   wire         _reader_12_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:127:11
-  wire [191:0] _reader_12_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:127:11
+  wire [255:0] _reader_12_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:127:11
   wire         _reader_11_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:127:11
   wire         _reader_11_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:127:11
   wire [63:0]  _reader_11_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:127:11
@@ -16681,7 +17189,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   wire [63:0]  _reader_2_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:127:11
   wire         _reader_1_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:127:11
   wire         _reader_1_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:127:11
-  wire [191:0] _reader_1_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:127:11
+  wire [255:0] _reader_1_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:127:11
   wire         _reader_0_io_busy;	// src/main/scala/snax/streamer/Streamer.scala:127:11
   wire         _reader_0_io_data_valid;	// src/main/scala/snax/streamer/Streamer.scala:127:11
   wire [127:0] _reader_0_io_data_bits;	// src/main/scala/snax/streamer/Streamer.scala:127:11
@@ -18191,12 +18699,17 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_tcdmReq_2_ready          (io_data_tcdm_req_4_ready),
     .io_tcdmReq_2_valid          (io_data_tcdm_req_4_valid),
     .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_4_bits_addr),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_5_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_5_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_5_bits_addr),
     .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_2_valid),
     .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_2_bits_data),
     .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_3_valid),
     .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_3_bits_data),
     .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_4_valid),
     .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_4_bits_data),
+    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_5_valid),
+    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_5_bits_data),
     .io_data_ready               (_readerDatapathExtension_1_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_1_io_data_valid),
     .io_data_bits                (_reader_1_io_data_bits)
@@ -18242,11 +18755,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_32[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_reader_2_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_5_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_5_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_5_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_5_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_5_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_6_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_6_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_6_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_6_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_6_bits_data),
     .io_data_ready               (_readerDatapathExtension_2_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_2_io_data_valid),
     .io_data_bits                (_reader_2_io_data_bits)
@@ -18292,11 +18805,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_43[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_reader_3_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_6_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_6_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_6_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_6_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_6_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_7_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_7_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_7_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_7_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_7_bits_data),
     .io_data_ready               (_readerDatapathExtension_3_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_3_io_data_valid),
     .io_data_bits                (_reader_3_io_data_bits)
@@ -18342,11 +18855,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_54[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_reader_4_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_7_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_7_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_7_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_7_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_7_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_8_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_8_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_8_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_8_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_8_bits_data),
     .io_data_ready               (_readerDatapathExtension_4_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_4_io_data_valid),
     .io_data_bits                (_reader_4_io_data_bits)
@@ -18392,11 +18905,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_65[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_reader_5_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_8_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_8_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_8_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_8_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_8_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_9_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_9_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_9_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_9_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_9_bits_data),
     .io_data_ready               (_readerDatapathExtension_5_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_5_io_data_valid),
     .io_data_bits                (_reader_5_io_data_bits)
@@ -18442,11 +18955,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_76[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_reader_6_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_9_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_9_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_9_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_9_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_9_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_10_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_10_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_10_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_10_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_10_bits_data),
     .io_data_ready               (_readerDatapathExtension_6_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_6_io_data_valid),
     .io_data_bits                (_reader_6_io_data_bits)
@@ -18496,26 +19009,26 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_87[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_reader_7_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_10_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_10_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_10_bits_addr),
-    .io_tcdmReq_1_ready          (io_data_tcdm_req_11_ready),
-    .io_tcdmReq_1_valid          (io_data_tcdm_req_11_valid),
-    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_11_bits_addr),
-    .io_tcdmReq_2_ready          (io_data_tcdm_req_12_ready),
-    .io_tcdmReq_2_valid          (io_data_tcdm_req_12_valid),
-    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_12_bits_addr),
-    .io_tcdmReq_3_ready          (io_data_tcdm_req_13_ready),
-    .io_tcdmReq_3_valid          (io_data_tcdm_req_13_valid),
-    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_13_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_10_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_10_bits_data),
-    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_11_valid),
-    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_11_bits_data),
-    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_12_valid),
-    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_12_bits_data),
-    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_13_valid),
-    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_13_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_11_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_11_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_11_bits_addr),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_12_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_12_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_12_bits_addr),
+    .io_tcdmReq_2_ready          (io_data_tcdm_req_13_ready),
+    .io_tcdmReq_2_valid          (io_data_tcdm_req_13_valid),
+    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_13_bits_addr),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_14_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_14_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_14_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_11_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_11_bits_data),
+    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_12_valid),
+    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_12_bits_data),
+    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_13_valid),
+    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_13_bits_data),
+    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_14_valid),
+    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_14_bits_data),
     .io_data_ready               (_readerDatapathExtension_7_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_7_io_data_valid),
     .io_data_bits                (_reader_7_io_data_bits)
@@ -18561,11 +19074,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_98[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_reader_8_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_14_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_14_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_14_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_14_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_14_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_15_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_15_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_15_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_15_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_15_bits_data),
     .io_data_ready               (_readerDatapathExtension_8_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_8_io_data_valid),
     .io_data_bits                (_reader_8_io_data_bits)
@@ -18611,11 +19124,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_109[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_reader_9_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_15_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_15_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_15_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_15_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_15_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_16_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_16_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_16_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_16_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_16_bits_data),
     .io_data_ready               (_readerDatapathExtension_9_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_9_io_data_valid),
     .io_data_bits                (_reader_9_io_data_bits)
@@ -18663,11 +19176,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       (_csrManager_io_readWriteRegIO_bits_198[0] & ~delayedStreamersHaveStarted_0
        & state),	// src/main/scala/snax/streamer/Streamer.scala:108:26, :199:38, :227:40, :234:92, :235:{51,83}
     .io_busy                     (_reader_10_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_16_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_16_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_16_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_16_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_16_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_17_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_17_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_17_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_17_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_17_bits_data),
     .io_data_ready               (_readerDatapathExtension_10_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_10_io_data_valid),
     .io_data_bits                (_reader_10_io_data_bits)
@@ -18715,11 +19228,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
       (_csrManager_io_readWriteRegIO_bits_199[0] & ~delayedStreamersHaveStarted_1
        & state),	// src/main/scala/snax/streamer/Streamer.scala:108:26, :199:38, :227:40, :234:92, :235:{51,83}
     .io_busy                     (_reader_11_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_17_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_17_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_17_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_17_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_17_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_18_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_18_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_18_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_18_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_18_bits_data),
     .io_data_ready               (_readerDatapathExtension_11_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_11_io_data_valid),
     .io_data_bits                (_reader_11_io_data_bits)
@@ -18769,21 +19282,26 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_142[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_reader_12_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_18_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_18_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_18_bits_addr),
-    .io_tcdmReq_1_ready          (io_data_tcdm_req_19_ready),
-    .io_tcdmReq_1_valid          (io_data_tcdm_req_19_valid),
-    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_19_bits_addr),
-    .io_tcdmReq_2_ready          (io_data_tcdm_req_20_ready),
-    .io_tcdmReq_2_valid          (io_data_tcdm_req_20_valid),
-    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_20_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_18_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_18_bits_data),
-    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_19_valid),
-    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_19_bits_data),
-    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_20_valid),
-    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_20_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_19_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_19_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_19_bits_addr),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_20_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_20_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_20_bits_addr),
+    .io_tcdmReq_2_ready          (io_data_tcdm_req_21_ready),
+    .io_tcdmReq_2_valid          (io_data_tcdm_req_21_valid),
+    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_21_bits_addr),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_22_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_22_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_22_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_19_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_19_bits_data),
+    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_20_valid),
+    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_20_bits_data),
+    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_21_valid),
+    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_21_bits_data),
+    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_22_valid),
+    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_22_bits_data),
     .io_data_ready               (_readerDatapathExtension_12_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_12_io_data_valid),
     .io_data_bits                (_reader_12_io_data_bits)
@@ -18833,26 +19351,26 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_153[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_reader_13_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_21_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_21_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_21_bits_addr),
-    .io_tcdmReq_1_ready          (io_data_tcdm_req_22_ready),
-    .io_tcdmReq_1_valid          (io_data_tcdm_req_22_valid),
-    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_22_bits_addr),
-    .io_tcdmReq_2_ready          (io_data_tcdm_req_23_ready),
-    .io_tcdmReq_2_valid          (io_data_tcdm_req_23_valid),
-    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_23_bits_addr),
-    .io_tcdmReq_3_ready          (io_data_tcdm_req_24_ready),
-    .io_tcdmReq_3_valid          (io_data_tcdm_req_24_valid),
-    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_24_bits_addr),
-    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_21_valid),
-    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_21_bits_data),
-    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_22_valid),
-    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_22_bits_data),
-    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_23_valid),
-    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_23_bits_data),
-    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_24_valid),
-    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_24_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_23_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_23_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_23_bits_addr),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_24_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_24_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_24_bits_addr),
+    .io_tcdmReq_2_ready          (io_data_tcdm_req_25_ready),
+    .io_tcdmReq_2_valid          (io_data_tcdm_req_25_valid),
+    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_25_bits_addr),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_26_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_26_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_26_bits_addr),
+    .io_tcdmRsp_0_valid          (io_data_tcdm_rsp_23_valid),
+    .io_tcdmRsp_0_bits_data      (io_data_tcdm_rsp_23_bits_data),
+    .io_tcdmRsp_1_valid          (io_data_tcdm_rsp_24_valid),
+    .io_tcdmRsp_1_bits_data      (io_data_tcdm_rsp_24_bits_data),
+    .io_tcdmRsp_2_valid          (io_data_tcdm_rsp_25_valid),
+    .io_tcdmRsp_2_bits_data      (io_data_tcdm_rsp_25_bits_data),
+    .io_tcdmRsp_3_valid          (io_data_tcdm_rsp_26_valid),
+    .io_tcdmRsp_3_bits_data      (io_data_tcdm_rsp_26_bits_data),
     .io_data_ready               (_readerDatapathExtension_13_io_data_in_ready),	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_valid               (_reader_13_io_data_valid),
     .io_data_bits                (_reader_13_io_data_bits)
@@ -18898,10 +19416,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_164[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_writer_0_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_25_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_25_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_25_bits_addr),
-    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_25_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_27_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_27_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_27_bits_addr),
+    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_27_bits_data),
     .io_data_ready               (_writer_0_io_data_ready),
     .io_data_valid               (_writerDatapathExtension_0_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:162:11
     .io_data_bits                (_writerDatapathExtension_0_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:162:11
@@ -18947,10 +19465,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_175[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_writer_1_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_26_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_26_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_26_bits_addr),
-    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_26_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_28_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_28_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_28_bits_addr),
+    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_28_bits_data),
     .io_data_ready               (_writer_1_io_data_ready),
     .io_data_valid               (_writerDatapathExtension_1_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:162:11
     .io_data_bits                (_writerDatapathExtension_1_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:162:11
@@ -18996,10 +19514,10 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_186[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_writer_2_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_27_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_27_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_27_bits_addr),
-    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_27_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_29_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_29_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_29_bits_addr),
+    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_29_bits_data),
     .io_data_ready               (_writer_2_io_data_ready),
     .io_data_valid               (_writerDatapathExtension_2_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:162:11
     .io_data_bits                (_writerDatapathExtension_2_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:162:11
@@ -19049,22 +19567,22 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
          : csrCfgReg_197[19:0]),	// src/main/scala/chisel3/util/Decoupled.scala:51:35, src/main/scala/snax/streamer/Streamer.scala:108:26, :329:26, :331:{30,42}
     .io_start                    (streamer_config_fire),	// src/main/scala/chisel3/util/Decoupled.scala:51:35
     .io_busy                     (_writer_3_io_busy),
-    .io_tcdmReq_0_ready          (io_data_tcdm_req_28_ready),
-    .io_tcdmReq_0_valid          (io_data_tcdm_req_28_valid),
-    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_28_bits_addr),
-    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_28_bits_data),
-    .io_tcdmReq_1_ready          (io_data_tcdm_req_29_ready),
-    .io_tcdmReq_1_valid          (io_data_tcdm_req_29_valid),
-    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_29_bits_addr),
-    .io_tcdmReq_1_bits_data      (io_data_tcdm_req_29_bits_data),
-    .io_tcdmReq_2_ready          (io_data_tcdm_req_30_ready),
-    .io_tcdmReq_2_valid          (io_data_tcdm_req_30_valid),
-    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_30_bits_addr),
-    .io_tcdmReq_2_bits_data      (io_data_tcdm_req_30_bits_data),
-    .io_tcdmReq_3_ready          (io_data_tcdm_req_31_ready),
-    .io_tcdmReq_3_valid          (io_data_tcdm_req_31_valid),
-    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_31_bits_addr),
-    .io_tcdmReq_3_bits_data      (io_data_tcdm_req_31_bits_data),
+    .io_tcdmReq_0_ready          (io_data_tcdm_req_30_ready),
+    .io_tcdmReq_0_valid          (io_data_tcdm_req_30_valid),
+    .io_tcdmReq_0_bits_addr      (io_data_tcdm_req_30_bits_addr),
+    .io_tcdmReq_0_bits_data      (io_data_tcdm_req_30_bits_data),
+    .io_tcdmReq_1_ready          (io_data_tcdm_req_31_ready),
+    .io_tcdmReq_1_valid          (io_data_tcdm_req_31_valid),
+    .io_tcdmReq_1_bits_addr      (io_data_tcdm_req_31_bits_addr),
+    .io_tcdmReq_1_bits_data      (io_data_tcdm_req_31_bits_data),
+    .io_tcdmReq_2_ready          (io_data_tcdm_req_32_ready),
+    .io_tcdmReq_2_valid          (io_data_tcdm_req_32_valid),
+    .io_tcdmReq_2_bits_addr      (io_data_tcdm_req_32_bits_addr),
+    .io_tcdmReq_2_bits_data      (io_data_tcdm_req_32_bits_data),
+    .io_tcdmReq_3_ready          (io_data_tcdm_req_33_ready),
+    .io_tcdmReq_3_valid          (io_data_tcdm_req_33_valid),
+    .io_tcdmReq_3_bits_addr      (io_data_tcdm_req_33_bits_addr),
+    .io_tcdmReq_3_bits_data      (io_data_tcdm_req_33_bits_data),
     .io_data_ready               (_writer_3_io_data_ready),
     .io_data_valid               (_writerDatapathExtension_3_io_data_out_valid),	// src/main/scala/snax/streamer/Streamer.scala:162:11
     .io_data_bits                (_writerDatapathExtension_3_io_data_out_bits)	// src/main/scala/snax/streamer/Streamer.scala:162:11
@@ -19125,7 +19643,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_data_out_valid (io_data_streamer2accelerator_data_6_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_6_bits)
   );
-  snax_simbacore__DataPathExtensionHost_7 readerDatapathExtension_7 (	// src/main/scala/snax/streamer/Streamer.scala:149:11
+  snax_simbacore__DataPathExtensionHost_1 readerDatapathExtension_7 (	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_in_ready  (_readerDatapathExtension_7_io_data_in_ready),
     .io_data_in_valid  (_reader_7_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:127:11
     .io_data_in_bits   (_reader_7_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:127:11
@@ -19173,7 +19691,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_data_out_valid (io_data_streamer2accelerator_data_12_valid),
     .io_data_out_bits  (io_data_streamer2accelerator_data_12_bits)
   );
-  snax_simbacore__DataPathExtensionHost_7 readerDatapathExtension_13 (	// src/main/scala/snax/streamer/Streamer.scala:149:11
+  snax_simbacore__DataPathExtensionHost_1 readerDatapathExtension_13 (	// src/main/scala/snax/streamer/Streamer.scala:149:11
     .io_data_in_ready  (_readerDatapathExtension_13_io_data_in_ready),
     .io_data_in_valid  (_reader_13_io_data_valid),	// src/main/scala/snax/streamer/Streamer.scala:127:11
     .io_data_in_bits   (_reader_13_io_data_bits),	// src/main/scala/snax/streamer/Streamer.scala:127:11
@@ -19205,7 +19723,7 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
     .io_data_out_valid (_writerDatapathExtension_2_io_data_out_valid),
     .io_data_out_bits  (_writerDatapathExtension_2_io_data_out_bits)
   );
-  snax_simbacore__DataPathExtensionHost_7 writerDatapathExtension_3 (	// src/main/scala/snax/streamer/Streamer.scala:162:11
+  snax_simbacore__DataPathExtensionHost_1 writerDatapathExtension_3 (	// src/main/scala/snax/streamer/Streamer.scala:162:11
     .io_data_in_ready  (io_data_accelerator2streamer_data_3_ready),
     .io_data_in_valid  (io_data_accelerator2streamer_data_3_valid),
     .io_data_in_bits   (io_data_accelerator2streamer_data_3_bits),
@@ -19288,9 +19806,11 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   assign io_data_tcdm_req_24_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :149:11, :162:11, :219:65, :220:65
   assign io_data_tcdm_req_24_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11
   assign io_data_tcdm_req_24_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :133:11
-  assign io_data_tcdm_req_25_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :133:11
+  assign io_data_tcdm_req_25_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :149:11, :162:11, :219:65, :220:65
+  assign io_data_tcdm_req_25_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11
   assign io_data_tcdm_req_25_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :133:11
-  assign io_data_tcdm_req_26_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :133:11
+  assign io_data_tcdm_req_26_bits_write = 1'h0;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :149:11, :162:11, :219:65, :220:65
+  assign io_data_tcdm_req_26_bits_data = 64'h0;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11
   assign io_data_tcdm_req_26_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :133:11
   assign io_data_tcdm_req_27_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :133:11
   assign io_data_tcdm_req_27_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :133:11
@@ -19302,5 +19822,9 @@ module snax_simbacore_Streamer(	// src/main/scala/snax/streamer/Streamer.scala:6
   assign io_data_tcdm_req_30_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :133:11
   assign io_data_tcdm_req_31_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :133:11
   assign io_data_tcdm_req_31_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :133:11
+  assign io_data_tcdm_req_32_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :133:11
+  assign io_data_tcdm_req_32_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :133:11
+  assign io_data_tcdm_req_33_bits_write = 1'h1;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :133:11
+  assign io_data_tcdm_req_33_bits_strb = 8'hFF;	// src/main/scala/snax/streamer/Streamer.scala:63:7, :127:11, :133:11
 endmodule
 

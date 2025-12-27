@@ -26,7 +26,6 @@ try:
 except Exception as e:
     raise RuntimeError(f"Error getting chisel-ssm path through bender: {e}")
 
-GEN_DATA_DIR = os.path.join(chisel_ssm_path, "generated", "data")
 NUM_LOOPS = 4  # NOTE this must match the hjson config
 BANKWIDTH = 64
 BANK_BYTES = BANKWIDTH // 8
@@ -38,10 +37,12 @@ FP8 = 8
 class DataGeneratorBase(ABC):
     """Abstract base class to centralize data generation logic."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, app_name: str, **kwargs):
         self.kwargs = kwargs
         self.lines_params: list[str] = []
         self.lines_data: list[str] = []
+        self.app_name = app_name
+        self.gen_data_dir = os.path.join(chisel_ssm_path, "generated", "data", self.app_name)
 
     def run(self):
         pass
@@ -112,7 +113,7 @@ class DataGeneratorBase(ABC):
 
     def _read_data_int(self, filename: str):
         """Read a vec from a file."""
-        with open(os.path.join(GEN_DATA_DIR, filename), "r") as f:
+        with open(os.path.join(self.gen_data_dir, filename), "r") as f:
             lines = f.readlines()
         data_lines = [line.strip() for line in lines if not line.startswith("#")]
         return [int(x) for x in data_lines]
@@ -153,6 +154,7 @@ class DataGeneratorBase(ABC):
         scalars: dict[str, int],
         test_data: dict[str, str],
         tests: dict[str, int],
+        app_name: str = "main",
     ):
         """Process all settings of a single mode and convert them to C code.
 
@@ -188,12 +190,6 @@ class DataGeneratorBase(ABC):
         # Read and format test data
         for tensor, dtype in test_data.items():
             self.read_and_format_vector(mode_id, dtype, tensor)
-
-    # def pad_to_bankwidth(self, total_size_bit: int, chunk_width: int):
-    #     """ """
-    #     streamer_width = math.ceil(chunk_width / BANKWIDTH) * BANKWIDTH
-    #     assert total_size_bit * streamer_width % chunk_width == 0, "Total size must be a multiple of chunk width"
-    #     return total_size_bit * streamer_width // chunk_width
 
     def extend_unroll_factor_to_bankwidth(self, unroll_factor: int, elem_width: int):
         """Returns the smallest number greater than or equal unroll_factor, such that this number times elem_width is a multiple of bankwidth.

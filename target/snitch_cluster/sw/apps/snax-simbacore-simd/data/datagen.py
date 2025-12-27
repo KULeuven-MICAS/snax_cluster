@@ -19,6 +19,10 @@ from datagen_cli import main as datagen_cli_main  # type: ignore[import]
 
 
 class DataGenerator(DataGeneratorBase):
+    APP_NAME = "simd"
+
+    def __init__(self, **kwargs):
+        super().__init__(self.APP_NAME, **kwargs)
 
     def run(self):
         self.build_SIMD()
@@ -27,7 +31,7 @@ class DataGenerator(DataGeneratorBase):
         mode_id = 5  # also mode 6, 7, 8
         assert f"M{mode_id}_SIMD_ADD" in self.kwargs, "verify mode_id"
 
-        dataLength = self.kwargs["seqLen"] * self.kwargs["dModel"]  # Same as in scala generator
+        dataLength = self.kwargs["numElem"]
         width = 2 * self.kwargs["suc_serial_width_BC"]
 
         # This must be equal to the other ports as well. Can we assert this?

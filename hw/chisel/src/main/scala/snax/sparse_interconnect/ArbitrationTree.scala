@@ -4,11 +4,23 @@ import chisel3._
 import chisel3.util._
 
 /** Performs forward arbitration for a single output memory bank. */
-class ArbitrationTree(NumInp: Int, addrWidth: Int, dataWidth: Int, strbWidth: Int, userWidth: Int) extends Module {
+class ArbitrationTree(
+  NumInp:        Int,
+  addrWidth:     Int,
+  dataWidth:     Int,
+  strbWidth:     Int,
+  priorityWidth: Int
+) extends Module {
   val io = IO(new Bundle {
-    val tcdmReqs = Vec(NumInp, Flipped(Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, userWidth))))
+    val tcdmReqs = Vec(
+      NumInp,
+      Flipped(
+        Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, priorityWidth))
+      )
+    )
     val tcdmRsp  = Decoupled(new TcdmRsp(dataWidth))
-    val memReq   = Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, userWidth))
+    val memReq   =
+      Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, priorityWidth))
     val memRsp   = Flipped(Decoupled(new TcdmRsp(dataWidth)))
   })
 
@@ -22,8 +34,11 @@ class ArbitrationTree(NumInp: Int, addrWidth: Int, dataWidth: Int, strbWidth: In
   io.memReq.bits  := DontCare
 
   // Arbitration and request routing
-  val arbiter = Module(new RoundRobinArbiter(NumInp))
-  arbiter.io.requests        := io.tcdmReqs.map { req => req.valid }
+  val arbiter = Module(new PriorityRoundRobinArbiter(NumInp, priorityWidth))
+  for (i <- 0 until NumInp) {
+    arbiter.io.requests(i).valid    := io.tcdmReqs(i).valid
+    arbiter.io.requests(i).priority := io.tcdmReqs(i).bits.priority
+  }
   arbiter.io.selection.ready := io.memReq.ready
 
   // Propagate the request to the memory bank

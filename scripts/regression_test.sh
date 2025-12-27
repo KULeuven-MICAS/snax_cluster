@@ -42,6 +42,7 @@ declare -a TESTS=(
   "snax-simbacore-osgemm"
   "snax-simbacore-isgemm"
   "snax-simbacore-simd"
+  "snax-simbacore-main-full"
 )
 
 pushd "${TARGET_DIR}" >/dev/null
@@ -49,6 +50,8 @@ pushd "${TARGET_DIR}" >/dev/null
 { # Summary header
   echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S')"
   echo "Commit: (${COMMIT_HASH}) \"${COMMIT_MSG}\""
+  chisel_ssm_commit="$(grep chisel-ssm ../../Bender.lock -A3 | grep revision | awk '{print $2}' | head -n1)"
+  echo "Chisel-SSM version: ${chisel_ssm_commit}"
   if [ "${build_rc}" -eq 0 ]; then
     echo "Build: ✅ SUCCESS"
   else

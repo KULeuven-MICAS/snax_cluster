@@ -192,7 +192,7 @@ int test_phase1_and_2() {
     }
 
     // Disable to transfer to L1 in parallel with Phase1 computation
-    snrt_cluster_hw_barrier();
+    // snrt_cluster_hw_barrier();
 
     if (snrt_is_dm_core()) {
         snrt_dma_start_1d(ptr_oscore_weight_P2, M2_oscore_weight, M2_length_oscore_weight);
@@ -220,6 +220,7 @@ int test_phase1_and_2() {
         start_simbacore_and_streamers(M2_R10_en, M2_R10_start_cnt, M2_R11_en, M2_R11_start_cnt);
         wait_simbacore_and_streamer();
         printf("SimbaCore took %u cycles\n", read_simbacore_perf_counter());
+        printf("Current CPU cycle count: %u\n", snrt_mcycle());
 
         err += check_result_sample(ptr_z, M2_oscore_expected, M2_test_samples_z,  //
                                    nb_test_samples, "z (osCore out)");
@@ -239,7 +240,7 @@ int test_phase1_and_2() {
 int main() {
     int err = 0;
     err += test_phase1_and_2();
-    // err += test_phase2();
     // err += test_phase1();
+    // err += test_phase2();
     return err;
 }

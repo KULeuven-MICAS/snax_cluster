@@ -1,0 +1,5 @@
+{
+    "dim0": 64, // Must be multiple of 16
+    "dim1": 56,
+    "dim2": 48 // Must be multiple of 24
+}

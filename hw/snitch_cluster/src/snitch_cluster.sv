@@ -100,32 +100,10 @@ module snitch_cluster
     },
     /// SNAX Acc initial narrow TCDM ports
     parameter int unsigned SnaxNarrowTcdmPorts[NrCores] = '{default: 0},
-    /// SNAX Acc initial wide TCDM ports
-    parameter int unsigned SnaxWideTcdmPorts[NrCores] = '{default: 0},
     /// SNAX Acc initial narrow TCDM ports
     parameter int unsigned TotalSnaxNarrowTcdmPorts = 0,
-    /// SNAX Acc initial wide TCDM ports
-    parameter int unsigned TotalSnaxWideTcdmPorts = 0,
     /// Total Number of SNAX TCDM ports
-    parameter int unsigned TotalSnaxTcdmPorts = TotalSnaxNarrowTcdmPorts + TotalSnaxWideTcdmPorts,
-    /// SNAX TCDM Custom Index Assignment
-    parameter bit SnaxUseIdxTcdmAssign = 1'b0,
-    /// SNAX Number of Narrow Index Assignments
-    parameter int unsigned SnaxNumNarrowAssignIdx = 1,
-    /// SNAX Number of Wide Index Assignments
-    parameter int unsigned SnaxNumWideAssignIdx = 1,
-    /// SNAX Narrow Custom Index Assignment
-    parameter int unsigned SnaxNarrowStartIdx[SnaxNumNarrowAssignIdx] = '{
-        default: 0
-    },
-    parameter int unsigned SnaxNarrowEndIdx[SnaxNumNarrowAssignIdx] = '{
-        default: 0
-    },
-    /// SNAX Wide Custom Index Assignment
-    parameter int unsigned SnaxWideStartIdx[SnaxNumWideAssignIdx] = '{
-        default: 0
-    },
-    parameter int unsigned SnaxWideEndIdx[SnaxNumWideAssignIdx] = '{default: 0},
+    parameter int unsigned TotalSnaxTcdmPorts = TotalSnaxNarrowTcdmPorts,
     /// SNAX Use Custom Instruction Ports
     parameter bit [NrCores-1:0] SnaxUseCustomPorts = 0,
     /// Physical Memory Attribute Configuration
@@ -437,6 +415,7 @@ module snitch_cluster
   typedef struct packed {
     logic [CoreIDWidth-1:0] core_id;
     bit                     is_core;
+    logic                   tcdm_priority;
   } tcdm_user_t;
 
   // Regbus peripherals.
@@ -746,242 +725,6 @@ DmaXbarCfg.NoMstPorts
   assign ext_dma_req.q.amo  = reqrsp_pkg::AMONone;
   assign ext_dma_req.q.user = '0;
 
-  //------------------------
-  // Splitting of narrow-wide connections
-  // for heterogeneous interconnection
-  //------------------------
-
-  // Split narrow and wide TCDM ports to solve the multi-driver issue
-  // Use these ports for the total number and needs to be cute into multiple versions
-  // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
-  localparam int unsigned TotalSnaxNarrowTcdmPortsWidth = (TotalSnaxNarrowTcdmPorts>0)?
-  TotalSnaxNarrowTcdmPorts : 1;
-  localparam int unsigned TotalSnaxWideTcdmPortsWidth   = (TotalSnaxWideTcdmPorts>0)?
-  TotalSnaxWideTcdmPorts : 1;
-  tcdm_req_t [TotalSnaxNarrowTcdmPortsWidth-1:0] snax_tcdm_req_narrow;
-  tcdm_req_t [  TotalSnaxWideTcdmPortsWidth-1:0] snax_tcdm_req_wide;
-
-  tcdm_rsp_t [TotalSnaxNarrowTcdmPortsWidth-1:0] snax_tcdm_rsp_narrow;
-  tcdm_rsp_t [  TotalSnaxWideTcdmPortsWidth-1:0] snax_tcdm_rsp_wide;
-
-  localparam int unsigned NumSnaxWideTcdmPorts = TotalSnaxWideTcdmPorts / 8;
-
-  if ((NumSnaxWideTcdmPorts > 0) && (TotalSnaxNarrowTcdmPorts > 0)) begin : gen_narrow_wide_map
-
-    integer total_offset, wide_offset, narrow_offset, curr_wide, curr_narrow;
-
-    //------------------------
-    // Designer note:
-    // SystemVerilog does not allow non-constant
-    // dynamic slicings (:+ or :-) styles so it's a limitation
-    // to overcome this you need to manually specify ports
-    // regardless if it's bit-wise or port wise.
-    // That is the technique used in the procedural block below
-    //------------------------
-
-    if (SnaxUseIdxTcdmAssign) begin : gen_custom_tcdm_assign
-
-      integer start_wide_idx, end_wide_idx, wide_len;
-      integer start_narrow_idx, end_narrow_idx, narrow_len;
-
-      always_comb begin
-
-        wide_offset   = 0;
-        narrow_offset = 0;
-
-        // Re-map the custom wide ports
-        // We make the assumption that the number of narrow
-        // per wide port is equal to BanksPerSuperBank
-
-        // For this part we cycle through the starting
-        // and end points for the TCDM slices
-        for (int i = 0; i < SnaxNumWideAssignIdx; i++) begin
-
-          // Note that indices are indexed starting from 0
-          start_wide_idx = SnaxWideStartIdx[i];
-          end_wide_idx = SnaxWideEndIdx[i];
-          wide_len = end_wide_idx - start_wide_idx + 1;
-
-          for (int j = 0; j < wide_len; j++) begin
-            snax_tcdm_req_wide[j+wide_offset] = snax_tcdm_req_i[j+start_wide_idx];
-            snax_tcdm_rsp_o[j+start_wide_idx] = snax_tcdm_rsp_wide[j+wide_offset];
-          end
-
-          wide_offset += wide_len;
-
-        end
-
-        // Re-map the custom narrow ports
-        for (int i = 0; i < SnaxNumNarrowAssignIdx; i++) begin
-
-          // Note that indices are indexed starting from 0
-          start_narrow_idx = SnaxNarrowStartIdx[i];
-          end_narrow_idx = SnaxNarrowEndIdx[i];
-          narrow_len = end_narrow_idx - start_narrow_idx + 1;
-
-          for (int j = 0; j < narrow_len; j++) begin
-            snax_tcdm_req_narrow[j+narrow_offset] = snax_tcdm_req_i[j+start_narrow_idx];
-            snax_tcdm_rsp_o[j+start_narrow_idx]   = snax_tcdm_rsp_narrow[j+narrow_offset];
-          end
-
-          narrow_offset += narrow_len;
-
-        end
-
-      end
-    end else begin : gen_non_custom_tcdm_assign
-
-      always_comb begin
-
-        total_offset  = 0;
-        wide_offset   = 0;
-        narrow_offset = 0;
-
-        for (int i = 0; i < NrCores; i++) begin
-
-          curr_wide   = SnaxWideTcdmPorts[i];
-          curr_narrow = SnaxNarrowTcdmPorts[i];
-
-          // Wide re-mapping
-          for (int j = 0; j < curr_wide; j++) begin
-            snax_tcdm_req_wide[j+wide_offset] = snax_tcdm_req_i[j+total_offset];
-            snax_tcdm_rsp_o[j+total_offset] = snax_tcdm_rsp_wide[j+wide_offset];
-          end
-
-          // Narrow re-mapping
-          for (int j = 0; j < curr_narrow; j++) begin
-            snax_tcdm_req_narrow[j+narrow_offset] = snax_tcdm_req_i[j+curr_wide+total_offset];
-            snax_tcdm_rsp_o[j+curr_wide+total_offset] = snax_tcdm_rsp_narrow[j+narrow_offset];
-          end
-
-          wide_offset += curr_wide;
-          narrow_offset += curr_narrow;
-          total_offset += (curr_wide + curr_narrow);
-        end
-
-      end
-    end
-
-  end else if (NumSnaxWideTcdmPorts > 0) begin : gen_wide_only_map
-    // For wide only connection ports
-    always_comb begin
-      snax_tcdm_req_wide = snax_tcdm_req_i;
-      snax_tcdm_rsp_o    = snax_tcdm_rsp_wide;
-    end
-  end else if (TotalSnaxNarrowTcdmPorts > 0) begin : gen_narrow_only_map
-    // For narrow only connection ports
-    always_comb begin
-      snax_tcdm_req_narrow = snax_tcdm_req_i;
-      snax_tcdm_rsp_o      = snax_tcdm_rsp_narrow;
-    end
-  end else begin : gen_no_snax_map
-    // When there are no accelerators in the system
-    always_comb begin
-      snax_tcdm_rsp_o = '0;
-    end
-  end
-
-  if (NumSnaxWideTcdmPorts > 0) begin : gen_yes_wide_acc_connect
-
-    // First declare the wide SNAX tcdm ports
-    tcdm_dma_req_t [NumSnaxWideTcdmPorts-1:0] snax_wide_req;
-    tcdm_dma_rsp_t [NumSnaxWideTcdmPorts-1:0] snax_wide_rsp;
-
-    // This is for hard remapping of signals
-    // !!! Note that System verilog does not support
-    // Part-select method for unpacked signals
-    always_comb begin
-      for (int i = 0; i < NumSnaxWideTcdmPorts; i++) begin
-        // Request ports
-        snax_wide_req[i].q.addr = snax_tcdm_req_wide[i*8].q.addr;
-        snax_wide_req[i].q.write = snax_tcdm_req_wide[i*8].q.write;
-        snax_wide_req[i].q.amo = reqrsp_pkg::AMONone;
-        snax_wide_req[i].q.data = {
-          snax_tcdm_req_wide[i*8+7].q.data,
-          snax_tcdm_req_wide[i*8+6].q.data,
-          snax_tcdm_req_wide[i*8+5].q.data,
-          snax_tcdm_req_wide[i*8+4].q.data,
-          snax_tcdm_req_wide[i*8+3].q.data,
-          snax_tcdm_req_wide[i*8+2].q.data,
-          snax_tcdm_req_wide[i*8+1].q.data,
-          snax_tcdm_req_wide[i*8].q.data
-        };
-        snax_wide_req[i].q.strb = {
-          snax_tcdm_req_wide[i*8+7].q.strb,
-          snax_tcdm_req_wide[i*8+6].q.strb,
-          snax_tcdm_req_wide[i*8+5].q.strb,
-          snax_tcdm_req_wide[i*8+4].q.strb,
-          snax_tcdm_req_wide[i*8+3].q.strb,
-          snax_tcdm_req_wide[i*8+2].q.strb,
-          snax_tcdm_req_wide[i*8+1].q.strb,
-          snax_tcdm_req_wide[i*8].q.strb
-        };
-        snax_wide_req[i].q.user = '0;
-        snax_wide_req[i].q_valid = &{
-                                      snax_tcdm_req_wide[i*8+7].q_valid,
-                                      snax_tcdm_req_wide[i*8+6].q_valid,
-                                      snax_tcdm_req_wide[i*8+5].q_valid,
-                                      snax_tcdm_req_wide[i*8+4].q_valid,
-                                      snax_tcdm_req_wide[i*8+3].q_valid,
-                                      snax_tcdm_req_wide[i*8+2].q_valid,
-                                      snax_tcdm_req_wide[i*8+1].q_valid,
-                                      snax_tcdm_req_wide[i*8].q_valid
-                                    };
-
-        // Response ports
-        {
-          snax_tcdm_rsp_wide[i*8+7].p.data,
-          snax_tcdm_rsp_wide[i*8+6].p.data,
-          snax_tcdm_rsp_wide[i*8+5].p.data,
-          snax_tcdm_rsp_wide[i*8+4].p.data,
-          snax_tcdm_rsp_wide[i*8+3].p.data,
-          snax_tcdm_rsp_wide[i*8+2].p.data,
-          snax_tcdm_rsp_wide[i*8+1].p.data,
-          snax_tcdm_rsp_wide[i*8].p.data
-        } = snax_wide_rsp[i].p.data;
-
-        snax_tcdm_rsp_wide[i*8+7].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_wide[i*8+6].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_wide[i*8+5].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_wide[i*8+4].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_wide[i*8+3].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_wide[i*8+2].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_wide[i*8+1].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_wide[i*8].p_valid = snax_wide_rsp[i].p_valid;
-
-        snax_tcdm_rsp_wide[i*8+7].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_wide[i*8+6].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_wide[i*8+5].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_wide[i*8+4].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_wide[i*8+3].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_wide[i*8+2].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_wide[i*8+1].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_wide[i*8].q_ready = snax_wide_rsp[i].q_ready;
-      end
-    end
-
-    snitch_tcdm_interconnect #(
-        .NumInp(1 + NumSnaxWideTcdmPorts),
-        .NumOut(NrSuperBanks),
-        .tcdm_req_t(tcdm_dma_req_t),
-        .tcdm_rsp_t(tcdm_dma_rsp_t),
-        .mem_req_t(mem_dma_req_t),
-        .mem_rsp_t(mem_dma_rsp_t),
-        .user_t(logic),
-        .MemAddrWidth(TCDMMemAddrWidth),
-        .DataWidth(WideDataWidth),
-        .MemoryResponseLatency(MemoryMacroLatency)
-    ) i_dma_interconnect (
-        .clk_i,
-        .rst_ni,
-        .req_i({ext_dma_req, snax_wide_req}),
-        .rsp_o({ext_dma_rsp, snax_wide_rsp}),
-        .mem_req_o(sb_dma_req),
-        .mem_rsp_i(sb_dma_rsp)
-    );
-
-  end else begin : gen_no_wide_acc_connect
-
     snitch_tcdm_interconnect #(
         .NumInp(1),
         .NumOut(NrSuperBanks),
@@ -1001,8 +744,6 @@ DmaXbarCfg.NoMstPorts
         .mem_req_o(sb_dma_req),
         .mem_rsp_i(sb_dma_rsp)
     );
-  end
-
 
   // ----------------
   // Memory Subsystem
@@ -1123,9 +864,9 @@ DmaXbarCfg.NoMstPorts
     ) i_tcdm_interconnect (
         .clk_i,
         .rst_ni,
-        .req_i({axi_soc_req, tcdm_req, snax_tcdm_req_narrow}),
+        .req_i({axi_soc_req, tcdm_req, snax_tcdm_req_i}),
         //snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]}),
-        .rsp_o({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_narrow}),
+        .rsp_o({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o}),
         .mem_req_o(ic_req),
         .mem_rsp_i(ic_rsp)
     );
@@ -1146,9 +887,9 @@ DmaXbarCfg.NoMstPorts
     ) i_tcdm_interconnect (
         .clk_i,
         .rst_ni,
-        .req_i({axi_soc_req, tcdm_req, snax_tcdm_req_narrow}),
+        .req_i({axi_soc_req, tcdm_req, snax_tcdm_req_i}),
         //snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]}),
-        .rsp_o({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_narrow}),
+        .rsp_o({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o}),
         .mem_req_o(ic_req),
         .mem_rsp_i(ic_rsp)
     );

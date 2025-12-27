@@ -354,9 +354,8 @@ jobs:
           sw/runtime.yaml \
           sw/snax-compiler-test-run.yaml -j
 
-  snax-versaCore-cluster-vlt-generic:
-
-    name: Simulate SW on VersaCore cluster w/ Verilator (Generic LLVM)
+  snax-versaCore-to-cluster-vlt-generic:
+    name: Generate HW on VersaCore TO cluster
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -372,25 +371,10 @@ jobs:
         run: |
           export JAVA_OPTS="-Xmx8G -Xms4G"
           make -C target/snitch_cluster rtl-gen \
-          CFG_OVERRIDE=cfg/snax_versacore_cluster.hjson
-      - name: Build Hardware
-        run: |
-          make CFG_OVERRIDE=cfg/snax_versacore_cluster.hjson \
-          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
-      - name: Build Software
-        run: |
-          make -C target/snitch_cluster sw \
-          CFG_OVERRIDE=cfg/snax_versacore_cluster.hjson
-      - name: Run Tests
-        working-directory: target/snitch_cluster
-        run: |-
-          ./run.py --simulator verilator \
-          sw/runtime.yaml \
-          sw/snax-versacore-matmul-run.yaml \
-          sw/snax-xdma-run.yaml -j
+          CFG_OVERRIDE=cfg/snax_versacore_to_cluster.hjson
 
-  snax-xdma-cluster-vlt-generic:
-    name: Simulate SW on XDMA cluster w/ Verilator (Generic LLVM)
+  sw-versacore-dse-cluster-vlt-generic:
+    name: Run versacore dse configuration w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -402,20 +386,21 @@ jobs:
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
           activate-environment: true
-      - name: Generate RTL
+      - name: RTL GEN
         run: |
-          make -C target/snitch_cluster rtl-gen \
-          CFG_OVERRIDE=cfg/snax_xdma_cluster.hjson
+          make CFG_OVERRIDE=cfg/snax_versacore_dse_cluster.hjson \
+          -C target/snitch_cluster rtl-gen
       - name: Build Hardware
         run: |
-          make CFG_OVERRIDE=cfg/snax_xdma_cluster.hjson \
+          make CFG_OVERRIDE=cfg/snax_versacore_dse_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \
-          CFG_OVERRIDE=cfg/snax_xdma_cluster.hjson
+          CFG_OVERRIDE=cfg/snax_versacore_dse_cluster.hjson
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
           ./run.py --simulator verilator \
-          sw/snax-xdma-run.yaml -j
+          sw/runtime.yaml \
+          sw/snax-versacore-dse-matmul-run.yaml -j

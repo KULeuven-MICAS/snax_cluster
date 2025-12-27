@@ -1,0 +1,5 @@
+{
+    "seqLen": 64,
+    "dModel": 48,
+    "dtRank": 24
+}

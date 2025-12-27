@@ -18,6 +18,10 @@ from datagen_cli import main as datagen_cli_main  # type: ignore[import]
 
 
 class DataGenerator(DataGeneratorBase):
+    APP_NAME = "main"
+
+    def __init__(self, **kwargs):
+        super().__init__(self.APP_NAME, **kwargs)
 
     def run(self):
         self.save_params()
@@ -47,6 +51,13 @@ class DataGenerator(DataGeneratorBase):
         self.suc_serial_width_A = self.kwargs["suc_serial_width_A"]
         self.suc_serial_width_BC = self.kwargs["suc_serial_width_BC"]  # Streamer width is 2x this value!
         self.switchcore_width = self.kwargs["switchcore_width"]
+        self.gemm_weight_width = self.kwargs["gemm_weight_width"]
+        self.weight_downsize_factor = self.gemm_weight_width / (self.dInnerUnroll * FP8)  # >= 1
+        # Derived
+        self.downsized_dModel = int(self.dModel / self.weight_downsize_factor)
+        self.downsized_xProjDim = int(self.xProjDim / self.weight_downsize_factor)
+        assert self.downsized_dModel * self.gemm_weight_width == self.dModel * (self.dInnerUnroll * FP8)
+        assert self.downsized_xProjDim * self.gemm_weight_width == self.xProjDim * (self.dInnerUnroll * FP8)
 
     def get_safe_to_start_delay(self):
         """In Phase2, the SU core reads the OS core output from memory, in a different order. The program must ensure
@@ -67,8 +78,8 @@ class DataGenerator(DataGeneratorBase):
         gemm_window_cnt = self.seqLen // self.seqLenUnroll  # expressed in OS core tiles
         suc_window_cnt = self.seqLen * self.dInnerUnroll  # expressed in SUC output elements
 
-        suc_safe_to_start = gemm_window_cnt * max(suc_tp / gemm_tp, 1)  # expressed in OS core tiles
-        iscore_safe_to_start = suc_window_cnt * max(gemm_tp / suc_tp, 1)  # expressed in SUC output elements
+        suc_safe_to_start = gemm_window_cnt + gemm_total_nb_tiles * max(suc_tp / gemm_tp, 1)  # [tiles]
+        iscore_safe_to_start = suc_window_cnt + suc_total_nb_elements * max(gemm_tp / suc_tp, 1)  # [elements]
 
         # Make sure the delay does not exceed the total number of tiles or elements
         return int(min(suc_safe_to_start, gemm_total_nb_tiles)), int(min(iscore_safe_to_start, suc_total_nb_elements))
@@ -93,14 +104,14 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R1": (  # oscore weight
                 [
-                    self.dModel,  # K
+                    self.downsized_dModel,  # K
                     self.seqLen // self.seqLenUnroll,  # M
                     self.dInner // self.dInnerUnroll,  # N
                 ],
                 [
-                    self.dInnerUnroll * FP8 // 8,
+                    self.gemm_weight_width // 8,
                     0,
-                    self.dModel * self.dInnerUnroll * FP8 // 8,
+                    self.downsized_dModel * self.gemm_weight_width // 8,
                 ],
             ),
             "R3": (  #  conv (switchCore) weight: layout is row-major [dInner, dConv]
@@ -113,14 +124,14 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R12": (  # iscore weight
                 [
-                    self.xProjDim,  # N
+                    self.downsized_xProjDim,  # N
                     self.seqLen // self.seqLenUnroll,  # M
                     self.dInner // self.dInnerUnroll,  # K
                 ],
                 [
-                    self.dInnerUnroll * FP8 // 8,
+                    self.gemm_weight_width // 8,
                     0,
-                    self.xProjDim * self.dInnerUnroll * FP8 // 8,
+                    self.downsized_xProjDim * self.gemm_weight_width // 8,
                 ],
             ),
             "R13": (  # isCore psum
@@ -229,14 +240,14 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R1": (  # oscore weight
                 [
-                    self.dModel,  # K
+                    self.downsized_dModel,  # K
                     self.seqLen // self.seqLenUnroll,  # M
                     self.dInner // self.dInnerUnroll,  # N
                 ],
                 [
-                    self.dInnerUnroll * FP8 // 8,
+                    self.gemm_weight_width // 8,
                     0,
-                    self.dModel * self.dInnerUnroll * FP8 // 8,
+                    self.downsized_dModel * self.gemm_weight_width // 8,
                 ],
             ),
             "R2": (  # switchCore in (deltaMinor)
@@ -309,14 +320,14 @@ class DataGenerator(DataGeneratorBase):
             ),
             "R12": (  # iscore weight
                 [
-                    self.dModel,  # N
+                    self.downsized_dModel,  # N
                     self.seqLen // self.seqLenUnroll,  # M
                     self.dInner // self.dInnerUnroll,  # K
                 ],
                 [
-                    self.dInnerUnroll * FP8 // 8,
+                    self.gemm_weight_width // 8,
                     0,
-                    self.dModel * self.dInnerUnroll * FP8 // 8,
+                    self.downsized_dModel * self.gemm_weight_width // 8,
                 ],
             ),
             "R13": (  # isCore psum
@@ -360,7 +371,7 @@ class DataGenerator(DataGeneratorBase):
             ("oscore_in", self.seqLen * self.dModel * FP8 // 8),
             ("oscore_weight", self.dModel * self.dInner * FP8 // 8),
             ("z", tensor_size),
-            # ("dt_in", self.dInner * self.dtRank * FP8 // 8),
+            # ("dt_BC_dummy", dummyFillBC),
             ("dt_BC", self.seqLen * self.xProjDim * FP8 // 8),
             ("dt_weight_1", self.dInner * (self.dtRank // self.dtRankUnroll) * self.dConv * FP8 // 8),
             (
@@ -414,7 +425,7 @@ class DataGenerator(DataGeneratorBase):
             )
         }
 
-        self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests)
+        self.build_mode(mode_id, streamers, scalars=scalars, test_data=test_data, tests=tests, app_name=self.APP_NAME)
 
 
 if __name__ == "__main__":
