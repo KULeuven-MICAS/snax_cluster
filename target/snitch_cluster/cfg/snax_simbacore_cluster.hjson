@@ -29,7 +29,7 @@ Naming convention:
     data_width: 64,
     user_width: 3,
     tcdm: {
-      size: 1024, // kB
+      size: 512, // kB
       banks: 32,
       sparse_interconnect: true
     },
