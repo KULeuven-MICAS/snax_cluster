@@ -455,19 +455,6 @@ def main():
 
         # Generate template out of given configurations
         for i in range(len(acc_cfgs)):
-            # First part is for chisel generation
-            # Generate the parameter files for chisel streamer generation
-            chisel_target_path = args.chisel_path + "src/main/scala/snax/streamer/"
-            file_name = "StreamParamGen.scala"
-            tpl_scala_param_file = args.tpl_path + "stream_param_gen.scala.tpl"
-            tpl_scala_param = get_template(tpl_scala_param_file)
-            gen_file(
-                cfg=acc_cfgs[i],
-                tpl=tpl_scala_param,
-                target_path=chisel_target_path,
-                file_name=file_name,
-            )
-
             # CSR manager scala parameter generation
             if not acc_cfgs[i].get("snax_disable_csr_manager", False):
                 chisel_target_path = (
