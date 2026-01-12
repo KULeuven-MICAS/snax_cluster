@@ -308,6 +308,21 @@ sources:
       # Level 2
       - target/snitch_cluster/generated/snax_alu/snax_alu_wrapper.sv
 
+  # SNAX ALU
+  - target: snax_alu_phs
+    files:
+      # Level 0
+      - target/snitch_cluster/generated/snax_alu_phs/acc1_array.sv
+      - hw/snax_alu/src/snax_alu_csr.sv
+      - target/snitch_cluster/generated/snax_alu_phs/snax_alu_phs_reqrspman_ReqRspManager.sv
+      - target/snitch_cluster/generated/snax_alu_phs/snax_alu_phs_Streamer.sv
+      # Level 1
+      - hw/snax_alu_phs/src/snax_alu_phs_shell_wrapper.sv
+      - target/snitch_cluster/generated/snax_alu_phs/snax_alu_phs_csrman_wrapper.sv
+      - target/snitch_cluster/generated/snax_alu_phs/snax_alu_phs_streamer_wrapper.sv
+      # Level 2
+      - target/snitch_cluster/generated/snax_alu_phs/snax_alu_phs_wrapper.sv
+
   # Hypercorex
   - target: hypercorex
     files:
@@ -439,6 +454,9 @@ sources:
   - target: snax_alu_cluster
     files:
       - target/snitch_cluster/generated/snax_alu_cluster_wrapper.sv
+  - target: snax_alu_phs_cluster
+    files:
+      - target/snitch_cluster/generated/snax_alu_phs_cluster_wrapper.sv
   - target: snax_hypercorex_cluster
     files:
       - target/snitch_cluster/generated/snax_hypercorex_cluster_wrapper.sv
