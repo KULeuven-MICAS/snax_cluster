@@ -139,7 +139,6 @@ module snax_alu_phs_shell_wrapper #(
   acc1_array snax_alu_pe_array(
     .data_0 (a_split),
     .data_1 (b_split),
-    .data_2 (b_split), // THIS INPUT IS NOT USED!
     .switch_0 (csr_alu_config),
     .out_0 (c_split)
   );
