@@ -885,9 +885,9 @@ total_snax_tcdm_ports = total_snax_narrow_ports
   );
       %if snax_core_acc[idx_key]['snax_use_custom_ports']:
 
-  assign snax_csr_req_ready [${idx}] = '0;
-  assign snax_csr_rsp_data  [${idx}] = '0;
-  assign snax_csr_rsp_valid [${idx}] = '0;
+  assign snax_csr_req_acc_ready [${idx}] = '0;
+  assign snax_csr_rsp_acc       [${idx}] = '0;
+  assign snax_csr_rsp_acc_valid [${idx}] = '0;
 
       %else:
   // TODO: Not yet supported for multiple CSR ports
@@ -952,9 +952,9 @@ total_snax_tcdm_ports = total_snax_narrow_ports
 
         %if snax_core_acc[idx_key]['snax_use_custom_ports']:
   // Tie unused CSR ports to 0
-  assign snax_csr_rsp_valid [${idx}] = '0;
-  assign snax_csr_rsp_data  [${idx}] = '0;
-  assign snax_csr_req_ready [${idx}] = '0;
+  assign snax_csr_req_acc_ready [${idx}] = '0;
+  assign snax_csr_rsp_acc       [${idx}] = '0;
+  assign snax_csr_rsp_acc_valid [${idx}] = '0;
         %else:
   // Tie unused custom instruction ports to 0
   assign snax_qready  [${idx}] = '0;
@@ -1050,9 +1050,9 @@ total_snax_tcdm_ports = total_snax_narrow_ports
   assign snax_resp    [${idx}] = '0;
   assign snax_pvalid  [${idx}] = '0;
   // Tie CSR ports to 0
-  assign snax_csr_rsp_data [ ${idx}] = '0;
-  assign snax_csr_rsp_valid [${idx}] = '0;
-  assign snax_csr_req_ready [${idx}] = '0;
+  assign snax_csr_req_acc_ready [${idx}] = '0;
+  assign snax_csr_rsp_acc       [${idx}] = '0;
+  assign snax_csr_rsp_acc_valid [${idx}] = '0;
   // Tie barrier to 0
   assign snax_barrier [${idx}] = '0;
 
