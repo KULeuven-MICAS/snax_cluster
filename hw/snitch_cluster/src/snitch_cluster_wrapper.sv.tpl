@@ -285,7 +285,7 @@ module ${cfg['name']}_wrapper (
   //-----------------------------
   // Observable pins
   //-----------------------------
-  output logic [${cfg['pkg_name']}::ObsWidth-1:0] obs_o,
+  (* false_path *) output logic [${cfg['pkg_name']}::ObsWidth-1:0] obs_o,
 % endif
   //-----------------------------
   // Interrupt ports
@@ -293,15 +293,15 @@ module ${cfg['name']}_wrapper (
 % if cfg['enable_debug']:
   input  logic [${cfg['pkg_name']}::NrCores-1:0] debug_req_i,
 % endif
-  input  logic [${cfg['pkg_name']}::NrCores-1:0] meip_i,
-  input  logic [${cfg['pkg_name']}::NrCores-1:0] mtip_i,
-  input  logic [${cfg['pkg_name']}::NrCores-1:0] msip_i,
+  (* false_path *) input logic [${cfg['pkg_name']}::NrCores-1:0] meip_i,
+  (* false_path *) input logic [${cfg['pkg_name']}::NrCores-1:0] mtip_i,
+  (* false_path *) input logic [${cfg['pkg_name']}::NrCores-1:0] msip_i,
   //-----------------------------
   // Cluster base addressing
   //-----------------------------
-  input  logic [9:0]                             hart_base_id_i,
-  input  logic [${cfg['addr_width']-1}:0]        cluster_base_addr_i,
-  input  logic [31:0]                            boot_addr_i,
+  (* false_path *) input logic [9:0]                             hart_base_id_i,
+  (* false_path *) input logic [${cfg['addr_width']-1}:0]        cluster_base_addr_i,
+  (* false_path *) input logic [31:0]                            boot_addr_i,
 % if cfg['timing']['iso_crossings']:
   //-----------------------------
   // ISO crossings
