@@ -66,6 +66,10 @@ class AdderTree(
     io.in.map(_.asTypeOf(adderTreeInputType).asTypeOf(UInt(outputType.width.W)))
   )
 
+  val realStageNum = MuxLookup(io.cfg, groupSizes(0).U)(groupSizes.zipWithIndex.map { case (size, idx) =>
+    (idx).U -> log2Ceil(size).U
+  })
+
   // Generate adder tree layers
   for (d <- 0 until treeDepth) {
     val step = 1
@@ -77,20 +81,19 @@ class AdderTree(
       // Connect the inputs of the adder
       // The adder takes two inputs from the current layer
       // and produces one output for the next layer
-      adder.io.in_a        := layers(d)(i)
-      adder.io.in_b        := layers(d)(i + step)
-      layers(d + 1)(i / 2) := adder.io.out_c
+      // The connection is controlled by the realStageNum
+      // If the current depth is less than or equal to realStageNum,
+      // we connect the inputs and outputs normally
+      // Otherwise, we connect zeros to save energy
+      adder.io.in_a        := Mux(realStageNum <= d.U, layers(d)(i), 0.U)
+      adder.io.in_b        := Mux(realStageNum <= d.U, layers(d)(i + step), 0.U)
+      layers(d + 1)(i / 2) := Mux(realStageNum <= d.U, adder.io.out_c, 0.U)
     }
   }
 
   // Generate multiple adder tree outputs based on groupSizes
-  val adderResults = groupSizes.map(size => layers(log2Ceil(size)))
+  io.out := layers(realStageNum)
 
-  // Mux output based on cfg to select the appropriate adder result
-  // for dynamic spatial reduction
-  io.out := MuxLookup(io.cfg, adderResults(0))(
-    (0 until groupSizes.length).map(i => (i).U -> adderResults(i))
-  )
 }
 
 object AdderTreeEmitterUInt extends App {

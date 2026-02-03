@@ -55,7 +55,7 @@ object SpatialArrayParamParser {
       widthSeq.zip(dataTypeStr).map { case (a, b) => widthToType(a, b) }
 
     SpatialArrayParam(
-      macNum                 = getSeqInt("snax_versacore_mac_num"),
+      multiplierNum          = getSeqInt("snax_versacore_mac_num"),
       inputTypeA             = widthSeqToTypeSeq(
         getSeqInt("snax_versacore_input_a_element_width"),
         cfg("snax_versacore_input_a_data_type").arr.map(_.str).toSeq

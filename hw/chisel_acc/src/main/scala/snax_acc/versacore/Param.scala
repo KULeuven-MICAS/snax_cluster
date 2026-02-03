@@ -9,7 +9,7 @@ package snax_acc.versacore
 import fp_unit._
 
 class SpatialArrayParam(
-  val macNum:                 Seq[Int],
+  val multiplierNum:          Seq[Int],
   val inputTypeA:             Seq[DataType],
   val inputTypeB:             Seq[DataType],
   val inputTypeC:             Seq[DataType],
@@ -33,7 +33,7 @@ object SpatialArrayParam {
   // test config
   def apply(): SpatialArrayParam =
     apply(
-      macNum                 = Seq(1024, 2048),
+      multiplierNum          = Seq(1024, 2048),
       inputTypeA             = Seq(Int8, Int4),
       inputTypeB             = Seq(Int8, Int4),
       inputTypeC             = Seq(Int32, Int16),
@@ -54,7 +54,7 @@ object SpatialArrayParam {
     )
 
   def apply(
-    macNum:                 Seq[Int],
+    multiplierNum:          Seq[Int],
     inputTypeA:             Seq[DataType],
     inputTypeB:             Seq[DataType],
     inputTypeC:             Seq[DataType],
@@ -72,7 +72,7 @@ object SpatialArrayParam {
     dataflow:               Seq[String] = Seq("output_stationary", "input_stationary", "weight_stationary")
   ): SpatialArrayParam =
     new SpatialArrayParam(
-      macNum                 = macNum,
+      multiplierNum          = multiplierNum,
       inputTypeA             = inputTypeA,
       inputTypeB             = inputTypeB,
       inputTypeC             = inputTypeC,

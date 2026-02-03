@@ -551,7 +551,7 @@ object VersaCoreEmitter extends App {
 
 object VersaCoreEmitterFloat16Int4 extends App {
   val FP16Int4Array_Param = SpatialArrayParam(
-    macNum                 = Seq(8),
+    multiplierNum          = Seq(8),
     inputTypeA             = Seq(FP16),
     inputTypeB             = Seq(Int4),
     inputTypeC             = Seq(FP32),
@@ -574,7 +574,7 @@ object VersaCoreEmitterFloat16Int4 extends App {
 
 object VersaCoreEmitterFloat16Float16 extends App {
   val FP16Float16Array_Param = SpatialArrayParam(
-    macNum                 = Seq(8),
+    multiplierNum          = Seq(8),
     inputTypeA             = Seq(FP16),
     inputTypeB             = Seq(FP16),
     inputTypeC             = Seq(FP32),

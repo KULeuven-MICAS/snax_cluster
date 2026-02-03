@@ -45,7 +45,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
       {
         require(dim.length == 3)
         // mac number should be enough to support the computation bound
-        require(dim(0) * dim(1) * dim(2) <= params.macNum(dataTypeIdx))
+        require(dim(0) * dim(1) * dim(2) <= params.multiplierNum(dataTypeIdx))
         // arrayInputAWidth should be enough to support the bandwidth bound
         require(
           params.arrayInputAWidth        >= dim(0) * dim(1) * params.inputTypeA(dataTypeIdx).width
@@ -76,30 +76,30 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   )
 
   require(
-    params.inputTypeA.length == params.macNum.length    &&
-      params.inputTypeB.length == params.macNum.length  &&
-      params.inputTypeC.length == params.macNum.length  &&
-      params.inputTypeC.length == params.macNum.length  &&
-      params.outputTypeD.length == params.macNum.length &&
-      params.arrayDim.length == params.macNum.length,
+    params.inputTypeA.length == params.multiplierNum.length    &&
+      params.inputTypeB.length == params.multiplierNum.length  &&
+      params.inputTypeC.length == params.multiplierNum.length  &&
+      params.inputTypeC.length == params.multiplierNum.length  &&
+      params.outputTypeD.length == params.multiplierNum.length &&
+      params.arrayDim.length == params.multiplierNum.length,
     "All data type related parameters should have the same length"
   )
 
   // N-D data feeding network, spatial loop bounds are specified by `dims` and data reuse strides by `strides`, idx 0 is the outermost dimension
   // e.g., for 3D data, dims = Seq(Mu, Nu, Ku) and strides = Seq(stride_Ku, stride_Nu, stride_Mu)
   def dataForwardN(
-    macNum:   Int,
-    elemBits: Int,
-    dims:     Seq[Int],
-    strides:  Seq[Int],
-    input:    UInt
+    multiplierNum: Int,
+    elemBits:      Int,
+    dims:          Seq[Int],
+    strides:       Seq[Int],
+    input:         UInt
   ): Vec[UInt] = {
     require(dims.length == strides.length)
     dims.length
 
-    val reshapedData = Wire(Vec(macNum, UInt(elemBits.W)))
+    val reshapedData = Wire(Vec(multiplierNum, UInt(elemBits.W)))
 
-    for (i <- 0 until macNum) {
+    for (i <- 0 until multiplierNum) {
       // Compute multi-dimensional index: idx = [d0, d1, ..., dn]
       def computeMultiIndex(flatIdx: Int, dims: Seq[Int]): Seq[Int] = {
         var remainder = flatIdx
@@ -133,7 +133,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   val inputA = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
       dataForwardN(
-        params.macNum(dataTypeIdx),
+        params.multiplierNum(dataTypeIdx),
         params.inputTypeA(dataTypeIdx).width,
         // Mu, Nu, Ku
         Seq(dim(0), dim(2), dim(1)),
@@ -147,7 +147,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   val inputB = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
       dataForwardN(
-        params.macNum(dataTypeIdx),
+        params.multiplierNum(dataTypeIdx),
         params.inputTypeB(dataTypeIdx).width,
         // Mu, Nu, Ku
         Seq(dim(0), dim(2), dim(1)),
@@ -161,7 +161,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   val inputC = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
       dataForwardN(
-        params.macNum(dataTypeIdx),
+        params.multiplierNum(dataTypeIdx),
         params.inputTypeC(dataTypeIdx).width,
         // Mu, Nu, 1
         Seq(dim(0), dim(2), 1),
@@ -172,9 +172,25 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     })
   }
 
+  val dimRom = VecInit(params.arrayDim.map { twoD =>
+    VecInit(twoD.map { oneD =>
+      VecInit(oneD.map(_.U(params.configWidth.W)))
+    })
+  })
+
+  def realUnrollFactorProd(
+    dataTypeIdx: UInt,
+    dimIdx:      UInt
+  ) = {
+    val dim = dimRom(dataTypeIdx)(dimIdx)
+    dim(0) * dim(1) * dim(2) // Mu * Nu * Ku
+  }
+
+  val runTimeUnrollFactorProd = realUnrollFactorProd(io.ctrl.dataTypeCfg, io.ctrl.arrayShapeCfg)
+
   // instantiate a bunch of multipliers with different data type
   val multipliers = (0 until params.inputTypeA.length).map(dataTypeIdx =>
-    Seq.fill(params.macNum(dataTypeIdx))(
+    Seq.fill(params.multiplierNum(dataTypeIdx))(
       Module(
         new Multiplier(
           params.inputTypeA(dataTypeIdx),
@@ -209,7 +225,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
       new AdderTree(
         params.inputTypeC(dataTypeIdx),
         params.outputTypeD(dataTypeIdx),
-        params.macNum(dataTypeIdx),
+        params.multiplierNum(dataTypeIdx),
         // adderGroupSizes = params.arrayDim(dataTypeIdx).map(_(1)), which describes the spatial reduction dimension
         params.arrayDim(dataTypeIdx).map(_(1))
       )
@@ -226,13 +242,12 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   // adder tree runtime configuration
   adderTree.foreach(_.io.cfg := io.ctrl.arrayShapeCfg)
 
-  // instantiate accumulators
   val accumulators = (0 until params.inputTypeA.length).map(dataTypeIdx =>
     Module(
       new Accumulator(
         params.outputTypeD(dataTypeIdx),
         params.outputTypeD(dataTypeIdx),
-        params.macNum(dataTypeIdx)
+        params.multiplierNum(dataTypeIdx)
       )
     )
   )
@@ -254,8 +269,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   accumulators.foreach(_.io.in2.valid := io.data.in_c.valid)
   accumulators.foreach(_.io.accAddExtIn := io.ctrl.accAddExtIn)
   accumulators.foreach(_.io.out.ready := io.data.out_d.ready)
+
   (0 until params.inputTypeA.length).foreach { dataTypeIdx =>
-    accumulators(dataTypeIdx).io.enable := io.ctrl.dataTypeCfg === dataTypeIdx.U
+    (0 until params.multiplierNum(dataTypeIdx)).foreach { accIdx =>
+      accumulators(dataTypeIdx).io.enable(
+        accIdx
+      ) := (io.ctrl.dataTypeCfg === dataTypeIdx.U && accIdx.U < runTimeUnrollFactorProd)
+    }
   }
 
   // input fire signals
@@ -300,7 +320,7 @@ object SpatialArrayEmitter extends App {
   )
 
   val params = SpatialArrayParam(
-    macNum                 = Seq(1024),
+    multiplierNum          = Seq(1024),
     inputTypeA             = Seq(Int8),
     inputTypeB             = Seq(Int8),
     inputTypeC             = Seq(Int8),
