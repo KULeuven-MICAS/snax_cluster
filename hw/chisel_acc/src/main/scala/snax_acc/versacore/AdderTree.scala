@@ -85,9 +85,9 @@ class AdderTree(
       // If the current depth is less than or equal to realStageNum,
       // we connect the inputs and outputs normally
       // Otherwise, we connect zeros to save energy
-      adder.io.in_a        := Mux(realStageNum <= d.U, layers(d)(i), 0.U)
-      adder.io.in_b        := Mux(realStageNum <= d.U, layers(d)(i + step), 0.U)
-      layers(d + 1)(i / 2) := Mux(realStageNum <= d.U, adder.io.out_c, 0.U)
+      adder.io.in_a        := Mux(realStageNum > d.U, layers(d)(i), 0.U)
+      adder.io.in_b        := Mux(realStageNum > d.U, layers(d)(i + step), 0.U)
+      layers(d + 1)(i / 2) := Mux(realStageNum > d.U, adder.io.out_c, 0.U)
     }
   }
 
