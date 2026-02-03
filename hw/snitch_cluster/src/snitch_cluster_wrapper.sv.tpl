@@ -156,6 +156,17 @@ package ${cfg['name']}_pkg;
     data_t      data;
   } acc_resp_t;
 
+  // CSR Req/Rsp interface
+  typedef struct packed {
+    addr_t         addr;
+    logic [31:0]   data;
+    logic          write;
+  } csr_req_t;
+  typedef struct packed {
+    logic [31:0]   data;
+  } csr_rsp_t;
+
+
   // Function pre-calculations
   function automatic snitch_pma_pkg::rule_t [snitch_pma_pkg::NrMaxRules-1:0] get_cached_regions();
     automatic snitch_pma_pkg::rule_t [snitch_pma_pkg::NrMaxRules-1:0] cached_regions;
@@ -314,6 +325,15 @@ module ${cfg['name']}_wrapper (
   //-----------------------------
   input  ${cfg['pkg_name']}::sram_cfgs_t         sram_cfgs_i,
 %endif
+  //-----------------------------
+  // To BINGO HW Scheduler
+  //-----------------------------
+  output ${cfg['pkg_name']}::csr_req_t  [${cfg['pkg_name']}::NrCores-1:0]       csr_req_o,
+  output logic                          [${cfg['pkg_name']}::NrCores-1:0]       csr_req_valid_o,
+  input  logic                          [${cfg['pkg_name']}::NrCores-1:0]       csr_req_ready_i,
+  input  ${cfg['pkg_name']}::csr_rsp_t  [${cfg['pkg_name']}::NrCores-1:0]       csr_resp_i,
+  input  logic                          [${cfg['pkg_name']}::NrCores-1:0]       csr_resp_valid_i,
+  output logic                          [${cfg['pkg_name']}::NrCores-1:0]       csr_resp_ready_o,                                              
   //-----------------------------
   // Narrow AXI ports
   //-----------------------------
@@ -476,16 +496,18 @@ total_snax_tcdm_ports = total_snax_narrow_ports
   // SNAX CSR Ports
   //-----------------------------
   // Request for CSR format
-  logic [${cfg['pkg_name']}::NrCores-1:0][31:0] snax_csr_req_data;
-  logic [${cfg['pkg_name']}::NrCores-1:0][31:0] snax_csr_req_addr;
-  logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_req_write;
-  logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_req_valid;
-  logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_req_ready;
-  ///Response for CSR format
-  logic [${cfg['pkg_name']}::NrCores-1:0][31:0] snax_csr_rsp_data;
-  logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_rsp_valid;
-  logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_rsp_ready;
-
+  ${cfg['pkg_name']}::csr_req_t [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_req;
+  logic [${cfg['pkg_name']}::NrCores-1:0]                               snax_csr_req_acc_valid;
+  logic [${cfg['pkg_name']}::NrCores-1:0]                               snax_csr_req_acc_ready;
+  logic [${cfg['pkg_name']}::NrCores-1:0]                               snax_csr_req_top_valid;
+  logic [${cfg['pkg_name']}::NrCores-1:0]                               snax_csr_req_top_ready;
+  // Response for CSR format
+  ${cfg['pkg_name']}::csr_rsp_t [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_rsp_acc;
+  logic [${cfg['pkg_name']}::NrCores-1:0]                               snax_csr_rsp_acc_valid;
+  logic [${cfg['pkg_name']}::NrCores-1:0]                               snax_csr_rsp_acc_ready;
+  ${cfg['pkg_name']}::csr_rsp_t [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_rsp_top;
+  logic [${cfg['pkg_name']}::NrCores-1:0]                               snax_csr_rsp_top_valid;
+  logic [${cfg['pkg_name']}::NrCores-1:0]                               snax_csr_rsp_top_ready;
   //-----------------------------
   // SNAX TCDM wires
   //-----------------------------
@@ -616,6 +638,8 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     .DebugSupport (${int(cfg['enable_debug'])}),
     .acc_req_t (${cfg['pkg_name']}::acc_req_t),
     .acc_resp_t (${cfg['pkg_name']}::acc_resp_t),
+    .csr_req_t (${cfg['pkg_name']}::csr_req_t),
+    .csr_rsp_t (${cfg['pkg_name']}::csr_rsp_t),
     .tcdm_req_t (${cfg['pkg_name']}::tcdm_req_t),
     .tcdm_rsp_t (${cfg['pkg_name']}::tcdm_rsp_t)
   ) i_cluster (
@@ -674,16 +698,18 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     // SNAX CSR Ports
     //-----------------------------
     // Request for CSR format ports
-    .snax_csr_req_bits_data_o   ( snax_csr_req_data  ),
-    .snax_csr_req_bits_addr_o   ( snax_csr_req_addr  ),
-    .snax_csr_req_bits_write_o  ( snax_csr_req_write ),
-    .snax_csr_req_valid_o       ( snax_csr_req_valid ),
-    .snax_csr_req_ready_i       ( snax_csr_req_ready ),
+    .snax_csr_req_o             ( snax_csr_req           ),
+    .snax_csr_req_acc_valid_o   ( snax_csr_req_acc_valid ),
+    .snax_csr_req_acc_ready_i   ( snax_csr_req_acc_ready ),
+    .snax_csr_req_top_valid_o   ( snax_csr_req_top_valid ),
+    .snax_csr_req_top_ready_i   ( snax_csr_req_top_ready ),
     // Response for CSR format ports
-    .snax_csr_rsp_bits_data_i   ( snax_csr_rsp_data  ),
-    .snax_csr_rsp_valid_i       ( snax_csr_rsp_valid ),
-    .snax_csr_rsp_ready_o       ( snax_csr_rsp_ready ),
-
+    .snax_csr_rsp_acc_i         ( snax_csr_rsp_acc       ),
+    .snax_csr_rsp_acc_valid_i   ( snax_csr_rsp_acc_valid ),
+    .snax_csr_rsp_acc_ready_o   ( snax_csr_rsp_acc_ready ),
+    .snax_csr_rsp_top_i         ( snax_csr_rsp_top       ),
+    .snax_csr_rsp_top_valid_i   ( snax_csr_rsp_top_valid ),
+    .snax_csr_rsp_top_ready_o   ( snax_csr_rsp_top_ready ),
     //-----------------------------
     // SNAX TCDM wires
     //-----------------------------
@@ -737,6 +763,13 @@ total_snax_tcdm_ports = total_snax_narrow_ports
   );
 
 % for idx, idx_key in enumerate(snax_core_acc):
+  // Connect the CSR Req/Rsp to Top
+  assign csr_req_o[${idx}]              = snax_csr_req[${idx}];
+  assign csr_req_valid_o[${idx}]        = snax_csr_req_top_valid[${idx}];
+  assign snax_csr_req_top_ready[${idx}] = csr_req_ready_i[${idx}];
+  assign snax_csr_rsp_top[${idx}]       = csr_resp_i[${idx}];
+  assign snax_csr_rsp_top_valid[${idx}] = csr_resp_valid_i[${idx}];
+  assign csr_resp_ready_o[${idx}]       = snax_csr_rsp_top_ready[${idx}];
   // ------------------------- Accelerator Set for Core ${idx} -------------------------
   // This is an accelerator set controlled by 1 Snitch core
   % if snax_core_acc[idx_key]['snax_acc_flag']:
@@ -777,15 +810,15 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     //------------------------
     // Main Snitch Port
     //------------------------
-    .csr_req_addr_i       ( snax_csr_req_addr [${idx}] ),
-    .csr_req_data_i       ( snax_csr_req_data [${idx}] ),
-    .csr_req_wen_i        ( snax_csr_req_write[${idx}] ),
-    .csr_req_valid_i      ( snax_csr_req_valid[${idx}] ),
-    .csr_req_ready_o      ( snax_csr_req_ready[${idx}] ),
+    .csr_req_addr_i       ( snax_csr_req[${idx}].addr      ),
+    .csr_req_data_i       ( snax_csr_req[${idx}].data      ),
+    .csr_req_wen_i        ( snax_csr_req[${idx}].write     ),
+    .csr_req_valid_i      ( snax_csr_req_acc_valid[${idx}] ),
+    .csr_req_ready_o      ( snax_csr_req_acc_ready[${idx}] ),
 
-    .csr_rsp_data_o       ( snax_csr_rsp_data [${idx}] ),
-    .csr_rsp_valid_o      ( snax_csr_rsp_valid[${idx}] ),
-    .csr_rsp_ready_i      ( snax_csr_rsp_ready[${idx}] ),
+    .csr_rsp_data_o       ( snax_csr_rsp_acc[${idx}].data  ),
+    .csr_rsp_valid_o      ( snax_csr_rsp_acc_valid[${idx}] ),
+    .csr_rsp_ready_i      ( snax_csr_rsp_acc_ready[${idx}] ),
     //------------------------
     // Split Ports
     //------------------------
@@ -852,9 +885,9 @@ total_snax_tcdm_ports = total_snax_narrow_ports
   );
       %if snax_core_acc[idx_key]['snax_use_custom_ports']:
 
-  assign snax_csr_req_ready [${idx}] = '0;
-  assign snax_csr_rsp_data  [${idx}] = '0;
-  assign snax_csr_rsp_valid [${idx}] = '0;
+  assign snax_csr_req_acc_ready [${idx}] = '0;
+  assign snax_csr_rsp_acc       [${idx}] = '0;
+  assign snax_csr_rsp_acc_valid [${idx}] = '0;
 
       %else:
   // TODO: Not yet supported for multiple CSR ports
@@ -896,15 +929,15 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     // CSR  format control ports
     //-----------------------------
     // Request
-    .snax_req_data_i  ( snax_csr_req_data [${idx}] ),
-    .snax_req_addr_i  ( snax_csr_req_addr [${idx}] ),
-    .snax_req_write_i ( snax_csr_req_write[${idx}] ),
-    .snax_req_valid_i ( snax_csr_req_valid[${idx}] ),
-    .snax_req_ready_o ( snax_csr_req_ready[${idx}] ),
+    .snax_req_data_i  ( snax_csr_req[${idx}].data            ),
+    .snax_req_addr_i  ( snax_csr_req[${idx}].addr[31:0]      ),
+    .snax_req_write_i ( snax_csr_req[${idx}].write           ),
+    .snax_req_valid_i ( snax_csr_req_acc_valid[${idx}] ),
+    .snax_req_ready_o ( snax_csr_req_acc_ready[${idx}] ),
     // Response
-    .snax_rsp_data_o  ( snax_csr_rsp_data [${idx}] ),
-    .snax_rsp_valid_o ( snax_csr_rsp_valid[${idx}] ),
-    .snax_rsp_ready_i ( snax_csr_rsp_ready[${idx}] ),
+    .snax_rsp_data_o  ( snax_csr_rsp_acc[${idx}].data  ),
+    .snax_rsp_valid_o ( snax_csr_rsp_acc_valid[${idx}] ),
+    .snax_rsp_ready_i ( snax_csr_rsp_acc_ready[${idx}] ),
         %endif
     //-----------------------------
     // Hardware barrier
@@ -919,9 +952,9 @@ total_snax_tcdm_ports = total_snax_narrow_ports
 
         %if snax_core_acc[idx_key]['snax_use_custom_ports']:
   // Tie unused CSR ports to 0
-  assign snax_csr_rsp_valid [${idx}] = '0;
-  assign snax_csr_rsp_data  [${idx}] = '0;
-  assign snax_csr_req_ready [${idx}] = '0;
+  assign snax_csr_req_acc_ready [${idx}] = '0;
+  assign snax_csr_rsp_acc       [${idx}] = '0;
+  assign snax_csr_rsp_acc_valid [${idx}] = '0;
         %else:
   // Tie unused custom instruction ports to 0
   assign snax_qready  [${idx}] = '0;
@@ -966,16 +999,16 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     // CSR  format control ports
     //-----------------------------
     // Request
-    .csr_req_bits_data_i  ( snax_csr_req_data [${idx}] ),
-    .csr_req_bits_strb_i   ( '1 ),
-    .csr_req_bits_addr_i  ( snax_csr_req_addr [${idx}] ),
-    .csr_req_bits_write_i ( snax_csr_req_write[${idx}] ),
-    .csr_req_valid_i ( snax_csr_req_valid[${idx}] ),
-    .csr_req_ready_o ( snax_csr_req_ready[${idx}] ),
+    .csr_req_bits_data_i  ( snax_csr_req[${idx}].data      ),
+    .csr_req_bits_strb_i  ( '1 ),
+    .csr_req_bits_addr_i  ( snax_csr_req[${idx}].addr[31:0]),
+    .csr_req_bits_write_i ( snax_csr_req[${idx}].write     ),
+    .csr_req_valid_i      ( snax_csr_req_acc_valid[${idx}] ),
+    .csr_req_ready_o      ( snax_csr_req_acc_ready[${idx}] ),
     // Response
-    .csr_rsp_bits_data_o  ( snax_csr_rsp_data [${idx}] ),
-    .csr_rsp_valid_o ( snax_csr_rsp_valid[${idx}] ),
-    .csr_rsp_ready_i ( snax_csr_rsp_ready[${idx}] ),
+    .csr_rsp_bits_data_o  ( snax_csr_rsp_acc[${idx}].data      ),
+    .csr_rsp_valid_o      ( snax_csr_rsp_acc_valid[${idx}] ),
+    .csr_rsp_ready_i      ( snax_csr_rsp_acc_ready[${idx}] ),
     //-----------------------------
     // Hardware barrier is not supported by xdma at the moment
     //-----------------------------
@@ -1017,9 +1050,9 @@ total_snax_tcdm_ports = total_snax_narrow_ports
   assign snax_resp    [${idx}] = '0;
   assign snax_pvalid  [${idx}] = '0;
   // Tie CSR ports to 0
-  assign snax_csr_rsp_data [ ${idx}] = '0;
-  assign snax_csr_rsp_valid [${idx}] = '0;
-  assign snax_csr_req_ready [${idx}] = '0;
+  assign snax_csr_req_acc_ready [${idx}] = '0;
+  assign snax_csr_rsp_acc       [${idx}] = '0;
+  assign snax_csr_rsp_acc_valid [${idx}] = '0;
   // Tie barrier to 0
   assign snax_barrier [${idx}] = '0;
 
