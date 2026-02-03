@@ -37,7 +37,7 @@ class ArbitrationTree(
   val arbiter = Module(new PriorityRoundRobinArbiter(NumInp, priorityWidth))
   for (i <- 0 until NumInp) {
     arbiter.io.requests(i).valid    := io.tcdmReqs(i).valid
-    arbiter.io.requests(i).priority := io.tcdmReqs(i).bits.priority
+    arbiter.io.requests(i).priority := 0
   }
   arbiter.io.selection.ready := io.memReq.ready
 
