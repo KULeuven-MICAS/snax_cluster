@@ -17,7 +17,7 @@ class AdderTreeTest extends AnyFunSuite with ChiselScalatestTester {
     val numElements = 8
     val groupSizes  = Seq(1, 2, 4) // Possible grouping sizes
 
-    test(new AdderTree(Int8, Int8, numElements, groupSizes)) { dut =>
+    test(new AdderTree(Int8, Int8, numElements, groupSizes)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
       // Helper function to run tests for different group sizes
       def testConfig(cfg: Int, inputValues: Seq[Int], expectedOutput: Seq[Int]): Unit = {
         // Set input values

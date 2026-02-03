@@ -106,7 +106,7 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
     }
 
     var params = SpatialArrayParam(
-      macNum                 = Seq(1024),
+      multiplierNum          = Seq(1024),
       inputTypeA             = Seq(Int8),
       inputTypeB             = Seq(Int8),
       inputTypeC             = Seq(Int32),
@@ -127,7 +127,7 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
     // Test for a different configuration
     params = SpatialArrayParam(
-      macNum                 = Seq(8, 16),
+      multiplierNum          = Seq(8, 16),
       inputTypeA             = Seq(Int8, Int4),
       inputTypeB             = Seq(Int8, Int4),
       inputTypeC             = Seq(Int32, Int16),
@@ -148,7 +148,7 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
     // Test for a different configuration
 
     params = SpatialArrayParam(
-      macNum                 = Seq(8),
+      multiplierNum          = Seq(8),
       inputTypeA             = Seq(Int16),
       inputTypeB             = Seq(Int4),
       inputTypeC             = Seq(Int32),

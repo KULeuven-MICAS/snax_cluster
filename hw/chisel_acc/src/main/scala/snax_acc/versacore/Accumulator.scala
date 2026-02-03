@@ -39,15 +39,12 @@ class AccumulatorBlock(
   ).io
 
   // connection description
-  adder.in_a := io.in1
-  adder.in_b := Mux(io.accAddExtIn, io.in2, accumulatorReg)
-
-  val nextAcc = Wire(UInt(outputType.width.W))
-  nextAcc := Mux(io.enable, adder.out_c, accumulatorReg)
+  adder.in_a := Mux(io.enable, io.in1, 0.U)
+  adder.in_b := Mux(io.enable, Mux(io.accAddExtIn, io.in2, accumulatorReg), 0.U)
 
   // update accumulator register enable signal
   val accUpdate = io.enable
-  accumulatorReg := Mux(accUpdate, nextAcc, accumulatorReg)
+  accumulatorReg := Mux(accUpdate, adder.out_c, accumulatorReg)
 
   // output of accumulator register
   io.out := accumulatorReg
@@ -66,7 +63,7 @@ class Accumulator(
     val in1         = Flipped(DecoupledIO(Vec(numElements, UInt(inputType.width.W))))
     val in2         = Flipped(DecoupledIO(Vec(numElements, UInt(inputType.width.W))))
     val accAddExtIn = Input(Bool())
-    val enable      = Input(Bool())
+    val enable      = Input(Vec(numElements, Bool()))
     val out         = DecoupledIO(Vec(numElements, UInt(outputType.width.W)))
   })
 
@@ -78,17 +75,19 @@ class Accumulator(
   }
 
   // accumulation update logic, considering the handshake and the accumulator enable at runtime
-  val accUpdate = (io.in1.fire && io.enable && (!io.accAddExtIn || (io.in2.fire && io.accAddExtIn)))
+  val accUpdate = VecInit(
+    (0 until numElements).map(i => io.in1.fire && io.enable(i) && (!io.accAddExtIn || (io.in2.fire && io.accAddExtIn)))
+  )
 
   // Connect the inputs of each AccumulatorBlock
   for (i <- 0 until numElements) {
     accumulator_blocks(i).io.in1         := io.in1.bits(i)
     accumulator_blocks(i).io.in2         := io.in2.bits(i)
     accumulator_blocks(i).io.accAddExtIn := io.accAddExtIn
-    accumulator_blocks(i).io.enable      := accUpdate
+    accumulator_blocks(i).io.enable      := accUpdate(i)
   }
 
-  val inputDataFire  = RegNext(accUpdate)
+  val inputDataFire  = RegNext(accUpdate(0), false.B) // assuming all accUpdate are the same for handshake
   val keepOutput     = RegInit(false.B)
   val keepOutputNext = io.out.valid && !io.out.ready
   keepOutput := keepOutputNext

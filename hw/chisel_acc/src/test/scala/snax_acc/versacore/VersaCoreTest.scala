@@ -65,7 +65,7 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
       val cValues = Array.fill(Mu * Nu * M * N)(rand.nextInt(math.pow(2, inputTypeC.width).toInt))
 
       // Compute the expected result
-      val expectedResult = Array.tabulate(M, N) { (m2, n2) =>
+      Array.tabulate(M, N) { (m2, n2) =>
         val acc = Array.fill(Mu, Nu)(0)
 
         // Matrix multiplication part
@@ -261,7 +261,7 @@ class VersaCoreTest extends VersaCoreTestHelper {
     // Define the test parameters
     val paramsList = Seq(
       SpatialArrayParam(
-        macNum                 = Seq(8, 16),
+        multiplierNum          = Seq(8, 16),
         inputTypeA             = Seq(Int8, Int4),
         inputTypeB             = Seq(Int8, Int4),
         inputTypeC             = Seq(Int32, Int16),
@@ -278,7 +278,7 @@ class VersaCoreTest extends VersaCoreTestHelper {
       ),
       // test different data types
       SpatialArrayParam(
-        macNum                 = Seq(8),
+        multiplierNum          = Seq(8),
         inputTypeA             = Seq(Int16),
         inputTypeB             = Seq(Int4),
         inputTypeC             = Seq(Int32),
