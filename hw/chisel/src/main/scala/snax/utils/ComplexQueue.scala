@@ -70,14 +70,14 @@ class ComplexQueueConcat(
   }
 
   if (priority_empty) {
-    // a queue can assert tcdm priority if it is empty or if it will be empty in the next cycle. (read but not write)
+    // a queue can assert tcdm priority if it is empty or if it could be empty in the next cycle. (read but not write)
     io.priorities.zip(queues).foreach { case (prio, queue) =>
-      prio := queue.io.count === 0.U || (queue.io.count === 1.U && queue.io.deq.fire && ~queue.io.enq.fire)
+      prio := queue.io.count <= 1.U
     }
   } else {
-    // a queue can assert tcdm priority if it is full or if it will be full in the next cycle. (write but not read)
+    // a queue can assert tcdm priority if it is full or if it coud be full in the next cycle. (write but not read)
     io.priorities.zip(queues).foreach { case (prio, queue) =>
-      prio := queue.io.count === (depth).U || (queue.io.count === (depth - 1).U && queue.io.enq.fire && ~queue.io.deq.fire)
+      prio := queue.io.count >= (depth - 1).U
     }
   }
 
