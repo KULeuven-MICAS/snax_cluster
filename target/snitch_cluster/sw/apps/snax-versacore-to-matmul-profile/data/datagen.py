@@ -574,8 +574,6 @@ def emit_matmul_data(**kwargs):
     else:
         D32tlbound0 = 1
 
-    data_str += [format_scalar_definition("int32_t", "D32tlbound0", D32tlbound0)]
-
     D32tlstride0 = d_spatial_bound_0 * (bankWidth / 8)
 
     if stationary == output_stationary:
