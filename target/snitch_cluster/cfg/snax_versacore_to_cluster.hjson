@@ -58,8 +58,6 @@ Naming convention:
             emaw: 2
             emas: 1
         }
-        use_ax_bw_converter: true
-        converted_axi_bandwidth: 256
         timing:
         {
             lat_comp_fp32: 3

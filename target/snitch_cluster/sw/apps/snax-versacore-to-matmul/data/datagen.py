@@ -270,6 +270,10 @@ def emit_matmul_data(**kwargs):
 
     bankWidth = 64
 
+    granularity_a = snax_acc_cfg.get("granularity_a", 1)
+    granularity_b = snax_acc_cfg.get("granularity_b", 1)
+    granularity_c_d = snax_acc_cfg.get("granularity_c_d", 1)
+
     data_str += [format_scalar_definition("uint32_t", "meshRow", meshRow)]
     data_str += [format_scalar_definition("uint32_t", "tileSize", tileSize)]
     data_str += [format_scalar_definition("uint32_t", "meshCol", meshCol)]
@@ -287,68 +291,56 @@ def emit_matmul_data(**kwargs):
     # --------------------------------------------------------------
     data_str += [format_scalar_definition("int32_t", "Aslstride0", bankWidth / 8)]
 
+    Atlstride0 = a_len * tileSize * meshRow / 8
+    Atlstride1 = 0
+    Atlstride2 = K * a_len * tileSize * meshRow / 8
+    Atlstride3 = 0
+    Atlstride4 = 0
+    Atlstride5 = 0
+
     if stationary == output_stationary:
-        data_str += [format_scalar_definition("int32_t", "Atlbound0", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Atlstride0", a_len * tileSize * meshRow / 8
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Atlbound1", N)]
-        data_str += [format_scalar_definition("int32_t", "Atlstride1", 0)]
-        data_str += [format_scalar_definition("int32_t", "Atlbound2", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Atlstride2",
-                K * a_len * tileSize * meshRow / 8,
-            )
-        ]
+        Atlbound0 = K
+        Atlstride0 = a_len * tileSize * meshRow / 8
+        Atlbound1 = N
+        Atlstride1 = 0
+        Atlbound2 = M
+        Atlstride2 = K * a_len * tileSize * meshRow / 8
     elif stationary == weight_stationary:
-        data_str += [format_scalar_definition("int32_t", "Atlbound0", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Atlstride0",
-                K * a_len * tileSize * meshRow / 8,
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Atlbound1", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Atlstride1",
-                a_len * tileSize * meshRow / 8,
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Atlbound2", N)]
-        data_str += [format_scalar_definition("int32_t", "Atlstride2", 0)]
+        Atlbound0 = M
+        Atlstride0 = K * a_len * tileSize * meshRow / 8
+        Atlbound1 = K
+        Atlstride1 = a_len * tileSize * meshRow / 8
+        Atlbound2 = N
+        Atlstride2 = 0
     elif stationary == input_stationary:
-        data_str += [format_scalar_definition("int32_t", "Atlbound0", N)]
-        data_str += [format_scalar_definition("int32_t", "Atlstride0", 0)]
-        data_str += [format_scalar_definition("int32_t", "Atlbound1", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Atlstride1",
-                a_len * tileSize * meshRow / 8,
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Atlbound2", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Atlstride2",
-                K * a_len * tileSize * meshRow / 8,
-            )
-        ]
+        Atlbound0 = N
+        Atlstride0 = 0
+        Atlbound1 = K
+        Atlstride1 = a_len * tileSize * meshRow / 8
+        Atlbound2 = M
+        Atlstride2 = K * a_len * tileSize * meshRow / 8
+
+    # Checker for tstrides of operand A
+    assert Atlstride0 % (bankWidth / 8 * granularity_a) == 0
+    assert Atlstride1 % (bankWidth / 8 * granularity_a) == 0
+    assert Atlstride2 % (bankWidth / 8 * granularity_a) == 0
+    assert Atlstride3 % (bankWidth / 8 * granularity_a) == 0
+    assert Atlstride4 % (bankWidth / 8 * granularity_a) == 0
+    assert Atlstride5 % (bankWidth / 8 * granularity_a) == 0
+
+    data_str += [format_scalar_definition("int32_t", "Atlbound0", Atlbound0)]
+    data_str += [format_scalar_definition("int32_t", "Atlstride0", Atlstride0)]
+    data_str += [format_scalar_definition("int32_t", "Atlbound1", Atlbound1)]
+    data_str += [format_scalar_definition("int32_t", "Atlstride1", Atlstride1)]
+    data_str += [format_scalar_definition("int32_t", "Atlbound2", Atlbound2)]
+    data_str += [format_scalar_definition("int32_t", "Atlstride2", Atlstride2)]
 
     data_str += [format_scalar_definition("int32_t", "Atlbound3", 1)]
-    data_str += [format_scalar_definition("int32_t", "Atlstride3", 0)]
+    data_str += [format_scalar_definition("int32_t", "Atlstride3", Atlstride3)]
     data_str += [format_scalar_definition("int32_t", "Atlbound4", 1)]
-    data_str += [format_scalar_definition("int32_t", "Atlstride4", 0)]
+    data_str += [format_scalar_definition("int32_t", "Atlstride4", Atlstride4)]
     data_str += [format_scalar_definition("int32_t", "Atlbound5", 1)]
-    data_str += [format_scalar_definition("int32_t", "Atlstride5", 0)]
+    data_str += [format_scalar_definition("int32_t", "Atlstride5", Atlstride5)]
 
     A_enabled_channel_CSR_num = int(math.ceil(a_array_width / bankWidth / 32))
     channel_en_A = [0] * A_enabled_channel_CSR_num
@@ -376,68 +368,38 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "Bslstride0", bankWidth / 8)]
 
     if stationary == output_stationary:
-        data_str += [format_scalar_definition("int32_t", "Btlbound0", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Btlstride0", b_len * tileSize * meshCol / 8
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Btlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Btlstride1",
-                K * b_len * tileSize * meshCol / 8,
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Btlbound2", M)]
-        data_str += [format_scalar_definition("int32_t", "Btlstride2", 0)]
+        Btlbound0 = K
+        Btlstride0 = b_len * tileSize * meshCol / 8
+        Btlbound1 = N
+        Btlstride1 = K * b_len * tileSize * meshCol / 8
+        Btlbound2 = M
+        Btlstride2 = 0
     elif stationary == weight_stationary:
-        data_str += [format_scalar_definition("int32_t", "Btlbound0", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Btlstride0",
-                0,
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Btlbound1", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Btlstride1",
-                b_len * tileSize * meshCol / 8,
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Btlbound2", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Btlstride2", K * b_len * tileSize * meshCol / 8
-            )
-        ]
+        Btlbound0 = M
+        Btlstride0 = 0
+        Btlbound1 = K
+        Btlstride1 = b_len * tileSize * meshCol / 8
+        Btlbound2 = N
+        Btlstride2 = K * b_len * tileSize * meshCol / 8
     elif stationary == input_stationary:
-        data_str += [format_scalar_definition("int32_t", "Btlbound0", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Btlstride0", K * b_len * tileSize * meshCol / 8
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Btlbound1", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Btlstride1",
-                b_len * tileSize * meshCol / 8,
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Btlbound2", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Btlstride2",
-                0,
-            )
-        ]
+        Btlbound0 = N
+        Btlstride0 = K * b_len * tileSize * meshCol / 8
+        Btlbound1 = K
+        Btlstride1 = b_len * tileSize * meshCol / 8
+        Btlbound2 = M
+        Btlstride2 = 0
+
+    # Checker for tstrides of operand B
+    assert Btlstride0 % (bankWidth / 8 * granularity_b) == 0
+    assert Btlstride1 % (bankWidth / 8 * granularity_b) == 0
+    assert Btlstride2 % (bankWidth / 8 * granularity_b) == 0
+
+    data_str += [format_scalar_definition("int32_t", "Btlbound0", Btlbound0)]
+    data_str += [format_scalar_definition("int32_t", "Btlstride0", Btlstride0)]
+    data_str += [format_scalar_definition("int32_t", "Btlbound1", Btlbound1)]
+    data_str += [format_scalar_definition("int32_t", "Btlstride1", Btlstride1)]
+    data_str += [format_scalar_definition("int32_t", "Btlbound2", Btlbound2)]
+    data_str += [format_scalar_definition("int32_t", "Btlstride2", Btlstride2)]
 
     B_enabled_channel_CSR_num = int(math.ceil(b_array_width / bankWidth / 32))
     channel_en_B = [0] * B_enabled_channel_CSR_num
@@ -466,84 +428,49 @@ def emit_matmul_data(**kwargs):
         c_spatial_bound_0 = meshCol * meshRow * c_len / bankWidth
     # temporal settings
     # serial input for C
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "Ctlbound0",
-            max(
-                1,
-                meshCol * meshRow * c_len / snax_versacore_serial_c_d_width,
-            ),
-        )
-    ]
-    # assert(meshCol * meshRow * output_data_width >= snax_versacore_serial_c_d_width)
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "Ctlstride0", c_spatial_bound_0 * (bankWidth / 8)
-        )
-    ]
+    Ctlbound0 = max(
+        1,
+        meshCol * meshRow * c_len / snax_versacore_serial_c_d_width,
+    )
+    Ctlstride0 = c_spatial_bound_0 * (bankWidth / 8)
 
     if stationary == output_stationary:
-        data_str += [format_scalar_definition("int32_t", "Ctlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Ctlstride1", c_len * meshRow * meshCol / 8
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Ctlbound2", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Ctlstride2",
-                N * c_len * meshRow * meshCol / 8,
-            )
-        ]
-
+        Ctlbound1 = N
+        Ctlstride1 = c_len * meshRow * meshCol / 8
+        Ctlbound2 = M
+        Ctlstride2 = N * c_len * meshRow * meshCol / 8
         # C is not used in this case
-        data_str += [format_scalar_definition("int32_t", "Ctlbound3", 1)]
-        data_str += [format_scalar_definition("int32_t", "Ctlstride3", 0)]
-
+        Ctlbound3 = 1
+        Ctlstride3 = 0
     elif stationary == weight_stationary:
-        data_str += [format_scalar_definition("int32_t", "Ctlbound1", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Ctlstride1",
-                N * c_len * meshRow * meshCol / 8,
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Ctlbound2", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Ctlstride2",
-                0,
-            )
-        ]
-        #
-        data_str += [format_scalar_definition("int32_t", "Ctlbound3", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Ctlstride3", c_len * meshRow * meshCol / 8
-            )
-        ]
+        Ctlbound1 = M
+        Ctlstride1 = N * c_len * meshRow * meshCol / 8
+        Ctlbound2 = K
+        Ctlstride2 = 0
+        Ctlbound3 = N
+        Ctlstride3 = c_len * meshRow * meshCol / 8
     elif stationary == input_stationary:
-        data_str += [format_scalar_definition("int32_t", "Ctlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "Ctlstride1", c_len * meshRow * meshCol / 8
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "Ctlbound2", K)]
-        data_str += [format_scalar_definition("int32_t", "Ctlstride2", 0)]
-        data_str += [format_scalar_definition("int32_t", "Ctlbound3", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "Ctlstride3",
-                N * c_len * meshRow * meshCol / 8,
-            )
-        ]
+        Ctlbound1 = N
+        Ctlstride1 = c_len * meshRow * meshCol / 8
+        Ctlbound2 = K
+        Ctlstride2 = 0
+        Ctlbound3 = M
+        Ctlstride3 = N * c_len * meshRow * meshCol / 8
+
+    # Checker for tstrides of operand C
+    assert Ctlstride0 % (bankWidth / 8 * granularity_c_d) == 0
+    assert Ctlstride1 % (bankWidth / 8 * granularity_c_d) == 0
+    assert Ctlstride2 % (bankWidth / 8 * granularity_c_d) == 0
+    assert Ctlstride3 % (bankWidth / 8 * granularity_c_d) == 0
+
+    data_str += [format_scalar_definition("int32_t", "Ctlbound0", Ctlbound0)]
+    data_str += [format_scalar_definition("int32_t", "Ctlstride0", Ctlstride0)]
+    data_str += [format_scalar_definition("int32_t", "Ctlbound1", Ctlbound1)]
+    data_str += [format_scalar_definition("int32_t", "Ctlstride1", Ctlstride1)]
+    data_str += [format_scalar_definition("int32_t", "Ctlbound2", Ctlbound2)]
+    data_str += [format_scalar_definition("int32_t", "Ctlstride2", Ctlstride2)]
+    data_str += [format_scalar_definition("int32_t", "Ctlbound3", Ctlbound3)]
+    data_str += [format_scalar_definition("int32_t", "Ctlstride3", Ctlstride3)]
 
     disable_C = kwargs["channel_en_C"] == 0
     enable_full_C = kwargs["channel_en_C"] == 1
@@ -581,87 +508,49 @@ def emit_matmul_data(**kwargs):
     else:
         d_spatial_bound_0 = meshCol * meshRow * c_len / bankWidth
     # temporal settings
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "D32tlbound0",
-            max(
-                1,
-                meshCol * meshRow * c_len / snax_versacore_serial_c_d_width,
-            ),
-        )
-    ]
-    # assert(meshCol * meshRow * c_len >= snax_versacore_serial_c_d_width)
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "D32tlstride0", d_spatial_bound_0 * (bankWidth / 8)
-        )
-    ]
+    D32tlbound0 = max(
+        1,
+        meshCol * meshRow * c_len / snax_versacore_serial_c_d_width,
+    )
+    D32tlstride0 = d_spatial_bound_0 * (bankWidth / 8)
 
     if stationary == output_stationary:
-
-        data_str += [format_scalar_definition("int32_t", "D32tlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "D32tlstride1", c_len * meshRow * meshCol / 8
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "D32tlbound2", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "D32tlstride2",
-                N * c_len * meshRow * meshCol / 8,
-            )
-        ]
-
+        D32tlbound1 = N
+        D32tlstride1 = c_len * meshRow * meshCol / 8
+        D32tlbound2 = M
+        D32tlstride2 = N * c_len * meshRow * meshCol / 8
         # D is not used in this case
-        data_str += [format_scalar_definition("int32_t", "D32tlbound3", 1)]
-        data_str += [format_scalar_definition("int32_t", "D32tlstride3", 0)]
-
+        D32tlbound3 = 1
+        D32tlstride3 = 0
     elif stationary == weight_stationary:
-        data_str += [format_scalar_definition("int32_t", "D32tlbound1", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "D32tlstride1",
-                N * c_len * meshRow * meshCol / 8,
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "D32tlbound2", K)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "D32tlstride2",
-                0,
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "D32tlbound3", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "D32tlstride3",
-                c_len * meshRow * meshCol / 8,
-            )
-        ]
-
+        D32tlbound1 = M
+        D32tlstride1 = N * c_len * meshRow * meshCol / 8
+        D32tlbound2 = K
+        D32tlstride2 = 0
+        D32tlbound3 = N
+        D32tlstride3 = c_len * meshRow * meshCol / 8
     elif stationary == input_stationary:
-        data_str += [format_scalar_definition("int32_t", "D32tlbound1", N)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t", "D32tlstride1", c_len * meshRow * meshCol / 8
-            )
-        ]
-        data_str += [format_scalar_definition("int32_t", "D32tlbound2", K)]
-        data_str += [format_scalar_definition("int32_t", "D32tlstride2", 0)]
-        data_str += [format_scalar_definition("int32_t", "D32tlbound3", M)]
-        data_str += [
-            format_scalar_definition(
-                "int32_t",
-                "D32tlstride3",
-                N * c_len * meshRow * meshCol / 8,
-            )
-        ]
+        D32tlbound1 = N
+        D32tlstride1 = c_len * meshRow * meshCol / 8
+        D32tlbound2 = K
+        D32tlstride2 = 0
+        D32tlbound3 = M
+        D32tlstride3 = N * c_len * meshRow * meshCol / 8
+
+    # Checker for tstrides of operand D
+    assert D32tlstride0 % (bankWidth / 8 * granularity_c_d) == 0
+    assert D32tlstride1 % (bankWidth / 8 * granularity_c_d) == 0
+    assert D32tlstride2 % (bankWidth / 8 * granularity_c_d) == 0
+    assert D32tlstride3 % (bankWidth / 8 * granularity_c_d) == 0
+
+    data_str += [format_scalar_definition("int32_t", "D32tlbound0", D32tlbound0)]
+    data_str += [format_scalar_definition("int32_t", "D32tlstride0", D32tlstride0)]
+    data_str += [format_scalar_definition("int32_t", "D32tlbound1", D32tlbound1)]
+    data_str += [format_scalar_definition("int32_t", "D32tlstride1", D32tlstride1)]
+    data_str += [format_scalar_definition("int32_t", "D32tlbound2", D32tlbound2)]
+    data_str += [format_scalar_definition("int32_t", "D32tlstride2", D32tlstride2)]
+    data_str += [format_scalar_definition("int32_t", "D32tlbound3", D32tlbound3)]
+    data_str += [format_scalar_definition("int32_t", "D32tlstride3", D32tlstride3)]
 
     D_enabled_channel_CSR_num = int(
         math.ceil(snax_versacore_serial_c_d_width / bankWidth / 32)

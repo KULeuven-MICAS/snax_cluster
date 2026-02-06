@@ -52,9 +52,6 @@
             emaw: 2,
             emas: 1
         },
-        // AXI bandwidth switcher
-        use_ax_bw_converter: true,
-        converted_axi_bandwidth: 256,
         // Timing parameters
         timing: {
             lat_comp_fp32: 3,
