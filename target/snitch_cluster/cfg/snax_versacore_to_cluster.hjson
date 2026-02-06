@@ -146,7 +146,7 @@ Naming convention:
                     ]
                     [
                         16
-                        4
+                        8
                     ]
                 ]
                 snax_num_rw_csr: 7
@@ -219,9 +219,9 @@ Naming convention:
                             64
                         ]
                         [
-                            4
-                            64
-                            4
+                            8
+                            32
+                            8
                         ]
                     ]
                 ]
@@ -235,7 +235,7 @@ Naming convention:
                 }
                 granularity_a: 1
                 granularity_b: 16
-                granularity_c_d: 4
+                granularity_c_d: 8
             }
         ]
         snax_use_custom_ports: false
@@ -333,7 +333,7 @@ Naming convention:
                     64
                 ]
             ]
-            datapath_extensions: [{HasIntlowToInthighConverter: {dataWidth:2048}, HasTransposer: {row:[32, 1, 4, 8, 4], col:[4, 8, 8, 8, 64], elementWidth:[8, 8, 8, 8, 8], dataWidth:2048}}, { HasIntlowToInthighConverter: {dataWidth:4096}, HasTransposer: {row:[4, 8, 8, 8, 64], col:[32, 64, 64, 64, 4], elementWidth:[8, 8, 8, 8, 8], dataWidth:4096}}]
+            datapath_extensions: [{HasIntlowToInthighConverter: {dataWidth:2048}, HasTransposer: {row:[32, 1, 4, 8, 8], col:[4, 8, 8, 8, 32], elementWidth:[8, 8, 8, 8, 8], dataWidth:2048}}, { HasIntlowToInthighConverter: {dataWidth:4096}, HasTransposer: {row:[4, 8, 8, 8, 32], col:[32, 64, 64, 64, 8], elementWidth:[8, 8, 8, 8, 8], dataWidth:4096}}]
         }
         data_reader_writer_params:
         {
