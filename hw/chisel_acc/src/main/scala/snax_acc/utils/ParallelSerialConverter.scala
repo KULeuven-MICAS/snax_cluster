@@ -12,13 +12,14 @@ import chisel3.util._
   * @param earlyTerminate
   *   Whether to support early termination of the serialization process.
   * @param allowedTerminateFactors
-  *   A sequence of allowed termination factors (not enforced in this implementation).
+  *   A sequence of allowed termination factors (not enforced in this
+  *   implementation).
   */
 case class ParallelAndSerialConverterParams(
-  parallelWidth:           Int,
-  serialWidth:             Int,
-  earlyTerminate:          Boolean  = false,
-  allowedTerminateFactors: Seq[Int] = Seq()
+    parallelWidth: Int,
+    serialWidth: Int,
+    earlyTerminate: Boolean = false,
+    allowedTerminateFactors: Seq[Int] = Seq()
 ) {
   if (parallelWidth > serialWidth) {
     require(
@@ -44,40 +45,43 @@ case class ParallelAndSerialConverterParams(
 
 }
 
-/** A module that sends a parallel input (via Decoupled I/O) out as multiple serial chunks (also Decoupled I/O).
+/** A module that sends a parallel input (via Decoupled I/O) out as multiple
+  * serial chunks (also Decoupled I/O).
   */
-class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module with RequireAsyncReset {
+class ParallelToSerial(val p: ParallelAndSerialConverterParams)
+    extends Module
+    with RequireAsyncReset {
   val io = IO(new Bundle {
-    val in               = Flipped(Decoupled(UInt(p.parallelWidth.W)))
+    val in = Flipped(Decoupled(UInt(p.parallelWidth.W)))
     val terminate_factor =
-      if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
-    val out              = Decoupled(UInt(p.serialWidth.W))
-    val start            = Input(Bool())
+      if (p.earlyTerminate)
+        Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W)))
+      else None
+    val out = Decoupled(UInt(p.serialWidth.W))
+    val start = Input(Bool())
   })
 
   val ratio: Int = p.parallelWidth / p.serialWidth
-  assert(ratio >= 1, "The ratio of parallelWidth to serialWidth must be at least 1.")
-  val inBitsSeq = Wire(Vec(ratio, UInt(p.serialWidth.W)))
-  inBitsSeq := VecInit(
-    Seq.tabulate(ratio) { i =>
-      io.in.bits((i + 1) * p.serialWidth - 1, i * p.serialWidth)
-    }
+  assert(
+    ratio >= 1,
+    "The ratio of parallelWidth to serialWidth must be at least 1."
   )
-
-  val storedData = Seq(inBitsSeq(0)) ++ inBitsSeq.drop(1).map { i =>
-    RegEnable(i, io.in.fire)
-  }
 
   // Validate terminate_factor if early termination is enabled at runtime
   if (p.earlyTerminate) {
-    val tf        = io.terminate_factor.get
+    val tf = io.terminate_factor.get
     val isAllowed = p.allowedTerminateFactors
       .map(f => tf === f.U)
       .reduce(_ || _) // since allowedFactors non-empty if earlyTerminate
-    assert(isAllowed, s"terminate_factor must be one of ${p.allowedTerminateFactors.mkString(", ")}")
+    assert(
+      isAllowed,
+      s"terminate_factor must be one of ${p.allowedTerminateFactors.mkString(", ")}"
+    )
   }
 
-  val counter = Module(new BasicCounter(width = log2Ceil(ratio), hasCeil = true))
+  val counter = Module(
+    new BasicCounter(width = log2Ceil(ratio), hasCeil = true)
+  )
   if (p.earlyTerminate) {
     counter.io.ceilOpt.get := io.terminate_factor.get
   } else {
@@ -86,43 +90,72 @@ class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module w
   counter.io.reset := io.start
   counter.io.tick := io.out.fire
 
-  io.out.bits := MuxLookup(counter.io.value, 0.U.asTypeOf(UInt(p.serialWidth.W)))(storedData.zipWithIndex.map {
-    case (i, j) =>
-      j.U -> i
-  })
-
-  when(counter.io.value === 0.U) {
+  if (ratio == 1) {
     io.out.valid := io.in.valid
-    io.in.ready  := io.out.ready
-  } otherwise {
-    io.out.valid := true.B
-    io.in.ready  := false.B
+    io.out.bits := io.in.bits
+    io.in.ready := io.out.ready
+  } else {
+    // shift register to store the remaining bits
+    // we only need to store the upper (parallelWidth - serialWidth) bits
+    val shiftReg = Reg(UInt((p.parallelWidth - p.serialWidth).W))
+
+    when(io.out.fire) {
+      when(counter.io.value === 0.U) {
+        // load the upper bits into the shift register
+        shiftReg := io.in.bits(p.parallelWidth - 1, p.serialWidth)
+      }.otherwise {
+        // shift right by serialWidth
+        shiftReg := shiftReg >> p.serialWidth
+      }
+    }
+
+    when(counter.io.value === 0.U) {
+      // first chunk comes directly from input
+      io.out.valid := io.in.valid
+      io.out.bits := io.in.bits(p.serialWidth - 1, 0)
+      io.in.ready := io.out.ready
+    } otherwise {
+      // subsequent chunks come from shift register
+      io.out.valid := true.B
+      io.out.bits := shiftReg(p.serialWidth - 1, 0)
+      io.in.ready := false.B
+    }
   }
 
 }
 
-/** A module that collects multiple serial inputs (via Decoupled I/O) and outputs them as a single parallel word (also
-  * Decoupled I/O).
+/** A module that collects multiple serial inputs (via Decoupled I/O) and
+  * outputs them as a single parallel word (also Decoupled I/O).
   */
-class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module with RequireAsyncReset {
+class SerialToParallel(val p: ParallelAndSerialConverterParams)
+    extends Module
+    with RequireAsyncReset {
   val io = IO(new Bundle {
-    val in               = Flipped(Decoupled(UInt(p.serialWidth.W)))
+    val in = Flipped(Decoupled(UInt(p.serialWidth.W)))
     val terminate_factor =
-      if (p.earlyTerminate) Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W))) else None
-    val out              = Decoupled(UInt(p.parallelWidth.W))
-    val start            = Input(Bool())
+      if (p.earlyTerminate)
+        Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W)))
+      else None
+    val out = Decoupled(UInt(p.parallelWidth.W))
+    val start = Input(Bool())
   })
 
   val ratio: Int = p.parallelWidth / p.serialWidth
-  assert(ratio >= 1, "The ratio of parallelWidth to serialWidth must be at least 1.")
+  assert(
+    ratio >= 1,
+    "The ratio of parallelWidth to serialWidth must be at least 1."
+  )
 
   // Validate terminate_factor if early termination is enabled at runtime
   if (p.earlyTerminate) {
-    val tf        = io.terminate_factor.get
+    val tf = io.terminate_factor.get
     val isAllowed = p.allowedTerminateFactors
       .map(f => tf === f.U)
       .reduce(_ || _) // since allowedFactors non-empty if earlyTerminate
-    assert(isAllowed, s"terminate_factor must be one of ${p.allowedTerminateFactors.mkString(", ")}")
+    assert(
+      isAllowed,
+      s"terminate_factor must be one of ${p.allowedTerminateFactors.mkString(", ")}"
+    )
   }
 
   val storeData = Wire(Vec(ratio, Bool()))
@@ -133,7 +166,9 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
     out := RegEnable(io.in.bits, enable)
   }
 
-  val counter = Module(new BasicCounter(width = log2Ceil(ratio) + 1, hasCeil = true))
+  val counter = Module(
+    new BasicCounter(width = log2Ceil(ratio) + 1, hasCeil = true)
+  )
   if (p.earlyTerminate) {
     counter.io.ceilOpt.get := io.terminate_factor.get
   } else {
@@ -142,7 +177,9 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
   counter.io.reset := io.start
   counter.io.tick := io.in.fire
 
-  storeData.zipWithIndex.foreach({ case (a, b) => a := counter.io.value === b.U && io.in.fire })
+  storeData.zipWithIndex.foreach({ case (a, b) =>
+    a := counter.io.value === b.U && io.in.fire
+  })
 
   val runtime_ratio = WireDefault(ratio.U)
   if (p.earlyTerminate) {
@@ -151,8 +188,9 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
     runtime_ratio := ratio.U
   }
 
-  val last_data_write_fire = RegNext(counter.io.value === (runtime_ratio - 1.U) && io.in.fire, false.B)
-  val output_stall         = io.out.valid && ~io.out.ready
+  val last_data_write_fire =
+    RegNext(counter.io.value === (runtime_ratio - 1.U) && io.in.fire, false.B)
+  val output_stall = io.out.valid && ~io.out.ready
 
   io.out.valid := last_data_write_fire || RegNext(output_stall, false.B)
 

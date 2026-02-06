@@ -39,14 +39,14 @@ class AccumulatorBlock(
   ).io
 
   // connection description
-  adder.in_a := Mux(io.enable, io.in1, 0.U)
-  adder.in_b := Mux(io.enable, Mux(io.accAddExtIn, io.in2, accumulatorReg), 0.U)
+  adder.in_a := io.in1
+  adder.in_b := Mux(io.accAddExtIn, io.in2, accumulatorReg)
 
   // update accumulator register enable signal
   val accUpdate = io.enable
   accumulatorReg := Mux(accUpdate, adder.out_c, accumulatorReg)
 
-  // output of accumulator register
+  // output of the accumulator register
   io.out := accumulatorReg
 }
 
