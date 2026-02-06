@@ -62,9 +62,6 @@ Naming convention:
             snax_wide_assign_start_idx: [8],
             snax_wide_assign_end_idx: [55],
         },
-        // AXI bandwidth switcher
-        use_ax_bw_converter: true,
-        converted_axi_bandwidth: 256,
         // Timing parameters
         timing: {
             lat_comp_fp32: 3,
