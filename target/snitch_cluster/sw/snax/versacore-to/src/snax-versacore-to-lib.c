@@ -206,7 +206,7 @@ void set_versacore_streamer_csr(
     // for the int32 to fp16 conversion
     if (array_shape == 4) {
         // for rescale-down per output channel
-        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 6, 1);
+        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 6, 0);
     } else {
         csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 6, 0);
     }

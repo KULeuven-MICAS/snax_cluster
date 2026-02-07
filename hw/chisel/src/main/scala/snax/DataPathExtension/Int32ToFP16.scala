@@ -100,7 +100,9 @@ class Int32ToFp16Converter(
   dataWidth:          Int      = 512,
   in_elementWidth:    Int      = 32,
   out_elementWidth:   Int      = 16,
-  extra_loops_choice: Seq[Int] = Seq(1, 2) //
+  extra_loops_choice: Seq[Int] = Seq(
+    1
+  ) // NOTE: This extra_loops_choice is related to the use case (aggregate a batch of input to output) and not used in the current implementation.
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
 

@@ -201,7 +201,10 @@ class HasRescaleDownEfficient(in_elementWidth: Int = 32, out_elementWidth: Int =
 class RescaleDownEfficientDynamic(
   in_elementWidth:    Int      = 32,
   out_elementWidth:   Int      = 8,
-  extra_loops_choice: Seq[Int] = Seq(1, 2) //
+  extra_loops_choice: Seq[Int] = Seq(
+    1,
+    2
+  ) // NOTE: This extra_loops_choice is used to aggregate a batch of input to output and is related to the use case! Be careful when using it
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
   // Efficient Version of RescaleDown with optimizations for area efficiency

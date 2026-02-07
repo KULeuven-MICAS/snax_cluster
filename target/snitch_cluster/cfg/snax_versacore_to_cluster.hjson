@@ -466,6 +466,7 @@ Naming convention:
                 }
             ]
         }
+        // NOTE: Every time when chaning the SUs, check the extra_loops_choice in the DataPathExtension files!
         has_flexible_transpose: true,
         has_int4toint8: true,
         has_rescaledown_dynamic: true,
