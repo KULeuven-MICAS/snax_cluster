@@ -702,6 +702,9 @@ def main():
         # finally, the AXI connection
         narrow_ports += 1
         sparse_config.append((1, 1))
+        # then, the iDMA connection
+        narrow_ports += 8
+        sparse_config.append((8, 8))
         cfg["cluster"]["sparse_interconnect_cfg"] = {}
         cfg["cluster"]["sparse_interconnect_cfg"]["NumInp"] = narrow_ports
         cfg["cluster"]["sparse_interconnect_cfg"]["NumOut"] = int(
