@@ -28,7 +28,7 @@ Naming convention:
         user_width: 3,
         tcdm: {
             size: 1024,
-            banks: 32,
+            banks: 4,
             sparse_interconnect: true,
         },
         cluster_periph_size: 64, // kB
