@@ -10,17 +10,21 @@ class CriticalLoopFinder(temporalDimension: Int, addressWidth: Int, fixedCacheDe
         val criticalLoop = Output(UInt(log2Ceil(temporalDimension).W))
         val fixedCachePeriod = Output(UInt(log2Ceil(fixedCacheDepth).W))
         val anyLoopFound = Output(Bool())
+        val totalBounds = Output(Vec(temporalDimension, UInt(addressWidth.W)))
     })
     
     // Compute totalBounds (this part is fine)
-    val totalBounds = Wire(Vec(temporalDimension, UInt(addressWidth.W)))
     for (i <- 0 until temporalDimension) {
         if (i == 0)
-        totalBounds(i) := io.temporalBounds(i)
+        io.totalBounds(i) := io.temporalBounds(i)
         else
-        totalBounds(i) := totalBounds(i-1) * io.temporalBounds(i)
+            when(io.temporalStrides(i) === 0.U) {
+                io.totalBounds(i) := io.totalBounds(i-1)
+            } .otherwise {
+                io.totalBounds(i) := io.totalBounds(i-1) * io.temporalBounds(i)
+            }
     }
-    dontTouch(totalBounds)
+    dontTouch(io.totalBounds)
     dontTouch(io.temporalStrides)
     dontTouch(io.temporalBounds)
 
@@ -29,7 +33,7 @@ class CriticalLoopFinder(temporalDimension: Int, addressWidth: Int, fixedCacheDe
         if (i == 0) {
             false.B
         } else {
-            (totalBounds(i-1) < fixedCacheDepth.U) && (io.temporalStrides(i) === 0.U)
+            (io.totalBounds(i-1) < fixedCacheDepth.U) && (io.temporalStrides(i) === 0.U)
         }
     }
 
@@ -41,5 +45,5 @@ class CriticalLoopFinder(temporalDimension: Int, addressWidth: Int, fixedCacheDe
     // Convert back to forward index
     io.criticalLoop := (temporalDimension.U - 1.U) - reversedIdx
 
-    io.fixedCachePeriod := totalBounds(io.criticalLoop - 1.U)
+    io.fixedCachePeriod := io.totalBounds(io.criticalLoop - 1.U)
 }

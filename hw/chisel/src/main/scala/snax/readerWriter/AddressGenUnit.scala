@@ -153,20 +153,43 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
   val countersIsZero = VecInit(counters.map(_.io.isZero))
   
   val newUseCache = io.cfg.enableFixedCache && criticalLoopFinder.io.anyLoopFound
-  val newUpdateCache = countersIsZero(criticalLoopFinder.io.criticalLoop)
+  
+  val totalBounds = criticalLoopFinder.io.totalBounds
 
-  val fixedCacheCounter = Module(
-    new ProgrammableCounter(
-      log2Ceil(param.fixedCacheDepth),
-      hasCeil = true,
-      s"${moduleNamePrefix}_FixedCacheCounter"
+  val fixedCacheCounter_tick = Wire(Bool())
+  val fixedCacheCounters = for (i <- 0 until param.temporalDimension) yield {
+    val fixed_cache_counter = Module(
+      new ProgrammableCounter(
+        param.addressWidth,
+        hasCeil = true,
+        s"${moduleNamePrefix}_FixedCacheCounter_${i}"
+      )
     )
-  )
-  fixedCacheCounter.io.reset := io.start
-  fixedCacheCounter.io.ceil  := criticalLoopFinder.io.fixedCachePeriod
-  fixedCacheCounter.io.step  := 1.U
+    if (i==0){
+      fixed_cache_counter.io.reset := io.start
+      fixed_cache_counter.io.tick := fixedCacheCounter_tick
+      fixed_cache_counter.io.ceil := io.cfg.temporalBounds(i)
+      fixed_cache_counter.io.step := 1.U
+    } else {
+      fixed_cache_counter.io.reset := io.start
+      fixed_cache_counter.io.tick := fixedCacheCounter_tick && counters(i-1).io.lastVal
+      fixed_cache_counter.io.ceil := io.cfg.temporalBounds(i)
+      fixed_cache_counter.io.step := totalBounds(i-1)
+    }
+    val counter_out = Wire(UInt(param.addressWidth.W))
+    when(io.cfg.temporalStrides(i) === 0.U || i.U > criticalLoopFinder.io.criticalLoop) {
+        counter_out := 0.U
+    } .otherwise {
+        counter_out := fixed_cache_counter.io.value
+    }
+    counter_out
+  }
 
-  val newIndex = fixedCacheCounter.io.value
+  val newIndex = VecInit(fixedCacheCounters).reduceTree(_ + _) 
+  val updateCacheConditions = (0 until param.temporalDimension).map { i =>
+    !((io.cfg.temporalStrides(i) === 0.U) && (i.U <= criticalLoopFinder.io.criticalLoop)) || countersIsZero(i)
+  }
+  val newUpdateCache = updateCacheConditions.reduce(_ && _)
 
   // Calculate the current base address: the first stride need to be left-shifted
   val temporalOffset = VecInit(counters.map(_.io.value)).reduceTree(_ + _)
@@ -296,5 +319,5 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
       a.io.tick := b.io.lastVal && counters_tick
     }
   }
-  fixedCacheCounter.io.tick  := counters_tick
+  fixedCacheCounter_tick  := counters_tick
 }

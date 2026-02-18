@@ -90,15 +90,15 @@ class ReaderTester extends AnyFlatSpec with ChiselScalatestTester {
       // dut.io.aguCfg.temporalBounds(0).poke(4)
       // dut.io.aguCfg.temporalBounds(1).poke(4)
       // dut.io.aguCfg.temporalBounds(2).poke(2)
-      dut.io.aguCfg.temporalStrides(0).poke(64)
+      dut.io.aguCfg.temporalStrides(0).poke(0)
       dut.io.aguCfg.temporalStrides(1).poke(0)
-      dut.io.aguCfg.temporalStrides(2).poke(0)
+      dut.io.aguCfg.temporalStrides(2).poke(64)
       dut.io.aguCfg.temporalStrides(3).poke(0)
       dut.io.aguCfg.temporalStrides(4).poke(0)
       dut.io.aguCfg.temporalStrides(5).poke(0)
-      dut.io.aguCfg.temporalBounds(0).poke(35)
-      dut.io.aguCfg.temporalBounds(1).poke(9)
-      dut.io.aguCfg.temporalBounds(2).poke(1)
+      dut.io.aguCfg.temporalBounds(0).poke(25)
+      dut.io.aguCfg.temporalBounds(1).poke(2)
+      dut.io.aguCfg.temporalBounds(2).poke(2)
       dut.io.aguCfg.temporalBounds(3).poke(1)
       dut.io.aguCfg.temporalBounds(4).poke(1)
       dut.io.aguCfg.temporalBounds(5).poke(1)
@@ -129,8 +129,8 @@ class ReaderTester extends AnyFlatSpec with ChiselScalatestTester {
         basePtr = 0x1000,
         spatialStride = 8,
         spatialBound = 8,
-        temporalStrides = Seq(64, 0, 0, 0, 0, 0),
-        temporalBounds = Seq(35, 9, 1, 1, 1, 1)
+        temporalStrides = Seq(0, 0, 64, 0, 0, 0),
+        temporalBounds = Seq(25, 2, 2, 1, 1, 1)
       )
       
       val receivedOutputs = mutable.ArrayBuffer[BigInt]()
