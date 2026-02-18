@@ -245,6 +245,28 @@ def emit_matmul_data(**kwargs):
         2
     ]
 
+    total_memory_usage = (
+        M
+        * K
+        * meshRow
+        * tileSize
+        * snax_acc_cfg["snax_versacore_input_a_element_width"][data_type]
+        + K
+        * N
+        * meshCol
+        * tileSize
+        * snax_acc_cfg["snax_versacore_input_b_element_width"][data_type]
+        + M
+        * N
+        * meshRow
+        * meshCol
+        * snax_acc_cfg["snax_versacore_input_c_element_width"][data_type]
+        * 2
+    )
+    assert (
+        total_memory_usage < kwargs["cluster"]["tcdm"]["size"] * 1024 * 8 * 0.9
+    ), f"Invalid total memory usage: {total_memory_usage}"
+
     a_len = snax_acc_cfg["snax_versacore_input_a_element_width"][data_type]
     b_len = snax_acc_cfg["snax_versacore_input_b_element_width"][data_type]
     c_len = snax_acc_cfg["snax_versacore_input_c_element_width"][data_type]
