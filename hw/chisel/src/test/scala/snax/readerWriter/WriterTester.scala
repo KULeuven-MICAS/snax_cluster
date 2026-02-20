@@ -55,7 +55,8 @@ class WriterTester extends AnyFlatSpec with ChiselScalatestTester {
         addressBufferDepth = 8,
         dataBufferDepth    = 8,
         tcdmSize           = 128
-      )
+      ),
+      false
     )
   ).withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
       // Configuration

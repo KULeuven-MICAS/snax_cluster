@@ -97,13 +97,47 @@ trait HasOutputDataIO {
   )
 }
 
-class ReaderIO(param: ReaderWriterParam)
+trait HasFixedCacheInputIO {
+  this: ReaderWriterCommomIO =>
+  val fixedCacheInstruction = Flipped(
+    Decoupled(new FixedCacheInstructionIO(param.aguParam.fixedCacheDepth))
+  )
+}
+
+trait HasFixedCacheOutputIO {
+  this: ReaderWriterCommomIO =>
+  val fixedCacheInstruction = Decoupled(new FixedCacheInstructionIO(param.aguParam.fixedCacheDepth))
+}
+
+class ReaderIO(param: ReaderWriterParam, isReaderWriter: Boolean = false)
     extends ReaderWriterCommomIO(param)
     with HasTCDMRequestor
     with HasTCDMResponder
     with HasOutputDataIO
+    with HasFixedCacheInputIO {
+  // When used in a ReaderWriter configuration, expose the writer-side port so the writer can write
+  // incoming data directly into the reader's FixedLevelCache memory.
+  val fixedCacheWriterPort =
+    if (isReaderWriter)
+      Some(new FixedLevelCacheWriterPort(param.aguParam.fixedCacheDepth, param.tcdmParam.dataWidth * param.tcdmParam.numChannel))
+    else
+      None
+}
 
-class WriterIO(param: ReaderWriterParam) extends ReaderWriterCommomIO(param) with HasTCDMRequestor with HasInputDataIO
+class WriterIO(param: ReaderWriterParam, isReaderWriter: Boolean = false)
+    extends ReaderWriterCommomIO(param)
+    with HasTCDMRequestor
+    with HasInputDataIO
+    with HasFixedCacheOutputIO {
+  // When used in a ReaderWriter configuration, expose the port that the writer uses to inject data
+  // directly into the reader's FixedLevelCache memory (bypassing TCDM for cached iterations).
+  // Flipped so that from inside the Writer module the fields are outputs (driven by Writer).
+  val fixedCacheWriterPort =
+    if (isReaderWriter)
+      Some(Flipped(new FixedLevelCacheWriterPort(param.aguParam.fixedCacheDepth, param.tcdmParam.dataWidth * param.tcdmParam.numChannel)))
+    else
+      None
+}
 
 class ReaderWriterIO(readerParam: ReaderWriterParam, writerParam: ReaderWriterParam) extends Bundle {
   // As they share the same TCDM interface, different number of channel is meaningless

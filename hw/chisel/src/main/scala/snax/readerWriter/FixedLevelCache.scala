@@ -6,11 +6,21 @@ import chisel3.util._
 
 import snax.utils._
 
-class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Boolean) extends Module {
+// Bundle for the writer-side write port into the reader's FixedLevelCache memory.
+// Used only when the FixedLevelCache is instantiated in ReaderWriter mode (isReaderWriter = true).
+class FixedLevelCacheWriterPort(fixedCacheDepth: Int, fixedCacheWidth: Int) extends Bundle {
+  val enable = Input(Bool())
+  val index  = Input(UInt(log2Ceil(fixedCacheDepth).W))
+  val data   = Input(UInt(fixedCacheWidth.W))
+}
+
+class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Boolean, isReaderWriter: Boolean = false) extends Module {
   val io = IO(new Bundle {
     val fixedLevelCacheRequest = Flipped(Decoupled(new FixedCacheInstructionIO(fixedCacheDepth)))
     val dataInTCDM = Flipped(Decoupled(UInt(fixedCacheWidth.W)))
     val dataInAccelerator = if (isReader) None else Some(Input(UInt(fixedCacheWidth.W)))
+    // When instantiated in ReaderWriter mode the writer can write directly into the cache memory
+    val writerPort = if (isReaderWriter) Some(new FixedLevelCacheWriterPort(fixedCacheDepth, fixedCacheWidth)) else None
     val dataOut = Decoupled(UInt(fixedCacheWidth.W))
     val busy = Output(Bool())
   })
@@ -134,6 +144,13 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
   val mem = SyncReadMem(fixedCacheDepth, UInt(fixedCacheWidth.W))
   if (!isReader) {
       mem.write(io.fixedLevelCacheRequest.bits.index - 1.U, io.dataInAccelerator.get) //TODO: minus one is an oversimplification, probably an entire seperate address generator is needed
+  }
+  // When used inside a ReaderWriter, the writer can write directly into this cache via the writerPort.
+  // This is a second independent write port; SyncReadMem supports multiple write ports.
+  if (isReaderWriter) {
+    when(io.writerPort.get.enable) {
+      mem.write(io.writerPort.get.index, io.writerPort.get.data)
+    }
   }
   output_bits := mem.readWrite(activeRequest.index, activeDataIn, request_enable, activeRequest.updateCache)
 

@@ -7,7 +7,7 @@ import snax.utils._
 
 // The reader takes the address from the AGU, offer to requestor, and responser collect the data from TCDM and pushed to FIFO packer to recombine into 512 bit data
 
-class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_cluster")
+class Reader(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix: String = "unnamed_cluster")
     extends Module
     with RequireAsyncReset {
 
@@ -18,7 +18,7 @@ class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
     "Byte Mask is not supported in Reader"
   )
 
-  val io = IO(new ReaderIO(param))
+  val io = IO(new ReaderIO(param, isReaderWriter))
 
   // New Address Generator
   val addressgen = Module(
@@ -143,14 +143,27 @@ class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
   // Data Buffer <> Fixed Level Cache
   val fixedCache = Module(
     new FixedLevelCache(
-      fixedCacheDepth = 1024,
-      fixedCacheWidth = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
-      isReader        = true
+      fixedCacheDepth  = param.aguParam.fixedCacheDepth,
+      fixedCacheWidth  = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
+      isReader         = true,
+      isReaderWriter   = isReaderWriter
     )
   )
   fixedCache.io.fixedLevelCacheRequest <> addressgen.io.fixedCacheInstruction
   fixedCache.io.dataInTCDM <> dataBuffer.io.out.head
   val fixedCacheDataOut = fixedCache.io.dataOut
+
+  // The external io.fixedCacheInstruction port (from HasFixedCacheInputIO) is now unused:
+  // the reader's FixedLevelCache is driven exclusively by the internal AGU.
+  // Tie off the ready output so it is always driven (port exists for legacy/standalone compatibility).
+  io.fixedCacheInstruction.ready := false.B
+
+  // When used in ReaderWriter mode, expose the writer's direct-write port from the FixedLevelCache
+  if (isReaderWriter) {
+    fixedCache.io.writerPort.get.enable := io.fixedCacheWriterPort.get.enable
+    fixedCache.io.writerPort.get.index  := io.fixedCacheWriterPort.get.index
+    fixedCache.io.writerPort.get.data   := io.fixedCacheWriterPort.get.data
+  }
 
   // Fixed Level Cache <> Output
   if (param.crossClockDomain == false) {
@@ -184,7 +197,8 @@ object ReaderEmitter extends App {
           tcdmDataWidth = 512,
           numChannel    = 1,
           spatialBounds = List(1)
-        )
+        ),
+        false
       )
     )
   )

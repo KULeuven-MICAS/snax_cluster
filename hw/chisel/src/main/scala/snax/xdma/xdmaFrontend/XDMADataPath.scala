@@ -99,16 +99,24 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
   })
 
   val reader = Module(
-    new Reader(readerParam.rwParam, moduleNamePrefix = clusterName)
+    new Reader(readerParam.rwParam, false, moduleNamePrefix = clusterName)
   )
   val writer = Module(
-    new Writer(writerParam.rwParam, moduleNamePrefix = clusterName)
+    new Writer(writerParam.rwParam, false, moduleNamePrefix = clusterName)
   )
 
   // Connect TCDM memory to reader and writer
   reader.io.tcdmReq <> io.tcdmReader.req
   reader.io.tcdmRsp <> io.tcdmReader.rsp
   writer.io.tcdmReq <> io.tcdmWriter.req
+
+  // Tie off the legacy fixedCacheInstruction ports (cache is driven internally; these are unused)
+  reader.io.fixedCacheInstruction.valid             := false.B
+  reader.io.fixedCacheInstruction.bits.index        := 0.U
+  reader.io.fixedCacheInstruction.bits.useCache     := false.B
+  reader.io.fixedCacheInstruction.bits.updateCache  := false.B
+  reader.io.fixedCacheInstruction.bits.lastAccess   := false.B
+  writer.io.fixedCacheInstruction.ready             := false.B
 
   // Connect the wire (ctrl plane)
   reader.io.aguCfg          := io.readerCfg.aguCfg

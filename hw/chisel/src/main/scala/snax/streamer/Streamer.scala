@@ -164,22 +164,35 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   val reader = Seq((0 until param.readerNum).map { i =>
     Module(
       new Reader(
-        param.readerParams(i),
+        param.readerParams(i), false,
         param.tagName + "_C" + i.toString()
       )
     )
   }: _*)
+
+  for (readerIdx <- 0 until param.readerNum) {
+    reader(readerIdx).io.fixedCacheInstruction.valid := false.B
+    reader(readerIdx).io.fixedCacheInstruction.bits.index := 0.U
+    reader(readerIdx).io.fixedCacheInstruction.bits.useCache := false.B
+    reader(readerIdx).io.fixedCacheInstruction.bits.updateCache := false.B
+    reader(readerIdx).io.fixedCacheInstruction.bits.lastAccess := false.B
+  }
+
 
   // data writers instantiation
   // a vector of data writer generator instantiation with different parameters for each module
   val writer = Seq((0 until param.writerNum).map { i =>
     Module(
       new Writer(
-        param.writerParams(i),
+        param.writerParams(i), false,
         param.tagName + "_C" + i.toString()
       )
     )
   }: _*)
+
+  for (writerIdx <- 0 until param.writerNum) {
+    writer(writerIdx).io.fixedCacheInstruction.ready := false.B
+  }
 
   // data reader_writers instantiation
   val reader_writer = Seq((0 until param.readerWriterNum / 2).map { i =>
@@ -191,6 +204,16 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
       )
     )
   }: _*)
+
+  // The readerInterface.fixedCacheInstruction port is a legacy/stub input on ReaderWriter
+  // (the cache is driven internally). Tie off its inputs so FIRRTL sees them as driven.
+  for (rwIdx <- 0 until param.readerWriterNum / 2) {
+    reader_writer(rwIdx).io.readerInterface.fixedCacheInstruction.valid              := false.B
+    reader_writer(rwIdx).io.readerInterface.fixedCacheInstruction.bits.index        := 0.U
+    reader_writer(rwIdx).io.readerInterface.fixedCacheInstruction.bits.useCache     := false.B
+    reader_writer(rwIdx).io.readerInterface.fixedCacheInstruction.bits.updateCache  := false.B
+    reader_writer(rwIdx).io.readerInterface.fixedCacheInstruction.bits.lastAccess   := false.B
+  }
 
   // datapath extension module instantiation
   val readerDatapathExtention = (0 until param.readerParams.length).map { i =>

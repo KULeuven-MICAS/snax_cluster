@@ -19,7 +19,8 @@ class ReaderTester extends AnyFlatSpec with ChiselScalatestTester {
           tcdmDataWidth = 64,
           numChannel    = 8,
           spatialBounds = List(8)
-        )
+        ),
+        false
       )
     )
   )
@@ -77,7 +78,8 @@ class ReaderTester extends AnyFlatSpec with ChiselScalatestTester {
         addressBufferDepth = 2,
         dataBufferDepth    = 2,
         tcdmSize           = 128
-      )
+      ),
+      false
     )
   )
     .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
@@ -723,7 +725,8 @@ object ReaderEmitterTest extends App {
         addressBufferDepth = 8,
         dataBufferDepth    = 8,
         tcdmSize           = 128
-      )
+      ),
+      false
     ),
     args = Array("--target-dir", "generated/reader")
   )

@@ -63,8 +63,12 @@ class FixedCacheInstructionIO(fixedCacheDepth: Int) extends Bundle {
   val index = UInt(log2Ceil(fixedCacheDepth).W)
   // Indicate whether fixed cache is used 
   val useCache = Bool()
-  // When the fixed cache must be updated, this signal becomes high
+  // When the fixed cache must be updated (first pass, zero-stride counters at their start), this signal becomes high
   val updateCache = Bool()
+  // True when all zero-stride counters within the cache scope are at their last value (ceil-1).
+  // Used by the Writer in ReaderWriter mode: only write to TCDM (dataBuffer) on this last access;
+  // all other accesses go to the reader's FixedLevelCache write port instead.
+  val lastAccess = Bool()
 }
 
 /** AGU is the module to automatically generate the address for all ports.
@@ -191,6 +195,13 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
   }
   val newUpdateCache = updateCacheConditions.reduce(_ && _)
 
+  // lastAccess: true when all zero-stride counters within the cache scope are at their last value (lastVal).
+  // Used by the Writer in ReaderWriter mode to decide when to write to TCDM vs. reader cache.
+  val lastAccessConditions = (0 until param.temporalDimension).map { i =>
+    !((io.cfg.temporalStrides(i) === 0.U) && (i.U <= criticalLoopFinder.io.criticalLoop)) || counters(i).io.lastVal
+  }
+  val newLastAccess = lastAccessConditions.reduce(_ && _)
+
   // Calculate the current base address: the first stride need to be left-shifted
   val temporalOffset = VecInit(counters.map(_.io.value)).reduceTree(_ + _)
 
@@ -283,6 +294,7 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
   fixedCacheInstructionBuffer.io.enq.bits.index       := newIndex
   fixedCacheInstructionBuffer.io.enq.bits.useCache    := newUseCache
   fixedCacheInstructionBuffer.io.enq.bits.updateCache := newUpdateCache
+  fixedCacheInstructionBuffer.io.enq.bits.lastAccess  := newLastAccess
   io.fixedCacheInstruction <> fixedCacheInstructionBuffer.io.deq
 
   // Connect io.bufferEmpty signal: If all output is 0, then all addresses are empty, which means io.bufferEmpty should be high

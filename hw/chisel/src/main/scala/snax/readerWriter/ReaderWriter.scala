@@ -1,8 +1,14 @@
 package snax.readerWriter
 
 import chisel3._
+import chisel3.util._
 
 import snax.utils._
+
+class ReaderWriterFixedCacheIO(param: ReaderWriterParam) extends Bundle {
+  val index = UInt(log2Ceil(param.aguParam.fixedCacheDepth).W)
+  val data = UInt((param.tcdmParam.dataWidth * param.tcdmParam.numChannel).W)
+}
 
 // ReaderWriter is the module that has a reader port and writer port, but they share one TCDM interface.
 // This is suitable for the case that the throughput is not high.
@@ -22,6 +28,7 @@ class ReaderWriter(
   val reader = Module(
     new Reader(
       readerParam,
+      true,
       moduleNamePrefix = s"${moduleNamePrefix}_RWReader"
     )
   )
@@ -37,6 +44,7 @@ class ReaderWriter(
   val writer = Module(
     new Writer(
       writerParam,
+      true,
       moduleNamePrefix = s"${moduleNamePrefix}_RWWriter"
     )
   )
@@ -47,6 +55,21 @@ class ReaderWriter(
   writer.io.start                := io.writerInterface.start
   io.writerInterface.busy        := writer.io.busy
   io.writerInterface.bufferEmpty := writer.io.bufferEmpty
+
+  // Fixed Cache Connection:
+  // The writer writes incoming data directly into the reader's FixedLevelCache via the writerPort.
+  // The reader's own AGU drives the reader-side cache operations (for serving data to the accelerator).
+  reader.io.fixedCacheWriterPort.get.enable := writer.io.fixedCacheWriterPort.get.enable
+  reader.io.fixedCacheWriterPort.get.index  := writer.io.fixedCacheWriterPort.get.index
+  reader.io.fixedCacheWriterPort.get.data   := writer.io.fixedCacheWriterPort.get.data
+
+  // The legacy fixedCacheInstruction ports are now unused in ReaderWriter mode.
+  // The reader's cache is driven by its own internal AGU; the writer consumes its
+  // fixedCacheInstruction internally for routing. Tie off undriven inputs/outputs.
+  reader.io.fixedCacheInstruction.valid               := false.B
+  reader.io.fixedCacheInstruction.bits                := 0.U.asTypeOf(chiselTypeOf(reader.io.fixedCacheInstruction.bits))
+  writer.io.fixedCacheInstruction.ready               := false.B
+  io.readerInterface.fixedCacheInstruction.ready      := false.B
 
   // Both reader and writer share the same Request interface
   val readerwriterMux = Seq.fill(readerParam.tcdmParam.numChannel)(
