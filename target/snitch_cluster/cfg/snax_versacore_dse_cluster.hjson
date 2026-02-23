@@ -372,6 +372,6 @@ Naming convention:
                 ]
             ]
         }
-        snax_library_name: versacore
+        snax_library_name: versacore-dse
     }
 }
