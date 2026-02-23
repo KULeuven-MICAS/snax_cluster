@@ -260,6 +260,33 @@ def emit_matmul_data(**kwargs):
         A_MIN, A_MAX = signed_int_range(a_len)
         B_MIN, B_MAX = signed_int_range(b_len)
         C_MIN, C_MAX = signed_int_range(c_len)
+        # for debugging
+        A_MIN, A_MAX = 1, 2
+        B_MIN, B_MAX = 1, 2
+        C_MIN, C_MAX = 1, 2
+
+    streamer_cfg = kwargs["snax_versacore_streamer_template"]
+    if kwargs["stationary"] == 1:
+        assert len(streamer_cfg["data_reader_params"]["fifo_depth"]) == 3
+
+    dependency_redudancy = 5
+    if kwargs["stationary"] == 1:
+        # heuristic data dependency
+        assert kwargs["channel_en_C"] == True
+        assert (
+            kwargs["M"] * kwargs["N"]
+            >= streamer_cfg["data_reader_params"]["fifo_depth"][2]
+            + dependency_redudancy
+        )
+
+    if kwargs["stationary"] == 2:
+        # heuristic data dependency
+        assert kwargs["channel_en_C"] == True
+        assert (
+            kwargs["M"] * kwargs["N"]
+            >= streamer_cfg["data_reader_params"]["fifo_depth"][2]
+            + dependency_redudancy
+        )
 
     a_array_width = snax_acc_cfg["snax_versacore_array_input_a_width"]
     b_array_width = snax_acc_cfg["snax_versacore_array_input_b_width"]
@@ -309,17 +336,17 @@ def emit_matmul_data(**kwargs):
     elif stationary == weight_stationary:
         Atlbound0 = M
         Atlstride0 = K * a_len * tileSize * meshRow / 8
-        Atlbound1 = K
-        Atlstride1 = a_len * tileSize * meshRow / 8
-        Atlbound2 = N
-        Atlstride2 = 0
+        Atlbound1 = N
+        Atlstride1 = 0
+        Atlbound2 = K
+        Atlstride2 = a_len * tileSize * meshRow / 8
     elif stationary == input_stationary:
         Atlbound0 = N
         Atlstride0 = 0
-        Atlbound1 = K
-        Atlstride1 = a_len * tileSize * meshRow / 8
-        Atlbound2 = M
-        Atlstride2 = K * a_len * tileSize * meshRow / 8
+        Atlbound1 = M
+        Atlstride1 = K * a_len * tileSize * meshRow / 8
+        Atlbound2 = K
+        Atlstride2 = a_len * tileSize * meshRow / 8
 
     # Checker for tstrides of operand A
     assert Atlstride0 % (bankWidth / 8 * granularity_a) == 0
@@ -348,9 +375,8 @@ def emit_matmul_data(**kwargs):
     # related to if this is a wide channel or not
     # if wide, must be divisible by 8
     # if narrow, must be divisible by 1
-    channel_en_A_bits = max(
-        8, int((meshRow * tileSize * a_len / bankWidth + 7) // 8 * 8)
-    )
+    channel_en_A_bits = int(meshRow * tileSize * a_len / bankWidth)
+
     channel_en_A = gen_channel_enable_CSR(
         channel_en_A,
         channel_en_A_bits,
@@ -378,17 +404,17 @@ def emit_matmul_data(**kwargs):
     elif stationary == weight_stationary:
         Btlbound0 = M
         Btlstride0 = 0
-        Btlbound1 = K
-        Btlstride1 = b_len * tileSize * meshCol / 8
-        Btlbound2 = N
-        Btlstride2 = K * b_len * tileSize * meshCol / 8
+        Btlbound1 = N
+        Btlstride1 = K * b_len * tileSize * meshCol / 8
+        Btlbound2 = K
+        Btlstride2 = b_len * tileSize * meshCol / 8
     elif stationary == input_stationary:
         Btlbound0 = N
         Btlstride0 = K * b_len * tileSize * meshCol / 8
-        Btlbound1 = K
-        Btlstride1 = b_len * tileSize * meshCol / 8
-        Btlbound2 = M
-        Btlstride2 = 0
+        Btlbound1 = M
+        Btlstride1 = 0
+        Btlbound2 = K
+        Btlstride2 = b_len * tileSize * meshCol / 8
 
     # Checker for tstrides of operand B
     assert Btlstride0 % (bankWidth / 8 * granularity_b) == 0
@@ -404,9 +430,8 @@ def emit_matmul_data(**kwargs):
 
     B_enabled_channel_CSR_num = int(math.ceil(b_array_width / bankWidth / 32))
     channel_en_B = [0] * B_enabled_channel_CSR_num
-    channel_en_B_bits = max(
-        8, int((meshCol * tileSize * b_len / bankWidth + 7) // 8 * 8)
-    )
+    channel_en_B_bits = int((meshCol * tileSize * b_len / bankWidth + 7) // 8 * 8)
+
     channel_en_B = gen_channel_enable_CSR(
         channel_en_B,
         channel_en_B_bits,
@@ -446,17 +471,17 @@ def emit_matmul_data(**kwargs):
     elif stationary == weight_stationary:
         Ctlbound1 = M
         Ctlstride1 = N * c_len * meshRow * meshCol / 8
-        Ctlbound2 = K
-        Ctlstride2 = 0
-        Ctlbound3 = N
-        Ctlstride3 = c_len * meshRow * meshCol / 8
+        Ctlbound2 = N
+        Ctlstride2 = c_len * meshRow * meshCol / 8
+        Ctlbound3 = K
+        Ctlstride3 = 0
     elif stationary == input_stationary:
         Ctlbound1 = N
         Ctlstride1 = c_len * meshRow * meshCol / 8
-        Ctlbound2 = K
-        Ctlstride2 = 0
-        Ctlbound3 = M
-        Ctlstride3 = N * c_len * meshRow * meshCol / 8
+        Ctlbound2 = M
+        Ctlstride2 = N * c_len * meshRow * meshCol / 8
+        Ctlbound3 = K
+        Ctlstride3 = 0
 
     # Checker for tstrides of operand C
     assert Ctlstride0 % (bankWidth / 8 * granularity_c_d) == 0
@@ -526,17 +551,17 @@ def emit_matmul_data(**kwargs):
     elif stationary == weight_stationary:
         D32tlbound1 = M
         D32tlstride1 = N * c_len * meshRow * meshCol / 8
-        D32tlbound2 = K
-        D32tlstride2 = 0
-        D32tlbound3 = N
-        D32tlstride3 = c_len * meshRow * meshCol / 8
+        D32tlbound2 = N
+        D32tlstride2 = c_len * meshRow * meshCol / 8
+        D32tlbound3 = K
+        D32tlstride3 = 0
     elif stationary == input_stationary:
         D32tlbound1 = N
         D32tlstride1 = c_len * meshRow * meshCol / 8
-        D32tlbound2 = K
-        D32tlstride2 = 0
-        D32tlbound3 = M
-        D32tlstride3 = N * c_len * meshRow * meshCol / 8
+        D32tlbound2 = M
+        D32tlstride2 = N * c_len * meshRow * meshCol / 8
+        D32tlbound3 = K
+        D32tlstride3 = 0
 
     # Checker for tstrides of operand D
     assert D32tlstride0 % (bankWidth / 8 * granularity_c_d) == 0
@@ -590,16 +615,10 @@ def emit_matmul_data(**kwargs):
     )
     if stationary == output_stationary:
         delta_local_d = delta_local_c
-        delta_local_d = align_wide_addr(
-            delta_local_d, snax_acc_cfg["granularity_c_d"] * bankWidth / 8
-        )
     elif stationary == weight_stationary:
         delta_local_d = delta_local_c
     elif stationary == input_stationary:
         delta_local_d = delta_local_c
-        delta_local_d = align_wide_addr(
-            delta_local_d, snax_acc_cfg["granularity_c_d"] * bankWidth / 8
-        )
 
     data_str += [format_scalar_definition("int32_t", "delta_local_a", delta_local_a)]
     data_str += [format_scalar_definition("int32_t", "delta_local_b", delta_local_b)]
@@ -645,7 +664,6 @@ def emit_matmul_data(**kwargs):
             C = np.random.uniform(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(
                 -1
             )
-            # C = np.random.uniform(1, 1, size=(M, N, meshRow, meshCol)).reshape(-1)
         else:
             C = np.zeros((M, N, meshRow, meshCol)).reshape(-1)
 
