@@ -272,7 +272,7 @@ def emit_matmul_data(**kwargs):
     dependency_redudancy = 5
     if kwargs["stationary"] == 1:
         # heuristic data dependency
-        assert kwargs["channel_en_C"] == True
+        assert kwargs["channel_en_C"]
         assert (
             kwargs["M"] * kwargs["N"]
             >= streamer_cfg["data_reader_params"]["fifo_depth"][2]
@@ -281,7 +281,7 @@ def emit_matmul_data(**kwargs):
 
     if kwargs["stationary"] == 2:
         # heuristic data dependency
-        assert kwargs["channel_en_C"] == True
+        assert kwargs["channel_en_C"]
         assert (
             kwargs["M"] * kwargs["N"]
             >= streamer_cfg["data_reader_params"]["fifo_depth"][2]
