@@ -107,8 +107,9 @@ trait AbstractBlockGemmTest {
 /** Random size of input matrices and Integer 8 data test and check with the results of Block Gemm with golden model */
 class BlockGemmTest extends AnyFlatSpec with ChiselScalatestTester with AbstractBlockGemmTest {
   "BlockGemm" should "work in corner case configurations" in {
+    val annotations = if (sys.env.getOrElse("WRITE_VCD", "false") == "true") Seq(WriteVcdAnnotation) else Seq()
     test(new BlockGemmDelayedWrapper(TestParameters.testConfig))
-      .withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+      .withAnnotations(annotations) { dut =>
         dut.clock.step(5)
         BlockGemmRandomTest(dut, 1, 1, 1)
         BlockGemmRandomTest(dut, 1, 2, 1)
@@ -119,7 +120,8 @@ class BlockGemmTest extends AnyFlatSpec with ChiselScalatestTester with Abstract
   }
 
   "BlockGemm" should "correctly compute randomly sized matrices" in {
-    test(new BlockGemmDelayedWrapper(DefaultConfig.gemmConfig)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    val annotations = if (sys.env.getOrElse("WRITE_VCD", "false") == "true") Seq(WriteVcdAnnotation) else Seq()
+    test(new BlockGemmDelayedWrapper(DefaultConfig.gemmConfig)).withAnnotations(annotations) { dut =>
       val nbTests = 10
       for (_ <- 0 until nbTests) {
         // Randomly generate the size of the input matrices

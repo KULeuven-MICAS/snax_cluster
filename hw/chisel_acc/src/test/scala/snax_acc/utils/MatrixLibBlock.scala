@@ -14,11 +14,15 @@ object MatrixLibBlock {
   /** Generate random M, K, N for testing the Block Gemm The test matrix are (M * meshRow, K * tileSize) and (K *
     * tileSize, N * meshCol)
     */
-  def GenRandSizeTest() = {
+  def GenRandSizeTest(
+    maxM: Int = TestParameters.MatrixLibBlock_random_M_range,
+    maxK: Int = TestParameters.MatrixLibBlock_random_K_range,
+    maxN: Int = TestParameters.MatrixLibBlock_random_N_range
+  ) = {
     val rand = new scala.util.Random
-    val M    = rand.between(1, TestParameters.MatrixLibBlock_random_M_range + 1)
-    val K    = rand.between(1, TestParameters.MatrixLibBlock_random_K_range + 1)
-    val N    = rand.between(1, TestParameters.MatrixLibBlock_random_N_range + 1)
+    val M    = rand.between(1, maxM + 1)
+    val K    = rand.between(1, maxK + 1)
+    val N    = rand.between(1, maxN + 1)
     (M, K, N)
   }
 
