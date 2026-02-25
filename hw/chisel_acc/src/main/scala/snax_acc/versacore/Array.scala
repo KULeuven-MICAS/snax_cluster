@@ -28,8 +28,8 @@ class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
 }
 
 class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {
-  val data = new SpatialArrayDataIO(params)
-  val ctrl = new SpatialArrayCtrlIO(params)
+  val array_data = new SpatialArrayDataIO(params)
+  val ctrl       = new SpatialArrayCtrlIO(params)
 }
 
 /** SpatialArray is a module that implements a spatial array for parallel computation.

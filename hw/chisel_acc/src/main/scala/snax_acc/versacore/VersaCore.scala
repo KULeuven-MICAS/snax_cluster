@@ -465,7 +465,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   val computeFireCounter = Module(new BasicCounter(params.configWidth, hasCeil = true, nameTag = "computeFireCounter"))
   computeFireCounter.io.ceilOpt.get := csrReg.fsmCfg.a_b_input_times_one_output
   val addCFire =
-    (a_after_cut.fire && b_after_cut.fire && array.io.versacore_data.in_c.fire && computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U) ||
+    (a_after_cut.fire && b_after_cut.fire && array.io.array_data.in_c.fire && computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U) ||
       (a_after_cut.fire && b_after_cut.fire && computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 0.U)
   val mulABFire = (a_after_cut.fire && b_after_cut.fire && computeFireCounter.io.value =/= 0.U)
   computeFireCounter.io.tick  := (addCFire || mulABFire) && cstate === sBUSY
@@ -479,35 +479,35 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   array.io.ctrl.accAddExtIn   := accAddExtIn
 
   // array data signals
-  array.io.versacore_data.in_a <> a_after_cut
-  array.io.versacore_data.in_b <> b_after_cut
+  array.io.array_data.in_a <> a_after_cut
+  array.io.array_data.in_b <> b_after_cut
 
-  array.io.versacore_data.in_c.bits  := C_s2p.io.out.bits
-  array.io.versacore_data.in_c.valid := C_s2p.io.out.valid && cstate === sBUSY
+  array.io.array_data.in_c.bits  := C_s2p.io.out.bits
+  array.io.array_data.in_c.valid := C_s2p.io.out.valid && cstate === sBUSY
   // array c_ready considering output stationary
   C_s2p.io.out.ready                 := addCFire           && cstate === sBUSY
 
-  array.io.versacore_data.in_subtraction <> sub_after_cut
+  array.io.array_data.in_subtraction <> sub_after_cut
 
   // array d_ready considering output stationary
   val dOutputValidCounter = Module(
     new BasicCounter(params.configWidth, hasCeil = true, nameTag = "dOutputValidCounter")
   )
   dOutputValidCounter.io.ceilOpt.get := csrReg.fsmCfg.a_b_input_times_one_output
-  dOutputValidCounter.io.tick  := array.io.versacore_data.out_d.fire && cstate === sBUSY
+  dOutputValidCounter.io.tick  := array.io.array_data.out_d.fire && cstate === sBUSY
   dOutputValidCounter.io.reset := versacore_finish
 
   // array output data to the D_p2s converter
-  D_p2s.io.in.bits                    := array.io.versacore_data.out_d.bits
+  D_p2s.io.in.bits                    := array.io.array_data.out_d.bits
   // output_times == 0 means no output
   // If output_times is 0, we need to ensure that the valid signal is not asserted
   // othwerwise, output one valid signal after a_b_input_times_one_output computations
   when(csrReg.fsmCfg.output_times === 0.U) {
     D_p2s.io.in.valid := false.B
   }.otherwise {
-    D_p2s.io.in.valid := array.io.versacore_data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.a_b_input_times_one_output - 1.U)
+    D_p2s.io.in.valid := array.io.array_data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.a_b_input_times_one_output - 1.U)
   }
-  array.io.versacore_data.out_d.ready := Mux(D_p2s.io.in.valid, D_p2s.io.in.ready, true.B)
+  array.io.array_data.out_d.ready := Mux(D_p2s.io.in.valid, D_p2s.io.in.ready, true.B)
 
   // ------------------------------------
   // array instance and data handshake signal connections ends
