@@ -7,8 +7,10 @@ import snax.utils._
 
 // The reader takes the address from the AGU, offer to requestor, and responser collect the data from TCDM and pushed to FIFO packer to recombine into 512 bit data
 
-class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_cluster")
-    extends Module
+class Reader(
+  param:            ReaderWriterParam,
+  moduleNamePrefix: String = "unnamed_cluster"
+) extends Module
     with RequireAsyncReset {
 
   override val desiredName = s"${moduleNamePrefix}_Reader"
@@ -31,12 +33,13 @@ class Reader(param: ReaderWriterParam, moduleNamePrefix: String = "unnamed_clust
   // Requestors to send address to TCDM
   val requestors = Module(
     new DataRequestors(
-      tcdmDataWidth    = param.tcdmParam.dataWidth,
-      tcdmAddressWidth = param.tcdmParam.addrWidth,
-      numChannel       = param.tcdmParam.numChannel,
-      isReader         = true,
-      moduleNamePrefix = s"${moduleNamePrefix}_Reader",
-      withPriority     = param.bufferDepth > 1
+      tcdmDataWidth        = param.tcdmParam.dataWidth,
+      tcdmAddressWidth     = param.tcdmParam.addrWidth,
+      numChannel           = param.tcdmParam.numChannel,
+      isReader             = true,
+      moduleNamePrefix     = s"${moduleNamePrefix}_Reader",
+      dynamicPriority      = param.dynamicPriority,
+      higherStaticPriority = param.higherStaticPriority
     )
   )
 

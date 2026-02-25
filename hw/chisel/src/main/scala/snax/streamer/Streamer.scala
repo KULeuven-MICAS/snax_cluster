@@ -48,12 +48,12 @@ class StreamerDataIO(param: StreamerParam) extends Bundle {
   val tcdm_req =
     (Vec(
       param.tcdmPortsNum,
-      Decoupled(new RegReq(param.addrWidth, param.tcdmDataWidth))
+      Decoupled(new SparseTCDMReq(param.addrWidth, param.tcdmDataWidth))
     ))
   // response interface with p_valid
   val tcdm_rsp = (Vec(
     param.tcdmPortsNum,
-    Flipped(Valid(new RegRsp(param.tcdmDataWidth)))
+    Flipped(Valid(new SparseTCDMRsp(param.tcdmDataWidth)))
   ))
 }
 

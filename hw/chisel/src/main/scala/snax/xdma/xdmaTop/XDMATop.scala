@@ -32,7 +32,7 @@ class XDMATopIO(readerParam: XDMAParam, writerParam: XDMAParam) extends Bundle {
     val req = Vec(
       readerParam.rwParam.tcdmParam.numChannel,
       Decoupled(
-        new RegReq(
+        new SparseTCDMReq(
           // The address width of the TCDM => Should be equal to axiAddrWidth
           readerParam.rwParam.tcdmParam.addrWidth,
           readerParam.rwParam.tcdmParam.dataWidth
@@ -43,7 +43,7 @@ class XDMATopIO(readerParam: XDMAParam, writerParam: XDMAParam) extends Bundle {
       readerParam.rwParam.tcdmParam.numChannel,
       Flipped(
         Valid(
-          new RegRsp(dataWidth = readerParam.rwParam.tcdmParam.dataWidth)
+          new SparseTCDMRsp(dataWidth = readerParam.rwParam.tcdmParam.dataWidth)
         )
       )
     )
@@ -52,7 +52,7 @@ class XDMATopIO(readerParam: XDMAParam, writerParam: XDMAParam) extends Bundle {
     val req = Vec(
       writerParam.rwParam.tcdmParam.numChannel,
       Decoupled(
-        new RegReq(
+        new SparseTCDMReq(
           // The address width of the TCDM => Should be equal to axiAddrWidth
           writerParam.rwParam.tcdmParam.addrWidth,
           writerParam.rwParam.tcdmParam.dataWidth
@@ -215,7 +215,9 @@ object XDMATopGen extends App {
     addressBufferDepth   = (parsedXdmaCfg \ "reader_buffer").as[Int],
     dataBufferDepth      = (parsedXdmaCfg \ "reader_buffer").as[Int],
     configurableChannel  = true,
-    configurableByteMask = false
+    configurableByteMask = false,
+    dynamicPriority      = false,
+    higherStaticPriority = true
   )
 
   val writerParam          = new ReaderWriterParam(
@@ -229,7 +231,9 @@ object XDMATopGen extends App {
     addressBufferDepth   = (parsedXdmaCfg \ "writer_buffer").as[Int],
     dataBufferDepth      = (parsedXdmaCfg \ "writer_buffer").as[Int],
     configurableChannel  = true,
-    configurableByteMask = true
+    configurableByteMask = true,
+    dynamicPriority      = false,
+    higherStaticPriority = true
   )
   var readerExtensionParam = Seq[HasDataPathExtension]()
   var writerExtensionParam = Seq[HasDataPathExtension]()
