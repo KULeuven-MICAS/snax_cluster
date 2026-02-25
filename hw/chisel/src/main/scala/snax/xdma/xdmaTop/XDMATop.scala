@@ -32,7 +32,7 @@ class XDMATopIO(readerParam: XDMAParam, writerParam: XDMAParam) extends Bundle {
     val req = Vec(
       readerParam.rwParam.tcdmParam.numChannel,
       Decoupled(
-        new RegReq(
+        new SparseTCDMReq(
           // The address width of the TCDM => Should be equal to axiAddrWidth
           readerParam.rwParam.tcdmParam.addrWidth,
           readerParam.rwParam.tcdmParam.dataWidth
@@ -43,7 +43,7 @@ class XDMATopIO(readerParam: XDMAParam, writerParam: XDMAParam) extends Bundle {
       readerParam.rwParam.tcdmParam.numChannel,
       Flipped(
         Valid(
-          new RegRsp(dataWidth = readerParam.rwParam.tcdmParam.dataWidth)
+          new SparseTCDMRsp(dataWidth = readerParam.rwParam.tcdmParam.dataWidth)
         )
       )
     )
@@ -52,7 +52,7 @@ class XDMATopIO(readerParam: XDMAParam, writerParam: XDMAParam) extends Bundle {
     val req = Vec(
       writerParam.rwParam.tcdmParam.numChannel,
       Decoupled(
-        new RegReq(
+        new SparseTCDMReq(
           // The address width of the TCDM => Should be equal to axiAddrWidth
           writerParam.rwParam.tcdmParam.addrWidth,
           writerParam.rwParam.tcdmParam.dataWidth

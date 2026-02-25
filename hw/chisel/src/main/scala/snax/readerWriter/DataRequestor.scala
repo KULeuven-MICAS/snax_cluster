@@ -19,7 +19,7 @@ class DataRequestorIO(tcdmDataWidth: Int, tcdmAddressWidth: Int, isReader: Boole
   }
 
   val out        = new Bundle {
-    val tcdmReq = Decoupled(new RegReq(tcdmAddressWidth, tcdmDataWidth))
+    val tcdmReq = Decoupled(new SparseTCDMReq(tcdmAddressWidth, tcdmDataWidth))
   }
   val enable     = Input(Bool())
   val reqrspLink = new Bundle {
@@ -36,7 +36,8 @@ class DataRequestor(
   tcdmAddressWidth: Int,
   isReader:         Boolean,
   moduleNamePrefix: String  = "unnamed_cluster",
-  withPriority:     Boolean = false
+  withPriority:     Boolean = false,
+  defaultPriority:  Boolean = false
 ) extends Module
     with RequireAsyncReset {
   override val desiredName = s"${moduleNamePrefix}_DataRequestor"
@@ -63,7 +64,7 @@ class DataRequestor(
   if (withPriority) {
     io.out.tcdmReq.bits.priority := io.in.priority.get
   } else {
-    io.out.tcdmReq.bits.priority := false.B
+    io.out.tcdmReq.bits.priority := defaultPriority.B
   }
 
   // If is reader, the mask is always 1 because tcdm ignore it;
@@ -93,7 +94,8 @@ class DataRequestors(
   isReader:         Boolean,
   numChannel:       Int,
   moduleNamePrefix: String  = "unnamed_cluster",
-  withPriority:     Boolean = false
+  withPriority:     Boolean = false,
+  defaultPriority:  Boolean = false
 ) extends Module
     with RequireAsyncReset {
   override val desiredName = s"${moduleNamePrefix}_DataRequestors"
@@ -111,7 +113,8 @@ class DataRequestors(
         tcdmAddressWidth,
         isReader,
         moduleNamePrefix = moduleNamePrefix,
-        withPriority     = withPriority
+        withPriority     = withPriority,
+        defaultPriority  = defaultPriority
       )
     )
 
