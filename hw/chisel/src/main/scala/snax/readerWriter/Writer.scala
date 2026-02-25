@@ -6,10 +6,10 @@ import chisel3.util._
 import snax.utils._
 
 class Writer(
-  param:                 ReaderWriterParam,
-  moduleNamePrefix:      String  = "unnamed_cluster",
-  withPriority:          Boolean = true,
-  defaultHigherPriority: Boolean = false
+  param:                ReaderWriterParam,
+  moduleNamePrefix:     String  = "unnamed_cluster",
+  dynamicPriority:      Boolean = true,
+  higherStaticPriority: Boolean = false
 ) extends Module
     with RequireAsyncReset {
 
@@ -29,13 +29,13 @@ class Writer(
   // Requestors to send address and data to TCDM
   val requestors = Module(
     new DataRequestors(
-      tcdmDataWidth         = param.tcdmParam.dataWidth,
-      tcdmAddressWidth      = param.tcdmParam.addrWidth,
-      numChannel            = param.tcdmParam.numChannel,
-      isReader              = false,
-      moduleNamePrefix      = s"${moduleNamePrefix}_Writer",
-      withPriority          = withPriority && (param.bufferDepth > 1),
-      defaultHigherPriority = defaultHigherPriority
+      tcdmDataWidth        = param.tcdmParam.dataWidth,
+      tcdmAddressWidth     = param.tcdmParam.addrWidth,
+      numChannel           = param.tcdmParam.numChannel,
+      isReader             = false,
+      moduleNamePrefix     = s"${moduleNamePrefix}_Writer",
+      dynamicPriority      = dynamicPriority,
+      higherStaticPriority = higherStaticPriority
     )
   )
 

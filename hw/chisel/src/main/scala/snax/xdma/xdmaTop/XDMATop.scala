@@ -215,7 +215,9 @@ object XDMATopGen extends App {
     addressBufferDepth   = (parsedXdmaCfg \ "reader_buffer").as[Int],
     dataBufferDepth      = (parsedXdmaCfg \ "reader_buffer").as[Int],
     configurableChannel  = true,
-    configurableByteMask = false
+    configurableByteMask = false,
+    dynamicPriority      = false,
+    higherStaticPriority = true
   )
 
   val writerParam          = new ReaderWriterParam(
@@ -229,7 +231,9 @@ object XDMATopGen extends App {
     addressBufferDepth   = (parsedXdmaCfg \ "writer_buffer").as[Int],
     dataBufferDepth      = (parsedXdmaCfg \ "writer_buffer").as[Int],
     configurableChannel  = true,
-    configurableByteMask = true
+    configurableByteMask = true,
+    dynamicPriority      = false,
+    higherStaticPriority = true
   )
   var readerExtensionParam = Seq[HasDataPathExtension]()
   var writerExtensionParam = Seq[HasDataPathExtension]()

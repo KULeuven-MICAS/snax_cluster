@@ -99,6 +99,10 @@ object AddressGenUnitParam {
     )
 }
 
+// dynamicPriority: If true, reader / writer will send the FIFO utilization information to TCDM interconnect for dynamic arbitration; otherwise, the arbitration priority is determined statically at design time (higherStaticPriority)
+
+// higherStaticPriority: If dynamicPriority is false, this higherStaticPriority param is effective. higherStaticPriority == true means reader / writer will have higher priority than other requestors in TCDM interconnect; otherwise, it will have lower priority than other requestors in TCDM interconnect. This param is ignored if dynamicPriority is true
+
 class ReaderWriterParam(
   spatialBounds:            List[Int] = List(8),
   temporalDimension:        Int       = 2,
@@ -111,7 +115,9 @@ class ReaderWriterParam(
   dataBufferDepth:          Int       = 8,
   val configurableChannel:  Boolean   = false,
   val configurableByteMask: Boolean   = false,
-  val crossClockDomain:     Boolean   = false
+  val crossClockDomain:     Boolean   = false,
+  val dynamicPriority:      Boolean   = true,
+  val higherStaticPriority: Boolean   = false
 ) {
   val aguParam = AddressGenUnitParam(
     spatialBounds     = spatialBounds,

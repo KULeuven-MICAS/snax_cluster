@@ -32,17 +32,17 @@ class DataRequestorIO(tcdmDataWidth: Int, tcdmAddressWidth: Int, isReader: Boole
 // When the reqeustor is writer, it only has req_valid and ignore the Responsor ready
 
 class DataRequestor(
-  tcdmDataWidth:         Int,
-  tcdmAddressWidth:      Int,
-  isReader:              Boolean,
-  moduleNamePrefix:      String  = "unnamed_cluster",
-  withPriority:          Boolean = false,
-  defaultHigherPriority: Boolean = false
+  tcdmDataWidth:        Int,
+  tcdmAddressWidth:     Int,
+  isReader:             Boolean,
+  moduleNamePrefix:     String  = "unnamed_cluster",
+  dynamicPriority:      Boolean = false,
+  higherStaticPriority: Boolean = false
 ) extends Module
     with RequireAsyncReset {
   override val desiredName = s"${moduleNamePrefix}_DataRequestor"
 
-  val io = IO(new DataRequestorIO(tcdmDataWidth, tcdmAddressWidth, isReader, withPriority))
+  val io = IO(new DataRequestorIO(tcdmDataWidth, tcdmAddressWidth, isReader, dynamicPriority))
   // address queue is popped out if responser is ready and current is acknowldged by the tcdm
   // Or this channel is disabled
   // Because if enable is 0, Reader will always write 0 to databuffer and writer does nothing at all, so the address is popped out if there is place to write 0 (reader case) or unconditionally (writer case)
@@ -61,10 +61,10 @@ class DataRequestor(
     io.in.data.get.ready := io.in.addr.ready
   }
 
-  if (withPriority) {
+  if (dynamicPriority) {
     io.out.tcdmReq.bits.priority := io.in.priority.get
   } else {
-    io.out.tcdmReq.bits.priority := defaultHigherPriority.B
+    io.out.tcdmReq.bits.priority := higherStaticPriority.B
   }
 
   // If is reader, the mask is always 1 because tcdm ignore it;
@@ -89,20 +89,20 @@ class DataRequestor(
 
 // In this module is the multiple instantiation of DataRequestor. No Buffer is required from the data requestor's side, as it will be done at the outside.
 class DataRequestors(
-  tcdmDataWidth:         Int,
-  tcdmAddressWidth:      Int,
-  isReader:              Boolean,
-  numChannel:            Int,
-  moduleNamePrefix:      String  = "unnamed_cluster",
-  withPriority:          Boolean = false,
-  defaultHigherPriority: Boolean = false
+  tcdmDataWidth:        Int,
+  tcdmAddressWidth:     Int,
+  isReader:             Boolean,
+  numChannel:           Int,
+  moduleNamePrefix:     String  = "unnamed_cluster",
+  dynamicPriority:      Boolean = false,
+  higherStaticPriority: Boolean = false
 ) extends Module
     with RequireAsyncReset {
   override val desiredName = s"${moduleNamePrefix}_DataRequestors"
   val io                   = IO(
     Vec(
       numChannel,
-      new DataRequestorIO(tcdmDataWidth, tcdmAddressWidth, isReader, withPriority)
+      new DataRequestorIO(tcdmDataWidth, tcdmAddressWidth, isReader, dynamicPriority)
     )
   )
   // new DataRequestorsIO(tcdmDataWidth, tcdmAddressWidth, isReader, numChannel)
@@ -112,9 +112,9 @@ class DataRequestors(
         tcdmDataWidth,
         tcdmAddressWidth,
         isReader,
-        moduleNamePrefix      = moduleNamePrefix,
-        withPriority          = withPriority,
-        defaultHigherPriority = defaultHigherPriority
+        moduleNamePrefix     = moduleNamePrefix,
+        dynamicPriority      = dynamicPriority,
+        higherStaticPriority = higherStaticPriority
       )
     )
 
