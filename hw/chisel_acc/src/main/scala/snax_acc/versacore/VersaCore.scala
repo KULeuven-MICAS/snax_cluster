@@ -32,7 +32,7 @@ class VersaCoreCfg(params: SpatialArrayParam) extends Bundle {
 /** VersaCoreIO defines the input and output interfaces for the VersaCore module. */
 class VersaCoreIO(params: SpatialArrayParam) extends Bundle {
   // data interface
-  val data = new Bundle {
+  val versacore_data = new Bundle {
     val in_a  = Flipped(DecoupledIO(UInt(params.arrayInputAWidth.W)))
     val in_b  = Flipped(DecoupledIO(UInt(params.arrayInputBWidth.W)))
     val in_c  = Flipped(DecoupledIO(UInt(params.serialInputCDataWidth.W)))
@@ -103,19 +103,18 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   // Store the configurations when config valid
   when(config_fire) {
-    when(!zeroLoopBoundCase) {
-      csrReg.fsmCfg.take_in_new_c              := io.ctrl.bits.fsmCfg.take_in_new_c
-      csrReg.fsmCfg.a_b_input_times_one_output := io.ctrl.bits.fsmCfg.a_b_input_times_one_output
-      csrReg.fsmCfg.output_times               := io.ctrl.bits.fsmCfg.output_times
-    }.otherwise {
+    csrReg.fsmCfg.take_in_new_c              := io.ctrl.bits.fsmCfg.take_in_new_c
+    csrReg.fsmCfg.a_b_input_times_one_output := io.ctrl.bits.fsmCfg.a_b_input_times_one_output
+    csrReg.fsmCfg.output_times               := io.ctrl.bits.fsmCfg.output_times
+    when(!zeroLoopBoundCase) {}.otherwise {
       assert(
         io.ctrl.bits.fsmCfg.a_b_input_times_one_output =/= 0.U,
         " a_b_input_times_one_output == 0, invalid configuration!"
       )
     }
-    csrReg.fsmCfg.subtraction_constant_i := io.ctrl.bits.fsmCfg.subtraction_constant_i
-    csrReg.arrayCfg.arrayShapeCfg        := io.ctrl.bits.arrayCfg.arrayShapeCfg
-    csrReg.arrayCfg.dataTypeCfg          := io.ctrl.bits.arrayCfg.dataTypeCfg
+    csrReg.fsmCfg.subtraction_constant_i     := io.ctrl.bits.fsmCfg.subtraction_constant_i
+    csrReg.arrayCfg.arrayShapeCfg            := io.ctrl.bits.arrayCfg.arrayShapeCfg
+    csrReg.arrayCfg.dataTypeCfg              := io.ctrl.bits.arrayCfg.dataTypeCfg
   }
 
   val dimRom = VecInit(params.arrayDim.map { twoD =>
@@ -160,7 +159,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   // all number of counts that the data needs to be outputted
   // dOutputCounter.io.ceil  := csrReg.fsmCfg.output_times * output_d_serial_factor
-  dOutputCounter.io.tick  := io.data.out_d.fire && cstate === sBUSY
+  dOutputCounter.io.tick  := io.versacore_data.out_d.fire && cstate === sBUSY
   dOutputCounter.io.reset := versacore_finish
 
   // -----------------------------------
@@ -197,15 +196,15 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   require(params.serialInputADataWidth == params.arrayInputAWidth)
   require(params.serialInputBDataWidth == params.arrayInputBWidth)
 
-  A_s2p.io.in <> io.data.in_a
+  A_s2p.io.in <> io.versacore_data.in_a
   A_s2p.io.start := config_fire
 
-  B_s2p.io.in <> io.data.in_b
+  B_s2p.io.in <> io.versacore_data.in_b
   B_s2p.io.start := config_fire
 
   // dynamically calculate the serial factor for input A and B
   // based on the run-time configuration
-  def realABandWidth(
+  def real_A_BandWidth(
     dataTypeIdx:  UInt,
     dimIdx:       UInt,
     elemWidthSeq: Vec[UInt]
@@ -216,7 +215,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   val inputAElemWidthRom = VecInit(params.inputTypeA.map(_.width.U(params.configWidth.W)))
 
-  val runTimeInputABandWidthFactor = (realABandWidth(
+  val runTimeInputABandWidthFactor = (real_A_BandWidth(
     csrReg.arrayCfg.dataTypeCfg,
     csrReg.arrayCfg.arrayShapeCfg,
     inputAElemWidthRom
@@ -234,7 +233,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
     )
   A_s2p.io.terminate_factor.get := input_a_serial_factor
 
-  def realBBandWidth(
+  def real_B_BandWidth(
     dataTypeIdx:  UInt,
     dimIdx:       UInt,
     elemWidthSeq: Vec[UInt]
@@ -245,7 +244,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   val inputBElemWidthRom = VecInit(params.inputTypeB.map(_.width.U(params.configWidth.W)))
 
-  val runTimeInputBBandWidthFactor = (realBBandWidth(
+  val runTimeInputBBandWidthFactor = (real_B_BandWidth(
     csrReg.arrayCfg.dataTypeCfg,
     csrReg.arrayCfg.arrayShapeCfg,
     inputBElemWidthRom
@@ -449,8 +448,8 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   D_p2s.io.terminate_factor.get := output_d_serial_factor
   D_p2s.io.start                := config_fire
 
-  io.data.in_c <> C_s2p.io.in
-  io.data.out_d <> D_p2s.io.out
+  io.versacore_data.in_c <> C_s2p.io.in
+  io.versacore_data.out_d <> D_p2s.io.out
 
   // ------------------------------------
   // serial_parallel data converters ends
@@ -466,7 +465,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   val computeFireCounter = Module(new BasicCounter(params.configWidth, hasCeil = true, nameTag = "computeFireCounter"))
   computeFireCounter.io.ceilOpt.get := csrReg.fsmCfg.a_b_input_times_one_output
   val addCFire =
-    (a_after_cut.fire && b_after_cut.fire && array.io.data.in_c.fire && computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U) ||
+    (a_after_cut.fire && b_after_cut.fire && array.io.versacore_data.in_c.fire && computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U) ||
       (a_after_cut.fire && b_after_cut.fire && computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 0.U)
   val mulABFire = (a_after_cut.fire && b_after_cut.fire && computeFireCounter.io.value =/= 0.U)
   computeFireCounter.io.tick  := (addCFire || mulABFire) && cstate === sBUSY
@@ -480,35 +479,35 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   array.io.ctrl.accAddExtIn   := accAddExtIn
 
   // array data signals
-  array.io.data.in_a <> a_after_cut
-  array.io.data.in_b <> b_after_cut
+  array.io.versacore_data.in_a <> a_after_cut
+  array.io.versacore_data.in_b <> b_after_cut
 
-  array.io.data.in_c.bits  := C_s2p.io.out.bits
-  array.io.data.in_c.valid := C_s2p.io.out.valid && cstate === sBUSY
+  array.io.versacore_data.in_c.bits  := C_s2p.io.out.bits
+  array.io.versacore_data.in_c.valid := C_s2p.io.out.valid && cstate === sBUSY
   // array c_ready considering output stationary
-  C_s2p.io.out.ready       := addCFire           && cstate === sBUSY
+  C_s2p.io.out.ready                 := addCFire           && cstate === sBUSY
 
-  array.io.data.in_subtraction <> sub_after_cut
+  array.io.versacore_data.in_subtraction <> sub_after_cut
 
   // array d_ready considering output stationary
   val dOutputValidCounter = Module(
     new BasicCounter(params.configWidth, hasCeil = true, nameTag = "dOutputValidCounter")
   )
   dOutputValidCounter.io.ceilOpt.get := csrReg.fsmCfg.a_b_input_times_one_output
-  dOutputValidCounter.io.tick  := array.io.data.out_d.fire && cstate === sBUSY
+  dOutputValidCounter.io.tick  := array.io.versacore_data.out_d.fire && cstate === sBUSY
   dOutputValidCounter.io.reset := versacore_finish
 
   // array output data to the D_p2s converter
-  D_p2s.io.in.bits          := array.io.data.out_d.bits
+  D_p2s.io.in.bits                    := array.io.versacore_data.out_d.bits
   // output_times == 0 means no output
   // If output_times is 0, we need to ensure that the valid signal is not asserted
   // othwerwise, output one valid signal after a_b_input_times_one_output computations
   when(csrReg.fsmCfg.output_times === 0.U) {
     D_p2s.io.in.valid := false.B
   }.otherwise {
-    D_p2s.io.in.valid := array.io.data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.a_b_input_times_one_output - 1.U)
+    D_p2s.io.in.valid := array.io.versacore_data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.a_b_input_times_one_output - 1.U)
   }
-  array.io.data.out_d.ready := Mux(D_p2s.io.in.valid, D_p2s.io.in.ready, true.B)
+  array.io.versacore_data.out_d.ready := Mux(D_p2s.io.in.valid, D_p2s.io.in.ready, true.B)
 
   // ------------------------------------
   // array instance and data handshake signal connections ends

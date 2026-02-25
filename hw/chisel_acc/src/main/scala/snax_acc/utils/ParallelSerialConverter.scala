@@ -75,22 +75,23 @@ class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module w
     )
   }
 
-  val counter = Module(
-    new BasicCounter(width = log2Ceil(ratio), hasCeil = true)
-  )
-  if (p.earlyTerminate) {
-    counter.io.ceilOpt.get := io.terminate_factor.get
-  } else {
-    counter.io.ceilOpt.get := ratio.U
-  }
-  counter.io.reset := io.start
-  counter.io.tick := io.out.fire
-
   if (ratio == 1) {
     io.out.valid := io.in.valid
     io.out.bits  := io.in.bits
     io.in.ready  := io.out.ready
   } else {
+
+    val counter = Module(
+      new BasicCounter(width = log2Ceil(ratio), hasCeil = true)
+    )
+    if (p.earlyTerminate) {
+      counter.io.ceilOpt.get := io.terminate_factor.get
+    } else {
+      counter.io.ceilOpt.get := ratio.U
+    }
+    counter.io.reset := io.start
+    counter.io.tick := io.out.fire
+
     // shift register to store the remaining bits
     // we only need to store the upper (parallelWidth - serialWidth) bits
     val shiftReg = Reg(UInt((p.parallelWidth - p.serialWidth).W))
@@ -152,42 +153,49 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
     )
   }
 
-  val storeData = Wire(Vec(ratio, Bool()))
-
-  val outBitsSeq = Wire(Vec(ratio, UInt(p.serialWidth.W)))
-  io.out.bits := outBitsSeq.asTypeOf(io.out.bits)
-  outBitsSeq.zip(storeData).foreach { case (out, enable) =>
-    out := RegEnable(io.in.bits, enable)
-  }
-
-  val counter = Module(
-    new BasicCounter(width = log2Ceil(ratio) + 1, hasCeil = true)
-  )
-  if (p.earlyTerminate) {
-    counter.io.ceilOpt.get := io.terminate_factor.get
+  if (ratio == 1) {
+    io.out.valid := io.in.valid
+    io.out.bits  := io.in.bits
+    io.in.ready  := io.out.ready
   } else {
-    counter.io.ceilOpt.get := ratio.U
+    val storeData = Wire(Vec(ratio, Bool()))
+
+    val outBitsSeq = Wire(Vec(ratio, UInt(p.serialWidth.W)))
+    io.out.bits := outBitsSeq.asTypeOf(io.out.bits)
+    outBitsSeq.zip(storeData).foreach { case (out, enable) =>
+      out := RegEnable(io.in.bits, enable)
+    }
+
+    val counter = Module(
+      new BasicCounter(width = log2Ceil(ratio) + 1, hasCeil = true)
+    )
+    if (p.earlyTerminate) {
+      counter.io.ceilOpt.get := io.terminate_factor.get
+    } else {
+      counter.io.ceilOpt.get := ratio.U
+    }
+    counter.io.reset := io.start
+    counter.io.tick := io.in.fire
+
+    storeData.zipWithIndex.foreach({ case (a, b) =>
+      a := counter.io.value === b.U && io.in.fire
+    })
+
+    val runtime_ratio = WireDefault(ratio.U)
+    if (p.earlyTerminate) {
+      runtime_ratio := io.terminate_factor.get
+    } else {
+      runtime_ratio := ratio.U
+    }
+
+    val last_data_write_fire =
+      RegNext(counter.io.value === (runtime_ratio - 1.U) && io.in.fire, false.B)
+    val output_stall         = io.out.valid && ~io.out.ready
+
+    io.out.valid := last_data_write_fire || RegNext(output_stall, false.B)
+
+    io.in.ready := ~output_stall
+
   }
-  counter.io.reset := io.start
-  counter.io.tick := io.in.fire
-
-  storeData.zipWithIndex.foreach({ case (a, b) =>
-    a := counter.io.value === b.U && io.in.fire
-  })
-
-  val runtime_ratio = WireDefault(ratio.U)
-  if (p.earlyTerminate) {
-    runtime_ratio := io.terminate_factor.get
-  } else {
-    runtime_ratio := ratio.U
-  }
-
-  val last_data_write_fire =
-    RegNext(counter.io.value === (runtime_ratio - 1.U) && io.in.fire, false.B)
-  val output_stall         = io.out.valid && ~io.out.ready
-
-  io.out.valid := last_data_write_fire || RegNext(output_stall, false.B)
-
-  io.in.ready := ~output_stall
 
 }
