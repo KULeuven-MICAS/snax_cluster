@@ -485,7 +485,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   array.io.array_data.in_c.bits  := C_s2p.io.out.bits
   array.io.array_data.in_c.valid := C_s2p.io.out.valid && cstate === sBUSY
   // array c_ready considering output stationary
-  C_s2p.io.out.ready                 := addCFire           && cstate === sBUSY
+  C_s2p.io.out.ready             := addCFire           && cstate === sBUSY
 
   array.io.array_data.in_subtraction <> sub_after_cut
 
@@ -498,7 +498,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   dOutputValidCounter.io.reset := versacore_finish
 
   // array output data to the D_p2s converter
-  D_p2s.io.in.bits                    := array.io.array_data.out_d.bits
+  D_p2s.io.in.bits                := array.io.array_data.out_d.bits
   // output_times == 0 means no output
   // If output_times is 0, we need to ensure that the valid signal is not asserted
   // othwerwise, output one valid signal after a_b_input_times_one_output computations
