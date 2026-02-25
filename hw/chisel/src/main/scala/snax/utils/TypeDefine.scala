@@ -18,4 +18,4 @@ class SparseTCDMReq(addrWidth: Int, dataWidth: Int) extends RegReq(addrWidth, da
   val priority = Bool()
 }
 
-class SparseTCDMResp(dataWidth: Int) extends RegRsp(dataWidth)
+class SparseTCDMRsp(dataWidth: Int) extends RegRsp(dataWidth)
