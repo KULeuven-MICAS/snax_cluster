@@ -97,11 +97,12 @@ import xdma_pkg::*;
 
   // TCDM signals
   // Request
-  logic [TCDMNumPorts-1:0][TCDMAddrWidth-1:0] tcdm_req_addr;
+  logic [TCDMNumPorts-1:0][TCDMAddrWidth-1:0]   tcdm_req_addr;
   logic [TCDMNumPorts-1:0]                      tcdm_req_write;
   logic [TCDMNumPorts-1:0][  TCDMDataWidth-1:0] tcdm_req_data;
   logic [TCDMNumPorts-1:0][TCDMDataWidth/8-1:0] tcdm_req_strb;
-  logic [TCDMNumPorts-1:0]                      tcdm_req_q_valid;
+  logic [TCDMNumPorts-1:0][4-1:0]               tcdm_req_amo;
+  logic [TCDMNumPorts-1:0]                      tcdm_req_priority;
 
   // Response
   logic [TCDMNumPorts-1:0]                      tcdm_rsp_q_ready;
@@ -118,7 +119,7 @@ import xdma_pkg::*;
       tcdm_req_o[i].q.strb         = tcdm_req_strb   [i];
       tcdm_req_o[i].q.user.core_id = '0;
       tcdm_req_o[i].q.user.is_core = '0;
-      tcdm_req_o[i].q.user.tcdm_priority = '0;
+      tcdm_req_o[i].q.user.tcdm_priority = tcdm_req_priority [i];
       tcdm_req_o[i].q_valid        = tcdm_req_q_valid[i];
 
       tcdm_rsp_q_ready[i] = tcdm_rsp_i[i].q_ready;
@@ -224,26 +225,28 @@ import xdma_pkg::*;
     // Ready signal is very strange... ETH defines ready at rsp side, but we think it should at request-side (imagine system with outstanding request support)
 
 % for idx in range(0, num_tcdm_ports >> 1):
-    .io_tcdmReader_req_${idx}_ready      ( tcdm_rsp_q_ready[${idx}] ),
-    .io_tcdmReader_req_${idx}_valid      ( tcdm_req_q_valid[${idx}] ),
-    .io_tcdmReader_req_${idx}_bits_addr  ( tcdm_req_addr   [${idx}] ),
-    .io_tcdmReader_req_${idx}_bits_write ( tcdm_req_write  [${idx}] ),
-    .io_tcdmReader_req_${idx}_bits_data  ( tcdm_req_data   [${idx}] ),
-    .io_tcdmReader_req_${idx}_bits_strb  ( tcdm_req_strb   [${idx}] ),
+    .io_tcdmReader_req_${idx}_ready         (tcdm_rsp_q_ready[${idx}]),
+    .io_tcdmReader_req_${idx}_valid         (tcdm_req_q_valid[${idx}]),
+    .io_tcdmReader_req_${idx}_bits_addr     (tcdm_req_addr   [${idx}]),
+    .io_tcdmReader_req_${idx}_bits_write    (tcdm_req_write  [${idx}]),
+    .io_tcdmReader_req_${idx}_bits_data     (tcdm_req_data   [${idx}]),
+    .io_tcdmReader_req_${idx}_bits_strb     (tcdm_req_strb   [${idx}]),
+    .io_tcdmReader_req_${idx}_bits_priority (tcdm_req_priority[${idx}]),
 % endfor
     // Writer's Request
 % for idx in range(0, num_tcdm_ports >> 1):
-    .io_tcdmWriter_req_${idx}_ready      ( tcdm_rsp_q_ready[${idx + (num_tcdm_ports >> 1)}] ),
-    .io_tcdmWriter_req_${idx}_valid      ( tcdm_req_q_valid[${idx + (num_tcdm_ports >> 1)}] ),
-    .io_tcdmWriter_req_${idx}_bits_addr  ( tcdm_req_addr   [${idx + (num_tcdm_ports >> 1)}] ),
-    .io_tcdmWriter_req_${idx}_bits_write ( tcdm_req_write  [${idx + (num_tcdm_ports >> 1)}] ),
-    .io_tcdmWriter_req_${idx}_bits_data  ( tcdm_req_data   [${idx + (num_tcdm_ports >> 1)}] ),
-    .io_tcdmWriter_req_${idx}_bits_strb  ( tcdm_req_strb   [${idx + (num_tcdm_ports >> 1)}] ),
+    .io_tcdmWriter_req_${idx}_ready         (tcdm_rsp_q_ready[${idx + (num_tcdm_ports >> 1)}]),
+    .io_tcdmWriter_req_${idx}_valid         (tcdm_req_q_valid[${idx + (num_tcdm_ports >> 1)}]),
+    .io_tcdmWriter_req_${idx}_bits_addr     (tcdm_req_addr   [${idx + (num_tcdm_ports >> 1)}]),
+    .io_tcdmWriter_req_${idx}_bits_write    (tcdm_req_write  [${idx + (num_tcdm_ports >> 1)}]),
+    .io_tcdmWriter_req_${idx}_bits_data     (tcdm_req_data   [${idx + (num_tcdm_ports >> 1)}]),
+    .io_tcdmWriter_req_${idx}_bits_strb     (tcdm_req_strb   [${idx + (num_tcdm_ports >> 1)}]),
+    .io_tcdmWriter_req_${idx}_bits_priority (tcdm_req_priority[${idx + (num_tcdm_ports >> 1)}]),
 % endfor
     // Reader's Respose
 % for idx in range(num_tcdm_ports >> 1):
-    .io_tcdmReader_rsp_${idx}_valid    ( tcdm_rsp_p_valid[${idx}] ),
-    .io_tcdmReader_rsp_${idx}_bits_data( tcdm_rsp_data   [${idx}] ),
+    .io_tcdmReader_rsp_${idx}_valid         (tcdm_rsp_p_valid[${idx}]),
+    .io_tcdmReader_rsp_${idx}_bits_data     (tcdm_rsp_data   [${idx}]),
 % endfor
     // Writer has no Respose
     //-----------------------------
