@@ -32,12 +32,12 @@ class DataRequestorIO(tcdmDataWidth: Int, tcdmAddressWidth: Int, isReader: Boole
 // When the reqeustor is writer, it only has req_valid and ignore the Responsor ready
 
 class DataRequestor(
-  tcdmDataWidth:    Int,
-  tcdmAddressWidth: Int,
-  isReader:         Boolean,
-  moduleNamePrefix: String  = "unnamed_cluster",
-  withPriority:     Boolean = false,
-  defaultPriority:  Boolean = false
+  tcdmDataWidth:         Int,
+  tcdmAddressWidth:      Int,
+  isReader:              Boolean,
+  moduleNamePrefix:      String  = "unnamed_cluster",
+  withPriority:          Boolean = false,
+  defaultHigherPriority: Boolean = false
 ) extends Module
     with RequireAsyncReset {
   override val desiredName = s"${moduleNamePrefix}_DataRequestor"
@@ -64,7 +64,7 @@ class DataRequestor(
   if (withPriority) {
     io.out.tcdmReq.bits.priority := io.in.priority.get
   } else {
-    io.out.tcdmReq.bits.priority := defaultPriority.B
+    io.out.tcdmReq.bits.priority := defaultHigherPriority.B
   }
 
   // If is reader, the mask is always 1 because tcdm ignore it;
@@ -89,13 +89,13 @@ class DataRequestor(
 
 // In this module is the multiple instantiation of DataRequestor. No Buffer is required from the data requestor's side, as it will be done at the outside.
 class DataRequestors(
-  tcdmDataWidth:    Int,
-  tcdmAddressWidth: Int,
-  isReader:         Boolean,
-  numChannel:       Int,
-  moduleNamePrefix: String  = "unnamed_cluster",
-  withPriority:     Boolean = false,
-  defaultPriority:  Boolean = false
+  tcdmDataWidth:         Int,
+  tcdmAddressWidth:      Int,
+  isReader:              Boolean,
+  numChannel:            Int,
+  moduleNamePrefix:      String  = "unnamed_cluster",
+  withPriority:          Boolean = false,
+  defaultHigherPriority: Boolean = false
 ) extends Module
     with RequireAsyncReset {
   override val desiredName = s"${moduleNamePrefix}_DataRequestors"
@@ -112,9 +112,9 @@ class DataRequestors(
         tcdmDataWidth,
         tcdmAddressWidth,
         isReader,
-        moduleNamePrefix = moduleNamePrefix,
-        withPriority     = withPriority,
-        defaultPriority  = defaultPriority
+        moduleNamePrefix      = moduleNamePrefix,
+        withPriority          = withPriority,
+        defaultHigherPriority = defaultHigherPriority
       )
     )
 

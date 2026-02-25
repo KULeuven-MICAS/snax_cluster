@@ -99,10 +99,10 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
   })
 
   val reader = Module(
-    new Reader(readerParam.rwParam, moduleNamePrefix = clusterName)
+    new Reader(readerParam.rwParam, moduleNamePrefix = clusterName, withPriority = false, defaultHigherPriority = true)
   )
   val writer = Module(
-    new Writer(writerParam.rwParam, moduleNamePrefix = clusterName)
+    new Writer(writerParam.rwParam, moduleNamePrefix = clusterName, withPriority = false, defaultHigherPriority = true)
   )
 
   // Connect TCDM memory to reader and writer
