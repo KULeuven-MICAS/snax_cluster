@@ -85,7 +85,7 @@ class FixedCacheInstructionIO(fixedCacheDepth: Int) extends Bundle {
   *   The parameter used for generation of the module This version of AGU aims to totally remove multiplication and
   *   division in temporal address generation
   */
-class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unnamed_cluster")
+class AddressGenUnit(param: AddressGenUnitParam, isWriter: Boolean = false, moduleNamePrefix: String = "unnamed_cluster")
     extends Module
     with RequireAsyncReset {
   val io = IO(new Bundle {
@@ -195,10 +195,11 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
   }
   val newUpdateCache = updateCacheConditions.reduce(_ && _)
 
-  // lastAccess: true when all zero-stride counters within the cache scope are at their last value (lastVal).
-  // Used by the Writer in ReaderWriter mode to decide when to write to TCDM vs. reader cache.
+  // lastAccess: true when all zero-stride counters within the cache scope are currently at their last
+  // position (ceil-1). Uses isLastVal (tick-free level signal) instead of lastVal to avoid a
+  // combinational loop through counters_tick → counter.tick → counter.lastVal → newLastAccess → counters_tick.
   val lastAccessConditions = (0 until param.temporalDimension).map { i =>
-    !((io.cfg.temporalStrides(i) === 0.U) && (i.U <= criticalLoopFinder.io.criticalLoop)) || counters(i).io.lastVal
+    !((io.cfg.temporalStrides(i) === 0.U) && (i.U <= criticalLoopFinder.io.criticalLoop)) || counters(i).io.isLastVal
   }
   val newLastAccess = lastAccessConditions.reduce(_ && _)
 
@@ -315,14 +316,17 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
   }
 
   // When the AGU becomes busy, the valid signal is pulled up to put address in the fifo
-  outputBuffer.io.in.head.valid := currentState === sBUSY && (newUpdateCache || !newUseCache) && (outputBuffer.io.in.head.ready && fixedCacheInstructionBuffer.io.enq.ready) //Put the address into FIFO only when the fixed cache needs to be updated
+  // Reader: fill outputBuffer on first access (newUpdateCache) so TCDM is fetched once.
+  // Writer: fill outputBuffer on last access (newLastAccess) so TCDM is written once.
+  val outputBufferFillCondition = if (isWriter) newLastAccess else newUpdateCache
+  outputBuffer.io.in.head.valid := currentState === sBUSY && (outputBufferFillCondition || !newUseCache) && (outputBuffer.io.in.head.ready && fixedCacheInstructionBuffer.io.enq.ready) //Put the address into FIFO only when the fixed cache needs to be updated
   fixedCacheInstructionBuffer.io.enq.valid := currentState === sBUSY && newUseCache && (outputBuffer.io.in.head.ready && fixedCacheInstructionBuffer.io.enq.ready)
   // io.busy also determined by currentState
   io.busy                       := currentState === sBUSY
 
   // Temporal bounds' tick signal (enable signal)
   val counters_tick =
-    currentState === sBUSY && ((newUpdateCache && outputBuffer.io.in.head.fire) || (fixedCacheInstructionBuffer.io.enq.fire) || (!newUseCache && outputBuffer.io.in.head.fire)) // FIFO still have the space to take the new address
+    currentState === sBUSY && ((outputBufferFillCondition && outputBuffer.io.in.head.fire) || (fixedCacheInstructionBuffer.io.enq.fire) || (!newUseCache && outputBuffer.io.in.head.fire)) // FIFO still have the space to take the new address
   // First counter's tick is connected to the start signal
   counters.head.io.tick    := counters_tick
   // Other counters' tick is connected to the previous counter's lastVal & counters_tick

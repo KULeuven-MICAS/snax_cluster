@@ -90,9 +90,12 @@ class ProgrammableCounter(width: Int, hasCeil: Boolean = true, moduleName: Strin
     val ceil  = Input(UInt(width.W))
     val step  = Input(UInt((width - 1).W))
 
-    val value   = Output(UInt(width.W))
-    val lastVal = Output(Bool())
-    val isZero  = Output(Bool())
+    val value      = Output(UInt(width.W))
+    val lastVal    = Output(Bool())
+    val isZero     = Output(Bool())
+    // Level signal: counter is currently at its last position (ceil-1), no tick dependency.
+    // Use this instead of lastVal when you need a combinational-loop-free "at last position" check.
+    val isLastVal  = Output(Bool())
   })
   val nextValue            = Wire(UInt(width.W))
   val value                = RegNext(nextValue, 0.U)
@@ -109,6 +112,8 @@ class ProgrammableCounter(width: Int, hasCeil: Boolean = true, moduleName: Strin
     smallCounter.io.ceil  := io.ceil
     io.lastVal            := smallCounter.io.lastVal
     io.isZero             := smallCounter.io.value === 0.U
+    // isLastVal: purely register-based, no tick → safe to use in expressions that derive tick
+    io.isLastVal          := smallCounter.io.value === io.ceil - 1.U
   }
 
   nextValue := {

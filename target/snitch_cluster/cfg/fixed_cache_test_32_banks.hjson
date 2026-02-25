@@ -215,7 +215,7 @@ Naming convention:
             spatial_bounds: [[8]],
             temporal_dim: [7],
             num_channel: [8],
-            fifo_depth: [1],
+            fifo_depth: [2],
             configurable_channel: [0],
             tcdm_logic_word_size: [[256, 128, 64]],
         },
@@ -224,7 +224,7 @@ Naming convention:
             spatial_bounds: [[8, 4], [8, 4]],
             temporal_dim: [7, 7],
             num_channel: [32, 32],
-            fifo_depth: [1, 1],
+            fifo_depth: [2, 2],
             configurable_channel: [1, 0],
             tcdm_logic_word_size: [[256, 128, 64], [256, 128, 64]],
             datapath_extensions: [{HasBroadcaster: {inputLength: 256, outputLength: 2048}}, {}]

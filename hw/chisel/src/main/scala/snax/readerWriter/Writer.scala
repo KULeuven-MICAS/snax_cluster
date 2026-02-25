@@ -13,10 +13,11 @@ class Writer(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
 
   val io = IO(new WriterIO(param, isReaderWriter))
 
-  // New Address Generator
+  // New Address Generator (isWriter=true: outputBuffer fills on lastAccess, not updateCache)
   val addressgen = Module(
     new AddressGenUnit(
       param.aguParam,
+      isWriter         = true,
       moduleNamePrefix = s"${moduleNamePrefix}_Writer"
     )
   )
@@ -38,7 +39,7 @@ class Writer(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
       inputWidth  = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
       outputWidth = param.tcdmParam.dataWidth,
       depth       = param.bufferDepth,
-      pipe        = false
+      pipe        = true //CHECK IF TRUE WORKS BETTER, ALSO CHECK FLOW
     ) {
       override val desiredName = s"${moduleNamePrefix}_Writer_DataBuffer"
     }
