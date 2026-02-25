@@ -234,21 +234,21 @@ module snax_versacore_shell_wrapper #(
       .clock(clk_i),
       .reset(~rst_ni),
 
-      .io_data_in_a_ready(stream2acc_0_ready_o),
-      .io_data_in_a_valid(stream2acc_0_valid_i),
-      .io_data_in_a_bits (stream2acc_0_data_i),
+      .io_versacore_data_in_a_ready(stream2acc_0_ready_o),
+      .io_versacore_data_in_a_valid(stream2acc_0_valid_i),
+      .io_versacore_data_in_a_bits (stream2acc_0_data_i),
 
-      .io_data_in_b_ready(stream2acc_1_ready_o),
-      .io_data_in_b_valid(stream2acc_1_valid_i),
-      .io_data_in_b_bits (stream2acc_1_data_i),
+      .io_versacore_data_in_b_ready(stream2acc_1_ready_o),
+      .io_versacore_data_in_b_valid(stream2acc_1_valid_i),
+      .io_versacore_data_in_b_bits (stream2acc_1_data_i),
 
-      .io_data_in_c_ready(stream2acc_2_ready_o),
-      .io_data_in_c_valid(stream2acc_2_valid_i),
-      .io_data_in_c_bits (stream2acc_2_data_i),
+      .io_versacore_data_in_c_ready(stream2acc_2_ready_o),
+      .io_versacore_data_in_c_valid(stream2acc_2_valid_i),
+      .io_versacore_data_in_c_bits (stream2acc_2_data_i),
 
-      .io_data_out_d_ready(acc2stream_0_ready_i),
-      .io_data_out_d_valid(acc2stream_0_valid_o),
-      .io_data_out_d_bits (acc2stream_0_data_o),
+      .io_versacore_data_out_d_ready(acc2stream_0_ready_i),
+      .io_versacore_data_out_d_valid(acc2stream_0_valid_o),
+      .io_versacore_data_out_d_bits (acc2stream_0_data_o),
 
       .io_ctrl_ready(csr_reg_set_ready_o),
       .io_ctrl_valid(csr_reg_set_valid_i),

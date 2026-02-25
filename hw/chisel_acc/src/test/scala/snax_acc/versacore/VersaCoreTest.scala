@@ -23,10 +23,10 @@ class VersaCoreHarness(params: SpatialArrayParam) extends Module with RequireAsy
   val io  = IO(chiselTypeOf(dut.io))
 
   io.ctrl <> dut.io.ctrl
-  io.data <> dut.io.data
-  io.data.in_a -||> dut.io.data.in_a
-  io.data.in_b -||> dut.io.data.in_b
-  io.data.in_c -||> dut.io.data.in_c
+  io.versacore_data <> dut.io.versacore_data
+  io.versacore_data.in_a -||> dut.io.versacore_data.in_a
+  io.versacore_data.in_b -||> dut.io.versacore_data.in_b
+  io.versacore_data.in_c -||> dut.io.versacore_data.in_c
 
   io.busy_o              := dut.io.busy_o
   io.performance_counter := dut.io.performance_counter
@@ -166,13 +166,13 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
             .sum
 
           dut.clock.step(Random.between(1, 5))
-          dut.io.data.in_a.bits.poke(aValues_cur.U)
-          dut.io.data.in_a.valid.poke(true.B)
-          WaitOrTimeout(dut.io.data.in_a.ready, dut.clock)
-          assert(dut.io.data.in_a.ready.peekBoolean())
+          dut.io.versacore_data.in_a.bits.poke(aValues_cur.U)
+          dut.io.versacore_data.in_a.valid.poke(true.B)
+          WaitOrTimeout(dut.io.versacore_data.in_a.ready, dut.clock)
+          assert(dut.io.versacore_data.in_a.ready.peekBoolean())
 
           dut.clock.step(1)
-          dut.io.data.in_a.valid.poke(false.B)
+          dut.io.versacore_data.in_a.valid.poke(false.B)
         }
       }
 
@@ -187,13 +187,13 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
             .sum
 
           dut.clock.step(Random.between(1, 5))
-          dut.io.data.in_b.bits.poke(bValues_cur.U)
-          dut.io.data.in_b.valid.poke(true.B)
-          WaitOrTimeout(dut.io.data.in_b.ready, dut.clock)
-          assert(dut.io.data.in_b.ready.peekBoolean())
+          dut.io.versacore_data.in_b.bits.poke(bValues_cur.U)
+          dut.io.versacore_data.in_b.valid.poke(true.B)
+          WaitOrTimeout(dut.io.versacore_data.in_b.ready, dut.clock)
+          assert(dut.io.versacore_data.in_b.ready.peekBoolean())
 
           dut.clock.step(1)
-          dut.io.data.in_b.valid.poke(false.B)
+          dut.io.versacore_data.in_b.valid.poke(false.B)
         }
       }
 
@@ -207,23 +207,23 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
             .sum
 
           dut.clock.step(Random.between(1, 5))
-          dut.io.data.in_c.bits.poke(cValues_cur.U)
-          dut.io.data.in_c.valid.poke(true.B)
-          WaitOrTimeout(dut.io.data.in_c.ready, dut.clock)
+          dut.io.versacore_data.in_c.bits.poke(cValues_cur.U)
+          dut.io.versacore_data.in_c.valid.poke(true.B)
+          WaitOrTimeout(dut.io.versacore_data.in_c.ready, dut.clock)
 
           dut.clock.step(1)
-          dut.io.data.in_c.valid.poke(false.B)
+          dut.io.versacore_data.in_c.valid.poke(false.B)
         }
       }
 
       // Output checking thread
       // concurrent_threads = concurrent_threads.fork {
       //   for (outputTemporalIndex <- 0 until M * N) {
-      //     WaitOrTimeout(dut.io.data.out_d.valid, dut.clock)
+      //     WaitOrTimeout(dut.io.versacore_data.out_d.valid, dut.clock)
 
       //     val expected = expectedResult.flatten.flatten.flatten
       //       .slice(outputTemporalIndex * Mu * Nu, (outputTemporalIndex + 1) * Mu * Nu)
-      //     val out_d    = dut.io.data.out_d.bits.peek().litValue
+      //     val out_d    = dut.io.versacore_data.out_d.bits.peek().litValue
       //     val output   = (0 until (Mu * Nu)).map { i =>
       //       ((out_d >> (i * outputTypeD.width)) & (math.pow(2, outputTypeD.width).toLong - 1)).toInt
       //     }
@@ -235,9 +235,9 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
       //       )
       //     }
       //     dut.clock.step(Random.between(1, 5))
-      //     dut.io.data.out_d.ready.poke(true.B)
+      //     dut.io.versacore_data.out_d.ready.poke(true.B)
       //     dut.clock.step(1)
-      //     dut.io.data.out_d.ready.poke(false.B)
+      //     dut.io.versacore_data.out_d.ready.poke(false.B)
       //   }
       // }
 

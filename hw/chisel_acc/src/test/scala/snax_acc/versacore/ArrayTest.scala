@@ -64,16 +64,16 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
             }
 
             // Poke the random values
-            c.io.data.in_a.bits.poke(a.U)
-            c.io.data.in_b.bits.poke(b.U)
-            c.io.data.in_c.bits.poke(0.U)
+            c.io.array_data.in_a.bits.poke(a.U)
+            c.io.array_data.in_b.bits.poke(b.U)
+            c.io.array_data.in_c.bits.poke(0.U)
 
             // Enable valid signals
-            c.io.data.in_a.valid.poke(true.B)
-            c.io.data.in_b.valid.poke(true.B)
-            c.io.data.in_c.valid.poke(true.B)
-            c.io.data.in_subtraction.valid.poke(false.B)
-            c.io.data.out_d.ready.poke(true.B)
+            c.io.array_data.in_a.valid.poke(true.B)
+            c.io.array_data.in_b.valid.poke(true.B)
+            c.io.array_data.in_c.valid.poke(true.B)
+            c.io.array_data.in_subtraction.valid.poke(false.B)
+            c.io.array_data.out_d.ready.poke(true.B)
 
             c.io.ctrl.arrayShapeCfg.poke(arrayShapeIdx.U)
             c.io.ctrl.dataTypeCfg.poke(dataTypeIdx.U)
@@ -82,8 +82,8 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
             c.clock.step(1)
 
             // Check the output
-            c.io.data.out_d.valid.expect(true.B)
-            val out_d            = c.io.data.out_d.bits.peek().litValue
+            c.io.array_data.out_d.valid.expect(true.B)
+            val out_d            = c.io.array_data.out_d.bits.peek().litValue
             val extractedOutputs = (0 until (Mu * Nu)).map { i =>
               ((out_d >> (i * outputTypeD.width)) & (math.pow(2, outputTypeD.width).toLong - 1)).toInt
             }

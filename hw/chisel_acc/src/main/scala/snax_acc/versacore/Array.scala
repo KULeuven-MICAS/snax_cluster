@@ -28,8 +28,8 @@ class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
 }
 
 class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {
-  val data = new SpatialArrayDataIO(params)
-  val ctrl = new SpatialArrayCtrlIO(params)
+  val array_data = new SpatialArrayDataIO(params)
+  val ctrl       = new SpatialArrayCtrlIO(params)
 }
 
 /** SpatialArray is a module that implements a spatial array for parallel computation.
@@ -139,7 +139,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
         Seq(dim(0), dim(2), dim(1)),
         // stride_Mu, stride_Nu, stride_Ku
         Seq(dim(1), 0, 1),
-        io.data.in_a.bits
+        io.array_data.in_a.bits
       )
     })
   }
@@ -153,7 +153,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
         Seq(dim(0), dim(2), dim(1)),
         // stride_Mu, stride_Nu, stride_Ku
         Seq(0, dim(1), 1),
-        io.data.in_b.bits
+        io.array_data.in_b.bits
       )
     })
   }
@@ -167,7 +167,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
         Seq(dim(0), dim(2), 1),
         // stride_Mu, stride_Nu, stride_Ku
         Seq(dim(2), 1, 0),
-        io.data.in_c.bits
+        io.array_data.in_c.bits
       )
     })
   }
@@ -265,10 +265,10 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   }
 
   // handle the control signals for accumulators
-  accumulators.foreach(_.io.in1.valid := io.data.in_a.valid && io.data.in_b.valid)
-  accumulators.foreach(_.io.in2.valid := io.data.in_c.valid)
+  accumulators.foreach(_.io.in1.valid := io.array_data.in_a.valid && io.array_data.in_b.valid)
+  accumulators.foreach(_.io.in2.valid := io.array_data.in_c.valid)
   accumulators.foreach(_.io.accAddExtIn := io.ctrl.accAddExtIn)
-  accumulators.foreach(_.io.out.ready := io.data.out_d.ready)
+  accumulators.foreach(_.io.out.ready := io.array_data.out_d.ready)
 
   (0 until params.inputTypeA.length).foreach { dataTypeIdx =>
     (0 until params.multiplierNum(dataTypeIdx)).foreach { accIdx =>
@@ -291,21 +291,21 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   )(
     (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.in2.fire)
   )
-  io.data.in_a.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
-  io.data.in_b.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
-  io.data.in_c.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, false.B)
+  io.array_data.in_a.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
+  io.array_data.in_b.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
+  io.array_data.in_c.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, false.B)
 
-  io.data.in_subtraction.ready := io.data.in_a.ready && io.data.in_b.ready
+  io.array_data.in_subtraction.ready := io.array_data.in_a.ready && io.array_data.in_b.ready
 
   // output data and valid signals
-  io.data.out_d.bits := MuxLookup(
+  io.array_data.out_d.bits := MuxLookup(
     io.ctrl.dataTypeCfg,
     accumulators(0).io.out.asUInt
   )(
     (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.out.bits.asUInt)
   )
 
-  io.data.out_d.valid := MuxLookup(
+  io.array_data.out_d.valid := MuxLookup(
     io.ctrl.dataTypeCfg,
     accumulators(0).io.out.valid
   )(
