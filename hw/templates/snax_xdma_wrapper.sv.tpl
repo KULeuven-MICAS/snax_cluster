@@ -101,7 +101,7 @@ import xdma_pkg::*;
   logic [TCDMNumPorts-1:0]                      tcdm_req_write;
   logic [TCDMNumPorts-1:0][  TCDMDataWidth-1:0] tcdm_req_data;
   logic [TCDMNumPorts-1:0][TCDMDataWidth/8-1:0] tcdm_req_strb;
-  logic [TCDMNumPorts-1:0][4-1:0]               tcdm_req_amo;
+  logic [TCDMNumPorts-1:0]                      tcdm_req_q_valid;
   logic [TCDMNumPorts-1:0]                      tcdm_req_priority;
 
   // Response
