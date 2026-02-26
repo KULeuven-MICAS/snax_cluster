@@ -67,6 +67,16 @@ object StreamerParametersGen {
       % else:
       configurableChannel = false,
       % endif
+      % if "dynamicPriority" in cfg["snax_streamer_cfg"]["data_reader_params"] and not cfg["snax_streamer_cfg"]["data_reader_params"]["dynamicPriority"][idx]:
+      dynamicPriority = false,
+      % else:
+      dynamicPriority = true,
+      % endif
+      % if "higherStaticPriority" in cfg["snax_streamer_cfg"]["data_reader_params"] and cfg["snax_streamer_cfg"]["data_reader_params"]["higherStaticPriority"][idx]:
+      higherStaticPriority = true,
+      % else:
+      higherStaticPriority = false,
+      % endif
       crossClockDomain = hasCrossClockDomain
 ${'   ), ' if not loop.last else '    )'}
 % endfor
@@ -104,6 +114,16 @@ ${'   ), ' if not loop.last else '    )'}
       % else:
       configurableChannel = false,
       % endif
+      % if "dynamicPriority" in cfg["snax_streamer_cfg"]["data_writer_params"] and not cfg["snax_streamer_cfg"]["data_writer_params"]["dynamicPriority"][idx]:
+      dynamicPriority = false,
+      % else:
+      dynamicPriority = true,
+      % endif
+      % if "higherStaticPriority" in cfg["snax_streamer_cfg"]["data_writer_params"] and cfg["snax_streamer_cfg"]["data_writer_params"]["higherStaticPriority"][idx]:
+      higherStaticPriority = true,
+      % else:
+      higherStaticPriority = false,
+      % endif
       crossClockDomain = hasCrossClockDomain
 ${'   ), ' if not loop.last else '    )'}
 % endfor
@@ -140,6 +160,16 @@ ${'   ), ' if not loop.last else '    )'}
       configurableChannel = true,
       % else:
       configurableChannel = false,
+      % endif
+      % if "dynamicPriority" in cfg["snax_streamer_cfg"]["data_reader_writer_params"] and not cfg["snax_streamer_cfg"]["data_reader_writer_params"]["dynamicPriority"][idx]:
+      dynamicPriority = false,
+      % else:
+      dynamicPriority = true,
+      % endif
+      % if "higherStaticPriority" in cfg["snax_streamer_cfg"]["data_reader_writer_params"] and cfg["snax_streamer_cfg"]["data_reader_writer_params"]["higherStaticPriority"][idx]:
+      higherStaticPriority = true,
+      % else:
+      higherStaticPriority = false,
       % endif
       crossClockDomain = hasCrossClockDomain
 ${'   ), ' if not loop.last else '    )'}
