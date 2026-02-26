@@ -1,0 +1,901 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.2.11">
+    
+    
+      
+        <title>Other Tools - SNAX Cluster</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8c5ef100.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.9647289d.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#other-tools" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="SNAX Cluster" class="md-header__button md-logo" aria-label="SNAX Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SNAX Cluster
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Other Tools
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/KULeuven-MICAS/snitch_cluster/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KULeuven-MICAS/snitch_cluster
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="SNAX Cluster" class="md-nav__button md-logo" aria-label="SNAX Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    SNAX Cluster
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/KULeuven-MICAS/snitch_cluster/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KULeuven-MICAS/snitch_cluster
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/getting_started.html" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/directory_structure.html" class="md-nav__link">
+        Repository Structure
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/documentation.html" class="md-nav__link">
+        Documentation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Reference Manual
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference Manual" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Reference Manual
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Hardware
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Hardware" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Hardware
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snitch.html" class="md-nav__link">
+        Snitch
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_2" type="checkbox" id="__nav_3_1_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_2">
+          Snitch Cluster
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Snitch Cluster" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          Snitch Cluster
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snitch_cluster.html" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/peripherals.html" class="md-nav__link">
+        Peripherals
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schema-doc/snitch_cluster.html" class="md-nav__link">
+        Schema
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snax_cluster.html" class="md-nav__link">
+        SNAX Cluster
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/reqrsp_interface.html" class="md-nav__link">
+        Reqrsp Interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/custom_instructions.html" class="md-nav__link">
+        Custom Instructions
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          SNAX Tutorial
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="SNAX Tutorial" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          SNAX Tutorial
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="introduction.html" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architectural_overview.html" class="md-nav__link">
+        Architectural Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="accelerator_design.html" class="md-nav__link">
+        1. Accelerator Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="csrman_design.html" class="md-nav__link">
+        2. CSR Manager Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="streamer_design.html" class="md-nav__link">
+        3. Streamer Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build_system.html" class="md-nav__link">
+        4. Building the System
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="programming.html" class="md-nav__link">
+        5. Programming the System
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="other_tools.html" class="md-nav__link md-nav__link--active">
+        Other Tools
+      </a>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="summary_and_exercise.html" class="md-nav__link">
+        Summary and Exercise
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../publications.html" class="md-nav__link">
+        Publications
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/KULeuven-MICAS/snitch_cluster/edit/master/docs/tutorial/other_tools.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<h1 id="other-tools">Other Tools</h1>
+<p>There are two useful tools for debugging and verifying your work. (1) Dumping waveform VCD files and (2) program stack tracing.</p>
+<h1 id="dumping-waveforms-with-vcd-files">Dumping Waveforms with VCD Files</h1>
+<p>To dump VCD files through simulation we only need to add the <code>--vcd</code> when running simulations.</p>
+<p><div class="highlight"><pre><span></span><code>bin/snitch_cluster.vlt sw/apps/snax-alu/build/snax-alu.elf --vcd
+</code></pre></div>
+The dumped file will be named as <code>sim.vcd</code>. You can view this with your favorite waveform viewing tool. Taking <code>GTKWave</code> as an example:</p>
+<div class="highlight"><pre><span></span><code>gtkwave sim.vcd &amp;
+</code></pre></div>
+<p>You can download <code>gtkwave</code> with this <a href="https://gtkwave.sourceforge.net/">link</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you're using the codespace, you need to download the <code>sim.vcd</code> file first and open it locally in your personal work space. The built-in waveform viewer in VS code has a hard time loading the system's signals.</p>
+</div>
+<h1 id="program-tracing-with-spike">Program Tracing with Spike</h1>
+<p>Spike is a nice tool for converting disassembly files into traces of the simulation. When your run the simulations with:</p>
+<p><div class="highlight"><pre><span></span><code>bin/snitch_cluster.vlt sw/apps/snax-alu/build/snax-alu.elf
+</code></pre></div>
+This creates a set of log files under the <code>./target/snitch_cluster/logs/.</code> directory. Then you should see <code>.dasm</code> files: </p>
+<div class="highlight"><pre><span></span><code>trace_hart_00000.dasm
+trace_hart_00001.dasm
+</code></pre></div>
+<p>These are disassembly files for each core. <code>trace_hart_00000.dasm</code> is for core 0 which is the core with the SNAX ALU accelerator, while <code>trace_hart_00001.dasm</code> is for core 1 which is the core with the DMA. We would like to convert these files into traces that are more readable. We will use <code>spike</code> for this.</p>
+<h2 id="installing-spike">Installing Spike</h2>
+<p>1 - Navigate to <code>./target/snitch_cluster/work-vlt/riscv-isa-sim/.</code></p>
+<p>2 - Configure the <code>spike</code> installation with:</p>
+<div class="highlight"><pre><span></span><code>./configure --prefix<span class="o">=</span>/opt/spike/
+</code></pre></div>
+<p>3 - Install <code>spike</code> and wait for a while for this to finish. This will take quite some time.</p>
+<div class="highlight"><pre><span></span><code>make install -j
+</code></pre></div>
+<p>4 - Add to path environment:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/opt/spike/bin:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p>5 - Check if <code>spike</code> is correctly installed:</p>
+<div class="highlight"><pre><span></span><code>spike -h
+</code></pre></div>
+<h2 id="running-traces">Running Traces</h2>
+<p>We can now generate traces. Make sure you are in the <code>./target/snitch_cluster/</code> directory.</p>
+<p>1 - Run simulations first:</p>
+<div class="highlight"><pre><span></span><code>bin/snitch_cluster.vlt sw/apps/snax-alu/build/snax-alu.elf
+</code></pre></div>
+<p>2 - Make traces:</p>
+<div class="highlight"><pre><span></span><code>make traces
+</code></pre></div>
+<p>3 - This file should generated trace files:</p>
+<div class="highlight"><pre><span></span><code>trace_hart_00000.txt
+trace_hart_00001.txt
+</code></pre></div>
+<h2 id="investigating-traces">Investigating Traces</h2>
+<p>The generated traces are a bit more readable from here. Open <code>trace_hart_00000.txt</code> and search for the first instance of the <code>mcycle</code> instruction (do a text search like <code>ctrl+f</code>).</p>
+<div class="highlight"><pre><span></span><code><span class="m">663000</span>      <span class="m">660</span>        M 0x8000020c csrr    a4, mcycle             <span class="c1">#; mcycle = 659, (wrb) a4  &lt;-- 659</span>
+<span class="m">664000</span>      <span class="m">661</span>        M 0x80000210 auipc   a4, 0x2                <span class="c1">#; (wrb) a4  &lt;-- 0x80002210</span>
+<span class="m">665000</span>      <span class="m">662</span>        M 0x80000214 addi    a4, a4, <span class="m">1816</span>           <span class="c1">#; a4  = 0x80002210, (wrb) a4  &lt;-- 0x80002928</span>
+<span class="m">666000</span>      <span class="m">663</span>        M 0x80000218 lw      a6, <span class="m">4</span><span class="o">(</span>a4<span class="o">)</span>              <span class="c1">#; a4  = 0x80002928, a6  &lt;~~ Word[0x8000292c]</span>
+<span class="m">677000</span>      <span class="m">674</span>        M                                           <span class="c1">#; (lsu) a6  &lt;-- 0</span>
+<span class="m">678000</span>      <span class="m">675</span>        M 0x8000021c lw      a7, <span class="m">0</span><span class="o">(</span>a4<span class="o">)</span>              <span class="c1">#; a4  = 0x80002928, a7  &lt;~~ Word[0x80002928]</span>
+<span class="m">679000</span>      <span class="m">676</span>        M 0x80000220 li      t0, <span class="m">0</span>                  <span class="c1">#; (wrb) t0  &lt;-- 0</span>
+<span class="m">689000</span>      <span class="m">686</span>        M                                           <span class="c1">#; (lsu) a7  &lt;-- 80</span>
+<span class="m">690000</span>      <span class="m">687</span>        M 0x80000224 csrw    unknown_3c0, a7        <span class="c1">#; a7  = 80</span>
+<span class="m">691000</span>      <span class="m">688</span>        M 0x80000228 add     a3, a5, a3             <span class="c1">#; a5  = 0x10000a00, a3  = 2560, (wrb) a3  &lt;-- 0x10001400</span>
+<span class="m">692000</span>      <span class="m">689</span>        M 0x8000022c li      a6, <span class="m">32</span>                 <span class="c1">#; (wrb) a6  &lt;-- 32</span>
+<span class="m">693000</span>      <span class="m">690</span>        M 0x80000230 csrw    unknown_3c1, a6        <span class="c1">#; a6  = 32</span>
+<span class="m">694000</span>      <span class="m">691</span>        M 0x80000234 csrw    unknown_3c2, a6        <span class="c1">#; a6  = 32</span>
+<span class="m">695000</span>      <span class="m">692</span>        M 0x80000238 li      a6, <span class="m">64</span>                 <span class="c1">#; (wrb) a6  &lt;-- 64</span>
+<span class="m">696000</span>      <span class="m">693</span>        M 0x8000023c csrw    unknown_3c3, a6        <span class="c1">#; a6  = 64</span>
+<span class="m">733000</span>      <span class="m">730</span>        M 0x80000240 csrwi   unknown_3c4, <span class="m">8</span>         <span class="c1">#; </span>
+<span class="m">734000</span>      <span class="m">731</span>        M 0x80000244 csrwi   unknown_3c5, <span class="m">8</span>         <span class="c1">#; </span>
+<span class="m">735000</span>      <span class="m">732</span>        M 0x80000248 csrwi   unknown_3c6, <span class="m">8</span>         <span class="c1">#; </span>
+<span class="m">736000</span>      <span class="m">733</span>        M 0x8000024c csrw    unknown_3c7, a0        <span class="c1">#; a0  = 0x10000000</span>
+<span class="m">737000</span>      <span class="m">734</span>        M 0x80000250 csrw    unknown_3c8, a5        <span class="c1">#; a5  = 0x10000a00</span>
+<span class="m">738000</span>      <span class="m">735</span>        M 0x80000254 csrw    unknown_3c9, a3        <span class="c1">#; a3  = 0x10001400</span>
+<span class="m">739000</span>      <span class="m">736</span>        M 0x80000258 csrwi   unknown_3ca, <span class="m">1</span>         <span class="c1">#; </span>
+<span class="m">740000</span>      <span class="m">737</span>        M 0x8000025c auipc   a3, 0x4                <span class="c1">#; (wrb) a3  &lt;-- 0x8000425c</span>
+<span class="m">757000</span>      <span class="m">754</span>        M 0x80000260 addi    a3, a3, <span class="m">1412</span>           <span class="c1">#; a3  = 0x8000425c, (wrb) a3  &lt;-- 0x800047e0</span>
+<span class="m">758000</span>      <span class="m">755</span>        M 0x80000264 lw      a5, <span class="m">4</span><span class="o">(</span>a3<span class="o">)</span>              <span class="c1">#; a3  = 0x800047e0, a5  &lt;~~ Word[0x800047e4]</span>
+<span class="m">769000</span>      <span class="m">766</span>        M                                           <span class="c1">#; (lsu) a5  &lt;-- 0</span>
+<span class="m">770000</span>      <span class="m">767</span>        M 0x80000268 lw      a3, <span class="m">0</span><span class="o">(</span>a3<span class="o">)</span>              <span class="c1">#; a3  = 0x800047e0, a3  &lt;~~ Word[0x800047e0]</span>
+<span class="m">781000</span>      <span class="m">778</span>        M                                           <span class="c1">#; (lsu) a3  &lt;-- 0</span>
+<span class="m">782000</span>      <span class="m">779</span>        M 0x8000026c csrw    unknown_3cc, a3        <span class="c1">#; a3  = 0</span>
+<span class="m">783000</span>      <span class="m">780</span>        M 0x80000270 lw      a3, <span class="m">4</span><span class="o">(</span>a4<span class="o">)</span>              <span class="c1">#; a4  = 0x80002928, a3  &lt;~~ Word[0x8000292c]</span>
+<span class="m">794000</span>      <span class="m">791</span>        M                                           <span class="c1">#; (lsu) a3  &lt;-- 0</span>
+<span class="m">795000</span>      <span class="m">792</span>        M 0x80000274 lw      a4, <span class="m">0</span><span class="o">(</span>a4<span class="o">)</span>              <span class="c1">#; a4  = 0x80002928, a4  &lt;~~ Word[0x80002928]</span>
+<span class="m">806000</span>      <span class="m">803</span>        M                                           <span class="c1">#; (lsu) a4  &lt;-- 80</span>
+<span class="m">807000</span>      <span class="m">804</span>        M 0x80000278 csrw    unknown_3cd, a4        <span class="c1">#; a4  = 80</span>
+<span class="m">808000</span>      <span class="m">805</span>        M 0x8000027c csrwi   unknown_3ce, <span class="m">1</span>         <span class="c1">#; </span>
+<span class="m">809000</span>      <span class="m">806</span>        M 0x80000280 csrr    a3, mcycle             <span class="c1">#; mcycle = 805, (wrb) a3  &lt;-- 805</span>
+</code></pre></div>
+<p><code>trace_hart_00000.txt</code> is the trace file for core 0 which is also controlling the SNAX ALU accelerator. The columns are arranged as follows:</p>
+<ul>
+<li>1st column is the time in ns.</li>
+<li>2nd column is the clock cycle count.</li>
+<li>3rd column is the instruction address.</li>
+<li>4th column is the instruction.</li>
+<li>5th column is the arguments for the instruction.</li>
+<li>6th column is the comments section to indicate what has happened.</li>
+</ul>
+<p>You can see comments that indicate load operations of the load-store unit of the Snitch core. For example:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#; (lsu) a4  &lt;-- 80</span>
+</code></pre></div>
+<p>This shows that the value 80 was loaded into a4 at this specific cycle.</p>
+<p>Recall, from our <code>snax-alu.c</code> program, there is a compute core assignment where we tag the <code>mcycle</code> count for the CSR setup cycles. The first instance of the <code>mcycle</code> for the computer happens before the CSR setup. The second time the <code>mcycle</code> appears when the CSR setup is finished. You could visibly locate this in the trace.</p>
+<p>Moreover, it is interesting to see the consistency of the CSR write instructions. For example, clock cycles 690 and 691 pertain to the part of the <code>snax-alu.c</code> program.</p>
+<div class="highlight"><pre><span></span><code><span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c1</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c2</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w"></span>
+</code></pre></div>
+<h1 id="some-exercise-questions">Some Exercise Questions</h1>
+<details>
+    <summary> At what clock cycle was the loop bound register set? </summary>
+    Clock cycle 687
+</details>
+
+<details>
+    <summary> How long does it take to set the CSR cycles from the start of the streamer up to the start of the accelerator? </summary>
+    Starts at clock cycle `mcycle=660` and ends at clock cycle `mcycle=806`. A total of 146 clock cycles. This is different from the performance counter we measured: 102 clock cycles.
+</details>
+
+<details>
+    <summary> Where can I find the `mcycle` tags for the DMA core? </summary>
+    We need to check `trace_hart_00001.txt`.
+</details>
+
+<details>
+    <summary> How many cycles does it take to preload the data with the DMA? (Assuming the default settings for `snax-alu.c`) </summary>
+    Starts at `mcycle=620` and ends at `mcycle=657`. A total of 37 clock cycles.
+</details>
+
+<h1 id="questasim-simulation">Questasim Simulation</h1>
+<p>We also support simulations using QuestaSim. This tool is more powerful than Verilator, because you can also trace signals that may have been unconnected. Moreoever, it offers a more useful sanity-checking of the connections or designs you made. If you opt to use QuestaSim, the steps below will guide you through.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There are options where you can mount the QuestaSim to the container, or you have installed, the necessary packages to make the Makefiles work without a container. The steps below assume you don't do either of this, but if ever you do, it's okay to just run the commands directly.</p>
+</div>
+<p>Steps 1, 2, 3, and 4 need to run inside the container first. Make sure to navigate to <code>/target/snitch_cluster/</code></p>
+<p>1 - Generate all necessary RTL files</p>
+<div class="highlight"><pre><span></span><code>make <span class="nv">CFG_OVERRIDE</span><span class="o">=</span>cfg/snax-alu.hjson rtl-gen
+</code></pre></div>
+<p>2 - Build the <code>bootdata.cc</code>. Note that to change the path accordingly.</p>
+<div class="highlight"><pre><span></span><code>make /repo/target/snitch_cluster/generated/bootdata.cc
+</code></pre></div>
+<p>3 - Build the <code>libfesvr.a</code></p>
+<div class="highlight"><pre><span></span><code>make work/lib/libfesvr.a
+</code></pre></div>
+<p>4 - While still in the container, you can build the software too:</p>
+<div class="highlight"><pre><span></span><code>make sw <span class="nv">CFG_OVERRIDE</span><span class="o">=</span>cfg/snax-alu.hjson <span class="nv">SELECT_RUNTIME</span><span class="o">=</span>rtl-generic <span class="nv">SELECT_TOOLCHAIN</span><span class="o">=</span>llvm-generic
+</code></pre></div>
+<p>5 - Exit the container. (This step is not needed if you can mount QuestaSim to the container or you can run everything without a container.)</p>
+<p>6 - Build the hardware with QuestaSim</p>
+<div class="highlight"><pre><span></span><code>make <span class="nv">CFG_OVERRIDE</span><span class="o">=</span>snax-alu.hjson bin/snitch_cluster.vsim
+</code></pre></div>
+<p>Done! This builds the system for QuestaSim. To simulate some built binaries (<code>.elf</code> files) you can just do:</p>
+<div class="highlight"><pre><span></span><code>make bin/snitch_cluster.vsim sw/apps/snax-alu/build/snax-alu.elf
+</code></pre></div>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="programming.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: 5. Programming the System" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              5. Programming the System
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="summary_and_exercise.html" class="md-footer__link md-footer__link--next" aria-label="Next: Summary and Exercise" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Summary and Exercise
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.748e2769.min.js"></script>
+      
+    
+  </body>
+</html>
