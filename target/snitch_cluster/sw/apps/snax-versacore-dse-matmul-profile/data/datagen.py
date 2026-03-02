@@ -31,7 +31,8 @@ np.random.seed(42)
 
 # Add stdint.h header
 def emit_header_file(**kwargs):
-    emit_str = "#include <stdint.h>\n\n"
+    emit_str = "#include <stdbool.h>\n\n"
+    emit_str += "#include <stdint.h>\n\n"
     emit_str += emit_matmul_data(**kwargs)
     return emit_str
 
@@ -283,9 +284,9 @@ def emit_matmul_data(**kwargs):
         B_MIN, B_MAX = signed_int_range(b_len)
         C_MIN, C_MAX = signed_int_range(c_len)
         # for debugging
-        A_MIN, A_MAX = 1, 2
-        B_MIN, B_MAX = 1, 2
-        C_MIN, C_MAX = 1, 2
+        # A_MIN, A_MAX = 1, 2
+        # B_MIN, B_MAX = 1, 2
+        # C_MIN, C_MAX = 1, 2
 
     streamer_cfg = kwargs["snax_versacore_streamer_template"]
     if kwargs["stationary"] == 1:

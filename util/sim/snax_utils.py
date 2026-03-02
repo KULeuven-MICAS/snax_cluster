@@ -229,30 +229,50 @@ def block_gemm_golden_model_fp8(
 ):
     """
     Golden model for FP8 matrix multiplication with FP32 accumulation.
+
+    Matches hardware accumulation order exactly:
+      1. Within each K-slice: binary adder-tree reduction over tileSize
+         (mirrors the hardware adder tree).
+      2. Across K-slices: sequential FP32 add, starting from C
+         (mirrors the hardware C-feedback loop in input/weight-stationary mode).
     """
-    # Reshape inputs
-    A = A.astype(np.float32)
-    B = B.astype(np.float32)
-    C = C.astype(np.float32)
-    A = A.reshape(M, K, meshRow, tileSize)
-    B = B.reshape(N, K, meshCol, tileSize)
+    A = A.astype(np.float32).reshape(M, K, meshRow, tileSize)
+    B = B.astype(np.float32).reshape(N, K, meshCol, tileSize)
+    C = C.astype(np.float32).reshape(M, N, meshRow, meshCol)
 
     assert subtraction_a == 0
     assert subtraction_b == 0
 
-    # Initialize output
-    D = np.zeros((M, N, meshRow, meshCol), dtype=np.float32)
+    def adder_tree(arr):
+        """Binary tree reduction over a 1-D float32 array (mirrors hardware adder tree)."""
+        arr = arr.copy()
+        length = len(arr)
+        # Pad to next power-of-2 if necessary
+        import math
+        n = 1 << math.ceil(math.log2(length)) if length > 1 else 1
+        if n > length:
+            arr = np.append(arr, np.zeros(n - length, dtype=np.float32))
+        while len(arr) > 1:
+            arr = np.add(arr[0::2], arr[1::2])  # pairwise FP32 add
+        return arr[0]
 
-    # Perform matrix multiplication
+    # Initialize output from C (hardware feeds C as starting accumulator value)
+    D = C.copy()
+
+    # Accumulate K-slices sequentially, matching hardware's K-loop order
     for m in range(M):
         for n in range(N):
-            # FP8 multiplication with FP32 accumulation
-            D[m, n] = np.tensordot(A[m], B[n], axes=([0, 2], [0, 2]))
+            for k in range(K):
+                for r in range(meshRow):
+                    for c in range(meshCol):
+                        # FP8 products → FP32 (exact, no rounding needed for FP8×FP8)
+                        products = np.float32(A[m, k, r, :]) * np.float32(B[n, k, c, :])
+                        # Binary adder-tree reduction over tileSize
+                        tile_sum = adder_tree(products)
+                        # Sequential FP32 add to accumulator (C for k=0, prev D for k>0)
+                        D[m, n, r, c] = np.float32(D[m, n, r, c] + tile_sum)
 
-    # Add bias/subtraction and C matrix
-    D = D.reshape(M * N * meshRow * meshCol) + C
-
-    return D.flatten()
+    return D.reshape(M * N * meshRow * meshCol)
 
 
 # This function Performs a tiled block

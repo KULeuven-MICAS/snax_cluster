@@ -167,7 +167,7 @@ Naming convention:
                 ]
                 snax_versacore_input_a_data_type:
                 [
-                    SInt
+                    Float
                 ]
                 snax_versacore_input_b_element_width:
                 [
@@ -175,7 +175,7 @@ Naming convention:
                 ]
                 snax_versacore_input_b_data_type:
                 [
-                    SInt
+                    Float
                 ]
                 snax_versacore_input_c_element_width:
                 [
@@ -183,7 +183,7 @@ Naming convention:
                 ]
                 snax_versacore_input_c_data_type:
                 [
-                    SInt
+                    Float
                 ]
                 snax_versacore_output_d_element_width:
                 [
@@ -191,7 +191,7 @@ Naming convention:
                 ]
                 snax_versacore_output_d_data_type:
                 [
-                    SInt
+                    Float
                 ]
                 snax_versacore_array_input_a_width: 1024
                 snax_versacore_array_input_b_width: 8192
