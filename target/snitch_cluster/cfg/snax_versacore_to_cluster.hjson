@@ -404,6 +404,8 @@ Naming convention:
                     }
                 }
             ]
+            dynamicPriority: [0, 0]
+            higherStaticPriority: [0, 0]
         }
         data_reader_writer_params:
         {
@@ -465,6 +467,8 @@ Naming convention:
                     }
                 }
             ]
+            dynamicPriority: [0, 0]
+            higherStaticPriority: [0, 0]
         }
         // NOTE: Every time when chaning the SUs, check the extra_loops_choice in the DataPathExtension files!
         has_flexible_transpose: true,
