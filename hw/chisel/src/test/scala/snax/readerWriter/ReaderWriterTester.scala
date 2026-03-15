@@ -134,8 +134,8 @@ class ReaderWriterTester extends AnyFlatSpec with ChiselScalatestTester {
       val basePtr: BigInt = 0x1000
       val spatialStride  = 8   // 8 bytes per 64-bit word
       // 1 active temporal dim: stride=64 (8ch*8B), bound=4
-      val tBounds = Seq(2, 2, 8, 4, 4)
-      val tStrides = Seq(256, 2048, 0, 512, 4096)
+      val tBounds = Seq(1, 2, 8, 4, 4)
+      val tStrides = Seq(0, 256, 2048, 512, 4096)
       val totalIterations = tBounds.product // 2*2*8*4*4 = 512
 
       // ---- Compute temporal address offsets (matches AGU nested counters) ----

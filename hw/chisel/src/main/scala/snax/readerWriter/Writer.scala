@@ -39,7 +39,7 @@ class Writer(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
       inputWidth  = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
       outputWidth = param.tcdmParam.dataWidth,
       depth       = param.bufferDepth,
-      pipe        = true //CHECK IF TRUE WORKS BETTER, ALSO CHECK FLOW
+      pipe        = false 
     ) {
       override val desiredName = s"${moduleNamePrefix}_Writer_DataBuffer"
     }
@@ -167,7 +167,7 @@ class Writer(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
     dataAfterCrosser.ready                        := false.B
     addressgen.io.fixedCacheInstruction.ready     := false.B
 
-    when(!io.aguCfg.enableFixedCache) {
+    when(!io.aguCfg.enableFixedCache || !addressgen.io.anyLoopFound) {
       // ── No fixed-cache mode ──────────────────────────────────────────────────
       // Data streams straight to the TCDM dataBuffer, exactly as a standalone writer.
       // The fixedCacheInstruction FIFO is empty by design; consume it opportunistically

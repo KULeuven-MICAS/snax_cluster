@@ -47,7 +47,7 @@ object AddressGenUnitParam {
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
       outputBufferDepth = 0x4, //Placeholder until i know how to dynamically change this back to outputBufferDepth
-      fixedCacheDepth = 0x100, // Placeholder, will be configured later
+      fixedCacheDepth = 0x40, // Placeholder, will be configured later
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = tcdmPhysWordSize,
       tcdmLogicWordSize = tcdmLogicWordSize
@@ -66,7 +66,7 @@ object AddressGenUnitParam {
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
       outputBufferDepth = 0x4, //Placeholder until i know how to dynamically change this back to outputBufferDepth
-      fixedCacheDepth = 0x100, // Placeholder, will be configured later
+      fixedCacheDepth = 0x40, // Placeholder, will be configured later
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = 256,
       tcdmLogicWordSize = Seq(256)
@@ -84,7 +84,7 @@ object AddressGenUnitParam {
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
       outputBufferDepth = 0x4, //Placeholder until i know how to dynamically change this back to outputBufferDepth
-      fixedCacheDepth = 0x100, // Placeholder, will be configured later
+      fixedCacheDepth = 0x40, // Placeholder, will be configured later
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = 256,
       tcdmLogicWordSize = Seq(256)

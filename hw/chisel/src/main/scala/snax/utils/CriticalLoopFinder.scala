@@ -33,7 +33,7 @@ class CriticalLoopFinder(temporalDimension: Int, addressWidth: Int, fixedCacheDe
         if (i == 0) {
             false.B
         } else {
-            (io.totalBounds(i-1) < fixedCacheDepth.U) && (io.temporalStrides(i) === 0.U)
+            (io.totalBounds(i-1) <= fixedCacheDepth.U) && (io.temporalStrides(i) === 0.U) && (io.temporalBounds(i) > 1.U)
         }
     }
 

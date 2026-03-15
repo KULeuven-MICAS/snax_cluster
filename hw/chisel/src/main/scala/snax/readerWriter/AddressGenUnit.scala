@@ -99,7 +99,10 @@ class AddressGenUnit(param: AddressGenUnitParam, isWriter: Boolean = false, modu
     // The calculated address. This equals to # of output channels (64-bit narrow TCDM)
     val addr        =
       Vec(param.numChannel, Decoupled(UInt(param.addressWidth.W)))
+    // The instruction for the reader's fixed cache in ReaderWriter mode. Only valid when enableFixedCache is true and anyLoopFound is true.  
     val fixedCacheInstruction = Decoupled(new FixedCacheInstructionIO(param.fixedCacheDepth))
+    // Any Critical Loop to cache found
+    val anyLoopFound = Output(Bool())
   })
 
   require(param.spatialBounds.reduce(_ * _) <= param.numChannel)
@@ -157,6 +160,7 @@ class AddressGenUnit(param: AddressGenUnitParam, isWriter: Boolean = false, modu
   val countersIsZero = VecInit(counters.map(_.io.isZero))
   
   val newUseCache = io.cfg.enableFixedCache && criticalLoopFinder.io.anyLoopFound
+  io.anyLoopFound := criticalLoopFinder.io.anyLoopFound
   
   val totalBounds = criticalLoopFinder.io.totalBounds
 
