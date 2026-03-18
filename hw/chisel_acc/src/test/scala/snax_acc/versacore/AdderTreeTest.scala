@@ -22,8 +22,10 @@ class AdderTreeTest extends AnyFunSuite with ChiselScalatestTester {
       def testConfig(cfg: Int, inputValues: Seq[Int], expectedOutput: Seq[Int]): Unit = {
         // Set input values
         inputValues.zipWithIndex.foreach { case (value, idx) =>
-          dut.io.in(idx).poke(value.U)
+          dut.io.in.bits(idx).poke(value.U)
         }
+        dut.io.in.valid.poke(true.B)
+        dut.io.out.ready.poke(true.B)
 
         // Set configuration
         dut.io.cfg.poke(cfg.U)
@@ -32,8 +34,9 @@ class AdderTreeTest extends AnyFunSuite with ChiselScalatestTester {
         dut.clock.step()
 
         // Check expected output
+        dut.io.out.valid.expect(true.B)
         expectedOutput.zipWithIndex.foreach { case (expected, idx) =>
-          dut.io.out(idx).expect(expected.U)
+          dut.io.out.bits(idx).expect(expected.U)
         }
       }
 

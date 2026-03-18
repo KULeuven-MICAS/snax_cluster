@@ -9,12 +9,18 @@ package snax_acc.versacore
 
 import chisel3._
 
+import chisel3.util._
+
 import fp_unit._
 
+class MultiplierReq(inputTypeA: DataType, inputTypeB: DataType) extends Bundle {
+  val in_a = UInt(inputTypeA.width.W)
+  val in_b = UInt(inputTypeB.width.W)
+}
+
 class MultiplierIO(inputTypeA: DataType, inputTypeB: DataType, inputTypeC: DataType) extends Bundle {
-  val in_a  = Input(UInt(inputTypeA.width.W))
-  val in_b  = Input(UInt(inputTypeB.width.W))
-  val out_c = Output(UInt(inputTypeC.width.W))
+  val in  = Flipped(Decoupled(new MultiplierReq(inputTypeA, inputTypeB)))
+  val out = Decoupled(UInt(inputTypeC.width.W))
 }
 
 /** Multiplier module that supports different operation types */
@@ -24,25 +30,32 @@ class Multiplier(inputTypeA: DataType, inputTypeB: DataType, inputTypeC: DataTyp
 
   val io = IO(new MultiplierIO(inputTypeA, inputTypeB, inputTypeC))
 
+  // Combinational handshake
+  io.in.ready  := io.out.ready
+  io.out.valid := io.in.valid
+
+  val out_c = Wire(UInt(inputTypeC.width.W))
+  io.out.bits := out_c
+
   (inputTypeA, inputTypeB, inputTypeC) match {
 
     case (_: IntType, _: IntType, _: IntType) =>
-      io.out_c := (io.in_a.asTypeOf(SInt(inputTypeC.width.W)) * io.in_b.asTypeOf(
+      out_c := (io.in.bits.in_a.asTypeOf(SInt(inputTypeC.width.W)) * io.in.bits.in_b.asTypeOf(
         SInt(inputTypeC.width.W)
       )).asUInt
 
     case (a: FpType, b: IntType, c: FpType) => {
       val fpMulInt = Module(new FpMulIntBlackBox("fp_mul_int", a, b, c))
-      fpMulInt.io.operand_a_i := io.in_a
-      fpMulInt.io.operand_b_i := io.in_b
-      io.out_c                := fpMulInt.io.result_o
+      fpMulInt.io.operand_a_i := io.in.bits.in_a
+      fpMulInt.io.operand_b_i := io.in.bits.in_b
+      out_c                   := fpMulInt.io.result_o
     }
 
     case (a: FpType, b: FpType, c: FpType) => {
       val fpMulfp = Module(new FpMulFp(a, b, c))
-      fpMulfp.io.in_a := io.in_a
-      fpMulfp.io.in_b := io.in_b
-      io.out_c        := fpMulfp.io.out
+      fpMulfp.io.in_a := io.in.bits.in_a
+      fpMulfp.io.in_b := io.in.bits.in_b
+      out_c           := fpMulfp.io.out
     }
 
     case (_, _, _) => throw new NotImplementedError()

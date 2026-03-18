@@ -39,12 +39,17 @@ class AccumulatorBlock(
   ).io
 
   // connection description
-  adder.in_a := io.in1
-  adder.in_b := Mux(io.accAddExtIn, io.in2, accumulatorReg)
+  adder.in.bits.in_a := io.in1
+  adder.in.bits.in_b := Mux(io.accAddExtIn, io.in2, accumulatorReg)
+  adder.in.valid     := io.enable
+  // the register will always accept the adder's output, so the ready signal is always true
+  adder.out.ready    := true.B
 
-  // update accumulator register enable signal
-  val accUpdate = io.enable
-  accumulatorReg := Mux(accUpdate, adder.out_c, accumulatorReg)
+  // update accumulator register based on the adder's output handshake
+  // This is robust to pipeline depth within the adder
+  when(adder.out.fire) {
+    accumulatorReg := adder.out.bits
+  }
 
   // output of the accumulator register
   io.out := accumulatorReg
@@ -65,6 +70,7 @@ class Accumulator(
     val accAddExtIn = Input(Bool())
     val enable      = Input(Vec(numElements, Bool()))
     val out         = DecoupledIO(Vec(numElements, UInt(outputType.width.W)))
+    val inputReady  = Output(Bool())
   })
 
   // Create an array of AccumulatorBlock instances
@@ -87,6 +93,7 @@ class Accumulator(
     accumulator_blocks(i).io.enable      := accUpdate(i)
   }
 
+  val inputDataReady = io.in1.ready && io.enable(0) && (!io.accAddExtIn || (io.in2.ready && io.accAddExtIn))
   val inputDataFire  = RegNext(accUpdate(0), false.B) // assuming all accUpdate are the same for handshake
   val keepOutput     = RegInit(false.B)
   val keepOutputNext = io.out.valid && !io.out.ready
@@ -97,8 +104,11 @@ class Accumulator(
   io.in2.ready := (!keepOutput) && (!keepOutputNext)
 
   // Connect the outputs of each AccumulatorBlock to the output interface
-  io.out.bits  := accumulator_blocks.map(_.io.out)
+  io.out.bits  := VecInit(accumulator_blocks.map(_.io.out))
   io.out.valid := inputDataFire || keepOutput
+
+  // input ready
+  io.inputReady := inputDataReady
 }
 
 object AccumulatorEmitterUInt extends App {
