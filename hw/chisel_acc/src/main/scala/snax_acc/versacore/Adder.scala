@@ -9,7 +9,14 @@ package snax_acc.versacore
 
 import chisel3._
 
+import chisel3.util._
+
 import fp_unit._
+
+class AdderReq(inputTypeA: DataType, inputTypeB: DataType) extends Bundle {
+  val in_a = UInt(inputTypeA.width.W)
+  val in_b = UInt(inputTypeB.width.W)
+}
 
 /** AdderIO defines the input and output interfaces for the Adder module. */
 class AdderIO(
@@ -17,9 +24,8 @@ class AdderIO(
   inputTypeB: DataType,
   inputTypeC: DataType
 ) extends Bundle {
-  val in_a  = Input(UInt(inputTypeA.width.W))
-  val in_b  = Input(UInt(inputTypeB.width.W))
-  val out_c = Output(UInt(inputTypeC.width.W))
+  val in  = Flipped(Decoupled(new AdderReq(inputTypeA, inputTypeB)))
+  val out = Decoupled(UInt(inputTypeC.width.W))
 }
 
 /** Adder is a module that performs addition on two inputs based on the specified operation type. */
@@ -32,9 +38,16 @@ class Adder(
 
   val io = IO(new AdderIO(inputTypeA, inputTypeB, inputTypeC))
 
+  // Combinational handshake
+  io.in.ready  := io.out.ready
+  io.out.valid := io.in.valid
+
+  val out_c = Wire(UInt(inputTypeC.width.W))
+  io.out.bits := out_c
+
   (inputTypeA, inputTypeB, inputTypeC) match {
     case (_: IntType, _: IntType, _: IntType) =>
-      io.out_c := (io.in_a.asTypeOf(SInt(inputTypeC.width.W)) + io.in_b.asTypeOf(
+      out_c := (io.in.bits.in_a.asTypeOf(SInt(inputTypeC.width.W)) + io.in.bits.in_b.asTypeOf(
         SInt(inputTypeC.width.W)
       )).asUInt
 
@@ -42,9 +55,9 @@ class Adder(
 
     case (a: FpType, b: FpType, c: FpType) => {
       val fpAddFp = Module(new FpAddFpBlackBox("fp_add", a, b, c))
-      fpAddFp.io.operand_a_i := io.in_a
-      fpAddFp.io.operand_b_i := io.in_b
-      io.out_c               := fpAddFp.io.result_o
+      fpAddFp.io.operand_a_i := io.in.bits.in_a
+      fpAddFp.io.operand_b_i := io.in.bits.in_b
+      out_c                  := fpAddFp.io.result_o
     }
 
     case (_, _, _) => throw new NotImplementedError()

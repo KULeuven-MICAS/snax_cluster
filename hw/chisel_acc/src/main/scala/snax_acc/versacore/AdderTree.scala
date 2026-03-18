@@ -29,10 +29,14 @@ class AdderTree(
   require(isPow2(numElements), "numElements must be a power of 2")
 
   val io = IO(new Bundle {
-    val in  = Input(Vec(numElements, UInt(inputType.width.W)))
-    val out = Output(Vec(numElements, UInt(outputType.width.W)))
+    val in  = Flipped(Decoupled(Vec(numElements, UInt(inputType.width.W))))
+    val out = Decoupled(Vec(numElements, UInt(outputType.width.W)))
     val cfg = Input(UInt(log2Ceil(groupSizes.length + 1).W))
   })
+
+  // Combinational handshake
+  io.in.ready  := io.out.ready
+  io.out.valid := io.in.valid
 
   // Ensure valid size
   groupSizes.foreach(size => require(isPow2(size), "groupSizes must be a power of 2"))
@@ -63,7 +67,7 @@ class AdderTree(
   layers.map(_.map(_ := 0.U.asTypeOf(UInt(outputType.width.W))))
   // Initialize the first layer with input values
   layers(0) := VecInit(
-    io.in.map(_.asTypeOf(adderTreeInputType).asTypeOf(UInt(outputType.width.W)))
+    io.in.bits.map(_.asTypeOf(adderTreeInputType).asTypeOf(UInt(outputType.width.W)))
   )
 
   val realStageNum = MuxLookup(io.cfg, groupSizes(0).U)(groupSizes.zipWithIndex.map { case (size, idx) =>
@@ -85,14 +89,16 @@ class AdderTree(
       // If the current depth is less than or equal to realStageNum,
       // we connect the inputs and outputs normally
       // Otherwise, we connect zeros to save energy
-      adder.io.in_a        := Mux(realStageNum > d.U, layers(d)(i), 0.U)
-      adder.io.in_b        := Mux(realStageNum > d.U, layers(d)(i + step), 0.U)
-      layers(d + 1)(i / 2) := Mux(realStageNum > d.U, adder.io.out_c, 0.U)
+      adder.io.in.bits.in_a := Mux(realStageNum > d.U, layers(d)(i), 0.U)
+      adder.io.in.bits.in_b := Mux(realStageNum > d.U, layers(d)(i + step), 0.U)
+      adder.io.in.valid     := io.in.valid
+      adder.io.out.ready    := io.out.ready
+      layers(d + 1)(i / 2)  := Mux(realStageNum > d.U, adder.io.out.bits, 0.U)
     }
   }
 
   // Generate multiple adder tree outputs based on groupSizes
-  io.out := layers(realStageNum)
+  io.out.bits := layers(realStageNum)
 
 }
 

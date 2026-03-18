@@ -8,6 +8,7 @@ package snax_acc.versacore
 
 import chisel3._
 import chisel3.util._
+import snax_acc.utils.DecoupledCut._
 
 import fp_unit._
 
@@ -204,18 +205,20 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   // multipliers connection with the output from data feeding network
   (0 until params.inputTypeA.length).foreach(dataTypeIdx =>
     multipliers(dataTypeIdx).zipWithIndex.foreach { case (mul, mulIdx) =>
-      mul.io.in_a := MuxLookup(
+      mul.io.in.bits.in_a := MuxLookup(
         io.ctrl.arrayShapeCfg,
         inputA(dataTypeIdx)(0)(mulIdx)
       )(
         (0 until params.arrayDim(dataTypeIdx).length).map(j => j.U -> inputA(dataTypeIdx)(j)(mulIdx))
       )
-      mul.io.in_b := MuxLookup(
+      mul.io.in.bits.in_b := MuxLookup(
         io.ctrl.arrayShapeCfg,
         inputB(dataTypeIdx)(0)(mulIdx)
       )(
         (0 until params.arrayDim(dataTypeIdx).length).map(j => j.U -> inputB(dataTypeIdx)(j)(mulIdx))
       )
+      // Use top-level valid signals to avoid combinational loops with fire
+      mul.io.in.valid := io.array_data.in_a.valid && io.array_data.in_b.valid
     }
   )
 
@@ -233,10 +236,21 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   )
 
   // connect output of the multipliers to adder tree
-  multipliers.zipWithIndex.foreach { case (muls, dataTypeIdx) =>
-    muls.zipWithIndex.foreach { case (mul, mulIdx) =>
-      adderTree(dataTypeIdx).io.in(mulIdx) := mul.io.out_c
-    }
+  // insert a register to pipeline the output of the multipliers
+  (0 until params.inputTypeA.length).foreach { dataTypeIdx =>
+    val muls      = multipliers(dataTypeIdx)
+    val tree      = adderTree(dataTypeIdx)
+    val output_bits = VecInit(muls.map(_.io.out.bits))
+    val output_valid = muls.map(_.io.out.valid).reduce(_ && _)
+
+    val muls_out_data = Wire(Decoupled(Vec(params.multiplierNum(dataTypeIdx), UInt(params.inputTypeC(dataTypeIdx).width.W))))
+    muls_out_data.bits := output_bits
+    muls_out_data.valid := output_valid
+    // The multipliers' ready signal comes from the pipeline register (-|>).
+    muls.foreach(_.io.out.ready := muls_out_data.ready)
+
+    // Use the -|> operator to insert a pipeline register
+    muls_out_data -|> tree.io.in
   }
 
   // adder tree runtime configuration
@@ -255,7 +269,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   // connect adder tree output to accumulators
   // and inputC to accumulators
   accumulators.zipWithIndex.foreach { case (acc, dataTypeIdx) =>
-    acc.io.in1.bits := adderTree(dataTypeIdx).io.out
+  // the accumulator input1 is from the adder tree
+    acc.io.in1.bits  := adderTree(dataTypeIdx).io.out.bits
+    acc.io.in1.valid := adderTree(dataTypeIdx).io.out.valid
+    // The adder tree's ready signal comes from the accumulator's inputReady, considering both the input1 and input2 are ready in different cases
+    adderTree(dataTypeIdx).io.out.ready := acc.io.inputReady
+
+    // the accumulator input2 is from the inputC
     acc.io.in2.bits := MuxLookup(
       io.ctrl.arrayShapeCfg,
       inputC(dataTypeIdx)(0)
@@ -265,7 +285,6 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   }
 
   // handle the control signals for accumulators
-  accumulators.foreach(_.io.in1.valid := io.array_data.in_a.valid && io.array_data.in_b.valid)
   accumulators.foreach(_.io.in2.valid := io.array_data.in_c.valid)
   accumulators.foreach(_.io.accAddExtIn := io.ctrl.accAddExtIn)
   accumulators.foreach(_.io.out.ready := io.array_data.out_d.ready)
@@ -278,22 +297,34 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     }
   }
 
-  // input fire signals
-  val acc_in1_fire = MuxLookup(
+  // The multipliers' ready signal comes from the pipeline register (-|>)
+  val muls_ready = MuxLookup(
     io.ctrl.dataTypeCfg,
-    accumulators(0).io.in1.fire
+    multipliers(0)(0).io.in.ready
   )(
-    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.in1.fire)
+    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> multipliers(dataTypeIdx)(0).io.in.ready)
   )
-  val acc_in2_fire = MuxLookup(
+
+  // Synchronize in_a and in_b to fire together
+  io.array_data.in_a.ready := io.array_data.in_b.valid && muls_ready
+  io.array_data.in_b.ready := io.array_data.in_a.valid && muls_ready
+
+  // Accumulator stage synchronization
+  val acc_inputReady = MuxLookup(
     io.ctrl.dataTypeCfg,
-    accumulators(0).io.in2.fire
+    accumulators(0).io.inputReady
   )(
-    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.in2.fire)
+    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.inputReady)
   )
-  io.array_data.in_a.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
-  io.array_data.in_b.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, acc_in1_fire)
-  io.array_data.in_c.ready := Mux(io.ctrl.accAddExtIn, acc_in1_fire && acc_in2_fire, false.B)
+  val acc_in1_valid = MuxLookup(
+    io.ctrl.dataTypeCfg,
+    accumulators(0).io.in1.valid
+  )(
+    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.in1.valid)
+  )
+
+  // in_c only fires if accAddExtIn is true, both inputs are ready, and accumulator (in1) has valid data
+  io.array_data.in_c.ready := io.ctrl.accAddExtIn && acc_inputReady && acc_in1_valid
 
   io.array_data.in_subtraction.ready := io.array_data.in_a.ready && io.array_data.in_b.ready
 
