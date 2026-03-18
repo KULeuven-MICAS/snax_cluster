@@ -159,9 +159,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     })
   }
 
-  // Pipeline in_c to match the multiplier + register stage latency
+  // Synchronize and pipeline in_c to match the multiplier + register stage latency
+  val in_c_sync = Wire(Decoupled(chiselTypeOf(io.array_data.in_c.bits)))
+  in_c_sync.bits := io.array_data.in_c.bits
+  // The actual valid/ready logic for in_c_sync is handled in the handshake section later
+
   val in_c_pipe = Wire(Decoupled(chiselTypeOf(io.array_data.in_c.bits)))
-  io.array_data.in_c -|> in_c_pipe
+  in_c_sync -|> in_c_pipe
 
   val inputC = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
@@ -221,8 +225,6 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
       )(
         (0 until params.arrayDim(dataTypeIdx).length).map(j => j.U -> inputB(dataTypeIdx)(j)(mulIdx))
       )
-      // Use top-level valid signals to avoid combinational loops with fire
-      mul.io.in.valid     := io.array_data.in_a.valid && io.array_data.in_b.valid
     }
   )
 
@@ -321,12 +323,17 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   // Top-level input synchronization
   // A, B and C (if enabled) must fire together to ensure the input wave enters the pipeline correctly.
-  val common_ready         = muls_ready && (in_c_pipe.ready || !io.ctrl.accAddExtIn)
-  val in_c_valid_if_needed = in_c_pipe.valid || !io.ctrl.accAddExtIn
+  val in_c_active  = io.ctrl.accAddExtIn
+  val common_valid = io.array_data.in_a.valid && io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active)
+  val common_ready = muls_ready               && (in_c_sync.ready || !in_c_active)
 
-  io.array_data.in_a.ready := io.array_data.in_b.valid && in_c_valid_if_needed     && common_ready
-  io.array_data.in_b.ready := io.array_data.in_a.valid && in_c_valid_if_needed     && common_ready
-  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid && common_ready
+  io.array_data.in_a.ready := io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
+  io.array_data.in_b.ready := io.array_data.in_a.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
+  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid                   && common_ready
+
+  // Drive the valid signals for the first stage
+  multipliers.foreach(_.foreach(_.io.in.valid := common_valid))
+  in_c_sync.valid := common_valid
 
   io.array_data.in_subtraction.ready := io.array_data.in_a.ready && io.array_data.in_b.ready
 
