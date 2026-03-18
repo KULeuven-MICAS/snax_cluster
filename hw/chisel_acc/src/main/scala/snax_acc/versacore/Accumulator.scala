@@ -82,9 +82,7 @@ class Accumulator(
 
   // accumulation update logic, considering the handshake and the accumulator enable at runtime
   val accUpdate = VecInit(
-    (0 until numElements).map(i =>
-      io.in1.fire && io.enable(i) && (!io.accAddExtIn || (io.in2.fire && io.accAddExtIn))
-    )
+    (0 until numElements).map(i => io.in1.fire && io.enable(i) && (!io.accAddExtIn || (io.in2.fire && io.accAddExtIn)))
   )
 
   // Connect the inputs of each AccumulatorBlock

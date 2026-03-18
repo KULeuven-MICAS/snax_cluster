@@ -48,7 +48,7 @@ class Multiplier(inputTypeA: DataType, inputTypeB: DataType, inputTypeC: DataTyp
       val fpMulInt = Module(new FpMulIntBlackBox("fp_mul_int", a, b, c))
       fpMulInt.io.operand_a_i := io.in.bits.in_a
       fpMulInt.io.operand_b_i := io.in.bits.in_b
-      out_c                  := fpMulInt.io.result_o
+      out_c                   := fpMulInt.io.result_o
     }
 
     case (a: FpType, b: FpType, c: FpType) => {
