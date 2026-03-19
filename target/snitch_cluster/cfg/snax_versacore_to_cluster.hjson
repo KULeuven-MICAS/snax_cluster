@@ -330,43 +330,6 @@ Naming convention:
                     64
                 ]
             ]
-            datapath_extensions:
-            [
-                {
-                    HasIntlowToInthighConverter:
-                    {
-                        dataWidth: 2048
-                    }
-                    HasTransposer:
-                    {
-                        row:
-                        [
-                            32
-                            1
-                            4
-                            8
-                            8
-                        ]
-                        col:
-                        [
-                            4
-                            8
-                            8
-                            8
-                            32
-                        ]
-                        elementWidth:
-                        [
-                            8
-                            8
-                            8
-                            8
-                            8
-                        ]
-                        dataWidth: 2048
-                    }
-                }
-            ]
             dynamicPriority:
             [
                 0
