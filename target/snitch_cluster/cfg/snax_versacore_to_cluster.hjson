@@ -145,8 +145,11 @@ Naming convention:
                     [
                         64
                         4
+                        16
                     ]
                     [
+                        16
+                        16
                         16
                         16
                     ]
@@ -225,8 +228,8 @@ Naming convention:
                 {
                     $ref: "#/snax_versacore_streamer_template"
                 }
-                granularity_a: 2
-                granularity_b: 4
+                granularity_a: 4
+                granularity_b: 16
                 granularity_c_d: 16
             }
         ]
