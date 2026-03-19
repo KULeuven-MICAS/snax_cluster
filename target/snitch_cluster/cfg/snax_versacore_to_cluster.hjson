@@ -10,7 +10,9 @@ Naming convention:
     The cluster name should be matched with the configuration file name, so that this cluster can be integrated into HeMAiA.
     The bender_target of the cluster should be the same as the cluster name.
     If XDMA is added into the cfg, the bender_target of the XDMA inside this cluster should be snax_<cluster_name>_xdma.
-    Adding a new "bender_target" also involves adding the corresponding file list in Bender.yml. "snax_<cluster_name>" target includes the cluster shell, streamers, and accelerator and "snax_<cluster_name>_xdma" target includes the XDMA shell and XDMA SystemVerilog.
+    Adding a new "bender_target" also involves adding the corresponding file list in Bender.yml.
+    "snax_<cluster_name>" target includes the cluster shell, streamers, and accelerator
+    and "snax_<cluster_name>_xdma" target includes the XDMA shell and XDMA SystemVerilog.
 **/
 
 {
@@ -133,20 +135,20 @@ Naming convention:
                 [
                     snax_versacore
                 ]
-                snax_tcdm_ports: 112
+                snax_tcdm_ports: 224
                 sparse_interconnect_config:
                 [
                     [
                         32
-                        1
+                        4.0
                     ]
                     [
                         64
-                        16
+                        16.0
                     ]
                     [
-                        16
-                        8
+                        128
+                        32
                     ]
                 ]
                 snax_num_rw_csr: 7
@@ -193,7 +195,7 @@ Naming convention:
                 snax_versacore_array_output_d_width: 32768
                 snax_versacore_serial_a_width: 2048
                 snax_versacore_serial_b_width: 4096
-                snax_versacore_serial_c_d_width: 1024
+                snax_versacore_serial_c_d_width: 8192
                 snax_versacore_adder_tree_delay: 0
                 snax_versacore_spatial_unrolling:
                 [
@@ -204,17 +206,7 @@ Naming convention:
                             32
                         ]
                         [
-                            1
-                            8
-                            64
-                        ]
-                        [
                             4
-                            8
-                            64
-                        ]
-                        [
-                            8
                             8
                             64
                         ]
@@ -233,9 +225,9 @@ Naming convention:
                 {
                     $ref: "#/snax_versacore_streamer_template"
                 }
-                granularity_a: 1
-                granularity_b: 16
-                granularity_c_d: 8
+                granularity_a: 4.0
+                granularity_b: 16.0
+                granularity_c_d: 32
             }
         ]
         snax_use_custom_ports: false
@@ -268,7 +260,7 @@ Naming convention:
             {
                 HasVerilogMemset: {}
             }
-            reader_extensions:{}
+            reader_extensions: {}
         }
         xdma: true
         xssr: false
@@ -312,8 +304,8 @@ Naming convention:
             ]
             fifo_depth:
             [
-                4
-                4
+                8
+                8
             ]
             configurable_channel:
             [
@@ -404,18 +396,26 @@ Naming convention:
                     }
                 }
             ]
-            dynamicPriority: [0, 0]
-            higherStaticPriority: [0, 0]
+            dynamicPriority:
+            [
+                0
+                0
+            ]
+            higherStaticPriority:
+            [
+                0
+                0
+            ]
         }
         data_reader_writer_params:
         {
             spatial_bounds:
             [
                 [
-                    16
+                    128
                 ]
                 [
-                    16
+                    128
                 ]
             ]
             temporal_dim:
@@ -425,13 +425,13 @@ Naming convention:
             ]
             num_channel:
             [
-                16
-                16
+                128
+                128
             ]
             fifo_depth:
             [
-                1
-                1
+                2
+                2
             ]
             configurable_channel:
             [
@@ -467,14 +467,21 @@ Naming convention:
                     }
                 }
             ]
-            dynamicPriority: [0, 0]
-            higherStaticPriority: [0, 0]
+            dynamicPriority:
+            [
+                0
+                0
+            ]
+            higherStaticPriority:
+            [
+                0
+                0
+            ]
         }
-        // NOTE: Every time when chaning the SUs, check the extra_loops_choice in the DataPathExtension files!
-        has_flexible_transpose: true,
-        has_int4toint8: true,
-        has_rescaledown_dynamic: true,
-        has_int32_to_fp16_converter: true,
+        has_flexible_transpose: true
+        has_int4toint8: true
+        has_rescaledown_dynamic: true
+        has_int32_to_fp16_converter: true
         snax_library_name: versacore-to
     }
 }
