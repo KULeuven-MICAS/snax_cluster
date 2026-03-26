@@ -45,6 +45,9 @@ SUBDIRS += snax-hypercorex/test-csr
 SUBDIRS += snax-hypercorex/char-recog
 SUBDIRS += snax-hypercorex/high-dim-bind
 endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_cgra_cluster.hjson)
+SUBDIRS += snax-cgra-cmatmul
+endif
 
 .PHONY: all clean $(SUBDIRS)
 

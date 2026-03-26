@@ -1,0 +1,5 @@
+#include "streamer_csr_addr_map.h"
+
+#define CGRA_CSR_ADDR_BASE (STREAMER_PERFORMANCE_COUNTER_CSR + 1)
+#define CGRA_START_CSR (CGRA_CSR_ADDR_BASE + 37)
+#define CGRA_CSR_RO_ADDR_BASE (CGRA_START_CSR + 1)
