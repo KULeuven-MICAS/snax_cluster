@@ -270,7 +270,7 @@ Naming convention:
 
             }
             reader_extensions:{
-                HasTransposer: { row: [8], col: [8], elementWidth: [8], dataWidth: 512 }
+                HasTransposer: { row: [8], col: [8], elementWidth: [8]}
             }
         }
         xdma: true
