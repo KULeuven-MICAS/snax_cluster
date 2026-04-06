@@ -194,10 +194,11 @@ class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String 
   val fixedCachePeriod = criticalLoopFinder.io.fixedCachePeriod
 
   // ── Fixed cache counters for the WRITE index ──
-  // These are coupled to the main counters_tick / DataBuffer counter.
-  // They are gated so they can never be more than one critical_loop step
-  // ahead of the read counter (see tick logic below).
-  // Cascading uses the main counters' lastVal (same as writer AGU).
+  // These are decoupled from the main counters and tick independently.
+  // They are gated by writeNotTooFarAhead so they can never be more than one
+  // critical_loop period ahead of the read counter.
+  // Cascading is internal: each counter's tick depends on the previous write counter's lastVal.
+  val writeFixedCacheCounterModules = scala.collection.mutable.ArrayBuffer[ProgrammableCounter]()
   val writeFixedCacheCounters = for (i <- 0 until param.temporalDimension) yield {
     val fixed_cache_counter = Module(
       new ProgrammableCounter(
@@ -213,10 +214,11 @@ class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String 
       fixed_cache_counter.io.step := 1.U
     } else {
       fixed_cache_counter.io.reset := io.start
-      fixed_cache_counter.io.tick := writeFixedCacheCounter_tick && counters(i - 1).io.lastVal
+      fixed_cache_counter.io.tick := writeFixedCacheCounter_tick && writeFixedCacheCounterModules(i - 1).io.lastVal
       fixed_cache_counter.io.ceil := io.cfg.temporalBounds(i)
       fixed_cache_counter.io.step := totalBounds(i - 1)
     }
+    writeFixedCacheCounterModules += fixed_cache_counter
     val counter_out = Wire(UInt(param.addressWidth.W))
     when(io.cfg.temporalStrides(i) === 0.U || i.U > criticalLoopFinder.io.criticalLoop) {
       counter_out := 0.U
@@ -302,6 +304,13 @@ class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String 
     !((io.cfg.temporalStrides(i) === 0.U) && (i.U <= criticalLoopFinder.io.criticalLoop)) || countersIsZero(i)
   }
   val newUpdateCache = updateCacheConditions.reduce(_ && _)
+
+  // updateCache condition (write cache side): same logic but using write cache counters' isZero
+  val writeCountersIsZero = VecInit(writeFixedCacheCounterModules.map(_.io.isZero).toSeq)
+  val writeUpdateCacheConditions = (0 until param.temporalDimension).map { i =>
+    !((io.cfg.temporalStrides(i) === 0.U) && (i.U <= criticalLoopFinder.io.criticalLoop)) || writeCountersIsZero(i)
+  }
+  val writeUpdateCache = writeUpdateCacheConditions.reduce(_ && _)
 
   // updateCache condition (read side): same logic but using read counters' isZero
   // When true, the read position corresponds to a cache slot that needed a fresh write.
@@ -393,22 +402,24 @@ class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String 
   val sIDLE :: sBUSY :: Nil = Enum(2)
   val currentState          = RegInit(sIDLE)
 
-  // ── Write-side buffer readiness ──
-  // The write counter is coupled to the main counters (DataBuffer).
-  // Requirement: write counter can never be more than one critical_loop period ahead of the read counter.
-  // Per-counter period tracking: writePeriodCount counts how many times all inner write counters
-  // (below criticalLoop) have simultaneously reached their last values (period boundaries crossed).
-  // Same for readServicedPeriodCount on the read side (tracks actually serviced reads, not just issued).
+  // ── Buffer readiness signals (decoupled) ──
+  // The write cache counters are now decoupled from the main counters.
+  // TCDM requests (outputBuffer) fire as soon as space is available.
+  // Write cache instructions wait for writeNotTooFarAhead.
   val writeNotTooFarAhead = writePeriodCount < readServicedPeriodCount + fixedCachePeriod
 
-  val writeBuffersReady = Wire(Bool())
+  // Output buffer (TCDM requests): can accept as soon as there is space
+  val outputBufferCanAccept = outputBuffer.io.in.head.ready
+
+  // Write cache buffer: gated by writeNotTooFarAhead to prevent overwriting unread cache slots
+  val writeBufferCanAccept = Wire(Bool())
   when(newUseCache) {
-    writeBuffersReady := Mux(newUpdateCache,
-      outputBuffer.io.in.head.ready && writeFixedCacheBuffer.io.enq.ready && writeNotTooFarAhead,
+    writeBufferCanAccept := Mux(writeUpdateCache,
+      writeFixedCacheBuffer.io.enq.ready && writeNotTooFarAhead,
       writeNotTooFarAhead
     )
   }.otherwise {
-    writeBuffersReady := outputBuffer.io.in.head.ready
+    writeBufferCanAccept := true.B
   }
 
   // ── Read-side counter can tick condition ──
@@ -427,8 +438,10 @@ class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String 
   when(io.start && io.cfg.temporalBounds.map(_ =/= 0.U).reduce(_ && _)) {
     currentState := sBUSY
   }.elsewhen(currentState === sBUSY && Mux(newUseCache,
-    mainCountersDone && writeBuffersReady && writeCountersDone && readCountersDone && readCanTick,
-    mainCountersDone && writeBuffersReady
+    mainCountersDone && Mux(newUpdateCache, outputBufferCanAccept, true.B) &&
+    writeCountersDone && writeBufferCanAccept &&
+    readCountersDone && readCanTick,
+    mainCountersDone && outputBufferCanAccept
   )) {
     currentState := sIDLE
   }.otherwise {
@@ -436,10 +449,10 @@ class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String 
   }
 
   // Valid signals for the buffers
-  // OutputBuffer: written when updateCache (first access) or when cache not used
-  outputBuffer.io.in.head.valid := currentState === sBUSY && (newUpdateCache || !newUseCache) && writeBuffersReady
-  // WriteFixedCacheBuffer: written in same conditions as outputBuffer, only when cache is used
-  writeFixedCacheBuffer.io.enq.valid := currentState === sBUSY && newUseCache && newUpdateCache && writeBuffersReady
+  // OutputBuffer: written when updateCache (cache miss, first access) or when cache not used
+  outputBuffer.io.in.head.valid := currentState === sBUSY && (newUpdateCache || !newUseCache) && outputBufferCanAccept
+  // WriteFixedCacheBuffer: written when write cache counters are at a cache-miss position, gated by writeNotTooFarAhead
+  writeFixedCacheBuffer.io.enq.valid := currentState === sBUSY && newUseCache && writeUpdateCache && writeBufferCanAccept
   // ReadFixedCacheBuffer: written when the read counter ticks (decoupled from write)
   readFixedCacheBuffer.io.enq.valid := currentState === sBUSY && newUseCache && readCanTick
 
@@ -447,15 +460,22 @@ class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String 
   io.busy := currentState === sBUSY
 
   // ── Tick logic ──
-  // Main counters + write fixed cache counters: coupled together, gated by writeBuffersReady
-  val counters_tick = currentState === sBUSY && writeBuffersReady
+  // Main counters: tick based on outputBuffer readiness (cache misses) or freely (cache hits)
+  // This allows TCDM requests to be issued as soon as the outputBuffer has space,
+  // without waiting for the write cache buffer or writeNotTooFarAhead.
+  val counters_tick = currentState === sBUSY && Mux(newUseCache,
+    Mux(newUpdateCache, outputBufferCanAccept, true.B),
+    outputBufferCanAccept
+  )
   counters.head.io.tick := counters_tick
   if (counters.length > 1) {
     counters.tail.zip(counters).foreach { case (a, b) =>
       a.io.tick := b.io.lastVal && counters_tick
     }
   }
-  writeFixedCacheCounter_tick := counters_tick
+
+  // Write fixed cache counters: tick independently, gated by writeBufferCanAccept
+  writeFixedCacheCounter_tick := currentState === sBUSY && newUseCache && writeBufferCanAccept
 
   // Read fixed cache counters: tick independently when readCanTick
   readFixedCacheCounter_tick := currentState === sBUSY && newUseCache && readCanTick
