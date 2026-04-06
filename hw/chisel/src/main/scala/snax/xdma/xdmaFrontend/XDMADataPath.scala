@@ -111,11 +111,10 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
   writer.io.tcdmReq <> io.tcdmWriter.req
 
   // Tie off the legacy fixedCacheInstruction ports (cache is driven internally; these are unused)
-  reader.io.fixedCacheInstruction.valid             := false.B
-  reader.io.fixedCacheInstruction.bits.index        := 0.U
-  reader.io.fixedCacheInstruction.bits.useCache     := false.B
-  reader.io.fixedCacheInstruction.bits.updateCache  := false.B
-  reader.io.fixedCacheInstruction.bits.lastAccess   := false.B
+  reader.io.writeFixedCacheInstruction.valid        := false.B
+  reader.io.writeFixedCacheInstruction.bits.index   := 0.U
+  reader.io.readFixedCacheInstruction.valid         := false.B
+  reader.io.readFixedCacheInstruction.bits.index    := 0.U
   writer.io.fixedCacheInstruction.ready             := false.B
 
   // Connect the wire (ctrl plane)

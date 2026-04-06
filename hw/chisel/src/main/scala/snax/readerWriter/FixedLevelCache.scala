@@ -14,145 +14,143 @@ class FixedLevelCacheWriterPort(fixedCacheDepth: Int, fixedCacheWidth: Int) exte
   val data   = Input(UInt(fixedCacheWidth.W))
 }
 
+/** FixedLevelCache with dual memory banks (even/odd) for concurrent read/write.
+  *
+  * The cache has two SyncReadMem banks:
+  *   - Bank 0: stores data at even indices (index LSB = 0)
+  *   - Bank 1: stores data at odd indices (index LSB = 1)
+  *
+  * Read instructions (from readFixedCacheInstruction) have priority.
+  * When a read targets a bank, that bank is busy and cannot be used for writes.
+  * Write instructions (from writeFixedCacheInstruction + dataInTCDM) can only proceed
+  * when their target bank is not busy being read.
+  *
+  * When useFixedCache is false, the cache is bypassed: dataInTCDM flows straight to dataOut.
+  *
+  * @param isReaderWriter When true, an additional writerPort is exposed for the ReaderWriter's
+  *   writer to inject data directly into the cache.
+  */
 class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Boolean, isReaderWriter: Boolean = false) extends Module {
   val io = IO(new Bundle {
-    val fixedLevelCacheRequest = Flipped(Decoupled(new FixedCacheInstructionIO(fixedCacheDepth)))
+    // Standalone useCache signal (extracted from AGU, no longer per-instruction)
+    val useFixedCache = Input(Bool())
+    // Write instructions: write TCDM data into cache at the given index
+    val writeFixedCacheInstruction = Flipped(Decoupled(new WriteFixedCacheInstructionIO(fixedCacheDepth)))
+    // Read instructions: read cached data from the given index
+    val readFixedCacheInstruction  = Flipped(Decoupled(new ReadFixedCacheInstructionIO(fixedCacheDepth)))
+    // TCDM data input (paired with write instructions)
     val dataInTCDM = Flipped(Decoupled(UInt(fixedCacheWidth.W)))
-    val dataInAccelerator = if (isReader) None else Some(Input(UInt(fixedCacheWidth.W)))
     // When instantiated in ReaderWriter mode the writer can write directly into the cache memory
     val writerPort = if (isReaderWriter) Some(new FixedLevelCacheWriterPort(fixedCacheDepth, fixedCacheWidth)) else None
+    // Data output (from cache reads or passthrough)
     val dataOut = Decoupled(UInt(fixedCacheWidth.W))
     val busy = Output(Bool())
   })
-    // Instantiates the fixed level cache memory.
-    // For a reader, only one port is needed. Reading and writing cannot happen at the same time.
-    // For a writer, two ports are needed. One for writing from the accelerator, one for reading to the accelerator.
 
-  val request_enable = Wire(Bool())
-  val output_bits = Wire(UInt(fixedCacheWidth.W))
-  
-  // Delay valid signal and mode by one cycle for cache operations to match SyncReadMem latency
-  val delayedValid = RegInit(false.B)
-  val delayedDataBits = RegInit(0.U(fixedCacheWidth.W))
-  val delayedUpdateCache = RegInit(false.B)
-  
-  // Register to hold the previous request that was accepted
-  val storedRequest = RegInit(0.U.asTypeOf(new FixedCacheInstructionIO(fixedCacheDepth)))
-  val storedDataIn = RegInit(0.U(fixedCacheWidth.W))
-  
-  // Wire to select between stored request or new input request
-  val activeRequest = Wire(new FixedCacheInstructionIO(fixedCacheDepth))
-  val activeDataIn = Wire(UInt(fixedCacheWidth.W))
-  
   dontTouch(io.dataOut)
-  
-  when(!io.fixedLevelCacheRequest.bits.useCache) {
-      // Mode 1: No cache - direct passthrough
-      io.fixedLevelCacheRequest.ready := true.B
-      io.dataOut <> io.dataInTCDM
-      request_enable := false.B
-      delayedValid := false.B
-      delayedUpdateCache := false.B
-      
-      // Use new request directly
-      activeRequest := io.fixedLevelCacheRequest.bits
-      activeDataIn := io.dataInTCDM.bits
-  }.elsewhen(io.fixedLevelCacheRequest.bits.updateCache) {
-      // Mode 2: Update cache - write to memory and forward data with delay
-      
-      // Check if we can accept new request: dataOut is ready or not valid yet
-      val canAcceptNew = !delayedValid || io.dataOut.ready
-      
-      // Select between stored request (when stalled) or new request (when can accept)
-      when(canAcceptNew) {
-        activeRequest := io.fixedLevelCacheRequest.bits
-        activeDataIn := io.dataInTCDM.bits
-      }.otherwise {
-        activeRequest := storedRequest
-        activeDataIn := storedDataIn
-      }
-      
-      // Keep request_enable high as long as inputs are valid, even when stalled
-      request_enable := Mux(canAcceptNew, 
-        io.fixedLevelCacheRequest.valid && io.dataInTCDM.valid,
-        true.B  // Keep enabled when using stored request
-      )
-      
-      io.fixedLevelCacheRequest.ready := io.fixedLevelCacheRequest.valid && io.dataInTCDM.valid && canAcceptNew
-      io.dataInTCDM.ready := io.fixedLevelCacheRequest.valid && io.dataInTCDM.valid && canAcceptNew
-      
-      // Store request when accepting new one
-      when(canAcceptNew && io.fixedLevelCacheRequest.valid && io.dataInTCDM.valid) {
-        storedRequest := io.fixedLevelCacheRequest.bits
-        storedDataIn := io.dataInTCDM.bits
-      }
-      
-      // Delay the data, valid, and mode by one cycle to match memory read latency
-      when(canAcceptNew && io.fixedLevelCacheRequest.valid && io.dataInTCDM.valid) {
-        delayedValid := true.B
-        delayedDataBits := io.dataInTCDM.bits
-        delayedUpdateCache := true.B
-      }.elsewhen(delayedValid && io.dataOut.ready) {
-        delayedValid := false.B
-      }
-      
-      io.dataOut.valid := delayedValid
-      // Output selection based on delayed mode
-      io.dataOut.bits := Mux(delayedUpdateCache, delayedDataBits, output_bits)
-  }.otherwise{
-      // Mode 3: Read from cache - output comes from memory with one-cycle latency
-      
-      // Check if we can accept new request: dataOut is ready or not valid yet
-      val canAcceptNew = !delayedValid || io.dataOut.ready
-      
-      // Select between stored request (when stalled) or new request (when can accept)
-      when(canAcceptNew) {
-        activeRequest := io.fixedLevelCacheRequest.bits
-        activeDataIn := io.dataInTCDM.bits
-      }.otherwise {
-        activeRequest := storedRequest
-        activeDataIn := storedDataIn
-      }
-      
-      // Keep request_enable high as long as input is valid, even when stalled
-      request_enable := Mux(canAcceptNew,
-        io.fixedLevelCacheRequest.valid,
-        true.B  // Keep enabled when using stored request
-      )
-      
-      io.fixedLevelCacheRequest.ready := io.fixedLevelCacheRequest.valid && canAcceptNew
-      io.dataInTCDM.ready := false.B
-      
-      // Store request when accepting new one
-      when(canAcceptNew && io.fixedLevelCacheRequest.valid) {
-        storedRequest := io.fixedLevelCacheRequest.bits
-      }
-      
-      // Only update when accepting new request
-      when(canAcceptNew && io.fixedLevelCacheRequest.valid) {
-        delayedValid := true.B
-        delayedUpdateCache := false.B
-      }.elsewhen(delayedValid && io.dataOut.ready) {
-        delayedValid := false.B
-      }
-      
-      io.dataOut.valid := delayedValid
-      // Output selection based on delayed mode
-      io.dataOut.bits := Mux(delayedUpdateCache, delayedDataBits, output_bits)
-  }
-  
-  val mem = SyncReadMem(fixedCacheDepth, UInt(fixedCacheWidth.W))
-  if (!isReader) {
-      mem.write(io.fixedLevelCacheRequest.bits.index - 1.U, io.dataInAccelerator.get) //TODO: minus one is an oversimplification, probably an entire seperate address generator is needed
-  }
+
+  // ── Dual memory banks ──
+  // Bank 0 holds even-indexed entries, Bank 1 holds odd-indexed entries
+  val bankDepth = (fixedCacheDepth + 1) / 2  // ceil(fixedCacheDepth / 2)
+  val mem0 = SyncReadMem(bankDepth, UInt(fixedCacheWidth.W))
+  val mem1 = SyncReadMem(bankDepth, UInt(fixedCacheWidth.W))
+
   // When used inside a ReaderWriter, the writer can write directly into this cache via the writerPort.
-  // This is a second independent write port; SyncReadMem supports multiple write ports.
   if (isReaderWriter) {
     when(io.writerPort.get.enable) {
-      mem.write(io.writerPort.get.index, io.writerPort.get.data)
+      val wrBank = io.writerPort.get.index(0)
+      val wrAddr = io.writerPort.get.index >> 1.U
+      when(wrBank === 0.U) {
+        mem0.write(wrAddr, io.writerPort.get.data)
+      }.otherwise {
+        mem1.write(wrAddr, io.writerPort.get.data)
+      }
     }
   }
-  output_bits := mem.readWrite(activeRequest.index, activeDataIn, request_enable, activeRequest.updateCache)
 
-  io.busy := (io.fixedLevelCacheRequest.valid || delayedValid) && io.fixedLevelCacheRequest.bits.useCache
+  // ── Bypass mode (no cache) ──
+  when(!io.useFixedCache) {
+    io.dataOut <> io.dataInTCDM
+    io.writeFixedCacheInstruction.ready := true.B  // drain any stale instructions
+    io.readFixedCacheInstruction.ready  := true.B
+    io.busy := false.B
+  }.otherwise {
+    // ── Cache mode ──
+
+    // Write pipeline: tracks that a write was issued last cycle
+    val writePipeValid = RegInit(false.B)
+
+    // Determine which bank each instruction targets
+    val readBank  = io.readFixedCacheInstruction.bits.index(0)
+    val readAddr  = io.readFixedCacheInstruction.bits.index >> 1.U
+    val writeBank = io.writeFixedCacheInstruction.bits.index(0)
+    val writeAddr = io.writeFixedCacheInstruction.bits.index >> 1.U
+
+    // ── Read logic ──
+    // The read is issued every cycle while the instruction is valid.
+    // SyncReadMem has 1-cycle latency: data appears one cycle after the read is issued.
+    // The read keeps being re-issued (same address) until downstream accepts the data.
+    val canIssueRead = io.readFixedCacheInstruction.valid
+
+    // A write can proceed when: write + data valid AND target bank not busy with a read AND write pipe empty
+    val writeBankBusy = canIssueRead && (writeBank === readBank)
+    val canAcceptWrite = io.writeFixedCacheInstruction.valid && io.dataInTCDM.valid && !writeBankBusy && !writePipeValid
+
+    // ── Bank 0 operations ──
+    val bank0ReadEn  = canIssueRead && readBank === 0.U
+    val bank0WriteEn = canAcceptWrite && writeBank === 0.U
+    val bank0ReadData = Wire(UInt(fixedCacheWidth.W))
+
+    when(bank0ReadEn) {
+      bank0ReadData := mem0.read(readAddr, true.B)
+    }.elsewhen(bank0WriteEn) {
+      mem0.write(writeAddr, io.dataInTCDM.bits)
+      bank0ReadData := DontCare
+    }.otherwise {
+      bank0ReadData := DontCare
+    }
+
+    // ── Bank 1 operations ──
+    val bank1ReadEn  = canIssueRead && readBank === 1.U
+    val bank1WriteEn = canAcceptWrite && writeBank === 1.U
+    val bank1ReadData = Wire(UInt(fixedCacheWidth.W))
+
+    when(bank1ReadEn) {
+      bank1ReadData := mem1.read(readAddr, true.B)
+    }.elsewhen(bank1WriteEn) {
+      mem1.write(writeAddr, io.dataInTCDM.bits)
+      bank1ReadData := DontCare
+    }.otherwise {
+      bank1ReadData := DontCare
+    }
+
+    // ── Read data output ──
+    // SyncReadMem data appears one cycle after the read is issued.
+    // readDataValid goes high one cycle after canIssueRead, and goes low for one cycle
+    // after an instruction is consumed (fire) so the SyncReadMem can fetch the next address.
+    val readBankReg = RegEnable(readBank, 0.U(1.W), canIssueRead)
+    val readPipeData = Mux(readBankReg === 0.U, bank0ReadData, bank1ReadData)
+
+    val readDataValid = RegNext(canIssueRead && !io.readFixedCacheInstruction.fire, false.B)
+
+    // ── Write pipeline ──
+    when(canAcceptWrite) {
+      writePipeValid := true.B
+    }.otherwise {
+      writePipeValid := false.B
+    }
+
+    // ── Handshake signals ──
+    // dataOut.valid is asserted independently of dataOut.ready (proper Decoupled).
+    // The read instruction is consumed only when downstream accepts the data.
+    io.readFixedCacheInstruction.ready  := readDataValid && io.dataOut.ready
+    io.writeFixedCacheInstruction.ready := canAcceptWrite
+    io.dataInTCDM.ready                := canAcceptWrite
+
+    // Output from read
+    io.dataOut.valid := readDataValid
+    io.dataOut.bits  := readPipeData
+
+    io.busy := io.readFixedCacheInstruction.valid || readDataValid || io.writeFixedCacheInstruction.valid || writePipeValid
+  }
 }

@@ -8,11 +8,11 @@ import org.scalatest.flatspec.AnyFlatSpec
 class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
 
   println(
-    getVerilogString(new AddressGenUnit(AddressGenUnitParam()))
+    getVerilogString(new AddressGenUnitWriter(AddressGenUnitParam()))
   )
 
   "AddressGenUnit: continuous fetch with first temporal loop disabled" should " pass" in test(
-    new AddressGenUnit(
+    new AddressGenUnitWriter(
       AddressGenUnitParam(
         spatialBounds     = List(8),
         temporalDimension = 2,
@@ -45,7 +45,7 @@ class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
     }
 
   "AddressGenUnit: continuous fetch with first temporal loop enabled" should " pass" in test(
-    new AddressGenUnit(
+    new AddressGenUnitWriter(
       AddressGenUnitParam(
         spatialBounds     = List(8),
         temporalDimension = 2,
@@ -77,7 +77,7 @@ class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
     }
 
   "AddressGenUnit: continuous 1D fetch with memory remapped to non-interleaved in superbank" should " pass" in test(
-    new AddressGenUnit(
+    new AddressGenUnitWriter(
       AddressGenUnitParam(
         spatialBounds     = List(8),
         temporalDimension = 2,
@@ -115,7 +115,7 @@ class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
 
 object AddressGenUnitEmitter extends App {
   _root_.circt.stage.ChiselStage.emitSystemVerilogFile(
-    new AddressGenUnit(
+    new AddressGenUnitWriter(
       AddressGenUnitParam(
         spatialBounds     = List(8),
         temporalDimension = 2,

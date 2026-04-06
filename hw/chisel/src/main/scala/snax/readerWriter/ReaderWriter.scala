@@ -63,13 +63,16 @@ class ReaderWriter(
   reader.io.fixedCacheWriterPort.get.index  := writer.io.fixedCacheWriterPort.get.index
   reader.io.fixedCacheWriterPort.get.data   := writer.io.fixedCacheWriterPort.get.data
 
-  // The legacy fixedCacheInstruction ports are now unused in ReaderWriter mode.
-  // The reader's cache is driven by its own internal AGU; the writer consumes its
-  // fixedCacheInstruction internally for routing. Tie off undriven inputs/outputs.
-  reader.io.fixedCacheInstruction.valid               := false.B
-  reader.io.fixedCacheInstruction.bits                := 0.U.asTypeOf(chiselTypeOf(reader.io.fixedCacheInstruction.bits))
+  // The write/read fixedCacheInstruction ports on the reader are unused in ReaderWriter mode.
+  // The reader's cache is driven by its own internal AGU. Tie off undriven inputs/outputs.
+  reader.io.writeFixedCacheInstruction.valid          := false.B
+  reader.io.writeFixedCacheInstruction.bits           := 0.U.asTypeOf(chiselTypeOf(reader.io.writeFixedCacheInstruction.bits))
+  reader.io.readFixedCacheInstruction.valid           := false.B
+  reader.io.readFixedCacheInstruction.bits            := 0.U.asTypeOf(chiselTypeOf(reader.io.readFixedCacheInstruction.bits))
+  // The writer's fixedCacheInstruction is consumed internally for routing; tie off the external IO port.
   writer.io.fixedCacheInstruction.ready               := false.B
-  io.readerInterface.fixedCacheInstruction.ready      := false.B
+  io.readerInterface.writeFixedCacheInstruction.ready := false.B
+  io.readerInterface.readFixedCacheInstruction.ready  := false.B
 
   // Both reader and writer share the same Request interface
   val readerwriterMux = Seq.fill(readerParam.tcdmParam.numChannel)(

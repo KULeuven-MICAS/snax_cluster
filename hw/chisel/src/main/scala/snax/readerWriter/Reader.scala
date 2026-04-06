@@ -20,9 +20,9 @@ class Reader(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
 
   val io = IO(new ReaderIO(param, isReaderWriter))
 
-  // New Address Generator
+  // New Address Generator (Reader-specific with separate write/read cache buffers)
   val addressgen = Module(
-    new AddressGenUnit(
+    new AddressGenUnitReader(
       param.aguParam,
       moduleNamePrefix = s"${moduleNamePrefix}_Reader"
     )
@@ -149,14 +149,21 @@ class Reader(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
       isReaderWriter   = isReaderWriter
     )
   )
-  fixedCache.io.fixedLevelCacheRequest <> addressgen.io.fixedCacheInstruction
+  // Connect the standalone useFixedCache signal from the AGU
+  fixedCache.io.useFixedCache := addressgen.io.useFixedCache
+  // Connect write instructions from AGU to cache
+  fixedCache.io.writeFixedCacheInstruction <> addressgen.io.writeFixedCacheInstruction
+  // Connect read instructions from AGU to cache
+  fixedCache.io.readFixedCacheInstruction <> addressgen.io.readFixedCacheInstruction
+  // Connect TCDM data to cache write port
   fixedCache.io.dataInTCDM <> dataBuffer.io.out.head
   val fixedCacheDataOut = fixedCache.io.dataOut
 
-  // The external io.fixedCacheInstruction port (from HasFixedCacheInputIO) is now unused:
-  // the reader's FixedLevelCache is driven exclusively by the internal AGU.
-  // Tie off the ready output so it is always driven (port exists for legacy/standalone compatibility).
-  io.fixedCacheInstruction.ready := false.B
+  // The external io.writeFixedCacheInstruction and io.readFixedCacheInstruction ports
+  // (from HasFixedCacheInputIO) are now unused: the reader's FixedLevelCache is driven
+  // exclusively by the internal AGU. Tie off the ready outputs.
+  io.writeFixedCacheInstruction.ready := false.B
+  io.readFixedCacheInstruction.ready  := false.B
 
   // When used in ReaderWriter mode, expose the writer's direct-write port from the FixedLevelCache
   if (isReaderWriter) {

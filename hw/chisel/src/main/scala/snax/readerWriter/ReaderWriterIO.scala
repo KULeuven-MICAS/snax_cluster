@@ -99,8 +99,13 @@ trait HasOutputDataIO {
 
 trait HasFixedCacheInputIO {
   this: ReaderWriterCommomIO =>
-  val fixedCacheInstruction = Flipped(
-    Decoupled(new FixedCacheInstructionIO(param.aguParam.fixedCacheDepth))
+  // Write instructions for the reader's fixed cache
+  val writeFixedCacheInstruction = Flipped(
+    Decoupled(new WriteFixedCacheInstructionIO(param.aguParam.fixedCacheDepth))
+  )
+  // Read instructions for the reader's fixed cache
+  val readFixedCacheInstruction = Flipped(
+    Decoupled(new ReadFixedCacheInstructionIO(param.aguParam.fixedCacheDepth))
   )
 }
 

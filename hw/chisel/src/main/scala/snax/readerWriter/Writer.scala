@@ -13,11 +13,10 @@ class Writer(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
 
   val io = IO(new WriterIO(param, isReaderWriter))
 
-  // New Address Generator (isWriter=true: outputBuffer fills on lastAccess, not updateCache)
+  // New Address Generator (Writer-specific: outputBuffer fills on lastAccess)
   val addressgen = Module(
-    new AddressGenUnit(
+    new AddressGenUnitWriter(
       param.aguParam,
-      isWriter         = true,
       moduleNamePrefix = s"${moduleNamePrefix}_Writer"
     )
   )
@@ -157,6 +156,7 @@ class Writer(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
     // detect this and fall back to the direct TCDM path so data still flows.
     val instrValid = addressgen.io.fixedCacheInstruction.valid
     val instr      = addressgen.io.fixedCacheInstruction.bits
+    val useCache   = addressgen.io.useFixedCache
 
     // Default (no-cache path) — overridden below when fixedCache is active.
     io.fixedCacheWriterPort.get.enable            := false.B
@@ -167,7 +167,7 @@ class Writer(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
     dataAfterCrosser.ready                        := false.B
     addressgen.io.fixedCacheInstruction.ready     := false.B
 
-    when(!io.aguCfg.enableFixedCache || !addressgen.io.anyLoopFound) {
+    when(!useCache) {
       // ── No fixed-cache mode ──────────────────────────────────────────────────
       // Data streams straight to the TCDM dataBuffer, exactly as a standalone writer.
       // The fixedCacheInstruction FIFO is empty by design; consume it opportunistically
@@ -179,14 +179,12 @@ class Writer(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
       // ── Fixed-cache mode ─────────────────────────────────────────────────────
       // Route based on the instruction produced by the AGU alongside each address.
       //
-      //  useCache=true,  lastAccess=false  → cache write only (skip TCDM for this iter)
-      //  useCache=true,  lastAccess=true   → cache write + TCDM dataBuffer (last iter)
-      //  useCache=false                    → TCDM dataBuffer only (normal)
-      val goToTCDM  = !instr.useCache || instr.lastAccess
-      val goToCache = instr.useCache
+      //  lastAccess=false  → cache write only (skip TCDM for this iter)
+      //  lastAccess=true   → cache write + TCDM dataBuffer (last iter)
+      val goToTCDM  = instr.lastAccess
       val bothValid = dataAfterCrosser.valid && instrValid
 
-      io.fixedCacheWriterPort.get.enable        := bothValid && goToCache
+      io.fixedCacheWriterPort.get.enable        := bothValid
       io.fixedCacheWriterPort.get.index         := instr.index
       io.fixedCacheWriterPort.get.data          := dataAfterCrosser.bits
       dataBuffer.io.in.head.valid               := bothValid && goToTCDM

@@ -8,7 +8,7 @@ class CriticalLoopFinder(temporalDimension: Int, addressWidth: Int, fixedCacheDe
         val temporalBounds    = Input(Vec(temporalDimension, UInt(addressWidth.W)))
         val temporalStrides   = Input(Vec(temporalDimension, UInt(addressWidth.W)))
         val criticalLoop = Output(UInt(log2Ceil(temporalDimension).W))
-        val fixedCachePeriod = Output(UInt(log2Ceil(fixedCacheDepth).W))
+        val fixedCachePeriod = Output(UInt((log2Ceil(fixedCacheDepth) + 1).W))
         val anyLoopFound = Output(Bool())
         val totalBounds = Output(Vec(temporalDimension, UInt(addressWidth.W)))
     })

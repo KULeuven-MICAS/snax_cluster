@@ -21,7 +21,7 @@ import snax.utils._
 class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
   val ptr               = UInt(param.addressWidth.W)
   val enableFixedCache  = Bool() // bit 0 from csr
-  val spatialStrides    = Vec(param.spatialBounds.length, UInt(param.addressWidth.W))
+  val spatialStrides    = Vec(param.spatialBounds.length, UInt(param.addressWidth.W))  
   val temporalBounds    = Vec(param.temporalDimension, UInt(param.addressWidth.W))
   val temporalStrides   = Vec(param.temporalDimension, UInt(param.addressWidth.W))
   val addressRemapIndex = UInt(log2Ceil(param.tcdmLogicWordSize.length).W)
@@ -59,48 +59,75 @@ class AddressGenUnitCfgIO(param: AddressGenUnitParam) extends Bundle {
   }
 }
 
+// Instruction for writing into the fixed cache (from TCDM data)
+class WriteFixedCacheInstructionIO(fixedCacheDepth: Int) extends Bundle {
+  val index = UInt(log2Ceil(fixedCacheDepth).W)
+}
+
+// Instruction for reading from the fixed cache
+class ReadFixedCacheInstructionIO(fixedCacheDepth: Int) extends Bundle {
+  val index = UInt(log2Ceil(fixedCacheDepth).W)
+}
+
+// Writer-side instruction (kept for backward compatibility with writer AGU)
 class FixedCacheInstructionIO(fixedCacheDepth: Int) extends Bundle {
   val index = UInt(log2Ceil(fixedCacheDepth).W)
-  // Indicate whether fixed cache is used 
-  val useCache = Bool()
-  // When the fixed cache must be updated (first pass, zero-stride counters at their start), this signal becomes high
-  val updateCache = Bool()
   // True when all zero-stride counters within the cache scope are at their last value (ceil-1).
   // Used by the Writer in ReaderWriter mode: only write to TCDM (dataBuffer) on this last access;
   // all other accesses go to the reader's FixedLevelCache write port instead.
   val lastAccess = Bool()
 }
 
-/** AGU is the module to automatically generate the address for all ports.
-  * @input
-  *   cfg The description of the Address Generation Task. It is normally configured by CSR manager
-  * @input
-  *   start The signal to start a address generation task
-  * @output
-  *   busy The signal to indicate whether all address generation is finished. Only when busy == 0 the next address
-  *   generation task can be launched
-  * @output
-  *   addresses The Vec[Decoupled[UInt]] signal to give tcdm_requestors the address
-  * @param AddressGenUnitParam
-  *   The parameter used for generation of the module This version of AGU aims to totally remove multiplication and
-  *   division in temporal address generation
-  */
-class AddressGenUnit(param: AddressGenUnitParam, isWriter: Boolean = false, moduleNamePrefix: String = "unnamed_cluster")
+// ============================================================================
+// Common address computation logic shared between Reader and Writer AGUs
+// ============================================================================
+object AddressGenUnitCommon {
+  def AffineAddressMapping(
+    inputAddress:    UInt,
+    physWordSize:    Int,
+    logicalWordSize: Int
+  ): UInt = {
+    import snax.utils.BitsConcat._
+    require(logicalWordSize <= physWordSize)
+    require(physWordSize     % logicalWordSize == 0)
+    require(isPow2(logicalWordSize))
+    require(isPow2(physWordSize))
+    if (logicalWordSize == physWordSize) {
+      return inputAddress
+    } else {
+      return inputAddress(
+        inputAddress.getWidth - (log2Ceil(physWordSize) - log2Ceil(
+          logicalWordSize
+        )) - 1,
+        log2Ceil(logicalWordSize)
+      ) ++ inputAddress(
+        inputAddress.getWidth - 1,
+        inputAddress.getWidth - (log2Ceil(physWordSize) - log2Ceil(
+          logicalWordSize
+        ))
+      ) ++ inputAddress(log2Ceil(logicalWordSize) - 1, 0)
+    }
+  }
+}
+
+// ============================================================================
+// Reader AGU: separate WriteFixedCacheBuffer and ReadFixedCacheBuffer
+// ============================================================================
+class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String = "unnamed_cluster")
     extends Module
     with RequireAsyncReset {
   val io = IO(new Bundle {
     val cfg         = Input(new AddressGenUnitCfgIO(param))
-    // Take in the new cfg file and reset all the counters
     val start       = Input(Bool())
-    // If the address is all generated and pushed into FIFO, busy is false
     val busy        = Output(Bool())
-    // If all signal in address buffer is consumed, bufferEmpty becomes high
     val bufferEmpty = Output(Bool())
-    // The calculated address. This equals to # of output channels (64-bit narrow TCDM)
-    val addr        =
-      Vec(param.numChannel, Decoupled(UInt(param.addressWidth.W)))
-    // The instruction for the reader's fixed cache in ReaderWriter mode. Only valid when enableFixedCache is true and anyLoopFound is true.  
-    val fixedCacheInstruction = Decoupled(new FixedCacheInstructionIO(param.fixedCacheDepth))
+    val addr        = Vec(param.numChannel, Decoupled(UInt(param.addressWidth.W)))
+    // Standalone useCache signal for the FixedLevelCache
+    val useFixedCache = Output(Bool())
+    // Write instructions: emitted when all invariant loops = 0 (same as outputBuffer)
+    val writeFixedCacheInstruction = Decoupled(new WriteFixedCacheInstructionIO(param.fixedCacheDepth))
+    // Read instructions: emitted every tick, valid only when enough writes have been serviced
+    val readFixedCacheInstruction  = Decoupled(new ReadFixedCacheInstructionIO(param.fixedCacheDepth))
     // Any Critical Loop to cache found
     val anyLoopFound = Output(Bool())
   })
@@ -115,9 +142,6 @@ class AddressGenUnit(param: AddressGenUnitParam, isWriter: Boolean = false, modu
 
   override val desiredName = s"${moduleNamePrefix}_AddressGenUnit"
 
-
-
-
   // Create counters for each dimension
   val counters = for (i <- 0 until param.temporalDimension) yield {
     val counter = Module(
@@ -128,7 +152,6 @@ class AddressGenUnit(param: AddressGenUnitParam, isWriter: Boolean = false, modu
       )
     )
     counter.io.reset := io.start
-    // counter.io.tick is conenected later, when all necessary signal becomes available
     counter.io.ceil := io.cfg.temporalBounds(i)
     counter.io.step := io.cfg.temporalStrides(i)
     counter
@@ -158,59 +181,151 @@ class AddressGenUnit(param: AddressGenUnitParam, isWriter: Boolean = false, modu
   criticalLoopFinder.io.temporalStrides := io.cfg.temporalStrides
 
   val countersIsZero = VecInit(counters.map(_.io.isZero))
-  
+
   val newUseCache = io.cfg.enableFixedCache && criticalLoopFinder.io.anyLoopFound
+  io.useFixedCache := newUseCache
   io.anyLoopFound := criticalLoopFinder.io.anyLoopFound
-  
+
   val totalBounds = criticalLoopFinder.io.totalBounds
 
-  val fixedCacheCounter_tick = Wire(Bool())
-  val fixedCacheCounters = for (i <- 0 until param.temporalDimension) yield {
+  val writeFixedCacheCounter_tick = Wire(Bool())
+  val readFixedCacheCounter_tick  = Wire(Bool())
+
+  val fixedCachePeriod = criticalLoopFinder.io.fixedCachePeriod
+
+  // ── Fixed cache counters for the WRITE index ──
+  // These are coupled to the main counters_tick / DataBuffer counter.
+  // They are gated so they can never be more than one critical_loop step
+  // ahead of the read counter (see tick logic below).
+  // Cascading uses the main counters' lastVal (same as writer AGU).
+  val writeFixedCacheCounters = for (i <- 0 until param.temporalDimension) yield {
     val fixed_cache_counter = Module(
       new ProgrammableCounter(
         param.addressWidth,
         hasCeil = true,
-        s"${moduleNamePrefix}_FixedCacheCounter_${i}"
+        s"${moduleNamePrefix}_WriteFixedCacheCounter_${i}"
       )
     )
-    if (i==0){
+    if (i == 0) {
       fixed_cache_counter.io.reset := io.start
-      fixed_cache_counter.io.tick := fixedCacheCounter_tick
+      fixed_cache_counter.io.tick := writeFixedCacheCounter_tick
       fixed_cache_counter.io.ceil := io.cfg.temporalBounds(i)
       fixed_cache_counter.io.step := 1.U
     } else {
       fixed_cache_counter.io.reset := io.start
-      fixed_cache_counter.io.tick := fixedCacheCounter_tick && counters(i-1).io.lastVal
+      fixed_cache_counter.io.tick := writeFixedCacheCounter_tick && counters(i - 1).io.lastVal
       fixed_cache_counter.io.ceil := io.cfg.temporalBounds(i)
-      fixed_cache_counter.io.step := totalBounds(i-1)
+      fixed_cache_counter.io.step := totalBounds(i - 1)
     }
     val counter_out = Wire(UInt(param.addressWidth.W))
     when(io.cfg.temporalStrides(i) === 0.U || i.U > criticalLoopFinder.io.criticalLoop) {
-        counter_out := 0.U
-    } .otherwise {
-        counter_out := fixed_cache_counter.io.value
+      counter_out := 0.U
+    }.otherwise {
+      counter_out := fixed_cache_counter.io.value
     }
-    counter_out
+    (counter_out, fixed_cache_counter)
   }
 
-  val newIndex = VecInit(fixedCacheCounters).reduceTree(_ + _) 
+  val writeIndex = VecInit(writeFixedCacheCounters.map(_._1)).reduceTree(_ + _)
+
+  // ── Fixed cache counters for the READ index ──
+  // These are fully decoupled from the write counters.
+  // They tick independently when:
+  //   1) There is space in the readFixedCacheBuffer
+  //   2) The corresponding write instruction has been serviced
+  // Cascading is internal: each counter's tick depends on the previous read counter's lastVal.
+  val readFixedCacheCounterModules = scala.collection.mutable.ArrayBuffer[ProgrammableCounter]()
+  val readFixedCacheCounters = for (i <- 0 until param.temporalDimension) yield {
+    val fixed_cache_counter = Module(
+      new ProgrammableCounter(
+        param.addressWidth,
+        hasCeil = true,
+        s"${moduleNamePrefix}_ReadFixedCacheCounter_${i}"
+      )
+    )
+    if (i == 0) {
+      fixed_cache_counter.io.reset := io.start
+      fixed_cache_counter.io.tick := readFixedCacheCounter_tick
+      fixed_cache_counter.io.ceil := io.cfg.temporalBounds(i)
+      fixed_cache_counter.io.step := 1.U
+    } else {
+      fixed_cache_counter.io.reset := io.start
+      fixed_cache_counter.io.tick := readFixedCacheCounter_tick && readFixedCacheCounterModules(i - 1).io.lastVal
+      fixed_cache_counter.io.ceil := io.cfg.temporalBounds(i)
+      fixed_cache_counter.io.step := totalBounds(i - 1)
+    }
+    readFixedCacheCounterModules += fixed_cache_counter
+    val counter_out = Wire(UInt(param.addressWidth.W))
+    when(io.cfg.temporalStrides(i) === 0.U || i.U > criticalLoopFinder.io.criticalLoop) {
+      counter_out := 0.U
+    }.otherwise {
+      counter_out := fixed_cache_counter.io.value
+    }
+    (counter_out, fixed_cache_counter)
+  }
+
+  val readIndex = VecInit(readFixedCacheCounters.map(_._1)).reduceTree(_ + _)
+  // Period transition counters: track how many period boundaries each side has crossed.
+  // The write side must never be more than 1 period ahead of the read side.
+  // writePeriodCount: increments when a write instruction is *created* (counter tick).
+  val writePeriodCount = RegInit(0.U(param.addressWidth.W))
+
+  when(io.start) {
+    writePeriodCount := 0.U
+  }.elsewhen(writeFixedCacheCounter_tick) {
+    writePeriodCount := writePeriodCount + 1.U
+  }
+
+  // readServicedPeriodCount: counts how many complete periods of read instructions have been
+  // *actually serviced* (consumed by the downstream cache via io.readFixedCacheInstruction.fire).
+  // Unlike readPeriodCount which tracked creation, this tracks consumption.
+  val readServicedPeriodCount = RegInit(0.U(param.addressWidth.W))
+
+  when(io.start) {
+    readServicedPeriodCount := 0.U
+  }.elsewhen(io.readFixedCacheInstruction.fire) {
+    readServicedPeriodCount := readServicedPeriodCount + 1.U
+  }
+
+  // ── Serviced counter: counts how many cache writes have been accepted ──
+  // Incremented when the downstream FixedLevelCache consumes a write instruction
+  // (writeFixedCacheInstruction.fire = valid && ready).
+  val servicedCounter = RegInit(0.U(param.addressWidth.W))
+  when(io.start) {
+    servicedCounter := 0.U
+  }.elsewhen(io.writeFixedCacheInstruction.fire) {
+    servicedCounter := servicedCounter + 1.U
+  }
+
+  // updateCache condition (write side): all invariant (zero-stride) loops within cache scope are at zero
   val updateCacheConditions = (0 until param.temporalDimension).map { i =>
     !((io.cfg.temporalStrides(i) === 0.U) && (i.U <= criticalLoopFinder.io.criticalLoop)) || countersIsZero(i)
   }
   val newUpdateCache = updateCacheConditions.reduce(_ && _)
 
-  // lastAccess: true when all zero-stride counters within the cache scope are currently at their last
-  // position (ceil-1). Uses isLastVal (tick-free level signal) instead of lastVal to avoid a
-  // combinational loop through counters_tick → counter.tick → counter.lastVal → newLastAccess → counters_tick.
-  val lastAccessConditions = (0 until param.temporalDimension).map { i =>
-    !((io.cfg.temporalStrides(i) === 0.U) && (i.U <= criticalLoopFinder.io.criticalLoop)) || counters(i).io.isLastVal
+  // updateCache condition (read side): same logic but using read counters' isZero
+  // When true, the read position corresponds to a cache slot that needed a fresh write.
+  // When false, we're re-reading already-cached data (invariant loop iteration), no write needed.
+  val readCountersIsZero = VecInit(readFixedCacheCounterModules.map(_.io.isZero).toSeq)
+  val readUpdateCacheConditions = (0 until param.temporalDimension).map { i =>
+    !((io.cfg.temporalStrides(i) === 0.U) && (i.U <= criticalLoopFinder.io.criticalLoop)) || readCountersIsZero(i)
   }
-  val newLastAccess = lastAccessConditions.reduce(_ && _)
+  val readUpdateCache = readUpdateCacheConditions.reduce(_ && _)
 
-  // Calculate the current base address: the first stride need to be left-shifted
+  // ── Read issued counter: counts how many read instructions have been issued ──
+  // Can never exceed servicedCounter.
+  // Only incremented when the read counters are at a position that requires a new cache write
+  // (i.e., the read-side updateCache condition is true).
+  val readIssuedCounter = RegInit(0.U(param.addressWidth.W))
+  when(io.start) {
+    readIssuedCounter := 0.U
+  }.elsewhen(readFixedCacheCounter_tick && readUpdateCache) {
+    readIssuedCounter := readIssuedCounter + 1.U
+  }
+
+  // Calculate the current base address
   val temporalOffset = VecInit(counters.map(_.io.value)).reduceTree(_ + _)
 
-  // This is a table for all possible values that the spatial offset can take
   val spatialOffsetTable = for (i <- 0 until param.spatialBounds.length) yield {
     (0 until param.spatialBounds(i)).map(io.cfg.spatialStrides(i) * _.U)
   }
@@ -227,48 +342,16 @@ class AddressGenUnit(param: AddressGenUnitParam, isWriter: Boolean = false, modu
     spatialOffset
   }
 
-  // Calculate all addresses for different channels together
   val currentAddress = Wire(Vec(io.addr.length, UInt(param.addressWidth.W)))
   currentAddress.zipWithIndex.foreach { case (address, index) =>
     address := io.cfg.ptr + spatialOffsets(index)
   }
 
-  // Connect it to the input of outputBuffer
-  // Before the connecting to outputBuffer, the address can be remapped to another address space
-  // The Function to do the mapping is defined below:
-  def AffineAddressMapping(
-    inputAddress:    UInt,
-    physWordSize:    Int,
-    logicalWordSize: Int
-  ): UInt = {
-    import snax.utils.BitsConcat._
-    require(logicalWordSize <= physWordSize)
-    require(physWordSize     % logicalWordSize == 0)
-    require(isPow2(logicalWordSize))
-    require(isPow2(physWordSize))
-    if (logicalWordSize == physWordSize) {
-      return inputAddress
-    } else {
-      return inputAddress(
-        inputAddress.getWidth - (log2Ceil(physWordSize) - log2Ceil(
-          logicalWordSize
-        )) - 1,
-        log2Ceil(logicalWordSize)
-      ) ++ inputAddress(
-        // inputAddress.getWidth - 1,
-        inputAddress.getWidth - 1,
-        inputAddress.getWidth - (log2Ceil(physWordSize) - log2Ceil(
-          logicalWordSize
-        ))
-      ) ++ inputAddress(log2Ceil(logicalWordSize) - 1, 0)
-    }
-  }
-
-  // The calling of the functions
+  // Address remapping
   val remappedAddress = param.tcdmLogicWordSize.map { logicalWordSize =>
     currentAddress
       .map(i =>
-        AffineAddressMapping(
+        AddressGenUnitCommon.AffineAddressMapping(
           i,
           param.tcdmPhysWordSize,
           logicalWordSize
@@ -277,67 +360,302 @@ class AddressGenUnit(param: AddressGenUnitParam, isWriter: Boolean = false, modu
       .reduce((a, b) => Cat(b, a))
   }
 
-  // Which mapping is used can be configured at the runtime. The default is the first mapping
   outputBuffer.io.in.head.bits := MuxLookup(
     io.cfg.addressRemapIndex,
     remappedAddress.head
   )(
     (0 until param.tcdmLogicWordSize.length).map(i => i.U -> remappedAddress(i))
   )
-  // outputBuffer.io.in.head.bits := currentAddress.reduce((a, b) => Cat(b, a))
 
-  // Connect the outputs of the buffer out
   outputBuffer.io.out.zip(io.addr).foreach { case (a, b) => a <> b }
 
-  
+  // ── WriteFixedCacheBuffer: appended in same conditions as outputBuffer (all invariant loops = 0) ──
+  val writeFixedCacheBuffer = Module(new Queue(new WriteFixedCacheInstructionIO(param.fixedCacheDepth), param.outputBufferDepth) {
+    override val desiredName = s"${moduleNamePrefix}_WriteFixedCacheBufferFIFO"
+  })
+  writeFixedCacheBuffer.io.enq.bits.index := writeIndex
+  io.writeFixedCacheInstruction <> writeFixedCacheBuffer.io.deq
 
-  // Make a Queue for the fixed cache index output
-  val fixedCacheInstructionBuffer = Module(new Queue(new FixedCacheInstructionIO(param.fixedCacheDepth), param.outputBufferDepth) {
-    override val desiredName = s"${moduleNamePrefix}_FixedCacheIndexBufferFIFO"
-  }
-  )
-  fixedCacheInstructionBuffer.io.enq.bits.index       := newIndex
-  fixedCacheInstructionBuffer.io.enq.bits.useCache    := newUseCache
-  fixedCacheInstructionBuffer.io.enq.bits.updateCache := newUpdateCache
-  fixedCacheInstructionBuffer.io.enq.bits.lastAccess  := newLastAccess
-  io.fixedCacheInstruction <> fixedCacheInstructionBuffer.io.deq
+  // ── ReadFixedCacheBuffer: appended when readFixedCacheCounter ticks ──
+  val readFixedCacheBuffer = Module(new Queue(new ReadFixedCacheInstructionIO(param.fixedCacheDepth), param.outputBufferDepth) {
+    override val desiredName = s"${moduleNamePrefix}_ReadFixedCacheBufferFIFO"
+  })
+  readFixedCacheBuffer.io.enq.bits.index := readIndex
 
-  // Connect io.bufferEmpty signal: If all output is 0, then all addresses are empty, which means io.bufferEmpty should be high
-  io.bufferEmpty := ~(outputBuffer.io.out.map(i => i.valid).reduce(_ | _)) && (fixedCacheInstructionBuffer.io.deq.valid === false.B || ~newUseCache)
+  // Read instructions pass through directly — the gating is done at the read counter tick level.
+  io.readFixedCacheInstruction <> readFixedCacheBuffer.io.deq
 
+  // bufferEmpty signal
+  io.bufferEmpty := ~(outputBuffer.io.out.map(i => i.valid).reduce(_ | _)) &&
+    (!newUseCache || (!writeFixedCacheBuffer.io.deq.valid && !readFixedCacheBuffer.io.deq.valid))
 
-  // The FSM to record if the AddressGenUnit is busy
+  // FSM
   val sIDLE :: sBUSY :: Nil = Enum(2)
   val currentState          = RegInit(sIDLE)
-  when(io.start && io.cfg.temporalBounds.map(_ =/= 0.U).reduce(_ && _)) { // The cfg is valid, and the start signal is high
+
+  // ── Write-side buffer readiness ──
+  // The write counter is coupled to the main counters (DataBuffer).
+  // Requirement: write counter can never be more than one critical_loop period ahead of the read counter.
+  // Per-counter period tracking: writePeriodCount counts how many times all inner write counters
+  // (below criticalLoop) have simultaneously reached their last values (period boundaries crossed).
+  // Same for readServicedPeriodCount on the read side (tracks actually serviced reads, not just issued).
+  val writeNotTooFarAhead = writePeriodCount < readServicedPeriodCount + fixedCachePeriod
+
+  val writeBuffersReady = Wire(Bool())
+  when(newUseCache) {
+    writeBuffersReady := Mux(newUpdateCache,
+      outputBuffer.io.in.head.ready && writeFixedCacheBuffer.io.enq.ready && writeNotTooFarAhead,
+      writeNotTooFarAhead
+    )
+  }.otherwise {
+    writeBuffersReady := outputBuffer.io.in.head.ready
+  }
+
+  // ── Read-side counter can tick condition ──
+  // A read instruction can be issued when:
+  //   1) There is space in the readFixedCacheBuffer
+  //   2) If this read position needs a cache write (readUpdateCache), the write must have been
+  //      serviced (readIssuedCounter < servicedCounter). Otherwise, we're re-reading cached data
+  //      and can proceed freely.
+  val readCanTick = readFixedCacheBuffer.io.enq.ready && (!readUpdateCache || (readIssuedCounter < servicedCounter))
+
+  // All counters done signals
+  val mainCountersDone = counters.map(_.io.lastVal).reduce(_ & _)
+  val writeCountersDone = writeFixedCacheCounters.map(_._2.io.lastVal).reduce(_ & _)
+  val readCountersDone  = readFixedCacheCounters.map(_._2.io.lastVal).reduce(_ & _)
+
+  when(io.start && io.cfg.temporalBounds.map(_ =/= 0.U).reduce(_ && _)) {
     currentState := sBUSY
-  }.elsewhen(
-    counters.map(_.io.lastVal).reduce(_ & _) && ((!newUseCache && outputBuffer.io.in.head.fire) || (newUseCache && fixedCacheInstructionBuffer.io.enq.fire))
-  ) { // The output FIFO already accept the result
+  }.elsewhen(currentState === sBUSY && Mux(newUseCache,
+    mainCountersDone && writeBuffersReady && writeCountersDone && readCountersDone && readCanTick,
+    mainCountersDone && writeBuffersReady
+  )) {
     currentState := sIDLE
   }.otherwise {
     currentState := currentState
   }
 
-  // When the AGU becomes busy, the valid signal is pulled up to put address in the fifo
-  // Reader: fill outputBuffer on first access (newUpdateCache) so TCDM is fetched once.
-  // Writer: fill outputBuffer on last access (newLastAccess) so TCDM is written once.
-  val outputBufferFillCondition = if (isWriter) newLastAccess else newUpdateCache
-  outputBuffer.io.in.head.valid := currentState === sBUSY && (outputBufferFillCondition || !newUseCache) && (outputBuffer.io.in.head.ready && fixedCacheInstructionBuffer.io.enq.ready) //Put the address into FIFO only when the fixed cache needs to be updated
-  fixedCacheInstructionBuffer.io.enq.valid := currentState === sBUSY && newUseCache && (outputBuffer.io.in.head.ready && fixedCacheInstructionBuffer.io.enq.ready)
-  // io.busy also determined by currentState
-  io.busy                       := currentState === sBUSY
+  // Valid signals for the buffers
+  // OutputBuffer: written when updateCache (first access) or when cache not used
+  outputBuffer.io.in.head.valid := currentState === sBUSY && (newUpdateCache || !newUseCache) && writeBuffersReady
+  // WriteFixedCacheBuffer: written in same conditions as outputBuffer, only when cache is used
+  writeFixedCacheBuffer.io.enq.valid := currentState === sBUSY && newUseCache && newUpdateCache && writeBuffersReady
+  // ReadFixedCacheBuffer: written when the read counter ticks (decoupled from write)
+  readFixedCacheBuffer.io.enq.valid := currentState === sBUSY && newUseCache && readCanTick
 
-  // Temporal bounds' tick signal (enable signal)
-  val counters_tick =
-    currentState === sBUSY && ((outputBufferFillCondition && outputBuffer.io.in.head.fire) || (fixedCacheInstructionBuffer.io.enq.fire) || (!newUseCache && outputBuffer.io.in.head.fire)) // FIFO still have the space to take the new address
-  // First counter's tick is connected to the start signal
-  counters.head.io.tick    := counters_tick
-  // Other counters' tick is connected to the previous counter's lastVal & counters_tick
+  // Busy depends on all counters (main, write cache, and read cache)
+  io.busy := currentState === sBUSY
+
+  // ── Tick logic ──
+  // Main counters + write fixed cache counters: coupled together, gated by writeBuffersReady
+  val counters_tick = currentState === sBUSY && writeBuffersReady
+  counters.head.io.tick := counters_tick
   if (counters.length > 1) {
     counters.tail.zip(counters).foreach { case (a, b) =>
       a.io.tick := b.io.lastVal && counters_tick
     }
   }
-  fixedCacheCounter_tick  := counters_tick
+  writeFixedCacheCounter_tick := counters_tick
+
+  // Read fixed cache counters: tick independently when readCanTick
+  readFixedCacheCounter_tick := currentState === sBUSY && newUseCache && readCanTick
+}
+
+// ============================================================================
+// Writer AGU: keeps lastAccess instruction for ReaderWriter routing
+// ============================================================================
+class AddressGenUnitWriter(param: AddressGenUnitParam, moduleNamePrefix: String = "unnamed_cluster")
+    extends Module
+    with RequireAsyncReset {
+  val io = IO(new Bundle {
+    val cfg         = Input(new AddressGenUnitCfgIO(param))
+    val start       = Input(Bool())
+    val busy        = Output(Bool())
+    val bufferEmpty = Output(Bool())
+    val addr        = Vec(param.numChannel, Decoupled(UInt(param.addressWidth.W)))
+    // Standalone useCache signal
+    val useFixedCache = Output(Bool())
+    // Writer instruction with lastAccess
+    val fixedCacheInstruction = Decoupled(new FixedCacheInstructionIO(param.fixedCacheDepth))
+    val anyLoopFound = Output(Bool())
+  })
+
+  require(param.spatialBounds.reduce(_ * _) <= param.numChannel)
+  if (param.spatialBounds.reduce(_ * _) > param.numChannel) {
+    Console.err.print(
+      s"The multiplication of temporal bounds (${param.spatialBounds
+          .reduce(_ * _)}) is larger than the number of channels(${param.numChannel}). Check the design parameter if you do not design it intentionally."
+    )
+  }
+
+  override val desiredName = s"${moduleNamePrefix}_AddressGenUnit"
+
+  // Create counters for each dimension
+  val counters = for (i <- 0 until param.temporalDimension) yield {
+    val counter = Module(
+      new ProgrammableCounter(
+        param.addressWidth,
+        hasCeil = true,
+        s"${moduleNamePrefix}_AddressGenUnitCounter"
+      )
+    )
+    counter.io.reset := io.start
+    counter.io.ceil := io.cfg.temporalBounds(i)
+    counter.io.step := io.cfg.temporalStrides(i)
+    counter
+  }
+
+  val outputBuffer = Module(
+    new ComplexQueueConcat(
+      inputWidth  = io.addr.head.bits.getWidth * param.numChannel,
+      outputWidth = io.addr.head.bits.getWidth,
+      depth       = param.outputBufferDepth,
+      pipe        = true
+    ) {
+      override val desiredName = s"${moduleNamePrefix}_AddressBufferFIFO"
+    }
+  )
+
+  val criticalLoopFinder = Module(
+    new CriticalLoopFinder(
+      param.temporalDimension,
+      param.addressWidth,
+      param.fixedCacheDepth
+    )
+  )
+  criticalLoopFinder.io.temporalBounds := io.cfg.temporalBounds
+  criticalLoopFinder.io.temporalStrides := io.cfg.temporalStrides
+
+  val countersIsZero = VecInit(counters.map(_.io.isZero))
+
+  val newUseCache = io.cfg.enableFixedCache && criticalLoopFinder.io.anyLoopFound
+  io.useFixedCache := newUseCache
+  io.anyLoopFound := criticalLoopFinder.io.anyLoopFound
+
+  val totalBounds = criticalLoopFinder.io.totalBounds
+
+  val fixedCacheCounter_tick = Wire(Bool())
+  val fixedCacheCounters = for (i <- 0 until param.temporalDimension) yield {
+    val fixed_cache_counter = Module(
+      new ProgrammableCounter(
+        param.addressWidth,
+        hasCeil = true,
+        s"${moduleNamePrefix}_FixedCacheCounter_${i}"
+      )
+    )
+    if (i == 0) {
+      fixed_cache_counter.io.reset := io.start
+      fixed_cache_counter.io.tick := fixedCacheCounter_tick
+      fixed_cache_counter.io.ceil := io.cfg.temporalBounds(i)
+      fixed_cache_counter.io.step := 1.U
+    } else {
+      fixed_cache_counter.io.reset := io.start
+      fixed_cache_counter.io.tick := fixedCacheCounter_tick && counters(i - 1).io.lastVal
+      fixed_cache_counter.io.ceil := io.cfg.temporalBounds(i)
+      fixed_cache_counter.io.step := totalBounds(i - 1)
+    }
+    val counter_out = Wire(UInt(param.addressWidth.W))
+    when(io.cfg.temporalStrides(i) === 0.U || i.U > criticalLoopFinder.io.criticalLoop) {
+      counter_out := 0.U
+    }.otherwise {
+      counter_out := fixed_cache_counter.io.value
+    }
+    counter_out
+  }
+
+  val newIndex = VecInit(fixedCacheCounters).reduceTree(_ + _)
+
+  // lastAccess condition (same as before)
+  val lastAccessConditions = (0 until param.temporalDimension).map { i =>
+    !((io.cfg.temporalStrides(i) === 0.U) && (i.U <= criticalLoopFinder.io.criticalLoop)) || counters(i).io.isLastVal
+  }
+  val newLastAccess = lastAccessConditions.reduce(_ && _)
+
+  // updateCache condition (for writer: outputBuffer fills on lastAccess)
+  val lastAccessForFill = newLastAccess
+
+  // Address computation
+  val temporalOffset = VecInit(counters.map(_.io.value)).reduceTree(_ + _)
+
+  val spatialOffsetTable = for (i <- 0 until param.spatialBounds.length) yield {
+    (0 until param.spatialBounds(i)).map(io.cfg.spatialStrides(i) * _.U)
+  }
+
+  val spatialOffsets = for (i <- 0 until param.numChannel) yield {
+    var remainder     = i
+    var spatialOffset = temporalOffset
+    for (j <- 0 until param.spatialBounds.length) {
+      spatialOffset = spatialOffset + spatialOffsetTable(j)(
+        remainder % param.spatialBounds(j)
+      )
+      remainder     = remainder / param.spatialBounds(j)
+    }
+    spatialOffset
+  }
+
+  val currentAddress = Wire(Vec(io.addr.length, UInt(param.addressWidth.W)))
+  currentAddress.zipWithIndex.foreach { case (address, index) =>
+    address := io.cfg.ptr + spatialOffsets(index)
+  }
+
+  val remappedAddress = param.tcdmLogicWordSize.map { logicalWordSize =>
+    currentAddress
+      .map(i =>
+        AddressGenUnitCommon.AffineAddressMapping(
+          i,
+          param.tcdmPhysWordSize,
+          logicalWordSize
+        )
+      )
+      .reduce((a, b) => Cat(b, a))
+  }
+
+  outputBuffer.io.in.head.bits := MuxLookup(
+    io.cfg.addressRemapIndex,
+    remappedAddress.head
+  )(
+    (0 until param.tcdmLogicWordSize.length).map(i => i.U -> remappedAddress(i))
+  )
+
+  outputBuffer.io.out.zip(io.addr).foreach { case (a, b) => a <> b }
+
+  // Fixed cache instruction buffer for writer (with lastAccess)
+  val fixedCacheInstructionBuffer = Module(new Queue(new FixedCacheInstructionIO(param.fixedCacheDepth), param.outputBufferDepth) {
+    override val desiredName = s"${moduleNamePrefix}_FixedCacheIndexBufferFIFO"
+  })
+  fixedCacheInstructionBuffer.io.enq.bits.index      := newIndex
+  fixedCacheInstructionBuffer.io.enq.bits.lastAccess := newLastAccess
+  io.fixedCacheInstruction <> fixedCacheInstructionBuffer.io.deq
+
+  io.bufferEmpty := ~(outputBuffer.io.out.map(i => i.valid).reduce(_ | _)) &&
+    (fixedCacheInstructionBuffer.io.deq.valid === false.B || ~newUseCache)
+
+  // FSM
+  val sIDLE :: sBUSY :: Nil = Enum(2)
+  val currentState          = RegInit(sIDLE)
+  when(io.start && io.cfg.temporalBounds.map(_ =/= 0.U).reduce(_ && _)) {
+    currentState := sBUSY
+  }.elsewhen(
+    counters.map(_.io.lastVal).reduce(_ & _) && ((!newUseCache && outputBuffer.io.in.head.fire) || (newUseCache && fixedCacheInstructionBuffer.io.enq.fire))
+  ) {
+    currentState := sIDLE
+  }.otherwise {
+    currentState := currentState
+  }
+
+  // Writer: fill outputBuffer on last access (newLastAccess) so TCDM is written once.
+  val outputBufferFillCondition = newLastAccess
+  outputBuffer.io.in.head.valid := currentState === sBUSY && (outputBufferFillCondition || !newUseCache) && (outputBuffer.io.in.head.ready && fixedCacheInstructionBuffer.io.enq.ready)
+  fixedCacheInstructionBuffer.io.enq.valid := currentState === sBUSY && newUseCache && (outputBuffer.io.in.head.ready && fixedCacheInstructionBuffer.io.enq.ready)
+  io.busy := currentState === sBUSY
+
+  val counters_tick =
+    currentState === sBUSY && ((outputBufferFillCondition && outputBuffer.io.in.head.fire) || (fixedCacheInstructionBuffer.io.enq.fire) || (!newUseCache && outputBuffer.io.in.head.fire))
+  counters.head.io.tick := counters_tick
+  if (counters.length > 1) {
+    counters.tail.zip(counters).foreach { case (a, b) =>
+      a.io.tick := b.io.lastVal && counters_tick
+    }
+  }
+  fixedCacheCounter_tick := counters_tick
 }

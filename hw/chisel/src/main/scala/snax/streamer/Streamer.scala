@@ -171,11 +171,10 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   }: _*)
 
   for (readerIdx <- 0 until param.readerNum) {
-    reader(readerIdx).io.fixedCacheInstruction.valid := false.B
-    reader(readerIdx).io.fixedCacheInstruction.bits.index := 0.U
-    reader(readerIdx).io.fixedCacheInstruction.bits.useCache := false.B
-    reader(readerIdx).io.fixedCacheInstruction.bits.updateCache := false.B
-    reader(readerIdx).io.fixedCacheInstruction.bits.lastAccess := false.B
+    reader(readerIdx).io.writeFixedCacheInstruction.valid := false.B
+    reader(readerIdx).io.writeFixedCacheInstruction.bits.index := 0.U
+    reader(readerIdx).io.readFixedCacheInstruction.valid := false.B
+    reader(readerIdx).io.readFixedCacheInstruction.bits.index := 0.U
   }
 
 
@@ -205,14 +204,13 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
     )
   }: _*)
 
-  // The readerInterface.fixedCacheInstruction port is a legacy/stub input on ReaderWriter
-  // (the cache is driven internally). Tie off its inputs so FIRRTL sees them as driven.
+  // The readerInterface write/read FixedCacheInstruction ports are legacy/stub inputs on ReaderWriter
+  // (the cache is driven internally). Tie off their inputs so FIRRTL sees them as driven.
   for (rwIdx <- 0 until param.readerWriterNum / 2) {
-    reader_writer(rwIdx).io.readerInterface.fixedCacheInstruction.valid              := false.B
-    reader_writer(rwIdx).io.readerInterface.fixedCacheInstruction.bits.index        := 0.U
-    reader_writer(rwIdx).io.readerInterface.fixedCacheInstruction.bits.useCache     := false.B
-    reader_writer(rwIdx).io.readerInterface.fixedCacheInstruction.bits.updateCache  := false.B
-    reader_writer(rwIdx).io.readerInterface.fixedCacheInstruction.bits.lastAccess   := false.B
+    reader_writer(rwIdx).io.readerInterface.writeFixedCacheInstruction.valid         := false.B
+    reader_writer(rwIdx).io.readerInterface.writeFixedCacheInstruction.bits.index    := 0.U
+    reader_writer(rwIdx).io.readerInterface.readFixedCacheInstruction.valid          := false.B
+    reader_writer(rwIdx).io.readerInterface.readFixedCacheInstruction.bits.index     := 0.U
   }
 
   // datapath extension module instantiation
