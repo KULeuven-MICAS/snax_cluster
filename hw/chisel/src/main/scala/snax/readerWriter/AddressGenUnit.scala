@@ -379,14 +379,14 @@ class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String 
   outputBuffer.io.out.zip(io.addr).foreach { case (a, b) => a <> b }
 
   // ── WriteFixedCacheBuffer: appended in same conditions as outputBuffer (all invariant loops = 0) ──
-  val writeFixedCacheBuffer = Module(new Queue(new WriteFixedCacheInstructionIO(param.fixedCacheDepth), param.outputBufferDepth) {
+  val writeFixedCacheBuffer = Module(new Queue(new WriteFixedCacheInstructionIO(param.fixedCacheDepth), param.outputBufferDepth, pipe = true) {
     override val desiredName = s"${moduleNamePrefix}_WriteFixedCacheBufferFIFO"
   })
   writeFixedCacheBuffer.io.enq.bits.index := writeIndex
   io.writeFixedCacheInstruction <> writeFixedCacheBuffer.io.deq
 
   // ── ReadFixedCacheBuffer: appended when readFixedCacheCounter ticks ──
-  val readFixedCacheBuffer = Module(new Queue(new ReadFixedCacheInstructionIO(param.fixedCacheDepth), param.outputBufferDepth) {
+  val readFixedCacheBuffer = Module(new Queue(new ReadFixedCacheInstructionIO(param.fixedCacheDepth), param.outputBufferDepth, pipe = true) {
     override val desiredName = s"${moduleNamePrefix}_ReadFixedCacheBufferFIFO"
   })
   readFixedCacheBuffer.io.enq.bits.index := readIndex
@@ -406,7 +406,9 @@ class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String 
   // The write cache counters are now decoupled from the main counters.
   // TCDM requests (outputBuffer) fire as soon as space is available.
   // Write cache instructions wait for writeNotTooFarAhead.
-  val writeNotTooFarAhead = writePeriodCount < readServicedPeriodCount + fixedCachePeriod
+  // Bypass: include current-cycle read fire to eliminate 1-cycle Reg latency on readServicedPeriodCount
+  val effectiveReadServicedPeriodCount = readServicedPeriodCount + io.readFixedCacheInstruction.fire.asUInt
+  val writeNotTooFarAhead = writePeriodCount < effectiveReadServicedPeriodCount + fixedCachePeriod
 
   // Output buffer (TCDM requests): can accept as soon as there is space
   val outputBufferCanAccept = outputBuffer.io.in.head.ready
@@ -428,7 +430,8 @@ class AddressGenUnitReader(param: AddressGenUnitParam, moduleNamePrefix: String 
   //   2) If this read position needs a cache write (readUpdateCache), the write must have been
   //      serviced (readIssuedCounter < servicedCounter). Otherwise, we're re-reading cached data
   //      and can proceed freely.
-  val readCanTick = readFixedCacheBuffer.io.enq.ready && (!readUpdateCache || (readIssuedCounter < servicedCounter))
+  val effectiveServicedCounter = servicedCounter + io.writeFixedCacheInstruction.fire.asUInt
+  val readCanTick = readFixedCacheBuffer.io.enq.ready && (!readUpdateCache || (readIssuedCounter < effectiveServicedCounter))
 
   // All counters done signals
   val mainCountersDone = counters.map(_.io.lastVal).reduce(_ & _)

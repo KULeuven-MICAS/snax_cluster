@@ -20,10 +20,8 @@ class FixedLevelCacheWriterPort(fixedCacheDepth: Int, fixedCacheWidth: Int) exte
   *   - Bank 0: stores data at even indices (index LSB = 0)
   *   - Bank 1: stores data at odd indices (index LSB = 1)
   *
-  * Read instructions (from readFixedCacheInstruction) have priority.
-  * When a read targets a bank, that bank is busy and cannot be used for writes.
-  * Write instructions (from writeFixedCacheInstruction + dataInTCDM) can only proceed
-  * when their target bank is not busy being read.
+  * Read instructions have priority over writes. When both target the same bank,
+  * the read proceeds and the write stalls for one cycle.
   *
   * When useFixedCache is false, the cache is bypassed: dataInTCDM flows straight to dataOut.
   *
@@ -77,80 +75,120 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
   }.otherwise {
     // ── Cache mode ──
 
-    // Write pipeline: tracks that a write was issued last cycle
-    val writePipeValid = RegInit(false.B)
-
     // Determine which bank each instruction targets
-    val readBank  = io.readFixedCacheInstruction.bits.index(0)
-    val readAddr  = io.readFixedCacheInstruction.bits.index >> 1.U
     val writeBank = io.writeFixedCacheInstruction.bits.index(0)
     val writeAddr = io.writeFixedCacheInstruction.bits.index >> 1.U
 
-    // ── Read logic ──
-    // The read is issued every cycle while the instruction is valid.
-    // SyncReadMem has 1-cycle latency: data appears one cycle after the read is issued.
-    // The read keeps being re-issued (same address) until downstream accepts the data.
-    val canIssueRead = io.readFixedCacheInstruction.valid
+    // A write can proceed when: write + data valid AND target bank not busy with a read
+    // (reads have priority over writes)
+    val canAcceptWrite = Wire(Bool())
 
-    // A write can proceed when: write + data valid AND target bank not busy with a read AND write pipe empty
-    val writeBankBusy = canIssueRead && (writeBank === readBank)
-    val canAcceptWrite = io.writeFixedCacheInstruction.valid && io.dataInTCDM.valid && !writeBankBusy && !writePipeValid
+    // ── Local instruction register ──
+    // Stores the current read instruction in a register, decoupling the instruction
+    // buffer from the SyncReadMem read pipeline. The buffer is ready'd immediately
+    // on acceptance, so the next instruction can be accepted and its SyncReadMem read
+    // issued in the same cycle that the current data is delivered — no 1-cycle gap.
+    // Only ONE read is issued per instruction (on the accept cycle). A hold register
+    // keeps the data stable while waiting for downstream to consume it, freeing the
+    // bank for writes on all other cycles.
+    val instrValid = RegInit(false.B)
+    val instrIndex = Reg(UInt(log2Ceil(fixedCacheDepth).W))
 
-    // ── Bank 0 operations ──
-    val bank0ReadEn  = canIssueRead && readBank === 0.U
+    // dataHeld: stays true once read data has arrived, until consumed (delivered)
+    val dataHeld = RegInit(false.B)
+
+    // Data arriving from SyncReadMem: one cycle after issueRead was asserted
+    val readDataArriving = RegInit(false.B)
+
+    val dataAvailable = instrValid && (dataHeld || readDataArriving)
+
+    // Fire: data delivered to downstream
+    val delivering = dataAvailable && io.dataOut.ready
+
+    // Accept a new instruction when the register is free or being freed (delivering)
+    val canAcceptNew = !instrValid || delivering
+    val newBank = io.readFixedCacheInstruction.bits.index(0)
+    val newAddr = io.readFixedCacheInstruction.bits.index >> 1.U
+    val acceptNew = io.readFixedCacheInstruction.valid && canAcceptNew
+
+    // Register update
+    when(acceptNew) {
+      instrValid := true.B
+      instrIndex := io.readFixedCacheInstruction.bits.index
+    }.elsewhen(delivering && !acceptNew) {
+      instrValid := false.B
+    }
+
+    // ── Issue SyncReadMem read ──
+    // Only when accepting a new instruction (one read per instruction).
+    // No re-reads: the hold register keeps data stable while waiting for downstream.
+    // This frees the bank for writes on all non-accept cycles.
+    val issueRead   = acceptNew
+    val readBankSel = newBank
+    val readAddrSel = newAddr
+
+    // Track data arrival (one cycle after read issued)
+    readDataArriving := issueRead
+
+    // dataHeld update (priority: acceptNew > readDataArriving > delivering)
+    when(acceptNew) {
+      dataHeld := false.B      // new instruction, data not ready yet
+    }.elsewhen(readDataArriving) {
+      dataHeld := true.B       // data arrived from memory, latch it
+    }.elsewhen(delivering) {
+      dataHeld := false.B      // data consumed
+    }
+
+    // Per-bank read busy flags (read priority: writes blocked when bank is reading)
+    val bank0ReadBusy = issueRead && readBankSel === 0.U
+    val bank1ReadBusy = issueRead && readBankSel === 1.U
+
+    // A write can only proceed when its target bank is not busy with a read
+    val writeBankBusy = Mux(writeBank === 0.U, bank0ReadBusy, bank1ReadBusy)
+    canAcceptWrite := io.writeFixedCacheInstruction.valid && io.dataInTCDM.valid && !writeBankBusy
+
+    // ── Bank 0: single readWrite port ──
+    // mem.readWrite(addr, wdata, en, isWrite) provides a single port.
+    // When en=true, isWrite=false: reads from addr, data available next cycle.
+    // When en=true, isWrite=true: writes wdata to addr.
+    // Read and write to the same bank are mutually exclusive (read has priority).
     val bank0WriteEn = canAcceptWrite && writeBank === 0.U
-    val bank0ReadData = Wire(UInt(fixedCacheWidth.W))
+    val bank0En      = bank0ReadBusy || bank0WriteEn
+    val bank0IsWrite = bank0WriteEn
+    val bank0Addr    = Mux(bank0ReadBusy, readAddrSel, writeAddr)
+    val bank0MemOut  = mem0.readWrite(bank0Addr, io.dataInTCDM.bits, bank0En, bank0IsWrite)
 
-    when(bank0ReadEn) {
-      bank0ReadData := mem0.read(readAddr, true.B)
-    }.elsewhen(bank0WriteEn) {
-      mem0.write(writeAddr, io.dataInTCDM.bits)
-      bank0ReadData := DontCare
-    }.otherwise {
-      bank0ReadData := DontCare
-    }
+    // Hold register: captures read data on the cycle it arrives, holds it stable afterwards
+    val bank0WasRead = RegNext(bank0ReadBusy, false.B)
+    val bank0HoldReg = Reg(UInt(fixedCacheWidth.W))
+    when(bank0WasRead) { bank0HoldReg := bank0MemOut }
+    val bank0ReadData = Mux(bank0WasRead, bank0MemOut, bank0HoldReg)
 
-    // ── Bank 1 operations ──
-    val bank1ReadEn  = canIssueRead && readBank === 1.U
+    // ── Bank 1: single readWrite port ──
     val bank1WriteEn = canAcceptWrite && writeBank === 1.U
-    val bank1ReadData = Wire(UInt(fixedCacheWidth.W))
+    val bank1En      = bank1ReadBusy || bank1WriteEn
+    val bank1IsWrite = bank1WriteEn
+    val bank1Addr    = Mux(bank1ReadBusy, readAddrSel, writeAddr)
+    val bank1MemOut  = mem1.readWrite(bank1Addr, io.dataInTCDM.bits, bank1En, bank1IsWrite)
 
-    when(bank1ReadEn) {
-      bank1ReadData := mem1.read(readAddr, true.B)
-    }.elsewhen(bank1WriteEn) {
-      mem1.write(writeAddr, io.dataInTCDM.bits)
-      bank1ReadData := DontCare
-    }.otherwise {
-      bank1ReadData := DontCare
-    }
+    val bank1WasRead = RegNext(bank1ReadBusy, false.B)
+    val bank1HoldReg = Reg(UInt(fixedCacheWidth.W))
+    when(bank1WasRead) { bank1HoldReg := bank1MemOut }
+    val bank1ReadData = Mux(bank1WasRead, bank1MemOut, bank1HoldReg)
 
     // ── Read data output ──
-    // SyncReadMem data appears one cycle after the read is issued.
-    // readDataValid goes high one cycle after canIssueRead, and goes low for one cycle
-    // after an instruction is consumed (fire) so the SyncReadMem can fetch the next address.
-    val readBankReg = RegEnable(readBank, 0.U(1.W), canIssueRead)
+    // Select output based on which bank was read on the PREVIOUS cycle (1-cycle SyncReadMem latency)
+    val readBankReg = RegEnable(readBankSel, 0.U(1.W), issueRead)
     val readPipeData = Mux(readBankReg === 0.U, bank0ReadData, bank1ReadData)
 
-    val readDataValid = RegNext(canIssueRead && !io.readFixedCacheInstruction.fire, false.B)
-
-    // ── Write pipeline ──
-    when(canAcceptWrite) {
-      writePipeValid := true.B
-    }.otherwise {
-      writePipeValid := false.B
-    }
-
     // ── Handshake signals ──
-    // dataOut.valid is asserted independently of dataOut.ready (proper Decoupled).
-    // The read instruction is consumed only when downstream accepts the data.
-    io.readFixedCacheInstruction.ready  := readDataValid && io.dataOut.ready
+    io.readFixedCacheInstruction.ready := canAcceptNew
     io.writeFixedCacheInstruction.ready := canAcceptWrite
-    io.dataInTCDM.ready                := canAcceptWrite
+    io.dataInTCDM.ready := canAcceptWrite
 
-    // Output from read
-    io.dataOut.valid := readDataValid
+    io.dataOut.valid := dataAvailable
     io.dataOut.bits  := readPipeData
 
-    io.busy := io.readFixedCacheInstruction.valid || readDataValid || io.writeFixedCacheInstruction.valid || writePipeValid
+    io.busy := instrValid || io.readFixedCacheInstruction.valid || io.writeFixedCacheInstruction.valid
   }
 }
