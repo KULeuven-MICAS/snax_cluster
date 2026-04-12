@@ -235,6 +235,9 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     )
   )
 
+  val accumulatorIn2Ready = Wire(Vec(params.inputTypeA.length, Bool()))
+  val accumulatorAccUpdate = Wire(Vec(params.inputTypeA.length, Bool()))
+
   // connect adder tree output to accumulators
   // and inputC to accumulators
   accumulators.zipWithIndex.foreach { case (acc, dataTypeIdx) =>
@@ -260,11 +263,8 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     // The in2 valid should come from the pipelined in_c
     acc.io.in2.valid := in_c_after_pipe.valid
 
-    // Connect the ready signal for the in_c pipeline to the accumulators' in2 ready
-    in_c_after_pipe.ready:= acc.io.in2.ready
-
-    // 
-    io.ctrl.computeFire  := acc.io.accUpdate
+    accumulatorIn2Ready(dataTypeIdx) := acc.io.in2.ready
+    accumulatorAccUpdate(dataTypeIdx) := acc.io.accUpdate
   }
 
   // handle the control signals for accumulators
@@ -288,6 +288,20 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> multipliers(dataTypeIdx)(0).io.in.ready)
   )
 
+  val selectedIn2Ready = MuxLookup(
+    io.ctrl.dataTypeCfg,
+    accumulatorIn2Ready(0)
+  )(
+    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulatorIn2Ready(dataTypeIdx))
+  )
+
+  io.ctrl.computeFire := MuxLookup(
+    io.ctrl.dataTypeCfg,
+    accumulatorAccUpdate(0)
+  )(
+    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulatorAccUpdate(dataTypeIdx))
+  )
+
   // ---------------------------------------------------
   // Top-level input synchronization
   // ---------------------------------------------------
@@ -298,11 +312,12 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   io.array_data.in_a.ready := io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
   io.array_data.in_b.ready := io.array_data.in_a.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
-  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid                   && common_ready
+  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid && common_ready
 
   // Drive the valid signals for the first stage
   multipliers.foreach(_.foreach(_.io.in.valid := common_valid))
   in_c_before_pipe.valid := common_valid
+  in_c_after_pipe.ready := selectedIn2Ready
 
   // output data and valid signals
   io.array_data.out_d.bits := MuxLookup(
