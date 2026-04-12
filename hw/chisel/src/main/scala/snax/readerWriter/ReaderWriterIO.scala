@@ -120,10 +120,10 @@ class ReaderIO(param: ReaderWriterParam, isReaderWriter: Boolean = false)
     with HasTCDMResponder
     with HasOutputDataIO
     with HasFixedCacheInputIO {
-  // When used in a ReaderWriter configuration, expose the writer-side port so the writer can write
+  // When used in a ReaderWriter configuration with cache enabled, expose the writer-side port so the writer can write
   // incoming data directly into the reader's FixedLevelCache memory.
   val fixedCacheWriterPort =
-    if (isReaderWriter)
+    if (isReaderWriter && param.enableFixedCache)
       Some(new FixedLevelCacheWriterPort(param.aguParam.fixedCacheDepth, param.tcdmParam.dataWidth * param.tcdmParam.numChannel))
     else
       None
@@ -134,11 +134,11 @@ class WriterIO(param: ReaderWriterParam, isReaderWriter: Boolean = false)
     with HasTCDMRequestor
     with HasInputDataIO
     with HasFixedCacheOutputIO {
-  // When used in a ReaderWriter configuration, expose the port that the writer uses to inject data
+  // When used in a ReaderWriter configuration with cache enabled, expose the port that the writer uses to inject data
   // directly into the reader's FixedLevelCache memory (bypassing TCDM for cached iterations).
   // Flipped so that from inside the Writer module the fields are outputs (driven by Writer).
   val fixedCacheWriterPort =
-    if (isReaderWriter)
+    if (isReaderWriter && param.enableFixedCache)
       Some(Flipped(new FixedLevelCacheWriterPort(param.aguParam.fixedCacheDepth, param.tcdmParam.dataWidth * param.tcdmParam.numChannel)))
     else
       None

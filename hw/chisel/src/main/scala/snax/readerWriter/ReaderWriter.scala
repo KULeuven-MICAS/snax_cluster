@@ -59,9 +59,11 @@ class ReaderWriter(
   // Fixed Cache Connection:
   // The writer writes incoming data directly into the reader's FixedLevelCache via the writerPort.
   // The reader's own AGU drives the reader-side cache operations (for serving data to the accelerator).
-  reader.io.fixedCacheWriterPort.get.enable := writer.io.fixedCacheWriterPort.get.enable
-  reader.io.fixedCacheWriterPort.get.index  := writer.io.fixedCacheWriterPort.get.index
-  reader.io.fixedCacheWriterPort.get.data   := writer.io.fixedCacheWriterPort.get.data
+  if (readerParam.enableFixedCache) {
+    reader.io.fixedCacheWriterPort.get.enable := writer.io.fixedCacheWriterPort.get.enable
+    reader.io.fixedCacheWriterPort.get.index  := writer.io.fixedCacheWriterPort.get.index
+    reader.io.fixedCacheWriterPort.get.data   := writer.io.fixedCacheWriterPort.get.data
+  }
 
   // The write/read fixedCacheInstruction ports on the reader are unused in ReaderWriter mode.
   // The reader's cache is driven by its own internal AGU. Tie off undriven inputs/outputs.

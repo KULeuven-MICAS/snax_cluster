@@ -67,7 +67,12 @@ object StreamerParametersGen {
       % else:
       configurableChannel = false,
       % endif
-      crossClockDomain = hasCrossClockDomain
+      crossClockDomain = hasCrossClockDomain,
+% if "fixed_cache_depth" in cfg["snax_streamer_cfg"]["data_reader_params"] and cfg["snax_streamer_cfg"]["data_reader_params"]["fixed_cache_depth"][idx] > 1:
+      fixedCacheDepth = ${cfg["snax_streamer_cfg"]["data_reader_params"]["fixed_cache_depth"][idx]}
+% else:
+      fixedCacheDepth = 1
+% endif
 ${'   ), ' if not loop.last else '    )'}
 % endfor
   )
@@ -104,7 +109,12 @@ ${'   ), ' if not loop.last else '    )'}
       % else:
       configurableChannel = false,
       % endif
-      crossClockDomain = hasCrossClockDomain
+      crossClockDomain = hasCrossClockDomain,
+% if "fixed_cache_depth" in cfg["snax_streamer_cfg"]["data_writer_params"] and cfg["snax_streamer_cfg"]["data_writer_params"]["fixed_cache_depth"][idx] > 1:
+      fixedCacheDepth = ${cfg["snax_streamer_cfg"]["data_writer_params"]["fixed_cache_depth"][idx]}
+% else:
+      fixedCacheDepth = 1
+% endif
 ${'   ), ' if not loop.last else '    )'}
 % endfor
   )
@@ -141,7 +151,12 @@ ${'   ), ' if not loop.last else '    )'}
       % else:
       configurableChannel = false,
       % endif
-      crossClockDomain = hasCrossClockDomain
+      crossClockDomain = hasCrossClockDomain,
+% if "fixed_cache_depth" in cfg["snax_streamer_cfg"]["data_reader_writer_params"] and cfg["snax_streamer_cfg"]["data_reader_writer_params"]["fixed_cache_depth"][idx] > 1:
+      fixedCacheDepth = ${cfg["snax_streamer_cfg"]["data_reader_writer_params"]["fixed_cache_depth"][idx]}
+% else:
+      fixedCacheDepth = 1
+% endif
 ${'   ), ' if not loop.last else '    )'}
 % endfor
   )

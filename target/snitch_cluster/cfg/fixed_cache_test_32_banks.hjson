@@ -208,6 +208,7 @@ Naming convention:
             fifo_depth: [2, 2],
             configurable_channel: [0, 0],
             tcdm_logic_word_size: [[256, 128, 64], [256, 128, 64]],
+            fixed_cache_depth: [64, 64],
             datapath_extensions: [{HasTransposer: {row:[8], col:[8], elementWidth:[8]}}, {HasTransposer: {row:[8], col:[8], elementWidth:[8]}}]
         },
 
@@ -227,6 +228,7 @@ Naming convention:
             fifo_depth: [2, 2],
             configurable_channel: [1, 0],
             tcdm_logic_word_size: [[256, 128, 64], [256, 128, 64]],
+            fixed_cache_depth: [64, 64],
             datapath_extensions: [{HasBroadcaster: {inputLength: 256, outputLength: 2048}}, {}]
         },
 

@@ -140,36 +140,50 @@ class Reader(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
   outputDataRepeat.io.repeat_times := Mux(io.aguCfg.temporalStrides(0) === 0.U, io.aguCfg.temporalBounds(0), 1.U)
   outputDataRepeat.io.start := io.start
 
-  // Data Buffer <> Fixed Level Cache
-  val fixedCache = Module(
-    new FixedLevelCache(
-      fixedCacheDepth  = param.aguParam.fixedCacheDepth,
-      fixedCacheWidth  = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
-      isReader         = true,
-      isReaderWriter   = isReaderWriter
+  // Data Buffer <> Fixed Level Cache (or bypass)
+  val fixedCacheDataOut: DecoupledIO[UInt] = if (param.enableFixedCache) {
+    val fixedCache = Module(
+      new FixedLevelCache(
+        fixedCacheDepth  = param.aguParam.fixedCacheDepth,
+        fixedCacheWidth  = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
+        isReader         = true,
+        isReaderWriter   = isReaderWriter
+      )
     )
-  )
-  // Connect the standalone useFixedCache signal from the AGU
-  fixedCache.io.useFixedCache := addressgen.io.useFixedCache
-  // Connect write instructions from AGU to cache
-  fixedCache.io.writeFixedCacheInstruction <> addressgen.io.writeFixedCacheInstruction
-  // Connect read instructions from AGU to cache
-  fixedCache.io.readFixedCacheInstruction <> addressgen.io.readFixedCacheInstruction
-  // Connect TCDM data to cache write port
-  fixedCache.io.dataInTCDM <> dataBuffer.io.out.head
-  val fixedCacheDataOut = fixedCache.io.dataOut
+    // Connect the standalone useFixedCache signal from the AGU
+    fixedCache.io.useFixedCache := addressgen.io.useFixedCache
+    // Connect write instructions from AGU to cache
+    fixedCache.io.writeFixedCacheInstruction <> addressgen.io.writeFixedCacheInstruction
+    // Connect read instructions from AGU to cache
+    fixedCache.io.readFixedCacheInstruction <> addressgen.io.readFixedCacheInstruction
+    // Connect TCDM data to cache write port
+    fixedCache.io.dataInTCDM <> dataBuffer.io.out.head
 
-  // The external io.writeFixedCacheInstruction and io.readFixedCacheInstruction ports
-  // (from HasFixedCacheInputIO) are now unused: the reader's FixedLevelCache is driven
-  // exclusively by the internal AGU. Tie off the ready outputs.
-  io.writeFixedCacheInstruction.ready := false.B
-  io.readFixedCacheInstruction.ready  := false.B
+    // The external io.writeFixedCacheInstruction and io.readFixedCacheInstruction ports
+    // (from HasFixedCacheInputIO) are now unused: the reader's FixedLevelCache is driven
+    // exclusively by the internal AGU. Tie off the ready outputs.
+    io.writeFixedCacheInstruction.ready := false.B
+    io.readFixedCacheInstruction.ready  := false.B
 
-  // When used in ReaderWriter mode, expose the writer's direct-write port from the FixedLevelCache
-  if (isReaderWriter) {
-    fixedCache.io.writerPort.get.enable := io.fixedCacheWriterPort.get.enable
-    fixedCache.io.writerPort.get.index  := io.fixedCacheWriterPort.get.index
-    fixedCache.io.writerPort.get.data   := io.fixedCacheWriterPort.get.data
+    // When used in ReaderWriter mode, expose the writer's direct-write port from the FixedLevelCache
+    if (isReaderWriter) {
+      fixedCache.io.writerPort.get.enable := io.fixedCacheWriterPort.get.enable
+      fixedCache.io.writerPort.get.index  := io.fixedCacheWriterPort.get.index
+      fixedCache.io.writerPort.get.data   := io.fixedCacheWriterPort.get.data
+    }
+
+    fixedCache.io.dataOut
+  } else {
+    // No FixedLevelCache: bypass directly
+    // Drain AGU cache instruction ports since cache is not instantiated
+    addressgen.io.writeFixedCacheInstruction.ready := true.B
+    addressgen.io.readFixedCacheInstruction.ready  := true.B
+
+    // Tie off the external fixed cache IO ports
+    io.writeFixedCacheInstruction.ready := false.B
+    io.readFixedCacheInstruction.ready  := false.B
+
+    dataBuffer.io.out.head
   }
 
   // Fixed Level Cache <> Output
@@ -190,7 +204,7 @@ class Reader(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
     outputDataRepeat.io.in <> clockDomainCrosser.io.deq.data
   }
   // Busy Signal
-  io.busy := addressgen.io.busy | (~addressgen.io.bufferEmpty) | fixedCache.io.busy
+  io.busy := addressgen.io.busy | (~addressgen.io.bufferEmpty)
 
   // The debug signal from the dataBuffer to see if AGU and requestor / responser work correctly: It should be high when valid signal at the combined output is low
   io.bufferEmpty := dataBuffer.io.allEmpty

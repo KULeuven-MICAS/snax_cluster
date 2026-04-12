@@ -115,6 +115,23 @@ class Writer(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
       clockDomainCrosser.io.enq.data <> io.data
       dataBuffer.io.in.head <> clockDomainCrosser.io.deq.data
     }
+  } else if (!param.enableFixedCache) {
+    // ReaderWriter mode without fixed cache: data goes directly to dataBuffer, no cache routing
+    addressgen.io.fixedCacheInstruction.ready := true.B
+    if (param.crossClockDomain == false) {
+      dataBuffer.io.in.head <> io.data
+    } else {
+      val clockDomainCrosser = Module(
+        new AsyncQueue(chiselTypeOf(dataBuffer.io.in.head.bits)) {
+          override val desiredName =
+            s"${moduleNamePrefix}_Writer_ClockDomainCrosser"
+        }
+      )
+      clockDomainCrosser.io.enq.clock := io.accClock.get
+      clockDomainCrosser.io.deq.clock := clock
+      clockDomainCrosser.io.enq.data <> io.data
+      dataBuffer.io.in.head <> clockDomainCrosser.io.deq.data
+    }
   } else {
     // ReaderWriter mode: route data to reader's FixedLevelCache write port or dataBuffer
     // based on the fixedCacheInstruction from the AGU.

@@ -39,7 +39,8 @@ object AddressGenUnitParam {
     outputBufferDepth: Int,
     tcdmSize:          Int,
     tcdmPhysWordSize:  Int,
-    tcdmLogicWordSize: Seq[Int]
+    tcdmLogicWordSize: Seq[Int],
+    fixedCacheDepth:   Int
   ): AddressGenUnitParam =
     new AddressGenUnitParam(
       spatialBounds     = spatialBounds,
@@ -47,7 +48,7 @@ object AddressGenUnitParam {
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
       outputBufferDepth = 0x4, //Placeholder until i know how to dynamically change this back to outputBufferDepth
-      fixedCacheDepth = 0x40, // Placeholder, will be configured later
+      fixedCacheDepth   = fixedCacheDepth,
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = tcdmPhysWordSize,
       tcdmLogicWordSize = tcdmLogicWordSize
@@ -58,7 +59,8 @@ object AddressGenUnitParam {
     temporalDimension: Int,
     numChannel:        Int,
     outputBufferDepth: Int,
-    tcdmSize:          Int
+    tcdmSize:          Int,
+    fixedCacheDepth:   Int
   ): AddressGenUnitParam =
     new AddressGenUnitParam(
       spatialBounds     = spatialBounds,
@@ -66,7 +68,7 @@ object AddressGenUnitParam {
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
       outputBufferDepth = 0x4, //Placeholder until i know how to dynamically change this back to outputBufferDepth
-      fixedCacheDepth = 0x40, // Placeholder, will be configured later
+      fixedCacheDepth   = fixedCacheDepth,
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = 256,
       tcdmLogicWordSize = Seq(256)
@@ -76,7 +78,8 @@ object AddressGenUnitParam {
     temporalDimension: Int,
     numChannel:        Int,
     outputBufferDepth: Int,
-    tcdmSize:          Int
+    tcdmSize:          Int,
+    fixedCacheDepth:   Int
   ): AddressGenUnitParam =
     new AddressGenUnitParam(
       spatialBounds     = List(numChannel),
@@ -84,7 +87,7 @@ object AddressGenUnitParam {
       addressWidth      = log2Ceil(tcdmSize) + 10,
       numChannel        = numChannel,
       outputBufferDepth = 0x4, //Placeholder until i know how to dynamically change this back to outputBufferDepth
-      fixedCacheDepth = 0x40, // Placeholder, will be configured later
+      fixedCacheDepth   = fixedCacheDepth,
       tcdmSize          = tcdmSize,
       tcdmPhysWordSize  = 256,
       tcdmLogicWordSize = Seq(256)
@@ -99,7 +102,8 @@ object AddressGenUnitParam {
       outputBufferDepth = 8,
       tcdmSize          = 128,
       tcdmPhysWordSize  = 256,
-      tcdmLogicWordSize = Seq(256)
+      tcdmLogicWordSize = Seq(256),
+      fixedCacheDepth   = 1
     )
 }
 
@@ -115,8 +119,11 @@ class ReaderWriterParam(
   dataBufferDepth:          Int       = 8,
   val configurableChannel:  Boolean   = false,
   val configurableByteMask: Boolean   = false,
-  val crossClockDomain:     Boolean   = false
+  val crossClockDomain:     Boolean   = false,
+  fixedCacheDepth:          Int       = 1
 ) {
+  val enableFixedCache: Boolean = fixedCacheDepth > 1
+
   val aguParam = AddressGenUnitParam(
     spatialBounds     = spatialBounds,
     temporalDimension = temporalDimension,
@@ -124,7 +131,8 @@ class ReaderWriterParam(
     outputBufferDepth = addressBufferDepth,
     tcdmSize          = tcdmSize,
     tcdmPhysWordSize  = tcdmPhysWordSize,
-    tcdmLogicWordSize = tcdmLogicWordSize
+    tcdmLogicWordSize = tcdmLogicWordSize,
+    fixedCacheDepth   = if (enableFixedCache) fixedCacheDepth else 2
   )
 
   val tcdmParam = TCDMParam(

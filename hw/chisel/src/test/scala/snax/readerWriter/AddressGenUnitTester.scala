@@ -18,7 +18,8 @@ class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
         temporalDimension = 2,
         numChannel        = 8,
         outputBufferDepth = 2,
-        tcdmSize          = 128
+        tcdmSize          = 128,
+        fixedCacheDepth   = 2
       )
     )
   )
@@ -51,7 +52,8 @@ class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
         temporalDimension = 2,
         numChannel        = 8,
         outputBufferDepth = 2,
-        tcdmSize          = 128
+        tcdmSize          = 128,
+        fixedCacheDepth   = 2
       )
     )
   )
@@ -85,7 +87,8 @@ class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
         outputBufferDepth = 2,
         tcdmSize          = 128,
         tcdmPhysWordSize  = 256,
-        tcdmLogicWordSize = Seq(256, 128, 64)
+        tcdmLogicWordSize = Seq(256, 128, 64),
+        fixedCacheDepth   = 2
       )
     )
   )
@@ -123,7 +126,8 @@ object AddressGenUnitEmitter extends App {
         outputBufferDepth = 8,
         tcdmSize          = 128,
         tcdmPhysWordSize  = 256,
-        tcdmLogicWordSize = Seq(256, 128, 64)
+        tcdmLogicWordSize = Seq(256, 128, 64),
+        fixedCacheDepth   = 2
       )
     ),
     args = Array("--target-dir", "generated/xdma")

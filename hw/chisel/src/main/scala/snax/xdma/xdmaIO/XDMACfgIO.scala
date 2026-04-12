@@ -37,7 +37,8 @@ class XDMACfgIO(val param: XDMAParam) extends Bundle {
         temporalDimension = param.crossClusterParam.maxTemporalDimension,
         numChannel        = param.axiParam.dataWidth / param.crossClusterParam.wordlineWidth,
         outputBufferDepth = param.rwParam.aguParam.outputBufferDepth,
-        tcdmSize          = param.crossClusterParam.tcdmSize
+        tcdmSize          = param.crossClusterParam.tcdmSize,
+        fixedCacheDepth   = 2 // XDMA never uses fixedCache (enableFixedCache := false.B in XDMACtrl); minimum value to avoid zero-width bundle
       )
     ) // Buffered within AGU
   val readerwriterCfg = new ReaderWriterCfgIO(param.rwParam)
