@@ -71,6 +71,7 @@ class Accumulator(
     val enable      = Input(Vec(numElements, Bool()))
     val out         = DecoupledIO(Vec(numElements, UInt(outputType.width.W)))
     val inputReady  = Output(Bool())
+    val accUpdate  = Output(Bool())
   })
 
   // Create an array of AccumulatorBlock instances
@@ -84,6 +85,7 @@ class Accumulator(
   val accUpdate = VecInit(
     (0 until numElements).map(i => io.in1.fire && io.enable(i) && (!io.accAddExtIn || (io.in2.fire && io.accAddExtIn)))
   )
+  io.accUpdate := accUpdate.reduce(_ || _)
 
   // Connect the inputs of each AccumulatorBlock
   for (i <- 0 until numElements) {

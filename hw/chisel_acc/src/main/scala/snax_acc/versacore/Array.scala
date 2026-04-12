@@ -18,7 +18,7 @@ class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
   val in_b           = Flipped(DecoupledIO(UInt(params.arrayInputBWidth.W)))
   val in_c           = Flipped(DecoupledIO(UInt(params.arrayInputCWidth.W)))
   val out_d          = DecoupledIO(UInt(params.arrayOutputDWidth.W))
-  val in_subtraction = Flipped(DecoupledIO(UInt(params.configWidth.W)))
+  val in_subtraction = Input(UInt(params.configWidth.W))
 }
 
 // control io
@@ -26,6 +26,7 @@ class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
   val arrayShapeCfg = Input(UInt(params.configWidth.W))
   val dataTypeCfg   = Input(UInt(params.configWidth.W))
   val accAddExtIn   = Input(Bool())
+  val computeFire   = Output(Bool())
 }
 
 class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {
@@ -39,52 +40,6 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   // io instantiation
   val io = IO(new SpatialArrayIO(params))
-
-  // constraints, regardless of the computation bound or bandwidth bound array
-  params.arrayDim.zipWithIndex.foreach { case (dims, dataTypeIdx) =>
-    dims.foreach { dim =>
-      {
-        require(dim.length == 3)
-        // mac number should be enough to support the computation bound
-        require(dim(0) * dim(1) * dim(2) <= params.multiplierNum(dataTypeIdx))
-        // arrayInputAWidth should be enough to support the bandwidth bound
-        require(
-          params.arrayInputAWidth        >= dim(0) * dim(1) * params.inputTypeA(dataTypeIdx).width
-        )
-        // arrayInputBWidth should be enough to support the bandwidth bound
-        require(
-          params.arrayInputBWidth        >= dim(1) * dim(2) * params.inputTypeB(dataTypeIdx).width
-        )
-        // arrayInputCWidth should be enough to support the bandwidth bound
-        require(
-          params.arrayInputCWidth        >= dim(0) * dim(2) * params.inputTypeC(dataTypeIdx).width
-        )
-        // arrayOutputDWidth should be enough to support the bandwidth bound
-        require(params.arrayOutputDWidth >= dim(0) * dim(2) * params.outputTypeD(dataTypeIdx).width)
-
-        // adder tree should be power of 2
-        require(isPow2(dim(1)))
-
-      }
-    }
-  }
-
-  // constraints for the number of spatial array dimensions
-  require(
-    params.arrayDim.map(_.length).sum < 32 && params.arrayDim
-      .map(_.length)
-      .sum                                 >= 1
-  )
-
-  require(
-    params.inputTypeA.length == params.multiplierNum.length    &&
-      params.inputTypeB.length == params.multiplierNum.length  &&
-      params.inputTypeC.length == params.multiplierNum.length  &&
-      params.inputTypeC.length == params.multiplierNum.length  &&
-      params.outputTypeD.length == params.multiplierNum.length &&
-      params.arrayDim.length == params.multiplierNum.length,
-    "All data type related parameters should have the same length"
-  )
 
   // N-D data feeding network, spatial loop bounds are specified by `dims` and data reuse strides by `strides`, idx 0 is the outermost dimension
   // e.g., for 3D data, dims = Seq(Mu, Nu, Ku) and strides = Seq(stride_Ku, stride_Nu, stride_Mu)
@@ -159,13 +114,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     })
   }
 
-  // Synchronize and pipeline in_c to match the multiplier + register stage latency
-  val in_c_sync = Wire(Decoupled(chiselTypeOf(io.array_data.in_c.bits)))
-  in_c_sync.bits := io.array_data.in_c.bits
-  // The actual valid/ready logic for in_c_sync is handled in the handshake section later
+  val in_c_before_pipe = Wire(Decoupled(chiselTypeOf(io.array_data.in_c.bits)))
+  in_c_before_pipe.bits := io.array_data.in_c.bits
+  // The actual valid/ready logic for in_c_before_pipe is handled in the handshake section later
 
-  val in_c_pipe = Wire(Decoupled(chiselTypeOf(io.array_data.in_c.bits)))
-  in_c_sync -|> in_c_pipe
+  // Synchronize and pipeline in_c to match the multiplier + register stage latency
+  val in_c_after_pipe = Wire(Decoupled(chiselTypeOf(io.array_data.in_c.bits)))
+  in_c_before_pipe -|> in_c_after_pipe
 
   val inputC = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
@@ -176,7 +131,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
         Seq(dim(0), dim(2), 1),
         // stride_Mu, stride_Nu, stride_Ku
         Seq(dim(2), 1, 0),
-        in_c_pipe.bits
+        in_c_after_pipe.bits
       )
     })
   }
@@ -187,7 +142,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     })
   })
 
-  def realUnrollFactorProd(
+  def multiplierCount(
     dataTypeIdx: UInt,
     dimIdx:      UInt
   ) = {
@@ -195,7 +150,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     dim(0) * dim(1) * dim(2) // Mu * Nu * Ku
   }
 
-  val runTimeUnrollFactorProd = realUnrollFactorProd(io.ctrl.dataTypeCfg, io.ctrl.arrayShapeCfg)
+  val runTimeMultiplierCount = multiplierCount(io.ctrl.dataTypeCfg, io.ctrl.arrayShapeCfg)
 
   // instantiate a bunch of multipliers with different data type
   val multipliers = (0 until params.inputTypeA.length).map(dataTypeIdx =>
@@ -244,11 +199,15 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   // connect output of the multipliers to adder tree
   // insert a register to pipeline the output of the multipliers
   (0 until params.inputTypeA.length).foreach { dataTypeIdx =>
+    // a shortcut to get the multipliers and adder tree for the current data type
     val muls         = multipliers(dataTypeIdx)
     val tree         = adderTree(dataTypeIdx)
+
+    // collect the output bits and valid signals from all multipliers
     val output_bits  = VecInit(muls.map(_.io.out.bits))
     val output_valid = muls.map(_.io.out.valid).reduce(_ && _)
 
+   // create a Decoupled output for the multipliers' results, which will be connected to the adder tree input through a pipeline register (-|>)
     val muls_out_data =
       Wire(Decoupled(Vec(params.multiplierNum(dataTypeIdx), UInt(params.inputTypeC(dataTypeIdx).width.W))))
     muls_out_data.bits  := output_bits
@@ -263,6 +222,9 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   // adder tree runtime configuration
   adderTree.foreach(_.io.cfg := io.ctrl.arrayShapeCfg)
 
+  // instantiate accumulators for each data type
+  // the number of accumulators is the same as the number of multipliers for that data type
+  // and each accumulator can be enabled or disabled based on the runtime multiplier count
   val accumulators = (0 until params.inputTypeA.length).map(dataTypeIdx =>
     Module(
       new Accumulator(
@@ -276,40 +238,45 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   // connect adder tree output to accumulators
   // and inputC to accumulators
   accumulators.zipWithIndex.foreach { case (acc, dataTypeIdx) =>
+    // ------------------------------------------
     // the accumulator input1 is from the adder tree
+    // ------------------------------------------
     acc.io.in1.bits                     := adderTree(dataTypeIdx).io.out.bits
     acc.io.in1.valid                    := adderTree(dataTypeIdx).io.out.valid
     // The adder tree's ready signal comes from the accumulator's inputReady, considering both the input1 and input2 are ready in different cases
     adderTree(dataTypeIdx).io.out.ready := acc.io.inputReady
 
+    // ------------------------------------------
     // the accumulator input2 is from the inputC
+    // ------------------------------------------
     acc.io.in2.bits := MuxLookup(
       io.ctrl.arrayShapeCfg,
       inputC(dataTypeIdx)(0)
     )(
+      // one dim data
       (0 until params.arrayDim(dataTypeIdx).length).map(j => j.U -> inputC(dataTypeIdx)(j))
     )
+
+    // The in2 valid should come from the pipelined in_c
+    acc.io.in2.valid := in_c_after_pipe.valid
+
+    // Connect the ready signal for the in_c pipeline to the accumulators' in2 ready
+    in_c_after_pipe.ready:= acc.io.in2.ready
+
+    // 
+    io.ctrl.computeFire  := acc.io.accUpdate
   }
 
   // handle the control signals for accumulators
-  // The in2 valid should come from the pipelined in_c
-  accumulators.foreach(_.io.in2.valid := in_c_pipe.valid)
   accumulators.foreach(_.io.accAddExtIn := io.ctrl.accAddExtIn)
   accumulators.foreach(_.io.out.ready := io.array_data.out_d.ready)
 
-  // Connect the ready signal for the in_c pipeline to the accumulators' in2 ready
-  in_c_pipe.ready := MuxLookup(
-    io.ctrl.dataTypeCfg,
-    accumulators(0).io.in2.ready
-  )(
-    (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> accumulators(dataTypeIdx).io.in2.ready)
-  )
-
+  // enable the accumulators based on the runtime multiplier count
   (0 until params.inputTypeA.length).foreach { dataTypeIdx =>
-    (0 until params.multiplierNum(dataTypeIdx)).foreach { accIdx =>
+    (0 until params.multiplierNum(dataTypeIdx)).foreach { mulIdx =>
       accumulators(dataTypeIdx).io.enable(
-        accIdx
-      ) := (io.ctrl.dataTypeCfg === dataTypeIdx.U && accIdx.U < runTimeUnrollFactorProd)
+        mulIdx
+      ) := (io.ctrl.dataTypeCfg === dataTypeIdx.U && mulIdx.U < runTimeMultiplierCount)
     }
   }
 
@@ -321,11 +288,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     (0 until params.arrayDim.length).map(dataTypeIdx => dataTypeIdx.U -> multipliers(dataTypeIdx)(0).io.in.ready)
   )
 
+  // ---------------------------------------------------
   // Top-level input synchronization
+  // ---------------------------------------------------
   // A, B and C (if enabled) must fire together to ensure the input wave enters the pipeline correctly.
   val in_c_active  = io.ctrl.accAddExtIn
   val common_valid = io.array_data.in_a.valid && io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active)
-  val common_ready = muls_ready               && (in_c_sync.ready || !in_c_active)
+  val common_ready = muls_ready               && (in_c_before_pipe.ready || !in_c_active)
 
   io.array_data.in_a.ready := io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
   io.array_data.in_b.ready := io.array_data.in_a.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
@@ -333,9 +302,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   // Drive the valid signals for the first stage
   multipliers.foreach(_.foreach(_.io.in.valid := common_valid))
-  in_c_sync.valid := common_valid
-
-  io.array_data.in_subtraction.ready := io.array_data.in_a.ready && io.array_data.in_b.ready
+  in_c_before_pipe.valid := common_valid
 
   // output data and valid signals
   io.array_data.out_d.bits := MuxLookup(

@@ -34,6 +34,7 @@ class AdderTree(
     val cfg = Input(UInt(log2Ceil(groupSizes.length + 1).W))
   })
 
+  // The adder tree is designed to be flexible in terms of the number of stages it uses based on the groupSizes configuration.
   // Combinational handshake
   io.in.ready  := io.out.ready
   io.out.valid := io.in.valid
@@ -42,7 +43,7 @@ class AdderTree(
   groupSizes.foreach(size => require(isPow2(size), "groupSizes must be a power of 2"))
   require(
     groupSizes.length < 32 && groupSizes.length >= 1,
-    "groupSizes number must be less than 32 and greater than 0"
+    "groupSizes number (reconfigurable output selection count) must be less than 32 and greater than 0"
   )
 
   // adder tree initialization
@@ -70,7 +71,7 @@ class AdderTree(
     io.in.bits.map(_.asTypeOf(adderTreeInputType).asTypeOf(UInt(outputType.width.W)))
   )
 
-  val realStageNum = MuxLookup(io.cfg, groupSizes(0).U)(groupSizes.zipWithIndex.map { case (size, idx) =>
+  val runTimeStageNum = MuxLookup(io.cfg, groupSizes(0).U)(groupSizes.zipWithIndex.map { case (size, idx) =>
     (idx).U -> log2Ceil(size).U
   })
 
@@ -85,20 +86,20 @@ class AdderTree(
       // Connect the inputs of the adder
       // The adder takes two inputs from the current layer
       // and produces one output for the next layer
-      // The connection is controlled by the realStageNum
-      // If the current depth is less than or equal to realStageNum,
+      // The connection is controlled by the runTimeStageNum
+      // If the current depth is less than or equal to runTimeStageNum,
       // we connect the inputs and outputs normally
       // Otherwise, we connect zeros to save energy
-      adder.io.in.bits.in_a := Mux(realStageNum > d.U, layers(d)(i), 0.U)
-      adder.io.in.bits.in_b := Mux(realStageNum > d.U, layers(d)(i + step), 0.U)
+      adder.io.in.bits.in_a := Mux(runTimeStageNum > d.U, layers(d)(i), 0.U)
+      adder.io.in.bits.in_b := Mux(runTimeStageNum > d.U, layers(d)(i + step), 0.U)
       adder.io.in.valid     := io.in.valid
       adder.io.out.ready    := io.out.ready
-      layers(d + 1)(i / 2)  := Mux(realStageNum > d.U, adder.io.out.bits, 0.U)
+      layers(d + 1)(i / 2)  := Mux(runTimeStageNum > d.U, adder.io.out.bits, 0.U)
     }
   }
 
   // Generate multiple adder tree outputs based on groupSizes
-  io.out.bits := layers(realStageNum)
+  io.out.bits := layers(runTimeStageNum)
 
 }
 
