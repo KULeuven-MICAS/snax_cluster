@@ -71,7 +71,7 @@ class Accumulator(
     val enable      = Input(Vec(numElements, Bool()))
     val out         = DecoupledIO(Vec(numElements, UInt(outputType.width.W)))
     val inputReady  = Output(Bool())
-    val accUpdate  = Output(Bool())
+    val accUpdate   = Output(Bool())
   })
 
   // Create an array of AccumulatorBlock instances

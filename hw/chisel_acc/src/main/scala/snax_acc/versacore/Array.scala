@@ -200,14 +200,14 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   // insert a register to pipeline the output of the multipliers
   (0 until params.inputTypeA.length).foreach { dataTypeIdx =>
     // a shortcut to get the multipliers and adder tree for the current data type
-    val muls         = multipliers(dataTypeIdx)
-    val tree         = adderTree(dataTypeIdx)
+    val muls = multipliers(dataTypeIdx)
+    val tree = adderTree(dataTypeIdx)
 
     // collect the output bits and valid signals from all multipliers
     val output_bits  = VecInit(muls.map(_.io.out.bits))
     val output_valid = muls.map(_.io.out.valid).reduce(_ && _)
 
-   // create a Decoupled output for the multipliers' results, which will be connected to the adder tree input through a pipeline register (-|>)
+    // create a Decoupled output for the multipliers' results, which will be connected to the adder tree input through a pipeline register (-|>)
     val muls_out_data =
       Wire(Decoupled(Vec(params.multiplierNum(dataTypeIdx), UInt(params.inputTypeC(dataTypeIdx).width.W))))
     muls_out_data.bits  := output_bits
@@ -235,7 +235,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     )
   )
 
-  val accumulatorIn2Ready = Wire(Vec(params.inputTypeA.length, Bool()))
+  val accumulatorIn2Ready  = Wire(Vec(params.inputTypeA.length, Bool()))
   val accumulatorAccUpdate = Wire(Vec(params.inputTypeA.length, Bool()))
 
   // connect adder tree output to accumulators
@@ -263,7 +263,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     // The in2 valid should come from the pipelined in_c
     acc.io.in2.valid := in_c_after_pipe.valid
 
-    accumulatorIn2Ready(dataTypeIdx) := acc.io.in2.ready
+    accumulatorIn2Ready(dataTypeIdx)  := acc.io.in2.ready
     accumulatorAccUpdate(dataTypeIdx) := acc.io.accUpdate
   }
 
@@ -312,12 +312,12 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   io.array_data.in_a.ready := io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
   io.array_data.in_b.ready := io.array_data.in_a.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
-  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid && common_ready
+  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid                   && common_ready
 
   // Drive the valid signals for the first stage
   multipliers.foreach(_.foreach(_.io.in.valid := common_valid))
   in_c_before_pipe.valid := common_valid
-  in_c_after_pipe.ready := selectedIn2Ready
+  in_c_after_pipe.ready  := selectedIn2Ready
 
   // output data and valid signals
   io.array_data.out_d.bits := MuxLookup(

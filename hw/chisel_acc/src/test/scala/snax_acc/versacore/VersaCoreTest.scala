@@ -142,7 +142,7 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
       // Configure hardware
       dut.clock.step(5)
       dut.io.ctrl.bits.fsmCfg.take_in_new_c.poke(1.U)
-      dut.io.ctrl.bits.fsmCfg.a_b_input_times_one_output.poke(K.U)
+      dut.io.ctrl.bits.fsmCfg.temporal_accumulation_times.poke(K.U)
       dut.io.ctrl.bits.fsmCfg.output_times.poke(0.U)
       dut.io.ctrl.bits.fsmCfg.subtraction_constant_i.poke(0.U)
       dut.io.ctrl.bits.arrayCfg.arrayShapeCfg.poke(arrayShapeIdx.U)

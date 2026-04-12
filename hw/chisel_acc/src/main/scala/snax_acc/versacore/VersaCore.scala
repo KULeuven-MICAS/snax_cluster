@@ -18,13 +18,13 @@ class VersaCoreCfg(params: SpatialArrayParam) extends Bundle {
   val fsmCfg = new Bundle {
     // signal to decide whether to take in new C data for the first computation or not
     // if yes, use the new C, if not, reuse the C stored in the array for accumulation
-    val take_in_new_c              = UInt(params.configWidth.W)
+    val take_in_new_c               = UInt(params.configWidth.W)
     // decide the computation count for one output, K in the GEMM case
     val temporal_accumulation_times = UInt(params.configWidth.W)
     // output_times == 0 means no output, only used for accumulation or reduction scenarios
     // otherwise, output one data after temporal_accumulation_times computations, output count = M * N
-    val output_times               = UInt(params.configWidth.W)
-    val subtraction_constant_i     = UInt(params.configWidth.W)
+    val output_times                = UInt(params.configWidth.W)
+    val subtraction_constant_i      = UInt(params.configWidth.W)
   }
 
   val arrayCfg = new Bundle {
@@ -165,18 +165,18 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   // Store the configurations when config valid
   when(config_fire) {
-    csrReg.fsmCfg.take_in_new_c              := io.ctrl.bits.fsmCfg.take_in_new_c
+    csrReg.fsmCfg.take_in_new_c               := io.ctrl.bits.fsmCfg.take_in_new_c
     csrReg.fsmCfg.temporal_accumulation_times := io.ctrl.bits.fsmCfg.temporal_accumulation_times
-    csrReg.fsmCfg.output_times               := io.ctrl.bits.fsmCfg.output_times
+    csrReg.fsmCfg.output_times                := io.ctrl.bits.fsmCfg.output_times
     when(!zeroLoopBoundCase) {}.otherwise {
       assert(
         io.ctrl.bits.fsmCfg.temporal_accumulation_times =/= 0.U,
         " temporal_accumulation_times == 0, invalid configuration!"
       )
     }
-    csrReg.fsmCfg.subtraction_constant_i     := io.ctrl.bits.fsmCfg.subtraction_constant_i
-    csrReg.arrayCfg.arrayShapeCfg            := io.ctrl.bits.arrayCfg.arrayShapeCfg
-    csrReg.arrayCfg.dataTypeCfg              := io.ctrl.bits.arrayCfg.dataTypeCfg
+    csrReg.fsmCfg.subtraction_constant_i      := io.ctrl.bits.fsmCfg.subtraction_constant_i
+    csrReg.arrayCfg.arrayShapeCfg             := io.ctrl.bits.arrayCfg.arrayShapeCfg
+    csrReg.arrayCfg.dataTypeCfg               := io.ctrl.bits.arrayCfg.dataTypeCfg
   }
 
   // -----------------------------------
@@ -468,7 +468,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   array.io.array_data.in_b <> B_s2p.io.out
 
   array.io.array_data.in_c.bits  := C_s2p.io.out.bits
-  array.io.array_data.in_c.valid := C_s2p.io.out.valid && cstate === sBUSY
+  array.io.array_data.in_c.valid := C_s2p.io.out.valid             && cstate === sBUSY
   // array c_ready considering output stationary
   C_s2p.io.out.ready             := array.io.array_data.in_c.ready && cstate === sBUSY
 

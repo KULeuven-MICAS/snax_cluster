@@ -72,7 +72,7 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
             c.io.array_data.in_a.valid.poke(true.B)
             c.io.array_data.in_b.valid.poke(true.B)
             c.io.array_data.in_c.valid.poke(true.B)
-            c.io.array_data.in_subtraction.valid.poke(false.B)
+            c.io.array_data.in_subtraction.poke(0.U)
             c.io.array_data.out_d.ready.poke(true.B)
 
             c.io.ctrl.arrayShapeCfg.poke(arrayShapeIdx.U)
