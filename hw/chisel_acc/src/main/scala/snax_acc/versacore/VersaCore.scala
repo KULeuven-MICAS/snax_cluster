@@ -16,15 +16,21 @@ import snax_acc.utils._
 /** VersaCoreCfg is a configuration bundle for the VersaCore module. */
 class VersaCoreCfg(params: SpatialArrayParam) extends Bundle {
   val fsmCfg = new Bundle {
-    val take_in_new_c              = UInt(params.configWidth.W)
-    // two signals to decide the computation count and the output count
-    val a_b_input_times_one_output = UInt(params.configWidth.W)
-    val output_times               = UInt(params.configWidth.W)
-    val subtraction_constant_i     = UInt(params.configWidth.W)
+    // signal to decide whether to take in new C data for the first computation or not
+    // if yes, use the new C, if not, reuse the C stored in the array for accumulation
+    val take_in_new_c               = UInt(params.configWidth.W)
+    // decide the computation count for one output, K in the GEMM case
+    val temporal_accumulation_times = UInt(params.configWidth.W)
+    // output_times == 0 means no output, only used for accumulation or reduction scenarios
+    // otherwise, output one data after temporal_accumulation_times computations, output count = M * N
+    val output_times                = UInt(params.configWidth.W)
+    val subtraction_constant_i      = UInt(params.configWidth.W)
   }
 
   val arrayCfg = new Bundle {
+    // runtime array selection
     val arrayShapeCfg = UInt(params.configWidth.W)
+    // runtime data type selection
     val dataTypeCfg   = UInt(params.configWidth.W)
   }
 }
@@ -52,13 +58,69 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   val io = IO(new VersaCoreIO(params))
 
+  // -----------------------------------
+  // design constraints check
+  // -----------------------------------
+
   if (params.dataflow.length > 1) {
     require(
       params.arrayInputAWidth == params.serialInputADataWidth && params.arrayInputBWidth == params.serialInputBDataWidth && params.arrayInputCWidth == params.serialInputCDataWidth &&
         params.arrayOutputDWidth == params.serialOutputDDataWidth,
-      "For multi-dataflow, the array input/output widths must match the serial input/output data widths."
+      "For multi-temporal-dataflow, the array input/output widths must match the serial input/output data widths."
     )
   }
+
+  // constraints, regardless of the computation bound or bandwidth bound array
+  params.arrayDim.zipWithIndex.foreach { case (dims, dataTypeIdx) =>
+    dims.foreach { dim =>
+      {
+        require(dim.length == 3)
+        // mac number should be enough to support the computation bound
+        require(dim(0) * dim(1) * dim(2) <= params.multiplierNum(dataTypeIdx))
+        // arrayInputAWidth should be enough to support the bandwidth bound
+        require(
+          params.arrayInputAWidth        >= dim(0) * dim(1) * params.inputTypeA(dataTypeIdx).width
+        )
+        // arrayInputBWidth should be enough to support the bandwidth bound
+        require(
+          params.arrayInputBWidth        >= dim(1) * dim(2) * params.inputTypeB(dataTypeIdx).width
+        )
+        // arrayInputCWidth should be enough to support the bandwidth bound
+        require(
+          params.arrayInputCWidth        >= dim(0) * dim(2) * params.inputTypeC(dataTypeIdx).width
+        )
+        // arrayOutputDWidth should be enough to support the bandwidth bound
+        require(params.arrayOutputDWidth >= dim(0) * dim(2) * params.outputTypeD(dataTypeIdx).width)
+
+        // adder tree should be power of 2
+        require(isPow2(dim(1)))
+
+      }
+    }
+  }
+
+  // constraints for the number of spatial array dimensions
+  require(
+    params.arrayDim.map(_.length).sum < 32 && params.arrayDim
+      .map(_.length)
+      .sum                                 >= 1
+  )
+
+  require(
+    params.inputTypeA.length == params.multiplierNum.length    &&
+      params.inputTypeB.length == params.multiplierNum.length  &&
+      params.inputTypeC.length == params.multiplierNum.length  &&
+      params.inputTypeC.length == params.multiplierNum.length  &&
+      params.outputTypeD.length == params.multiplierNum.length &&
+      params.arrayDim.length == params.multiplierNum.length,
+    "All data type related parameters should have the same length"
+  )
+
+  val dimRom = VecInit(params.arrayDim.map { twoD =>
+    VecInit(twoD.map { oneD =>
+      VecInit(oneD.map(_.U(params.configWidth.W)))
+    })
+  })
 
   // -----------------------------------
   // state machine starts
@@ -73,7 +135,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   val config_fire      = WireInit(0.B)
   val versacore_finish = WireInit(0.B)
 
-  val zeroLoopBoundCase = io.ctrl.bits.fsmCfg.a_b_input_times_one_output === 0.U
+  val zeroLoopBoundCase = io.ctrl.bits.fsmCfg.temporal_accumulation_times === 0.U
 
   // Changing states
   cstate := nstate
@@ -103,67 +165,26 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   // Store the configurations when config valid
   when(config_fire) {
-    csrReg.fsmCfg.take_in_new_c              := io.ctrl.bits.fsmCfg.take_in_new_c
-    csrReg.fsmCfg.a_b_input_times_one_output := io.ctrl.bits.fsmCfg.a_b_input_times_one_output
-    csrReg.fsmCfg.output_times               := io.ctrl.bits.fsmCfg.output_times
+    csrReg.fsmCfg.take_in_new_c               := io.ctrl.bits.fsmCfg.take_in_new_c
+    csrReg.fsmCfg.temporal_accumulation_times := io.ctrl.bits.fsmCfg.temporal_accumulation_times
+    csrReg.fsmCfg.output_times                := io.ctrl.bits.fsmCfg.output_times
     when(!zeroLoopBoundCase) {}.otherwise {
       assert(
-        io.ctrl.bits.fsmCfg.a_b_input_times_one_output =/= 0.U,
-        " a_b_input_times_one_output == 0, invalid configuration!"
+        io.ctrl.bits.fsmCfg.temporal_accumulation_times =/= 0.U,
+        " temporal_accumulation_times == 0, invalid configuration!"
       )
     }
-    csrReg.fsmCfg.subtraction_constant_i     := io.ctrl.bits.fsmCfg.subtraction_constant_i
-    csrReg.arrayCfg.arrayShapeCfg            := io.ctrl.bits.arrayCfg.arrayShapeCfg
-    csrReg.arrayCfg.dataTypeCfg              := io.ctrl.bits.arrayCfg.dataTypeCfg
+    csrReg.fsmCfg.subtraction_constant_i      := io.ctrl.bits.fsmCfg.subtraction_constant_i
+    csrReg.arrayCfg.arrayShapeCfg             := io.ctrl.bits.arrayCfg.arrayShapeCfg
+    csrReg.arrayCfg.dataTypeCfg               := io.ctrl.bits.arrayCfg.dataTypeCfg
   }
-
-  val dimRom = VecInit(params.arrayDim.map { twoD =>
-    VecInit(twoD.map { oneD =>
-      VecInit(oneD.map(_.U(params.configWidth.W)))
-    })
-  })
-
-  def realCDBandWidth(
-    dataTypeIdx:  UInt,
-    dimIdx:       UInt,
-    elemWidthSeq: Vec[UInt]
-  ) = {
-    val dim = dimRom(dataTypeIdx)(dimIdx)
-    dim(0) * dim(2) * elemWidthSeq(dataTypeIdx)
-  }
-
-  // Calculate the run-time output serial factor based on the configuration
-  // (how many cycles it to output one data)
-  val outPutDWidthRom = VecInit(params.outputTypeD.map(_.width.U(params.configWidth.W)))
-
-  val runTimeOutputBandWidthFactor = (realCDBandWidth(
-    csrReg.arrayCfg.dataTypeCfg,
-    csrReg.arrayCfg.arrayShapeCfg,
-    outPutDWidthRom
-  ) / params.serialOutputDDataWidth.U)
-
-  val output_d_serial_factor =
-    Mux(
-      params.arrayOutputDWidth.U <= params.serialOutputDDataWidth.U,
-      1.U,
-      Mux(
-        runTimeOutputBandWidthFactor
-          === 0.U,
-        1.U,
-        runTimeOutputBandWidthFactor
-      )
-    )
-
-  // counter for output data count
-  val dOutputCounter = Module(new BasicCounter(params.configWidth, hasCeil = false, nameTag = "dOutputCounter"))
-
-  // all number of counts that the data needs to be outputted
-  // dOutputCounter.io.ceil  := csrReg.fsmCfg.output_times * output_d_serial_factor
-  dOutputCounter.io.tick  := io.versacore_data.out_d.fire && cstate === sBUSY
-  dOutputCounter.io.reset := versacore_finish
 
   // -----------------------------------
   // state machine ends
+  // -----------------------------------
+
+  // -----------------------------------
+  // runtime data width decoding
   // -----------------------------------
 
   // data serial to parallel converters for input A and B
@@ -263,81 +284,36 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   B_s2p.io.terminate_factor.get := input_b_serial_factor
 
   // -----------------------------------
-  // insert registers for A and B data cut starts
-  // -----------------------------------
-  val cut_combined_decoupled_a_b_sub_in  = Wire(
-    Decoupled(UInt((params.arrayInputAWidth + params.arrayInputBWidth + params.configWidth).W))
-  )
-  val cut_combined_decoupled_a_b_sub_out = Wire(
-    Decoupled(UInt((params.arrayInputAWidth + params.arrayInputBWidth + params.configWidth).W))
-  )
-
-  val combined_decoupled_a_b_sub = Module(
-    new DecoupledCatNto1(
-      Seq(
-        params.arrayInputAWidth,
-        params.arrayInputBWidth,
-        params.configWidth
-      )
-    )
-  )
-
-  combined_decoupled_a_b_sub.io.in(0) <> A_s2p.io.out
-  combined_decoupled_a_b_sub.io.in(1) <> B_s2p.io.out
-
-  val decoupled_sub = Wire(Decoupled(UInt(params.configWidth.W)))
-  decoupled_sub.bits  := io.ctrl.bits.fsmCfg.subtraction_constant_i
-  decoupled_sub.valid := cstate === sBUSY
-  combined_decoupled_a_b_sub.io.in(2) <> decoupled_sub
-
-  combined_decoupled_a_b_sub.io.out <> cut_combined_decoupled_a_b_sub_in
-
-  val cut_buffer = Module(
-    new DataCut(chiselTypeOf(cut_combined_decoupled_a_b_sub_in.bits), delay = params.adderTreeDelay) {
-      override val desiredName =
-        s"DataCut${params.adderTreeDelay}_W_" + cut_combined_decoupled_a_b_sub_in.bits.getWidth.toString + "_T_" + cut_combined_decoupled_a_b_sub_in.bits.getClass.getSimpleName
-    }
-  )
-  cut_buffer.suggestName(cut_combined_decoupled_a_b_sub_in.circuitName + s"_dataCut${params.adderTreeDelay}")
-  cut_combined_decoupled_a_b_sub_in <> cut_buffer.io.in
-  cut_buffer.io.out <> cut_combined_decoupled_a_b_sub_out
-
-  val a_after_cut   = Wire(Decoupled(UInt(params.arrayInputAWidth.W)))
-  val b_after_cut   = Wire(Decoupled(UInt(params.arrayInputBWidth.W)))
-  val sub_after_cut = Wire(Decoupled(UInt(params.configWidth.W)))
-
-  a_after_cut.bits  := cut_combined_decoupled_a_b_sub_out.bits(
-    params.arrayInputAWidth + params.arrayInputBWidth + params.configWidth - 1,
-    params.arrayInputBWidth + params.configWidth
-  )
-  a_after_cut.valid := cut_combined_decoupled_a_b_sub_out.valid
-
-  b_after_cut.bits  := cut_combined_decoupled_a_b_sub_out.bits(
-    params.arrayInputBWidth + params.configWidth - 1,
-    params.configWidth
-  )
-  b_after_cut.valid := cut_combined_decoupled_a_b_sub_out.valid
-
-  sub_after_cut.bits  := cut_combined_decoupled_a_b_sub_out.bits(
-    params.configWidth - 1,
-    0
-  )
-  sub_after_cut.valid := cut_combined_decoupled_a_b_sub_out.valid
-
-  cut_combined_decoupled_a_b_sub_out.ready := a_after_cut.fire && b_after_cut.fire && sub_after_cut.fire
-
-  // -----------------------------------
-  // insert registers for data cut ends
-  // -----------------------------------
-
-  // -----------------------------------
   // serial_parallel C/D data converters starts
   // ---------------------------------
-// Max ratios for the converters
+  // Max ratios for the converters
   val ratioC = params.arrayInputCWidth / params.serialInputCDataWidth
   val ratioD = params.arrayOutputDWidth / params.serialOutputDDataWidth
 
-// Allowed terminate factors for D (ParallelToSerial)
+  // Allowed terminate factors for C (SerialToParallel)
+  // Adjust `inputTypeC` to the actual type array you have for C.
+  val allowedTerminateFactorsC: Seq[Int] = {
+    val perShapeFactors =
+      params.arrayDim.zipWithIndex.flatMap { case (shapes, dataTypeIdx) =>
+        val inputTypeC = params.inputTypeC(dataTypeIdx) // or reuse outputTypeD if appropriate
+        shapes.map { dim =>
+          val realBandwidth = dim(0) * dim(2) * inputTypeC.width
+          val words         = math.max(1, realBandwidth / params.serialInputCDataWidth)
+
+          require(
+            words <= ratioC,
+            s"Computed terminate factor $words exceeds max ratio $ratioC " +
+              s"for C at dataTypeIdx=$dataTypeIdx, dim=$dim"
+          )
+
+          words
+        }
+      }
+
+    (perShapeFactors :+ ratioC).distinct.sorted
+  }
+
+  // Allowed terminate factors for D (ParallelToSerial)
   val allowedTerminateFactorsD: Seq[Int] = {
     val perShapeFactors =
       params.arrayDim.zipWithIndex.flatMap { case (shapes, dataTypeIdx) =>
@@ -359,29 +335,6 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
     // Include the full ratio as well, and deduplicate/sort for sanity
     (perShapeFactors :+ ratioD).distinct.sorted
-  }
-
-// Allowed terminate factors for C (SerialToParallel)
-// Adjust `inputTypeC` to the actual type array you have for C.
-  val allowedTerminateFactorsC: Seq[Int] = {
-    val perShapeFactors =
-      params.arrayDim.zipWithIndex.flatMap { case (shapes, dataTypeIdx) =>
-        val inputTypeC = params.inputTypeC(dataTypeIdx) // or reuse outputTypeD if appropriate
-        shapes.map { dim =>
-          val realBandwidth = dim(0) * dim(2) * inputTypeC.width
-          val words         = math.max(1, realBandwidth / params.serialInputCDataWidth)
-
-          require(
-            words <= ratioC,
-            s"Computed terminate factor $words exceeds max ratio $ratioC " +
-              s"for C at dataTypeIdx=$dataTypeIdx, dim=$dim"
-          )
-
-          words
-        }
-      }
-
-    (perShapeFactors :+ ratioC).distinct.sorted
   }
 
   // C32 serial to parallel converter
@@ -410,7 +363,20 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   require(params.serialInputCDataWidth == params.serialOutputDDataWidth)
   require(params.arrayInputCWidth == params.arrayOutputDWidth)
 
-  // Design-time check to ensure real bandwidth is divisible by serialization width
+  // Design-time check to ensure real C bandwidth is divisible by serialization width
+  params.arrayDim.zipWithIndex.foreach { case (shapes, dataTypeIdx) =>
+    shapes.zipWithIndex.foreach { case (dim, dimIdx) =>
+      val inputTypeC    = params.inputTypeC(dataTypeIdx)
+      val realBandwidth = dim(0) * dim(2) * inputTypeC.width
+      require(
+        if (realBandwidth > params.serialInputCDataWidth) realBandwidth % params.serialInputCDataWidth == 0 else true,
+        s"Invalid config: real C bandwidth ($realBandwidth) not divisible by serialInputCDataWidth (${params.serialInputCDataWidth}) " +
+          s"at dataTypeIdx=$dataTypeIdx, dimIdx=$dimIdx"
+      )
+    }
+  }
+
+  // Design-time check to ensure real D bandwidth is divisible by serialization width
   params.arrayDim.zipWithIndex.foreach { case (shapes, dataTypeIdx) =>
     shapes.zipWithIndex.foreach { case (dim, dimIdx) =>
       val outputTypeD   = params.outputTypeD(dataTypeIdx)
@@ -442,6 +408,28 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
       )
     )
 
+  // Calculate the run-time output serial factor based on the configuration
+  // (how many cycles it to output one data)
+  val outPutDWidthRom = VecInit(params.outputTypeD.map(_.width.U(params.configWidth.W)))
+
+  val runTimeOutputBandWidthFactor = (realCDBandWidth(
+    csrReg.arrayCfg.dataTypeCfg,
+    csrReg.arrayCfg.arrayShapeCfg,
+    outPutDWidthRom
+  ) / params.serialOutputDDataWidth.U)
+
+  val output_d_serial_factor =
+    Mux(
+      params.arrayOutputDWidth.U <= params.serialOutputDDataWidth.U,
+      1.U,
+      Mux(
+        runTimeOutputBandWidthFactor
+          === 0.U,
+        1.U,
+        runTimeOutputBandWidthFactor
+      )
+    )
+
   C_s2p.io.terminate_factor.get := input_c_serial_factor
   C_s2p.io.start                := config_fire
 
@@ -463,12 +451,9 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   // array accAddExtIn control signal
   val accAddExtIn        = WireInit(0.B)
   val computeFireCounter = Module(new BasicCounter(params.configWidth, hasCeil = true, nameTag = "computeFireCounter"))
-  computeFireCounter.io.ceilOpt.get := csrReg.fsmCfg.a_b_input_times_one_output
-  val addCFire =
-    (a_after_cut.fire && b_after_cut.fire && array.io.array_data.in_c.fire && computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U) ||
-      (a_after_cut.fire && b_after_cut.fire && computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 0.U)
-  val mulABFire = (a_after_cut.fire && b_after_cut.fire && computeFireCounter.io.value =/= 0.U)
-  computeFireCounter.io.tick  := (addCFire || mulABFire) && cstate === sBUSY
+  computeFireCounter.io.ceilOpt.get := csrReg.fsmCfg.temporal_accumulation_times
+
+  computeFireCounter.io.tick  := array.io.ctrl.computeFire && cstate === sBUSY
   computeFireCounter.io.reset := versacore_finish
 
   accAddExtIn := computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U && cstate === sBUSY
@@ -479,21 +464,21 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   array.io.ctrl.accAddExtIn   := accAddExtIn
 
   // array data signals
-  array.io.array_data.in_a <> a_after_cut
-  array.io.array_data.in_b <> b_after_cut
+  array.io.array_data.in_a <> A_s2p.io.out
+  array.io.array_data.in_b <> B_s2p.io.out
 
   array.io.array_data.in_c.bits  := C_s2p.io.out.bits
-  array.io.array_data.in_c.valid := C_s2p.io.out.valid && cstate === sBUSY
+  array.io.array_data.in_c.valid := C_s2p.io.out.valid             && cstate === sBUSY
   // array c_ready considering output stationary
-  C_s2p.io.out.ready             := addCFire           && cstate === sBUSY
+  C_s2p.io.out.ready             := array.io.array_data.in_c.ready && cstate === sBUSY
 
-  array.io.array_data.in_subtraction <> sub_after_cut
+  array.io.array_data.in_subtraction := csrReg.fsmCfg.subtraction_constant_i
 
   // array d_ready considering output stationary
   val dOutputValidCounter = Module(
     new BasicCounter(params.configWidth, hasCeil = true, nameTag = "dOutputValidCounter")
   )
-  dOutputValidCounter.io.ceilOpt.get := csrReg.fsmCfg.a_b_input_times_one_output
+  dOutputValidCounter.io.ceilOpt.get := csrReg.fsmCfg.temporal_accumulation_times
   dOutputValidCounter.io.tick  := array.io.array_data.out_d.fire && cstate === sBUSY
   dOutputValidCounter.io.reset := versacore_finish
 
@@ -501,11 +486,11 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   D_p2s.io.in.bits                := array.io.array_data.out_d.bits
   // output_times == 0 means no output
   // If output_times is 0, we need to ensure that the valid signal is not asserted
-  // othwerwise, output one valid signal after a_b_input_times_one_output computations
+  // othwerwise, output one valid signal after temporal_accumulation_times computations
   when(csrReg.fsmCfg.output_times === 0.U) {
     D_p2s.io.in.valid := false.B
   }.otherwise {
-    D_p2s.io.in.valid := array.io.array_data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.a_b_input_times_one_output - 1.U)
+    D_p2s.io.in.valid := array.io.array_data.out_d.valid && cstate === sBUSY && dOutputValidCounter.io.value === (csrReg.fsmCfg.temporal_accumulation_times - 1.U)
   }
   array.io.array_data.out_d.ready := Mux(D_p2s.io.in.valid, D_p2s.io.in.ready, true.B)
 
@@ -525,7 +510,21 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   // output control signals for read-only csrs
   io.performance_counter := performance_counter
 
-  // all the data is outputted means the computation is finished
+  def realCDBandWidth(
+    dataTypeIdx:  UInt,
+    dimIdx:       UInt,
+    elemWidthSeq: Vec[UInt]
+  ) = {
+    val dim = dimRom(dataTypeIdx)(dimIdx)
+    dim(0) * dim(2) * elemWidthSeq(dataTypeIdx)
+  }
+  // counter for output data count
+  val dOutputCounter = Module(new BasicCounter(params.configWidth, hasCeil = false, nameTag = "dOutputCounter"))
+
+  // all number of counts that the data needs to be outputted
+  dOutputCounter.io.tick  := io.versacore_data.out_d.fire && cstate === sBUSY
+  dOutputCounter.io.reset := versacore_finish
+
   val output_finish =
     (dOutputCounter.io.value === csrReg.fsmCfg.output_times * output_d_serial_factor) && cstate === sBUSY
   val computation_finish = WireInit(0.B)
@@ -536,6 +535,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
     computation_finish := output_finish
   }
 
+  // all the data is outputted means the computation is finished
   versacore_finish := computation_finish && output_finish
 
   io.busy_o := cstate =/= sIDLE

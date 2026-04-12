@@ -13,6 +13,7 @@ import chisel3._
 import chiseltest._
 import fp_unit._
 import org.scalatest.flatspec.AnyFlatSpec
+import snax_acc.utils.CommonTestUtils.WaitOrTimeout
 import snax_acc.utils.CommonTestUtils.toSInt
 
 class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
@@ -72,17 +73,16 @@ class SpatialArrayTest extends AnyFlatSpec with ChiselScalatestTester {
             c.io.array_data.in_a.valid.poke(true.B)
             c.io.array_data.in_b.valid.poke(true.B)
             c.io.array_data.in_c.valid.poke(true.B)
-            c.io.array_data.in_subtraction.valid.poke(false.B)
+            c.io.array_data.in_subtraction.poke(0.U)
             c.io.array_data.out_d.ready.poke(true.B)
 
             c.io.ctrl.arrayShapeCfg.poke(arrayShapeIdx.U)
             c.io.ctrl.dataTypeCfg.poke(dataTypeIdx.U)
             c.io.ctrl.accAddExtIn.poke(true.B)
 
-            c.clock.step(1)
+            WaitOrTimeout(c.io.array_data.out_d.valid, c.clock)
 
             // Check the output
-            c.io.array_data.out_d.valid.expect(true.B)
             val out_d            = c.io.array_data.out_d.bits.peek().litValue
             val extractedOutputs = (0 until (Mu * Nu)).map { i =>
               ((out_d >> (i * outputTypeD.width)) & (math.pow(2, outputTypeD.width).toLong - 1)).toInt

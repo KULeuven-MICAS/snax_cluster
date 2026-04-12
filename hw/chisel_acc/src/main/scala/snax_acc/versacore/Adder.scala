@@ -38,6 +38,7 @@ class Adder(
 
   val io = IO(new AdderIO(inputTypeA, inputTypeB, inputTypeC))
 
+  // this is a combinational adder, so we can directly connect the ready/valid signals for a simple combinational handshake
   // Combinational handshake
   io.in.ready  := io.out.ready
   io.out.valid := io.in.valid
@@ -46,12 +47,11 @@ class Adder(
   io.out.bits := out_c
 
   (inputTypeA, inputTypeB, inputTypeC) match {
+    // only implement the cases that are needed for our use cases, other cases will throw not implemented exception
     case (_: IntType, _: IntType, _: IntType) =>
       out_c := (io.in.bits.in_a.asTypeOf(SInt(inputTypeC.width.W)) + io.in.bits.in_b.asTypeOf(
         SInt(inputTypeC.width.W)
       )).asUInt
-
-    case (_: FpType, _: IntType, _: FpType) => throw new NotImplementedError()
 
     case (a: FpType, b: FpType, c: FpType) => {
       val fpAddFp = Module(new FpAddFpBlackBox("fp_add", a, b, c))
@@ -59,6 +59,8 @@ class Adder(
       fpAddFp.io.operand_b_i := io.in.bits.in_b
       out_c                  := fpAddFp.io.result_o
     }
+
+    case (_: FpType, _: IntType, _: FpType) => throw new NotImplementedError()
 
     case (_, _, _) => throw new NotImplementedError()
 
