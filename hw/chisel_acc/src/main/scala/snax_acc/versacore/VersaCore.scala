@@ -218,10 +218,10 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   require(params.serialInputBDataWidth == params.arrayInputBWidth)
 
   A_s2p.io.in <> io.versacore_data.in_a
-  A_s2p.io.start := config_fire
+  A_s2p.io.start := versacore_finish
 
   B_s2p.io.in <> io.versacore_data.in_b
-  B_s2p.io.start := config_fire
+  B_s2p.io.start := versacore_finish
 
   // dynamically calculate the serial factor for input A and B
   // based on the run-time configuration
@@ -431,10 +431,10 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
     )
 
   C_s2p.io.terminate_factor.get := input_c_serial_factor
-  C_s2p.io.start                := config_fire
+  C_s2p.io.start                := versacore_finish
 
   D_p2s.io.terminate_factor.get := output_d_serial_factor
-  D_p2s.io.start                := config_fire
+  D_p2s.io.start                := versacore_finish
 
   io.versacore_data.in_c <> C_s2p.io.in
   io.versacore_data.out_d <> D_p2s.io.out
@@ -462,15 +462,13 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   array.io.ctrl.arrayShapeCfg := csrReg.arrayCfg.arrayShapeCfg
   array.io.ctrl.dataTypeCfg   := csrReg.arrayCfg.dataTypeCfg
   array.io.ctrl.accAddExtIn   := accAddExtIn
+  array.io.ctrl.cstate_is_busy   := cstate === sBUSY
 
   // array data signals
   array.io.array_data.in_a <> A_s2p.io.out
   array.io.array_data.in_b <> B_s2p.io.out
 
-  array.io.array_data.in_c.bits  := C_s2p.io.out.bits
-  array.io.array_data.in_c.valid := C_s2p.io.out.valid             && cstate === sBUSY
-  // array c_ready considering output stationary
-  C_s2p.io.out.ready             := array.io.array_data.in_c.ready && cstate === sBUSY
+  array.io.array_data.in_c <> C_s2p.io.out
 
   array.io.array_data.in_subtraction := csrReg.fsmCfg.subtraction_constant_i
 

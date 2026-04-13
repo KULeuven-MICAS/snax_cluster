@@ -26,6 +26,7 @@ class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
   val arrayShapeCfg = Input(UInt(params.configWidth.W))
   val dataTypeCfg   = Input(UInt(params.configWidth.W))
   val accAddExtIn   = Input(Bool())
+  val cstate_is_busy   = Input(Bool())
   val computeFire   = Output(Bool())
 }
 
@@ -276,7 +277,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     (0 until params.multiplierNum(dataTypeIdx)).foreach { mulIdx =>
       accumulators(dataTypeIdx).io.enable(
         mulIdx
-      ) := (io.ctrl.dataTypeCfg === dataTypeIdx.U && mulIdx.U < runTimeMultiplierCount)
+      ) := (io.ctrl.dataTypeCfg === dataTypeIdx.U && mulIdx.U < runTimeMultiplierCount && io.ctrl.cstate_is_busy) // Only enable the accumulators corresponding to the active multipliers and when the state is busy
     }
   }
 
@@ -310,9 +311,9 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   val common_valid = io.array_data.in_a.valid && io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active)
   val common_ready = muls_ready               && (in_c_before_pipe.ready || !in_c_active)
 
-  io.array_data.in_a.ready := io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
-  io.array_data.in_b.ready := io.array_data.in_a.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
-  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid                   && common_ready
+  io.array_data.in_a.ready := io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready && io.ctrl.cstate_is_busy
+  io.array_data.in_b.ready := io.array_data.in_a.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready && io.ctrl.cstate_is_busy
+  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid                   && common_ready && io.ctrl.cstate_is_busy
 
   // Drive the valid signals for the first stage
   multipliers.foreach(_.foreach(_.io.in.valid := common_valid))
