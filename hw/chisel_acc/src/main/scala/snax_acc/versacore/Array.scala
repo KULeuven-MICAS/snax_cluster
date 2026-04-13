@@ -23,10 +23,11 @@ class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
 
 // control io
 class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
-  val arrayShapeCfg = Input(UInt(params.configWidth.W))
-  val dataTypeCfg   = Input(UInt(params.configWidth.W))
-  val accAddExtIn   = Input(Bool())
-  val computeFire   = Output(Bool())
+  val arrayShapeCfg  = Input(UInt(params.configWidth.W))
+  val dataTypeCfg    = Input(UInt(params.configWidth.W))
+  val accAddExtIn    = Input(Bool())
+  val cstate_is_busy = Input(Bool())
+  val computeFire    = Output(Bool())
 }
 
 class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {
@@ -276,7 +277,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     (0 until params.multiplierNum(dataTypeIdx)).foreach { mulIdx =>
       accumulators(dataTypeIdx).io.enable(
         mulIdx
-      ) := (io.ctrl.dataTypeCfg === dataTypeIdx.U && mulIdx.U < runTimeMultiplierCount)
+      ) := (io.ctrl.dataTypeCfg === dataTypeIdx.U && mulIdx.U < runTimeMultiplierCount && io.ctrl.cstate_is_busy) // Only enable the accumulators corresponding to the active multipliers and when the state is busy
     }
   }
 
@@ -308,11 +309,13 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   // A, B and C (if enabled) must fire together to ensure the input wave enters the pipeline correctly.
   val in_c_active  = io.ctrl.accAddExtIn
   val common_valid = io.array_data.in_a.valid && io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active)
-  val common_ready = muls_ready               && (in_c_before_pipe.ready || !in_c_active)
+  val common_accept_data_ready = muls_ready && (in_c_before_pipe.ready || !in_c_active)
 
-  io.array_data.in_a.ready := io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
-  io.array_data.in_b.ready := io.array_data.in_a.valid && (io.array_data.in_c.valid || !in_c_active) && common_ready
-  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid                   && common_ready
+  // sync a and b ready signals for the three inputs based on the common valid and the pipeline ready
+  io.array_data.in_a.ready := io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && common_accept_data_ready && io.ctrl.cstate_is_busy
+  io.array_data.in_b.ready := io.array_data.in_a.valid && (io.array_data.in_c.valid || !in_c_active) && common_accept_data_ready && io.ctrl.cstate_is_busy
+  // only takes in c when accAddExtIn is true to accept new c input data
+  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid && common_accept_data_ready && io.ctrl.cstate_is_busy && in_c_active
 
   // Drive the valid signals for the first stage
   multipliers.foreach(_.foreach(_.io.in.valid := common_valid))

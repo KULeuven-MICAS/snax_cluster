@@ -203,7 +203,8 @@ class RescaleDownEfficientDynamic(
   out_elementWidth:   Int      = 8,
   extra_loops_choice: Seq[Int] = Seq(
     1,
-    2
+    4,
+    1
   ) // NOTE: This extra_loops_choice is used to aggregate a batch of input to output and is related to the use case! Be careful when using it
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
