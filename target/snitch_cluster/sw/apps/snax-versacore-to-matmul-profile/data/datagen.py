@@ -750,7 +750,7 @@ def emit_matmul_data(**kwargs):
         A_MIN, A_MAX = signed_int_range(a_len)
         B_MIN, B_MAX = signed_int_range(b_len)
         # For C, we want to make sure the range won't overflow in quatization accumulation
-        C_MIN, C_MAX = -20_000_000, 20_000_000  # leave some headroom for accumulation
+        C_MIN, C_MAX = -2_000_000, 2_000_000  # leave some headroom for accumulation
         # for debugging
         # A_MIN, A_MAX = 1, 2
         # B_MIN, B_MAX = 1, 2
