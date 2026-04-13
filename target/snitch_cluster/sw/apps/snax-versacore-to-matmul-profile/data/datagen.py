@@ -282,7 +282,8 @@ def emit_matmul_data(**kwargs):
         assert kwargs["channel_en_C"]
         assert (
             kwargs["M"] * kwargs["N"]
-            >= streamer_cfg["data_reader_params"]["fifo_depth"][2] + dependency_redudancy
+            >= streamer_cfg["data_reader_params"]["fifo_depth"][2]
+            + dependency_redudancy
         )
 
     if kwargs["stationary"] == 2:
@@ -290,7 +291,8 @@ def emit_matmul_data(**kwargs):
         assert kwargs["channel_en_C"]
         assert (
             kwargs["M"] * kwargs["N"]
-            >= streamer_cfg["data_reader_params"]["fifo_depth"][2] + dependency_redudancy
+            >= streamer_cfg["data_reader_params"]["fifo_depth"][2]
+            + dependency_redudancy
         )
 
     a_array_width = snax_acc_cfg["snax_versacore_array_input_a_width"]
@@ -747,7 +749,8 @@ def emit_matmul_data(**kwargs):
     else:  # Integer data types
         A_MIN, A_MAX = signed_int_range(a_len)
         B_MIN, B_MAX = signed_int_range(b_len)
-        C_MIN, C_MAX = signed_int_range(c_len)
+        # For C, we want to make sure the range won't overflow in quatization accumulation
+        C_MIN, C_MAX = -20_000_000, 20_000_000  # leave some headroom for accumulation
         # for debugging
         # A_MIN, A_MAX = 1, 2
         # B_MIN, B_MAX = 1, 2
@@ -771,8 +774,16 @@ def emit_matmul_data(**kwargs):
         A_fp8_bin = float32_to_fp8_bin(A_fp8)
         B_fp8_bin = float32_to_fp8_bin(B_fp8)
 
-        data_str += [format_vector_definition("int8_t", "A", A_fp8_bin.flatten())]
-        data_str += [format_vector_definition("int8_t", "B", B_fp8_bin.flatten())]
+        data_str += [
+            format_vector_definition(
+                "int8_t", "A", A_fp8_bin.flatten(), hex_bits=8, cast_hex=True
+            )
+        ]
+        data_str += [
+            format_vector_definition(
+                "int8_t", "B", B_fp8_bin.flatten(), hex_bits=8, cast_hex=True
+            )
+        ]
 
         if enable_full_C == 1:
             C = np.random.uniform(C_MIN, C_MAX, size=(M, N, meshRow, meshCol)).reshape(
@@ -781,28 +792,54 @@ def emit_matmul_data(**kwargs):
         else:
             C = np.zeros((M, N, meshRow, meshCol)).reshape(-1)
 
-        data_str += [format_vector_definition("int32_t", "C", float32_to_hex_uint(C))]
+        data_str += [
+            format_vector_definition(
+                "int32_t", "C", float32_to_hex_uint(C), hex_bits=32, cast_hex=True
+            )
+        ]
 
     else:  # Integer data types
         A = np.random.randint(A_MIN, A_MAX, size=(M, K, meshRow, tileSize)).reshape(-1)
         if a_len == 4:
-            data_str += [format_vector_definition("int8_t", "A_orginal_4bits", A)]
+            data_str += [
+                format_vector_definition(
+                    "int8_t", "A_orginal_4bits", A, hex_bits=8, cast_hex=True
+                )
+            ]
             A_packed = pack_signed_nbit(A, bit_width=4, pack_per_byte=2)
-            data_str += [format_vector_definition("int8_t", "A", A_packed)]
+            data_str += [
+                format_vector_definition(
+                    "int8_t", "A", A_packed, hex_bits=8, cast_hex=True
+                )
+            ]
         elif a_len == 8:
-            data_str += [format_vector_definition("int8_t", "A", A)]
+            data_str += [
+                format_vector_definition("int8_t", "A", A, hex_bits=8, cast_hex=True)
+            ]
         elif a_len == 16:
-            data_str += [format_vector_definition("int16_t", "A", A)]
+            data_str += [
+                format_vector_definition("int16_t", "A", A, hex_bits=16, cast_hex=True)
+            ]
         else:
             raise ValueError("Invalid A data type")
 
         B = np.random.randint(B_MIN, B_MAX, size=(K, N, tileSize, meshCol)).reshape(-1)
         if b_len == 4:
-            data_str += [format_vector_definition("int8_t", "B_orginal_4bits", B)]
+            data_str += [
+                format_vector_definition(
+                    "int8_t", "B_orginal_4bits", B, hex_bits=8, cast_hex=True
+                )
+            ]
             B_packed = pack_signed_nbit(B, bit_width=4, pack_per_byte=2)
-            data_str += [format_vector_definition("int8_t", "B", B_packed)]
+            data_str += [
+                format_vector_definition(
+                    "int8_t", "B", B_packed, hex_bits=8, cast_hex=True
+                )
+            ]
         elif b_len == 8:
-            data_str += [format_vector_definition("int8_t", "B", B)]
+            data_str += [
+                format_vector_definition("int8_t", "B", B, hex_bits=8, cast_hex=True)
+            ]
         else:
             raise ValueError("Invalid B data type")
 
@@ -814,7 +851,9 @@ def emit_matmul_data(**kwargs):
             C = np.random.randint(0, 1, size=(M, N, meshRow, meshCol)).reshape(-1)
 
         assert c_len == 32, "C data type must be 32 bits for now"
-        data_str += [format_vector_definition("int32_t", "C", C)]
+        data_str += [
+            format_vector_definition("int32_t", "C", C, hex_bits=32, cast_hex=True)
+        ]
 
     if kwargs["transposed_A"] == 1:
         A = A.reshape(M, K, meshRow, tileSize)
@@ -848,7 +887,9 @@ def emit_matmul_data(**kwargs):
             C,
         )
         D = float32_to_hex_uint(D)
-        data_str += [format_vector_definition("int32_t", "D", D)]
+        data_str += [
+            format_vector_definition("int32_t", "D", D, hex_bits=32, cast_hex=True)
+        ]
     else:
         D = block_gemm_golden_model(
             M,
@@ -863,7 +904,9 @@ def emit_matmul_data(**kwargs):
             subtraction_b,
             C,
         )
-        data_str += [format_vector_definition("int32_t", "D", D)]
+        data_str += [
+            format_vector_definition("int32_t", "D", D, hex_bits=32, cast_hex=True)
+        ]
 
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_A", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_B", 0)]
@@ -902,7 +945,11 @@ def emit_matmul_data(**kwargs):
         )
     output_matrix = np.array(output_matrix, dtype=np.uint8)
 
-    data_str += [format_vector_definition("int8_t", "D_quantized", output_matrix)]
+    data_str += [
+        format_vector_definition(
+            "int8_t", "D_quantized", output_matrix, hex_bits=8, cast_hex=True
+        )
+    ]
 
     # Int32 to FP16 conversion
     data_str += [
@@ -921,7 +968,11 @@ def emit_matmul_data(**kwargs):
         fp_output_matrix.append(int32_to_fp16_golden(data_element))
     fp_output_matrix = np.array(fp_output_matrix, dtype=np.uint16)
 
-    data_str += [format_vector_definition("int16_t", "D_int32tofp16", fp_output_matrix)]
+    data_str += [
+        format_vector_definition(
+            "int16_t", "D_int32tofp16", fp_output_matrix, hex_bits=16, cast_hex=True
+        )
+    ]
 
     data_str = "\n\n".join(data_str)
 
