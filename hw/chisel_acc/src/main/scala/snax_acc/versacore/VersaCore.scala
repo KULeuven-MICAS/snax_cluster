@@ -459,10 +459,10 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   accAddExtIn := computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U && cstate === sBUSY
 
   // array ctrl signals
-  array.io.ctrl.arrayShapeCfg := csrReg.arrayCfg.arrayShapeCfg
-  array.io.ctrl.dataTypeCfg   := csrReg.arrayCfg.dataTypeCfg
-  array.io.ctrl.accAddExtIn   := accAddExtIn
-  array.io.ctrl.cstate_is_busy   := cstate === sBUSY
+  array.io.ctrl.arrayShapeCfg  := csrReg.arrayCfg.arrayShapeCfg
+  array.io.ctrl.dataTypeCfg    := csrReg.arrayCfg.dataTypeCfg
+  array.io.ctrl.accAddExtIn    := accAddExtIn
+  array.io.ctrl.cstate_is_busy := cstate === sBUSY
 
   // array data signals
   array.io.array_data.in_a <> A_s2p.io.out
