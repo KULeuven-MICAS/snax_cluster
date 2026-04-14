@@ -274,6 +274,7 @@ jobs:
       - name: Build Hardware
         run: |
           make CFG_OVERRIDE=cfg/snax_versacore_to_cluster.hjson \
+          VLT_FLAGS="-fno-dfg-push-down-sels" \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Build Software
         run: |
