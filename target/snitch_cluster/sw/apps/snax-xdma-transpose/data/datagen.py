@@ -23,6 +23,7 @@ from data_utils import format_scalar_definition, format_vector_definition  # noq
 
 
 MAX_TEMPORAL_DIM = 5
+LANE_BYTES = 8
 BIT_WIDTH_CONFIG = {
     8: {
         "tile_width": 8,
@@ -37,8 +38,8 @@ BIT_WIDTH_CONFIG = {
         "dtype": np.dtype("<u2"),
     },
     32: {
-        "tile_width": 4,
-        "transfer_per_transpose": 1,
+        "tile_width": 8,
+        "transfer_per_transpose": 4,
         "transposer_csr": 2,
         "dtype": np.dtype("<u4"),
     },
@@ -112,13 +113,64 @@ def pad_temporal_values(values):
     return values + [0] * (MAX_TEMPORAL_DIM - len(values))
 
 
+def validate_single_spatial_stride_mn_support(
+    rows,
+    cols,
+    tile_width,
+    bytes_per_element,
+    transfer_count,
+    layout_role,
+):
+    tile_row_bytes = tile_width * bytes_per_element
+    expected_transfer_count = tile_row_bytes // LANE_BYTES
+
+    # For MN source/destination layouts we only have one programmable spatial
+    # stride in the current XDMA software interface, so the channels can only
+    # walk one linear dimension inside a transfer.
+    #
+    # That matches the transposer modes when one lane carries one whole row
+    # slice for the current transfer:
+    # - int8 : each lane fetches one whole 8B row-slice, so 1 transfer/tile
+    # - int16: each lane fetches 4 values = half a row, so 2 transfers/tile
+    # - int32 with an 8x8 tile: each lane fetches 2 values = one quarter-row,
+    #   so 4 transfers/tile
+    if cols > tile_width and transfer_count != expected_transfer_count:
+        raise ValueError(
+            f"{layout_role} MN layout with BIT_WIDTH={bytes_per_element * 8} "
+            f"and shape ({rows}, {cols}) cannot be represented by the current "
+            f"single-spatial-stride XDMA interface. The tile needs "
+            f"{expected_transfer_count} row-slice transfers or multi-dimensional "
+            f"spatial strides, but this transposer mode uses {transfer_count} transfer(s)."
+        )
+
+
 def derive_src_agu(rows, cols, layout_name, tile_width, bytes_per_element, transfer_count):
+    if (
+        layout_name == "MN"
+        and transfer_count == 1
+        and rows == tile_width
+        and cols == tile_width
+    ):
+        return {
+            "spatial_stride": 8,
+            "temporal_bounds": [1],
+            "temporal_strides": [64],
+        }
+
     if layout_name == "MN":
+        validate_single_spatial_stride_mn_support(
+            rows,
+            cols,
+            tile_width,
+            bytes_per_element,
+            transfer_count,
+            "Source",
+        )
         return {
             "spatial_stride": cols * bytes_per_element,
             "temporal_bounds": [transfer_count, cols // tile_width, rows // tile_width],
             "temporal_strides": [
-                8,
+                LANE_BYTES,
                 tile_width * bytes_per_element,
                 cols * tile_width * bytes_per_element,
             ],
@@ -129,6 +181,18 @@ def derive_src_agu(rows, cols, layout_name, tile_width, bytes_per_element, trans
         raise ValueError(
             f"Input matrix shape {(rows, cols)} is incompatible with layout {layout_name}"
         )
+
+    if transfer_count == 1 and block_m == tile_width and block_n == tile_width:
+        tile_bytes = block_m * block_n * bytes_per_element
+        return {
+            "spatial_stride": 8,
+            "temporal_bounds": [transfer_count, cols // block_n, rows // block_m],
+            "temporal_strides": [
+                64,
+                tile_bytes,
+                (cols // block_n) * tile_bytes,
+            ],
+        }
 
     return {
         "spatial_stride": block_n * bytes_per_element,
@@ -158,7 +222,29 @@ def derive_dst_agu(
     transfer_count,
     enable_transpose,
 ):
+    if (
+        layout_name == "MN"
+        and transfer_count == 1
+        and rows == tile_width
+        and cols == tile_width
+    ):
+        return {
+            "spatial_stride": 8,
+            "temporal_bounds": [1],
+            "temporal_strides": [64],
+        }
+
     if layout_name == "MN":
+        out_rows = cols if enable_transpose else rows
+        out_cols = rows if enable_transpose else cols
+        validate_single_spatial_stride_mn_support(
+            out_rows,
+            out_cols,
+            tile_width,
+            bytes_per_element,
+            transfer_count,
+            "Destination",
+        )
         if enable_transpose:
             return {
                 "spatial_stride": rows * bytes_per_element,
@@ -168,7 +254,7 @@ def derive_dst_agu(
                     rows // tile_width,
                 ],
                 "temporal_strides": [
-                    8,
+                    LANE_BYTES,
                     rows * tile_width * bytes_per_element,
                     tile_width * bytes_per_element,
                 ],
@@ -178,7 +264,7 @@ def derive_dst_agu(
             "spatial_stride": cols * bytes_per_element,
             "temporal_bounds": [transfer_count, cols // tile_width, rows // tile_width],
             "temporal_strides": [
-                8,
+                LANE_BYTES,
                 tile_width * bytes_per_element,
                 cols * tile_width * bytes_per_element,
             ],
@@ -191,6 +277,37 @@ def derive_dst_agu(
         raise ValueError(
             f"Output matrix shape {(out_rows, out_cols)} is incompatible with layout {layout_name}"
         )
+
+    if transfer_count == 1 and block_m == tile_width and block_n == tile_width:
+        tile_bytes = block_m * block_n * bytes_per_element
+        if enable_transpose:
+            return {
+                "spatial_stride": 8,
+                "temporal_bounds": [
+                    transfer_count,
+                    cols // block_m,
+                    rows // block_n,
+                ],
+                "temporal_strides": [
+                    64,
+                    (rows // block_n) * tile_bytes,
+                    tile_bytes,
+                ],
+            }
+
+        return {
+            "spatial_stride": 8,
+            "temporal_bounds": [
+                transfer_count,
+                cols // block_n,
+                rows // block_m,
+            ],
+            "temporal_strides": [
+                64,
+                tile_bytes,
+                (cols // block_n) * tile_bytes,
+            ],
+        }
 
     if enable_transpose:
         return {

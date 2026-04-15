@@ -7,13 +7,58 @@
 {
     cases: [
         {
-            name: "int8_current_layout"
-            M: 56
-            N: 33
+            name: "int8_block_m16n16"
+            M: 16
+            N: 32
             BIT_WIDTH: 8
             // Input layout can be MN or MNMaNb, where block sizes must be
-            // multiples of 8 for BIT_WIDTH 8/16 and multiples of 4 for 32.
+            // multiples of 8 for the currently configured transposer modes.
+            input_layout: "MNM16N16"
+            output_layout: "MN"
+            enable_transpose: true
+        }
+        {
+            name: "int16_block_m32n16"
+            M: 32
+            N: 16
+            BIT_WIDTH: 16
             input_layout: "MNM32N16"
+            output_layout: "MN"
+            enable_transpose: true
+        }
+        {
+            name: "int32_block_m8n8"
+            M: 16
+            N: 24
+            BIT_WIDTH: 32
+            input_layout: "MNM8N8"
+            output_layout: "MN"
+            enable_transpose: true
+        }
+        {
+            name: "int8_mn"
+            M: 16
+            N: 24
+            BIT_WIDTH: 8
+            input_layout: "MN"
+            output_layout: "MN"
+            enable_transpose: true
+        }
+        {
+            name: "int16_mn"
+            M: 16
+            N: 24
+            BIT_WIDTH: 16
+            input_layout: "MN"
+            output_layout: "MN"
+            enable_transpose: true
+        }
+        {
+            name: "int32_mn"
+            M: 16
+            N: 24
+            BIT_WIDTH: 32
+            input_layout: "MN"
             output_layout: "MN"
             enable_transpose: true
         }

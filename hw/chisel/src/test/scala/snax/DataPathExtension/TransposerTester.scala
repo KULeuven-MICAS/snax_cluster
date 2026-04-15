@@ -5,8 +5,8 @@ import chiseltest._
 import snax.DataPathExtension.HasTransposer
 
 private object XDMATransposerTesterHelper {
-  private val sharedRow          = Seq(8, 8, 4)
-  private val sharedCol          = Seq(8, 8, 4)
+  private val sharedRow          = Seq(8, 8, 8)
+  private val sharedCol          = Seq(8, 8, 8)
   private val sharedElementWidth = Seq(8, 16, 32)
   private val sharedDataWidth    = 512
   private val numTestMatrices    = 128
@@ -97,7 +97,7 @@ class XDMATransposerMode1Tester extends XDMATransposerTester(modeIdx = 0, row = 
 
 class XDMATransposerMode2Tester extends XDMATransposerTester(modeIdx = 1, row = 8, col = 8, elementWidth = 16, seed = 16)
 
-class XDMATransposerMode3Tester extends XDMATransposerTester(modeIdx = 2, row = 4, col = 4, elementWidth = 32, seed = 32)
+class XDMATransposerMode3Tester extends XDMATransposerTester(modeIdx = 2, row = 8, col = 8, elementWidth = 32, seed = 32)
 
 class TransposerRow32Col4Ewidth8Dwidth2048Tester extends DataPathExtensionTester {
   

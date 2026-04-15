@@ -8,6 +8,12 @@
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 
+#if defined(READER_EXT_TRANSPOSERROW8_8_8COL8_8_8BIT8_16_32)
+#define READER_TRANSPOSE_EXT_ID READER_EXT_TRANSPOSERROW8_8_8COL8_8_8BIT8_16_32
+#elif defined(READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32)
+#define READER_TRANSPOSE_EXT_ID READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32
+#endif
+
 static uint32_t align_up(uint32_t value, uint32_t alignment) {
     return ((value + alignment - 1) / alignment) * alignment;
 }
@@ -35,17 +41,15 @@ int main() {
             snrt_dma_wait_all();
 
             // --------------------- Configure the Ext --------------------- //
-#ifdef READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32
+#ifdef READER_TRANSPOSE_EXT_ID
             if (test_case->enable_transpose) {
                 if (snax_xdma_enable_src_ext(
-                        READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32,
-                        test_case->transposer_csr) != 0) {
+                        READER_TRANSPOSE_EXT_ID, test_case->transposer_csr) != 0) {
                     printf("[Transpose] Failed to enable reader transposer\n");
                     err++;
                     continue;
                 }
-            } else if (snax_xdma_disable_src_ext(
-                           READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32) !=
+            } else if (snax_xdma_disable_src_ext(READER_TRANSPOSE_EXT_ID) !=
                        0) {
                 printf("[Transpose] Failed to disable reader transposer\n");
                 err++;
@@ -103,9 +107,8 @@ int main() {
             }
         }
 
-#ifdef READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32
-        snax_xdma_disable_src_ext(
-            READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32);
+#ifdef READER_TRANSPOSE_EXT_ID
+        snax_xdma_disable_src_ext(READER_TRANSPOSE_EXT_ID);
 #endif
 
         if (err == 0) {

@@ -8,3 +8,4 @@
 runs:
   - elf: apps/snax-xdma-memset/build/snax-xdma-memset.elf
   - elf: apps/snax-xdma-reshape-comparison/build/snax-xdma-reshape-comparison.elf
+  - elf: apps/snax-xdma-transpose/build/snax-xdma-transpose.elf
