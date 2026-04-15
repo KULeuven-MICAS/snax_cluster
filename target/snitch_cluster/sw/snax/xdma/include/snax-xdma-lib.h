@@ -47,7 +47,7 @@ int32_t snax_xdma_memcpy_1d(void* src, void* dst, uint32_t size);
 // Configures the reader-side transposer and the ND descriptor for an MN source
 // matrix and an NM destination matrix. The caller still needs to launch the
 // configured task with snax_xdma_start() and wait for completion separately.
-// Supported element widths are 8, 16, and 32 bits.
+// Supported element widths are 8 and 16 bits.
 int32_t snax_xdma_row_major_transpose(void* src, void* dst, uint32_t rows,
                                       uint32_t cols,
                                       uint32_t element_width_bits);

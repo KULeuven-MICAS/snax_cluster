@@ -17,16 +17,14 @@
 
 #define XDMA_LANE_BYTES (XDMA_WIDTH / XDMA_SPATIAL_CHAN)
 
-#if defined(READER_EXT_TRANSPOSERROW8_8_8COL8_8_8BIT8_16_32)
+#if defined(READER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16)
+#define XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID READER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16
+#elif defined(READER_EXT_TRANSPOSERROW8_8_8COL8_8_8BIT8_16_32)
 #define XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID \
     READER_EXT_TRANSPOSERROW8_8_8COL8_8_8BIT8_16_32
-#define XDMA_ROW_MAJOR_TRANSPOSE_INT32_TILE 8
-#define XDMA_ROW_MAJOR_TRANSPOSE_INT32_TRANSFER 4
 #elif defined(READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32)
 #define XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID \
     READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32
-#define XDMA_ROW_MAJOR_TRANSPOSE_INT32_TILE 4
-#define XDMA_ROW_MAJOR_TRANSPOSE_INT32_TRANSFER 1
 #endif
 
 typedef struct {
@@ -54,15 +52,10 @@ static int32_t snax_xdma_get_row_major_transpose_cfg(
             cfg->transfer_count = 2;
             cfg->csr_value[0] = 1;
             return 0;
-        case 32:
-            cfg->tile_width = XDMA_ROW_MAJOR_TRANSPOSE_INT32_TILE;
-            cfg->transfer_count = XDMA_ROW_MAJOR_TRANSPOSE_INT32_TRANSFER;
-            cfg->csr_value[0] = 2;
-            return 0;
         default:
             XDMA_DEBUG_PRINT(
                 "Unsupported transpose element width %u bits, expected "
-                "8/16/32\n",
+                "8/16\n",
                 element_width_bits);
             return -1;
     }

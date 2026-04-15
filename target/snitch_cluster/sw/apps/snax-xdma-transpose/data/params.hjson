@@ -27,15 +27,6 @@
             enable_transpose: true
         }
         {
-            name: "int32_block_m8n8"
-            M: 16
-            N: 24
-            BIT_WIDTH: 32
-            input_layout: "MNM8N8"
-            output_layout: "MN"
-            enable_transpose: true
-        }
-        {
             name: "int8_mn"
             M: 16
             N: 24
@@ -49,15 +40,6 @@
             M: 16
             N: 24
             BIT_WIDTH: 16
-            input_layout: "MN"
-            output_layout: "MN"
-            enable_transpose: true
-        }
-        {
-            name: "int32_mn"
-            M: 16
-            N: 24
-            BIT_WIDTH: 32
             input_layout: "MN"
             output_layout: "MN"
             enable_transpose: true

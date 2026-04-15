@@ -37,12 +37,6 @@ BIT_WIDTH_CONFIG = {
         "transposer_csr": 1,
         "dtype": np.dtype("<u2"),
     },
-    32: {
-        "tile_width": 8,
-        "transfer_per_transpose": 4,
-        "transposer_csr": 2,
-        "dtype": np.dtype("<u4"),
-    },
 }
 
 
@@ -71,7 +65,7 @@ def get_case_config(case_cfg):
         return BIT_WIDTH_CONFIG[int(case_cfg["BIT_WIDTH"])]
     except KeyError as exc:
         raise ValueError(
-            f"Unsupported BIT_WIDTH {case_cfg['BIT_WIDTH']}, expected one of 8, 16, 32"
+            f"Unsupported BIT_WIDTH {case_cfg['BIT_WIDTH']}, expected one of 8, 16"
         ) from exc
 
 
@@ -132,8 +126,6 @@ def validate_single_spatial_stride_mn_support(
     # slice for the current transfer:
     # - int8 : each lane fetches one whole 8B row-slice, so 1 transfer/tile
     # - int16: each lane fetches 4 values = half a row, so 2 transfers/tile
-    # - int32 with an 8x8 tile: each lane fetches 2 values = one quarter-row,
-    #   so 4 transfers/tile
     if cols > tile_width and transfer_count != expected_transfer_count:
         raise ValueError(
             f"{layout_role} MN layout with BIT_WIDTH={bytes_per_element * 8} "

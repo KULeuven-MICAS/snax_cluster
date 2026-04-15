@@ -5,9 +5,9 @@ import chiseltest._
 import snax.DataPathExtension.HasTransposer
 
 private object XDMATransposerTesterHelper {
-  private val sharedRow          = Seq(8, 8, 8)
-  private val sharedCol          = Seq(8, 8, 8)
-  private val sharedElementWidth = Seq(8, 16, 32)
+  private val sharedRow          = Seq(8, 8)
+  private val sharedCol          = Seq(8, 8)
+  private val sharedElementWidth = Seq(8, 16)
   private val sharedDataWidth    = 512
   private val numTestMatrices    = 128
 
@@ -22,7 +22,6 @@ private object XDMATransposerTesterHelper {
   private def randomValue(random: Random, elementWidth: Int): Long =
     elementWidth match {
       case 8 | 16 => random.nextInt(1 << elementWidth).toLong
-      case 32     => random.nextInt().toLong & 0xffffffffL
       case _ =>
         throw new IllegalArgumentException(
           s"Unsupported element width $elementWidth for TransposerTester"
@@ -96,8 +95,6 @@ abstract class XDMATransposerTester(modeIdx: Int, row: Int, col: Int, elementWid
 class XDMATransposerMode1Tester extends XDMATransposerTester(modeIdx = 0, row = 8, col = 8, elementWidth = 8, seed = 8)
 
 class XDMATransposerMode2Tester extends XDMATransposerTester(modeIdx = 1, row = 8, col = 8, elementWidth = 16, seed = 16)
-
-class XDMATransposerMode3Tester extends XDMATransposerTester(modeIdx = 2, row = 8, col = 8, elementWidth = 32, seed = 32)
 
 class TransposerRow32Col4Ewidth8Dwidth2048Tester extends DataPathExtensionTester {
   
