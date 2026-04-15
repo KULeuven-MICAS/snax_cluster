@@ -40,7 +40,10 @@ abstract class DataPathExtensionTester(
   val output_data_vec: Seq[BigInt]
   def hasExtension: HasDataPathExtension
 
-  hasExtension.extensionParam.moduleName should "pass" in {
+  private val suiteTestName =
+    s"${hasExtension.extensionParam.moduleName}_${this.getClass.getSimpleName.stripSuffix("$")}"
+
+  suiteTestName should "pass" in {
     test(new DataPathExtensionHarness(hasExtension))
       .withAnnotations(Seq(WriteVcdAnnotation, simBackEnd)) { dut =>
         dut.io.csr_i.zip(csr_vec).foreach { case (csrPort, csrData) =>
