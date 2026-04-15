@@ -5,11 +5,17 @@
 // Yunhao Deng <yunhao.deng@kuleuven.be>
 
 {
-    M: 56, // Number of rows / height
-    N: 33, // Number of columns / width
-    BIT_WIDTH: 16, // Bit width of the data type
-    // Input layout can be MN or MNMaNb, where b should be larger than 8 for any cases and a should be larger than 8 if transpose is needed. 
-    input_layout: "MNM32N16",
-    output_layout: "MN",
-    enable_transpose: true
+    cases: [
+        {
+            name: "int8_current_layout"
+            M: 56
+            N: 33
+            BIT_WIDTH: 8
+            // Input layout can be MN or MNMaNb, where block sizes must be
+            // multiples of 8 for BIT_WIDTH 8/16 and multiples of 4 for 32.
+            input_layout: "MNM32N16"
+            output_layout: "MN"
+            enable_transpose: true
+        }
+    ]
 }

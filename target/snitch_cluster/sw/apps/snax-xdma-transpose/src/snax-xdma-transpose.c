@@ -8,67 +8,112 @@
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 
+static uint32_t align_up(uint32_t value, uint32_t alignment) {
+    return ((value + alignment - 1) / alignment) * alignment;
+}
+
 int main() {
-    // Set err value for checking
     int err = 0;
-    // Obtain the start address of the TCDM memory
-    uint32_t dma_load_input_start;
-    uint32_t dma_load_input_end;
     uint32_t tcdm_baseaddress = snrt_cluster_base_addrl();
-    // Put the input at the starting of tcdm
-    void *tcdm_in = (void *)tcdm_baseaddress;
-    // Put the output at the middle of tcdm
-    void *tcdm_out =
-        (void *)(tcdm_baseaddress +
-                 (matrix_size * sizeof(input_matrix[0]) * 8 + 7) / 8);
+    uint8_t *tcdm_in = (uint8_t *)tcdm_baseaddress;
+    uint8_t *tcdm_out =
+        tcdm_in + align_up(max_case_input_bytes, XDMA_WIDTH);
 
     if (snrt_is_dm_core()) {
-        // First we need to transfer the input data from L3->TCDM
-        snrt_dma_start_1d(tcdm_in, input_matrix,
-                          matrix_size * sizeof(input_matrix[0]));
-        snrt_dma_wait_all();
+        for (uint32_t case_idx = 0; case_idx < transpose_test_case_count;
+             case_idx++) {
+            transpose_test_case_t *test_case = &transpose_test_cases[case_idx];
+            int case_err = 0;
 
-        // --------------------- Configure the Ext --------------------- //
-#ifdef READER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16
-        if (enable_transpose) {
-            if (snax_xdma_enable_dst_ext(
-                    WRITER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16,
-                    (uint32_t *)transposer_param) != 0) {
-                printf("Error in enabling xdma writer extension 1\n");
+            printf(
+                "[Transpose] Running case %u (%s), M=%u, N=%u, BIT_WIDTH=%u, transpose=%u\n",
+                case_idx, test_case->name, test_case->M, test_case->N,
+                test_case->bit_width, test_case->enable_transpose);
+
+            snrt_dma_start_1d(tcdm_in, test_case->input_matrix_bytes,
+                              test_case->input_bytes);
+            snrt_dma_wait_all();
+
+            // --------------------- Configure the Ext --------------------- //
+#ifdef READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32
+            if (test_case->enable_transpose) {
+                if (snax_xdma_enable_src_ext(
+                        READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32,
+                        test_case->transposer_csr) != 0) {
+                    printf("[Transpose] Failed to enable reader transposer\n");
+                    err++;
+                    continue;
+                }
+            } else if (snax_xdma_disable_src_ext(
+                           READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32) !=
+                       0) {
+                printf("[Transpose] Failed to disable reader transposer\n");
                 err++;
+                continue;
             }
-        } else {
-            if (snax_xdma_disable_dst_ext(
-                    WRITER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16) != 0) {
-                printf("Error in disabling xdma writer extension 1\n");
+#else
+            if (test_case->enable_transpose) {
+                printf("[Transpose] Reader transposer is not available in this build\n");
                 err++;
+                continue;
             }
-        }
 #endif
 
-        // --------------------- Configure the AGU --------------------- //
-        snax_xdma_memcpy_nd(
-            tcdm_in, tcdm_out, spatial_stride_src, spatial_stride_dst,
-            temporal_dimension_src, temporal_strides_src, temporal_bounds_src,
-            temporal_dimension_dst, temporal_strides_dst, temporal_bounds_dst,
-            0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+            // --------------------- Configure the AGU --------------------- //
+            if (snax_xdma_memcpy_nd(
+                    tcdm_in, tcdm_out, test_case->spatial_stride_src,
+                    test_case->spatial_stride_dst,
+                    test_case->temporal_dimension_src,
+                    test_case->temporal_strides_src,
+                    test_case->temporal_bounds_src,
+                    test_case->temporal_dimension_dst,
+                    test_case->temporal_strides_dst,
+                    test_case->temporal_bounds_dst, 0xFFFFFFFF, 0xFFFFFFFF,
+                    0xFFFFFFFF) != 0) {
+                printf("[Transpose] Failed to configure XDMA memcpy\n");
+                err++;
+                continue;
+            }
 
-        int task_id = snax_xdma_start();
-        snax_xdma_local_wait(task_id);
-        printf("xdma task %d is done in %d cycles\n", task_id,
-               snax_xdma_last_task_cycle());
+            int task_id = snax_xdma_start();
+            snax_xdma_local_wait(task_id);
+            printf("[Transpose] xdma task %d finished in %d cycles\n", task_id,
+                   snax_xdma_last_task_cycle());
 
-        // --------------------- Checking the Results --------------------- //
-        uint32_t *golden_result = (uint32_t *)golden_output_matrix;
-        uint32_t *tcdm_result = (uint32_t *)tcdm_out;
+            // --------------------- Checking the Results --------------------- //
+            for (uint32_t byte_idx = 0; byte_idx < test_case->output_bytes;
+                 byte_idx++) {
+                if (tcdm_out[byte_idx] != test_case->golden_output_bytes[byte_idx]) {
+                    if (case_err < 8) {
+                        printf(
+                            "[Transpose] Mismatch in case %s at byte %u: got 0x%02x expected 0x%02x\n",
+                            test_case->name, byte_idx, tcdm_out[byte_idx],
+                            test_case->golden_output_bytes[byte_idx]);
+                    }
+                    case_err++;
+                }
+            }
 
-        for (int i = 0; i < matrix_size * sizeof(input_matrix[0]) / 4; i++) {
-            if (tcdm_result[i] != golden_result[i]) {
-                printf("The transpose is incorrect at byte %d! \n", i << 2);
+            if (case_err == 0) {
+                printf("[Transpose] Case %s passed\n", test_case->name);
+            } else {
+                printf("[Transpose] Case %s failed with %d byte mismatches\n",
+                       test_case->name, case_err);
+                err++;
             }
         }
-        printf("Checking is done. All values are right\n");
+
+#ifdef READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32
+        snax_xdma_disable_src_ext(
+            READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32);
+#endif
+
+        if (err == 0) {
+            printf("[Transpose] All cases passed\n");
+        } else {
+            printf("[Transpose] Encountered %d failing cases\n", err);
+        }
     }
 
-    return 0;
+    return err != 0;
 }

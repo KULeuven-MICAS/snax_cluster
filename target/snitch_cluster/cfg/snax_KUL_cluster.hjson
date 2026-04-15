@@ -172,7 +172,9 @@ Naming convention:
             {
                 HasVerilogMemset: {}
             }
-            reader_extensions:{}
+            reader_extensions: {
+                HasTransposer: {row:[8,8,4], col:[8,8,4], elementWidth:[8,16,32]}
+            }
         }
         // Xdiv_sqrt: true,
         # isa: "rv32ema",
