@@ -21,18 +21,18 @@ static uint32_t align_up(uint32_t value, uint32_t alignment) {
 int main() {
     int err = 0;
     uint32_t tcdm_baseaddress = snrt_cluster_base_addrl();
-    uint8_t *tcdm_in = (uint8_t *)tcdm_baseaddress;
-    uint8_t *tcdm_out =
-        tcdm_in + align_up(max_case_input_bytes, XDMA_WIDTH);
+    uint8_t* tcdm_in = (uint8_t*)tcdm_baseaddress;
+    uint8_t* tcdm_out = tcdm_in + align_up(max_case_input_bytes, XDMA_WIDTH);
 
     if (snrt_is_dm_core()) {
         for (uint32_t case_idx = 0; case_idx < transpose_test_case_count;
              case_idx++) {
-            transpose_test_case_t *test_case = &transpose_test_cases[case_idx];
+            transpose_test_case_t* test_case = &transpose_test_cases[case_idx];
             int case_err = 0;
 
             printf(
-                "[Transpose] Running case %u (%s), M=%u, N=%u, BIT_WIDTH=%u, transpose=%u\n",
+                "[Transpose] Running case %u (%s), M=%u, N=%u, BIT_WIDTH=%u, "
+                "transpose=%u\n",
                 case_idx, test_case->name, test_case->M, test_case->N,
                 test_case->bit_width, test_case->enable_transpose);
 
@@ -40,21 +40,26 @@ int main() {
                               test_case->input_bytes);
             snrt_dma_wait_all();
 
-            // --------------------- Configure the Ext / Helper --------------------- //
+            // --------------------- Configure the Ext / Helper
+            // --------------------- //
             if (test_case->use_row_major_transpose_helper) {
                 if (snax_xdma_row_major_transpose(tcdm_in, tcdm_out,
                                                   test_case->M, test_case->N,
                                                   test_case->bit_width) != 0) {
-                    printf("[Transpose] Failed to configure row-major transpose helper\n");
+                    printf(
+                        "[Transpose] Failed to configure row-major transpose "
+                        "helper\n");
                     err++;
                     continue;
                 }
             } else {
 #ifdef READER_TRANSPOSE_EXT_ID
                 if (test_case->enable_transpose) {
-                    if (snax_xdma_enable_src_ext(
-                            READER_TRANSPOSE_EXT_ID, test_case->transposer_csr) != 0) {
-                        printf("[Transpose] Failed to enable reader transposer\n");
+                    if (snax_xdma_enable_src_ext(READER_TRANSPOSE_EXT_ID,
+                                                 test_case->transposer_csr) !=
+                        0) {
+                        printf(
+                            "[Transpose] Failed to enable reader transposer\n");
                         err++;
                         continue;
                     }
@@ -66,13 +71,16 @@ int main() {
                 }
 #else
                 if (test_case->enable_transpose) {
-                    printf("[Transpose] Reader transposer is not available in this build\n");
+                    printf(
+                        "[Transpose] Reader transposer is not available in "
+                        "this build\n");
                     err++;
                     continue;
                 }
 #endif
 
-                // --------------------- Configure the AGU --------------------- //
+                // --------------------- Configure the AGU ---------------------
+                // //
                 if (snax_xdma_memcpy_nd(
                         tcdm_in, tcdm_out, test_case->spatial_stride_src,
                         test_case->spatial_stride_dst,
@@ -94,13 +102,16 @@ int main() {
             printf("[Transpose] xdma task %d finished in %d cycles\n", task_id,
                    snax_xdma_last_task_cycle());
 
-            // --------------------- Checking the Results --------------------- //
+            // --------------------- Checking the Results ---------------------
+            // //
             for (uint32_t byte_idx = 0; byte_idx < test_case->output_bytes;
                  byte_idx++) {
-                if (tcdm_out[byte_idx] != test_case->golden_output_bytes[byte_idx]) {
+                if (tcdm_out[byte_idx] !=
+                    test_case->golden_output_bytes[byte_idx]) {
                     if (case_err < 8) {
                         printf(
-                            "[Transpose] Mismatch in case %s at byte %u: got 0x%02x expected 0x%02x\n",
+                            "[Transpose] Mismatch in case %s at byte %u: got "
+                            "0x%02x expected 0x%02x\n",
                             test_case->name, byte_idx, tcdm_out[byte_idx],
                             test_case->golden_output_bytes[byte_idx]);
                     }

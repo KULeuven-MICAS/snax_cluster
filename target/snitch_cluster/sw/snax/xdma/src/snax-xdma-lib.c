@@ -61,7 +61,8 @@ static int32_t snax_xdma_get_row_major_transpose_cfg(
             return 0;
         default:
             XDMA_DEBUG_PRINT(
-                "Unsupported transpose element width %u bits, expected 8/16/32\n",
+                "Unsupported transpose element width %u bits, expected "
+                "8/16/32\n",
                 element_width_bits);
             return -1;
     }
@@ -155,11 +156,10 @@ int32_t snax_xdma_row_major_transpose(void* src, void* dst, uint32_t rows,
         return ret;
     }
 
-    ret = snax_xdma_memcpy_nd(
-        src, dst, spatial_stride_src, spatial_stride_dst, temp_dim_src,
-        temp_stride_src, temp_bound_src, temp_dim_dst, temp_stride_dst,
-        temp_bound_dst,
-        0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+    ret = snax_xdma_memcpy_nd(src, dst, spatial_stride_src, spatial_stride_dst,
+                              temp_dim_src, temp_stride_src, temp_bound_src,
+                              temp_dim_dst, temp_stride_dst, temp_bound_dst,
+                              0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
     if (ret != 0) {
         snax_xdma_disable_src_ext(XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID);
         return ret;
