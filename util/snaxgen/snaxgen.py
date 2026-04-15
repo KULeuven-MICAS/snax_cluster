@@ -377,6 +377,18 @@ def main():
         default="false",
         help="Disable the generation of header files for the streamer.",
     )
+    parser.add_argument(
+        "--sw_only",
+        type=str,
+        default="false",
+        help=(
+            "Generate only SW-facing headers (e.g. streamer_csr_addr_map.h) "
+            "via the lightweight StreamerSwHeaderGen entry point. Skips all "
+            "SystemVerilog wrapper templating and the heavy accelerator / "
+            "XDMA / sparse-interconnect Chisel elaborations. Intended for "
+            "`make sw` so SW builds don't require full RTL generation."
+        ),
+    )
 
     # Get the list of parsing
     args = parser.parse_args()
@@ -485,58 +497,71 @@ def main():
 
             rtl_target_path = args.gen_path + acc_cfgs[i]["snax_acc_name"] + "/"
 
-            # This is for RTL wrapper and chisel generation
-            # This first one generates the CSR manager wrapper
-            if not acc_cfgs[i].get("snax_disable_csr_manager", False):
-                file_name = acc_cfgs[i]["snax_acc_name"] + "_csrman_wrapper.sv"
-                tpl_csrman_wrapper_file = args.tpl_path + "snax_csrman_wrapper.sv.tpl"
-                tpl_csrman_wrapper = get_template(tpl_csrman_wrapper_file)
+            sw_only = args.sw_only == "true"
+
+            # SV wrapper templates and the CSR-manager Chisel pass are
+            # RTL-only. In sw_only mode we skip them entirely; the SW build
+            # only needs the streamer CSR address-map header.
+            if not sw_only:
+                # This is for RTL wrapper and chisel generation
+                # This first one generates the CSR manager wrapper
+                if not acc_cfgs[i].get("snax_disable_csr_manager", False):
+                    file_name = acc_cfgs[i]["snax_acc_name"] + "_csrman_wrapper.sv"
+                    tpl_csrman_wrapper_file = args.tpl_path + "snax_csrman_wrapper.sv.tpl"
+                    tpl_csrman_wrapper = get_template(tpl_csrman_wrapper_file)
+                    gen_file(
+                        cfg=acc_cfgs[i],
+                        tpl=tpl_csrman_wrapper,
+                        target_path=rtl_target_path,
+                        file_name=file_name,
+                    )
+
+                # This first one generates the streamer wrapper
+                file_name = acc_cfgs[i]["snax_acc_name"] + "_streamer_wrapper.sv"
+                tpl_streamer_wrapper_file = (
+                    args.tpl_path + "snax_streamer_wrapper.sv.tpl"
+                )  # noqa: E501
+                tpl_streamer_wrapper = get_template(tpl_streamer_wrapper_file)
                 gen_file(
                     cfg=acc_cfgs[i],
-                    tpl=tpl_csrman_wrapper,
+                    tpl=tpl_streamer_wrapper,
                     target_path=rtl_target_path,
                     file_name=file_name,
                 )
 
-            # This first one generates the streamer wrapper
-            file_name = acc_cfgs[i]["snax_acc_name"] + "_streamer_wrapper.sv"
-            tpl_streamer_wrapper_file = (
-                args.tpl_path + "snax_streamer_wrapper.sv.tpl"
-            )  # noqa: E501
-            tpl_streamer_wrapper = get_template(tpl_streamer_wrapper_file)
-            gen_file(
-                cfg=acc_cfgs[i],
-                tpl=tpl_streamer_wrapper,
-                target_path=rtl_target_path,
-                file_name=file_name,
-            )
-
-            # This generates the top wrapper
-            file_name = acc_cfgs[i]["snax_acc_name"] + "_wrapper.sv"
-            tpl_rtl_wrapper_file = args.tpl_path + "snax_acc_wrapper.sv.tpl"
-            tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
-            gen_file(
-                cfg=acc_cfgs[i],
-                tpl=tpl_rtl_wrapper,
-                target_path=rtl_target_path,
-                file_name=file_name,
-            )
-
-            # Generate chisel component using chisel generation script
-            if not acc_cfgs[i].get("snax_disable_csr_manager", False):
-                gen_chisel_file(
-                    chisel_path=args.chisel_path,
-                    chisel_param="snax.reqRspManager.ReqRspManagerGen",
-                    gen_path=rtl_target_path,
+                # This generates the top wrapper
+                file_name = acc_cfgs[i]["snax_acc_name"] + "_wrapper.sv"
+                tpl_rtl_wrapper_file = args.tpl_path + "snax_acc_wrapper.sv.tpl"
+                tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
+                gen_file(
+                    cfg=acc_cfgs[i],
+                    tpl=tpl_rtl_wrapper,
+                    target_path=rtl_target_path,
+                    file_name=file_name,
                 )
+
+                # Generate chisel component using chisel generation script
+                if not acc_cfgs[i].get("snax_disable_csr_manager", False):
+                    gen_chisel_file(
+                        chisel_path=args.chisel_path,
+                        chisel_param="snax.reqRspManager.ReqRspManagerGen",
+                        gen_path=rtl_target_path,
+                    )
 
             streamer_cfg = find_keys_with_keyword(
                 cfg, f"{acc_cfgs[i]['tag_name']}_streamer"
             )
+            # In sw_only mode use the lightweight entry point that skips
+            # CIRCT and emits only streamer_csr_addr_map.h.
+            chisel_streamer_target = (
+                "snax.streamer.StreamerSwHeaderGen"
+                if sw_only
+                else "snax.streamer.StreamerGen"
+            )
             # Generate chisel component using chisel generation script
             gen_chisel_file(
                 chisel_path=args.chisel_path,
-                chisel_param="snax.streamer.StreamerGen",
+                chisel_param=chisel_streamer_target,
                 gen_path=" --streamercfg "
                 + hjson.dumpsJSON(obj=streamer_cfg, separators=(",", ":")).replace(
                     " ", ""
@@ -557,6 +582,10 @@ def main():
     # refactor the accelerator and XDMA generation
     # but the idea is that it needs to come from the
     # configuration file only
+    if args.sw_only == "true":
+        print("Skipping accelerator / XDMA / sparse-interconnect generation (sw_only)")
+        return
+
     print("------------------------------------------------")
     print("    Generate SNAX Chisel Accelerators")
     print("------------------------------------------------")

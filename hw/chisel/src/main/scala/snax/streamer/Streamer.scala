@@ -579,8 +579,26 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   // --------------------------------------------------------------------------------
   // ------------------ csr address map header file generation-----------------------
   // --------------------------------------------------------------------------------
+  // The CSR-map computation and file write are pure functions of `param` and live
+  // in `object Streamer` so the SW-only entry point (StreamerSwHeaderGen) can
+  // emit the header without paying for full Chisel elaboration. We still call it
+  // here to preserve the existing RTL-build side effect.
+  Streamer.writeCsrAddrMap(param)
 
-  def genCSRMap(csrBase: Int, param: ReaderWriterParam, tag: String = "") = {
+}
+
+// Pure-Scala helpers for CSR map computation. Decoupled from the Chisel Module
+// body so SW-only generation (StreamerSwHeaderGen) can run without elaborating
+// any hardware.
+object Streamer {
+
+  // Per-data-mover CSR layout — base ptr, spatial strides, temporal bounds /
+  // strides, address remap, channel/byte enables. Returns the C #define block.
+  private def genCSRMap(
+    csrBase: Int,
+    param:   ReaderWriterParam,
+    tag:     String
+  ): String = {
     var csrMap    = "// CSR Map for " + tag + "\n"
     var csrOffset = csrBase
 
@@ -643,58 +661,12 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
     csrMap
   }
 
-  var csrBase   = 0
-  var csrBase_i = 0
-  var csrMap    = ""
-
-  // reader csr configuration
-  csrBase = 960
-  for (i <- 0 until param.readerNum) {
-    csrBase_i = csrBase + param.readerParams
-      .take(i)
-      .map(_.csrNum)
-      .reduceLeftOption(_ + _)
-      .getOrElse(0)
-    csrMap    = csrMap + genCSRMap(csrBase_i, param.readerParams(i), "READER_" + i)
-  }
-  csrBase = csrBase + param.readerParams.map(_.csrNum).sum
-
-  // writer csr configuration
-  for (i <- 0 until param.writerNum) {
-    csrBase_i = csrBase + param.writerParams
-      .take(i)
-      .map(_.csrNum)
-      .reduceLeftOption(_ + _)
-      .getOrElse(0)
-    csrMap    = csrMap + genCSRMap(csrBase_i, param.writerParams(i), "WRITER_" + i)
-  }
-  csrBase = csrBase + param.writerParams
-    .map(_.csrNum)
-    .sum
-
-  // reader_writer csr configuration
-  for (i <- 0 until param.readerWriterNum) {
-    csrBase_i = csrBase + param.readerWriterParams
-      .take(i)
-      .map(_.csrNum)
-      .reduceLeftOption(_ + _)
-      .getOrElse(0)
-    csrMap    = csrMap + genCSRMap(
-      csrBase_i,
-      param.readerWriterParams(i),
-      "READER_WRITER_" + i
-    )
-  }
-  csrBase = csrBase + param.readerWriterParams
-    .map(_.csrNum)
-    .sum
-
-  // extension csr configuration
-  csrMap = csrMap + "// Datapath extension CSRs\n"
-  var extension_csr_num = 0
-
-  def get_extension_csr_num(extensionSeq: Seq[HasDataPathExtension]): Int = {
-    extension_csr_num = extensionSeq match {
+  // Per-extension list contribution to the CSR address space. Mirrors the
+  // class-body helper of the same name used to size the CSR manager.
+  def get_extension_list_csr_num(
+    extensionSeqSeq: Seq[Seq[HasDataPathExtension]]
+  ): Int = {
+    extensionSeqSeq.map {
       case seq if seq.nonEmpty =>
         seq
           .map(_.extensionParam.userCsrNum)
@@ -702,68 +674,133 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
           .getOrElse(0) + 1
       case _                   => 0
     }
-    extension_csr_num
+      .reduceLeftOption(_ + _)
+      .getOrElse(0)
   }
 
-  // reader extension csr configuration
-  for (i <- 0 until param.readerDatapathExtention.length) {
-    extension_csr_num = get_extension_csr_num(param.readerDatapathExtention(i))
-    if (extension_csr_num > 0) {
-      csrBase_i = csrBase + get_extension_list_csr_num(
-        param.readerDatapathExtention.take(i)
-      )
-      csrMap    = csrMap + "#define READER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
-      csrMap    = csrMap + s"#define READER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+  // Build the streamer_csr_addr_map.h text and write it to disk. Pure function
+  // of `param`; safe to call without a Chisel Module context.
+  def writeCsrAddrMap(param: StreamerParam): Unit = {
+    var csrBase   = 0
+    var csrBase_i = 0
+    var csrMap    = ""
+
+    // reader csr configuration
+    csrBase = 960
+    for (i <- 0 until param.readerNum) {
+      csrBase_i = csrBase + param.readerParams
+        .take(i)
+        .map(_.csrNum)
+        .reduceLeftOption(_ + _)
+        .getOrElse(0)
+      csrMap    = csrMap + genCSRMap(csrBase_i, param.readerParams(i), "READER_" + i)
     }
-  }
-  csrBase = csrBase + reader_extension_csr
+    csrBase = csrBase + param.readerParams.map(_.csrNum).sum
 
-  // writer extension csr configuration
-  for (i <- 0 until param.writerDatapathExtention.length) {
-    extension_csr_num = get_extension_csr_num(param.writerDatapathExtention(i))
-    if (extension_csr_num > 0) {
-      csrBase_i = csrBase + get_extension_list_csr_num(
-        param.writerDatapathExtention.take(i)
-      )
-      csrMap    = csrMap + "#define WRITER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
-      csrMap    = csrMap + s"#define WRITER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+    // writer csr configuration
+    for (i <- 0 until param.writerNum) {
+      csrBase_i = csrBase + param.writerParams
+        .take(i)
+        .map(_.csrNum)
+        .reduceLeftOption(_ + _)
+        .getOrElse(0)
+      csrMap    = csrMap + genCSRMap(csrBase_i, param.writerParams(i), "WRITER_" + i)
     }
-  }
-  csrBase = csrBase + writer_extension_csr
+    csrBase = csrBase + param.writerParams.map(_.csrNum).sum
 
-  // reader_writer extension csr configuration
-  for (i <- 0 until param.readerWriterDatapathExtention.length) {
-    extension_csr_num = get_extension_csr_num(
-      param.readerWriterDatapathExtention(i)
-    )
-    if (extension_csr_num > 0) {
-      csrBase_i = csrBase + get_extension_list_csr_num(
-        param.readerWriterDatapathExtention
-          .take(i)
+    // reader_writer csr configuration
+    for (i <- 0 until param.readerWriterNum) {
+      csrBase_i = csrBase + param.readerWriterParams
+        .take(i)
+        .map(_.csrNum)
+        .reduceLeftOption(_ + _)
+        .getOrElse(0)
+      csrMap    = csrMap + genCSRMap(
+        csrBase_i,
+        param.readerWriterParams(i),
+        "READER_WRITER_" + i
       )
-      csrMap    = csrMap + "#define READER_WRITER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
-      csrMap    = csrMap + s"#define READER_WRITER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
     }
-  }
-  csrBase = csrBase + reader_writer_extension_csr
+    csrBase = csrBase + param.readerWriterParams.map(_.csrNum).sum
 
-  // start csr
-  csrMap  = csrMap + "// Other resgiters\n"
-  csrMap  = csrMap + "// Status register\n"
-  csrMap  = csrMap + "#define STREAMER_START_CSR " + csrBase + "\n"
-  csrBase = csrBase + 1
+    // extension csr configuration
+    csrMap = csrMap + "// Datapath extension CSRs\n"
+    var extension_csr_num = 0
 
-  // streamer busy csr
-  csrMap  = csrMap + "// Read only CSRs\n"
-  csrMap  = csrMap + "#define STREAMER_BUSY_CSR " + csrBase + "\n"
-  csrBase = csrBase + 1
+    def get_extension_csr_num(extensionSeq: Seq[HasDataPathExtension]): Int = {
+      extension_csr_num = extensionSeq match {
+        case seq if seq.nonEmpty =>
+          seq
+            .map(_.extensionParam.userCsrNum)
+            .reduceLeftOption(_ + _)
+            .getOrElse(0) + 1
+        case _                   => 0
+      }
+      extension_csr_num
+    }
 
-  // streamer performance counter csr
-  csrMap = csrMap + "#define STREAMER_PERFORMANCE_COUNTER_CSR " + csrBase + "\n"
+    val reader_extension_csr        = get_extension_list_csr_num(param.readerDatapathExtention)
+    val writer_extension_csr        = get_extension_list_csr_num(param.writerDatapathExtention)
+    val reader_writer_extension_csr = get_extension_list_csr_num(param.readerWriterDatapathExtention)
 
-  val macro_dir      = param.headerFilepath + "/streamer_csr_addr_map.h"
-  val macro_template =
-    s"""// Copyright 2024 KU Leuven.
+    // reader extension csr configuration
+    for (i <- 0 until param.readerDatapathExtention.length) {
+      extension_csr_num = get_extension_csr_num(param.readerDatapathExtention(i))
+      if (extension_csr_num > 0) {
+        csrBase_i = csrBase + get_extension_list_csr_num(
+          param.readerDatapathExtention.take(i)
+        )
+        csrMap    = csrMap + "#define READER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
+        csrMap    = csrMap + s"#define READER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+      }
+    }
+    csrBase = csrBase + reader_extension_csr
+
+    // writer extension csr configuration
+    for (i <- 0 until param.writerDatapathExtention.length) {
+      extension_csr_num = get_extension_csr_num(param.writerDatapathExtention(i))
+      if (extension_csr_num > 0) {
+        csrBase_i = csrBase + get_extension_list_csr_num(
+          param.writerDatapathExtention.take(i)
+        )
+        csrMap    = csrMap + "#define WRITER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
+        csrMap    = csrMap + s"#define WRITER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+      }
+    }
+    csrBase = csrBase + writer_extension_csr
+
+    // reader_writer extension csr configuration
+    for (i <- 0 until param.readerWriterDatapathExtention.length) {
+      extension_csr_num = get_extension_csr_num(
+        param.readerWriterDatapathExtention(i)
+      )
+      if (extension_csr_num > 0) {
+        csrBase_i = csrBase + get_extension_list_csr_num(
+          param.readerWriterDatapathExtention.take(i)
+        )
+        csrMap    = csrMap + "#define READER_WRITER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
+        csrMap    = csrMap + s"#define READER_WRITER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+      }
+    }
+    csrBase = csrBase + reader_writer_extension_csr
+
+    // start csr
+    csrMap  = csrMap + "// Other resgiters\n"
+    csrMap  = csrMap + "// Status register\n"
+    csrMap  = csrMap + "#define STREAMER_START_CSR " + csrBase + "\n"
+    csrBase = csrBase + 1
+
+    // streamer busy csr
+    csrMap  = csrMap + "// Read only CSRs\n"
+    csrMap  = csrMap + "#define STREAMER_BUSY_CSR " + csrBase + "\n"
+    csrBase = csrBase + 1
+
+    // streamer performance counter csr
+    csrMap = csrMap + "#define STREAMER_PERFORMANCE_COUNTER_CSR " + csrBase + "\n"
+
+    val macro_dir      = param.headerFilepath + "/streamer_csr_addr_map.h"
+    val macro_template =
+      s"""// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -773,11 +810,14 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
 
 """ ++ csrMap
 
-  java.nio.file.Files.write(
-    java.nio.file.Paths.get(macro_dir),
-    macro_template.getBytes(java.nio.charset.StandardCharsets.UTF_8)
-  )
-
+    // Ensure parent directory exists when invoked from a fresh checkout where
+    // the Chisel RTL elaboration hasn't yet created the destination tree.
+    java.nio.file.Files.createDirectories(java.nio.file.Paths.get(param.headerFilepath))
+    java.nio.file.Files.write(
+      java.nio.file.Paths.get(macro_dir),
+      macro_template.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+    )
+  }
 }
 
 object StreamerEmitter extends App {
@@ -788,7 +828,13 @@ object StreamerEmitter extends App {
 }
 
 object StreamerGen {
-  def main(args: Array[String]): Unit = {
+
+  // Parse CLI args + streamer JSON config into a fully-populated StreamerParam,
+  // also returning the requested SystemVerilog output directory. Shared between
+  // the RTL entry point (StreamerGen.main) and the SW-only entry point
+  // (StreamerSwHeaderGen.main); keep them in lockstep on this code path so the
+  // CSR map seen by SW always matches the RTL.
+  def buildParam(args: Array[String]): (StreamerParam, String) = {
 
     val parsedArgs = snax.utils.ArgParser.parse(args)
 
@@ -1014,22 +1060,41 @@ object StreamerGen {
 
     }
 
-    emitVerilog(
-      new Streamer(
-        StreamerParam(
-          readerParams                  = StreamerParametersGen.readerParams,
-          writerParams                  = StreamerParametersGen.writerParams,
-          readerWriterParams            = StreamerParametersGen.readerWriterParams,
-          readerDatapathExtention       = readerDatapathExtention,
-          writerDatapathExtention       = writerDatapathExtention,
-          readerWriterDatapathExtention = readerWriterDatapathExtention,
-          hasCrossClockDomain           = StreamerParametersGen.hasCrossClockDomain,
-          csrAddrWidth                  = 32,
-          tagName                       = StreamerParametersGen.tagName,
-          headerFilepath                = StreamerParametersGen.headerFilepath
-        )
-      ),
-      Array("--target-dir", outPath)
+    val param = StreamerParam(
+      readerParams                  = StreamerParametersGen.readerParams,
+      writerParams                  = StreamerParametersGen.writerParams,
+      readerWriterParams            = StreamerParametersGen.readerWriterParams,
+      readerDatapathExtention       = readerDatapathExtention,
+      writerDatapathExtention       = writerDatapathExtention,
+      readerWriterDatapathExtention = readerWriterDatapathExtention,
+      hasCrossClockDomain           = StreamerParametersGen.hasCrossClockDomain,
+      csrAddrWidth                  = 32,
+      tagName                       = StreamerParametersGen.tagName,
+      headerFilepath                = StreamerParametersGen.headerFilepath
+    )
+
+    (param, outPath)
+  }
+
+  def main(args: Array[String]): Unit = {
+    val (param, outPath) = buildParam(args)
+    // The CSR header is written as a side effect of `new Streamer(param)` (via
+    // Streamer.writeCsrAddrMap in the class body) — keeps `make rtl` self-
+    // contained.
+    emitVerilog(new Streamer(param), Array("--target-dir", outPath))
+  }
+}
+
+// SW-only entry point. Produces just streamer_csr_addr_map.h via the pure
+// `Streamer.writeCsrAddrMap`, with no Chisel Module instantiation and no
+// SystemVerilog emission. Invoked by snaxgen.py when `--sw_only=true` and by
+// the snax `sw-snax-gen` make target.
+object StreamerSwHeaderGen {
+  def main(args: Array[String]): Unit = {
+    val (param, _) = StreamerGen.buildParam(args)
+    Streamer.writeCsrAddrMap(param)
+    println(
+      s"[StreamerSwHeaderGen] wrote ${param.headerFilepath}/streamer_csr_addr_map.h"
     )
   }
 }

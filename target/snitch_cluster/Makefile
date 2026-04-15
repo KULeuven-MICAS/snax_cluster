@@ -95,7 +95,7 @@ ifeq (${CFG_OVERRIDE}, cfg/snitch_cluster.hjson)
 
 endif
 
-.PHONY: rtl-snax-gen rtl-gen
+.PHONY: rtl-snax-gen sw-snax-gen rtl-gen
 
 rtl-snax-gen: | $(GENERATED_DIR)
 	@echo "-------------------------------------------------------------"
@@ -108,6 +108,25 @@ rtl-snax-gen: | $(GENERATED_DIR)
 		--chisel_path="${SNAX_CHISEL_PATH}" \
 		--bypass_accgen="${BYPASS_ACCGEN}" \
 		--disable_header_gen="${DISABLE_HEADER_GEN}" \
+		--gen_path="${GENERATED_DIR}/"
+
+# SW-only path: regenerate just the SNAX SW headers (streamer_csr_addr_map.h)
+# via StreamerSwHeaderGen. Skips all SystemVerilog wrapper templating and the
+# heavy accelerator / XDMA / sparse-interconnect Chisel elaborations. Intended
+# to be called from a downstream `make sw` so SW builds pick up CSR layout
+# changes without paying for full RTL generation.
+sw-snax-gen: | $(GENERATED_DIR)
+	@echo "-------------------------------------------------------------"
+	@echo "Generating SNAX SW headers only (no RTL emission)"
+	@echo "-------------------------------------------------------------"
+
+	${WRAPPER_GEN} --cfg_path="$(CFG_FILE)" \
+		--tpl_path="${SNAX_TPL_PATH}" \
+		--test_path="${SNAX_TEST_PATH}" \
+		--chisel_path="${SNAX_CHISEL_PATH}" \
+		--bypass_accgen="${BYPASS_ACCGEN}" \
+		--disable_header_gen="${DISABLE_HEADER_GEN}" \
+		--sw_only="true" \
 		--gen_path="${GENERATED_DIR}/"
 
 
