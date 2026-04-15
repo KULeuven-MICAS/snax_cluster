@@ -15,6 +15,153 @@
 #define XDMA_DEBUG_PRINT(...)
 #endif
 
+#define XDMA_LANE_BYTES (XDMA_WIDTH / XDMA_SPATIAL_CHAN)
+
+#if defined(READER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16)
+#define XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID READER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16
+#elif defined(READER_EXT_TRANSPOSERROW8_8_8COL8_8_8BIT8_16_32)
+#define XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID \
+    READER_EXT_TRANSPOSERROW8_8_8COL8_8_8BIT8_16_32
+#elif defined(READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32)
+#define XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID \
+    READER_EXT_TRANSPOSERROW8_8_4COL8_8_4BIT8_16_32
+#endif
+
+typedef struct {
+    uint32_t tile_width;
+    uint32_t transfer_count;
+    uint32_t csr_value[1];
+} snax_xdma_row_major_transpose_cfg_t;
+
+static int32_t snax_xdma_get_row_major_transpose_cfg(
+    uint32_t element_width_bits, snax_xdma_row_major_transpose_cfg_t* cfg) {
+#ifndef XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID
+    (void)element_width_bits;
+    (void)cfg;
+    XDMA_DEBUG_PRINT("Reader transposer extension is not available\n");
+    return -5;
+#else
+    switch (element_width_bits) {
+        case 8:
+            cfg->tile_width = 8;
+            cfg->transfer_count = 1;
+            cfg->csr_value[0] = 0;
+            return 0;
+        case 16:
+            cfg->tile_width = 8;
+            cfg->transfer_count = 2;
+            cfg->csr_value[0] = 1;
+            return 0;
+        default:
+            XDMA_DEBUG_PRINT(
+                "Unsupported transpose element width %u bits, expected "
+                "8/16\n",
+                element_width_bits);
+            return -1;
+    }
+#endif
+}
+
+int32_t snax_xdma_row_major_transpose(void* src, void* dst, uint32_t rows,
+                                      uint32_t cols,
+                                      uint32_t element_width_bits) {
+    snax_xdma_row_major_transpose_cfg_t cfg;
+    int32_t ret =
+        snax_xdma_get_row_major_transpose_cfg(element_width_bits, &cfg);
+    if (ret != 0) {
+        return ret;
+    }
+
+    if (rows == 0 || cols == 0) {
+        XDMA_DEBUG_PRINT("Transpose matrix dimensions must be non-zero\n");
+        return -2;
+    }
+
+    uint32_t bytes_per_element = element_width_bits / 8;
+    if (rows % cfg.tile_width != 0 || cols % cfg.tile_width != 0) {
+        XDMA_DEBUG_PRINT(
+            "Row-major transpose requires rows/cols to be multiples of %u\n",
+            cfg.tile_width);
+        return -3;
+    }
+
+    uint64_t src_spatial_stride = (uint64_t)cols * bytes_per_element;
+    uint64_t dst_spatial_stride = (uint64_t)rows * bytes_per_element;
+    uint64_t src_outer_stride =
+        (uint64_t)cols * cfg.tile_width * bytes_per_element;
+    uint64_t dst_mid_stride =
+        (uint64_t)rows * cfg.tile_width * bytes_per_element;
+
+    if (src_spatial_stride > UINT32_MAX || dst_spatial_stride > UINT32_MAX ||
+        src_outer_stride > UINT32_MAX || dst_mid_stride > UINT32_MAX) {
+        XDMA_DEBUG_PRINT(
+            "Row-major transpose AGU parameters overflow 32-bit registers\n");
+        return -4;
+    }
+
+    uint32_t spatial_stride_src;
+    uint32_t spatial_stride_dst;
+    uint32_t temp_dim_src;
+    uint32_t temp_dim_dst;
+    uint32_t temp_bound_src[3];
+    uint32_t temp_stride_src[3];
+    uint32_t temp_bound_dst[3];
+    uint32_t temp_stride_dst[3];
+
+    if (cfg.transfer_count == 1 && rows == cfg.tile_width &&
+        cols == cfg.tile_width) {
+        spatial_stride_src = XDMA_LANE_BYTES;
+        spatial_stride_dst = XDMA_LANE_BYTES;
+        temp_dim_src = 1;
+        temp_dim_dst = 1;
+        temp_bound_src[0] = 1;
+        temp_stride_src[0] = XDMA_WIDTH;
+        temp_bound_dst[0] = 1;
+        temp_stride_dst[0] = XDMA_WIDTH;
+    } else {
+        spatial_stride_src = (uint32_t)src_spatial_stride;
+        spatial_stride_dst = (uint32_t)dst_spatial_stride;
+        temp_dim_src = 3;
+        temp_dim_dst = 3;
+        temp_bound_src[0] = cfg.transfer_count;
+        temp_bound_src[1] = cols / cfg.tile_width;
+        temp_bound_src[2] = rows / cfg.tile_width;
+        temp_stride_src[0] = XDMA_LANE_BYTES;
+        temp_stride_src[1] = cfg.tile_width * bytes_per_element;
+        temp_stride_src[2] = (uint32_t)src_outer_stride;
+        temp_bound_dst[0] = cfg.transfer_count;
+        temp_bound_dst[1] = cols / cfg.tile_width;
+        temp_bound_dst[2] = rows / cfg.tile_width;
+        temp_stride_dst[0] = XDMA_LANE_BYTES;
+        temp_stride_dst[1] = (uint32_t)dst_mid_stride;
+        temp_stride_dst[2] = cfg.tile_width * bytes_per_element;
+    }
+
+#ifndef XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID
+    (void)src;
+    (void)dst;
+    return -5;
+#else
+    ret = snax_xdma_enable_src_ext(XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID,
+                                   cfg.csr_value);
+    if (ret != 0) {
+        XDMA_DEBUG_PRINT("Failed to enable reader transposer extension\n");
+        return ret;
+    }
+
+    ret = snax_xdma_memcpy_nd(src, dst, spatial_stride_src, spatial_stride_dst,
+                              temp_dim_src, temp_stride_src, temp_bound_src,
+                              temp_dim_dst, temp_stride_dst, temp_bound_dst,
+                              0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+    if (ret != 0) {
+        snax_xdma_disable_src_ext(XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID);
+        return ret;
+    }
+
+    return 0;
+#endif
+}
+
 int32_t snax_xdma_memcpy_nd_full_addr(
     uint64_t src, uint64_t dst, uint32_t spatial_stride_src,
     uint32_t spatial_stride_dst, uint32_t temp_dim_src,

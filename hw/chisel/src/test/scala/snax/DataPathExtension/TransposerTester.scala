@@ -4,33 +4,97 @@ import scala.util.Random
 import chiseltest._
 import snax.DataPathExtension.HasTransposer
 
-class TransposerTester extends DataPathExtensionTester {
+private object XDMATransposerTesterHelper {
+  private val sharedRow          = Seq(8, 8)
+  private val sharedCol          = Seq(8, 8)
+  private val sharedElementWidth = Seq(8, 16)
+  private val sharedDataWidth    = 512
+  private val numTestMatrices    = 128
 
-  def hasExtension = new HasTransposer(row = Seq(8), col = Seq(8), elementWidth = Seq(16), dataWidth = 512)
+  def newHasExtension: HasTransposer =
+    new HasTransposer(
+      row = sharedRow,
+      col = sharedCol,
+      elementWidth = sharedElementWidth,
+      dataWidth = sharedDataWidth
+    )
 
-  val csr_vec = Seq()
+  private def randomValue(random: Random, elementWidth: Int): Long =
+    elementWidth match {
+      case 8 | 16 => random.nextInt(1 << elementWidth).toLong
+      case _ =>
+        throw new IllegalArgumentException(
+          s"Unsupported element width $elementWidth for TransposerTester"
+        )
+    }
 
-  val inputData  = collection.mutable.Buffer[BigInt]()
-  val outputData = collection.mutable.Buffer[BigInt]()
-
-  for (_ <- 0 until 128) {
-    val inputMatrix: Array[Array[Int]] = Array.fill(8, 8)(Random.nextInt(1 << 16))
-    val leftInputMatrix  = inputMatrix.map(row => row.slice(0, 4))
-    val rightInputMatrix = inputMatrix.map(row => row.slice(4, 8))
-    inputData.append(BigInt(leftInputMatrix.flatten.map { i => f"$i%04X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(rightInputMatrix.flatten.map { i => f"$i%04X" }.reverse.reduce(_ + _), 16))
-
-    val outputMatrix: Array[Array[Int]] = inputMatrix.transpose
-    val leftOutputMatrix  = outputMatrix.map(row => row.slice(0, 4))
-    val rightOutputMatrix = outputMatrix.map(row => row.slice(4, 8))
-    outputData.append(BigInt(leftOutputMatrix.flatten.map { i => f"$i%04X" }.reverse.reduce(_ + _), 16))
-    outputData.append(BigInt(rightOutputMatrix.flatten.map { i => f"$i%04X" }.reverse.reduce(_ + _), 16))
+  private def transferPerTranspose(row: Int, col: Int, elementWidth: Int): Int = {
+    val elementPerTransfer = math.min(sharedDataWidth, row * col * elementWidth) / elementWidth
+    (row * col + elementPerTransfer - 1) / elementPerTransfer
   }
 
-  val input_data_vec = inputData.toSeq
+  private def packMatrix(matrix: Array[Array[Long]], elementWidth: Int): BigInt =
+    matrix.flatten.reverse.foldLeft(BigInt(0)) { case (acc, value) =>
+      (acc << elementWidth) + BigInt(value)
+    }
 
-  val output_data_vec = outputData.toSeq
+  private def buildTransfers(
+    matrix:               Array[Array[Long]],
+    transferPerTranspose: Int,
+    columnsPerTransfer:   Int,
+    elementWidth:         Int
+  ): Seq[BigInt] =
+    (0 until transferPerTranspose).map { transferIdx =>
+      val transferStart = transferIdx * columnsPerTransfer
+      val transferEnd   = transferStart + columnsPerTransfer
+      packMatrix(matrix.map(row => row.slice(transferStart, transferEnd)), elementWidth)
+    }
+
+  def generateVectors(
+    row:          Int,
+    col:          Int,
+    elementWidth: Int,
+    seed:         Int
+  ): (Seq[BigInt], Seq[BigInt]) = {
+    val transferCount = transferPerTranspose(row, col, elementWidth)
+    require(
+      col % transferCount == 0 && row % transferCount == 0,
+      s"TransposerTester expects row and col to be divisible by transfer count $transferCount"
+    )
+
+    val random     = new Random(seed)
+    val inputData  = collection.mutable.Buffer[BigInt]()
+    val outputData = collection.mutable.Buffer[BigInt]()
+
+    for (_ <- 0 until numTestMatrices) {
+      val inputMatrix: Array[Array[Long]] = Array.fill(row, col)(randomValue(random, elementWidth))
+      val outputMatrix                    = inputMatrix.transpose
+
+      inputData ++= buildTransfers(inputMatrix, transferCount, col / transferCount, elementWidth)
+      outputData ++= buildTransfers(outputMatrix, transferCount, row / transferCount, elementWidth)
+    }
+
+    (inputData.toSeq, outputData.toSeq)
+  }
 }
+
+abstract class XDMATransposerTester(modeIdx: Int, row: Int, col: Int, elementWidth: Int, seed: Int)
+    extends DataPathExtensionTester {
+
+  override lazy val hasExtension = XDMATransposerTesterHelper.newHasExtension
+
+  override val csr_vec = Seq(modeIdx)
+
+  private val (generatedInputData, generatedOutputData) =
+    XDMATransposerTesterHelper.generateVectors(row, col, elementWidth, seed)
+
+  override val input_data_vec  = generatedInputData
+  override val output_data_vec = generatedOutputData
+}
+
+class XDMATransposerMode1Tester extends XDMATransposerTester(modeIdx = 0, row = 8, col = 8, elementWidth = 8, seed = 8)
+
+class XDMATransposerMode2Tester extends XDMATransposerTester(modeIdx = 1, row = 8, col = 8, elementWidth = 16, seed = 16)
 
 class TransposerRow32Col4Ewidth8Dwidth2048Tester extends DataPathExtensionTester {
   

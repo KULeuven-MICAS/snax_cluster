@@ -43,6 +43,15 @@ int32_t snax_xdma_memcpy_1d_full_addr(uint64_t src, uint64_t dst,
 
 int32_t snax_xdma_memcpy_1d(void* src, void* dst, uint32_t size);
 
+// Row-major transpose helper.
+// Configures the reader-side transposer and the ND descriptor for an MN source
+// matrix and an NM destination matrix. The caller still needs to launch the
+// configured task with snax_xdma_start() and wait for completion separately.
+// Supported element widths are 8 and 16 bits.
+int32_t snax_xdma_row_major_transpose(void* src, void* dst, uint32_t rows,
+                                      uint32_t cols,
+                                      uint32_t element_width_bits);
+
 // Multicast Task
 int32_t snax_xdma_multicast_nd_full_address(
     uint64_t src, uint64_t* dst, uint32_t dst_num, uint32_t spatial_stride_src,
