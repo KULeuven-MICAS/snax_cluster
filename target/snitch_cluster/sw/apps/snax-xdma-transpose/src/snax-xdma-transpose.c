@@ -40,43 +40,53 @@ int main() {
                               test_case->input_bytes);
             snrt_dma_wait_all();
 
-            // --------------------- Configure the Ext --------------------- //
-#ifdef READER_TRANSPOSE_EXT_ID
-            if (test_case->enable_transpose) {
-                if (snax_xdma_enable_src_ext(
-                        READER_TRANSPOSE_EXT_ID, test_case->transposer_csr) != 0) {
-                    printf("[Transpose] Failed to enable reader transposer\n");
+            // --------------------- Configure the Ext / Helper --------------------- //
+            if (test_case->use_row_major_transpose_helper) {
+                if (snax_xdma_row_major_transpose(tcdm_in, tcdm_out,
+                                                  test_case->M, test_case->N,
+                                                  test_case->bit_width) != 0) {
+                    printf("[Transpose] Failed to configure row-major transpose helper\n");
                     err++;
                     continue;
                 }
-            } else if (snax_xdma_disable_src_ext(READER_TRANSPOSE_EXT_ID) !=
-                       0) {
-                printf("[Transpose] Failed to disable reader transposer\n");
-                err++;
-                continue;
-            }
+            } else {
+#ifdef READER_TRANSPOSE_EXT_ID
+                if (test_case->enable_transpose) {
+                    if (snax_xdma_enable_src_ext(
+                            READER_TRANSPOSE_EXT_ID, test_case->transposer_csr) != 0) {
+                        printf("[Transpose] Failed to enable reader transposer\n");
+                        err++;
+                        continue;
+                    }
+                } else if (snax_xdma_disable_src_ext(READER_TRANSPOSE_EXT_ID) !=
+                           0) {
+                    printf("[Transpose] Failed to disable reader transposer\n");
+                    err++;
+                    continue;
+                }
 #else
-            if (test_case->enable_transpose) {
-                printf("[Transpose] Reader transposer is not available in this build\n");
-                err++;
-                continue;
-            }
+                if (test_case->enable_transpose) {
+                    printf("[Transpose] Reader transposer is not available in this build\n");
+                    err++;
+                    continue;
+                }
 #endif
 
-            // --------------------- Configure the AGU --------------------- //
-            if (snax_xdma_memcpy_nd(
-                    tcdm_in, tcdm_out, test_case->spatial_stride_src,
-                    test_case->spatial_stride_dst,
-                    test_case->temporal_dimension_src,
-                    test_case->temporal_strides_src,
-                    test_case->temporal_bounds_src,
-                    test_case->temporal_dimension_dst,
-                    test_case->temporal_strides_dst,
-                    test_case->temporal_bounds_dst, 0xFFFFFFFF, 0xFFFFFFFF,
-                    0xFFFFFFFF) != 0) {
-                printf("[Transpose] Failed to configure XDMA memcpy\n");
-                err++;
-                continue;
+                // --------------------- Configure the AGU --------------------- //
+                if (snax_xdma_memcpy_nd(
+                        tcdm_in, tcdm_out, test_case->spatial_stride_src,
+                        test_case->spatial_stride_dst,
+                        test_case->temporal_dimension_src,
+                        test_case->temporal_strides_src,
+                        test_case->temporal_bounds_src,
+                        test_case->temporal_dimension_dst,
+                        test_case->temporal_strides_dst,
+                        test_case->temporal_bounds_dst, 0xFFFFFFFF, 0xFFFFFFFF,
+                        0xFFFFFFFF) != 0) {
+                    printf("[Transpose] Failed to configure XDMA memcpy\n");
+                    err++;
+                    continue;
+                }
             }
 
             int task_id = snax_xdma_start();

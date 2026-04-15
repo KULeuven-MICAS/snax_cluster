@@ -358,6 +358,7 @@ def emit_struct_definition():
     uint32_t N;
     uint32_t bit_width;
     uint8_t enable_transpose;
+    uint8_t use_row_major_transpose_helper;
     uint32_t input_bytes;
     uint32_t output_bytes;
     uint32_t spatial_stride_src;
@@ -421,6 +422,11 @@ def generate_case(case_cfg, case_idx):
     case_name = case_cfg.get("name", f"transpose_case_{case_idx}")
     input_symbol = f"input_matrix_bytes_case_{case_idx}"
     output_symbol = f"golden_output_bytes_case_{case_idx}"
+    use_row_major_transpose_helper = (
+        case_cfg["input_layout"] == "MN"
+        and case_cfg["output_layout"] == "MN"
+        and bool(case_cfg["enable_transpose"])
+    )
 
     definitions = [
         format_vector_definition(
@@ -445,6 +451,7 @@ def generate_case(case_cfg, case_idx):
     .N = {int(case_cfg["N"])},
     .bit_width = {int(case_cfg["BIT_WIDTH"])},
     .enable_transpose = {1 if case_cfg["enable_transpose"] else 0},
+    .use_row_major_transpose_helper = {1 if use_row_major_transpose_helper else 0},
     .input_bytes = {input_bytes.size},
     .output_bytes = {output_bytes.size},
     .spatial_stride_src = {src_agu["spatial_stride"]},
