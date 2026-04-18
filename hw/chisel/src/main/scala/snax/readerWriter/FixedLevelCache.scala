@@ -16,7 +16,7 @@ class FixedLevelCacheWriterPort(fixedCacheDepth: Int, fixedCacheWidth: Int) exte
 
 /** FixedLevelCache with dual memory banks (even/odd) for concurrent read/write.
   *
-  * The cache has two SyncReadMem banks:
+  * The cache has two single-port SRAM banks (via FixedCacheMemoryLib):
   *   - Bank 0: stores data at even indices (index LSB = 0)
   *   - Bank 1: stores data at odd indices (index LSB = 1)
   *
@@ -28,7 +28,7 @@ class FixedLevelCacheWriterPort(fixedCacheDepth: Int, fixedCacheWidth: Int) exte
   * @param isReaderWriter When true, an additional writerPort is exposed for the ReaderWriter's
   *   writer to inject data directly into the cache.
   */
-class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Boolean, isReaderWriter: Boolean = false) extends Module {
+class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Boolean, isReaderWriter: Boolean = false, isSynthesis: Boolean = false) extends Module {
   val io = IO(new Bundle {
     // Standalone useCache signal (extracted from AGU, no longer per-instruction)
     val useFixedCache = Input(Bool())
@@ -50,20 +50,116 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
   // ── Dual memory banks ──
   // Bank 0 holds even-indexed entries, Bank 1 holds odd-indexed entries
   val bankDepth = (fixedCacheDepth + 1) / 2  // ceil(fixedCacheDepth / 2)
-  val mem0 = SyncReadMem(bankDepth, UInt(fixedCacheWidth.W))
-  val mem1 = SyncReadMem(bankDepth, UInt(fixedCacheWidth.W))
+  val addrWidth = log2Ceil(bankDepth)
 
-  // When used inside a ReaderWriter, the writer can write directly into this cache via the writerPort.
+  // Bank control wires (active HIGH enables, driven by cache-mode logic)
+  val bank0_writeEn   = WireDefault(false.B)
+  val bank0_writeAddr = WireDefault(0.U(addrWidth.W))
+  val bank0_writeData = WireDefault(0.U(fixedCacheWidth.W))
+  val bank0_readEn    = WireDefault(false.B)
+  val bank0_readAddr  = WireDefault(0.U(addrWidth.W))
+  val bank1_writeEn   = WireDefault(false.B)
+  val bank1_writeAddr = WireDefault(0.U(addrWidth.W))
+  val bank1_writeData = WireDefault(0.U(fixedCacheWidth.W))
+  val bank1_readEn    = WireDefault(false.B)
+  val bank1_readAddr  = WireDefault(0.U(addrWidth.W))
+
+  // Memory output data wires
+  val mem0Q = Wire(UInt(fixedCacheWidth.W))
+  val mem1Q = Wire(UInt(fixedCacheWidth.W))
+
+  // WriterPort bank-busy flags (visible to cache-mode logic for stalling TCDM writes)
+  val writerPortBank0Busy = WireDefault(false.B)
+  val writerPortBank1Busy = WireDefault(false.B)
+
   if (isReaderWriter) {
+    // ── Dual-port (1W1R) SRAMs: write port for writerPort + main writes, read port for reads ──
+    val mem0 = Module(new FixedCacheDualPortMemoryLib(bankDepth, fixedCacheWidth, isSynthesis))
+    val mem1 = Module(new FixedCacheDualPortMemoryLib(bankDepth, fixedCacheWidth, isSynthesis))
+
+    // Write port defaults (disabled)
+    mem0.io.web := true.B;  mem0.io.aa := 0.U; mem0.io.d := 0.U; mem0.io.bweb := 0.U
+    mem1.io.web := true.B;  mem1.io.aa := 0.U; mem1.io.d := 0.U; mem1.io.bweb := 0.U
+    // Read port defaults (disabled)
+    mem0.io.reb := true.B;  mem0.io.ab := 0.U
+    mem1.io.reb := true.B;  mem1.io.ab := 0.U
+
+    // WriterPort drives the write port (higher priority via last-connect)
+    // Main path writes are connected first (lower priority), writerPort overrides.
+    // When writerPort is active on a bank, TCDM writes to that bank are blocked.
     when(io.writerPort.get.enable) {
       val wrBank = io.writerPort.get.index(0)
-      val wrAddr = io.writerPort.get.index >> 1.U
+      val wrAddr = io.writerPort.get.index >> 1
       when(wrBank === 0.U) {
-        mem0.write(wrAddr, io.writerPort.get.data)
+        writerPortBank0Busy := true.B
       }.otherwise {
-        mem1.write(wrAddr, io.writerPort.get.data)
+        writerPortBank1Busy := true.B
       }
     }
+
+    // Main path writes (lower priority, will be overridden by writerPort via last-connect)
+    when(bank0_writeEn) {
+      mem0.io.web := false.B; mem0.io.aa := bank0_writeAddr
+      mem0.io.d := bank0_writeData; mem0.io.bweb := 0.U
+    }
+    when(bank1_writeEn) {
+      mem1.io.web := false.B; mem1.io.aa := bank1_writeAddr
+      mem1.io.d := bank1_writeData; mem1.io.bweb := 0.U
+    }
+
+    // WriterPort overrides main path writes (last-connect = highest priority)
+    when(io.writerPort.get.enable) {
+      val wrBank = io.writerPort.get.index(0)
+      val wrAddr = io.writerPort.get.index >> 1
+      when(wrBank === 0.U) {
+        mem0.io.web := false.B; mem0.io.aa := wrAddr
+        mem0.io.d := io.writerPort.get.data; mem0.io.bweb := 0.U
+      }.otherwise {
+        mem1.io.web := false.B; mem1.io.aa := wrAddr
+        mem1.io.d := io.writerPort.get.data; mem1.io.bweb := 0.U
+      }
+    }
+
+    // Read port (independent from write port — no conflicts)
+    when(bank0_readEn) {
+      mem0.io.reb := false.B; mem0.io.ab := bank0_readAddr
+    }
+    when(bank1_readEn) {
+      mem1.io.reb := false.B; mem1.io.ab := bank1_readAddr
+    }
+
+    mem0Q := mem0.io.q
+    mem1Q := mem1.io.q
+
+  } else {
+    // ── Single-port SRAMs ──
+    val mem0 = Module(new FixedCacheMemoryLib(bankDepth, fixedCacheWidth, isSynthesis))
+    val mem1 = Module(new FixedCacheMemoryLib(bankDepth, fixedCacheWidth, isSynthesis))
+
+    // Defaults (disabled)
+    mem0.io.ceb := true.B; mem0.io.web := true.B; mem0.io.a := 0.U; mem0.io.d := 0.U; mem0.io.bweb := 0.U
+    mem1.io.ceb := true.B; mem1.io.web := true.B; mem1.io.a := 0.U; mem1.io.d := 0.U; mem1.io.bweb := 0.U
+
+    // Writes (lower priority)
+    when(bank0_writeEn) {
+      mem0.io.ceb := false.B; mem0.io.web := false.B
+      mem0.io.a := bank0_writeAddr; mem0.io.d := bank0_writeData; mem0.io.bweb := 0.U
+    }
+    when(bank1_writeEn) {
+      mem1.io.ceb := false.B; mem1.io.web := false.B
+      mem1.io.a := bank1_writeAddr; mem1.io.d := bank1_writeData; mem1.io.bweb := 0.U
+    }
+
+    // Reads (higher priority via last-connect, overrides writes on single port)
+    when(bank0_readEn) {
+      mem0.io.ceb := false.B; mem0.io.web := true.B; mem0.io.a := bank0_readAddr
+    }
+    when(bank1_readEn) {
+      mem1.io.ceb := false.B; mem1.io.web := true.B; mem1.io.a := bank1_readAddr
+    }
+
+    mem0Q := mem0.io.q
+    mem1Q := mem1.io.q
   }
 
   // ── Bypass mode (no cache) ──
@@ -77,7 +173,7 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
 
     // Determine which bank each instruction targets
     val writeBank = io.writeFixedCacheInstruction.bits.index(0)
-    val writeAddr = io.writeFixedCacheInstruction.bits.index >> 1.U
+    val writeAddr = io.writeFixedCacheInstruction.bits.index >> 1
 
     // A write can proceed when: write + data valid AND target bank not busy with a read
     // (reads have priority over writes)
@@ -85,8 +181,8 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
 
     // ── Local instruction register ──
     // Stores the current read instruction in a register, decoupling the instruction
-    // buffer from the SyncReadMem read pipeline. The buffer is ready'd immediately
-    // on acceptance, so the next instruction can be accepted and its SyncReadMem read
+    // buffer from the SRAM read pipeline. The buffer is ready'd immediately
+    // on acceptance, so the next instruction can be accepted and its SRAM read
     // issued in the same cycle that the current data is delivered — no 1-cycle gap.
     // Only ONE read is issued per instruction (on the accept cycle). A hold register
     // keeps the data stable while waiting for downstream to consume it, freeing the
@@ -97,7 +193,7 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
     // dataHeld: stays true once read data has arrived, until consumed (delivered)
     val dataHeld = RegInit(false.B)
 
-    // Data arriving from SyncReadMem: one cycle after issueRead was asserted
+    // Data arriving from SRAM: one cycle after issueRead was asserted
     val readDataArriving = RegInit(false.B)
 
     val dataAvailable = instrValid && (dataHeld || readDataArriving)
@@ -108,7 +204,7 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
     // Accept a new instruction when the register is free or being freed (delivering)
     val canAcceptNew = !instrValid || delivering
     val newBank = io.readFixedCacheInstruction.bits.index(0)
-    val newAddr = io.readFixedCacheInstruction.bits.index >> 1.U
+    val newAddr = io.readFixedCacheInstruction.bits.index >> 1
     val acceptNew = io.readFixedCacheInstruction.valid && canAcceptNew
 
     // Register update
@@ -119,7 +215,7 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
       instrValid := false.B
     }
 
-    // ── Issue SyncReadMem read ──
+    // ── Issue SRAM read ──
     // Only when accepting a new instruction (one read per instruction).
     // No re-reads: the hold register keeps data stable while waiting for downstream.
     // This frees the bank for writes on all non-accept cycles.
@@ -143,20 +239,28 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
     val bank0ReadBusy = issueRead && readBankSel === 0.U
     val bank1ReadBusy = issueRead && readBankSel === 1.U
 
-    // A write can only proceed when its target bank is not busy with a read
-    val writeBankBusy = Mux(writeBank === 0.U, bank0ReadBusy, bank1ReadBusy)
+    // For dual-port (isReaderWriter): no read/write port conflict, but writerPort
+    // blocks TCDM writes to the same bank (they share the single write port)
+    // For single-port: writes blocked when target bank is busy with a read
+    val writeBankBusy = if (isReaderWriter) {
+      Mux(writeBank === 0.U, writerPortBank0Busy, writerPortBank1Busy) || (issueRead && readBankSel === writeBank && readAddrSel === writeAddr)
+    } else {
+      Mux(writeBank === 0.U, bank0ReadBusy, bank1ReadBusy)
+    }
     canAcceptWrite := io.writeFixedCacheInstruction.valid && io.dataInTCDM.valid && !writeBankBusy
 
-    // ── Bank 0: single readWrite port ──
-    // mem.readWrite(addr, wdata, en, isWrite) provides a single port.
-    // When en=true, isWrite=false: reads from addr, data available next cycle.
-    // When en=true, isWrite=true: writes wdata to addr.
-    // Read and write to the same bank are mutually exclusive (read has priority).
+    // ── Bank 0 ──
     val bank0WriteEn = canAcceptWrite && writeBank === 0.U
-    val bank0En      = bank0ReadBusy || bank0WriteEn
-    val bank0IsWrite = bank0WriteEn
-    val bank0Addr    = Mux(bank0ReadBusy, readAddrSel, writeAddr)
-    val bank0MemOut  = mem0.readWrite(bank0Addr, io.dataInTCDM.bits, bank0En, bank0IsWrite)
+    when(bank0WriteEn) {
+      bank0_writeEn   := true.B
+      bank0_writeAddr := writeAddr
+      bank0_writeData := io.dataInTCDM.bits
+    }
+    when(bank0ReadBusy) {
+      bank0_readEn   := true.B
+      bank0_readAddr := readAddrSel
+    }
+    val bank0MemOut = mem0Q
 
     // Hold register: captures read data on the cycle it arrives, holds it stable afterwards
     val bank0WasRead = RegNext(bank0ReadBusy, false.B)
@@ -164,12 +268,18 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
     when(bank0WasRead) { bank0HoldReg := bank0MemOut }
     val bank0ReadData = Mux(bank0WasRead, bank0MemOut, bank0HoldReg)
 
-    // ── Bank 1: single readWrite port ──
+    // ── Bank 1 ──
     val bank1WriteEn = canAcceptWrite && writeBank === 1.U
-    val bank1En      = bank1ReadBusy || bank1WriteEn
-    val bank1IsWrite = bank1WriteEn
-    val bank1Addr    = Mux(bank1ReadBusy, readAddrSel, writeAddr)
-    val bank1MemOut  = mem1.readWrite(bank1Addr, io.dataInTCDM.bits, bank1En, bank1IsWrite)
+    when(bank1WriteEn) {
+      bank1_writeEn   := true.B
+      bank1_writeAddr := writeAddr
+      bank1_writeData := io.dataInTCDM.bits
+    }
+    when(bank1ReadBusy) {
+      bank1_readEn   := true.B
+      bank1_readAddr := readAddrSel
+    }
+    val bank1MemOut = mem1Q
 
     val bank1WasRead = RegNext(bank1ReadBusy, false.B)
     val bank1HoldReg = Reg(UInt(fixedCacheWidth.W))
@@ -177,7 +287,7 @@ class FixedLevelCache(fixedCacheDepth: Int, fixedCacheWidth: Int, isReader: Bool
     val bank1ReadData = Mux(bank1WasRead, bank1MemOut, bank1HoldReg)
 
     // ── Read data output ──
-    // Select output based on which bank was read on the PREVIOUS cycle (1-cycle SyncReadMem latency)
+    // Select output based on which bank was read on the PREVIOUS cycle (1-cycle SRAM latency)
     val readBankReg = RegEnable(readBankSel, 0.U(1.W), issueRead)
     val readPipeData = Mux(readBankReg === 0.U, bank0ReadData, bank1ReadData)
 

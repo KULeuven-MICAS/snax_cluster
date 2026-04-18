@@ -238,10 +238,21 @@ object BlockGemmRescaleSIMDGen {
       sharedScaleFactorPerGroupSize = meshRow
     )
 
+    val SIMDParamsWithPipeline = RescaleSIMDParams(
+      inputType                     = RescaleSIMDConstant.inputType,
+      outputType                    = RescaleSIMDConstant.outputType,
+      constantType                  = RescaleSIMDConstant.constantType,
+      constantMulType               = RescaleSIMDConstant.constantMulType,
+      dataLen                       = meshRow * meshCol,
+      laneLen                       = meshCol,
+      readWriteCsrNum               = SIMDReadWriteCsrNum,
+      sharedScaleFactorPerGroupSize = 1
+    )
+
     val params = BlockGemmRescaleSIMDParams(
       gemmParams,
       (if (withPipeline == true)
-         snax_acc.simd.PipelinedConfig.rescaleSIMDConfig
+         SIMDParamsWithPipeline
        else SIMDParamsWithoutPipeline),
       withPipeline,
       C32_D32_width = serialC32D32Width,

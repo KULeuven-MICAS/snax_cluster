@@ -147,7 +147,8 @@ class Reader(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
         fixedCacheDepth  = param.aguParam.fixedCacheDepth,
         fixedCacheWidth  = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
         isReader         = true,
-        isReaderWriter   = isReaderWriter
+        isReaderWriter   = isReaderWriter,
+        isSynthesis       = false,
       )
     )
     // Connect the standalone useFixedCache signal from the AGU

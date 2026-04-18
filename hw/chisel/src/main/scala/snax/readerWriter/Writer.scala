@@ -201,7 +201,7 @@ class Writer(param: ReaderWriterParam, isReaderWriter: Boolean, moduleNamePrefix
       val goToTCDM  = instr.lastAccess
       val bothValid = dataAfterCrosser.valid && instrValid
 
-      io.fixedCacheWriterPort.get.enable        := bothValid
+      io.fixedCacheWriterPort.get.enable        := bothValid && !goToTCDM // Only enable cache write when it's not going to TCDM; if it goes to TCDM, the cache write is a "side-effect" of the dataBuffer write and doesn't need a separate valid/enable 
       io.fixedCacheWriterPort.get.index         := instr.index
       io.fixedCacheWriterPort.get.data          := dataAfterCrosser.bits
       dataBuffer.io.in.head.valid               := bothValid && goToTCDM
