@@ -135,21 +135,18 @@ Naming convention:
                 [
                     snax_versacore
                 ]
-                snax_tcdm_ports: 96
+                snax_tcdm_ports: 112
                 sparse_interconnect_config:
                 [
                     [
-                        16
+                        32
                         2
                     ]
                     [
                         64
-                        4
                         16
                     ]
                     [
-                        16
-                        16
                         16
                         16
                     ]
@@ -158,7 +155,7 @@ Naming convention:
                 snax_num_ro_csr: 2
                 snax_versacore_mac_num:
                 [
-                    2048
+                    4096
                 ]
                 snax_versacore_input_a_element_width:
                 [
@@ -192,11 +189,11 @@ Naming convention:
                 [
                     SInt
                 ]
-                snax_versacore_array_input_a_width: 1024
+                snax_versacore_array_input_a_width: 2048
                 snax_versacore_array_input_b_width: 4096
                 snax_versacore_array_input_c_width: 32768
                 snax_versacore_array_output_d_width: 32768
-                snax_versacore_serial_a_width: 1024
+                snax_versacore_serial_a_width: 2048
                 snax_versacore_serial_b_width: 4096
                 snax_versacore_serial_c_d_width: 1024
                 snax_versacore_adder_tree_delay: 0
@@ -205,7 +202,7 @@ Naming convention:
                     [
                         [
                             32
-                            2
+                            4
                             32
                         ]
                         [
@@ -215,7 +212,7 @@ Naming convention:
                         ]
                         [
                             16
-                            8
+                            16
                             16
                         ]
                     ]
@@ -228,7 +225,7 @@ Naming convention:
                 {
                     $ref: "#/snax_versacore_streamer_template"
                 }
-                granularity_a: 4
+                granularity_a: 2
                 granularity_b: 16
                 granularity_c_d: 16
             }
@@ -292,7 +289,7 @@ Naming convention:
             spatial_bounds:
             [
                 [
-                    16
+                    32
                 ]
                 [
                     64
@@ -305,7 +302,7 @@ Naming convention:
             ]
             num_channel:
             [
-                16
+                32
                 64
             ]
             fifo_depth:
@@ -336,7 +333,7 @@ Naming convention:
                 {
                     HasIntlowToInthighConverter:
                     {
-                        dataWidth: 1024
+                        dataWidth: 2048
                     }
                     HasTransposer:
                     {
@@ -348,9 +345,9 @@ Naming convention:
                         ]
                         col:
                         [
-                            2
+                            4
                             16
-                            8
+                            16
                         ]
                         elementWidth:
                         [
@@ -358,7 +355,7 @@ Naming convention:
                             8
                             8
                         ]
-                        dataWidth: 1024
+                        dataWidth: 2048
                     }
                 }
                 {
@@ -370,9 +367,9 @@ Naming convention:
                     {
                         row:
                         [
-                            2
+                            4
                             16
-                            8
+                            16
                         ]
                         col:
                         [
@@ -445,6 +442,22 @@ Naming convention:
                     64
                 ]
             ]
+            datapath_extensions:
+            [
+                {}
+                {
+                    HasRescaleDownEfficientDynamic:
+                    {
+                        in_elementWidth: 32
+                        out_elementWidth: 8
+                        dataWidth: 1024
+                    }
+                    HasInt32ToFp16Converter:
+                    {
+                        dataWidth: 1024
+                    }
+                }
+            ]
             dynamicPriority:
             [
                 0
@@ -456,6 +469,10 @@ Naming convention:
                 0
             ]
         }
+        has_flexible_transpose: true
+        has_int4toint8: true
+        has_rescaledown_dynamic: true
+        has_int32_to_fp16_converter: true
         snax_library_name: versacore-to
     }
 }
