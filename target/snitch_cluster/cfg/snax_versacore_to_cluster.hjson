@@ -260,9 +260,26 @@ Naming convention:
             {
                 HasVerilogMemset: {}
             }
-            reader_extensions: 
+            reader_extensions:
             {
-                HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
+                HasTransposer:
+                {
+                    row:
+                    [
+                        8
+                        8
+                    ]
+                    col:
+                    [
+                        8
+                        8
+                    ]
+                    elementWidth:
+                    [
+                        8
+                        16
+                    ]
+                }
             }
         }
         xdma: true
