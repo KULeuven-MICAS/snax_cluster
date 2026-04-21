@@ -48,13 +48,14 @@ case class ParallelAndSerialConverterParams(
   */
 class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
-    val in               = Flipped(Decoupled(UInt(p.parallelWidth.W)))
-    val terminate_factor =
+    val in                  = Flipped(Decoupled(UInt(p.parallelWidth.W)))
+    val terminate_factor    =
       if (p.earlyTerminate)
         Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W)))
       else None
-    val out              = Decoupled(UInt(p.serialWidth.W))
-    val start            = Input(Bool())
+    val out                 = Decoupled(UInt(p.serialWidth.W))
+    val counter_value_reset = Input(Bool())
+    val is_busy_cstate      = Input(Bool())
   })
 
   val ratio: Int = p.parallelWidth / p.serialWidth
@@ -89,7 +90,7 @@ class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module w
     } else {
       counter.io.ceilOpt.get := ratio.U
     }
-    counter.io.reset := io.start
+    counter.io.reset := io.counter_value_reset
     counter.io.tick := io.out.fire
 
     // shift register to store the remaining bits
@@ -110,12 +111,12 @@ class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module w
       // first chunk comes directly from input
       io.out.valid := io.in.valid
       io.out.bits  := io.in.bits(p.serialWidth - 1, 0)
-      io.in.ready  := io.out.ready
+      io.in.ready  := io.out.ready && io.is_busy_cstate
     } otherwise {
       // subsequent chunks come from shift register
       io.out.valid := true.B
       io.out.bits  := shiftReg(p.serialWidth - 1, 0)
-      io.in.ready  := false.B
+      io.in.ready  := false.B && io.is_busy_cstate
     }
   }
 
@@ -126,13 +127,14 @@ class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module w
   */
 class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
-    val in               = Flipped(Decoupled(UInt(p.serialWidth.W)))
-    val terminate_factor =
+    val in                  = Flipped(Decoupled(UInt(p.serialWidth.W)))
+    val terminate_factor    =
       if (p.earlyTerminate)
         Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W)))
       else None
-    val out              = Decoupled(UInt(p.parallelWidth.W))
-    val start            = Input(Bool())
+    val out                 = Decoupled(UInt(p.parallelWidth.W))
+    val counter_value_reset = Input(Bool())
+    val is_busy_cstate      = Input(Bool())
   })
 
   val ratio: Int = p.parallelWidth / p.serialWidth
@@ -156,7 +158,7 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
   if (ratio == 1) {
     io.out.valid := io.in.valid
     io.out.bits  := io.in.bits
-    io.in.ready  := io.out.ready
+    io.in.ready  := io.out.ready && io.is_busy_cstate
   } else {
     val storeData = Wire(Vec(ratio, Bool()))
 
@@ -174,7 +176,7 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
     } else {
       counter.io.ceilOpt.get := ratio.U
     }
-    counter.io.reset := io.start
+    counter.io.reset := io.counter_value_reset
     counter.io.tick := io.in.fire
 
     storeData.zipWithIndex.foreach({ case (a, b) =>
@@ -194,7 +196,7 @@ class SerialToParallel(val p: ParallelAndSerialConverterParams) extends Module w
 
     io.out.valid := last_data_write_fire || RegNext(output_stall, false.B)
 
-    io.in.ready := ~output_stall
+    io.in.ready := ~output_stall && io.is_busy_cstate
 
   }
 

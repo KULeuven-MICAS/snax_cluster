@@ -218,10 +218,12 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   require(params.serialInputBDataWidth == params.arrayInputBWidth)
 
   A_s2p.io.in <> io.versacore_data.in_a
-  A_s2p.io.start := versacore_finish
+  A_s2p.io.counter_value_reset := versacore_finish
+  A_s2p.io.is_busy_cstate      := cstate === sBUSY
 
   B_s2p.io.in <> io.versacore_data.in_b
-  B_s2p.io.start := versacore_finish
+  B_s2p.io.counter_value_reset := versacore_finish
+  B_s2p.io.is_busy_cstate      := cstate === sBUSY
 
   // dynamically calculate the serial factor for input A and B
   // based on the run-time configuration
@@ -431,10 +433,12 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
     )
 
   C_s2p.io.terminate_factor.get := input_c_serial_factor
-  C_s2p.io.start                := versacore_finish
+  C_s2p.io.counter_value_reset  := versacore_finish
+  C_s2p.io.is_busy_cstate       := cstate === sBUSY
 
   D_p2s.io.terminate_factor.get := output_d_serial_factor
-  D_p2s.io.start                := versacore_finish
+  D_p2s.io.counter_value_reset  := versacore_finish
+  D_p2s.io.is_busy_cstate       := cstate === sBUSY
 
   io.versacore_data.in_c <> C_s2p.io.in
   io.versacore_data.out_d <> D_p2s.io.out
