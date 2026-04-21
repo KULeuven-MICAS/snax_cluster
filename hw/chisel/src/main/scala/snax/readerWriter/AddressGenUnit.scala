@@ -120,7 +120,7 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
       inputWidth  = io.addr.head.bits.getWidth * param.numChannel,
       outputWidth = io.addr.head.bits.getWidth,
       depth       = param.outputBufferDepth,
-      pipe        = true
+      pipe        = false
     ) {
       override val desiredName = s"${moduleNamePrefix}_AddressBufferFIFO"
     }
