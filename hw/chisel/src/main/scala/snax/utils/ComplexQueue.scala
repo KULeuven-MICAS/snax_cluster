@@ -13,6 +13,8 @@ import chisel3.util._
   *   the depth of the FIFO If inputWidth is smaller than outputWidth, then it will be the first option If inputWidth is
   *   larger than outputWidth, then it will be the second option No matter which case, the big width one should equal to
   *   integer times of the small width one
+  * @param pipe:
+  *   Set to true if the queue should be pipelined
   * @param priority_empty:
   *   Set to true if this streamer should request priority when it is nearly empty (= reading from tcdm) Set to false if
   *   this streamer should request priority when it is nearly full (= writing to tcdm)
