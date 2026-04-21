@@ -31,7 +31,7 @@ dependencies:
   riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg,          version:  0.8.0   }
   cluster_icache:     { git:  https://github.com/KULeuven-MICAS/cluster_icache,     rev: main }
   hwpe-mac-engine:    { git: https://github.com/KULeuven-MICAS/hwpe-mac-engine.git, rev: 5d3b4525b665169fc8321c8a811f3c83ad3c72e8 }
-  hypercorex:         { git: "https://github.com/KULeuven-MICAS/hypercorex.git", rev: main }
+  hypercorex:         { git: "https://github.com/KULeuven-MICAS/hypercorex.git", rev: hypercorex_v1.0.1 }
   dimc:               { git: "https://github.com/KULeuven-MICAS/snax-dimc.git", rev: main }
   cgra:               { git: "https://github.com/KULeuven-MICAS/snax_cgra.git", rev: main }
   xdma_axi_adapter:   { git: https://github.com/KULeuven-MICAS/xdma_axi_adapter.git, rev: main }
