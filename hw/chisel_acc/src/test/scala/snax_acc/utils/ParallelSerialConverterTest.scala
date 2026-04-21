@@ -15,7 +15,7 @@ class ParallelToSerialReference(val p: ParallelAndSerialConverterParams) extends
         Some(Input(UInt(log2Ceil(p.parallelWidth / p.serialWidth + 1).W)))
       else None
     val out              = Decoupled(UInt(p.serialWidth.W))
-    val start            = Input(Bool())
+    val counter_value_reset            = Input(Bool())
   })
 
   val ratio: Int = p.parallelWidth / p.serialWidth
@@ -54,7 +54,7 @@ class ParallelToSerialReference(val p: ParallelAndSerialConverterParams) extends
   } else {
     counter.io.ceilOpt.get := ratio.U
   }
-  counter.io.reset := io.start
+  counter.io.reset := io.counter_value_reset
   counter.io.tick := io.out.fire
 
   io.out.bits := MuxLookup(
@@ -92,7 +92,7 @@ class ParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester {
         val in     = Flipped(Decoupled(UInt(parallelWidth.W)))
         val outRef = Decoupled(UInt(serialWidth.W))
         val outDut = Decoupled(UInt(serialWidth.W))
-        val start  = Input(Bool())
+        val counter_value_reset  = Input(Bool())
       })
 
       val ref = Module(new ParallelToSerialReference(params))
@@ -100,8 +100,9 @@ class ParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester {
 
       ref.io.terminate_factor.get := 4.U
       dut.io.terminate_factor.get := 4.U
-      ref.io.start                := io.start
-      dut.io.start                := io.start
+      ref.io.counter_value_reset                := io.counter_value_reset
+      dut.io.counter_value_reset                := io.counter_value_reset
+      dut.io.is_busy_cstate                     := true.B
 
       ref.io.in <> io.in
       dut.io.in.valid := io.in.valid
@@ -112,9 +113,9 @@ class ParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester {
       io.outRef <> ref.io.out
       io.outDut <> dut.io.out
     }).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
-      c.io.start.poke(true.B)
+      c.io.counter_value_reset.poke(true.B)
       c.clock.step()
-      c.io.start.poke(false.B)
+      c.io.counter_value_reset.poke(false.B)
 
       val rng = new Random(42)
 
@@ -187,15 +188,16 @@ class ParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester {
         val in     = Flipped(Decoupled(UInt(parallelWidth.W)))
         val outRef = Decoupled(UInt(serialWidth.W))
         val outDut = Decoupled(UInt(serialWidth.W))
-        val start  = Input(Bool())
+        val counter_value_reset  = Input(Bool())
       })
       val ref = Module(new ParallelToSerialReference(params))
       val dut = Module(new ParallelToSerial(params))
 
       ref.io.terminate_factor.get := 4.U
       dut.io.terminate_factor.get := 4.U
-      ref.io.start                := io.start
-      dut.io.start                := io.start
+      ref.io.counter_value_reset                := io.counter_value_reset
+      dut.io.counter_value_reset                := io.counter_value_reset
+      dut.io.is_busy_cstate                     := true.B
 
       // Wire inputs
       ref.io.in.valid := io.in.valid
@@ -209,9 +211,9 @@ class ParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester {
       io.outRef <> ref.io.out
       io.outDut <> dut.io.out
     }).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
-      c.io.start.poke(true.B)
+      c.io.counter_value_reset.poke(true.B)
       c.clock.step()
-      c.io.start.poke(false.B)
+      c.io.counter_value_reset.poke(false.B)
       val rng = new Random(123)
 
       for (i <- 0 until 50) { // 50 transactions

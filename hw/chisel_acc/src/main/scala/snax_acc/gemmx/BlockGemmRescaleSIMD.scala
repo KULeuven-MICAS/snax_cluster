@@ -79,6 +79,7 @@ class BlockGemmRescaleSIMD(params: BlockGemmRescaleSIMDParams) extends Module wi
     )
   )
   C32_s2p.io.counter_value_reset := io.ctrl.gemm_ctrl.fire
+  C32_s2p.io.is_busy_cstate := io.ctrl.busy_o
 
   // D3232 parallel to serial converter
   val D32_p2s = Module(
@@ -90,6 +91,7 @@ class BlockGemmRescaleSIMD(params: BlockGemmRescaleSIMDParams) extends Module wi
     )
   )
   D32_p2s.io.counter_value_reset := io.ctrl.gemm_ctrl.fire
+  D32_p2s.io.is_busy_cstate := io.ctrl.busy_o
 
   // D8 parallel to serial converter
   val D8_p2s = Module(
@@ -101,6 +103,7 @@ class BlockGemmRescaleSIMD(params: BlockGemmRescaleSIMDParams) extends Module wi
     )
   )
   D8_p2s.io.counter_value_reset := io.ctrl.gemm_ctrl.fire
+  D8_p2s.io.is_busy_cstate := io.ctrl.busy_o
 
   // data converter connection
   io.data.gemm_data.c_serial_i <> C32_s2p.io.in
