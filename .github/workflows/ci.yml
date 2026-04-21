@@ -254,7 +254,7 @@ jobs:
           sw/snax-compiler-test-run.yaml -j
 
   snax-versaCore-to-cluster-vlt-generic:
-    name: Generate HW on VersaCore TO cluster
+    name: Run versacore TO configuration w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -271,6 +271,21 @@ jobs:
           export JAVA_OPTS="-Xmx8G -Xms4G"
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax_versacore_to_cluster.hjson
+      - name: Build Hardware
+        run: |
+          make CFG_OVERRIDE=cfg/snax_versacore_to_cluster.hjson \
+          VLT_FLAGS="-fno-dfg" \
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw \
+          CFG_OVERRIDE=cfg/snax_versacore_to_cluster.hjson
+      - name: Run Tests
+        working-directory: target/snitch_cluster
+        run: |-
+          ./run.py --simulator verilator \
+          sw/runtime.yaml \
+          sw/snax-versacore-to-cluster-run.yaml -j
 
   sw-versacore-dse-cluster-vlt-generic:
     name: Run versacore dse configuration w/ Verilator (Generic LLVM)
