@@ -12,12 +12,14 @@
     xdma_cfg_io_width = cfg["xdma_cfg_io_width"]
   except Exception:
     xdma_cfg_io_width = 32
+
+  max_mem_size_kiB = cfg["max_mem_size_kiB"]
+  wordline_width   = cfg.get("wordline_width", 64)
 %>
 //-----------------------------
 // xdma wrapper
 //-----------------------------
 module ${cfg["name"]}_xdma_wrapper
-import xdma_pkg::*;
 #(
   // Address width
   parameter int unsigned PhysicalAddrWidth = ${cfg["addr_width"]},
@@ -90,7 +92,68 @@ import xdma_pkg::*;
   input  narrow_in_req_t     xdma_narrow_in_req_i,
   output narrow_in_resp_t    xdma_narrow_in_resp_o
 );
-  
+
+  //-----------------------------
+  // Generated parameters & typedefs (self-contained mirror of the adapter)
+  //-----------------------------
+  // The values mirror the
+  // adapter's `// Generated parameters & typedefs` block; they MUST stay
+  // in sync (any edit here must be replicated in
+  //   xdma_axi_adapter/src/xdma_axi_adapter_top.sv).
+  localparam int unsigned MaxMemSizeKiB      = ${max_mem_size_kiB};
+  localparam int unsigned WordlineWidth      = ${wordline_width};
+  localparam int unsigned AxiAddrWidth       = 32'd${cfg["addr_width"]};
+  localparam int unsigned AxiWideDataWidth   = 32'd${cfg["dma_data_width"]};
+  localparam int unsigned AxiNarrowDataWidth = 32'd${cfg["data_width"]};
+  localparam int unsigned ChipIdWidth        = 32'd8;
+  localparam int unsigned XDMAIdWidth        = 32'd4;
+  localparam int unsigned TotalFrameWidth    = 32'd4;
+  localparam int unsigned WideStrbWidth      = AxiWideDataWidth   / 8;
+  localparam int unsigned NarrowStrbWidth    = AxiNarrowDataWidth / 8;
+  localparam int unsigned DMALengthWidth     =
+      $clog2(MaxMemSizeKiB) + 10 - $clog2(WordlineWidth/8);
+  localparam int unsigned FirstFrameRemainingPayloadWidth =
+      AxiWideDataWidth - 1 - TotalFrameWidth - XDMAIdWidth - 2*AxiAddrWidth;
+
+  typedef logic [XDMAIdWidth-1:0]                       id_t;
+  typedef logic [AxiAddrWidth-1:0]                      addr_t;
+  typedef logic [AxiWideDataWidth-1:0]                  wide_data_t;
+  typedef logic [AxiNarrowDataWidth-1:0]                narrow_data_t;
+  typedef logic [TotalFrameWidth-1:0]                   frame_length_t;
+  typedef logic [FirstFrameRemainingPayloadWidth-1:0]   first_frame_remaining_payload_t;
+  typedef logic [DMALengthWidth-1:0]                    len_t;
+  typedef struct packed {
+    first_frame_remaining_payload_t first_frame_remaining_payload;
+    addr_t                          writer_addr;
+    addr_t                          reader_addr;
+    id_t                            dma_id;
+    frame_length_t                  frame_length;
+    logic                           dma_type;
+  } xdma_inter_cluster_cfg_t;
+  typedef wide_data_t                                   xdma_to_remote_data_t;
+  typedef wide_data_t                                   xdma_from_remote_data_t;
+  typedef struct packed {
+    id_t   dma_id;
+    logic  dma_type;
+    addr_t src_addr;
+    addr_t dst_addr;
+    len_t  dma_length;
+    logic  ready_to_transfer;
+    logic  is_first_cw;
+    logic  is_last_cw;
+  } xdma_accompany_cfg_t;
+  typedef struct packed {
+    id_t   dma_id;
+    logic  dma_type;
+    addr_t remote_addr;
+    len_t  dma_length;
+    logic  ready_to_transfer;
+  } xdma_req_desc_t;
+  typedef struct packed {
+    id_t  dma_id;
+    len_t dma_length;
+  } xdma_req_meta_t;
+
   //-----------------------------
   // Wiring and combinational logic
   //-----------------------------
@@ -131,26 +194,26 @@ import xdma_pkg::*;
   ///---------------------------------------------------------------
   // XDMA Intercluster Signals
   ///---------------------------------------------------------------
-  xdma_pkg::wide_data_t                   xdma_to_remote_cfg_bits;
-  xdma_pkg::wide_data_t                   xdma_from_remote_cfg_bits;
+  wide_data_t                   xdma_to_remote_cfg_bits;
+  wide_data_t                   xdma_from_remote_cfg_bits;
   ///---------------------
   /// TO REMOTE
   ///---------------------
   // to remote cfg
-  xdma_pkg::xdma_inter_cluster_cfg_t   xdma_to_remote_cfg;
+  xdma_inter_cluster_cfg_t   xdma_to_remote_cfg;
   logic                                xdma_to_remote_cfg_valid;
   logic                                xdma_to_remote_cfg_ready;
   // to remote data
-  xdma_pkg::xdma_to_remote_data_t      xdma_to_remote_data;
+  xdma_to_remote_data_t      xdma_to_remote_data;
   logic                                xdma_to_remote_data_valid;
   logic                                xdma_to_remote_data_ready;
   // to remote accompany cfg
-  xdma_pkg::xdma_accompany_cfg_t       xdma_to_remote_data_accompany_cfg;
-  xdma_pkg::id_t                       xdma_to_remote_data_accompany_cfg_dma_id;
+  xdma_accompany_cfg_t                 xdma_to_remote_data_accompany_cfg;
+  id_t                       xdma_to_remote_data_accompany_cfg_dma_id;
   logic                                xdma_to_remote_data_accompany_cfg_dma_type;
-  xdma_pkg::addr_t                     xdma_to_remote_data_accompany_cfg_src_addr;
-  xdma_pkg::addr_t                     xdma_to_remote_data_accompany_cfg_dst_addr;
-  xdma_pkg::len_t                      xdma_to_remote_data_accompany_cfg_dma_length;
+  addr_t                     xdma_to_remote_data_accompany_cfg_src_addr;
+  addr_t                     xdma_to_remote_data_accompany_cfg_dst_addr;
+  len_t                                xdma_to_remote_data_accompany_cfg_dma_length;
   logic                                xdma_to_remote_data_accompany_cfg_ready_to_transfer;
   logic                                xdma_to_remote_data_accompany_cfg_is_first_cw;
   logic                                xdma_to_remote_data_accompany_cfg_is_last_cw;
@@ -158,20 +221,20 @@ import xdma_pkg::*;
   /// FROM REMOTE
   ///---------------------
   // from remote cfg
-  xdma_pkg::xdma_inter_cluster_cfg_t xdma_from_remote_cfg;
+  xdma_inter_cluster_cfg_t xdma_from_remote_cfg;
   logic                              xdma_from_remote_cfg_valid;
   logic                              xdma_from_remote_cfg_ready;
   // from remote data
-  xdma_pkg::xdma_from_remote_data_t  xdma_from_remote_data;
+  xdma_from_remote_data_t  xdma_from_remote_data;
   logic                              xdma_from_remote_data_valid;
   logic                              xdma_from_remote_data_ready;
   // from remote data accompany cfg
-  xdma_pkg::xdma_accompany_cfg_t     xdma_from_remote_data_accompany_cfg;
-  xdma_pkg::id_t                     xdma_from_remote_data_accompany_cfg_dma_id;
+  xdma_accompany_cfg_t               xdma_from_remote_data_accompany_cfg;
+  id_t                     xdma_from_remote_data_accompany_cfg_dma_id;
   logic                              xdma_from_remote_data_accompany_cfg_dma_type;
-  xdma_pkg::addr_t                   xdma_from_remote_data_accompany_cfg_src_addr;
-  xdma_pkg::addr_t                   xdma_from_remote_data_accompany_cfg_dst_addr;
-  xdma_pkg::len_t                    xdma_from_remote_data_accompany_cfg_dma_length;
+  addr_t                   xdma_from_remote_data_accompany_cfg_src_addr;
+  addr_t                   xdma_from_remote_data_accompany_cfg_dst_addr;
+  len_t                              xdma_from_remote_data_accompany_cfg_dma_length;
   logic                              xdma_from_remote_data_accompany_cfg_ready_to_transfer;
   logic                              xdma_from_remote_data_accompany_cfg_is_first_cw;
   logic                              xdma_from_remote_data_accompany_cfg_is_last_cw;
@@ -182,9 +245,9 @@ import xdma_pkg::*;
   ///---------------------------------------------------------------
   // Assign Signals
   ///---------------------------------------------------------------
-  assign xdma_to_remote_cfg = xdma_pkg::xdma_inter_cluster_cfg_t'(xdma_to_remote_cfg_bits);
-  assign xdma_from_remote_cfg_bits = xdma_pkg::wide_data_t'(xdma_from_remote_cfg);
-  assign xdma_to_remote_data_accompany_cfg = xdma_pkg::xdma_accompany_cfg_t'{
+  assign xdma_to_remote_cfg = xdma_inter_cluster_cfg_t'(xdma_to_remote_cfg_bits);
+  assign xdma_from_remote_cfg_bits = wide_data_t'(xdma_from_remote_cfg);
+  assign xdma_to_remote_data_accompany_cfg = xdma_accompany_cfg_t'{
     dma_id:            xdma_to_remote_data_accompany_cfg_dma_id,
     dma_type:          xdma_to_remote_data_accompany_cfg_dma_type,
     src_addr:          xdma_to_remote_data_accompany_cfg_src_addr,
@@ -194,7 +257,7 @@ import xdma_pkg::*;
     is_first_cw:       xdma_to_remote_data_accompany_cfg_is_first_cw,
     is_last_cw:        xdma_to_remote_data_accompany_cfg_is_last_cw
   };
-  assign xdma_from_remote_data_accompany_cfg = xdma_pkg::xdma_accompany_cfg_t'{
+  assign xdma_from_remote_data_accompany_cfg = xdma_accompany_cfg_t'{
     dma_id:            xdma_from_remote_data_accompany_cfg_dma_id,
     dma_type:          xdma_from_remote_data_accompany_cfg_dma_type,
     src_addr:          xdma_from_remote_data_accompany_cfg_src_addr,
@@ -329,46 +392,33 @@ import xdma_pkg::*;
 
 
     xdma_axi_adapter_top #(
-        // Wide AXI Types
-        .axi_wide_id_t                        (wide_slv_id_t                     ),
-        .axi_wide_out_req_t                   (wide_out_req_t                    ),
-        .axi_wide_out_resp_t                  (wide_out_resp_t                   ),
-        .axi_wide_in_req_t                    (wide_in_req_t                     ),
-        .axi_wide_in_resp_t                   (wide_in_resp_t                    ),
-        // Narrow AXI Types
-        .axi_narrow_id_t                      (narrow_slv_id_t                   ),
-        .axi_narrow_out_req_t                 (narrow_out_req_t                  ),
-        .axi_narrow_out_resp_t                (narrow_out_resp_t                 ),
-        .axi_narrow_in_req_t                  (narrow_in_req_t                   ),
-        .axi_narrow_in_resp_t                 (narrow_in_resp_t                  ),
-        // Reqrsp Types
-        // Wide
-        .reqrsp_wide_req_t                    (xdma_pkg::reqrsp_wide_req_t       ),
-        .reqrsp_wide_rsp_t                    (xdma_pkg::reqrsp_wide_rsp_t       ),
-        // Narrow
-        .reqrsp_narrow_req_t                  (xdma_pkg::reqrsp_narrow_req_t     ),
-        .reqrsp_narrow_rsp_t                  (xdma_pkg::reqrsp_narrow_rsp_t     ),
-        .wide_data_t                          (xdma_pkg::wide_data_t             ),
-        .wide_strb_t                          (xdma_pkg::wide_strb_t             ),
-        .narrow_data_t                        (xdma_pkg::narrow_data_t           ),
-        .narrow_strb_t                        (xdma_pkg::narrow_strb_t           ),
-        .addr_t                               (xdma_pkg::addr_t                  ),
-        .len_t                                (xdma_pkg::len_t                   ),
-        .xdma_to_remote_cfg_t                 (xdma_pkg::xdma_inter_cluster_cfg_t),
-        .xdma_to_remote_data_t                (xdma_pkg::xdma_to_remote_data_t   ),
-        .xdma_to_remote_data_accompany_cfg_t  (xdma_pkg::xdma_accompany_cfg_t    ),
-        .xdma_req_desc_t                      (xdma_pkg::xdma_req_desc_t         ),
-        .xdma_req_meta_t                      (xdma_pkg::xdma_req_meta_t         ),
-        .xdma_to_remote_grant_t               (xdma_pkg::xdma_to_remote_grant_t  ),
-        .xdma_from_remote_grant_t             (xdma_pkg::xdma_from_remote_grant_t),
-        .xdma_from_remote_cfg_t               (xdma_pkg::xdma_inter_cluster_cfg_t),
-        .xdma_from_remote_data_t              (xdma_pkg::xdma_from_remote_data_t ),
-        .xdma_from_remote_data_accompany_cfg_t(xdma_pkg::xdma_accompany_cfg_t    ),
-        .ClusterBaseAddr                      (ClusterBaseAddr),
-        .ClusterAddressSpace                  (ClusterAddressSpace),
-        .MainMemBaseAddr                      (MainMemBaseAddr),
-        .MainMemEndAddr                       (MainMemEndAddr),
-        .MMIOSize                             (MMIOSize)
+        // Meta params
+        .MaxMemSizeKiB            (MaxMemSizeKiB),
+        .WordlineWidth            (WordlineWidth),
+        .AxiAddrWidth             (AxiAddrWidth),
+        .AxiWideDataWidth         (AxiWideDataWidth),
+        .AxiNarrowDataWidth       (AxiNarrowDataWidth),
+        .ChipIdWidth              (ChipIdWidth),
+        .XDMAIdWidth              (XDMAIdWidth),
+        .TotalFrameWidth          (TotalFrameWidth),
+        // System AXI ID widths
+        .WideAXIIdWidth           ($bits(wide_slv_id_t)),
+        .NarrowAXIIdWidth         ($bits(narrow_slv_id_t)),
+        // System AXI request/response types
+        .axi_wide_out_req_t       (wide_out_req_t),
+        .axi_wide_out_resp_t      (wide_out_resp_t),
+        .axi_wide_in_req_t        (wide_in_req_t),
+        .axi_wide_in_resp_t       (wide_in_resp_t),
+        .axi_narrow_out_req_t     (narrow_out_req_t),
+        .axi_narrow_out_resp_t    (narrow_out_resp_t),
+        .axi_narrow_in_req_t      (narrow_in_req_t),
+        .axi_narrow_in_resp_t     (narrow_in_resp_t),
+        // Cluster cfgs
+        .ClusterBaseAddr          (ClusterBaseAddr),
+        .ClusterAddressSpace      (ClusterAddressSpace),
+        .MainMemBaseAddr          (MainMemBaseAddr),
+        .MainMemEndAddr           (MainMemEndAddr),
+        .MMIOSize                 (MMIOSize)
     ) i_xdma_axi_adapter (
         .clk_i                           (clk_i),
         .rst_ni                          (rst_ni),

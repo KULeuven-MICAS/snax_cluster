@@ -200,7 +200,11 @@ object XDMATopGen extends App {
   val crossClusterParam = new XDMACrossClusterParam(
     maxMulticastDest     = (parsedXdmaCfg \ "max_multicast").as[Int],
     maxTemporalDimension = (parsedXdmaCfg \ "max_dimension").as[Int],
-    tcdmSize             = (parsedXdmaCfg \ "max_mem_size").as[Int],
+    // `max_mem_size_kiB` is the unified XDMA-addressable region (KiB).
+    // The SV-side mirror is `MaxMemSizeKiB` in xdma_axi_adapter_top.sv and
+    // the wrapper template snax_xdma_wrapper.sv.tpl.
+    tcdmSize             = (parsedXdmaCfg \ "max_mem_size_kiB").as[Int],
+    wordlineWidth        = (parsedXdmaCfg \ "wordline_width").asOpt[Int].getOrElse(64),
     AxiAddressWidth      = parsedArgs("axiAddrWidth").toInt
   )
 

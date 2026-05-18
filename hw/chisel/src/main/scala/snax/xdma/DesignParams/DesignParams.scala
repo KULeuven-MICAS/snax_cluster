@@ -16,11 +16,19 @@ class XDMACrossClusterParam(
   val maxMulticastDest:     Int = 4,
   val maxTemporalDimension: Int = 5,
   val maxSpatialDimension:  Int = 1,
+  // tcdmSize is the XDMA-addressable memory region in KiB
+  // (cfg name: `max_mem_size_kiB`, SV mirror: `MaxMemSizeKiB`).
   val tcdmSize:             Int = 4096,
   val AxiAddressWidth:      Int = 48,
   val AxiDataWidth:         Int = 512,
+  // wordlineWidth is the per-bank word width in bits
+  // (cfg name: `wordline_width`, SV mirror: `WordlineWidth`).
   val wordlineWidth:        Int = 64
 ) {
+  // tcdmAddressWidth drives the *length / dma_length / temporal bound /
+  // stride port widths of the Chisel-generated XDMA module. The SV side
+  // MUST derive the same value from the same MaxMemSizeKiB/WordlineWidth
+  // to avoid port-width mismatches on the wrapper boundary.
   val tcdmAddressWidth: Int =
     log2Ceil(tcdmSize) + 10 - log2Ceil(wordlineWidth / 8)
   val channelNum:       Int = AxiDataWidth / wordlineWidth
