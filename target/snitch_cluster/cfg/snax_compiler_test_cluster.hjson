@@ -27,6 +27,7 @@
             size: 128,
             banks: 32,
             sparse_interconnect: true,
+            wordline_width: 64,
         },
         cluster_periph_size: 64, // kB
         zero_mem_size: 64, // kB
@@ -152,7 +153,6 @@
             max_multicast: 16,
             max_dimension: 5,
             max_mem_size_kiB: 4096,
-            wordline_width: 64
             // DataMaestro Cfg
             reader_buffer: 4,
             writer_buffer: 4,

@@ -41,6 +41,7 @@ Naming convention:
             size: 512
             banks: 64
             sparse_interconnect: true
+            wordline_width: 64
         }
         cluster_periph_size: 64
         zero_mem_size: 64
@@ -252,7 +253,6 @@ Naming convention:
             max_multicast: 16
             max_dimension: 5
             max_mem_size_kiB: 65536
-            wordline_width: 64
             reader_buffer: 12
             writer_buffer: 12
             reader_agu_temporal_dimension: 5

@@ -204,7 +204,11 @@ object XDMATopGen extends App {
     // The SV-side mirror is `MaxMemSizeKiB` in xdma_axi_adapter_top.sv and
     // the wrapper template snax_xdma_wrapper.sv.tpl.
     tcdmSize             = (parsedXdmaCfg \ "max_mem_size_kiB").as[Int],
-    wordlineWidth        = (parsedXdmaCfg \ "wordline_width").asOpt[Int].getOrElse(64),
+    // wordlineWidth is a TCDM-side parameter (cluster.tcdm.wordline_width
+    // on the snax side, spm_wide.wordline_width / hemaia_mem_chip.wordline_width
+    // on the HeMAiA side). It is unified across all TCDMs by the codegen
+    // and passed in via a dedicated CLI flag, NOT via the xdmaCfg JSON.
+    wordlineWidth        = parsedArgs("wordlineWidth").toInt,
     AxiAddressWidth      = parsedArgs("axiAddrWidth").toInt
   )
 

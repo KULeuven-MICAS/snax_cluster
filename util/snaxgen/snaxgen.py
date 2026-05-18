@@ -664,9 +664,15 @@ def main():
         # max_mem_size_kiB. It must match the Chisel XDMA's tcdmAddressWidth
         # which is also driven by snax_xdma_cfg.max_mem_size_kiB — see
         # snax/xdma/DesignParams XDMACrossClusterParam.tcdmAddressWidth.
+        #
+        # wordline_width is a TCDM property — it lives on cluster.tcdm, NOT
+        # on snax_xdma_cfg. The wrapper template and the Chisel CLI both
+        # read it from the same TCDM source here.
+        cluster_tcdm = cfg["cluster"]["tcdm"]
+        wordline_width = cluster_tcdm.get("wordline_width", 64)
         xdma_wrapper_cfg = dict(cfg["cluster"])
         xdma_wrapper_cfg["max_mem_size_kiB"] = snax_xdma_cfg["max_mem_size_kiB"]
-        xdma_wrapper_cfg["wordline_width"] = snax_xdma_cfg.get("wordline_width", 64)
+        xdma_wrapper_cfg["wordline_width"] = wordline_width
 
         gen_file(
             cfg=xdma_wrapper_cfg,
@@ -692,7 +698,11 @@ def main():
             + " --axiAddrWidth "
             + str(cfg["cluster"]["addr_width"])
             + " --tcdmSize "
-            + str(cfg["cluster"]["tcdm"]["size"])
+            + str(cluster_tcdm["size"])
+            # wordline_width is a TCDM-side parameter (cluster.tcdm), passed
+            # as a dedicated CLI flag rather than via the --xdmaCfg JSON.
+            + " --wordlineWidth "
+            + str(wordline_width)
             + " --xdmaCfg "
             + hjson.dumpsJSON(obj=snax_xdma_cfg, separators=(",", ":")).replace(" ", "")
             + " --hw-target-dir "
