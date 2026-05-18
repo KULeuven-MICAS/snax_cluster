@@ -29,7 +29,9 @@
             "description": "Configuration of the Tightly Coupled Data Memory of this cluster.",
             "default": {
                 "size": 128,
-                "banks": 32
+                "banks": 32,
+                "sparse_interconnect": false,
+                "wordline_width": 64
             },
             "properties": {
                 "size": {
@@ -47,6 +49,16 @@
                         16,
                         32
                     ]
+                },
+                "sparse_interconnect": {
+                    "type": "boolean",
+                    "description": "Whether to use a sparse interconnect for the TCDM. This means that not all cores can access all banks, but only a subset. This reduces the interconnect complexity and thus can save area and power at the cost of flexibility.",
+                    "default": false
+                },
+                "wordline_width": {
+                    "type": "number",
+                    "description": "Wordline width in bits. This determines the data bus width of the TCDM and thus the number of bits transferred in one access. This should typically be 64 or 128 bits, but smaller widths are also possible. The wordline width must be at least as large as the data width of the integer core to be able to feed it with one access.",
+                    "default": 64
                 }
             }
         },

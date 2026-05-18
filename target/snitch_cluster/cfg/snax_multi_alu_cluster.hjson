@@ -23,6 +23,7 @@
             size: 128,
             banks: 32,
             sparse_interconnect: true,
+            wordline_width: 64,
         },
         cluster_periph_size: 64, // kB
         zero_mem_size: 64, // kB
