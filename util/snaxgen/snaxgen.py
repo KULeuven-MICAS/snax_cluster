@@ -660,10 +660,6 @@ def main():
 
         tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
 
-        # The wrapper template derives its local len_t / dma_length width from
-        # max_mem_size_kiB. It must match the Chisel XDMA's tcdmAddressWidth
-        # which is also driven by snax_xdma_cfg.max_mem_size_kiB — see
-        # snax/xdma/DesignParams XDMACrossClusterParam.tcdmAddressWidth.
         xdma_wrapper_cfg = dict(cfg["cluster"])
         xdma_wrapper_cfg["max_mem_size_kiB"] = snax_xdma_cfg["max_mem_size_kiB"]
 
@@ -692,8 +688,6 @@ def main():
             + str(cfg["cluster"]["addr_width"])
             + " --tcdmSize "
             + str(cfg["cluster"]["tcdm"]["size"])
-            + " --wordlineWidth "
-            + str(cfg["cluster"]["tcdm"]["wordline_width"])
             + " --xdmaCfg "
             + hjson.dumpsJSON(obj=snax_xdma_cfg, separators=(",", ":")).replace(" ", "")
             + " --hw-target-dir "

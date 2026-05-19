@@ -41,7 +41,6 @@ Naming convention:
             size: 512
             banks: 64
             sparse_interconnect: true
-            wordline_width: 64
         }
         cluster_periph_size: 64
         zero_mem_size: 64

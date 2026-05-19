@@ -30,8 +30,7 @@
             "default": {
                 "size": 128,
                 "banks": 32,
-                "sparse_interconnect": false,
-                "wordline_width": 64
+                "sparse_interconnect": false
             },
             "properties": {
                 "size": {
@@ -54,11 +53,6 @@
                     "type": "boolean",
                     "description": "Whether to use a sparse interconnect for the TCDM. This means that not all cores can access all banks, but only a subset. This reduces the interconnect complexity and thus can save area and power at the cost of flexibility.",
                     "default": false
-                },
-                "wordline_width": {
-                    "type": "number",
-                    "description": "Wordline width in bits. This determines the data bus width of the TCDM and thus the number of bits transferred in one access. This should typically be 64 or 128 bits, but smaller widths are also possible. The wordline width must be at least as large as the data width of the integer core to be able to feed it with one access.",
-                    "default": 64
                 }
             }
         },
@@ -94,7 +88,7 @@
         },
         "data_width": {
             "type": "number",
-            "description": "Data bus size of the integer core (everything except the DMA), must be 32 or 64. A double precision FPU requires 64 bit data length.",
+            "description": "Data bus size of the integer core (everything except the DMA), must be 32 or 64. A double precision FPU requires 64 bit data length. This value is also taken as the TCDM wordline width (per-bank data bus width) — the codegen uses `cluster.data_width` to drive `TCDMDataWidth`.",
             "default": 64
         },
         "dma_data_width": {

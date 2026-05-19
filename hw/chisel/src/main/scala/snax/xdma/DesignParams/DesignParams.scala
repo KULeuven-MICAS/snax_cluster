@@ -17,12 +17,12 @@ class XDMACrossClusterParam(
   val maxTemporalDimension: Int = 5,
   val maxSpatialDimension:  Int = 1,
   // tcdmSize is the XDMA-addressable memory region in KiB
-  // (cfg name: `max_mem_size_kiB`, SV mirror: `MaxMemSizeKiB`).
+  // (cfg name: snax_xdma_cfg.max_mem_size_kiB, SV mirror: MaxMemSizeKiB).
   val tcdmSize:             Int = 4096,
   val AxiAddressWidth:      Int = 48,
   val AxiDataWidth:         Int = 512,
-  // wordlineWidth is the per-bank word width in bits
-  // (cfg name: `wordline_width`, SV mirror: `WordlineWidth`).
+  // wordlineWidth is the per-bank TCDM data bus width in bits.
+  // Sourced from cluster.data_width on the cfg side; SV mirror: WordlineWidth.
   val wordlineWidth:        Int = 64
 ) {
   // tcdmAddressWidth drives the *length / dma_length / temporal bound /

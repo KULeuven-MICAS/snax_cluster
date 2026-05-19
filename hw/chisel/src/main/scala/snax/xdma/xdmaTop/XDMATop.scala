@@ -201,14 +201,11 @@ object XDMATopGen extends App {
     maxMulticastDest     = (parsedXdmaCfg \ "max_multicast").as[Int],
     maxTemporalDimension = (parsedXdmaCfg \ "max_dimension").as[Int],
     // `max_mem_size_kiB` is the unified XDMA-addressable region (KiB).
-    // The SV-side mirror is `MaxMemSizeKiB` in xdma_axi_adapter_top.sv and
-    // the wrapper template snax_xdma_wrapper.sv.tpl.
     tcdmSize             = (parsedXdmaCfg \ "max_mem_size_kiB").as[Int],
-    // wordlineWidth is a TCDM-side parameter (cluster.tcdm.wordline_width
-    // on the snax side, spm_wide.wordline_width / hemaia_mem_chip.wordline_width
-    // on the HeMAiA side). It is unified across all TCDMs by the codegen
-    // and passed in via a dedicated CLI flag, NOT via the xdmaCfg JSON.
-    wordlineWidth        = parsedArgs("wordlineWidth").toInt,
+    // wordlineWidth (per-bank TCDM data bus width) equals the cluster's
+    // `data_width` knob — the schema documents data_width as carrying the
+    // TCDM wordline width as well.
+    wordlineWidth        = parsedArgs("tcdmDataWidth").toInt,
     AxiAddressWidth      = parsedArgs("axiAddrWidth").toInt
   )
 

@@ -14,7 +14,10 @@
     xdma_cfg_io_width = 32
 
   max_mem_size_kiB = cfg["max_mem_size_kiB"]
-  wordline_width   = cfg["tcdm"]["wordline_width"]
+  # The TCDM wordline width (per-bank data bus width) is sourced from
+  # cluster.data_width. The schema documents data_width as carrying the
+  # TCDM wordline width as well, so there is no separate cfg knob.
+  wordline_width   = cfg["data_width"]
 %>
 //-----------------------------
 // xdma wrapper
@@ -40,7 +43,7 @@ module ${cfg["name"]}_xdma_wrapper
   parameter type         narrow_in_req_t     = logic,
   parameter type         narrow_in_resp_t    = logic,
   // Parameters related to TCDM
-  parameter int unsigned TCDMDataWidth     = ${wordline_width},
+  parameter int unsigned TCDMDataWidth     = ${cfg["data_width"]},
   parameter int unsigned TCDMNumPorts      = ${num_tcdm_ports},
   parameter int unsigned TCDMAddrWidth     = ${tcdm_addr_width},
   // Cluster Addr
