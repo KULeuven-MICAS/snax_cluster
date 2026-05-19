@@ -200,7 +200,12 @@ object XDMATopGen extends App {
   val crossClusterParam = new XDMACrossClusterParam(
     maxMulticastDest     = (parsedXdmaCfg \ "max_multicast").as[Int],
     maxTemporalDimension = (parsedXdmaCfg \ "max_dimension").as[Int],
-    tcdmSize             = (parsedXdmaCfg \ "max_mem_size").as[Int],
+    // `max_mem_size_kiB` is the unified XDMA-addressable region (KiB).
+    tcdmSize             = (parsedXdmaCfg \ "max_mem_size_kiB").as[Int],
+    // wordlineWidth (per-bank TCDM data bus width) equals the cluster's
+    // `data_width` knob — the schema documents data_width as carrying the
+    // TCDM wordline width as well.
+    wordlineWidth        = parsedArgs("tcdmDataWidth").toInt,
     AxiAddressWidth      = parsedArgs("axiAddrWidth").toInt
   )
 

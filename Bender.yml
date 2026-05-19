@@ -22,18 +22,18 @@ package:
     - Guilherme Paim <gppaim@ieee.org>
 
 dependencies:
-  axi:                { git: https://github.com/pulp-platform/axi,                version:  0.39.1  }
-  axi_riscv_atomics:  { git: https://github.com/pulp-platform/axi_riscv_atomics,  version:  0.8.2   }
-  common_cells:       { git: https://github.com/pulp-platform/common_cells,       version:  1.28.0  }
-  FPnew:              { git: https://github.com/pulp-platform/cvfpu.git,      rev:      pulp-v0.2.3 }
-  register_interface: { git: https://github.com/pulp-platform/register_interface, version:  0.4.2   }
-  tech_cells_generic: { git: https://github.com/pulp-platform/tech_cells_generic, version:  0.2.11  }
-  riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg,          version:  0.8.0   }
-  cluster_icache:     { git:  https://github.com/KULeuven-MICAS/cluster_icache,     rev: main }
-  hwpe-mac-engine:    { git: https://github.com/KULeuven-MICAS/hwpe-mac-engine.git, rev: 5d3b4525b665169fc8321c8a811f3c83ad3c72e8 }
-  hypercorex:         { git: "https://github.com/KULeuven-MICAS/hypercorex.git", rev: hypercorex_v1.0.1 }
-  dimc:               { git: "https://github.com/KULeuven-MICAS/snax-dimc.git", rev: main }
-  cgra:               { git: "https://github.com/KULeuven-MICAS/snax_cgra.git", rev: main }
+  axi:                { git: https://github.com/pulp-platform/axi,                   version:  0.39.1  }
+  axi_riscv_atomics:  { git: https://github.com/pulp-platform/axi_riscv_atomics,     version:  0.8.2   }
+  common_cells:       { git: https://github.com/pulp-platform/common_cells,          version:  1.28.0  }
+  FPnew:              { git: https://github.com/pulp-platform/cvfpu.git,             rev:      pulp-v0.2.3 }
+  register_interface: { git: https://github.com/pulp-platform/register_interface,    version:  0.4.2   }
+  tech_cells_generic: { git: https://github.com/pulp-platform/tech_cells_generic,    version:  0.2.11  }
+  riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg,             version:  0.8.0   }
+  cluster_icache:     { git:  https://github.com/KULeuven-MICAS/cluster_icache,      rev: main }
+  hwpe-mac-engine:    { git: https://github.com/KULeuven-MICAS/hwpe-mac-engine.git,  rev: 5d3b4525b665169fc8321c8a811f3c83ad3c72e8 }
+  hypercorex:         { git: "https://github.com/KULeuven-MICAS/hypercorex.git",     rev: hypercorex_v1.0.1 }
+  dimc:               { git: "https://github.com/KULeuven-MICAS/snax-dimc.git",      rev: main }
+  cgra:               { git: "https://github.com/KULeuven-MICAS/snax_cgra.git",      rev: main }
   xdma_axi_adapter:   { git: https://github.com/KULeuven-MICAS/xdma_axi_adapter.git, rev: main }
 
 vendor_package:

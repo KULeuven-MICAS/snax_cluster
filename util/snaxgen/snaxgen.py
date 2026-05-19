@@ -660,8 +660,11 @@ def main():
 
         tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
 
+        xdma_wrapper_cfg = dict(cfg["cluster"])
+        xdma_wrapper_cfg["max_mem_size_kiB"] = snax_xdma_cfg["max_mem_size_kiB"]
+
         gen_file(
-            cfg=cfg["cluster"],
+            cfg=xdma_wrapper_cfg,
             tpl=tpl_rtl_wrapper,
             target_path=args.gen_path + cfg["cluster"]["name"] + "_xdma/",
             file_name=cfg["cluster"]["name"] + "_xdma_wrapper.sv",
