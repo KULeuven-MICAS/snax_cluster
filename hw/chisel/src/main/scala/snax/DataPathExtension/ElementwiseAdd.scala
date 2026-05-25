@@ -41,7 +41,8 @@ class ElementwiseAdd(
     override val desiredName = "ElementwiseAddCounter"
   })
 
-  val operandCount = ext_csr_i(0)(7, 0)
+  val csrOperandCount = ext_csr_i(0)(7, 0)
+  val operandCount    = Mux(csrOperandCount === 0.U, 1.U(8.W), csrOperandCount)
   counter.io.ceil  := operandCount
   counter.io.reset := ext_start_i
   counter.io.tick  := ext_data_i.fire
