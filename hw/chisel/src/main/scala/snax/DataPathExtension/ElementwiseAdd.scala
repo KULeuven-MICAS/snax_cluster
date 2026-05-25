@@ -42,12 +42,12 @@ class ElementwiseAdd(
   })
 
   val operandCount = ext_csr_i(0)(7, 0)
-  counter.io.ceil := operandCount
+  counter.io.ceil  := operandCount
   counter.io.reset := ext_start_i
   counter.io.tick  := ext_data_i.fire
 
   // The register holds the partial sum and then the completed output.
-  val regs = RegInit(
+  val regs        = RegInit(
     VecInit(
       Seq.fill(elementPerVector)(0.U(elementWidth.W))
     )
@@ -70,10 +70,10 @@ class ElementwiseAdd(
   when(ext_start_i) {
     regs        := VecInit(Seq.fill(elementPerVector)(0.U(elementWidth.W)))
     outputValid := false.B
-  } .elsewhen(inputFire) {
+  }.elsewhen(inputFire) {
     regs        := nextSum
     outputValid := lastInput
-  } .elsewhen(outputFire) {
+  }.elsewhen(outputFire) {
     regs        := VecInit(Seq.fill(elementPerVector)(0.U(elementWidth.W)))
     outputValid := false.B
   }
