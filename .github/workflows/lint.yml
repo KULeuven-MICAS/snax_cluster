@@ -155,6 +155,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: editorconfig-checker/action-editorconfig-checker@main
+        with:
+          # Pin the checker version
+          version: v3.7.0
       - run: editorconfig-checker
 
   ######################
