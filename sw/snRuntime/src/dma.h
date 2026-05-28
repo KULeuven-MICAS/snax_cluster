@@ -28,7 +28,8 @@ inline uint32_t __attribute__((const)) snrt_cluster_base_addrh();
 //       bit 0 : decouple_aw. 1 = each AW is only issued after the first
 //               corresponding R has returned (decouples the AW channel and
 //               avoids read/write ordering deadlocks); 0 = AW issued coupled
-//               with R. (This bit carried `decouple_rw` in the legacy frontend.)
+//               with R. (This bit carried `decouple_rw` in the legacy
+//               frontend.)
 //       bit 1 : 2D enable. 0 = 1D transfer (reps forced to 1),
 //               1 = 2D transfer (uses the dmstr strides + dmrep repetitions)
 //   imm[4:2]  -> idma_fe_sel_chan (DMA channel select, also used as AXI id)
@@ -69,7 +70,8 @@ inline snrt_dma_txid_t snrt_dma_start_1d_wideptr(uint64_t dst, uint64_t src,
             "r"(reg_dst_low));
 
         // dmcpyi a0, a4, 0b01
-        // config immediate [24:20] = 0b00001: chan=0, twod=0 (1D), decouple_aw=1
+        // config immediate [24:20] = 0b00001: chan=0, twod=0 (1D),
+        // decouple_aw=1
         register uint32_t reg_txid asm("a0");  // 10
         asm volatile(
             ".word (0b0000010 << 25) | \
@@ -152,7 +154,8 @@ inline snrt_dma_txid_t snrt_dma_start_2d_wideptr(uint64_t dst, uint64_t src,
             : "r"(reg_repeat));
 
         // dmcpyi a0, a4, 0b11
-        // config immediate [24:20] = 0b00011: chan=0, twod=1 (2D), decouple_aw=1
+        // config immediate [24:20] = 0b00011: chan=0, twod=1 (2D),
+        // decouple_aw=1
         register uint32_t reg_txid asm("a0");  // 10
         asm volatile(
             ".word (0b0000010 << 25) | \
