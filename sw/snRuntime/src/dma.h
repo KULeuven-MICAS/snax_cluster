@@ -36,14 +36,6 @@ inline uint32_t __attribute__((const)) snrt_cluster_base_addrh();
 // So to set the config you write the immediate as:
 //   imm = (chan << 2) | (twod << 1) | decouple_aw
 //   1D, decouple_aw=1, ch0 -> 0b00001  ;  2D, decouple_aw=1, ch0 -> 0b00011
-//
-// NOTE: bit 0 only has an effect if the iDMA frontend wires idma_fe_cfg[0] to
-// opt.beo.decouple_aw. Upstream idma_inst64_top.sv ties decouple_aw to a
-// constant, so this needs a one-line frontend change carried in our iDMA fork
-// / Bender override (replace the `decouple_aw = 1'b0;` default with
-// `decouple_aw = idma_fe_cfg[0];`). With pristine upstream RTL bit 0 is simply
-// ignored. The remaining backend options (decouple_rw, src/dst_max_llen,
-// src/dst_reduce_len) are not exposed and stay fixed in hardware.
 // ---------------------------------------------------------------------------
 
 /// Initiate an asynchronous 1D DMA transfer with wide 64-bit pointers.
