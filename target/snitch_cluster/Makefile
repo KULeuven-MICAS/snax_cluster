@@ -140,7 +140,19 @@ rtl-cluster-gen: | $(GENERATED_DIR)
 $(GENERATED_DIR)/bender_targets.tmp: | $(GENERATED_DIR)
 	${WRAPPER_GEN} --cfg_path="$(CFG_FILE)" --get_bender_targets > $(GENERATED_DIR)/bender_targets.tmp
 
-rtl-gen: $(GENERATED_DIR)/bender_targets.tmp rtl-snax-gen rtl-cluster-gen
+# The iDMA dependency ships its backend/frontend as templates that must be
+# generated (see idma.mk in the iDMA repo). The resulting idma_generated.sv and
+# the idma/tracer.svh include are referenced by the bender file list, so they
+# must exist before HW elaboration. Generate them into the iDMA checkout using
+# the iDMA makefile, resolving dep paths from this repo's bender context.
+.PHONY: idma-rtl-gen
+idma-rtl-gen:
+	$(eval IDMA_ROOT := $(shell $(BENDER) path idma))
+	$(MAKE) -f $(IDMA_ROOT)/idma.mk IDMA_ROOT=$(IDMA_ROOT) BENDER="$(BENDER)" \
+		$(IDMA_ROOT)/target/rtl/idma_generated.sv \
+		$(IDMA_ROOT)/target/rtl/include/idma/tracer.svh
+
+rtl-gen: $(GENERATED_DIR)/bender_targets.tmp rtl-snax-gen rtl-cluster-gen idma-rtl-gen
 
 VSIM_BENDER += -t QUESTA_SIM
 
