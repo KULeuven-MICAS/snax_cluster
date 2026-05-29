@@ -24,8 +24,8 @@ The two channels are:
   response. For reads the response channel returns the read response, for writes
   the response acknowledges that the data is committed and subsequent reads will
   return the last written value, for atomic operations the data _before_ the
-  memory operations has happened is being returned. For load-linked the the read
-  response is returned, for store-conditionals the the success code is returned.
+  memory operations has happened is being returned. For load-linked the read
+  response is returned, for store-conditionals the success code is returned.
   Additionally, the response channel carries error information.
 
 ## Sizes

@@ -26,7 +26,7 @@ As a quick start, it is recommended to download our pre-built docker container.
 git clone https://github.com/KULeuven-MICAS/snax_cluster.git --recurse-submodules
 ```
 
-Note: If you cloned the repository already but without the recursed submodules, update the summodules inside the repository:
+Note: If you cloned the repository already but without the recursed submodules, update the submodules inside the repository:
 
 ```bash
 git submodule update --init --recursive
@@ -105,7 +105,7 @@ We provide a [detailed tutorial](https://kuleuven-micas.github.io/snax_cluster/t
 
 What can you expect to find in this repository?
 
-- The RISC-V [Snitch integer core](https://pulp-platform.github.io/snitch_cluster/rm/hw/snitch.html). This can be useful stand-alone if you are just interested in re-using the core for your project, e.g., as a tiny control core or you want to make a peripheral smart. The sky is the limit.
+- The RISC-V [Snitch integer core](https://kuleuven-micas.github.io/snax_cluster/rm/snitch.html). This can be useful stand-alone if you are just interested in re-using the core for your project, e.g., as a tiny control core or you want to make a peripheral smart. The sky is the limit.
 - The [SNAX cluster](https://kuleuven-micas.github.io/snax_cluster/tutorial/architectural_overview.html). A highly configurable cluster provides a standard and clean accelerator integration interface.
 
 - A [CSR Manager](https://kuleuven-micas.github.io/snax_cluster/tutorial/csrman_design.html) is included to support a standardized control and management of registers through CSR instructions.
