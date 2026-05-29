@@ -105,13 +105,13 @@ We provide a [detailed tutorial](https://kuleuven-micas.github.io/snax_cluster/t
 
 What can you expect to find in this repository?
 
-- The RISC-V [Snitch integer core](https://pulp-platform.github.io/snitch_cluster/rm/snitch.html). This can be useful stand-alone if you are just interested in re-using the core for your project, e.g., as a tiny control core or you want to make a peripheral smart. The sky is the limit.
+- The RISC-V [Snitch integer core](https://pulp-platform.github.io/snitch_cluster/rm/hw/snitch.html). This can be useful stand-alone if you are just interested in re-using the core for your project, e.g., as a tiny control core or you want to make a peripheral smart. The sky is the limit.
 - The [SNAX cluster](https://kuleuven-micas.github.io/snax_cluster/tutorial/architectural_overview.html). A highly configurable cluster provides a standard and clean accelerator integration interface.
 
 - A [CSR Manager](https://kuleuven-micas.github.io/snax_cluster/tutorial/csrman_design.html) is included to support a standardized control and management of registers through CSR instructions.
   
 - The [Data Streamer](https://kuleuven-micas.github.io/snax_cluster/tutorial/streamer_design.html) streamlines the data access patterns for the accelerator.
-- Versatile accelerator examples, including a [Chisel-based GEMM accelerator generator](https://github.com/KULeuven-MICAS/snax-gemm), a [rescale SIMD accelerator generator](https://github.com/KULeuven-MICAS/snax-postprocessing-simd), and a [Data Reshuffler](https://github.com/KULeuven-MICAS/snax_cluster/blob/main/hw/snax_data_reshuffler/doc/snax_data_reshuffler.md) for data layout transformation, are provided for reference.
+- Versatile accelerator examples, including a [Chisel-based GEMM accelerator generator](https://github.com/KULeuven-MICAS/snax-gemm), a [rescale SIMD accelerator generator](https://github.com/KULeuven-MICAS/snax-postprocessing-simd), and a [Data Reshuffler](https://github.com/KULeuven-MICAS/snax_cluster/tree/main/hw/chisel_acc/src/main/scala/snax_acc/reshuffle) for data layout transformation, are provided for reference.
 - Software example applications for the SNAX cluster and corresponding accelerators.
 - RTL simulation environments for Verilator, Questa Advanced Simulator, and VCS.
 
@@ -149,7 +149,7 @@ The file tree is visualized as follows:
 
 The top-level is structured as follows:
 
-* `docs`: [Documentation](documentation.md) of the generator and software.
+* `docs`: [Documentation](https://kuleuven-micas.github.io/snax_cluster/ug/documentation.html) of the generator and software.
   Contains additional user guides.
 * `hw`: All hardware IP components. The source files are either specified by SystemVerilog, Chisel, or a template to generate these files.
 * `sw`: Hardware independent software, libraries, runtimes, etc.
