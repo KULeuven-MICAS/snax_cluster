@@ -8,6 +8,42 @@ typedef uint32_t snrt_dma_txid_t;
 // Early declaration of the functions
 inline uint32_t __attribute__((const)) snrt_cluster_base_addrh();
 
+// ---------------------------------------------------------------------------
+// Snitch DMA custom instruction encoding (opcode 0b0101011)
+// ---------------------------------------------------------------------------
+// Each `.word` below hand-assembles one DMA instruction. The 32-bit word is
+// laid out as a standard RISC-V instruction:
+//
+//   [31:25] funct7   selects the DMA op (DMSRC/DMDST/DMCPYI/DMSTR/...)
+//   [24:20] rs2 / immediate field
+//   [19:15] rs1      first source GPR
+//   [14:12] funct3   = 0b000
+//   [11: 7] rd       destination GPR (e.g. the returned transfer id)
+//   [ 6: 0] opcode   = 0b0101011 (custom-3)
+//
+// The transfer "config" lives in the DMCPYI immediate field [24:20]. The iDMA
+// frontend (idma_inst64_top.sv, proc_fe_inst_decode) decodes it as:
+//
+//   imm[1:0]  -> idma_fe_cfg   (config)
+//       bit 0 : decouple_aw. R-AW coupling -- the RTL (idma_channel_coupler.sv)
+//               is authoritative; the idma_pkg.sv comment is inverted.
+//               0 = COUPLED  : the write address (AW) is held back until the
+//                   first beat of the matching read arrives, so a data-starved
+//                   write can never grab and hold a shared write mux. Use this
+//                   to avoid read/write ordering deadlocks.
+//               1 = DECOUPLED: AW is issued eagerly, before any read data
+//                   returns -- a starved write can then hold the mux and
+//                   deadlock against other writers on the same path.
+//               (This bit carried `decouple_rw` in the legacy frontend.)
+//       bit 1 : 2D enable. 0 = 1D transfer (reps forced to 1),
+//               1 = 2D transfer (uses the dmstr strides + dmrep repetitions)
+//   imm[4:2]  -> idma_fe_sel_chan (DMA channel select, also used as AXI id)
+//
+// So to set the config you write the immediate as:
+//   imm = (chan << 2) | (twod << 1) | decouple_aw
+//   1D, decouple_aw=0, ch0 -> 0b00000  ;  2D, decouple_aw=0, ch0 -> 0b00010
+// ---------------------------------------------------------------------------
+
 /// Initiate an asynchronous 1D DMA transfer with wide 64-bit pointers.
 inline snrt_dma_txid_t snrt_dma_start_1d_wideptr(uint64_t dst, uint64_t src,
                                                  size_t size) {
@@ -39,6 +75,8 @@ inline snrt_dma_txid_t snrt_dma_start_1d_wideptr(uint64_t dst, uint64_t src,
             "r"(reg_dst_low));
 
         // dmcpyi a0, a4, 0b00
+        // config immediate [24:20] = 0b00000: chan=0, twod=0 (1D),
+        // decouple_aw=0 (R-AW coupled; see note above)
         register uint32_t reg_txid asm("a0");  // 10
         asm volatile(
             ".word (0b0000010 << 25) | \
@@ -121,6 +159,8 @@ inline snrt_dma_txid_t snrt_dma_start_2d_wideptr(uint64_t dst, uint64_t src,
             : "r"(reg_repeat));
 
         // dmcpyi a0, a4, 0b10
+        // config immediate [24:20] = 0b00010: chan=0, twod=1 (2D),
+        // decouple_aw=0 (R-AW coupled; see note above)
         register uint32_t reg_txid asm("a0");  // 10
         asm volatile(
             ".word (0b0000010 << 25) | \
