@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Jonas Crols <jonas.crols@student.kuleuven.be>
+# Yunhao Deng <yunhao.deng@kuleuven.be>
 
 import argparse
 import os
@@ -18,10 +19,18 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
 
-np.random.seed(320)
+
+ELEMENT_WIDTH = 32
+ELEMENT_BYTES = ELEMENT_WIDTH // 8
+XDMA_WIDTH_BYTES = 64
+ELEMENTS_PER_XDMA_BEAT = XDMA_WIDTH_BYTES // ELEMENT_BYTES
+RNG_SEED = 320
 
 
-# Add stdint.h header
+def round_up(value, multiple):
+    return ((value + multiple - 1) // multiple) * multiple
+
+
 def emit_header_file(**kwargs):
     emit_str = ["#include <stdint.h>"]
     emit_str += emit_elementwise_add_data(**kwargs)
@@ -29,97 +38,97 @@ def emit_header_file(**kwargs):
 
 
 def emit_elementwise_add_data(**kwargs):
-    tile_width = None
-    element_width = kwargs["BIT_WIDTH"]
-    if element_width == 8 or element_width == 16 or element_width == 32:
-        tile_width = 8
-    else:
+    element_width = int(kwargs["BIT_WIDTH"])
+    if element_width != ELEMENT_WIDTH:
         raise ValueError(
-            f"Invalid BIT_WIDTH: {element_width}, only 8, 16 and 32  are supported"
+            f"Invalid BIT_WIDTH: {element_width}, only {ELEMENT_WIDTH} is supported"
         )
-    data_type = None
-    if element_width == 8:
-        data_type = "uint8_t"
-    elif element_width == 16:
-        data_type = "uint16_t"
-    elif element_width == 32:
-        data_type = "uint32_t"
-    else:
-        raise ValueError(
-            f"Invalid BIT_WIDTH: {element_width}, only 8, 16 and 32 are supported"
-        )
+
+    rows = int(kwargs["M"])
+    cols = int(kwargs["N"])
+    if rows <= 0 or cols <= 0:
+        raise ValueError(f"M and N must be positive, got M={rows}, N={cols}")
+
+    padded_cols = round_up(cols, ELEMENTS_PER_XDMA_BEAT)
+    matrix_shape = (rows, padded_cols)
+    matrix_elements = rows * padded_cols
+    input_bytes = matrix_elements * ELEMENT_BYTES
+    input_bytes_aligned = round_up(input_bytes, XDMA_WIDTH_BYTES)
+    output_bytes = input_bytes
+    tile_count = matrix_elements // ELEMENTS_PER_XDMA_BEAT
+
+    rng = np.random.default_rng(RNG_SEED)
+    int32_info = np.iinfo(np.int32)
+
+    matrix1_data = np.zeros(matrix_shape, dtype=np.int32)
+    matrix2_data = np.zeros(matrix_shape, dtype=np.int32)
+    matrix1_data[:, :cols] = rng.integers(
+        low=int32_info.min,
+        high=int32_info.max,
+        size=(rows, cols),
+        dtype=np.int32,
+    )
+    matrix2_data[:, :cols] = rng.integers(
+        low=int32_info.min,
+        high=int32_info.max,
+        size=(rows, cols),
+        dtype=np.int32,
+    )
+
+    golden_output = (
+        matrix1_data.view(np.uint32) + matrix2_data.view(np.uint32)
+    ).view(np.int32)
+
+    spatial_stride_src = 8
+    spatial_stride_dst = 8
+    temporal_bounds_src = [2, tile_count]
+    temporal_strides_src = [input_bytes_aligned, XDMA_WIDTH_BYTES]
+    temporal_bounds_dst = [tile_count]
+    temporal_strides_dst = [XDMA_WIDTH_BYTES]
 
     emit_str = []
-    padded_M = None
-    padded_N = None
-    padded_M = (kwargs["M"] + tile_width - 1) // tile_width * tile_width
-    padded_N = (kwargs["N"] + tile_width - 1) // tile_width * tile_width
-
-    # First input matrix for elementwise add
-    matrix1_data = np.zeros((padded_M, padded_N), dtype=np.uint32)
-    matrix1_data[: kwargs["M"], : kwargs["N"]] = np.random.randint(
-        low=0, high=1 << element_width, size=(kwargs["M"], kwargs["N"]), dtype=np.uint32
-    )
-    input_matrix1 = matrix1_data
-    input_matrix1 = input_matrix1.ravel()
-
-    # Emit input matrix
+    emit_str += [format_scalar_definition("uint32_t", "matrix_m", rows)]
+    emit_str += [format_scalar_definition("uint32_t", "matrix_n", cols)]
+    emit_str += [format_scalar_definition("uint32_t", "matrix_padded_n", padded_cols)]
     emit_str += [
-        format_scalar_definition("uint32_t", "matrix1_size", matrix1_data.size)
+        format_scalar_definition("uint32_t", "matrix_elements", matrix_elements)
     ]
-    emit_str += [format_vector_definition(data_type, "input_matrix1", input_matrix1)]
-
-    # Second input matrix for elementwise add
-    matrix2_data = np.zeros((padded_M, padded_N), dtype=np.uint32)
-    matrix2_data[: kwargs["M"], : kwargs["N"]] = np.random.randint(
-        low=0, high=1 << element_width, size=(kwargs["M"], kwargs["N"]), dtype=np.uint32
-    )
-    input_matrix2 = matrix2_data
-    input_matrix2 = input_matrix2.ravel()
-
-    # Emit input matrix
+    emit_str += [format_scalar_definition("uint32_t", "input_bytes", input_bytes)]
     emit_str += [
-        format_scalar_definition("uint32_t", "matrix2_size", matrix2_data.size)
+        format_scalar_definition("uint32_t", "input_bytes_aligned", input_bytes_aligned)
     ]
-    emit_str += [format_vector_definition(data_type, "input_matrix2", input_matrix2)]
-
-    # Emit output matrix
-    output_matrix = matrix1_data + matrix2_data
-
-    output_matrix = output_matrix.ravel()
+    emit_str += [format_scalar_definition("uint32_t", "output_bytes", output_bytes)]
+    emit_str += [format_scalar_definition("uint32_t", "tile_count", tile_count)]
     emit_str += [
-        format_vector_definition(data_type, "golden_output_matrix", output_matrix)
+        format_vector_definition(
+            "int32_t",
+            "input_matrix1",
+            matrix1_data.ravel(),
+            alignment=XDMA_WIDTH_BYTES,
+            hex_bits=ELEMENT_WIDTH,
+            cast_hex=True,
+        )
     ]
-
-    # Emit the configuration for XDMA
-    spatial_stride_src = None
-    spatial_stride_dst = None
-    temporal_strides_src = []
-    temporal_strides_dst = []
-    temporal_bounds_src = []
-    temporal_bounds_dst = []
-
-    # Input Side (Reader)
-    spatial_stride_src = 8
-    temporal_bounds_src = [
-        2,
-        input_matrix1.shape[0] // (512 // element_width),
+    emit_str += [
+        format_vector_definition(
+            "int32_t",
+            "input_matrix2",
+            matrix2_data.ravel(),
+            alignment=XDMA_WIDTH_BYTES,
+            hex_bits=ELEMENT_WIDTH,
+            cast_hex=True,
+        )
     ]
-    temporal_strides_src = [
-        input_matrix1.shape[0] * (element_width // 8),
-        64,
+    emit_str += [
+        format_vector_definition(
+            "int32_t",
+            "golden_output_matrix",
+            golden_output.ravel(),
+            alignment=XDMA_WIDTH_BYTES,
+            hex_bits=ELEMENT_WIDTH,
+            cast_hex=True,
+        )
     ]
-
-    # Output Side (Writer)
-
-    spatial_stride_dst = 8
-    temporal_bounds_dst = [
-        input_matrix1.shape[0] // (512 // element_width),
-    ]
-    temporal_strides_dst = [
-        64,
-    ]
-
     emit_str += [
         format_scalar_definition("uint32_t", "spatial_stride_src", spatial_stride_src)
     ]
@@ -157,7 +166,6 @@ def emit_elementwise_add_data(**kwargs):
 
 
 def main():
-    # Parsing cmd args
     parser = argparse.ArgumentParser(description="Generating data for kernels")
     parser.add_argument(
         "-c",
@@ -168,11 +176,9 @@ def main():
     )
     args = parser.parse_args()
 
-    # Load param config file
     with args.cfg.open() as f:
         param = hjson.loads(f.read())
 
-    # Emit header file
     print(emit_header_file(**param))
 
 

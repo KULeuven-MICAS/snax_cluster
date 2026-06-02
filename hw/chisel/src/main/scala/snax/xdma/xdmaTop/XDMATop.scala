@@ -252,51 +252,62 @@ object XDMATopGen extends App {
 
   val toolbox = currentMirror.mkToolBox()
 
-  // Writer Side
-  val writerDatapathExtensionParam = (parsedXdmaCfg \ "writer_extensions").as[JsObject] match {
-    case obj: JsObject =>
-      obj.fields.filter { case (k, _) =>
-        k.startsWith("Has")
-      }.toSeq.map { case (k, v) =>
-        (k, v.as[Map[String, Seq[Int]]].values)
-      }
-    case _ => Seq.empty
-  }
+  def renderDatapathExtensionArgs(extensionName: String, args: JsValue): String =
+    args match {
+      case obj: JsObject =>
+        obj.fields.map { case (paramName, paramValue) =>
+          val renderedParam = paramValue.validate[Int] match {
+            case JsSuccess(intValue, _) => intValue.toString
+            case JsError(_)             =>
+              paramValue.validate[Seq[Int]] match {
+                case JsSuccess(seqValue, _) => s"Seq(${seqValue.mkString(",")})"
+                case JsError(_)             =>
+                  throw new IllegalArgumentException(
+                    s"Invalid XDMA datapath extension parameter $extensionName.$paramName: expected Int or Seq[Int]"
+                  )
+              }
+          }
+          s"$paramName = $renderedParam"
+        }
+          .mkString(", ")
+      case _ =>
+        throw new IllegalArgumentException(
+          s"Invalid XDMA datapath extension parameters for $extensionName: expected an object"
+        )
+    }
 
-  writerDatapathExtensionParam
-    .foreach(i => {
-      writerExtensionParam = writerExtensionParam :+ toolbox
-        .compile(toolbox.parse(s"""
+  def datapathExtensionParams(extensionSide: String): Seq[(String, String)] =
+    (parsedXdmaCfg \ extensionSide).as[JsObject] match {
+      case obj: JsObject =>
+        obj.fields.filter { case (k, _) =>
+          k.startsWith("Has")
+        }.toSeq.map { case (k, v) =>
+          (k, renderDatapathExtensionArgs(k, v))
+        }
+      case _ => Seq.empty
+    }
+
+  def instantiateDatapathExtension(extensionName: String, extensionArgs: String): HasDataPathExtension =
+    toolbox
+      .compile(toolbox.parse(s"""
 import snax.DataPathExtension._
-return new ${i._1}(${i._2
-            .map(list => s"Seq(${list.mkString(",")})")
-            .mkString(", ")})
+return new $extensionName($extensionArgs)
       """))()
-        .asInstanceOf[HasDataPathExtension]
-    })
+      .asInstanceOf[HasDataPathExtension]
+
+  // Writer Side
+  val writerDatapathExtensionParam = datapathExtensionParams("writer_extensions")
+
+  writerDatapathExtensionParam.foreach { case (extensionName, extensionArgs) =>
+    writerExtensionParam = writerExtensionParam :+ instantiateDatapathExtension(extensionName, extensionArgs)
+  }
 
   // Reader Side
-  val readerDatapathExtensionParam = (parsedXdmaCfg \ "reader_extensions").as[JsObject] match {
-    case obj: JsObject =>
-      obj.fields.filter { case (k, _) =>
-        k.startsWith("Has")
-      }.toSeq.map { case (k, v) =>
-        (k, v.as[Map[String, Seq[Int]]].values)
-      }
-    case _ => Seq.empty
-  }
+  val readerDatapathExtensionParam = datapathExtensionParams("reader_extensions")
 
-  readerDatapathExtensionParam
-    .foreach(i => {
-      readerExtensionParam = readerExtensionParam :+ toolbox
-        .compile(toolbox.parse(s"""
-import snax.DataPathExtension._
-return new ${i._1}(${i._2
-            .map(list => s"Seq(${list.mkString(",")})")
-            .mkString(", ")})
-      """))()
-        .asInstanceOf[HasDataPathExtension]
-    })
+  readerDatapathExtensionParam.foreach { case (extensionName, extensionArgs) =>
+    readerExtensionParam = readerExtensionParam :+ instantiateDatapathExtension(extensionName, extensionArgs)
+  }
 
   // Generation of the hardware
   var sv_string = getVerilogString(

@@ -1,82 +1,57 @@
 package snax.DataPathExtension
+
 import scala.util.Random
 
 import chiseltest._
-import snax.DataPathExtension.HasElementwiseAdd
 
-class ElementwiseAdd2Tester extends DataPathExtensionTester(TreadleBackendAnnotation) {
+abstract class ElementWiseAddTester(numOperandPerAdd: Int, numOperand: Int, seed: Int = 0, debugMode: Boolean = false)
+    extends DataPathExtensionTester(TreadleBackendAnnotation, debugMode) {
 
-  def hasExtension = new HasElementwiseAdd(elementWidth = 32, dataWidth = 512)
+  private def elementWidth     = 32
+  private def dataWidth        = 512
+  private def elementPerVector = dataWidth / elementWidth
 
-  val amount_of_vectors = 2
-  val csr_vec           = Seq(amount_of_vectors)
+  require(numOperandPerAdd > 0, "Number of operands per addition must be greater than 0")
+  require(numOperand % elementPerVector == 0, "Total number of operands must be a multiple of one data vector")
+  require(
+    numOperand       % (numOperandPerAdd * elementPerVector) == 0,
+    "Total number of operands must be a multiple of operands per addition"
+  )
 
-  val inputData  = collection.mutable.Buffer[BigInt]()
-  val outputData = collection.mutable.Buffer[BigInt]()
+  def hasExtension = new HasElementwiseAdd(elementWidth = elementWidth, dataWidth = dataWidth)
 
-  for (_ <- 0 until 128) {
-    val inputMatrix1: Array[Array[Int]] = Array.fill(8, 4)(Random.nextInt(Int.MaxValue))
-    val inputMatrix2: Array[Array[Int]] = Array.fill(8, 4)(Random.nextInt(Int.MaxValue))
-    val leftInputMatrix1  = inputMatrix1.map(row => row.slice(0, 2))
-    val rightInputMatrix1 = inputMatrix1.map(row => row.slice(2, 4))
-    val leftInputMatrix2  = inputMatrix2.map(row => row.slice(0, 2))
-    val rightInputMatrix2 = inputMatrix2.map(row => row.slice(2, 4))
-    inputData.append(BigInt(leftInputMatrix1.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(leftInputMatrix2.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(rightInputMatrix1.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(rightInputMatrix2.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+  val csr_vec = Seq(numOperandPerAdd)
 
-    val leftOutputMatrix  =
-      leftInputMatrix1.zip(leftInputMatrix2).map { case (a, b) => a.zip(b).map { case (x, y) => x + y } }
-    val rightOutputMatrix =
-      rightInputMatrix1.zip(rightInputMatrix2).map { case (a, b) => a.zip(b).map { case (x, y) => x + y } }
-    outputData.append(BigInt(leftOutputMatrix.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    outputData.append(BigInt(rightOutputMatrix.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
+  private val random = new Random(seed)
+
+  private val inputData: Array[Array[Int]] =
+    Array.fill(numOperand / elementPerVector, elementPerVector)(random.nextInt())
+
+  private val outputData: Array[Array[Int]] =
+    inputData
+      .grouped(numOperandPerAdd)
+      .map { group =>
+        group.reduce { (left, right) =>
+          left.zip(right).map { case (x, y) => x + y }
+        }
+      }
+      .toArray
+
+  private def packVector(data: Array[Int]): BigInt = {
+    require(data.length == elementPerVector, s"Expected $elementPerVector elements per data vector")
+
+    data.zipWithIndex.foldLeft(BigInt(0)) { case (packed, (value, laneIdx)) =>
+      packed | (BigInt(value.toLong & 0xffffffffL) << (laneIdx * elementWidth))
+    }
   }
 
-  val input_data_vec = inputData.toSeq
+  val input_data_vec = inputData.map(packVector).toSeq
 
-  val output_data_vec = outputData.toSeq
+  val output_data_vec = outputData.map(packVector).toSeq
 }
 
-class ElementwiseAdd3Tester extends DataPathExtensionTester(TreadleBackendAnnotation) {
+class ElementwiseAdd1Tester extends ElementWiseAddTester(numOperandPerAdd = 1, numOperand = 1 * 16 * 256, seed = 1, debugMode = true)
 
-  def hasExtension = new HasElementwiseAdd(elementWidth = 32, dataWidth = 512)
+class ElementwiseAdd2Tester extends ElementWiseAddTester(numOperandPerAdd = 2, numOperand = 2 * 16 * 256, seed = 2, debugMode = true)
 
-  val amount_of_vectors = 3
-  val csr_vec           = Seq(amount_of_vectors)
-
-  val inputData  = collection.mutable.Buffer[BigInt]()
-  val outputData = collection.mutable.Buffer[BigInt]()
-
-  for (_ <- 0 until 128) {
-    val inputMatrix1: Array[Array[Int]] = Array.fill(8, 4)(Random.nextInt(1 << 30))
-    val inputMatrix2: Array[Array[Int]] = Array.fill(8, 4)(Random.nextInt(1 << 30))
-    val inputMatrix3: Array[Array[Int]] = Array.fill(8, 4)(Random.nextInt(1 << 30))
-    val leftInputMatrix1  = inputMatrix1.map(row => row.slice(0, 2))
-    val rightInputMatrix1 = inputMatrix1.map(row => row.slice(2, 4))
-    val leftInputMatrix2  = inputMatrix2.map(row => row.slice(0, 2))
-    val rightInputMatrix2 = inputMatrix2.map(row => row.slice(2, 4))
-    val leftInputMatrix3  = inputMatrix3.map(row => row.slice(0, 2))
-    val rightInputMatrix3 = inputMatrix3.map(row => row.slice(2, 4))
-    inputData.append(BigInt(leftInputMatrix1.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(leftInputMatrix2.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(leftInputMatrix3.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(rightInputMatrix1.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(rightInputMatrix2.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    inputData.append(BigInt(rightInputMatrix3.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-
-    val leftOutputMatrix  = leftInputMatrix1.zip(leftInputMatrix2.zip(leftInputMatrix3)).map { case (a, (b, c)) =>
-      a.zip(b.zip(c)).map { case (x, (y, z)) => x + y + z }
-    }
-    val rightOutputMatrix = rightInputMatrix1.zip(rightInputMatrix2.zip(rightInputMatrix3)).map { case (a, (b, c)) =>
-      a.zip(b.zip(c)).map { case (x, (y, z)) => x + y + z }
-    }
-    outputData.append(BigInt(leftOutputMatrix.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-    outputData.append(BigInt(rightOutputMatrix.flatten.map { i => f"$i%08X" }.reverse.reduce(_ + _), 16))
-  }
-
-  val input_data_vec = inputData.toSeq
-
-  val output_data_vec = outputData.toSeq
-}
+class ElementwiseAdd3Tester extends ElementWiseAddTester(numOperandPerAdd = 3, numOperand = 3 * 16 * 256, seed = 3, debugMode = true)

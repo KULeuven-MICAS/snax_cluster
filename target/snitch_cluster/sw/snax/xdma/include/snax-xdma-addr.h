@@ -26,11 +26,11 @@
 // The channel and strobe region of the reader of XDMA
 #define XDMA_SRC_ENABLED_CHAN_PTR XDMA_SRC_TEMP_STRIDE_PTR + XDMA_SRC_TEMP_DIM
 #define XDMA_SRC_ENABLE_PTR XDMA_SRC_ENABLED_CHAN_PTR + 1
-#define XDMA_SRC_EXT_NUM 1
+#define XDMA_SRC_EXT_NUM 2
 #define XDMA_SRC_EXT_CSR_PTR XDMA_SRC_ENABLE_PTR + 1
-#define XDMA_SRC_EXT_CSR_NUM 1
+#define XDMA_SRC_EXT_CSR_NUM 2
 #define XDMA_SRC_EXT_CUSTOM_CSR_NUM \
-    { 1 }
+    { 1, 1 }
 
 // The stride and bound region of the writer of XDMA
 #define XDMA_DST_TEMP_DIM 5
@@ -57,4 +57,5 @@
 
 // Extension Information
 #define READER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16 0
+#define READER_EXT_ELEMENTWISEADDBIT32 1
 #define WRITER_EXT_VERILOGMEMSET 0
