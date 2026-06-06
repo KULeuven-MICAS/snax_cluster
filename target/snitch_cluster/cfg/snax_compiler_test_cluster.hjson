@@ -13,6 +13,7 @@
         name: snax_KUL_cluster
         bender_target:
         [
+            snitch_cluster
             snax_KUL_cluster
             sparse_interconnect
         ],
