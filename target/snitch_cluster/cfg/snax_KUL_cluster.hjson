@@ -18,7 +18,7 @@ Naming convention:
 
     cluster: {
         name: "snax_KUL_cluster",
-        bender_target: ["snax_KUL_cluster", "sparse_interconnect"],
+        bender_target: ["snitch_cluster", "snax_KUL_cluster", "sparse_interconnect"],
         boot_addr: 4096, // 0x1000
         cluster_base_addr: 268435456, // 0x1000_0000
         cluster_base_offset: 4194304,  // 4MB

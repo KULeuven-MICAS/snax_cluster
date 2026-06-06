@@ -26,6 +26,7 @@ Naming convention:
         name: snax_versacore_dse_cluster
         bender_target:
         [
+            snitch_cluster
             snax_versacore_dse_cluster
             sparse_interconnect
         ]
