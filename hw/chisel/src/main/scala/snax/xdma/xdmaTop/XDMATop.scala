@@ -309,46 +309,55 @@ return new $extensionName($extensionArgs)
     readerExtensionParam = readerExtensionParam :+ instantiateDatapathExtension(extensionName, extensionArgs)
   }
 
-  // Generation of the hardware
-  var sv_string = getVerilogString(
-    new XDMATop(
-      clusterName = parsedArgs.getOrElse("clusterName", ""),
-      readerParam = new XDMAParam(
-        cfgParam,
-        axiParam,
-        crossClusterParam,
-        readerParam,
-        readerExtensionParam
-      ),
-      writerParam = new XDMAParam(
-        cfgParam,
-        axiParam,
-        crossClusterParam,
-        writerParam,
-        writerExtensionParam
+  // SW-header-only mode (--sw-only): skip the RTL/CIRCT elaboration below. The
+  // SW #define header further down is derived purely from the parsed
+  // params/extensions and does not depend on the Chisel elaboration, so a
+  // sw_only build can regenerate the header cheaply without emitting RTL.
+  // Mirrors snax.streamer.StreamerSwHeaderGen.
+  val swOnly = parsedArgs.contains("sw-only")
+
+  // Generation of the hardware (skipped in --sw-only mode)
+  if (!swOnly) {
+    var sv_string = getVerilogString(
+      new XDMATop(
+        clusterName = parsedArgs.getOrElse("clusterName", ""),
+        readerParam = new XDMAParam(
+          cfgParam,
+          axiParam,
+          crossClusterParam,
+          readerParam,
+          readerExtensionParam
+        ),
+        writerParam = new XDMAParam(
+          cfgParam,
+          axiParam,
+          crossClusterParam,
+          writerParam,
+          writerExtensionParam
+        )
       )
     )
-  )
 
-  // Perform dirty fix on the Chisel's bug that append the file list at the end of the file
-  sv_string = sv_string
-    .split("\n")
-    .takeWhile(
-      !_.contains(
-        """// ----- 8< ----- FILE "firrtl_black_box_resource_files.f" ----- 8< -----"""
+    // Perform dirty fix on the Chisel's bug that append the file list at the end of the file
+    sv_string = sv_string
+      .split("\n")
+      .takeWhile(
+        !_.contains(
+          """// ----- 8< ----- FILE "firrtl_black_box_resource_files.f" ----- 8< -----"""
+        )
       )
-    )
-    .mkString("\n")
+      .mkString("\n")
 
-  // Write the sv_string to the SystemVerilog file
-  val hardware_dir = parsedArgs.getOrElse(
-    "hw-target-dir",
-    "generated"
-  ) + "/" + s"${parsedArgs.getOrElse("clusterName", "")}_xdma.sv"
-  java.nio.file.Files.write(
-    java.nio.file.Paths.get(hardware_dir),
-    sv_string.getBytes(java.nio.charset.StandardCharsets.UTF_8)
-  )
+    // Write the sv_string to the SystemVerilog file
+    val hardware_dir = parsedArgs.getOrElse(
+      "hw-target-dir",
+      "generated"
+    ) + "/" + s"${parsedArgs.getOrElse("clusterName", "")}_xdma.sv"
+    java.nio.file.Files.write(
+      java.nio.file.Paths.get(hardware_dir),
+      sv_string.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+    )
+  }
 
   // Generation of the software #define macros
   val macro_dir = parsedArgs.getOrElse(
