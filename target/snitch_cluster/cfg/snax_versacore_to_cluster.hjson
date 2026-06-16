@@ -259,12 +259,12 @@ Naming convention:
             writer_agu_temporal_dimension: 5
             writer_extensions:
             {
-                HasVerilogMemset: {}
+                HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
+                HasElementwiseAdd: {elementWidth: 32, dataWidth: 512}
             }
             reader_extensions: 
             {
-                HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
-                HasElementwiseAdd: {elementWidth: 32, dataWidth: 512}
+                HasVerilogMemset: {}
             }
         }
         xdma: true
