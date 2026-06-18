@@ -17,5 +17,9 @@
 /sw/snax/versacore-dse/include/snax_versacore_stationarity.h
 /sw/**/include/*csr_addr_map.h
 /sw/**/include/*params.h
+# xDMA SW address-map header: generated from the cfg by XDMATopGen (also in
+# sw_only builds now), same as the streamer's *csr_addr_map.h above. Keeping it
+# committed let it go stale when the cfg moved extensions reader<->writer.
+/sw/snax/xdma/include/snax-xdma-addr.h
 
 **/data.h

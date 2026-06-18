@@ -326,6 +326,65 @@ def find_keys_with_keyword(data, keyword, parent_key=""):
     return results
 
 
+def generate_xdma(cfg, cfg_cores, num_cores, args):
+    """Generate the cluster xDMA.
+
+    The SW #define header (snax-xdma-addr.h) is always (re)generated so it
+    tracks the active cfg. In sw_only mode the RTL wrapper + the XDMATopGen RTL
+    emission are skipped (XDMATopGen --sw-only writes only the header), so the
+    SW build regenerates the header cheaply without a CIRCT run -- mirroring the
+    streamer's StreamerSwHeaderGen path.
+    """
+    sw_only = args.sw_only == "true"
+    snax_xdma_cfg = None
+    for i in range(num_cores):
+        if "snax_xdma_cfg" in cfg_cores[i]:
+            snax_xdma_cfg = cfg_cores[i]["snax_xdma_cfg"]
+    if snax_xdma_cfg is None:
+        return
+
+    print("------------------------------------------------")
+    print("    Generate XDMA" + (" (SW header only)" if sw_only else ""))
+    print("------------------------------------------------")
+
+    # RTL wrapper SystemVerilog is RTL-only; skip it in sw_only mode.
+    if not sw_only:
+        tpl_rtl_wrapper = get_template(args.tpl_path + "snax_xdma_wrapper.sv.tpl")
+        xdma_wrapper_cfg = dict(cfg["cluster"])
+        xdma_wrapper_cfg["max_mem_size_kiB"] = snax_xdma_cfg["max_mem_size_kiB"]
+        gen_file(
+            cfg=xdma_wrapper_cfg,
+            tpl=tpl_rtl_wrapper,
+            target_path=args.gen_path + cfg["cluster"]["name"] + "_xdma/",
+            file_name=cfg["cluster"]["name"] + "_xdma_wrapper.sv",
+        )
+
+    gen_chisel_file(
+        chisel_path=args.chisel_path,
+        chisel_param="snax.xdma.xdmaTop.XDMATopGen",
+        gen_path=" --clusterName "
+        + str(cfg["cluster"]["name"])
+        + " --tcdmDataWidth "
+        + str(cfg["cluster"]["data_width"])
+        + " --axiDataWidth "
+        + str(cfg["cluster"]["dma_data_width"])
+        + " --axiAddrWidth "
+        + str(cfg["cluster"]["addr_width"])
+        + " --tcdmSize "
+        + str(cfg["cluster"]["tcdm"]["size"])
+        + " --xdmaCfg "
+        + hjson.dumpsJSON(obj=snax_xdma_cfg, separators=(",", ":")).replace(" ", "")
+        + " --hw-target-dir "
+        + args.gen_path
+        + cfg["cluster"]["name"]
+        + "_xdma/"
+        + " --sw-target-dir "
+        + args.gen_path
+        + "../sw/snax/xdma/include/snax-xdma-addr.h"
+        + (" --sw-only" if sw_only else ""),
+    )
+
+
 # Main function run and parsing
 def main():
     # Parse all arguments
@@ -583,7 +642,11 @@ def main():
     # but the idea is that it needs to come from the
     # configuration file only
     if args.sw_only == "true":
-        print("Skipping accelerator / XDMA / sparse-interconnect generation (sw_only)")
+        # SW-only build: still regenerate the xDMA SW header (cheap, no RTL) so
+        # it tracks the active cfg, then skip the RTL-only accelerator /
+        # sparse-interconnect generation.
+        generate_xdma(cfg, cfg_cores, num_cores, args)
+        print("Skipping accelerator / sparse-interconnect generation (sw_only)")
         return
 
     print("------------------------------------------------")
@@ -645,59 +708,8 @@ def main():
         else:
             print("Nothing to generate ")
 
-    # ---------------------------------------
-    # Generate xdma for the whole cluster
-    # ---------------------------------------
-    print("------------------------------------------------")
-    print("    Generate XDMA")
-    print("------------------------------------------------")
-    snax_xdma_cfg = None
-    for i in range(num_cores):
-        if "snax_xdma_cfg" in cfg_cores[i]:
-            snax_xdma_cfg = cfg_cores[i]["snax_xdma_cfg"]
-    if snax_xdma_cfg is not None:
-        tpl_rtl_wrapper_file = args.tpl_path + "snax_xdma_wrapper.sv.tpl"
-
-        tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
-
-        xdma_wrapper_cfg = dict(cfg["cluster"])
-        xdma_wrapper_cfg["max_mem_size_kiB"] = snax_xdma_cfg["max_mem_size_kiB"]
-
-        gen_file(
-            cfg=xdma_wrapper_cfg,
-            tpl=tpl_rtl_wrapper,
-            target_path=args.gen_path + cfg["cluster"]["name"] + "_xdma/",
-            file_name=cfg["cluster"]["name"] + "_xdma_wrapper.sv",
-        )
-
-        xdma_extension_arg = ""
-        for key, value in snax_xdma_cfg.items():
-            if key.startswith("Has"):
-                xdma_extension_arg += f" --{key} {value}"
-
-        gen_chisel_file(
-            chisel_path=args.chisel_path,
-            chisel_param="snax.xdma.xdmaTop.XDMATopGen",
-            gen_path=" --clusterName "
-            + str(cfg["cluster"]["name"])
-            + " --tcdmDataWidth "
-            + str(cfg["cluster"]["data_width"])
-            + " --axiDataWidth "
-            + str(cfg["cluster"]["dma_data_width"])
-            + " --axiAddrWidth "
-            + str(cfg["cluster"]["addr_width"])
-            + " --tcdmSize "
-            + str(cfg["cluster"]["tcdm"]["size"])
-            + " --xdmaCfg "
-            + hjson.dumpsJSON(obj=snax_xdma_cfg, separators=(",", ":")).replace(" ", "")
-            + " --hw-target-dir "
-            + args.gen_path
-            + cfg["cluster"]["name"]
-            + "_xdma/"
-            + " --sw-target-dir "
-            + args.gen_path
-            + "../sw/snax/xdma/include/snax-xdma-addr.h",
-        )
+    # Generate xdma for the whole cluster (RTL + SW header; see generate_xdma).
+    generate_xdma(cfg, cfg_cores, num_cores, args)
 
     # ---------------------------------------
     # Generating Sparse Interconnect
