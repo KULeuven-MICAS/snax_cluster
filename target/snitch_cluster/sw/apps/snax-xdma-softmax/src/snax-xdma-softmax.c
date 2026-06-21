@@ -3,32 +3,35 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // xDMA FP16 softmax: out = exp(x - max(x)) / sum(exp(x - max(x))).
-// CHAIN-FUSED into 3 xDMA tasks (was 5), L1<->L1 (localLoopback). ALL math is offloaded to the xDMA
-// reader SIMD extensions. The DM core (rv32ima, no FPU) only shuffles two row-scalars via integer
-// bit-ops between tasks, so it avoids every floating-point instruction (the toolchain emits hard-FP
-// that traps on this core).
+// The scalar reciprocal (1/Σexp) is NOT an xDMA op: the StreamScalar extension and StreamMap's operandMode
+// were removed (a single 1/Σ only uses one SIMD lane, wasting the xDMA datapath). The xDMA does the
+// SIMD-wide work (max, exp+sum, scale); the HOST computes the one 1/Σexp reciprocal:
 //
-//   T1  max         : StreamReduce(MAX)                                  x -> max
-//   T2  exp + sum    : StreamMap(EXP, b=-max)  -||>  StreamReduce(ADD,tap)  x -> exp row + Σexp(trailing beat)
-//   T3  norm (1/Σ)   : StreamMap(a=Σ, operandMode=RECIP)                 exp -> out
+//   T1  max       : StreamReduce(MAX)                                    x -> max               [xDMA]
+//   T2  exp + sum  : StreamMap(EXP, b=-max) -||> StreamReduce(ADD,tap)    x -> exp row + Σexp    [xDMA]
+//   host           : inv_sum = 1/Σexp                                                            [host, ~57 cc]
+//   T3  norm       : StreamMap(a=inv_sum, b=0, func=LINEAR)              exp -> out             [xDMA]
 //
-// Softmax has two hard barriers (need max before exp; need Σexp before normalize), so 3 streaming
-// phases is the floor for reusable (non-monolithic) blocks. The exp+sum fusion uses StreamReduce's tap
-// mode (pass the row through + emit the scalar as a trailing beat); the recip is folded into the
-// normalize map's operandMode. Per-task CSR programming uses the delta (_fast) path after one full
-// config.
+// The DM core (rv32ima, no FPU) cannot do the reciprocal; on the real HeMAiA host the CVA6 computes it.
+// This standalone test precomputes inv_sum in data.h (softmax_inv_sum) to stay self-validating on vsim, and
+// checks the runtime Σexp against the golden scalar (softmax_sum_golden). The -max for T2 is still a DM-core
+// integer sign-flip (no FP). Per-task CSR programming uses the delta (_fast) path after one full config.
 //
-// Performance (FP16, measured under vsim, L1<->L1). warm = steady-state (the AGU shape persists across
-// rows, as in repeated inference); cold = first call, incl. the one-time shape setup + icache warm.
-// host = a single CVA6+Ara core running the FP32 LUT softmax. Significant outputs match the FP64 golden
-// to <=1 FP16 ULP at every N.
+// Cost: the xDMA max/exp+sum/scale is unchanged vs the old folded-HW-recip version (the recip added ~0 cc);
+// the host now adds ~57 cc per call for 1/Σexp -- estimated from the bingo op-LUT fp16_reciprocal at the
+// scalar case n=1 (a flagged placeholder LUT). Net: an area-for-cycles trade (drops 2x FpRecipRsqrt + the
+// StreamScalar extension) costing ~57 host cc -- small vs the orchestration-bound xDMA total.
 //
-//   N      beats   warm    cold    host       warm speedup
-//   ----   -----   -----   -----   -------    ------------
-//   64     2       1,059   2,495   6,489      6.1x
-//   256    8       1,135   2,563   24,153     21.3x
-//   1024   32      1,449   2,890   95,177     65.7x
-//   4096   128     2,697   4,138   379,441    140.7x
+// Performance (FP16, measured under vsim, L1<->L1; xDMA part). warm = steady-state (AGU shape persists);
+// cold = first call. "+host" adds the estimated host reciprocal (~57 cc). host = a single CVA6+Ara core
+// running the full FP32 LUT softmax (old all-host baseline). Significant outputs match the FP64 golden <=4 ULP.
+//
+//   N      beats   xDMA warm   +host est   cold    host(full)   warm speedup(+host)
+//   ----   -----   ---------   ---------   -----   ----------   -------------------
+//   64     2       1,070       ~1,127      2,492   6,489        5.8x
+//   256    8       1,150       ~1,207      2,564   24,153       20.0x
+//   1024   32      1,458       ~1,515      2,845   95,177       62.8x
+//   4096   128     2,706       ~2,763      4,093   379,441      137.3x
 
 #include "data.h"
 #include "snax-xdma-lib.h"
@@ -42,9 +45,8 @@
 #define OP_MAX 0u
 #define OP_ADD 1u
 #define RED_TAP 0x100u       // StreamReduce op CSR bit[8]: pass row through + trailing scalar beat
-#define ACT_NONE 0u
+#define ACT_NONE 0u          // StreamMap func CSR bits[1:0]=0: LINEAR (out = a*x + b)
 #define ACT_EXP 1u
-#define MAP_RECIP_A 0x100u   // StreamMap act CSR bits[9:8]=1: aEff = 1/a (fold recip into the map)
 
 // FP16 bit pattern -> FP32 bit pattern (pure integer, no FPU).
 static inline uint32_t fp16_bits_to_fp32_bits(uint16_t h) {
@@ -127,11 +129,20 @@ int main() {
             c2 = retask_and_run(x_in, exp_buf, beats + 1);
             snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
             snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
-            uint32_t sum_f32 = fp16_bits_to_fp32_bits(
-                ((uint16_t*)(exp_buf + beats * XDMA_BEAT_BYTES))[0]);
 
-            // T3: normalize = (1/Σ)*exp, recip folded into the map operand (a:=1/a). retask: same shape.
-            uint32_t csr_norm[3] = {sum_f32, 0u, ACT_NONE | MAP_RECIP_A};
+            // The host computes inv_sum = 1/Σexp from the reduce scalar (on the real HeMAiA host the CVA6
+            // does the reciprocal; here it is precomputed in softmax_inv_sum). Validate T2's Σexp (positive,
+            // so the raw FP16 bits are monotonic).
+            if (iter == 1) {
+                uint16_t sum_hw = ((uint16_t*)(exp_buf + beats * XDMA_BEAT_BYTES))[0];
+                int32_t d = (int32_t)sum_hw - (int32_t)(uint16_t)softmax_sum_golden;
+                if (d > 2 || d < -2)
+                    printf("[Softmax] WARN runtime sumexp %04x vs golden %04x\n",
+                           sum_hw, (uint16_t)softmax_sum_golden);
+            }
+
+            // T3: out = inv_sum * exp. Plain LINEAR multiply by the host-provided reciprocal (no operandMode).
+            uint32_t csr_norm[3] = {softmax_inv_sum, 0u, ACT_NONE};
             ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMMAP, csr_norm) == 0);
             c3 = retask_and_run(exp_buf, out_buf, beats);
             snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);

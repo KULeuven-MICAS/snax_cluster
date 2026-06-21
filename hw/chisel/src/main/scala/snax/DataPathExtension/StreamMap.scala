@@ -7,9 +7,9 @@ import chisel3.util._
   *
   *   - x is a transport-precision lane (the element type — FP16/BF16/FP8/FP32 — is set by the op-set);
   *     a, b are FP32 CSR-immediates; the math is FP32; the output is narrowed back to the transport type.
-  *   - func in {LINEAR, EXP} selected at runtime (CSR), so one instance serves softmax pass-2
-  *     (a=1, b=-max, EXP) and pass-4 (a=inv_sum, b=0, LINEAR — identity activation, just a*x+b).
-  *     EXP routes through FpExp.
+  *   - func in {LINEAR, EXP, SILU} selected at runtime (CSR), so one instance serves softmax pass-2
+  *     (a=1, b=-max, EXP), pass-4 (a=inv_sum, b=0, LINEAR — identity activation, just a*x+b), and silu
+  *     (a=1, b=0, SILU). EXP routes through FpExp, SILU through FpSilu.
   *
   * TIME-MULTIPLEXED (area-reduction point): only `computeLanes` compute units are built and reused over
   * `subCycles` (= lanes/computeLanes) cycles per beat, so a 512-bit beat (e.g. 32 FP16 lanes) needs only
@@ -17,23 +17,21 @@ import chisel3.util._
   * the sub-groups, then emits the assembled beat. (computeLanes >= lanes ⇒ fully parallel / combinational.)
   * Throughput drops ~`subCycles`x — acceptable since the datapath is far from the orchestration critical path.
   *
-  * CSR layout: csr(0)=a (FP32 bits), csr(1)=b (FP32 bits), csr(2)= bits[0]=func (0=LINEAR,1=EXP),
-  * bits[9:8]=operandMode (0=a as-is, 1=a:=1/a, 2=a:=1/√a). operandMode transforms the scalar `a` ONCE
-  * (a single shared FpRecipRsqrt, not per-lane) so the normalize map can fold the reciprocal in:
-  * softmax x/Σ = StreamMap(a=Σ, operandMode=1); rmsnorm x·rms = StreamMap(a=meanSq, operandMode=2).
+  * CSR layout: csr(0)=a (FP32 bits), csr(1)=b (FP32 bits), csr(2)= bits[1:0]=func (0=LINEAR,1=EXP,2=SILU).
+  * a, b are plain FP32 immediates; the normalize maps (softmax x/Σ, rmsnorm x·rms) pass the already-inverted
+  * scalar in `a` as a LINEAR multiply — the host computes the 1/Σ resp. 1/√mean reciprocal/rsqrt.
   *
   * Configurable from the hjson: `computeLanes` (time-mux width), `func` (the LIST of supported funcs, a
-  * subset of {LINEAR, EXP}), and `elementWidth` (the transport element width in bits — must match the
-  * func-set precision: FP16/BF16⇒16, FP8⇒8, FP32⇒32). FpExp is built only if "EXP" is listed; the act
-  * CSR bit selects among the listed funcs at runtime only when more than one is listed. All are REQUIRED
-  * (no defaults) — the config must spell them out explicitly, e.g.
-  * {elementWidth:16, computeLanes:8, func:["LINEAR_FP16","EXP_FP16"]}.
+  * subset of {LINEAR, EXP, SILU}), and `elementWidth` (the transport element width in bits — must match the
+  * func-set precision: FP16/BF16⇒16, FP8⇒8, FP32⇒32). FpExp/FpSilu are built only if "EXP"/"SILU" is
+  * listed; the act CSR field selects among the listed funcs at runtime only when more than one is listed.
+  * All are REQUIRED (no defaults) — the config must spell them out explicitly, e.g.
+  * {elementWidth:16, computeLanes:8, func:["LINEAR_FP16","EXP_FP16","SILU_FP16"]}.
   *
   * HARDWARE UNIT COUNT — for a 512-bit input only `computeLanes` physical compute units exist, NOT one per
   * lane (lanes = dataWidth/elementWidth, e.g. 32 at FP16 or 64 at FP8): each does one FFMA (a·x+b) and, when
   * "EXP" is listed, one FpExp. They are time-multiplexed over `subCycles` (= lanes/computeLanes) cycles to
-  * cover all lanes, so func=["EXP"] builds `computeLanes` FpExp, not one per lane. (The shared operandMode
-  * FpRecipRsqrt is also ONE unit, not per-lane — it transforms the scalar `a` once.) computeLanes = lanes ⇒
+  * cover all lanes, so func=["EXP"] builds `computeLanes` FpExp, not one per lane. computeLanes = lanes ⇒
   * subCycles=1 ⇒ one unit per lane in parallel (the combinational path).
   *
   * NUMERICAL EXAMPLE — affine map, FP16 transport, 32 lanes, computeLanes=8 ⇒ subCycles=4.
@@ -60,7 +58,7 @@ class HasStreamMap(
   dataWidth:    Int = 512
 ) extends HasDataPathExtension {
   require(computeLanes > 0, "HasStreamMap: computeLanes must be > 0")
-  private val (_, transport) = OpSpec.parse(func, Set("LINEAR", "EXP"), "HasStreamMap") // validate func names + precision
+  private val (_, transport) = OpSpec.parse(func, Set("LINEAR", "EXP", "SILU"), "HasStreamMap") // validate func names + precision
   OpSpec.checkWidth(elementWidth, transport, "HasStreamMap") // explicit width must match the precision tag
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
@@ -86,7 +84,7 @@ class StreamMap(
   import FpHelpers._
 
   // transport (element) precision comes from the func-set; a/b and the per-lane math stay FP32
-  val (funcs, transport) = OpSpec.parse(func, Set("LINEAR", "EXP"), "StreamMap")
+  val (funcs, transport) = OpSpec.parse(func, Set("LINEAR", "EXP", "SILU"), "StreamMap")
   OpSpec.checkWidth(elementWidth, transport, "StreamMap") // config width must match the func-set precision
   val lanes = extensionParam.dataWidth / elementWidth
   val computeLanes = if (computeLanesParam > lanes) lanes else computeLanesParam // time-mux width
@@ -94,31 +92,27 @@ class StreamMap(
   val subCycles    = lanes / computeLanes
 
   val hasExp    = funcs.contains("EXP")
+  val hasSilu   = funcs.contains("SILU")
   val hasLinear = funcs.contains("LINEAR")
 
-  def ACT_EXP = 1.U
+  def ACT_EXP  = 1.U
+  def ACT_SILU = 2.U
 
   val a        = ext_csr_i(0)
   val b        = ext_csr_i(1)
   val actField = ext_csr_i(2)
-  val act         = actField(0)    // func: 0=LINEAR, 1=EXP
-  val operandMode = actField(9, 8) // 0=a as-is, 1=1/a (recip), 2=1/sqrt(a) (rsqrt)
+  val act      = actField(1, 0) // func: 0=LINEAR, 1=EXP, 2=SILU
 
-  // transform the scalar operand a ONCE via a single shared scalar unit (not per-lane)
-  val recipUnit = Module(new FpRecipRsqrt)
-  recipUnit.io.in   := a
-  recipUnit.io.mode := operandMode(1) // operandMode 1 -> RECIP (mode 0), 2 -> RSQRT (mode 1)
-  val aEff = Mux(operandMode === 0.U, a, recipUnit.io.out)
-
-  // one compute lane: aEff*x + b (FP32), optional EXP (built only if listed), narrow back to transport
+  // one compute lane: a*x + b (FP32), then the CSR-selected activation (each built only if listed),
+  // narrow back to transport. LINEAR is the affine result itself; EXP/SILU route through FpExp/FpSilu.
   def computeLane(laneIn: UInt): UInt = {
-    val t = ffma(aEff, widen(laneIn, transport), b)
-    val r =
-      if (hasExp) {
-        val e = Module(new FpExp)
-        e.io.in := t
-        if (hasLinear) Mux(act === ACT_EXP, e.io.out, t) else e.io.out
-      } else t
+    val t = ffma(a, widen(laneIn, transport), b)
+    val e = if (hasExp)  { val m = Module(new FpExp);  m.io.in := t; m.io.out } else t
+    val s = if (hasSilu) { val m = Module(new FpSilu); m.io.in := t; m.io.out } else t
+    // default when act selects no built activation: LINEAR (=t) if listed, else the sole non-linear func.
+    val dflt = if (hasLinear) t else if (hasExp) e else s
+    val r0   = if (hasExp)  Mux(act === ACT_EXP,  e, dflt) else dflt
+    val r    = if (hasSilu) Mux(act === ACT_SILU, s, r0)   else r0
     narrow(r, transport)
   }
 

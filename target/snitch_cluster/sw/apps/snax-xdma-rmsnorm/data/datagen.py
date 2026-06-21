@@ -44,6 +44,13 @@ def emit_header_file(**kwargs):
     inv_rms = np.float64(1.0) / np.sqrt(mean)            # eps = 0
     out16 = (xf32.astype(np.float64) * inv_rms).astype(np.float16)  # golden rmsnorm -> FP16
 
+    # Host-computed scalar rsqrt (1/sqrt(mean)): no longer an xDMA op. T1's SUMSQ emits Σx² narrowed to
+    # FP16; the DM core forms mean = Σx²/N via the exact exponent-field subtract (N=2^log2n), and the host
+    # computes 1/sqrt(mean). Mirror exactly so the precomputed inverse matches the runtime reduce.
+    ssq_fp16 = np.float16((xf32 ** 2).sum(dtype=np.float32))    # FP32 accumulate -> FP16 trailing beat
+    mean_fp32 = ssq_fp16.astype(np.float32) / np.float32(n)     # = fp32(Σx²)/2^log2n (exact)
+    inv_rms_fp32 = np.float32(1.0) / np.float32(np.sqrt(mean_fp32))
+
     x_u16 = x16.view(np.uint16)
     g_u16 = out16.view(np.uint16)
 
@@ -51,6 +58,9 @@ def emit_header_file(**kwargs):
     emit += [format_scalar_definition("uint32_t", "rmsnorm_n", n)]
     emit += [format_scalar_definition("uint32_t", "rmsnorm_beats", beats)]
     emit += [format_scalar_definition("uint32_t", "rmsnorm_log2n", log2n)]
+    # host-provided scalar rsqrt: FP16 Σx² (runtime-reduce check) + FP32 bits of 1/sqrt(mean) (map operand a)
+    emit += [format_scalar_definition("uint32_t", "rmsnorm_ssq_golden", int(ssq_fp16.view(np.uint16)))]
+    emit += [format_scalar_definition("uint32_t", "rmsnorm_inv_rms", int(inv_rms_fp32.view(np.uint32)))]
     emit += [
         format_vector_definition(
             "uint16_t", "rmsnorm_input", x_u16,

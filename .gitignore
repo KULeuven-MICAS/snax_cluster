@@ -1,6 +1,7 @@
 .bender/
 Bender.lock
 .vscode/
+.claude/
 .metals
 .bloop
 .bsp

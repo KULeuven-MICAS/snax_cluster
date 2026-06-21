@@ -84,7 +84,10 @@ class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
   def golden(a: Float, b: Float, act: Int, beats: Seq[Seq[Int]]): Seq[Seq[Float]] =
     beats.map(_.map { h =>
       val t = a * f16bitsToF32(h) + b
-      val r = if (act == 1) math.exp(t.toDouble).toFloat else t
+      val r =
+        if (act == 1) math.exp(t.toDouble).toFloat
+        else if (act == 2) (t.toDouble / (1.0 + math.exp(-t.toDouble))).toFloat // silu = x*sigmoid(x)
+        else t
       f16bitsToF32(f32ToF16bits(r))
     })
 
@@ -106,6 +109,9 @@ class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
 
   "StreamMap_affine" should "match a*x+b" in { check("affine", 2.0f, -1.5f, 0) }
   "StreamMap_exp" should "match exp(x - max)" in { check("exp", 1.0f, -3.0f, 1) }
+  "StreamMap_silu" should "match x*sigmoid(x)" in {
+    check("silu", 1.0f, 0.0f, 2, func = Seq("LINEAR_FP16", "EXP_FP16", "SILU_FP16"))
+  }
 
   // --- specialized configs ---
   // computeLanes knob: 32 -> subCycles=1 (fully parallel), 16 -> subCycles=2.
@@ -115,30 +121,4 @@ class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
   "StreamMap_affine_noexp" should "match with FpExp dropped" in {
     check("affine", 2.0f, -1.5f, 0, func = Seq("LINEAR_FP16"))
   }
-
-  /** operandMode (csr(2) bits[9:8]): the scalar a is transformed once (1=1/a, 2=1/sqrt(a)) before the
-    * per-lane a*x+b. Folds the reciprocal into the normalize map (softmax x/Σ, rmsnorm x*rms). */
-  def checkOperand(name: String, aRaw: Float, b: Float, mode: Int): Unit = {
-    val aEff = mode match {
-      case 1 => 1.0f / aRaw
-      case 2 => (1.0 / math.sqrt(aRaw.toDouble)).toFloat
-      case _ => aRaw
-    }
-    val actCsr = mode << 8 // func LINEAR (bit0=0), operandMode in bits[9:8]
-    val rng    = new Random(0xBEEF + mode)
-    val beats  = Seq.fill(4)(Seq.fill(lanes)(f32ToF16bits(rng.between(-6, 6) + rng.nextInt(4) * 0.25f)))
-    val hw     = run(aRaw, b, actCsr, beats)
-    val gd     = beats.map(_.map(h => f16bitsToF32(f32ToF16bits(aEff * f16bitsToF32(h) + b))))
-    var maxErr = 0.0f
-    for ((hr, gr) <- hw.zip(gd); (h, g) <- hr.zip(gr)) {
-      val tol = math.max(math.abs(g) * 0.02f, 0.03f) // NR recip ~machine eps + FP16 narrowing
-      val e   = math.abs(h - g)
-      if (e > maxErr) maxErr = e
-      assert(e <= tol, s"$name mismatch: hw=$h golden=$g err=$e tol=$tol")
-    }
-    println(f"[StreamMap:$name] aRaw=$aRaw aEff=$aEff mode=$mode maxErr=$maxErr%.4g")
-  }
-
-  "StreamMap_recipA" should "match (1/a)*x" in { checkOperand("recipA", 8.0f, 0.0f, 1) }
-  "StreamMap_rsqrtA" should "match (1/sqrt(a))*x" in { checkOperand("rsqrtA", 16.0f, 0.0f, 2) }
 }
