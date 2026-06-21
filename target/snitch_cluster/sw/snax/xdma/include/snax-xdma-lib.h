@@ -38,6 +38,28 @@ int32_t snax_xdma_memcpy_nd(void* src, void* dst, uint32_t spatial_stride_src,
                             uint32_t enabled_chan_dst,
                             uint32_t enabled_byte_dst);
 
+// Delta-reconfig variants: same as the above but skip re-zeroing the unused multicast destinations
+// (sticky from a prior full memcpy_nd). Cuts per-task CSR writes ~44 -> ~12. Unicast only.
+int32_t snax_xdma_memcpy_nd_full_addr_fast(
+    uint64_t src, uint64_t dst, uint32_t spatial_stride_src,
+    uint32_t spatial_stride_dst, uint32_t temp_dim_src,
+    uint32_t* temp_stride_src, uint32_t* temp_bound_src, uint32_t temp_dim_dst,
+    uint32_t* temp_stride_dst, uint32_t* temp_bound_dst,
+    uint32_t enabled_chan_src, uint32_t enabled_chan_dst,
+    uint32_t enabled_byte_dst);
+
+int32_t snax_xdma_memcpy_nd_fast(
+    void* src, void* dst, uint32_t spatial_stride_src,
+    uint32_t spatial_stride_dst, uint32_t temp_dim_src,
+    uint32_t* temp_stride_src, uint32_t* temp_bound_src, uint32_t temp_dim_dst,
+    uint32_t* temp_stride_dst, uint32_t* temp_bound_dst,
+    uint32_t enabled_chan_src, uint32_t enabled_chan_dst,
+    uint32_t enabled_byte_dst);
+
+// Minimal re-task (5 writes) when the temporal shape is unchanged from a prior memcpy_nd[_fast]:
+// rewrites only src/dst base addresses + the dst dim-0 bound. Unicast only.
+int32_t snax_xdma_retask_1d(void* src, void* dst, uint32_t dst_bound0);
+
 int32_t snax_xdma_memcpy_1d_full_addr(uint64_t src, uint64_t dst,
                                       uint32_t size);
 

@@ -10,3 +10,5 @@ runs:
   - elf: apps/snax-xdma-reshape-comparison/build/snax-xdma-reshape-comparison.elf
   - elf: apps/snax-xdma-transpose/build/snax-xdma-transpose.elf
   - elf: apps/snax-xdma-elementwise-add/build/snax-xdma-elementwise-add.elf
+  - elf: apps/snax-xdma-softmax/build/snax-xdma-softmax.elf
+  - elf: apps/snax-xdma-rmsnorm/build/snax-xdma-rmsnorm.elf

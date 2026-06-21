@@ -36,6 +36,8 @@ SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-elementwise-add
+SUBDIRS += snax-xdma-softmax
+SUBDIRS += snax-xdma-rmsnorm
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
 SUBDIRS += snax-xdma-memset

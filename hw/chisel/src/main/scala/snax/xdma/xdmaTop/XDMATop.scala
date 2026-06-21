@@ -262,9 +262,18 @@ object XDMATopGen extends App {
               paramValue.validate[Seq[Int]] match {
                 case JsSuccess(seqValue, _) => s"Seq(${seqValue.mkString(",")})"
                 case JsError(_)             =>
-                  throw new IllegalArgumentException(
-                    s"Invalid XDMA datapath extension parameter $extensionName.$paramName: expected Int or Seq[Int]"
-                  )
+                  paramValue.validate[String] match {
+                    case JsSuccess(strValue, _) => "\"" + strValue + "\""
+                    case JsError(_)             =>
+                      paramValue.validate[Seq[String]] match {
+                        case JsSuccess(seqStr, _) =>
+                          s"Seq(${seqStr.map(s => "\"" + s + "\"").mkString(",")})"
+                        case JsError(_) =>
+                          throw new IllegalArgumentException(
+                            s"Invalid XDMA datapath extension parameter $extensionName.$paramName: expected Int, Seq[Int], String, or Seq[String]"
+                          )
+                      }
+                  }
               }
           }
           s"$paramName = $renderedParam"
@@ -339,14 +348,25 @@ return new $extensionName($extensionArgs)
     )
 
     // Perform dirty fix on the Chisel's bug that append the file list at the end of the file
-    sv_string = sv_string
+    val truncated = sv_string
       .split("\n")
       .takeWhile(
         !_.contains(
           """// ----- 8< ----- FILE "firrtl_black_box_resource_files.f" ----- 8< -----"""
         )
       )
-      .mkString("\n")
+
+    // CIRCT inlines blackbox resource files (e.g. fpnew_pkg_snax + fp_add/fp_mul/fp_fma used by the FP
+    // SIMD extensions) AFTER the main circuit that instantiates them. SystemVerilog packages must be
+    // declared before use, so hoist the inlined resource block (from the first "----- 8< ----- FILE"
+    // marker onward) ahead of the main circuit. The resources keep their own dependency order
+    // (package -> classifier/rounding/lzc -> fp_* modules).
+    val firstResIdx = truncated.indexWhere(_.contains("// ----- 8< ----- FILE"))
+    sv_string =
+      if (firstResIdx >= 0)
+        (truncated.drop(firstResIdx) ++ truncated.take(firstResIdx)).mkString("\n")
+      else
+        truncated.mkString("\n")
 
     // Write the sv_string to the SystemVerilog file
     val hardware_dir = parsedArgs.getOrElse(
