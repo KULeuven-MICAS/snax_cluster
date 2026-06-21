@@ -1,6 +1,6 @@
 # SNitch Acceleration eXtension (SNAX) Cluster Documentation
 
-This section discusses the modifications to the Snitch cluster to makthe acceleration extensions as easy as possible. The figure below shows a simplified figure of the SNAX architecture.
+This section discusses the modifications to the Snitch cluster to make the acceleration extensions as easy as possible. The figure below shows a simplified figure of the SNAX architecture.
 
 ![SNAX Cluster](https://drive.google.com/uc?id=1PqMhcxbqWnJdn-EawCfGetc0CbqfFCK_)
 
@@ -35,13 +35,13 @@ The [RISCV ISA](https://drive.google.com/file/d/1s0lZxUZaa7eV_O0_WsZzaurFLLww7ou
 
 The RISCV CSR instruction has a 12-bit CSR address. There are other existing CSRs in Snitch, but we reserved CSR addresses `[0x3c0:0x5ff]` giving us a total of 575 different registers to use. Note that the Snitch does not instantiate any registers. Rather it offloads the CSR reads and writes unto the accelerator's.
 
-For example the table below describes the the [HWPE MAC engine](https://github.com/KULeuven-MICAS/hwpe-mac-engine) CSRs. First, we consider the `CSR Address Offset` which we add to any reserved register space. For example, if we allocate `[0x3c0:0x3d7]` space for the entire register mapping of the HWPE, then we have the equivalent `CSR Address` listed in the third column. Any user has the freedom to set these mappings as long as it is consistent with the register spacing they need.
+For example the table below describes the [HWPE MAC engine](https://github.com/KULeuven-MICAS/hwpe-mac-engine) CSRs. First, we consider the `CSR Address Offset` which we add to any reserved register space. For example, if we allocate `[0x3c0:0x3d7]` space for the entire register mapping of the HWPE, then we have the equivalent `CSR Address` listed in the third column. Any user has the freedom to set these mappings as long as it is consistent with the register spacing they need.
 
 | Register          | CSR Address Offset | CSR Address if <br /> Starting from `0x3c0`  | Description                                                             |
 | ----------------- | -----------------  | -------------------------------------------- |-----------------------------------------------------------------------  |
 | Trigger           | 0                  | 0x3c0                                        | Write 0 to start                                                        |
 | Acquire           | 1                  | 0x3c1                                        | Lock the accelerator                                                    |
-| Finsihed          | 2                  | 0x3c2                                        | Finished signal (1 pulse only)                                          |
+| Finished          | 2                  | 0x3c2                                        | Finished signal (1 pulse only)                                          |
 | Status            | 3                  | 0x3c3                                        | 1: busy; 0: free                                                        |
 | Running           | 4                  | 0x3c4                                        | 1: running; 0: free                                                     |
 | Softclear         | 5                  | 0x3c5                                        | write 1 to reset the accelerator                                        |
@@ -55,13 +55,13 @@ For example the table below describes the the [HWPE MAC engine](https://github.c
 | Iterations        | 20                 | 0x3d4                                        | Number of iterations                                                    |
 | Vector Length     | 21                 | 0x3d5                                        | Number of elements                                                      |
 | Multiplier Mode   | 22                 | 0x3d6                                        | 1: $d_i = a_i \cdot b_i$;  <br /> 0: $D = ( \sum a_i \cdot b_i) + C$    |
-| Vector Stide      | 23                 | 0x3d7                                        | Vectore tride                                                           |
+| Vector Stride     | 23                 | 0x3d7                                        | Vector stride                                                           |
 
 There are no registers in the unused addresses `[0x3d8:0x5ff]`. However, a user can utilize the unused addresses for their needs.
 
 ### Snitch Accelerator Ports
 
-The Snitch has accelerator ports that connect to the co-processors or accelerator units like the floating point sub-system (FPSS), integer processing units (IPU), stream semantic registers (SSRs), and also the DMA. The SNAX version also uses the same ports to control any custom accelerator. The figure below shows the the Snitch / SNAX ports for controlling an acccelerator:
+The Snitch has accelerator ports that connect to the co-processors or accelerator units like the floating point sub-system (FPSS), integer processing units (IPU), stream semantic registers (SSRs), and also the DMA. The SNAX version also uses the same ports to control any custom accelerator. The figure below shows the Snitch / SNAX ports for controlling an accelerator:
 
 ![Accelerator Request Response Ports](https://drive.google.com/uc?id=18QRV3U6FrEvX3-0q908MgRKv-pq02eKq)
 
@@ -98,7 +98,7 @@ It is important to know how to map the CSR instruction into the request and resp
 csrrw rd, csr_addr, rs1
 ```
 
-Where `csrrw` is a CSR read-write instruction which reads the current data located at `csr_addr` and stores it in `rd` and writes the data `rs1` at `csr_addr` simultanesouly. The `csr_addr` is a 12-bit unsigned value (e.g., `0x3c0`). This instruction maps to the request channel as:
+Where `csrrw` is a CSR read-write instruction which reads the current data located at `csr_addr` and stores it in `rd` and writes the data `rs1` at `csr_addr` simultaneously. The `csr_addr` is a 12-bit unsigned value (e.g., `0x3c0`). This instruction maps to the request channel as:
 
 * `addr` - will point to the accelerator port (e.g., 0 is for the FPSS, 1 is for the shared multiply and divide, and 5 is for SNAX ports. Always use 5 if you want to use the SNAX accelerator ports.).
 * `id` - will be the register number `rd` (not the contents of `rd`).
