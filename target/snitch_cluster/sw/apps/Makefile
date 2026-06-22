@@ -40,6 +40,7 @@ SUBDIRS += snax-xdma-softmax
 SUBDIRS += snax-xdma-rmsnorm
 SUBDIRS += snax-xdma-silu
 SUBDIRS += snax-xdma-swiglu
+SUBDIRS += snax-xdma-rope
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
 SUBDIRS += snax-xdma-memset
