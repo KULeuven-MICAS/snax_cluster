@@ -37,6 +37,12 @@ def emit_header_file(**kwargs):
     sig = 1.0 / (1.0 + np.exp(-xf32))
     out16 = (xf32 * sig).astype(np.float16)  # golden silu -> FP16
 
+    # INT8 quantize golden for the fused Fp16ToInt8 stage: q = sat127(rne(fp32(out16)*inv_scale)).
+    # Mirrors the HW PE (fp32 product, clamp to +/-128 before the RNE round, symmetric saturate).
+    inv_scale = np.float32(16.0)
+    prod = np.clip(out16.astype(np.float32) * inv_scale, np.float32(-128.0), np.float32(128.0))
+    q_i8 = np.clip(np.rint(prod.astype(np.float64)), -127, 127).astype(np.int8)
+
     x_u16 = x16.view(np.uint16)
     g_u16 = out16.view(np.uint16)
 
@@ -55,6 +61,8 @@ def emit_header_file(**kwargs):
             alignment=64, hex_bits=16, cast_hex=True,
         )
     ]
+    emit += [format_scalar_definition("uint32_t", "silu_inv_scale", int(inv_scale.view(np.uint32)))]
+    emit += [format_vector_definition("int8_t", "silu_golden_i8", q_i8, alignment=64)]
     return "\n\n".join(emit)
 
 

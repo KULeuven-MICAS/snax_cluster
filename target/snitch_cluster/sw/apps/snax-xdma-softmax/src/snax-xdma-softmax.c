@@ -30,8 +30,9 @@
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 
-#if !defined(READER_EXT_STREAMREDUCE) || !defined(READER_EXT_STREAMMAP)
-#error "Regenerate the XDMA CSR map with StreamReduce and StreamMap."
+#if !defined(READER_EXT_STREAMREDUCE) || !defined(READER_EXT_STREAMMAP) || \
+    !defined(READER_EXT_FP16TOINT8)
+#error "Regenerate the XDMA CSR map with StreamReduce, StreamMap and Fp16ToInt8."
 #endif
 
 #define XDMA_BEAT_BYTES 64
@@ -76,10 +77,11 @@ int main() {
         uint32_t beats = softmax_beats;
         uint32_t row_bytes = beats * XDMA_BEAT_BYTES;
 
-        uint8_t* x_in    = (uint8_t*)base;
-        uint8_t* max_buf = x_in + row_bytes;                          // 1 beat
-        uint8_t* exp_buf = max_buf + XDMA_BEAT_BYTES;                 // beats + 1 (exp row + trailing Σ)
-        uint8_t* out_buf = exp_buf + (beats + 1) * XDMA_BEAT_BYTES;   // beats
+        uint8_t* x_in       = (uint8_t*)base;
+        uint8_t* max_buf    = x_in + row_bytes;                          // 1 beat
+        uint8_t* exp_buf    = max_buf + XDMA_BEAT_BYTES;                 // beats + 1 (exp row + trailing Σ)
+        uint8_t* out_buf    = exp_buf + (beats + 1) * XDMA_BEAT_BYTES;   // beats   (FP16 softmax result)
+        uint8_t* out_i8_buf = out_buf + row_bytes;                       // beats/2 (INT8 packed, fused quant)
 
         printf("[Softmax] N=%u beats=%u\n", softmax_n, beats);
 
@@ -94,7 +96,7 @@ int main() {
         uint32_t src_bnd_2d[2]  = {beats, 1};
         uint32_t bnd_1[1]       = {1};
 
-        uint32_t c1 = 0, c2 = 0, c3 = 0, lat_cold = 0, lat_warm = 0;
+        uint32_t c1 = 0, c2 = 0, c3 = 0, cq = 0, lat_cold = 0, lat_warm = 0;
         int ok = 1;
         // Run twice: iter 0 = cold (pays the one-time AGU shape setup + icache warming of the
         // CSR-dispatch code); iter 1 = warm / steady-state (as in repeated inference: shape persists,
@@ -140,16 +142,25 @@ int main() {
             c3 = retask_and_run(exp_buf, out_buf, beats);
             snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
 
+            // Tq: SAME normalize pass, but Fp16ToInt8 chained after StreamMap quantizes the probabilities
+            // to int8 in-stream (no re-read). The writer emits beats/2 packed beats; cq - c3 is the margin.
+            uint32_t csr_q[1] = {softmax_inv_scale};
+            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMMAP, csr_norm) == 0);
+            ok &= (snax_xdma_enable_src_ext(READER_EXT_FP16TOINT8, csr_q) == 0);
+            cq = retask_and_run(exp_buf, out_i8_buf, beats / 2);
+            snax_xdma_disable_src_ext(READER_EXT_FP16TOINT8);
+            snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
+
             uint32_t t1 = snrt_mcycle();
             if (iter == 0) lat_cold = t1 - t0; else lat_warm = t1 - t0;
         }
 
-        if (!ok || c1 == 0xFFFFFFFFu || c2 == 0xFFFFFFFFu || c3 == 0xFFFFFFFFu) {
+        if (!ok || c1 == 0xFFFFFFFFu || c2 == 0xFFFFFFFFu || c3 == 0xFFFFFFFFu || cq == 0xFFFFFFFFu) {
             printf("[Softmax] xDMA task setup failed\n");
             return 1;
         }
-        printf("[Softmax] cycles: max=%u exp+sum=%u norm=%u xdma_total=%u\n",
-               c1, c2, c3, c1 + c2 + c3);
+        printf("[Softmax] cycles: max=%u exp+sum=%u norm=%u norm+quant=%u (quant marginal=%u)\n",
+               c1, c2, c3, cq, cq - c3);
         printf("[Softmax] full latency: cold=%u warm=%u cycles\n", lat_cold, lat_warm);
 
         // Integer FP16-ULP check on the SIGNIFICANT outputs (softmax positive -> FP16 bits
@@ -177,6 +188,28 @@ int main() {
             printf("[Softmax] PASS (%u significant elements, <=4 ULP)\n", checked);
         } else {
             printf("[Softmax] FAIL (%u/%u significant beyond 4 ULP)\n", mism, checked);
+            err++;
+        }
+
+        // Quantize check: fused int8 out vs golden quant(softmax_golden). Tolerance 2 absorbs the upstream
+        // FP16 (<=4 ULP) difference between the HW result and the FP16 golden after scaling.
+        int8_t* out_i8 = (int8_t*)out_i8_buf;
+        uint32_t qmism = 0, qworst = 0;
+        for (uint32_t i = 0; i < softmax_n; i++) {
+            int d = (int)out_i8[i] - (int)softmax_golden_i8[i];
+            uint32_t ad = (d < 0) ? (uint32_t)(-d) : (uint32_t)d;
+            if (ad > qworst) qworst = ad;
+            if (ad > 2) {
+                if (qmism < 6)
+                    printf("[Softmax] int8 mismatch[%u]: got %d golden %d\n", i, out_i8[i], softmax_golden_i8[i]);
+                qmism++;
+            }
+        }
+        printf("[Softmax] quant worst |delta int8|=%u\n", qworst);
+        if (qmism == 0) {
+            printf("[Softmax] QUANT PASS (<=2 int8)\n");
+        } else {
+            printf("[Softmax] QUANT FAIL (%u beyond 2 int8)\n", qmism);
             err++;
         }
     }

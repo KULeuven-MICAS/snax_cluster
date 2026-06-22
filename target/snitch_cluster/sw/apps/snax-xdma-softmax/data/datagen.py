@@ -38,6 +38,13 @@ def emit_header_file(**kwargs):
     s = e.sum()
     out16 = (e / s).astype(np.float16)     # golden softmax, narrowed to FP16
 
+    # INT8 quantize golden for the fused Fp16ToInt8 stage: q = sat127(rne(fp32(out16)*inv_scale)).
+    # softmax probabilities live in [0,1], so inv_scale=127 maps them onto [0,127] (near-lossless).
+    # Mirrors the HW PE (fp32 product, clamp to +/-128 before the RNE round, symmetric saturate).
+    inv_scale = np.float32(127.0)
+    prod = np.clip(out16.astype(np.float32) * inv_scale, np.float32(-128.0), np.float32(128.0))
+    q_i8 = np.clip(np.rint(prod.astype(np.float64)), -127, 127).astype(np.int8)
+
     # golden exp(x) for the standalone StreamMap+FpExp 1:1 benchmark (no reduction)
     exp16 = np.exp(xf32.astype(np.float64)).astype(np.float16)
 
@@ -76,6 +83,8 @@ def emit_header_file(**kwargs):
             alignment=64, hex_bits=16, cast_hex=True,
         )
     ]
+    emit += [format_scalar_definition("uint32_t", "softmax_inv_scale", int(inv_scale.view(np.uint32)))]
+    emit += [format_vector_definition("int8_t", "softmax_golden_i8", q_i8, alignment=64)]
     return "\n\n".join(emit)
 
 

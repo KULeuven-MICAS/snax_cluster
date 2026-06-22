@@ -44,6 +44,12 @@ def emit_header_file(**kwargs):
     inv_rms = np.float64(1.0) / np.sqrt(mean)            # eps = 0
     out16 = (xf32.astype(np.float64) * inv_rms).astype(np.float16)  # golden rmsnorm -> FP16
 
+    # INT8 quantize golden for the fused Fp16ToInt8 stage: q = sat127(rne(fp32(out16)*inv_scale)).
+    # Mirrors the HW PE (fp32 product, clamp to +/-128 before the RNE round, symmetric saturate).
+    inv_scale = np.float32(64.0)
+    prod = np.clip(out16.astype(np.float32) * inv_scale, np.float32(-128.0), np.float32(128.0))
+    q_i8 = np.clip(np.rint(prod.astype(np.float64)), -127, 127).astype(np.int8)
+
     # Host-computed scalar rsqrt (1/sqrt(mean)): no longer an xDMA op. T1's SUMSQ emits Σx² narrowed to
     # FP16; the DM core forms mean = Σx²/N via the exact exponent-field subtract (N=2^log2n), and the host
     # computes 1/sqrt(mean). Mirror exactly so the precomputed inverse matches the runtime reduce.
@@ -73,6 +79,8 @@ def emit_header_file(**kwargs):
             alignment=64, hex_bits=16, cast_hex=True,
         )
     ]
+    emit += [format_scalar_definition("uint32_t", "rmsnorm_inv_scale", int(inv_scale.view(np.uint32)))]
+    emit += [format_vector_definition("int8_t", "rmsnorm_golden_i8", q_i8, alignment=64)]
     return "\n\n".join(emit)
 
 

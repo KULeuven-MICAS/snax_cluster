@@ -24,8 +24,8 @@
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 
-#if !defined(READER_EXT_STREAMMAP)
-#error "Regenerate the XDMA CSR map with StreamMap (and func=SILU in the cfg)."
+#if !defined(READER_EXT_STREAMMAP) || !defined(READER_EXT_FP16TOINT8)
+#error "Regenerate the XDMA CSR map with StreamMap (func=SILU) and Fp16ToInt8."
 #endif
 
 #define XDMA_BEAT_BYTES 64
@@ -53,8 +53,9 @@ int main() {
         uint32_t beats = silu_beats;
         uint32_t row_bytes = beats * XDMA_BEAT_BYTES;
 
-        uint8_t* x_in    = (uint8_t*)base;
-        uint8_t* out_buf = x_in + row_bytes;  // beats
+        uint8_t* x_in       = (uint8_t*)base;
+        uint8_t* out_buf    = x_in + row_bytes;     // beats   (FP16 silu result)
+        uint8_t* out_i8_buf = out_buf + row_bytes;  // beats/2 (INT8 packed, fused quantize)
 
         printf("[Silu] N=%u beats=%u\n", silu_n, beats);
 
@@ -70,7 +71,7 @@ int main() {
         uint32_t src_bnd_2d[2] = {beats, 1};
         uint32_t bnd_1[1]      = {1};
 
-        uint32_t c1 = 0, lat_cold = 0, lat_warm = 0;
+        uint32_t c1 = 0, cq = 0, lat_cold = 0, lat_warm = 0;
         int ok = 1;
         // Run twice: iter 0 = cold (one-time AGU shape setup + icache warming); iter 1 = warm / steady-state.
         for (int iter = 0; iter < 2; iter++) {
@@ -80,21 +81,30 @@ int main() {
                                                 src_bnd_2d, 1, str_beat, bnd_1,
                                                 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
 
-            // T1: out = silu(x). a=1.0, b=0, func=SILU.
+            // T1: out = silu(x). a=1.0, b=0, func=SILU.  (FP16 result, kept for the ULP regression check)
             uint32_t csr_silu[3] = {0x3F800000u /*1.0f*/, 0u, ACT_SILU};
             ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMMAP, csr_silu) == 0);
             c1 = retask_and_run(x_in, out_buf, beats);
+            snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
+
+            // Tq: SAME silu pass, but Fp16ToInt8 chained after StreamMap quantizes the result to int8
+            // in-stream (no re-read). The writer emits beats/2 packed beats; cq - c1 is the marginal cost.
+            uint32_t csr_q[1] = {silu_inv_scale};
+            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMMAP, csr_silu) == 0);
+            ok &= (snax_xdma_enable_src_ext(READER_EXT_FP16TOINT8, csr_q) == 0);
+            cq = retask_and_run(x_in, out_i8_buf, beats / 2);
+            snax_xdma_disable_src_ext(READER_EXT_FP16TOINT8);
             snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
 
             uint32_t t1 = snrt_mcycle();
             if (iter == 0) lat_cold = t1 - t0; else lat_warm = t1 - t0;
         }
 
-        if (!ok || c1 == 0xFFFFFFFFu) {
+        if (!ok || c1 == 0xFFFFFFFFu || cq == 0xFFFFFFFFu) {
             printf("[Silu] xDMA task setup failed\n");
             return 1;
         }
-        printf("[Silu] cycles: silu=%u\n", c1);
+        printf("[Silu] cycles: silu=%u silu+quant=%u (quant marginal=%u)\n", c1, cq, cq - c1);
         printf("[Silu] full latency: cold=%u warm=%u cycles\n", lat_cold, lat_warm);
 
         // Integer FP16-ULP check on the significant (signed) outputs; skip the negligible subnormal/zero
@@ -119,6 +129,28 @@ int main() {
             printf("[Silu] PASS (%u significant elements, <=4 ULP)\n", checked);
         } else {
             printf("[Silu] FAIL (%u/%u significant beyond 4 ULP)\n", mism, checked);
+            err++;
+        }
+
+        // Quantize check: fused int8 out vs golden quant(silu_golden). Tolerance 2 absorbs the upstream
+        // FP16 (<=4 ULP) difference between the HW result and the FP16 golden after scaling.
+        int8_t* out_i8 = (int8_t*)out_i8_buf;
+        uint32_t qmism = 0, qworst = 0;
+        for (uint32_t i = 0; i < silu_n; i++) {
+            int d = (int)out_i8[i] - (int)silu_golden_i8[i];
+            uint32_t ad = (d < 0) ? (uint32_t)(-d) : (uint32_t)d;
+            if (ad > qworst) qworst = ad;
+            if (ad > 2) {
+                if (qmism < 6)
+                    printf("[Silu] int8 mismatch[%u]: got %d golden %d\n", i, out_i8[i], silu_golden_i8[i]);
+                qmism++;
+            }
+        }
+        printf("[Silu] quant worst |delta int8|=%u\n", qworst);
+        if (qmism == 0) {
+            printf("[Silu] QUANT PASS (<=2 int8)\n");
+        } else {
+            printf("[Silu] QUANT FAIL (%u beyond 2 int8)\n", qmism);
             err++;
         }
     }
