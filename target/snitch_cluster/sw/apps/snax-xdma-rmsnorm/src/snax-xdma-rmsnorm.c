@@ -3,28 +3,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // xDMA FP16 rmsnorm: out = x * rsqrt(mean(x^2)), mean = sum(x^2)/N, eps = 0.
-// The scalar rsqrt is NOT an xDMA op: the StreamScalar extension and StreamMap's operandMode were removed
-// (a single 1/sqrt only uses one SIMD lane, so it wastes the xDMA datapath). The xDMA does the SIMD-wide
-// work (sum of squares, then a plain scale); the HOST computes the one 1/sqrt(mean):
+// The SIMD-wide work runs on the xDMA; the scalar rsqrt runs on the host (a single 1/sqrt only uses one
+// lane, so it wastes the datapath -- StreamScalar and StreamMap.operandMode were removed for it):
 //
-//   T1  sum(x^2)  : StreamReduce(SUMSQ)                      x -> ssq (1 beat)   [xDMA]
-//   host          : inv_rms = 1/sqrt(ssq/N)                                      [host, ~110 cc]
-//   T2  scale     : StreamMap(a=inv_rms, b=0, func=LINEAR)   x -> out            [xDMA]
+//   T1  sum(x^2)  : StreamReduce(SUMSQ)                      x -> ssq           [xDMA]
+//   host          : inv_rms = 1/sqrt(ssq/N)                                     [host, ~110 cc]
+//   T2  scale     : StreamMap(a=inv_rms, b=0, func=LINEAR)   x -> out           [xDMA]
 //
-// The DM core (rv32ima, no FPU) cannot do the rsqrt; on the real HeMAiA host the CVA6 computes it. This
-// standalone test precomputes inv_rms in data.h (rmsnorm_inv_rms) to stay self-validating on vsim, and
-// checks the runtime SUMSQ against the golden scalar (rmsnorm_ssq_golden). mean = sum(x^2)/N is exact
-// (N = 2^log2n) and is folded into the precomputed inv_rms.
+// The DM core (rv32ima, no FPU) can't do the rsqrt; on HeMAiA the host CVA6 does it. This standalone test
+// precomputes inv_rms in data.h (rmsnorm_inv_rms; mean = sum(x^2)/N is exact for N=2^log2n) and checks the
+// runtime SUMSQ against rmsnorm_ssq_golden.
 //
-// Cost: the xDMA reduce+scale is unchanged vs the old folded-HW-rsqrt version (the rsqrt added ~0 cc); the
-// host now adds ~110 cc per call for 1/sqrt(mean) -- estimated from the bingo op-LUTs (inputs/op_luts/simd)
-// at the scalar case n=1: fp16_sqrt ~52 cc composed with fp16_reciprocal ~57 cc (there is no rsqrt LUT, and
-// fp16_reciprocal is a flagged placeholder). Net: an area-for-cycles trade (drops 2x FpRecipRsqrt + the
-// StreamScalar extension) costing ~110 host cc -- small vs the orchestration-bound xDMA total.
-//
-// Performance (FP16, measured under vsim, L1<->L1; xDMA part). warm = steady-state (AGU shape persists);
-// cold = first call. "+host" adds the estimated host rsqrt (~110 cc). host = a single CVA6+Ara core running
-// the full FP32 rmsnorm (the old all-host baseline). Significant outputs match the FP64 golden to <=4 ULP.
+// Performance (FP16, vsim, L1<->L1; xDMA part). "+host" adds the estimated host rsqrt (~110 cc, from the
+// fp16_sqrt + fp16_reciprocal op-LUTs at n=1). host = a single CVA6+Ara core, full FP32 rmsnorm. Outputs
+// match the FP64 golden to <=4 ULP.
 //
 //   N      beats   xDMA warm   +host est   cold    host(full)   warm speedup(+host)
 //   ----   -----   ---------   ---------   -----   ----------   -------------------

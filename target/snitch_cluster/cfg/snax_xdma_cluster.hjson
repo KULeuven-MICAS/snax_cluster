@@ -177,6 +177,7 @@ Naming convention:
                 HasElementwiseAdd: {elementWidth: 32, dataWidth: 512}
                 HasStreamMap: {dataWidth: 512, elementWidth: 16, computeLanes: 8, func: ["LINEAR_FP16", "EXP_FP16", "SILU_FP16"]}
                 HasStreamReduce: {dataWidth: 512, elementWidth: 16, computeLanes: 32, op: ["MAX_FP16", "ADD_FP16", "SUMSQ_FP16"]}
+                HasStreamElementwise: {dataWidth: 512, elementWidth: 16, computeLanes: 8, op: ["MUL_FP16", "ADD_FP16"]}
             }
         }
         // Xdiv_sqrt: true,

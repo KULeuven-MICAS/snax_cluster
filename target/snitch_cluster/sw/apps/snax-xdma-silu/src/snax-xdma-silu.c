@@ -2,20 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// xDMA FP16 SiLU: out = silu(x) = x * sigmoid(x). ONE xDMA task, L1<->L1. The whole op is offloaded to
-// the xDMA reader SIMD extension; the DM core (rv32ima, no FPU) only programs the descriptor. Because
-// silu is unary, it needs no scalar glue at all (unlike rmsnorm/softmax which form a reduction scalar
-// between passes) -- a single StreamMap pass with the SILU activation:
+// xDMA FP16 SiLU: out = silu(x) = x * sigmoid(x). ONE xDMA task, L1<->L1, fully offloaded -- silu is unary,
+// so it needs no scalar glue (unlike softmax/rmsnorm). The DM core (rv32ima, no FPU) only programs it:
 //
-//   T1  silu : StreamMap(a=1, b=0, func=SILU)   x -> out   (out = silu(1*x + 0) = x*sigmoid(x))
+//   T1  silu : StreamMap(a=1, b=0, func=SILU)   x -> out   (= x*sigmoid(x))
 //
-// SILU routes the per-lane affine result through FpSilu (a 512-entry sigmoid LUT * x); see FpSilu.scala.
-// FP16 transport, FP32-internal. Significant outputs match the FP64 golden to <= a few FP16 ULP.
+// SILU routes the affine result through FpSilu (a 512-entry sigmoid LUT * x; see FpSilu.scala). FP16
+// transport, FP32-internal.
 //
-// Performance (FP16, measured under vsim, L1<->L1). warm = steady-state (AGU shape persists); cold = first
-// call (one-time shape setup + icache warm). SiLU is unary, so it is FULLY offloaded -- there is no host
-// step. host = a single CVA6+Ara core running the full FP32 silu (op-LUT baseline). Significant outputs
-// match the FP64 golden to <=1 FP16 ULP at every N.
+// Performance (FP16, vsim, L1<->L1). host = a single CVA6+Ara core, full FP32 silu (op-LUT baseline).
+// Outputs match the FP64 golden to <=1 FP16 ULP at every N.
 //
 //   N      beats   warm    cold    host       warm speedup
 //   ----   -----   -----   -----   -------    ------------

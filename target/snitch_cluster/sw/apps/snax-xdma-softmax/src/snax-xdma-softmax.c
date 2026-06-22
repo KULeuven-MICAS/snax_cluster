@@ -3,28 +3,21 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // xDMA FP16 softmax: out = exp(x - max(x)) / sum(exp(x - max(x))).
-// The scalar reciprocal (1/Σexp) is NOT an xDMA op: the StreamScalar extension and StreamMap's operandMode
-// were removed (a single 1/Σ only uses one SIMD lane, wasting the xDMA datapath). The xDMA does the
-// SIMD-wide work (max, exp+sum, scale); the HOST computes the one 1/Σexp reciprocal:
+// The SIMD-wide work runs on the xDMA; the scalar 1/Σexp runs on the host (a single reciprocal only uses
+// one lane, so it wastes the datapath -- StreamScalar and StreamMap.operandMode were removed for it):
 //
-//   T1  max       : StreamReduce(MAX)                                    x -> max               [xDMA]
-//   T2  exp + sum  : StreamMap(EXP, b=-max) -||> StreamReduce(ADD,tap)    x -> exp row + Σexp    [xDMA]
-//   host           : inv_sum = 1/Σexp                                                            [host, ~57 cc]
-//   T3  norm       : StreamMap(a=inv_sum, b=0, func=LINEAR)              exp -> out             [xDMA]
+//   T1  max       : StreamReduce(MAX)                                  x -> max               [xDMA]
+//   T2  exp + sum  : StreamMap(EXP, b=-max) -||> StreamReduce(ADD,tap)  x -> exp row + Σexp    [xDMA]
+//   host           : inv_sum = 1/Σexp                                                          [host, ~57 cc]
+//   T3  norm       : StreamMap(a=inv_sum, b=0, func=LINEAR)            exp -> out             [xDMA]
 //
-// The DM core (rv32ima, no FPU) cannot do the reciprocal; on the real HeMAiA host the CVA6 computes it.
-// This standalone test precomputes inv_sum in data.h (softmax_inv_sum) to stay self-validating on vsim, and
-// checks the runtime Σexp against the golden scalar (softmax_sum_golden). The -max for T2 is still a DM-core
-// integer sign-flip (no FP). Per-task CSR programming uses the delta (_fast) path after one full config.
+// The DM core (rv32ima, no FPU) can't do the reciprocal; on HeMAiA the host CVA6 does it. This standalone
+// test precomputes inv_sum in data.h (softmax_inv_sum) and checks the runtime Σexp against softmax_sum_golden
+// (-max for T2 is a DM-core integer sign-flip, no FP).
 //
-// Cost: the xDMA max/exp+sum/scale is unchanged vs the old folded-HW-recip version (the recip added ~0 cc);
-// the host now adds ~57 cc per call for 1/Σexp -- estimated from the bingo op-LUT fp16_reciprocal at the
-// scalar case n=1 (a flagged placeholder LUT). Net: an area-for-cycles trade (drops 2x FpRecipRsqrt + the
-// StreamScalar extension) costing ~57 host cc -- small vs the orchestration-bound xDMA total.
-//
-// Performance (FP16, measured under vsim, L1<->L1; xDMA part). warm = steady-state (AGU shape persists);
-// cold = first call. "+host" adds the estimated host reciprocal (~57 cc). host = a single CVA6+Ara core
-// running the full FP32 LUT softmax (old all-host baseline). Significant outputs match the FP64 golden <=4 ULP.
+// Performance (FP16, vsim, L1<->L1; xDMA part). "+host" adds the estimated host reciprocal (~57 cc, from the
+// fp16_reciprocal op-LUT at n=1). host = a single CVA6+Ara core, full FP32 LUT softmax. Outputs match the
+// FP64 golden to <=4 ULP.
 //
 //   N      beats   xDMA warm   +host est   cold    host(full)   warm speedup(+host)
 //   ----   -----   ---------   ---------   -----   ----------   -------------------

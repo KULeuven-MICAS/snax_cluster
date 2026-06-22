@@ -34,11 +34,12 @@ def emit_header_file(**kwargs):
     gate = rng.uniform(-8.0, 8.0, size=n).astype(np.float16)
     up = rng.uniform(-2.0, 2.0, size=n).astype(np.float16)
     gate32 = gate.astype(np.float64)
-    up32 = up.astype(np.float64)
 
     sg = (gate32 / (1.0 + np.exp(-gate32)))         # silu(gate), FP64
-    sg16 = sg.astype(np.float16)                     # on-cluster xDMA golden
-    out16 = (sg16.astype(np.float64) * up32).astype(np.float16)  # host (.)up: out = silu(gate)*up
+    sg16 = sg.astype(np.float16)                     # T1 (StreamMap SILU) golden
+    # swiglu = silu(gate) (.) up. Match the HW T2 (StreamElementwise MUL): fp32 product of the two FP16
+    # operands, narrowed to FP16.
+    out16 = (sg16.astype(np.float32) * up.astype(np.float32)).astype(np.float16)
 
     emit = ["#include <stdint.h>"]
     emit += [format_scalar_definition("uint32_t", "swiglu_n", n)]
