@@ -14,10 +14,16 @@
 
 // Define the base address of XDMA CSRIO
 #define XDMA_CFG_ADDR 960
-static inline uint32_t snax_read_xdma_cfg_reg(uint32_t addr) {
+// always_inline so a compile-time-constant `addr` propagates into the csrr_ss/csrw_ss
+// switch and constant-folds to a single direct `csrr/csrw <imm>`. Without this the helper
+// stays out-of-line and every CSR access pays a jump-table load (from .rodata in L2) plus an
+// indirect jump to a scattered csrw stub -- the dominant cost of xDMA CSR configuration.
+__attribute__((always_inline)) static inline uint32_t snax_read_xdma_cfg_reg(
+    uint32_t addr) {
     return csrr_ss(XDMA_CFG_ADDR + addr);
 }
-static inline void snax_write_xdma_cfg_reg(uint32_t addr, uint32_t value) {
+__attribute__((always_inline)) static inline void snax_write_xdma_cfg_reg(
+    uint32_t addr, uint32_t value) {
     csrw_ss(XDMA_CFG_ADDR + addr, value);
 }
 
