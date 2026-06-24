@@ -45,30 +45,44 @@ class FpSiluTester extends AnyFlatSpec with ChiselScalatestTester {
   // |key(a) - key(b)| is the FP16-ULP distance even across zero.
   def f16mono(h: Int): Int = { val mag = h & 0x7fff; if ((h & 0x8000) != 0) 0x8000 - mag else 0x8000 + mag }
 
+  /** Sweep silu over [-20, 20] and assert the worst FP16-narrowed ULP. `latency` accounts for the
+    * pipelined datapath (input held constant across `latency`+1 cycles so the pipe fills with it). */
+  def sweep(dut: FpSilu, latency: Int, maxUlpAllowed: Int, tag: String): Unit = {
+    dut.clock.step(1)
+    var maxUlp = 0
+    var worstX = 0.0f
+    // sweep [-20, 20]: covers the [-16,16] table, the curvy origin, and both saturating tails.
+    // Skip FP16 subnormal/zero goldens (exp field 0): the deep negative tail (x < ~-12.5) is silu ~ 0
+    // noise that the DM core's FTZ host path also discards, exactly as the softmax/rmsnorm apps do.
+    val xs = (-200 to 200).map(_ * 0.1f)
+    for (x <- xs) {
+      dut.io.in.poke(fbits(x).U)
+      dut.clock.step(latency + 1)
+      val golden = (x.toDouble / (1.0 + math.exp(-x.toDouble))).toFloat
+      val gBits  = f32ToF16bits(golden)
+      if ((gBits & 0x7c00) != 0) { // significant (normal) golden only
+        val hw  = asF(dut.io.out.peekInt())
+        val ulp = math.abs(f16mono(f32ToF16bits(hw)) - f16mono(gBits))
+        if (ulp > maxUlp) { maxUlp = ulp; worstX = x }
+      }
+    }
+    println(f"[FpSilu:$tag] worst FP16 ULP=$maxUlp at x=$worstX%.2f (significant outputs)")
+    assert(maxUlp <= maxUlpAllowed, s"FpSilu($tag) exceeds $maxUlpAllowed FP16 ULP: $maxUlp at x=$worstX")
+  }
+
   "FpSilu" should "match host silu within <= 1 FP16 ULP after narrowing" in {
     test(new FpSilu)
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
-        dut =>
-          dut.clock.step(1)
-          var maxUlp = 0
-          var worstX = 0.0f
-          // sweep [-20, 20]: covers the [-16,16] table, the curvy origin, and both saturating tails.
-          // Skip FP16 subnormal/zero goldens (exp field 0): the deep negative tail (x < ~-12.5) is silu ~ 0
-          // noise that the DM core's FTZ host path also discards, exactly as the softmax/rmsnorm apps do.
-          val xs = (-200 to 200).map(_ * 0.1f)
-          for (x <- xs) {
-            dut.io.in.poke(fbits(x).U)
-            dut.clock.step(1)
-            val golden = (x.toDouble / (1.0 + math.exp(-x.toDouble))).toFloat
-            val gBits  = f32ToF16bits(golden)
-            if ((gBits & 0x7c00) != 0) { // significant (normal) golden only
-              val hw  = asF(dut.io.out.peekInt())
-              val ulp = math.abs(f16mono(f32ToF16bits(hw)) - f16mono(gBits))
-              if (ulp > maxUlp) { maxUlp = ulp; worstX = x }
-            }
-          }
-          println(f"[FpSilu] worst FP16 ULP=$maxUlp at x=$worstX%.2f (significant outputs)")
-          assert(maxUlp <= 1, s"FpSilu exceeds 1 FP16 ULP: $maxUlp at x=$worstX")
+        dut => sweep(dut, latency = 0, maxUlpAllowed = 1, tag = "comb512")
+      }
+  }
+
+  // Config used by StreamMap: pipelined + 512-node ROMs (256 nodes measured 3 ULP in the negative tail,
+  // over the <=2 budget, so silu keeps the full table). Validates the pipelined datapath stays <=1 ULP.
+  "FpSilu_pipelined_n512" should "match host silu within <= 1 FP16 ULP (pipelined, 512-node ROMs)" in {
+    test(new FpSilu(pipelined = true, N = 512))
+      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+        dut => sweep(dut, latency = FpSilu.PipeLatency, maxUlpAllowed = 1, tag = "pipe512")
       }
   }
 }

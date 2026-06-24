@@ -39,30 +39,42 @@ class FpExpTester extends AnyFlatSpec with ChiselScalatestTester {
     h
   }
 
+  /** Sweep exp over [-88, 8] and assert the worst FP16-narrowed ULP. `latency` accounts for the
+    * pipelined datapath (input is held constant across `latency`+1 cycles so the pipe fills with it). */
+  def sweep(dut: FpExp, latency: Int, maxUlpAllowed: Int, tag: String): Unit = {
+    dut.clock.step(1)
+    var maxUlp = 0
+    var worstX = 0.0f
+    var maxRel = 0.0
+    val xs = (-880 to 80).map(_ * 0.1f) // exp(8) ~ 2981 < 65504 stays in FP16 range
+    for (x <- xs) {
+      dut.io.in.poke(fbits(x).U)
+      dut.clock.step(latency + 1)
+      val hw     = asF(dut.io.out.peekInt())
+      val golden = math.exp(x.toDouble).toFloat
+      val ulp    = math.abs(f32ToF16bits(hw) - f32ToF16bits(golden))
+      if (ulp > maxUlp) { maxUlp = ulp; worstX = x }
+      if (golden != 0.0f) {
+        val rel = math.abs((hw - golden) / golden).toDouble
+        if (rel > maxRel) maxRel = rel
+      }
+    }
+    println(f"[FpExp:$tag] worst FP16 ULP=$maxUlp at x=$worstX%.2f ; worst FP32 rel-err=$maxRel%.3e")
+    assert(maxUlp <= maxUlpAllowed, s"FpExp($tag) exceeds $maxUlpAllowed FP16 ULP: $maxUlp at x=$worstX")
+  }
+
   "FpExp" should "match host exp within <=1 FP16 ULP after narrowing" in {
     test(new FpExp)
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
-        dut =>
-          dut.clock.step(1)
-          var maxUlp   = 0
-          var worstX   = 0.0f
-          var maxRel   = 0.0
-          // sweep [-88, 8]; exp stays within FP16 range (exp(8) ~ 2981 < 65504)
-          val xs = (-880 to 80).map(_ * 0.1f)
-          for (x <- xs) {
-            dut.io.in.poke(fbits(x).U)
-            dut.clock.step(1)
-            val hw     = asF(dut.io.out.peekInt())
-            val golden = math.exp(x.toDouble).toFloat
-            val ulp    = math.abs(f32ToF16bits(hw) - f32ToF16bits(golden))
-            if (ulp > maxUlp) { maxUlp = ulp; worstX = x }
-            if (golden != 0.0f) {
-              val rel = math.abs((hw - golden) / golden).toDouble
-              if (rel > maxRel) maxRel = rel
-            }
-          }
-          println(f"[FpExp] worst FP16 ULP=$maxUlp at x=$worstX%.2f ; worst FP32 rel-err=$maxRel%.3e")
-          assert(maxUlp <= 1, s"FpExp exceeds 1 FP16 ULP: $maxUlp at x=$worstX")
+        dut => sweep(dut, latency = 0, maxUlpAllowed = 1, tag = "comb256")
+      }
+  }
+
+  // Area config used by StreamMap: pipelined + 128-entry ROM must stay within the relaxed <=2 FP16 ULP.
+  "FpExp_pipelined_lut128" should "match host exp within <=2 FP16 ULP (pipelined, 128-entry ROM)" in {
+    test(new FpExp(pipelined = true, lutN = 128))
+      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+        dut => sweep(dut, latency = FpExp.PipeLatency, maxUlpAllowed = 2, tag = "pipe128")
       }
   }
 }

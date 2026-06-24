@@ -83,7 +83,8 @@ class HasStreamReduce(
 class StreamReduce(
   computeLanesParam: Int = 0,
   op:                Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16"),
-  elementWidth:      Int = 16
+  elementWidth:      Int = 16,
+  pipelined:         Boolean = true
 )(
   implicit extensionParam: DataPathExtensionParam
 ) extends DataPathExtension {
@@ -117,6 +118,12 @@ class StreamReduce(
 
   val FP32_ZERO = 0.U(accWidth.W)
 
+  // ---- pipeline depths (timing): the per-lane accumulate (accLat) and the horizontal reduce tree
+  // (treeLat) are each cut into register stages so no single combinational path crosses a clock period. ----
+  val accLat  = if (pipelined) 2 else 0 // widen/square -> add/max
+  val treeLat = if (pipelined) 2 else 0 // register layers inside the horizontal reduceTree
+  private def sr[T <: Data](u: T): T = if (pipelined) RegNext(u) else u
+
   // FP32 max (finite inputs; NaN not expected from the host softmax path)
   def fp32max(a: UInt, b: UInt): UInt = {
     val sa = a(accWidth - 1); val sb = b(accWidth - 1)
@@ -129,108 +136,116 @@ class StreamReduce(
   def square(h: UInt): UInt = squareT(h, transport) // transport*transport -> FP32
   def narrow(f: UInt): UInt = narrowT(f, transport) // FP32 -> transport
 
-  // one lane's new partial: accumulate `laneIn` into `prev` per the active op (only built ops instantiated)
+  // one lane's new partial: accumulate `laneIn` into `prev` per the active op (only built ops built).
+  // Pipelined into `accLat` stages: stage 0 widen/square the input, stage 1 fold into `prev`.
   def accLane(laneIn: UInt, prev: UInt, first: Bool): UInt = {
     val widened = widen(laneIn)
+    val sq      = if (hasSumsq) square(laneIn) else widened
+    // ---- stage register: carry widened/squared inputs and the (stable) accumulator alongside ----
+    val w1 = sr(widened); val s1 = sr(sq); val p1 = sr(prev); val f1 = sr(first)
     val addend =
-      if (hasSumsq && hasAdd) Mux(opcode === OP_SUMSQ, square(laneIn), widened)
-      else if (hasSumsq) square(laneIn)
-      else widened
-    val accAdd = if (hasAdd || hasSumsq) fp32add(addend, Mux(first, FP32_ZERO, prev)) else FP32_ZERO
-    val accMax = if (hasMax) Mux(first, widened, fp32max(widened, prev)) else FP32_ZERO
-    if (multiOp) Mux(opcode === OP_MAX, accMax, accAdd)
-    else if (hasMax) accMax
-    else accAdd
+      if (hasSumsq && hasAdd) Mux(opcode === OP_SUMSQ, s1, w1)
+      else if (hasSumsq) s1
+      else w1
+    val accAdd = if (hasAdd || hasSumsq) fp32add(addend, Mux(f1, FP32_ZERO, p1)) else FP32_ZERO
+    val accMax = if (hasMax) Mux(f1, w1, fp32max(w1, p1)) else FP32_ZERO
+    val sel =
+      if (multiOp) Mux(opcode === OP_MAX, accMax, accAdd)
+      else if (hasMax) accMax
+      else accAdd
+    sr(sel) // result register
   }
 
-  // ---- per-lane FP32 partials (shared by both paths) ----
+  // ---- per-lane FP32 partials ----
   val regs = RegInit(VecInit(Seq.fill(lanes)(0.U(accWidth.W))))
 
   // ---- horizontal collapse of the lane partials -> 1 FP32 -> transport, splatted ----
-  val addTree    = if (hasAdd || hasSumsq) regs.reduceTree((a, b) => fp32add(a, b)) else FP32_ZERO
-  val maxTree    = if (hasMax) regs.reduceTree((a, b) => fp32max(a, b)) else FP32_ZERO
+  // Pairwise reduce with register layers after the given levels; read only once `regs` are stable
+  // (treeLat cycles after the last accumulate retires, gated by the FSM's tree-drain phase below).
+  val numLevels  = log2Ceil(lanes)
+  val regAfterLvl = Set(1, 3).filter(_ < numLevels - 1) // ~even split; never register the last level
+  def pipedReduce(xs: Seq[UInt], f: (UInt, UInt) => UInt): UInt = {
+    var cur = xs.toIndexedSeq
+    var lvl = 0
+    while (cur.length > 1) {
+      cur = (0 until (cur.length + 1) / 2).map { k =>
+        if (2 * k + 1 < cur.length) f(cur(2 * k), cur(2 * k + 1)) else cur(2 * k)
+      }.toIndexedSeq
+      if (regAfterLvl.contains(lvl)) cur = cur.map(sr(_))
+      lvl += 1
+    }
+    cur.head
+  }
+  val addTree    = if (hasAdd || hasSumsq) pipedReduce(regs, (a, b) => fp32add(a, b)) else FP32_ZERO
+  val maxTree    = if (hasMax) pipedReduce(regs, (a, b) => fp32max(a, b)) else FP32_ZERO
   val scalarFP32 =
     if (multiOp) Mux(opcode === OP_MAX, maxTree, addTree) else if (hasMax) maxTree else addTree
   val scalarBeat = Cat(Seq.fill(lanes)(narrow(scalarFP32)))
 
-  if (computeLanes == lanes) {
-    // PATH A — fully parallel, combinational accumulate (today's behaviour, unchanged)
-    val counter = Module(new snax.utils.BasicCounter(16) {
-      override val desiredName = "StreamReduceCounter"
-    })
-    counter.io.ceil  := operandCount
-    counter.io.reset := ext_start_i
-    counter.io.tick  := ext_data_i.fire
-    val isFirst = counter.io.value === 0.U
-    val isLast  = counter.io.value === (operandCount - 1.U)
-    val outputValid = RegInit(false.B)
+  // ---- unified time-mux + pipeline FSM ----
+  // `computeLanes` pipelined ALUs sweep the beat over `subCycles` sub-groups (one issued/cycle); results
+  // retire `accLat` cycles later into the per-lane partials. After the last beat of a row, a tree-drain
+  // phase waits `treeLat` cycles for the pipelined reduceTree to settle, then the scalar is emitted.
+  // computeLanes == lanes ⇒ subCycles == 1. tap ⇒ each input beat is re-emitted before the trailing scalar.
+  val inBeat   = Reg(UInt((lanes * elementWidth).W)) // latched raw input beat
+  val inLanes  = inBeat.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
+  val busy     = RegInit(false.B)
+  val emitPass = RegInit(false.B) // tap: a passthrough beat is ready to emit
+  val outValid = RegInit(false.B) // trailing scalar ready
+  val treeBusy = RegInit(false.B) // draining the pipelined reduceTree after the last beat
+  val beatCnt  = RegInit(0.U(16.W))
+  val firstBeat = beatCnt === 0.U
+  val lastBeat  = beatCnt === (operandCount - 1.U)
+  val total     = subCycles - 1 + accLat
+  val step      = RegInit(0.U(log2Ceil(total + 1).max(1).W))
+  val treeStepW = if (treeLat > 0) log2Ceil(treeLat + 1) else 1
+  val treeStep  = RegInit(0.U(treeStepW.W))
 
-    val input_lanes = ext_data_i.bits.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
-    val nextRegs = VecInit((0 until lanes).map(i => accLane(input_lanes(i), regs(i), isFirst)))
+  // index of lane (s*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
+  def li(s: UInt, j: Int): UInt = (s * computeLanes.U + j.U)(log2Ceil(lanes) - 1, 0)
 
-    when(ext_start_i) {
-      regs := VecInit(Seq.fill(lanes)(0.U(accWidth.W))); outputValid := false.B
-    }.elsewhen(ext_data_i.fire) {
-      regs := nextRegs; outputValid := isLast
-    }.elsewhen(ext_data_o.fire) {
-      outputValid := false.B
-    }
+  val issuing  = busy && (step < subCycles.U)
+  val subIssue = step // low log2(lanes) bits matter; gated off during drain
+  val res = Wire(Vec(computeLanes, UInt(accWidth.W)))
+  for (j <- 0 until computeLanes)
+    res(j) := accLane(inLanes(li(subIssue, j)), regs(li(subIssue, j)), firstBeat)
 
-    when(outputValid) {
-      ext_data_o.bits  := scalarBeat
-      ext_data_o.valid := true.B
-      ext_data_i.ready := Mux(tap, false.B, ext_data_o.ready)
-    }.otherwise {
-      ext_data_o.bits  := Mux(tap, ext_data_i.bits, scalarBeat)
-      ext_data_o.valid := Mux(tap, ext_data_i.valid, false.B)
-      ext_data_i.ready := Mux(tap, ext_data_o.ready, true.B)
-    }
-    ext_busy_o := (counter.io.value =/= 0.U) || outputValid
-  } else {
-    // PATH B — time-multiplexed: computeLanes ALUs sweep the lane partials over subCycles cycles per beat
-    val inBeat   = Reg(UInt((lanes * elementWidth).W)) // latched raw input beat
-    val inLanes  = inBeat.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
-    val sub      = RegInit(0.U(log2Ceil(subCycles).W))
-    val busy     = RegInit(false.B)
-    val emitPass = RegInit(false.B) // tap: a passthrough beat is ready to emit
-    val outValid = RegInit(false.B) // trailing scalar ready
-    val beatCnt  = RegInit(0.U(16.W))
-    val firstBeat = beatCnt === 0.U
-    val lastBeat  = beatCnt === (operandCount - 1.U)
-
-    // index of lane (sub*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
-    def li(j: Int): UInt = (sub * computeLanes.U + j.U)(log2Ceil(lanes) - 1, 0)
-
-    val res = Wire(Vec(computeLanes, UInt(accWidth.W)))
-    for (j <- 0 until computeLanes)
-      res(j) := accLane(inLanes(li(j)), regs(li(j)), firstBeat)
-
-    ext_data_i.ready := !busy && !emitPass && !outValid
-
-    when(ext_start_i) {
-      busy := false.B; emitPass := false.B; outValid := false.B; sub := 0.U; beatCnt := 0.U
-    }.elsewhen(busy) {
-      for (j <- 0 until computeLanes) regs(li(j)) := res(j)
-      when(sub === (subCycles - 1).U) {
-        busy := false.B; sub := 0.U
-        when(tap) { emitPass := true.B }
-        when(lastBeat) { outValid := true.B }.otherwise { beatCnt := beatCnt + 1.U }
-      }.otherwise {
-        sub := sub + 1.U
-      }
-    }.elsewhen(ext_data_i.fire) {
-      inBeat := ext_data_i.bits; busy := true.B; sub := 0.U
-    }
-    when(emitPass && ext_data_o.ready && !ext_start_i) { emitPass := false.B }
-    when(outValid && !emitPass && ext_data_o.ready && !ext_start_i) { outValid := false.B; beatCnt := 0.U }
-
-    when(emitPass) {
-      ext_data_o.bits  := inBeat // tap passthrough of the latched beat
-      ext_data_o.valid := true.B
-    }.otherwise {
-      ext_data_o.bits  := scalarBeat
-      ext_data_o.valid := outValid
-    }
-    ext_busy_o := busy || emitPass || outValid || (beatCnt =/= 0.U)
+  val subRetire   = ShiftRegister(subIssue, accLat)
+  val retireValid = ShiftRegister(issuing, accLat, false.B, true.B)
+  when(busy && retireValid) {
+    for (j <- 0 until computeLanes) regs(li(subRetire, j)) := res(j)
   }
+
+  ext_data_i.ready := !busy && !treeBusy && !emitPass && !outValid
+
+  when(ext_start_i) {
+    busy := false.B; emitPass := false.B; outValid := false.B; treeBusy := false.B
+    step := 0.U; treeStep := 0.U; beatCnt := 0.U
+  }.elsewhen(busy) {
+    when(step === total.U) {
+      busy := false.B; step := 0.U
+      when(tap) { emitPass := true.B }
+      when(lastBeat) {
+        if (treeLat > 0) { treeBusy := true.B; treeStep := 0.U } else { outValid := true.B }
+      }.otherwise { beatCnt := beatCnt + 1.U }
+    }.otherwise {
+      step := step + 1.U
+    }
+  }.elsewhen(treeBusy) {
+    when(treeStep === (treeLat - 1).U) { treeBusy := false.B; outValid := true.B }
+      .otherwise { treeStep := treeStep + 1.U }
+  }.elsewhen(ext_data_i.fire) {
+    inBeat := ext_data_i.bits; busy := true.B; step := 0.U
+  }
+  when(emitPass && ext_data_o.ready && !ext_start_i) { emitPass := false.B }
+  when(outValid && !emitPass && ext_data_o.ready && !ext_start_i) { outValid := false.B; beatCnt := 0.U }
+
+  when(emitPass) {
+    ext_data_o.bits  := inBeat // tap passthrough of the latched beat
+    ext_data_o.valid := true.B
+  }.otherwise {
+    ext_data_o.bits  := scalarBeat
+    ext_data_o.valid := outValid
+  }
+  ext_busy_o := busy || treeBusy || emitPass || outValid || (beatCnt =/= 0.U)
 }

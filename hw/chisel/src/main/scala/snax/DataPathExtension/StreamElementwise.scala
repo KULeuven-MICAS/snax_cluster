@@ -52,7 +52,8 @@ class HasStreamElementwise(
 class StreamElementwise(
   computeLanesParam: Int = 0,
   op:                Seq[String] = Seq("MUL_FP16", "ADD_FP16"),
-  elementWidth:      Int = 16
+  elementWidth:      Int = 16,
+  pipelined:         Boolean = true
 )(
   implicit extensionParam: DataPathExtensionParam
 ) extends DataPathExtension {
@@ -91,87 +92,78 @@ class StreamElementwise(
   def widen(h:  UInt): UInt = widenT(h, transport)  // transport -> FP32
   def narrow(f: UInt): UInt = narrowT(f, transport) // FP32 -> transport
 
-  // one lane's new partial: combine `laneIn` into `prev` per the active op (only built ops instantiated).
+  // ---- pipeline depth (timing): widen -> mul/add is cut into `accLat` register stages ----
+  val accLat = if (pipelined) 2 else 0
+  private def sr[T <: Data](u: T): T = if (pipelined) RegNext(u) else u
+
+  // one lane's new partial: combine `laneIn` into `prev` per the active op (only built ops built).
   // first beat seeds the partial with the (widened) input; later beats fold in via mul/add.
+  // Pipelined into `accLat` stages: stage 0 widens the input, stage 1 folds into `prev`.
   def accLane(laneIn: UInt, prev: UInt, first: Bool): UInt = {
     val widened = widen(laneIn)
-    val accMul  = if (hasMul) Mux(first, widened, fmul(prev, widened)) else FP32_ZERO
-    val accAdd  = if (hasAdd) Mux(first, widened, fadd(prev, widened)) else FP32_ZERO
-    if (multiOp) Mux(opcode === OP_ADD, accAdd, accMul)
-    else if (hasAdd) accAdd
-    else accMul
+    // ---- stage register: carry widened input and the (stable) accumulator alongside ----
+    val w1 = sr(widened); val p1 = sr(prev); val f1 = sr(first)
+    val accMul = if (hasMul) Mux(f1, w1, fmul(p1, w1)) else FP32_ZERO
+    val accAdd = if (hasAdd) Mux(f1, w1, fadd(p1, w1)) else FP32_ZERO
+    val sel =
+      if (multiOp) Mux(opcode === OP_ADD, accAdd, accMul)
+      else if (hasAdd) accAdd
+      else accMul
+    sr(sel) // result register
   }
 
-  // ---- per-lane FP32 partials (shared by both paths) ----
+  // ---- per-lane FP32 partials ----
   val regs = RegInit(VecInit(Seq.fill(lanes)(0.U(accWidth.W))))
 
   // per-lane result beat: narrow each FP32 partial back to transport (lane 0 in the low bits)
   val resultBeat = Cat((0 until lanes).map(i => narrow(regs(i))).reverse)
 
-  if (computeLanes == lanes) {
-    // PATH A — fully parallel, combinational combine per beat
-    val counter = Module(new snax.utils.BasicCounter(16) {
-      override val desiredName = "StreamElementwiseCounter"
-    })
-    counter.io.ceil  := operandCount
-    counter.io.reset := ext_start_i
-    counter.io.tick  := ext_data_i.fire
-    val isFirst = counter.io.value === 0.U
-    val isLast  = counter.io.value === (operandCount - 1.U)
-    val outputValid = RegInit(false.B)
+  // ---- unified time-mux + pipeline FSM ----
+  // `computeLanes` pipelined ALUs sweep the beat over `subCycles` sub-groups (one issued/cycle); results
+  // retire `accLat` cycles later into the per-lane partials. After the last beat of a row the full beat is
+  // emitted. computeLanes == lanes ⇒ subCycles == 1. Per-beat cost = subCycles + accLat cycles.
+  val inBeat   = Reg(UInt((lanes * elementWidth).W))
+  val inLanes  = inBeat.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
+  val busy     = RegInit(false.B)
+  val outValid = RegInit(false.B)
+  val beatCnt  = RegInit(0.U(16.W))
+  val firstBeat = beatCnt === 0.U
+  val lastBeat  = beatCnt === (operandCount - 1.U)
+  val total     = subCycles - 1 + accLat
+  val step      = RegInit(0.U(log2Ceil(total + 1).max(1).W))
 
-    val input_lanes = ext_data_i.bits.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
-    val nextRegs    = VecInit((0 until lanes).map(i => accLane(input_lanes(i), regs(i), isFirst)))
+  // index of lane (s*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
+  def li(s: UInt, j: Int): UInt = (s * computeLanes.U + j.U)(log2Ceil(lanes) - 1, 0)
 
-    when(ext_start_i) {
-      regs := VecInit(Seq.fill(lanes)(0.U(accWidth.W))); outputValid := false.B
-    }.elsewhen(ext_data_i.fire) {
-      regs := nextRegs; outputValid := isLast
-    }.elsewhen(ext_data_o.fire) {
-      outputValid := false.B
-    }
+  val issuing  = busy && (step < subCycles.U)
+  val subIssue = step
+  val res = Wire(Vec(computeLanes, UInt(accWidth.W)))
+  for (j <- 0 until computeLanes)
+    res(j) := accLane(inLanes(li(subIssue, j)), regs(li(subIssue, j)), firstBeat)
 
-    ext_data_o.bits  := resultBeat
-    ext_data_o.valid := outputValid
-    ext_data_i.ready := !outputValid || ext_data_o.ready
-    ext_busy_o       := (counter.io.value =/= 0.U) || outputValid
-  } else {
-    // PATH B — time-multiplexed: computeLanes ALUs sweep the lane partials over subCycles cycles per beat
-    val inBeat   = Reg(UInt((lanes * elementWidth).W))
-    val inLanes  = inBeat.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
-    val sub      = RegInit(0.U(log2Ceil(subCycles).W))
-    val busy     = RegInit(false.B)
-    val outValid = RegInit(false.B)
-    val beatCnt  = RegInit(0.U(16.W))
-    val firstBeat = beatCnt === 0.U
-    val lastBeat  = beatCnt === (operandCount - 1.U)
-
-    // index of lane (sub*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
-    def li(j: Int): UInt = (sub * computeLanes.U + j.U)(log2Ceil(lanes) - 1, 0)
-
-    val res = Wire(Vec(computeLanes, UInt(accWidth.W)))
-    for (j <- 0 until computeLanes)
-      res(j) := accLane(inLanes(li(j)), regs(li(j)), firstBeat)
-
-    ext_data_i.ready := !busy && !outValid
-
-    when(ext_start_i) {
-      busy := false.B; outValid := false.B; sub := 0.U; beatCnt := 0.U
-    }.elsewhen(busy) {
-      for (j <- 0 until computeLanes) regs(li(j)) := res(j)
-      when(sub === (subCycles - 1).U) {
-        busy := false.B; sub := 0.U
-        when(lastBeat) { outValid := true.B }.otherwise { beatCnt := beatCnt + 1.U }
-      }.otherwise {
-        sub := sub + 1.U
-      }
-    }.elsewhen(ext_data_i.fire) {
-      inBeat := ext_data_i.bits; busy := true.B; sub := 0.U
-    }
-    when(outValid && ext_data_o.ready && !ext_start_i) { outValid := false.B; beatCnt := 0.U }
-
-    ext_data_o.bits  := resultBeat
-    ext_data_o.valid := outValid
-    ext_busy_o       := busy || outValid || (beatCnt =/= 0.U)
+  val subRetire   = ShiftRegister(subIssue, accLat)
+  val retireValid = ShiftRegister(issuing, accLat, false.B, true.B)
+  when(busy && retireValid) {
+    for (j <- 0 until computeLanes) regs(li(subRetire, j)) := res(j)
   }
+
+  ext_data_i.ready := !busy && !outValid
+
+  when(ext_start_i) {
+    busy := false.B; outValid := false.B; step := 0.U; beatCnt := 0.U
+  }.elsewhen(busy) {
+    when(step === total.U) {
+      busy := false.B; step := 0.U
+      when(lastBeat) { outValid := true.B }.otherwise { beatCnt := beatCnt + 1.U }
+    }.otherwise {
+      step := step + 1.U
+    }
+  }.elsewhen(ext_data_i.fire) {
+    inBeat := ext_data_i.bits; busy := true.B; step := 0.U
+  }
+  when(outValid && ext_data_o.ready && !ext_start_i) { outValid := false.B; beatCnt := 0.U }
+
+  ext_data_o.bits  := resultBeat
+  ext_data_o.valid := outValid
+  ext_busy_o       := busy || outValid || (beatCnt =/= 0.U)
 }

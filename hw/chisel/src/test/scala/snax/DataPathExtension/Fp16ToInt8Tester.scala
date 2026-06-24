@@ -93,9 +93,9 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   // Pack `beats` 512b FP16 input beats (even count) into beats/2 INT8 output beats.
-  def runHarness(invScaleBits: BigInt, inputBeats: Seq[BigInt]): Seq[BigInt] = {
+  def runHarness(invScaleBits: BigInt, inputBeats: Seq[BigInt], computeLanes: Int = 0): Seq[BigInt] = {
     var outs = Seq[BigInt]()
-    test(new DataPathExtensionHarness(new HasFp16ToInt8(16, 8, 512)))
+    test(new DataPathExtensionHarness(new HasFp16ToInt8(16, 8, 512, computeLanes)))
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, flags)) { dut =>
         dut.io.csr_i(0).poke(invScaleBits.U)
         dut.io.enable_i.poke(true)
@@ -144,5 +144,24 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
     assert(hw.length == gd.length, s"got ${hw.length} output beats, expected ${gd.length}")
     for (i <- hw.indices)
       assert(hw(i) == gd(i), f"beat $i mismatch:\n  HW=0x${hw(i).toString(16)}\n  SW=0x${gd(i).toString(16)}")
+  }
+
+  // Time-mux config used by the cfg (computeLanes=8 -> 4 sub-cycles per input beat): same packed result.
+  it should "pack correctly in the time-mux FSM (computeLanes=8)" in {
+    val rng        = new Random(0xBEE)
+    val scaleBits  = f32bits(16.0f)
+    val nBeats     = 6 // even
+    val inputBeats = Seq.fill(nBeats)(packFp16(Seq.fill(32)(sampleFp16(rng))))
+
+    val hw = runHarness(scaleBits, inputBeats, computeLanes = 8)
+    val gd = inputBeats.grouped(2).map { pair =>
+      val bytes = lanesOf(pair(0)).map(h => quantRef(h, scaleBits.toLong)) ++
+        lanesOf(pair(1)).map(h => quantRef(h, scaleBits.toLong))
+      packInt8(bytes)
+    }.toSeq
+
+    assert(hw.length == gd.length, s"got ${hw.length} output beats, expected ${gd.length}")
+    for (i <- hw.indices)
+      assert(hw(i) == gd(i), f"beat $i (cl=8) mismatch:\n  HW=0x${hw(i).toString(16)}\n  SW=0x${gd(i).toString(16)}")
   }
 }

@@ -76,7 +76,8 @@ class HasStreamMap(
 class StreamMap(
   computeLanesParam: Int = 8,
   func:              Seq[String] = Seq("LINEAR_FP16", "EXP_FP16"),
-  elementWidth:      Int = 16
+  elementWidth:      Int = 16,
+  pipelined:         Boolean = true
 )(implicit
   extensionParam: DataPathExtensionParam
 ) extends DataPathExtension {
@@ -95,6 +96,13 @@ class StreamMap(
   val hasSilu   = funcs.contains("SILU")
   val hasLinear = funcs.contains("LINEAR")
 
+  // Activation ROM depths. FpExp shrinks to 128 entries (still 0 FP16 ULP). FpSilu stays at 512: its
+  // negative tail (silu ~ x*e^x lands small normals on a fine FP16 grid) needs the density to keep
+  // within the <=2 FP16 ULP budget (256 nodes measured 3 ULP at x~-10.8); only 1-2 instances exist
+  // after the computeLanes cut, so the LUT saving there is marginal anyway.
+  val expLutN = 128
+  val siluN   = 512
+
   def ACT_EXP  = 1.U
   def ACT_SILU = 2.U
 
@@ -103,62 +111,68 @@ class StreamMap(
   val actField = ext_csr_i(2)
   val act      = actField(1, 0) // func: 0=LINEAR, 1=EXP, 2=SILU
 
+  // ---- pipeline depth (timing): the per-lane chain widen+ffma -> act -> narrow is cut into P
+  // register stages so no single combinational path crosses a clock period; the FSM below drains it. ----
+  val actLat  = if (pipelined && (hasExp || hasSilu)) FpExp.PipeLatency else 0
+  val preLat  = if (pipelined) 1 else 0 // register after widen+ffma (a*x+b)
+  val postLat = if (pipelined) 1 else 0 // register after narrow
+  val P       = preLat + actLat + postLat
+  private def sr[T <: Data](u: T): T = if (pipelined) RegNext(u) else u
+
   // one compute lane: a*x + b (FP32), then the CSR-selected activation (each built only if listed),
   // narrow back to transport. LINEAR is the affine result itself; EXP/SILU route through FpExp/FpSilu.
+  // When `pipelined`, all three func branches share `actLat` so the runtime func-mux stays aligned.
   def computeLane(laneIn: UInt): UInt = {
-    val t = ffma(a, widen(laneIn, transport), b)
-    val e = if (hasExp)  { val m = Module(new FpExp);  m.io.in := t; m.io.out } else t
-    val s = if (hasSilu) { val m = Module(new FpSilu); m.io.in := t; m.io.out } else t
-    // default when act selects no built activation: LINEAR (=t) if listed, else the sole non-linear func.
-    val dflt = if (hasLinear) t else if (hasExp) e else s
+    val t = sr(ffma(a, widen(laneIn, transport), b)) // preLat stage
+    val e = if (hasExp)  { val m = Module(new FpExp(pipelined, expLutN)); m.io.in := t; m.io.out } else t
+    val s = if (hasSilu) { val m = Module(new FpSilu(pipelined, siluN)); m.io.in := t; m.io.out } else t
+    val tD = if (actLat > 0) ShiftRegister(t, actLat) else t // delay LINEAR to match EXP/SILU latency
+    // default when act selects no built activation: LINEAR (=tD) if listed, else the sole non-linear func.
+    val dflt = if (hasLinear) tD else if (hasExp) e else s
     val r0   = if (hasExp)  Mux(act === ACT_EXP,  e, dflt) else dflt
     val r    = if (hasSilu) Mux(act === ACT_SILU, s, r0)   else r0
-    narrow(r, transport)
+    sr(narrow(r, transport)) // postLat stage
   }
 
-  if (subCycles == 1) {
-    // fully parallel: combinational 1 beat in / 1 beat out
-    val in_lanes  = ext_data_i.bits.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
-    val out_lanes = VecInit((0 until lanes).map(i => computeLane(in_lanes(i))))
-    ext_data_o.bits  := Cat(out_lanes.reverse)
-    ext_data_o.valid := ext_data_i.valid
-    ext_data_i.ready := ext_data_o.ready
-    ext_busy_o       := false.B
-  } else {
-    // time-multiplexed: `computeLanes` units sweep the beat over `subCycles` cycles
-    val inBeat   = Reg(Vec(lanes, UInt(elementWidth.W)))
-    val outBeat  = Reg(Vec(lanes, UInt(elementWidth.W)))
-    val sub      = RegInit(0.U(log2Ceil(subCycles).W))
-    val busy     = RegInit(false.B)
-    val outValid = RegInit(false.B)
+  // Unified time-mux + pipeline FSM: `computeLanes` pipelined units sweep the beat over `subCycles`
+  // sub-groups (one issued per cycle), and results retire P cycles later. computeLanes == lanes ⇒
+  // subCycles == 1 (one issue, then drain). Per-beat cost = subCycles + P cycles.
+  val inBeat   = Reg(Vec(lanes, UInt(elementWidth.W)))
+  val outBeat  = Reg(Vec(lanes, UInt(elementWidth.W)))
+  val busy     = RegInit(false.B)
+  val outValid = RegInit(false.B)
+  val total    = subCycles - 1 + P
+  val step     = RegInit(0.U(log2Ceil(total + 1).max(1).W))
 
-    // index of lane (sub*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
-    def li(j: Int): UInt = (sub * computeLanes.U + j.U)(log2Ceil(lanes) - 1, 0)
+  // index of lane (s*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
+  def li(s: UInt, j: Int): UInt = (s * computeLanes.U + j.U)(log2Ceil(lanes) - 1, 0)
 
-    // combinational compute of the current sub-group's `computeLanes` lanes
-    val res = Wire(Vec(computeLanes, UInt(elementWidth.W)))
-    for (j <- 0 until computeLanes)
-      res(j) := computeLane(inBeat(li(j)))
+  val issuing  = busy && (step < subCycles.U)
+  val subIssue = step // only the low log2(lanes) bits matter (li masks); during drain it is gated off
+  val res = Wire(Vec(computeLanes, UInt(elementWidth.W)))
+  for (j <- 0 until computeLanes)
+    res(j) := computeLane(inBeat(li(subIssue, j)))
 
-    ext_data_i.ready := !busy && !outValid
-
-    when(ext_start_i) {
-      busy := false.B; outValid := false.B; sub := 0.U
-    }.elsewhen(busy) {
-      for (j <- 0 until computeLanes) outBeat(li(j)) := res(j)
-      when(sub === (subCycles - 1).U) {
-        busy := false.B; outValid := true.B; sub := 0.U
-      }.otherwise {
-        sub := sub + 1.U
-      }
-    }.elsewhen(ext_data_i.fire) {
-      inBeat := ext_data_i.bits.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
-      busy := true.B; sub := 0.U
-    }
-    when(outValid && ext_data_o.ready && !ext_start_i) { outValid := false.B }
-
-    ext_data_o.bits  := Cat(outBeat.reverse)
-    ext_data_o.valid := outValid
-    ext_busy_o       := busy || outValid
+  // retire: the result for the group issued P cycles ago lands now (P==0 ⇒ same cycle)
+  val subRetire   = ShiftRegister(subIssue, P)
+  val retireValid = ShiftRegister(issuing, P, false.B, true.B)
+  when(busy && retireValid) {
+    for (j <- 0 until computeLanes) outBeat(li(subRetire, j)) := res(j)
   }
+
+  ext_data_i.ready := !busy && !outValid
+  when(ext_start_i) {
+    busy := false.B; outValid := false.B; step := 0.U
+  }.elsewhen(busy) {
+    when(step === total.U) { busy := false.B; step := 0.U; outValid := true.B }
+      .otherwise { step := step + 1.U }
+  }.elsewhen(ext_data_i.fire) {
+    inBeat := ext_data_i.bits.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
+    busy := true.B; step := 0.U
+  }
+  when(outValid && ext_data_o.ready && !ext_start_i) { outValid := false.B }
+
+  ext_data_o.bits  := Cat(outBeat.reverse)
+  ext_data_o.valid := outValid
+  ext_busy_o       := busy || outValid
 }
