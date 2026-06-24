@@ -21,18 +21,20 @@
 //   Fp16ToInt8 (fused quant pass): packs 2 FP16 beats -> 1 INT8 beat (64 int8 = 512b); writer drains
 //      beats/2 (needs an even beat count). NOT a 512->512 op.
 //
-// Performance (FP16, vsim, L1<->L1). host(full) = a single host vector core, full FP32 silu_mul (op-LUT).
+// Performance (FP16, vsim, L1<->L1) on the area/timing-optimized RTL: pipelined FP datapaths + time-mux
+// computeLanes (StreamMap=2, StreamElementwise=2, Fp16ToInt8=8). host(full) = a single host vector core,
+// full FP32 silu_mul (op-LUT). Outputs match the FP64 golden to <=2 FP16 ULP.
 //
-//   N      beats   silu  mul    xdma_total   warm    cold    host(full)   warm speedup
-//   ----   -----   ----  -----  ----------   -----   -----   ----------   ------------
-//   64     2       22    32     54           2,107   2,610   2,308        1.1x
-//   256    8       58    98     156          2,207   2,714   8,662        3.9x
-//   1024   32      202   362    564          2,590   3,089   34,493       13.3x
-//   4096   128     778   1,418  2,196        4,222   4,721   137,799      32.6x
+//   N      beats   silu  mul    xdma_total   warm     cold     host(full)   warm speedup
+//   ----   -----   ----  -----  ----------   ------   ------   ----------   ------------
+//   64     2       59    89     148          1,991    2,247    2,308        1.2x
+//   256    8       203   323    526          2,603    2,855    8,662        3.3x
+//   1024   32      779   1,259  2,038        5,045    5,306    34,493       6.8x
+//   4096   128     3,083 5,003  8,086        14,837   15,098   137,799      9.3x
 //
-// The mul datapath (32..1,418 cc) replaces the host's O(n) (.)up, so the speedup climbs with n instead of
-// collapsing. warm ~= 2,050 (two AGU setups, no retask) + xdma_total; the 2-setup overhead amortizes in
-// batched inference (one silu over all [S,F], then one mul).
+// The mul datapath (89..5,003 cc) replaces the host's O(n) (.)up, so the speedup climbs with n instead of
+// collapsing. warm ~= 1,745 fixed (three task setups: two AGU + retask) + xdma_total; the setup overhead
+// amortizes in batched inference (one silu over all [S,F], then one mul).
 
 #include "data.h"
 #include "snax-xdma-lib.h"

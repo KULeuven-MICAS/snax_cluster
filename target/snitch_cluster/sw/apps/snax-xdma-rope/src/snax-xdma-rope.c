@@ -31,20 +31,22 @@
 //   P3 ADD:  out  = tmp1  (+) tmp2     -> [ x0*c0-x1*s0   x1*c0+x0*s0  ... ]   (the rotation)
 //   Each pass is a clean 32-lane-in/32-lane-out element-wise op (the 2:1 is the interleaved-operand read).
 //
-// Performance (FP16, vsim, L1<->L1), measured. swap* = one-time rotate_half staging (iDMA, ~2 cyc/elem);
-// p1/p2/p3 = the StreamElementwise passes; xdma_total = p1+p2+p3 (pure datapath); warm/cold = the 3-pass
-// offload only (swap excluded, comparable to swiglu's warm/cold); per-call = swap+warm.
+// Performance (FP16, vsim, L1<->L1), measured on the area/timing-optimized RTL: pipelined StreamElementwise
+// + time-mux computeLanes=2. swap* = one-time rotate_half staging (iDMA, ~2 cyc/elem); p1/p2/p3 = the
+// StreamElementwise passes; xdma_total = p1+p2+p3 (pure datapath); warm/cold = the 3-pass offload only
+// (swap excluded, comparable to swiglu's warm/cold); per-call = swap+warm.
 //
-//   N      beats   swap*   p1     p2     p3     xdma_total   warm    cold    per-call(swap+warm)
-//   ----   -----   -----   ----   ----   ----   ----------   -----   -----   -------------------
-//   64     2       165     33     33     33     99           3,190   3,556   3,355
-//   256    8       550     99     99     99     297          3,390   3,760   3,940
-//   1024   32      2,086   363    363    363    1,089        4,143   4,577   6,229
-//   4096   128     8,231   1,419  1,419  1,419  4,257        7,311   7,745   15,542
+//   N      beats   swap*   p1     p2     p3     xdma_total   warm     cold     per-call(swap+warm)
+//   ----   -----   -----   ----   ----   ----   ----------   ------   ------   -------------------
+//   64     2       166     89     89     89     267          1,864    2,032    2,030
+//   256    8       551     323    323    323    969          2,568    2,736    3,119
+//   1024   32      2,090   1,259  1,259  1,259  3,777        5,326    5,532    7,416
+//   4096   128     8,235   5,003  5,003  5,003  15,009       16,558   16,764   24,793
 //
-// worst FP16 ULP vs the 3-pass golden = 0 (N<=1024), 1 (N=4096). The datapath is ~11 cyc/beat/pass; the
-// ~3k fixed warm cost is the 3x CSR orchestration (3 memcpy_nd setups), not the math (skill: orchestration
-// is the bottleneck). At large N the swap (the rotate_half tax of the zero-HW path) dominates. Reference:
+// worst FP16 ULP vs the 3-pass golden = 0 (N<=1024), 1 (N=4096). The datapath is ~40 cyc/beat/pass (the
+// computeLanes=2 time-mux); the ~1.6k fixed warm cost is the 3x CSR orchestration (3 memcpy_nd setups), not
+// the math (skill: orchestration is the bottleneck). At large N the swap (the rotate_half tax of the
+// zero-HW path) and the time-muxed datapath dominate. Reference:
 // swiglu's measured host(full) silu+mul is ~33.6*N cyc (2,308..137,799 for N=64..4096); a host
 // RoPE has no transcendental so it is cheaper, hence the offload pays off only at larger N. A fused
 // single-pass StreamRoPE (intra-beat adjacent-pair) would remove the swap and 2 of the 3 passes.

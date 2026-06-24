@@ -24,16 +24,19 @@
 // test precomputes inv_sum in data.h (softmax_inv_sum) and checks the runtime Σexp against softmax_sum_golden
 // (-max for T2 is a DM-core integer sign-flip, no FP).
 //
-// Performance (FP16, vsim, L1<->L1; xDMA part). "+host" adds the estimated host reciprocal (~57 cc, from the
-// fp16_reciprocal op-LUT at n=1). host = a single host vector core, full FP32 LUT softmax. Outputs match the
-// FP64 golden to <=4 ULP.
+// Performance (FP16, vsim, L1<->L1; xDMA part) on the area/timing-optimized RTL: pipelined FP datapaths +
+// time-mux computeLanes (StreamMap=2, StreamReduce=4, Fp16ToInt8=8), FpExp 128-entry LUT. "+host" adds the
+// estimated host reciprocal (~57 cc, from the fp16_reciprocal op-LUT at n=1). host = a single host vector
+// core, full FP32 LUT softmax. Outputs match the FP64 golden to <=4 ULP (worst FP16 ULP=1). The CSR
+// orchestration is a fixed ~1.3k cc (4 task setups); the datapath scales with N, so warm is CSR-bound at
+// small N and datapath-bound for N>=1k (the time-mux trades datapath throughput, felt only at large N).
 //
-//   N      beats   xDMA warm   +host est   cold    host(full)   warm speedup(+host)
-//   ----   -----   ---------   ---------   -----   ----------   -------------------
-//   64     2       1,070       ~1,127      2,492   6,489        5.8x
-//   256    8       1,150       ~1,207      2,564   24,153       20.0x
-//   1024   32      1,458       ~1,515      2,845   95,177       62.8x
-//   4096   128     2,706       ~2,763      4,093   379,441      137.3x
+//   N      beats   xDMA warm   +host est   cold     host(full)   warm speedup(+host)
+//   ----   -----   ---------   ---------   ------   ----------   -------------------
+//   64     2       1,535       ~1,592      2,317    6,489        4.1x
+//   256    8       2,035       ~2,092      2,813    24,153       11.5x
+//   1024   32      4,017       ~4,074      4,765    95,177       23.4x
+//   4096   128     11,985      ~12,042     12,733   379,441      31.5x
 
 #include "data.h"
 #include "snax-xdma-lib.h"
