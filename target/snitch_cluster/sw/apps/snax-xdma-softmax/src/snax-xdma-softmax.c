@@ -11,12 +11,21 @@
 //   host           : inv_sum = 1/Σexp                                                          [host, ~57 cc]
 //   T3  norm       : StreamMap(a=inv_sum, b=0, func=LINEAR)            exp -> out             [xDMA]
 //
-// The DM core (rv32ima, no FPU) can't do the reciprocal; on HeMAiA the host CVA6 does it. This standalone
+// LANE DATAFLOW (FP16 transport = 32 lanes per 512-b beat):
+//   T1 StreamReduce(MAX)  N beats -> 1 beat: 32 lanes collapse to s=max(row), SPLATTED [s s..s] (read lane 0).
+//   T2 StreamMap(EXP, b=-max) -||> StreamReduce(ADD, TAP):
+//      Map: e[i] = exp(x[i] - max)              1 beat -> 1 beat, all 32 lanes
+//      Reduce in TAP mode PASSES the exp row through (N beats) and APPENDS the row-sum Sexp as ONE trailing
+//      splatted beat -> T2 writes N+1 beats: [ exp_beat0 .. exp_beatN-1 , (S S .. S) ].
+//   T3 StreamMap(LINEAR)  1 beat -> 1 beat: out[i] = inv_sum * exp[i]      (clean 512->512)
+//   Fp16ToInt8 (fused quant): packs 2 FP16 beats -> 1 INT8 beat (writer drains beats/2, even count).
+//
+// The DM core (rv32ima, no FPU) can't do the reciprocal; a host core does it. This standalone
 // test precomputes inv_sum in data.h (softmax_inv_sum) and checks the runtime Σexp against softmax_sum_golden
 // (-max for T2 is a DM-core integer sign-flip, no FP).
 //
 // Performance (FP16, vsim, L1<->L1; xDMA part). "+host" adds the estimated host reciprocal (~57 cc, from the
-// fp16_reciprocal op-LUT at n=1). host = a single CVA6+Ara core, full FP32 LUT softmax. Outputs match the
+// fp16_reciprocal op-LUT at n=1). host = a single host vector core, full FP32 LUT softmax. Outputs match the
 // FP64 golden to <=4 ULP.
 //
 //   N      beats   xDMA warm   +host est   cold    host(full)   warm speedup(+host)
@@ -125,7 +134,7 @@ int main() {
             snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
             snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
 
-            // The host computes inv_sum = 1/Σexp from the reduce scalar (on the real HeMAiA host the CVA6
+            // The host computes inv_sum = 1/Σexp from the reduce scalar (a host core
             // does the reciprocal; here it is precomputed in softmax_inv_sum). Validate T2's Σexp (positive,
             // so the raw FP16 bits are monotonic).
             if (iter == 1) {

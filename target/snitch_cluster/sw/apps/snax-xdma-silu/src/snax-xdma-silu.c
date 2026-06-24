@@ -10,7 +10,14 @@
 // SILU routes the affine result through FpSilu (a 512-entry sigmoid LUT * x; see FpSilu.scala). FP16
 // transport, FP32-internal.
 //
-// Performance (FP16, vsim, L1<->L1). host = a single CVA6+Ara core, full FP32 silu (op-LUT baseline).
+// LANE DATAFLOW (FP16 transport = 32 lanes per 512-b beat):
+//   StreamMap(SILU)  1 beat -> 1 beat, all 32 lanes used (clean 512b in / 512b out):
+//     in  [ x0  x1  ... x31 ]   ->   out [ silu(x0) silu(x1) ... silu(x31) ]   (a=1, b=0 -> act on x)
+//   Fp16ToInt8 (fused quant pass) is NOT 512->512: it packs 2 FP16 beats -> 1 INT8 beat (half the bytes):
+//     beat0 [x0..x31]->int8 = LOW 32 B,  beat1 [x32..x63]->int8 = HIGH 32 B  ->  out [q0..q63] (64 int8)
+//     emitted on beat1 only; the writer drains beats/2 (needs an even beat count).
+//
+// Performance (FP16, vsim, L1<->L1). host = a single host vector core, full FP32 silu (op-LUT baseline).
 // Outputs match the FP64 golden to <=1 FP16 ULP at every N.
 //
 //   N      beats   warm    cold    host       warm speedup

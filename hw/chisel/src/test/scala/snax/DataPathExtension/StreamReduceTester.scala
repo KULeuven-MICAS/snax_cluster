@@ -97,6 +97,50 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     result
   }
 
+  /** Drive the DUT for `rows` consecutive rows in ONE dispatch (operandCount = beatsPerRow), returning
+    * the per-row HW scalars (low lane of each output beat). The counter wraps at operandCount and
+    * re-inits the per-lane regs every row, so feeding rows*beatsPerRow input beats emits one splatted
+    * scalar per row -- no Chisel change. Distinct per-row data lets the check catch a broken
+    * row-boundary re-init: row r's scalar must equal row r's own reduction, not a running total. */
+  def runReduceMultiRow(op: Int, rows: Seq[Seq[Seq[Int]]], computeLanes: Int = 32,
+                        ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16")): Seq[Float] = {
+    val beatsPerRow = rows.head.length
+    val allBeats    = rows.flatten // rows*beatsPerRow input beats
+    val results     = scala.collection.mutable.ArrayBuffer[Float]()
+    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
+      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.io.csr_i(0).poke(beatsPerRow.U)
+        dut.io.csr_i(1).poke(op.U)
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true)
+        dut.clock.step(1)
+        dut.io.start_i.poke(false)
+
+        var threads = new chiseltest.internal.TesterThreadList(Seq())
+        threads = threads.fork {
+          dut.io.data_i.valid.poke(true)
+          for (b <- allBeats) {
+            while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+            dut.io.data_i.bits.poke(packBeat(b))
+            dut.clock.step(1)
+          }
+          dut.io.data_i.valid.poke(false)
+        }
+        threads = threads.fork {
+          for (_ <- rows.indices) { // one scalar beat per row
+            while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+            val lane0 = (dut.io.data_o.bits.peekInt() & ((BigInt(1) << 16) - 1)).toInt
+            results += f16bitsToF32(lane0)
+            dut.io.data_o.ready.poke(true)
+            dut.clock.step(1)
+            dut.io.data_o.ready.poke(false)
+          }
+        }
+        threads.joinAndStep()
+      }
+    results.toSeq
+  }
+
   // ---- golden + check ----
   def goldenScalar(op: Int, vals: Seq[Float]): Float = op match {
     case 0 => vals.max                                  // MAX
@@ -124,6 +168,29 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     assert(err <= tol, s"$opName mismatch: hw=$hw golden=$goldenF16 err=$err > tol=$tol")
   }
 
+  /** Multi-row: nRows independent per-row reductions in one dispatch. Each row gets its OWN random data
+    * so a stale carry across the row boundary (broken re-init) shows up as a wrong per-row scalar. */
+  def checkMultiRow(op: Int, opName: String, nRows: Int, beatsPerRow: Int, mag: Int, computeLanes: Int = 32,
+                    ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16")): Unit = {
+    val rng  = new Random(0x3A1 + op)
+    val rows = Seq.tabulate(nRows) { _ =>
+      Seq.fill(beatsPerRow)(Seq.fill(lanes) {
+        val f = (rng.between(-mag, mag) + rng.nextInt(4) * 0.25f)
+        f32ToF16bits(f)
+      })
+    }
+    val hw = runReduceMultiRow(op, rows, computeLanes, ops)
+    assert(hw.length == nRows, s"$opName multirow: expected $nRows scalars, got ${hw.length}")
+    for (r <- 0 until nRows) {
+      val vals      = rows(r).flatten.map(f16bitsToF32)
+      val goldenF16 = f16bitsToF32(f32ToF16bits(goldenScalar(op, vals)))
+      val tol       = math.max(math.abs(goldenF16) * 0.004f, 0.05f)
+      val err       = math.abs(hw(r) - goldenF16)
+      println(s"[StreamReduce:$opName:multirow r=$r cl=$computeLanes] golden=$goldenF16 hw=${hw(r)} err=$err tol=$tol")
+      assert(err <= tol, s"$opName multirow row $r mismatch: hw=${hw(r)} golden=$goldenF16 err=$err > tol=$tol")
+    }
+  }
+
   "StreamReduce_MAX" should "match the FP golden" in { checkOp(0, "MAX", 8, 32) }
   "StreamReduce_ADD" should "match the FP golden" in { checkOp(1, "ADD", 8, 32) }
   "StreamReduce_SUMSQ" should "match the FP golden" in { checkOp(2, "SUMSQ", 8, 4) }
@@ -134,6 +201,14 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   "StreamReduce_ADD_cl8" should "match (time-mux)" in { checkOp(1, "ADD", 8, 32, computeLanes = 8) }
   // single-op build (op CSR fixed, unused arithmetic dropped): ADD-only.
   "StreamReduce_ADDonly" should "match (op=ADD only)" in { checkOp(1, "ADD", 8, 32, ops = Seq("ADD_FP16")) }
+
+  // --- multi-row: S independent per-row reductions in ONE dispatch (the llama3 per-row RMSNorm/Softmax
+  // need). 4 rows x 2 beats = D=64 @FP16. Distinct per-row data catches a broken row-boundary re-init.
+  "StreamReduce_SUMSQ_multirow" should "reduce each row independently" in { checkMultiRow(2, "SUMSQ", 4, 2, 4) }
+  "StreamReduce_MAX_multirow"   should "reduce each row independently" in { checkMultiRow(0, "MAX",   4, 2, 8) }
+  "StreamReduce_ADD_multirow"   should "reduce each row independently" in { checkMultiRow(1, "ADD",   4, 2, 8) }
+  // multi-row in the time-mux FSM (computeLanes=8 -> beatCnt-reset re-init path).
+  "StreamReduce_ADD_multirow_cl8" should "reduce each row in the time-mux" in { checkMultiRow(1, "ADD", 4, 2, 8, computeLanes = 8) }
 
   /** Tap mode (op | 0x100): the N input beats pass through unchanged, then one trailing scalar beat is
     * emitted (output = N+1 beats). The harness inserts -||> register cuts on both data ports, so use the

@@ -12,7 +12,16 @@
 // elementwise-add app. T1/T2 use different AGU shapes, so each does its own memcpy_nd_fast. FP16 transport,
 // FP32-internal; out matches the FP64 golden to <=2 FP16 ULP.
 //
-// Performance (FP16, vsim, L1<->L1). host(full) = a single CVA6+Ara core, full FP32 silu_mul (op-LUT).
+// LANE DATAFLOW (FP16 transport = 32 lanes per 512-b beat):
+//   T1 StreamMap(SILU)        1 beat -> 1 beat:  sg[i] = silu(gate[i])              (clean 512b->512b)
+//   T2 StreamElementwise(MUL) 2 beats -> 1 beat: out[i] = sg[i] * up[i]
+//      The reader feeds the two operands INTERLEAVED {sg_beat, up_beat}, so it reads 2x the beats the
+//      writer emits (2:1). Each output beat is a full 32-lane product:
+//        sg [ s0 s1 ... s31 ]   up [ u0 u1 ... u31 ]   ->   out [ s0*u0  s1*u1  ... s31*u31 ]
+//   Fp16ToInt8 (fused quant pass): packs 2 FP16 beats -> 1 INT8 beat (64 int8 = 512b); writer drains
+//      beats/2 (needs an even beat count). NOT a 512->512 op.
+//
+// Performance (FP16, vsim, L1<->L1). host(full) = a single host vector core, full FP32 silu_mul (op-LUT).
 //
 //   N      beats   silu  mul    xdma_total   warm    cold    host(full)   warm speedup
 //   ----   -----   ----  -----  ----------   -----   -----   ----------   ------------

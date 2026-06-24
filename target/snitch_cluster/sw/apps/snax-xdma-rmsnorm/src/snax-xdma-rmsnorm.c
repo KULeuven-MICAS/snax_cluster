@@ -10,12 +10,19 @@
 //   host          : inv_rms = 1/sqrt(ssq/N)                                     [host, ~110 cc]
 //   T2  scale     : StreamMap(a=inv_rms, b=0, func=LINEAR)   x -> out           [xDMA]
 //
-// The DM core (rv32ima, no FPU) can't do the rsqrt; on HeMAiA the host CVA6 does it. This standalone test
-// precomputes inv_rms in data.h (rmsnorm_inv_rms; mean = sum(x^2)/N is exact for N=2^log2n) and checks the
-// runtime SUMSQ against rmsnorm_ssq_golden.
+// LANE DATAFLOW (FP16 transport = 32 lanes per 512-b beat):
+//   T1 StreamReduce(SUMSQ)  N beats -> 1 beat (the row's 32 lanes COLLAPSE to a scalar; not 512->512):
+//     in beat 0..N-1 [ x0 .. x31 ] -> per-lane FP32 partials accumulate, then a horizontal tree folds
+//     them to s = sum(x^2) over the row;  out [ s s ... s ] SPLATTED across all 32 lanes (read lane 0).
+//   T2 StreamMap(LINEAR)    1 beat -> 1 beat, all 32 lanes:  out[i] = inv_rms*x[i] + 0   (clean 512->512)
+//   Fp16ToInt8 (fused quant): packs 2 FP16 beats -> 1 INT8 beat (writer drains beats/2, even count).
+//
+// The DM core (rv32ima, no FPU) can't do the rsqrt; a host core does it. This standalone test precomputes
+// inv_rms in data.h (rmsnorm_inv_rms; mean = sum(x^2)/N is exact for N=2^log2n) and checks the runtime
+// SUMSQ against rmsnorm_ssq_golden.
 //
 // Performance (FP16, vsim, L1<->L1; xDMA part). "+host" adds the estimated host rsqrt (~110 cc, from the
-// fp16_sqrt + fp16_reciprocal op-LUTs at n=1). host = a single CVA6+Ara core, full FP32 rmsnorm. Outputs
+// fp16_sqrt + fp16_reciprocal op-LUTs at n=1). host = a single host vector core, full FP32 rmsnorm. Outputs
 // match the FP64 golden to <=4 ULP.
 //
 //   N      beats   xDMA warm   +host est   cold    host(full)   warm speedup(+host)
@@ -95,8 +102,8 @@ int main() {
             c1 = retask_and_run(x_in, ssq_buf, 1);
             snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
 
-            // The host computes inv_rms = 1/sqrt(sum(x^2)/N) from the SUMSQ scalar (on the real HeMAiA host
-            // the CVA6 does the rsqrt; here it is precomputed in rmsnorm_inv_rms). Validate T1's reduce.
+            // The host computes inv_rms = 1/sqrt(sum(x^2)/N) from the SUMSQ scalar (a host core does the
+            // rsqrt; here it is precomputed in rmsnorm_inv_rms). Validate T1's reduce.
             if (iter == 1) {
                 uint32_t r = fp16_mono(((uint16_t*)ssq_buf)[0]);
                 uint32_t g = fp16_mono((uint16_t)rmsnorm_ssq_golden);

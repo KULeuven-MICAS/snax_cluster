@@ -18,6 +18,19 @@
 // FP64 golden to <=4 FP16 ULP. Each pass reads its two operands as one INTERLEAVED stream (AGU inner dim
 // count=2 striding operand0 -> operand1), exactly like swiglu's mul pass.
 //
+// LANE DATAFLOW (FP16 transport = 32 lanes/512-b beat; all 3 passes are StreamElementwise, 2 beats -> 1
+// beat, op per lane). RoPE works on adjacent PAIRS (lanes 2k, 2k+1 share angle theta_k), encoded purely
+// in how the operand tables are laid out across the lanes -- no special HW:
+//   lane:       0     1     2     3   ...          (pair k uses lanes 2k, 2k+1)
+//   x        [  x0    x1    x2    x3  ... ]
+//   xswap    [  x1    x0    x3    x2  ... ]         adjacent halfword swap (iDMA, one-time)
+//   cos_full [  c0    c0    c1    c1  ... ]         each cos_k duplicated across the pair
+//   sin_sgn  [ -s0   +s0   -s1   +s1  ... ]         rotate_half sign baked into the table
+//   P1 MUL:  tmp1 = x     (.) cos_full -> [ x0*c0    x1*c0    x2*c1  ... ]
+//   P2 MUL:  tmp2 = xswap (.) sin_sgn  -> [ -x1*s0   x0*s0   -x3*s1  ... ]
+//   P3 ADD:  out  = tmp1  (+) tmp2     -> [ x0*c0-x1*s0   x1*c0+x0*s0  ... ]   (the rotation)
+//   Each pass is a clean 32-lane-in/32-lane-out element-wise op (the 2:1 is the interleaved-operand read).
+//
 // Performance (FP16, vsim, L1<->L1), measured. swap* = one-time rotate_half staging (iDMA, ~2 cyc/elem);
 // p1/p2/p3 = the StreamElementwise passes; xdma_total = p1+p2+p3 (pure datapath); warm/cold = the 3-pass
 // offload only (swap excluded, comparable to swiglu's warm/cold); per-call = swap+warm.
@@ -32,7 +45,7 @@
 // worst FP16 ULP vs the 3-pass golden = 0 (N<=1024), 1 (N=4096). The datapath is ~11 cyc/beat/pass; the
 // ~3k fixed warm cost is the 3x CSR orchestration (3 memcpy_nd setups), not the math (skill: orchestration
 // is the bottleneck). At large N the swap (the rotate_half tax of the zero-HW path) dominates. Reference:
-// swiglu's measured CVA6+Ara host(full) silu+mul is ~33.6*N cyc (2,308..137,799 for N=64..4096); a host
+// swiglu's measured host(full) silu+mul is ~33.6*N cyc (2,308..137,799 for N=64..4096); a host
 // RoPE has no transcendental so it is cheaper, hence the offload pays off only at larger N. A fused
 // single-pass StreamRoPE (intra-beat adjacent-pair) would remove the swap and 2 of the 3 passes.
 
