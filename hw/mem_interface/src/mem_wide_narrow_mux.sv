@@ -120,8 +120,11 @@ module mem_wide_narrow_mux #(
   `ASSERT(DmaSelected, sel_wide_i & in_wide_req_i.q_valid |-> &q_valid_flat)
   `ASSERT(DmaSelectedReadyWhenValid,
     sel_wide_i & in_wide_req_i.q_valid |-> in_wide_rsp_o.q_ready)
+  // Write-data-correctness check: only meaningful on writes. On a read the request carries no
+  // write-data, so `in_wide_req_i.q.data` is legitimately don't-care (X) and the `==` would evaluate
+  // to X and (over-eagerly) fail. Gate on `q.write` so the assert fires only when write-data is real.
   `ASSERT(DMAWriteDataCorrect,
-    in_wide_req_i.q_valid & in_wide_rsp_o.q_ready |->
+    in_wide_req_i.q_valid & in_wide_rsp_o.q_ready & in_wide_req_i.q.write |->
     (in_wide_req_i.q.data == q_data) && (in_wide_req_i.q.strb == q_strb))
 
 endmodule
