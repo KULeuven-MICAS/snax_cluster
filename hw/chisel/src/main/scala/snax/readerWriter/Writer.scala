@@ -6,10 +6,8 @@ import chisel3.util._
 import snax.utils._
 
 class Writer(
-  param:                ReaderWriterParam,
-  moduleNamePrefix:     String  = "unnamed_cluster",
-  dynamicPriority:      Boolean = true,
-  higherStaticPriority: Boolean = false
+  param:            ReaderWriterParam,
+  moduleNamePrefix: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
 
@@ -34,8 +32,8 @@ class Writer(
       numChannel           = param.tcdmParam.numChannel,
       isReader             = false,
       moduleNamePrefix     = s"${moduleNamePrefix}_Writer",
-      dynamicPriority      = dynamicPriority,
-      higherStaticPriority = higherStaticPriority
+      dynamicPriority      = param.dynamicPriority,
+      higherStaticPriority = param.higherStaticPriority
     )
   )
 
