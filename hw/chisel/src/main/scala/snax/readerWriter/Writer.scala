@@ -6,8 +6,8 @@ import chisel3.util._
 import snax.utils._
 
 class Writer(
-  param:                ReaderWriterParam,
-  moduleNamePrefix:     String  = "unnamed_cluster"
+  param:            ReaderWriterParam,
+  moduleNamePrefix: String = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
 
