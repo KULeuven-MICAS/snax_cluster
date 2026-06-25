@@ -62,7 +62,18 @@ class DataRequestor(
   }
 
   if (dynamicPriority) {
-    io.out.tcdmReq.bits.priority := io.in.priority.get
+    // `io.in.priority` is the write-FIFO fill-level hint (queue.count > 2): it is combinational on the
+    // live count and can change while a TCDM request is already asserted and waiting for grant. The
+    // downstream TCDM `stream_xbar` enforces AXI payload stability
+    // (`valid && !ready |=> $stable(payload)`), and `priority` rides in the request `user` field, so a
+    // mid-request change trips `input_data_unstable`. Sample-and-hold the hint so the whole request
+    // payload is stable for the duration of each request.
+    val priorityHold = RegInit(false.B)
+    // Free to (re)load only when no request is in flight, or on the cycle the current one fires.
+    when(!io.out.tcdmReq.valid || io.out.tcdmReq.fire) {
+      priorityHold := io.in.priority.get
+    }
+    io.out.tcdmReq.bits.priority := priorityHold
   } else {
     io.out.tcdmReq.bits.priority := higherStaticPriority.B
   }
