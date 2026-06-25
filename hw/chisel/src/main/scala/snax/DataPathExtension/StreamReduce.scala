@@ -16,7 +16,10 @@ import fp_unit._
   * balanced reduceTree (tree order; small numeric tolerance accepted per design decision #4).
   *
   * CSR layout: csr(0) = operandCount (#beats in the row), csr(1) = op: bits[7:0] = 0=MAX,1=ADD,2=SUMSQ;
-  * bit[8] = tap. When tap=1 the row is passed through unchanged (1:1) AND the reduction is accumulated in
+  * bit[8] = tap; bit[9] = fp32out (emit the scalar in FP32 instead of narrowing to the transport grid — for
+  * a reduction that overflows FP16, e.g. an unscaled-GEMM SUMSQ ~1e9, this delivers the true value to the
+  * host instead of inf; the scalar is splatted as FP32 so the host reads the beat's low 32 bits as a float).
+  * When tap=1 the row is passed through unchanged (1:1) AND the reduction is accumulated in
   * parallel; after the last input beat one extra trailing beat (the scalar, splatted) is emitted, so the
   * output is N+1 beats. tap=0 = legacy behaviour (consume N beats, emit only the scalar). The tap mode lets
   * one chained task produce both a transformed row and its reduction (e.g. softmax exp-row + Σexp).
@@ -27,8 +30,8 @@ import fp_unit._
   * for the FSM that sweeps `computeLanes` ALUs across the lane partials over `subCycles` cycles per beat),
   * and `elementWidth` (the transport element width in bits — must match the op-set precision: FP16/BF16⇒16,
   * FP8⇒8, FP32⇒32). All are REQUIRED (no defaults) — the config must spell them out, e.g. {elementWidth:16,
-  * computeLanes:32, op:["MAX_FP16","ADD_FP16","SUMSQ_FP16"]}. The tap bit stays runtime, so userCsrNum=2
-  * is unchanged.
+  * computeLanes:32, op:["MAX_FP16","ADD_FP16","SUMSQ_FP16"]}. The tap and fp32out bits stay runtime, so
+  * userCsrNum=2 is unchanged.
   *
   * HARDWARE UNIT COUNT — for a 512-bit input there are `computeLanes` physical ALUs (widen + add/max/square),
   * NOT one per lane, time-multiplexed over `subCycles` (= lanes/computeLanes) cycles per beat; but there are
@@ -115,6 +118,9 @@ class StreamReduce(
   val opField = ext_csr_i(1)
   val opcode  = opField(7, 0)     // 0=MAX,1=ADD,2=SUMSQ (used only when >1 op is built)
   val tap     = opField(8).asBool // pass the row through + emit the scalar as a trailing beat
+  val fp32out = opField(9).asBool // emit the scalar in FP32 (no narrow) so a large reduction (e.g. an
+  //                                 unscaled-GEMM SUMSQ ~1e9) reaches the host as the true value instead
+  //                                 of overflowing the transport FP16 range to inf/garbage. Splatted as FP32.
 
   val FP32_ZERO = 0.U(accWidth.W)
 
@@ -180,7 +186,15 @@ class StreamReduce(
   val maxTree    = if (hasMax) pipedReduce(regs, (a, b) => fp32max(a, b)) else FP32_ZERO
   val scalarFP32 =
     if (multiOp) Mux(opcode === OP_MAX, maxTree, addTree) else if (hasMax) maxTree else addTree
-  val scalarBeat = Cat(Seq.fill(lanes)(narrow(scalarFP32)))
+  // Output packing: narrow the FP32 scalar to the transport grid (default), or — when fp32out is set and
+  // the transport is narrower than FP32 — splat the raw FP32 scalar across the 512-bit beat (dataWidth/32
+  // copies). The beat stays 512-bit either way, so the writer AGU is unchanged; the host just reads the
+  // low 32 bits as a float instead of the low `elementWidth` bits. (For an FP32 transport there is nothing
+  // to narrow, so the mux folds away at elaboration.)
+  val narrowedBeat = Cat(Seq.fill(lanes)(narrow(scalarFP32)))
+  val scalarBeat =
+    if (transport.width >= accWidth) narrowedBeat
+    else Mux(fp32out, Cat(Seq.fill(extensionParam.dataWidth / accWidth)(scalarFP32)), narrowedBeat)
 
   // ---- unified time-mux + pipeline FSM ----
   // `computeLanes` pipelined ALUs sweep the beat over `subCycles` sub-groups (one issued/cycle); results

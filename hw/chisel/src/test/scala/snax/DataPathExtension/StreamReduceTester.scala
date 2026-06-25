@@ -97,6 +97,44 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     result
   }
 
+  /** Drive one row with fp32out set (op CSR bit[9]) and return the HW scalar read from the output beat's
+    * low 32 bits as a raw FP32 (NO FP16 narrowing). This is the SUMSQ-overflow fix path: a reduction that
+    * would saturate the FP16 grid to +inf is instead delivered to the host as the true FP32 value. */
+  def runReduceFp32(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32,
+                    ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16")): Float = {
+    var result: Float = 0.0f
+    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
+      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.io.csr_i(0).poke(beats.length.U)
+        dut.io.csr_i(1).poke((op | 0x200).U) // fp32out bit[9]
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true)
+        dut.clock.step(1)
+        dut.io.start_i.poke(false)
+
+        var threads = new chiseltest.internal.TesterThreadList(Seq())
+        threads = threads.fork {
+          dut.io.data_i.valid.poke(true)
+          for (b <- beats) {
+            while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+            dut.io.data_i.bits.poke(packBeat(b))
+            dut.clock.step(1)
+          }
+          dut.io.data_i.valid.poke(false)
+        }
+        threads = threads.fork {
+          while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+          val lane0 = (dut.io.data_o.bits.peekInt() & ((BigInt(1) << 32) - 1)).toLong
+          result = java.lang.Float.intBitsToFloat(lane0.toInt)
+          dut.io.data_o.ready.poke(true)
+          dut.clock.step(1)
+          dut.io.data_o.ready.poke(false)
+        }
+        threads.joinAndStep()
+      }
+    result
+  }
+
   /** Drive the DUT for `rows` consecutive rows in ONE dispatch (operandCount = beatsPerRow), returning
     * the per-row HW scalars (low lane of each output beat). The counter wraps at operandCount and
     * re-inits the per-lane regs every row, so feeding rows*beatsPerRow input beats emits one splatted
@@ -191,9 +229,33 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
+  /** fp32out SUMSQ with LARGE inputs that overflow the FP16 grid: prove the scalar comes back as the true
+    * FP32 value (finite), not the +inf a narrowed FP16 scalar would produce. mag~4096 -> per-row SUMSQ
+    * ~1e9 >> FP16 max (65504). Compares the raw FP32 read-back against the FP32 (un-narrowed) golden. */
+  def checkSumsqFp32(nBeats: Int, mag: Int, computeLanes: Int = 32): Unit = {
+    val rng   = new Random(0xF32)
+    val beats = Seq.fill(nBeats)(Seq.fill(lanes)(f32ToF16bits(rng.between(-mag, mag).toFloat)))
+    val vals   = beats.flatten.map(f16bitsToF32)
+    val golden = goldenScalar(2, vals) // FP32 SUMSQ, NOT narrowed to FP16
+    assert(f16bitsToF32(f32ToF16bits(golden)).isInfinite,
+           s"test setup: SUMSQ $golden must overflow the FP16 grid to exercise the fix")
+    val hw  = runReduceFp32(2, beats, computeLanes)
+    val rel = math.abs(hw - golden) / math.abs(golden)
+    println(s"[StreamReduce:SUMSQ:fp32out cl=$computeLanes] beats=$nBeats golden=$golden hw=$hw rel=$rel")
+    assert(!hw.isInfinite && !hw.isNaN, s"fp32out scalar must be finite, got $hw")
+    assert(rel <= 0.02f, s"SUMSQ fp32out mismatch: hw=$hw golden=$golden rel=$rel > 0.02")
+  }
+
   "StreamReduce_MAX" should "match the FP golden" in { checkOp(0, "MAX", 8, 32) }
   "StreamReduce_ADD" should "match the FP golden" in { checkOp(1, "ADD", 8, 32) }
   "StreamReduce_SUMSQ" should "match the FP golden" in { checkOp(2, "SUMSQ", 8, 4) }
+  // fp32out: large inputs that overflow FP16 must come back as the true FP32 SUMSQ (combinational + time-mux).
+  "StreamReduce_SUMSQ_fp32out" should "emit the true FP32 sum-of-squares when FP16 would overflow" in {
+    checkSumsqFp32(8, 4096)
+  }
+  "StreamReduce_SUMSQ_fp32out_cl8" should "emit the true FP32 SUMSQ in the time-mux" in {
+    checkSumsqFp32(8, 4096, computeLanes = 8)
+  }
 
   // --- specialized configs ---
   // time-mux FSM (computeLanes=8 -> 4 sub-cycles/beat): MAX + ADD must still match.
