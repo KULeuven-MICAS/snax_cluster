@@ -1,0 +1,918 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.2.11">
+    
+    
+      
+        <title>4. Building the System - SNAX Cluster</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8c5ef100.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.9647289d.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#review-of-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="SNAX Cluster" class="md-header__button md-logo" aria-label="SNAX Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SNAX Cluster
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              4. Building the System
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/KULeuven-MICAS/snitch_cluster/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KULeuven-MICAS/snitch_cluster
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="SNAX Cluster" class="md-nav__button md-logo" aria-label="SNAX Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    SNAX Cluster
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/KULeuven-MICAS/snitch_cluster/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KULeuven-MICAS/snitch_cluster
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/getting_started.html" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/directory_structure.html" class="md-nav__link">
+        Repository Structure
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/documentation.html" class="md-nav__link">
+        Documentation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Reference Manual
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference Manual" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Reference Manual
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Hardware
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Hardware" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Hardware
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snitch.html" class="md-nav__link">
+        Snitch
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_2" type="checkbox" id="__nav_3_1_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_2">
+          Snitch Cluster
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Snitch Cluster" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          Snitch Cluster
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snitch_cluster.html" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/peripherals.html" class="md-nav__link">
+        Peripherals
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schema-doc/snitch_cluster.html" class="md-nav__link">
+        Schema
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snax_cluster.html" class="md-nav__link">
+        SNAX Cluster
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/reqrsp_interface.html" class="md-nav__link">
+        Reqrsp Interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/custom_instructions.html" class="md-nav__link">
+        Custom Instructions
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          SNAX Tutorial
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="SNAX Tutorial" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          SNAX Tutorial
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="introduction.html" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architectural_overview.html" class="md-nav__link">
+        Architectural Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="accelerator_design.html" class="md-nav__link">
+        1. Accelerator Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="csrman_design.html" class="md-nav__link">
+        2. CSR Manager Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="streamer_design.html" class="md-nav__link">
+        3. Streamer Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="build_system.html" class="md-nav__link md-nav__link--active">
+        4. Building the System
+      </a>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="programming.html" class="md-nav__link">
+        5. Programming the System
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="other_tools.html" class="md-nav__link">
+        Other Tools
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="summary_and_exercise.html" class="md-nav__link">
+        Summary and Exercise
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../publications.html" class="md-nav__link">
+        Publications
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/KULeuven-MICAS/snitch_cluster/edit/master/docs/tutorial/build_system.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<h1 id="review-of-architecture">Review of Architecture</h1>
+<p>Previously we discussed the <a href="accelerator_design.html">Accelerator Design</a>, the <a href="csrman_design.html">CSR Manager Design</a> and the <a href="streamer_design.html">Streamer Design</a>. These are the main components that are tightly coupled together in a shell before connecting to the system. The figure below shows the system of interest again:</p>
+<p><img alt="image" src="https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/0090e1a4-15c5-4852-a351-7c3ee0368e1f" /></p>
+<p>There are key wrappers: <strong>(1) The accelerator shell</strong> that needs to comply with the CSR manager and streamer interface. <strong>(2) The CSR manager wrapper</strong> and <strong>(3) streamer wrapper</strong> that converts the Chisel's unpacked signals to packed signals to connect RTL designs developed in SystemVerilog. An <strong>(4) accelerator wrapper</strong> that encapsulates all components together. Finally, the <strong>(5) top-level cluster wrapper</strong> connects the accelerator wrapper to the entire system. Components (2), (3), (4), and (5) are all generated through a script. There are more details in the <a href="#wrapper-generation-script">Wrapper Generation Script</a> section about the wrapper generation.</p>
+<h1 id="step-by-step-guide-to-build">Step-by-step Guide to Build</h1>
+<p>Let's review what we have done so far to prepare the SNAX ALU system:</p>
+<ul>
+<li>Building your accelerator shell.</li>
+<li>Setting up the configuration file to our desired system requirements.</li>
+<li>Configuring the SNAX CSR manager.</li>
+<li>Configuring the SNAX streamer.</li>
+</ul>
+<p>With this in place, we only need to make sure to include the RTL files needed for the build and do the build process. In this tutorial, we have several parts in place but we'll guide you through which components need to be modified. </p>
+<h2 id="adding-rtl-files">Adding RTL Files</h2>
+<p>All RTL file lists are generated through <a href="https://github.com/pulp-platform/bender">bender</a>. Bender is a file management tool that functions like git submodules but with more features like file list generation in different forms. </p>
+<p>We first need to make sure we add all the files we need for our SNAX ALU. At the root of the repository, you should find a <code>Bender.yml</code> file. You will see several files related to the cluster. Scroll down to almost the bottom of the file and look for the <code>SNAX Accelerators</code> section. You should also find the SNAX ALU in there:</p>
+<div class="highlight"><pre><span></span><code>- target: snax-alu
+    files:
+      # Level 0
+      - hw/snax_alu/src/snax_alu_csr.sv
+      - hw/snax_alu/src/snax_alu_pe.sv
+      - target/snitch_cluster/generated/snax_alu/snax_alu_csrman_CsrManager.sv
+      - target/snitch_cluster/generated/snax_alu/snax_alu_streamer_StreamerTop.sv
+      # Level 1
+      - hw/snax_alu/src/snax_alu_shell_wrapper.sv
+      - target/snitch_cluster/generated/snax_alu/snax_alu_csrman_wrapper.sv
+      - target/snitch_cluster/generated/snax_alu/snax_alu_streamer_wrapper.sv
+      # Level 2
+      - target/snitch_cluster/generated/snax_alu/snax_alu_wrapper.sv
+</code></pre></div>
+<p>The <code>-target</code> parameter is a switch to include the files listed below it. Here, we use <code>snax-alu</code> as the target. Take note of this as we will use this definition in the makefile build later.</p>
+<p>The files are listed according to a hierarchical structure from the base modules up to the system modules. This means that Level 0 contains modules that are not dependent on any other modules. Level 1 is dependent on Level 0 modules. Likewise, Level 2 is dependent on both Level 1 and Level 0 modules.</p>
+<p>At Level 0, you will notice that we declared the <code>snax_alu_csr.sv</code> and <code>snax_alu_pe.sv</code> which are the base modules of our main SNAX ALU accelerator. It is important to declare the generated files which are the <code>snax_alu_csrman_CsrManager.sv</code> and <code>snax_alu_streamer_StreamerTop.sv</code>.</p>
+<p>At Level 1, the <code>snax_alu_shell_wrapper.sv</code> is dependent on the ALU CSR and PEs and hence it is listed above the two. The wrappers for the CSR manager and streamer are also dependent on the Chisel-generated modules. Finally, Level 2 is the accelerator wrapper which is directly connected to the cluster system.</p>
+<p>When you make your own accelerator you need to declare all the RTL files in this format too. Make sure it's under the SNAX Accelerator section just to make sure you don't mess up the structure.</p>
+<h3 id="what-about-the-naming-of-the-generated-files">What About the Naming of the Generated Files?</h3>
+<p>The names of the generated files are dependent on the configuration file you set. If you recall in the <code>snax_acc_cfg</code>, there is a <code>snax_acc_name</code> parameter. Moreover, to match the bender target name specified earlier, you need to add the <code>bender_target: ["snax_alu"]</code> option too.</p>
+<p><div class="highlight"><pre><span></span><code>snax_acc_cfg: {
+    snax_acc_name: &quot;snax_alu&quot;,
+    bender_target: [&quot;snax_alu&quot;],
+    snax_tcdm_ports: 16,
+    snax_num_rw_csr: 3,
+    snax_num_ro_csr: 2,
+    snax_streamer_cfg: {$ref: &quot;#/snax_alu_streamer_template&quot; }
+},
+</code></pre></div>
+This is prefixed at the beginning of each generated file. Moreover, it also sets the generated directory for each accelerator you add. Such that we have:</p>
+<div class="highlight"><pre><span></span><code>- target: snax-alu
+    files:
+      # Level 0
+      # ... Add some other files here
+      - target/snitch_cluster/generated/${snax_acc_name}/${snax_acc_name}_csrman_CsrManager.sv
+      - target/snitch_cluster/generated/${snax_acc_name}/${snax_acc_name}_streamer_StreamerTop.sv
+      # Level 1
+      # ... Add some other files here
+      - target/snitch_cluster/generated/${snax_acc_name}/${snax_acc_name}_streamer_wrapper.sv
+      # Level 2
+      - target/snitch_cluster/generated/${snax_acc_name}/${snax_acc_name}_wrapper.sv
+</code></pre></div>
+<p>Where you should substitute <code>${snax_acc_name}</code>  with the parameter name you specified.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When you write the filenames for the <code>Bender.yml</code> file, make sure to have the correct top module name of the shell. For example, the <code>snax_alu_shell_wrapper.sv</code> should be the top-shell name of your accelerator. Then, the generated Chisel files should also haev the <code>${snax_acc_namee}</code> pre-fixed accordingly. Just like it was mentioned above.</p>
+</div>
+<h2 id="build-process">Build Process</h2>
+<p>1 - From the root of the repo navigate to <code>./target/snitch_cluster/</code></p>
+<p>2 - Generate the RTL files</p>
+<div class="highlight"><pre><span></span><code>make <span class="nv">CFG_OVERRIDE</span><span class="o">=</span>cfg/snax_alu_cluster.hjson rtl-gen
+</code></pre></div>
+<p>3 - Build the system:</p>
+<div class="highlight"><pre><span></span><code>make <span class="nv">CFG_OVERRIDE</span><span class="o">=</span>cfg/snax_alu_cluster.hjson bin/snitch_cluster.vlt -j
+</code></pre></div>
+<p>4 - Wait 5 to 10 minutes until the build finishes.</p>
+<p>5 - Success!!!</p>
+<p>That was easy, right?</p>
+<h1 id="seeing-the-generated-rtl-files">Seeing the Generated RTL Files</h1>
+<p>You can do step 2 whithout having to build the system yet. This becomes especially useful for designers to do a manual (eye-ball) sanity check on the connections.</p>
+<div class="highlight"><pre><span></span><code>make <span class="nv">CFG_OVERRIDE</span><span class="o">=</span>cfg/snax_alu_cluster.hjson rtl-gen
+</code></pre></div>
+<p>Generates all RTL files including the wrappers and the Chisel-generated CSR manager, streamers, (and possibly accelerators if need be).</p>
+<h1 id="optional-wrapper-generation-scripts">(Optional) Wrapper Generation Scripts</h1>
+<p>The original <a href="https://github.com/pulp-platform/snitch_cluster">Snitch Platform</a> uses templated generation Python scripts. First, you have the accelerator wrapper script (<code>./util/snaxgen/snaxgen.py</code>) and then the cluster generation script (<code>./util/clustergen/cluster.py</code>).</p>
+<p>In principle, both scripts use a specified configuration file like the <code>snax_alu_cluster.hjson</code> and load those configurations in a templated file <code>*.tpl</code>. Once loaded, it generates the target files like System Verilog designs or Chisel parameters.</p>
+<h2 id="accelerator-wrapper-script">Accelerator Wrapper Script</h2>
+<p>The <strong>accelerator wrapper</strong> script uses any of the configuration files under the <code>./target/snitch_cluster/cfg/.</code> directory. Then load them in wrapper templates found in <code>./hw/templates/.</code> directory.</p>
+<p>Inside the template directory we have:</p>
+<ul>
+<li><code>snax_csrman_wrapper.sv.tpl</code> - is for the CSR manager wrapper. This is (2) from the figure above.</li>
+<li><code>snax_streamer_wrapper.sv.tpl</code> - is for the streamer wrapper. This is (3) from the figure above.</li>
+<li><code>snax_acc_wrapper.sv.tpl</code> - is for the accelerator wrapper. This is (4) from the figure above.</li>
+<li><code>csrman_param_gen.scala.tpl</code> - this is a parameter file that Chisel uses for generating the CSR manager.</li>
+<li><code>stream_param_gen.scala.tpl</code> - this is a parameter file that Chisel uses for generating the streamer.</li>
+</ul>
+<p>We have shown previously how to use the <code>snaxgen</code> script. If you are working in Codespaces:</p>
+<div class="highlight"><pre><span></span><code>/workspaces/snax_cluster/util/snaxgen/snaxgen.py --cfg_path<span class="o">=</span><span class="s2">&quot;/workspaces/snax_cluster/target/snitch_cluster/cfg/snax_alu_cluster.hjson&quot;</span> --tpl_path<span class="o">=</span><span class="s2">&quot;/workspaces/snax_cluster/hw/templates/&quot;</span> --chisel_path<span class="o">=</span><span class="s2">&quot;/workspaces/snax_cluster/hw/chisel/&quot;</span> --gen_path<span class="o">=</span><span class="s2">&quot;/workspaces/snax_cluster/target/snitch_cluster/generated/&quot;</span>
+</code></pre></div>
+<p>If you are working in a docker container:</p>
+<div class="highlight"><pre><span></span><code>/repo/util/snaxgen/snaxgen.py --cfg_path<span class="o">=</span><span class="s2">&quot;/repo/target/snitch_cluster/cfg/snax_alu_cluster.hjson&quot;</span> --tpl_path<span class="o">=</span><span class="s2">&quot;/repo/hw/templates/&quot;</span> --chisel_path<span class="o">=</span><span class="s2">&quot;/repo/hw/chisel/&quot;</span> --gen_path<span class="o">=</span><span class="s2">&quot;/repo/target/snitch_cluster/generated/&quot;</span>
+</code></pre></div>
+<p>Where:
+- <code>--cfg_path</code> - points to the configuration file of interest.
+- <code>--tpl_path</code> - points to the template directory.
+- <code>--chisel_path</code> - points to the chisel directory.
+- <code>--gen_path</code> - points to the directory where all the generated files will be placed.</p>
+<h2 id="cluster-wrapper-script">Cluster Wrapper Script</h2>
+<p>The <strong>cluster wrapper</strong> made by the Snitch platform also does the same mechanism but is tailored towards the system integration. The main template is in <code>./hw/snitch_cluster/src/snitch_cluster_wrapper.sv.tpl</code>.</p>
+<p>If you are working in Codespaces run the <code>clustergen</code> with:</p>
+<div class="highlight"><pre><span></span><code>/workspaces/snax_cluster/util/clustergen.py -c /workspaces/snax_cluster/target/snitch_cluster/cfg/snax_alu_cluster.hjson -o /workspaces/snax_cluster/target/snitch_cluster/generated --wrapper
+</code></pre></div>
+<p>If you are working in the container do:</p>
+<div class="highlight"><pre><span></span><code>/repo/util/clustergen.py -c cfg/snax_alu_cluster.hjson -o /repo/target/snitch_cluster/generated --wrapper
+</code></pre></div>
+<p>Where:
+- <code>-c</code> - points to the target configuration file.
+- <code>-o</code> - points to the directory where all the generated files will be placed.</p>
+<p>The <code>clustergen</code> generates the <code>snitch_cluster_wrapper.sv</code> inside the <code>./target/snitch_cluster/generated</code> directory. You can see this after the build finishes.</p>
+<h1 id="optional-more-details-on-the-snax_alu_clusterhjson">(Optional) More Details on the <code>snax_alu_cluster.hjson</code></h1>
+<p>Let's go through the <code>snax_alu_cluster.hjson</code> file again and look at important configurations. We'll only discuss the notable ones that would be most useful for an accelerator designer. Remember, you can locate this at <code>./target/snitch_cluster/cfg/snax_alu_cluster.hjson</code> starting from the root of the repository.</p>
+<p>The main <code>cluster</code> dictionary configures the entire system. Particularly, it affects the cluster wrapper which you can see in <code>./hw/snitch_cluster/src/snitch_cluster_wrapper.sv.tpl</code>. The file has several things in it but we'll just give you an overview of the few parameters.</p>
+<p>First, under the cluster dictionary you have the TCDM <code>addr_width</code> and <code>data_width</code> definitions:</p>
+<p><div class="highlight"><pre><span></span><code>addr_width: 48,
+data_width: 64,
+</code></pre></div>
+The <code>data_width</code> affects the memory bank data width sizes. By default, it's 64 already. Make sure this is consistent with the streamer definition.</p>
+<p>The TCDM size is declared under the <code>tcdm</code> parameter. Where <code>size</code> is in kB and <code>banks</code> is the number of memory banks.</p>
+<div class="highlight"><pre><span></span><code>tcdm: {
+    size: 128,
+    banks: 32,
+},
+</code></pre></div>
+<p>Then we have DMA parameters for the built-in Snitch DMA. The <code>dma_data_width</code> affects the DMA bandwidth and also the wide interconnect of the cluster. This is a special parameter that can be useful if you want to hook your accelerator towards the wide interconnect. The FIFOs are for handling buffering inside the DMA.</p>
+<div class="highlight"><pre><span></span><code>dma_data_width: 512,
+dma_axi_req_fifo_depth: 3,
+dma_req_fifo_depth: 3,
+</code></pre></div>
+<p>The <code>hives</code> contain information about the shared instruction cache and the cores we generate. This part is something we configure more often when we add more accelerators. Under the hives we have the instruction cache where <code>size</code> is in kB, <code>sets</code> refer to the <em>n-way</em> set associative, and <code>cacheline</code> is one word line.</p>
+<div class="highlight"><pre><span></span><code>icache: {
+    size: 8,
+    sets: 2,
+    cacheline: 256 
+},
+</code></pre></div>
+<p>The <code>cores</code> refer to the core templates. We already saw an example of the <code>snax_alu_core_template</code>. A core template describes the functionalities of the Snitch core attached to an accelerator (or no accelerator). With the current list of cores we have 1 SNAX core attached to the SNAX ALU and 1 DMA core (a Snitch connected to the DMA only).</p>
+<div class="highlight"><pre><span></span><code>cores: [
+    { $ref: &quot;#/snax_alu_core_template&quot; },
+    { $ref: &quot;#/dma_core_template&quot; },
+]
+</code></pre></div>
+<p>For a multi-accelerator system attached to one cluster, we can have a cluster configuration like the one below. This time it has 3 other accelerators within one cluster.</p>
+<div class="highlight"><pre><span></span><code>cores: [
+    { $ref: &quot;#/snax_data_reshuffler_template&quot; },
+    { $ref: &quot;#/snax_streamer_simd_template&quot; },
+    { $ref: &quot;#/snax_streamer_gemm_template&quot; },
+    { $ref: &quot;#/dma_core_template&quot; },
+]
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is imperative that the last core should always be the DMA core. Otherwise, the generation scripts will break and you have no way of getting data into the TCDM memory.</p>
+</div>
+<h2 id="some-exercises">Some Exercises !!!</h2>
+<details>
+  <summary> What does the `-target` of the Bender.yml file do? </summary>
+  It's used to specify if the components under the target will be included in the filelist generation.
+</details>
+
+<details>
+  <summary> What do you need to update in the Makefile for a new accelerator? </summary>
+  Just add the condition of the new accelerator configuration and make sure to add the appropriate -t tags. Make sure to include the `SNAX_GEN` path so that it creates the correct directory too.
+</details>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="streamer_design.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: 3. Streamer Design" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              3. Streamer Design
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="programming.html" class="md-footer__link md-footer__link--next" aria-label="Next: 5. Programming the System" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              5. Programming the System
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.748e2769.min.js"></script>
+      
+    
+  </body>
+</html>
