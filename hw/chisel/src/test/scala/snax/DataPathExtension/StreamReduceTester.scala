@@ -61,9 +61,10 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   /** Drive the DUT for one row and return the HW scalar (as f32) read from the output beat's low lane.
     * computeLanes>0 exercises the time-mux FSM (path B); ops selects which reductions are built. */
   def runReduce(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32,
-                ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16")): Float = {
+                ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16"),
+                fpPipe: Int = 1, treePipe: Int = 1): Float = {
     var result: Float = 0.0f
-    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
+    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16, fpPipe = fpPipe, treePipe = treePipe)))
       // Serial build: fpnew blackboxes (lzc.sv UNOPTFLAT) trip a Verilator PCH parallel-build race.
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
         dut.io.csr_i(0).poke(beats.length.U)
@@ -187,7 +188,8 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   def checkOp(op: Int, opName: String, nBeats: Int, mag: Int, computeLanes: Int = 32,
-              ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16")): Unit = {
+              ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16"),
+              fpPipe: Int = 1, treePipe: Int = 1): Unit = {
     val rng   = new Random(0x5EED + op)
     // FP16-representable inputs; magnitude kept small enough that the reduction stays in FP16 range
     // (SUMSQ over nBeats*32 squared terms must not overflow 65504).
@@ -199,7 +201,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     val golden = goldenScalar(op, vals)
     // narrow golden to FP16 grid for a fair compare with the HW (which narrows before output)
     val goldenF16 = f16bitsToF32(f32ToF16bits(golden))
-    val hw        = runReduce(op, beats, computeLanes, ops)
+    val hw        = runReduce(op, beats, computeLanes, ops, fpPipe, treePipe)
     val tol       = math.max(math.abs(goldenF16) * 0.004f, 0.05f) // ~0.4% rel + small abs floor
     val err       = math.abs(hw - goldenF16)
     println(s"[StreamReduce:$opName cl=$computeLanes ops=${ops.mkString}] beats=$nBeats golden=$goldenF16 hw=$hw err=$err tol=$tol")
@@ -255,6 +257,15 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   }
   "StreamReduce_SUMSQ_fp32out_cl8" should "emit the true FP32 SUMSQ in the time-mux" in {
     checkSumsqFp32(8, 4096, computeLanes = 8)
+  }
+
+  // separate accumulate (fpPipe) vs reduce-tree (treePipe) cut knobs: asymmetric depths must still match
+  // (exercises the independent accLat = laneLat+2*fpPipe and treeAddLat = numLevels*treePipe accounting).
+  "StreamReduce_SUMSQ_asym_pipe" should "match with fpPipe=2, treePipe=1" in {
+    checkOp(2, "SUMSQ", 8, 4, computeLanes = 8, fpPipe = 2, treePipe = 1)
+  }
+  "StreamReduce_ADD_treePipe" should "match with fpPipe=1, treePipe=2" in {
+    checkOp(1, "ADD", 8, 32, computeLanes = 8, fpPipe = 1, treePipe = 2)
   }
 
   // --- specialized configs ---

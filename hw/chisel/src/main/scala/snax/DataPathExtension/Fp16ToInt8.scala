@@ -24,7 +24,7 @@ import fp_unit._
   * magic add) so it fits the clock. `pipelined=false` keeps the original combinational PE (used by the
   * standalone PE tester for an exact same-cycle compare).
   */
-class Fp16ToInt8PE(pipelined: Boolean = false) extends Module with RequireAsyncReset {
+class Fp16ToInt8PE(pipelined: Boolean = false, fpPipeParam: Int = 0) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val in        = Input(UInt(16.W))  // FP16
     val inv_scale = Input(UInt(32.W))  // FP32 (= 1 / quant_scale)
@@ -34,18 +34,19 @@ class Fp16ToInt8PE(pipelined: Boolean = false) extends Module with RequireAsyncR
   import FpHelpers._
 
   private def sr[T <: Data](u: T): T = if (pipelined) RegNext(u) else u
+  val fpPipe = if (pipelined) fpPipeParam else 0 // internal FP-unit pipeline depth (cfg cut knob)
 
   val MAGIC = f32lit(12582912.0f) // 1.5 * 2^23 = 0x4B400000
   val HI    = f32lit(128.0f)      // pre-round clamp window (keeps the RNE exact, bounds iM)
   val LO    = f32lit(-128.0f)
 
   // ---- stage 0: widen fp16 -> fp32, then multiply by the FP32 inv_scale ----
-  val xf     = widen(io.in, FP16)
-  val scaled = sr(fmul(xf, io.inv_scale)) // reg0
+  val xf     = widen(io.in, FP16, fpPipe)
+  val scaled = sr(fmul(xf, io.inv_scale, fpPipe)) // reg0
 
   // ---- stage 1: clamp into [-128, 128] then round to nearest (ties to even) via the magic add ----
   val clamped = fp32max(fp32min(scaled, HI), LO)
-  val rM      = sr(fadd(clamped, MAGIC))  // reg1
+  val rM      = sr(fadd(clamped, MAGIC, fpPipe))  // reg1
   val iM      = rM.asSInt - 0x4b400000.S  // |iM| <= 128 after the clamp
 
   // ---- symmetric saturate to [-127, 127] ----
@@ -62,8 +63,9 @@ class Fp16ToInt8PE(pipelined: Boolean = false) extends Module with RequireAsyncR
 }
 
 object Fp16ToInt8PE {
-  /** Register-stage latency of the pipelined PE (kept in sync with the `sr()` cuts above). */
-  val PipeLatency: Int = 2
+  /** Register-stage latency of the pipelined PE: the 2 sr() cuts (after the multiply and the magic add)
+    * plus `fpPipe` internal registers in each of widen/fmul/fadd (= 2 + 3*fpPipe). 0 if not pipelined. */
+  def pipeLatency(pipelined: Boolean, fpPipe: Int): Int = if (pipelined) 2 + 3 * fpPipe else 0
 }
 
 /** Fp16ToInt8: stream FP16 -> INT8 quantize extension. Packs `pack` input beats (e.g. 2 beats of 32
@@ -84,6 +86,7 @@ class Fp16ToInt8(
   in_elementWidth:   Int = 16,
   out_elementWidth:  Int = 8,
   computeLanesParam: Int = 0,
+  fpPipeParam:       Int = 1,
   pipelined:         Boolean = true
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
@@ -103,7 +106,8 @@ class Fp16ToInt8(
   val computeLanes = if (computeLanesParam <= 0 || computeLanesParam > nPE) nPE else computeLanesParam
   require(nPE % computeLanes == 0, "Fp16ToInt8: nPE must be a multiple of computeLanes")
   val subCycles = nPE / computeLanes
-  val Ppe = if (pipelined) Fp16ToInt8PE.PipeLatency else 0
+  val fpPipe = if (pipelined) fpPipeParam else 0
+  val Ppe    = Fp16ToInt8PE.pipeLatency(pipelined, fpPipe)
 
   val inv_scale = WireInit(ext_csr_i(0).asUInt)
 
@@ -124,7 +128,7 @@ class Fp16ToInt8(
   val subIssue = step
   val res = Wire(Vec(computeLanes, SInt(out_elementWidth.W)))
   for (j <- 0 until computeLanes) {
-    val PE = Module(new Fp16ToInt8PE(pipelined) {
+    val PE = Module(new Fp16ToInt8PE(pipelined, fpPipe) {
       override def desiredName = extensionParam.moduleName + "_fp16_to_int8_pe"
     })
     PE.io.in        := inLanes(li(subIssue, j))
@@ -165,7 +169,8 @@ class HasFp16ToInt8(
   in_elementWidth:  Int = 16,
   out_elementWidth: Int = 8,
   dataWidth:        Int = 512,
-  computeLanes:     Int = 0
+  computeLanes:     Int = 0,
+  fpPipe:           Int = 1 // internal pipeline depth of the quantize-PE FP units (timing cut knob)
 ) extends HasDataPathExtension {
   require(
     in_elementWidth == 16 && out_elementWidth == 8,
@@ -181,7 +186,7 @@ class HasFp16ToInt8(
 
   def instantiate(clusterName: String): Fp16ToInt8 =
     Module(
-      new Fp16ToInt8(in_elementWidth, out_elementWidth, computeLanes) {
+      new Fp16ToInt8(in_elementWidth, out_elementWidth, computeLanes, fpPipe) {
         override def desiredName = clusterName + namePostfix
       }
     )

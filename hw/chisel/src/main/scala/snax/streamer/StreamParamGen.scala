@@ -22,114 +22,91 @@ object StreamerParametersGen {
   def readerParams = Seq(
     new ReaderWriterParam(
       spatialBounds = List(
-        8
+        16
       ),
       temporalDimension = 6,
       tcdmDataWidth = 64,
-      tcdmSize = 128,
+      tcdmSize = 512,
       tcdmLogicWordSize = Seq(
         256,
         128,
         64
       ),
-      numChannel = 8,
+      numChannel = 16,
       addressBufferDepth = 8,
       dataBufferDepth = 8,
-      configurableChannel = false,
-      dynamicPriority = true,
+      configurableChannel = true,
+      dynamicPriority = false,
       higherStaticPriority = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
       spatialBounds = List(
-        8
+        64
       ),
       temporalDimension = 3,
       tcdmDataWidth = 64,
-      tcdmSize = 128,
+      tcdmSize = 512,
       tcdmLogicWordSize = Seq(
         256,
         128,
         64
       ),
-      numChannel = 8,
+      numChannel = 64,
       addressBufferDepth = 8,
       dataBufferDepth = 8,
-      configurableChannel = false,
-      dynamicPriority = true,
+      configurableChannel = true,
+      dynamicPriority = false,
       higherStaticPriority = false,
       crossClockDomain = hasCrossClockDomain
     )
   )
 
-  def writerParams = Seq(
-    new ReaderWriterParam(
-      spatialBounds = List(
-        8
-      ),
-      temporalDimension = 3,
-      tcdmDataWidth = 64,
-      tcdmSize = 128,
-      tcdmLogicWordSize = Seq(
-        256,
-        128,
-        64
-      ),
-      numChannel = 8,
-      addressBufferDepth = 1,
-      dataBufferDepth = 1,
-      configurableChannel = false,
-      dynamicPriority = true,
-      higherStaticPriority = false,
-      crossClockDomain = hasCrossClockDomain
-    )
-  )
+  def writerParams = Seq()
 
   def readerWriterParams = Seq(
     new ReaderWriterParam(
       spatialBounds = List(
-        8,
-        4
+        16
       ),
-      temporalDimension = 3,
+      temporalDimension = 4,
       tcdmDataWidth = 64,
-      tcdmSize = 128,
+      tcdmSize = 512,
       tcdmLogicWordSize = Seq(
         256,
         128,
         64
       ),
-      numChannel = 32,
-      addressBufferDepth = 1,
-      dataBufferDepth = 1,
+      numChannel = 16,
+      addressBufferDepth = 2,
+      dataBufferDepth = 2,
       configurableChannel = true,
-      dynamicPriority = true,
+      dynamicPriority = false,
       higherStaticPriority = false,
       crossClockDomain = hasCrossClockDomain
    ), 
     new ReaderWriterParam(
       spatialBounds = List(
-        8,
-        4
+        16
       ),
-      temporalDimension = 3,
+      temporalDimension = 4,
       tcdmDataWidth = 64,
-      tcdmSize = 128,
+      tcdmSize = 512,
       tcdmLogicWordSize = Seq(
         256,
         128,
         64
       ),
-      numChannel = 32,
-      addressBufferDepth = 1,
-      dataBufferDepth = 1,
-      configurableChannel = false,
-      dynamicPriority = true,
+      numChannel = 16,
+      addressBufferDepth = 2,
+      dataBufferDepth = 2,
+      configurableChannel = true,
+      dynamicPriority = false,
       higherStaticPriority = false,
       crossClockDomain = hasCrossClockDomain
     )
   )
 
-  def tagName = "snax_streamer_gemmX_"
-  def headerFilepath = "../../target/snitch_cluster/sw/snax/gemmx/include"
+  def tagName = "snax_versacore_"
+  def headerFilepath = "../../target/snitch_cluster/sw/snax/versacore-to/include"
 }

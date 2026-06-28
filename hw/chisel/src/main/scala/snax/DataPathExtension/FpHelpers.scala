@@ -3,13 +3,14 @@ package snax.DataPathExtension
 import chisel3._
 
 import fp_unit._
+import fp_native._
 
 /** Shared FP primitives for the SIMD xDMA extensions. FP16 transport, FP32 internal.
   *
-  * The combinational fpnew blackboxes (fp_add/fp_mul/fp_fma) support mixed in/out formats, so widen
-  * and narrow are just adds with a zero operand. fp32max/min are pure Chisel (no NaN handling — the
-  * host softmax path produces only finite values). Each arithmetic / widen / narrow call instantiates
-  * one blackbox at the call site (legal inside a Module body).
+  * The native-Chisel FP units (fp_native.FpAdd/FpMul/FpFma, 1:1 ports of fpnew fp_add/fp_mul/fp_fma)
+  * support mixed in/out formats, so widen and narrow are just adds with a zero operand. fp32max/min are
+  * pure Chisel (no NaN handling — the host softmax path produces only finite values). Each arithmetic /
+  * widen / narrow call instantiates one unit at the call site (legal inside a Module body).
   */
 object FpHelpers {
   // FP32 / FP16 bit-pattern literals computed at elaboration
@@ -29,27 +30,28 @@ object FpHelpers {
     Mux(Mux(sa =/= sb, sa, Mux(sa, a >= b, b >= a)), a, b)
   }
 
-  // FP32 arithmetic (a*b+c etc.) via fpnew blackboxes
-  def fadd(a: UInt, b: UInt): UInt = {
-    val m = Module(new FpAddFp(FP32, FP32, FP32)); m.io.in_a := a; m.io.in_b := b; m.io.out
+  // FP32 arithmetic (a*b+c etc.) via the native-Chisel FP units. `numPipe` = internal pipeline depth of
+  // the FP unit (the per-op "cutting" knob for timing; 0 = combinational). The host FSM accounts for it.
+  def fadd(a: UInt, b: UInt, numPipe: Int = 0): UInt = {
+    val m = Module(new FpAdd(FP32, FP32, FP32, numPipe)); m.io.in_a := a; m.io.in_b := b; m.io.out
   }
-  def fmul(a: UInt, b: UInt): UInt = {
-    val m = Module(new FpMulFp(FP32, FP32, FP32)); m.io.in_a := a; m.io.in_b := b; m.io.out
+  def fmul(a: UInt, b: UInt, numPipe: Int = 0): UInt = {
+    val m = Module(new FpMul(FP32, FP32, FP32, numPipe)); m.io.in_a := a; m.io.in_b := b; m.io.out
   }
-  def ffma(a: UInt, b: UInt, c: UInt): UInt = {
-    val m = Module(new FpFmaFp(FP32, FP32, FP32)); m.io.in_a := a; m.io.in_b := b; m.io.in_c := c; m.io.out
+  def ffma(a: UInt, b: UInt, c: UInt, numPipe: Int = 0): UInt = {
+    val m = Module(new FpFma(FP32, FP32, FP32, numPipe)); m.io.in_a := a; m.io.in_b := b; m.io.in_c := c; m.io.out
   }
 
   // transport-type <-> FP32 conversions (exact widen; RNE narrow), via add-with-zero in the target format.
   // `t` is the FP16/BF16/FP8/FP32 transport (element) type; the internal compute stays FP32.
-  def widen(h: UInt, t: FpType): UInt = {
-    val m = Module(new FpAddFp(t, t, FP32)); m.io.in_a := h; m.io.in_b := 0.U(t.width.W); m.io.out
+  def widen(h: UInt, t: FpType, numPipe: Int = 0): UInt = {
+    val m = Module(new FpAdd(t, t, FP32, numPipe)); m.io.in_a := h; m.io.in_b := 0.U(t.width.W); m.io.out
   }
-  def narrow(f: UInt, t: FpType): UInt = {
-    val m = Module(new FpAddFp(FP32, FP32, t)); m.io.in_a := f; m.io.in_b := FP32_ZERO; m.io.out
+  def narrow(f: UInt, t: FpType, numPipe: Int = 0): UInt = {
+    val m = Module(new FpAdd(FP32, FP32, t, numPipe)); m.io.in_a := f; m.io.in_b := FP32_ZERO; m.io.out
   }
-  def square(h: UInt, t: FpType): UInt = { // t*t -> FP32
-    val m = Module(new FpMulFp(t, t, FP32)); m.io.in_a := h; m.io.in_b := h; m.io.out
+  def square(h: UInt, t: FpType, numPipe: Int = 0): UInt = { // t*t -> FP32
+    val m = Module(new FpMul(t, t, FP32, numPipe)); m.io.in_a := h; m.io.in_b := h; m.io.out
   }
 
   // FP16 <-> FP32 (the legacy fixed-precision aliases)

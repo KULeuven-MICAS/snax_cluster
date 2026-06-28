@@ -55,7 +55,8 @@ class HasStreamMap(
   computeLanes: Int,
   func:         Seq[String], // each entry "<FUNC>_<PRECISION>", e.g. "EXP_FP16"
   elementWidth: Int,         // transport element width (bits); must match the func-set precision
-  dataWidth:    Int = 512
+  dataWidth:    Int = 512,
+  fpPipe:       Int = 1      // internal pipeline depth of the affine (a*x+b) FP units (timing cut knob)
 ) extends HasDataPathExtension {
   require(computeLanes > 0, "HasStreamMap: computeLanes must be > 0")
   private val (_, transport) = OpSpec.parse(func, Set("LINEAR", "EXP", "SILU"), "HasStreamMap") // validate func names + precision
@@ -68,7 +69,7 @@ class HasStreamMap(
     )
 
   def instantiate(clusterName: String): StreamMap =
-    Module(new StreamMap(computeLanes, func, elementWidth) {
+    Module(new StreamMap(computeLanes, func, elementWidth, fpPipe) {
       override def desiredName = clusterName + namePostfix
     })
 }
@@ -77,6 +78,7 @@ class StreamMap(
   computeLanesParam: Int = 8,
   func:              Seq[String] = Seq("LINEAR_FP16", "EXP_FP16"),
   elementWidth:      Int = 16,
+  fpPipeParam:       Int = 1,
   pipelined:         Boolean = true
 )(implicit
   extensionParam: DataPathExtensionParam
@@ -96,12 +98,12 @@ class StreamMap(
   val hasSilu   = funcs.contains("SILU")
   val hasLinear = funcs.contains("LINEAR")
 
-  // Activation ROM depths. FpExp shrinks to 128 entries (still 0 FP16 ULP). FpSilu stays at 512: its
-  // negative tail (silu ~ x*e^x lands small normals on a fine FP16 grid) needs the density to keep
-  // within the <=2 FP16 ULP budget (256 nodes measured 3 ULP at x~-10.8); only 1-2 instances exist
-  // after the computeLanes cut, so the LUT saving there is marginal anyway.
+  // Activation ROM depths. FpExp shrinks to 128 entries (still 0 FP16 ULP). FpSilu uses 256 nodes over
+  // [0,16]: the odd-symmetry tabulation (g(m)=sigmoid(-|x|), reflect via 1-g for x>0) keeps the full node
+  // density of the old 512-over-[-16,16] table at half the ROM, staying within <=1 FP16 ULP (the prior
+  // uniform 256-node table measured 3 ULP at x~-10.8; odd-symmetry recovers the deep-negative tail).
   val expLutN = 128
-  val siluN   = 512
+  val siluN   = 256
 
   def ACT_EXP  = 1.U
   def ACT_SILU = 2.U
@@ -113,9 +115,12 @@ class StreamMap(
 
   // ---- pipeline depth (timing): the per-lane chain widen+ffma -> act -> narrow is cut into P
   // register stages so no single combinational path crosses a clock period; the FSM below drains it. ----
+  // fpPipe = internal pipeline depth of the affine FP units (widen/ffma/narrow). The EXP/SILU activations
+  // keep their own fixed FpExp.PipeLatency (their LUT chain has no numPipe knob).
+  val fpPipe  = if (pipelined) fpPipeParam else 0
   val actLat  = if (pipelined && (hasExp || hasSilu)) FpExp.PipeLatency else 0
-  val preLat  = if (pipelined) 1 else 0 // register after widen+ffma (a*x+b)
-  val postLat = if (pipelined) 1 else 0 // register after narrow
+  val preLat  = if (pipelined) 2 * fpPipe + 1 else 0 // widen(fpPipe) -> ffma(fpPipe) -> register
+  val postLat = if (pipelined) fpPipe + 1 else 0     // narrow(fpPipe) -> register
   val P       = preLat + actLat + postLat
   private def sr[T <: Data](u: T): T = if (pipelined) RegNext(u) else u
 
@@ -123,7 +128,7 @@ class StreamMap(
   // narrow back to transport. LINEAR is the affine result itself; EXP/SILU route through FpExp/FpSilu.
   // When `pipelined`, all three func branches share `actLat` so the runtime func-mux stays aligned.
   def computeLane(laneIn: UInt): UInt = {
-    val t = sr(ffma(a, widen(laneIn, transport), b)) // preLat stage
+    val t = sr(ffma(a, widen(laneIn, transport, fpPipe), b, fpPipe)) // preLat stage (widen+ffma cut by fpPipe)
     val e = if (hasExp)  { val m = Module(new FpExp(pipelined, expLutN)); m.io.in := t; m.io.out } else t
     val s = if (hasSilu) { val m = Module(new FpSilu(pipelined, siluN)); m.io.in := t; m.io.out } else t
     val tD = if (actLat > 0) ShiftRegister(t, actLat) else t // delay LINEAR to match EXP/SILU latency
@@ -131,7 +136,7 @@ class StreamMap(
     val dflt = if (hasLinear) tD else if (hasExp) e else s
     val r0   = if (hasExp)  Mux(act === ACT_EXP,  e, dflt) else dflt
     val r    = if (hasSilu) Mux(act === ACT_SILU, s, r0)   else r0
-    sr(narrow(r, transport)) // postLat stage
+    sr(narrow(r, transport, fpPipe)) // postLat stage (narrow cut by fpPipe)
   }
 
   // Unified time-mux + pipeline FSM: `computeLanes` pipelined units sweep the beat over `subCycles`

@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import fp_unit._
+import fp_native._
 
 /** StreamReduce: vertical (across-beat) + horizontal (across-lane) FP reduction of a streamed row to a
   * single scalar, splatted across all lanes of one output beat.
@@ -65,7 +66,9 @@ class HasStreamReduce(
   computeLanes: Int,
   op:           Seq[String], // each entry "<OP>_<PRECISION>", e.g. "ADD_FP16"
   elementWidth: Int,         // transport element width (bits); must match the op-set precision
-  dataWidth:    Int = 512
+  dataWidth:    Int = 512,
+  fpPipe:       Int = 1,     // accumulate FP-unit internal pipeline depth, 0..2 (per-op timing cut knob)
+  treePipe:     Int = 1      // reduce-tree add internal pipeline depth, 0..2 (SEPARATE cut knob)
 ) extends HasDataPathExtension {
   private val (_, transport) = OpSpec.parse(op, Set("MAX", "ADD", "SUMSQ"), "HasStreamReduce") // validate op names + precision
   OpSpec.checkWidth(elementWidth, transport, "HasStreamReduce") // explicit width must match the precision tag
@@ -78,7 +81,7 @@ class HasStreamReduce(
     )
 
   def instantiate(clusterName: String): StreamReduce =
-    Module(new StreamReduce(computeLanes, op, elementWidth) {
+    Module(new StreamReduce(computeLanes, op, elementWidth, fpPipe, treePipe) {
       override def desiredName = clusterName + namePostfix
     })
 }
@@ -87,12 +90,14 @@ class StreamReduce(
   computeLanesParam: Int = 0,
   op:                Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16"),
   elementWidth:      Int = 16,
+  fpPipeParam:       Int = 1,
+  treePipeParam:     Int = 1,
   pipelined:         Boolean = true
 )(
   implicit extensionParam: DataPathExtensionParam
 ) extends DataPathExtension {
 
-  import FpHelpers.{widen => widenT, narrow => narrowT, square => squareT}
+  import FpHelpers.{narrow => narrowT}
 
   // transport (element) precision comes from the op-set; internal compute stays FP32
   val (ops, transport) = OpSpec.parse(op, Set("MAX", "ADD", "SUMSQ"), "StreamReduce")
@@ -124,10 +129,22 @@ class StreamReduce(
 
   val FP32_ZERO = 0.U(accWidth.W)
 
-  // ---- pipeline depths (timing): the per-lane accumulate (accLat) and the horizontal reduce tree
-  // (treeLat) are each cut into register stages so no single combinational path crosses a clock period. ----
-  val accLat  = if (pipelined) 2 else 0 // widen/square -> add/max
-  val treeLat = if (pipelined) 2 else 0 // register layers inside the horizontal reduceTree
+  // ---- pipeline depths (timing) ----------------------------------------------------------------
+  // A single FP32 add/mul overruns the clock as one combinational op, so the reduce hot path uses the
+  // INTERNALLY-pipelined native FP units (fp_native.FpAdd/FpMul, numPipe register stages each) rather than
+  // relying on synthesis register-retiming. Two SEPARATE cut knobs (cfg): `fpPipe` for the per-lane
+  // accumulate, `treePipe` for the horizontal reduce-tree adds. Per-lane accumulate latency =
+  //   laneLat (register the time-mux lane select) + fpPipe (widen/square) + fpPipe (accumulate add).
+  // Horizontal reduce tree: one treePipe-pipelined add per level (add) / one registered compare per
+  // level (max), aligned to a common treeLat.
+  val fpPipe     = if (pipelined) fpPipeParam else 0   // accumulate FP-unit pipeline depth (cfg)
+  val treePipe   = if (pipelined) treePipeParam else 0 // reduce-tree add pipeline depth (cfg, separate knob)
+  val laneLat    = if (pipelined) 1 else 0      // register after the time-mux lane-select mux
+  val accLat     = laneLat + 2 * fpPipe         // issue -> per-lane accumulate result
+  val numLevels  = log2Ceil(lanes)
+  val treeAddLat = numLevels * treePipe         // add tree: treePipe registers per level
+  val treeMaxLat = if (pipelined) numLevels else 0 // max tree: 1 register per level
+  val treeLat    = scala.math.max(treeAddLat, treeMaxLat)
   private def sr[T <: Data](u: T): T = if (pipelined) RegNext(u) else u
 
   // FP32 max (finite inputs; NaN not expected from the host softmax path)
@@ -135,55 +152,68 @@ class StreamReduce(
     val sa = a(accWidth - 1); val sb = b(accWidth - 1)
     Mux(Mux(sa =/= sb, !sa, Mux(sa, b >= a, a >= b)), a, b)
   }
-  def fp32add(a: UInt, b: UInt): UInt = {
-    val m = Module(new FpAddFp(FP32, FP32, FP32)); m.io.in_a := a; m.io.in_b := b; m.io.out
-  }
-  def widen(h:  UInt): UInt = widenT(h, transport)  // transport -> FP32
-  def square(h: UInt): UInt = squareT(h, transport) // transport*transport -> FP32
   def narrow(f: UInt): UInt = narrowT(f, transport) // FP32 -> transport
 
+  // Internally-pipelined native FP units. The per-lane accumulate (widenP/squareP/addP) is cut by
+  // `fpPipe`; the horizontal reduce-tree add (treeAdd) by the separate `treePipe`. Each call instantiates
+  // one unit at the call site (numPipe=0 => combinational).
+  def widenP(h:  UInt): UInt = {
+    val m = Module(new FpAdd(transport, transport, FP32, fpPipe)); m.io.in_a := h; m.io.in_b := 0.U(transport.width.W); m.io.out
+  }
+  def squareP(h: UInt): UInt = {
+    val m = Module(new FpMul(transport, transport, FP32, fpPipe)); m.io.in_a := h; m.io.in_b := h; m.io.out
+  }
+  def addP(a: UInt, b: UInt): UInt = {
+    val m = Module(new FpAdd(FP32, FP32, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := b; m.io.out
+  }
+  def treeAdd(a: UInt, b: UInt): UInt = {
+    val m = Module(new FpAdd(FP32, FP32, FP32, treePipe)); m.io.in_a := a; m.io.in_b := b; m.io.out
+  }
+
   // one lane's new partial: accumulate `laneIn` into `prev` per the active op (only built ops built).
-  // Pipelined into `accLat` stages: stage 0 widen/square the input, stage 1 fold into `prev`.
+  // Pipeline: register the time-mux lane select (laneLat), widen/square through an internally-pipelined
+  // FP unit (fpPipe), then fold into `prev` through an internally-pipelined add (fpPipe); max stays a
+  // cheap compare, latency-matched. Total issue->result latency = accLat = laneLat + 2*fpPipe.
   def accLane(laneIn: UInt, prev: UInt, first: Bool): UInt = {
-    val widened = widen(laneIn)
-    val sq      = if (hasSumsq) square(laneIn) else widened
-    // ---- stage register: carry widened/squared inputs and the (stable) accumulator alongside ----
-    val w1 = sr(widened); val s1 = sr(sq); val p1 = sr(prev); val f1 = sr(first)
+    val laneR   = sr(laneIn)                     // +laneLat : break the lane-select mux off the FP op
+    val widened = widenP(laneR)                  // +fpPipe
+    val sq      = if (hasSumsq) squareP(laneR) else widened
+    // align the (stable) accumulator and the first-beat flag with the widened/squared inputs
+    val prevA  = ShiftRegister(prev,  laneLat + fpPipe)
+    val firstA = ShiftRegister(first, laneLat + fpPipe)
     val addend =
-      if (hasSumsq && hasAdd) Mux(opcode === OP_SUMSQ, s1, w1)
-      else if (hasSumsq) s1
-      else w1
-    val accAdd = if (hasAdd || hasSumsq) fp32add(addend, Mux(f1, FP32_ZERO, p1)) else FP32_ZERO
-    val accMax = if (hasMax) Mux(f1, w1, fp32max(w1, p1)) else FP32_ZERO
-    val sel =
-      if (multiOp) Mux(opcode === OP_MAX, accMax, accAdd)
-      else if (hasMax) accMax
-      else accAdd
-    sr(sel) // result register
+      if (hasSumsq && hasAdd) Mux(opcode === OP_SUMSQ, sq, widened)
+      else if (hasSumsq) sq
+      else widened
+    val accAdd = if (hasAdd || hasSumsq) addP(addend, Mux(firstA, FP32_ZERO, prevA)) else FP32_ZERO
+    // max is a cheap combinational compare; register it by fpPipe to line up with the pipelined add
+    val accMax = if (hasMax) ShiftRegister(Mux(firstA, widened, fp32max(widened, prevA)), fpPipe) else FP32_ZERO
+    if (multiOp) Mux(opcode === OP_MAX, accMax, accAdd)
+    else if (hasMax) accMax
+    else accAdd
   }
 
   // ---- per-lane FP32 partials ----
   val regs = RegInit(VecInit(Seq.fill(lanes)(0.U(accWidth.W))))
 
   // ---- horizontal collapse of the lane partials -> 1 FP32 -> transport, splatted ----
-  // Pairwise reduce with register layers after the given levels; read only once `regs` are stable
-  // (treeLat cycles after the last accumulate retires, gated by the FSM's tree-drain phase below).
-  val numLevels  = log2Ceil(lanes)
-  val regAfterLvl = Set(1, 3).filter(_ < numLevels - 1) // ~even split; never register the last level
-  def pipedReduce(xs: Seq[UInt], f: (UInt, UInt) => UInt): UInt = {
+  // Fully-registered pairwise reduce: the add tree uses one internally-pipelined add per level (so a
+  // single FP add never crosses a clock period — the tree's two-serial-add segments were the worst
+  // path), the max tree one registered compare per level; the two are aligned to the common treeLat.
+  // Read only once `regs` are stable (the FSM tree-drain waits treeLat cycles after the last accumulate).
+  def treeReduce(xs: Seq[UInt], f: (UInt, UInt) => UInt, carry: UInt => UInt): UInt = {
     var cur = xs.toIndexedSeq
-    var lvl = 0
     while (cur.length > 1) {
       cur = (0 until (cur.length + 1) / 2).map { k =>
-        if (2 * k + 1 < cur.length) f(cur(2 * k), cur(2 * k + 1)) else cur(2 * k)
+        if (2 * k + 1 < cur.length) f(cur(2 * k), cur(2 * k + 1)) else carry(cur(2 * k))
       }.toIndexedSeq
-      if (regAfterLvl.contains(lvl)) cur = cur.map(sr(_))
-      lvl += 1
     }
     cur.head
   }
-  val addTree    = if (hasAdd || hasSumsq) pipedReduce(regs, (a, b) => fp32add(a, b)) else FP32_ZERO
-  val maxTree    = if (hasMax) pipedReduce(regs, (a, b) => fp32max(a, b)) else FP32_ZERO
+  val addTreeRaw = if (hasAdd || hasSumsq) treeReduce(regs, (a, b) => treeAdd(a, b), x => ShiftRegister(x, treePipe)) else FP32_ZERO
+  val maxTreeRaw = if (hasMax) treeReduce(regs, (a, b) => sr(fp32max(a, b)), x => sr(x)) else FP32_ZERO
+  val addTree    = ShiftRegister(addTreeRaw, treeLat - treeAddLat) // pad to the common tree latency
+  val maxTree    = ShiftRegister(maxTreeRaw, treeLat - treeMaxLat)
   val scalarFP32 =
     if (multiOp) Mux(opcode === OP_MAX, maxTree, addTree) else if (hasMax) maxTree else addTree
   // Output packing: narrow the FP32 scalar to the transport grid (default), or — when fp32out is set and

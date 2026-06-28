@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import fp_unit._
+import fp_native._
 
 /** StreamElementwise: per-lane FP binary combine of `operandCount` consecutive input beats, emitted as ONE
   * full output beat (NO horizontal collapse — the element-wise sibling of StreamReduce).
@@ -31,7 +32,8 @@ class HasStreamElementwise(
   computeLanes: Int,
   op:           Seq[String], // each entry "<OP>_<PRECISION>", e.g. "MUL_FP16"
   elementWidth: Int,         // transport element width (bits); must match the op-set precision
-  dataWidth:    Int = 512
+  dataWidth:    Int = 512,
+  fpPipe:       Int = 1      // internal pipeline depth of each FP unit (timing cut knob)
 ) extends HasDataPathExtension {
   private val (ops, transport) = OpSpec.parse(op, Set("MUL", "ADD"), "HasStreamElementwise") // validate op names + precision
   OpSpec.checkWidth(elementWidth, transport, "HasStreamElementwise")
@@ -44,7 +46,7 @@ class HasStreamElementwise(
     )
 
   def instantiate(clusterName: String): StreamElementwise =
-    Module(new StreamElementwise(computeLanes, op, elementWidth) {
+    Module(new StreamElementwise(computeLanes, op, elementWidth, fpPipe) {
       override def desiredName = clusterName + namePostfix
     })
 }
@@ -53,6 +55,7 @@ class StreamElementwise(
   computeLanesParam: Int = 0,
   op:                Seq[String] = Seq("MUL_FP16", "ADD_FP16"),
   elementWidth:      Int = 16,
+  fpPipeParam:       Int = 1,
   pipelined:         Boolean = true
 )(
   implicit extensionParam: DataPathExtensionParam
@@ -83,33 +86,41 @@ class StreamElementwise(
   // op-select CSR exists only when >1 op is built; otherwise the single op is fixed
   val opcode: UInt = if (multiOp) ext_csr_i(1)(7, 0) else if (hasAdd) OP_ADD else OP_MUL
 
+  // ---- pipeline depth (timing) ----------------------------------------------------------------
+  // Each FP unit is internally pipelined by `fpPipe` (cfg "cutting" knob); plus laneLat to register the
+  // time-mux lane select. Per-lane combine latency = laneLat + fpPipe (widen) + fpPipe (mul/add).
+  val fpPipe  = if (pipelined) fpPipeParam else 0
+  val laneLat = if (pipelined) 1 else 0
+  val accLat  = laneLat + 2 * fpPipe
+  private def sr[T <: Data](u: T): T = if (pipelined) RegNext(u) else u
+
   def fmul(a: UInt, b: UInt): UInt = {
-    val m = Module(new FpMulFp(FP32, FP32, FP32)); m.io.in_a := a; m.io.in_b := b; m.io.out
+    val m = Module(new FpMul(FP32, FP32, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := b; m.io.out
   }
   def fadd(a: UInt, b: UInt): UInt = {
-    val m = Module(new FpAddFp(FP32, FP32, FP32)); m.io.in_a := a; m.io.in_b := b; m.io.out
+    val m = Module(new FpAdd(FP32, FP32, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := b; m.io.out
   }
-  def widen(h:  UInt): UInt = widenT(h, transport)  // transport -> FP32
-  def narrow(f: UInt): UInt = narrowT(f, transport) // FP32 -> transport
-
-  // ---- pipeline depth (timing): widen -> mul/add is cut into `accLat` register stages ----
-  val accLat = if (pipelined) 2 else 0
-  private def sr[T <: Data](u: T): T = if (pipelined) RegNext(u) else u
+  def widen(h:  UInt): UInt = widenT(h, transport, fpPipe) // transport -> FP32
+  def narrow(f: UInt): UInt = narrowT(f, transport)        // FP32 -> transport (output; not timing-critical)
 
   // one lane's new partial: combine `laneIn` into `prev` per the active op (only built ops built).
   // first beat seeds the partial with the (widened) input; later beats fold in via mul/add.
-  // Pipelined into `accLat` stages: stage 0 widens the input, stage 1 folds into `prev`.
+  // Pipeline: register the lane select (laneLat), widen (fpPipe), then mul/add (fpPipe); the seed and the
+  // accumulator are ShiftRegister-aligned to the combine output. Total issue->result latency = accLat.
   def accLane(laneIn: UInt, prev: UInt, first: Bool): UInt = {
-    val widened = widen(laneIn)
-    // ---- stage register: carry widened input and the (stable) accumulator alongside ----
-    val w1 = sr(widened); val p1 = sr(prev); val f1 = sr(first)
-    val accMul = if (hasMul) Mux(f1, w1, fmul(p1, w1)) else FP32_ZERO
-    val accAdd = if (hasAdd) Mux(f1, w1, fadd(p1, w1)) else FP32_ZERO
-    val sel =
-      if (multiOp) Mux(opcode === OP_ADD, accAdd, accMul)
-      else if (hasAdd) accAdd
-      else accMul
-    sr(sel) // result register
+    val laneR   = sr(laneIn)                                  // +laneLat
+    val widened = widen(laneR)                                // +fpPipe
+    val prevA   = ShiftRegister(prev,  laneLat + fpPipe)
+    val firstA  = ShiftRegister(first, laneLat + fpPipe)
+    val mulRes  = if (hasMul) fmul(prevA, widened) else FP32_ZERO // +fpPipe
+    val addRes  = if (hasAdd) fadd(prevA, widened) else FP32_ZERO
+    val seedD   = ShiftRegister(widened, fpPipe)             // first-beat seed, aligned to the combine output
+    val firstAA = ShiftRegister(firstA, fpPipe)
+    val accMul  = if (hasMul) Mux(firstAA, seedD, mulRes) else FP32_ZERO
+    val accAdd  = if (hasAdd) Mux(firstAA, seedD, addRes) else FP32_ZERO
+    if (multiOp) Mux(opcode === OP_ADD, accAdd, accMul)
+    else if (hasAdd) accAdd
+    else accMul
   }
 
   // ---- per-lane FP32 partials ----
