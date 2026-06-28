@@ -29,6 +29,11 @@
 //     +768   max    256 B   [4] MAX   scalars
 //     +1024  add    256 B   [4] ADD   scalars
 //     total  1280 B
+//
+// Performance (FP16, vsim, L1<->L1) on the native-Chisel FP RTL (StreamReduce FpAdd/FpMul, fpPipe=1 cut,
+// treePipe=1 reduce-tree cut; computeLanes=4). Default rows=4, D=64 (2 beats/row): each op (SUMSQ/MAX/ADD,
+// and the fp32out big16/big32 paths) measures 131 cycles. Outputs match the FP64 golden to 0 FP16 ULP;
+// the fp32out SUMSQ recovers the rows that overflow the FP16 grid.
 
 #include "data.h"
 #include "snax-xdma-lib.h"

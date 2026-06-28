@@ -21,7 +21,7 @@
 // inv_rms in data.h (rmsnorm_inv_rms; mean = sum(x^2)/N is exact for N=2^log2n) and checks the runtime
 // SUMSQ against rmsnorm_ssq_golden.
 //
-// Performance (FP16, vsim, L1<->L1; xDMA part) on the area/timing-optimized RTL: pipelined FP datapaths +
+// Performance (FP16, vsim, L1<->L1; xDMA part) on the native-Chisel FP RTL (FpAdd/FpMul/FpFma, fpPipe=1 cut) +
 // time-mux computeLanes (StreamReduce=4, StreamMap=2, Fp16ToInt8=8). "+host" adds the estimated host rsqrt
 // (~110 cc, from the fp16_sqrt + fp16_reciprocal op-LUTs at n=1). host = a single host vector core, full
 // FP32 rmsnorm. Outputs match the FP64 golden to <=4 ULP (worst FP16 ULP=1). The CSR orchestration is a
@@ -29,10 +29,10 @@
 //
 //   N      beats   xDMA warm   +host est   cold    host(full)   warm speedup(+host)
 //   ----   -----   ---------   ---------   -----   ----------   -------------------
-//   64     2       1,064       ~1,174      1,732   2,962        2.5x
-//   256    8       1,416       ~1,526      2,088   11,239       7.4x
-//   1024   32      2,828       ~2,938      3,486   44,463       15.1x
-//   4096   128     8,492       ~8,602      9,150   177,381      20.6x
+//   64     2       1,084       ~1,194      1,748   2,962        2.5x
+//   256    8       1,480       ~1,590      2,144   11,239       7.1x
+//   1024   32      3,060       ~3,170      3,710   44,463       14.0x
+//   4096   128     9,396       ~9,506      10,046  177,381      18.7x
 
 #include "data.h"
 #include "snax-xdma-lib.h"

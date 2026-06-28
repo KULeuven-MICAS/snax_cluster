@@ -17,17 +17,17 @@
 //     beat0 [x0..x31]->int8 = LOW 32 B,  beat1 [x32..x63]->int8 = HIGH 32 B  ->  out [q0..q63] (64 int8)
 //     emitted on beat1 only; the writer drains beats/2 (needs an even beat count).
 //
-// Performance (FP16, vsim, L1<->L1) on the area/timing-optimized RTL: pipelined FpSilu (512-node ROM) +
-// time-mux StreamMap computeLanes=2, Fp16ToInt8=8. host = a single host vector core, full FP32 silu (op-LUT
+// Performance (FP16, vsim, L1<->L1) on the native-Chisel FP RTL (fpPipe=1 cut, FpSilu 256-node odd-symmetry
+// ROM) + time-mux StreamMap computeLanes=2, Fp16ToInt8=8. host = a single host vector core, full FP32 silu (op-LUT
 // baseline). Outputs match the FP64 golden to <=1 FP16 ULP at every N. The CSR orchestration is a fixed
 // ~0.7k cc (2 task setups); the datapath scales with N (CSR-bound at small N, datapath-bound for N>=1k).
 //
 //   N      beats   warm    cold    host       warm speedup
 //   ----   -----   -----   -----   -------    ------------
-//   64     2       793     1,329   2,258      2.8x
-//   256    8       1,081   1,617   8,264      7.6x
-//   1024   32      2,248   2,785   32,718     14.6x
-//   4096   128     6,856   7,393   130,686    19.1x
+//   64     2       805     1,341   2,258      2.8x
+//   256    8       1,129   1,669   8,264      7.3x
+//   1024   32      2,440   2,977   32,718     13.4x
+//   4096   128     7,624   8,161   130,686    17.1x
 
 #include "data.h"
 #include "snax-xdma-lib.h"
