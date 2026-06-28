@@ -39,8 +39,8 @@ Naming convention:
         user_width: 3
         tcdm:
         {
-            size: 512
-            banks: 64
+            size: 256
+            banks: 32
             sparse_interconnect: true
         }
         cluster_periph_size: 64
