@@ -45,6 +45,11 @@ SUBDIRS += snax-xdma-reduce-multirow
 SUBDIRS += snax-xdma-rmsnorm-multirow
 SUBDIRS += snax-xdma-softmax-multirow
 endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_cluster.hjson)
+SUBDIRS += snax-xdma-reduce-multirow
+SUBDIRS += snax-xdma-rmsnorm-multirow
+SUBDIRS += snax-xdma-softmax-multirow
+endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-maxpool
@@ -62,6 +67,8 @@ SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-elementwise-add
+SUBDIRS += snax-xdma-reduce-multirow
+SUBDIRS += snax-xdma-rmsnorm-multirow
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_dse_cluster.hjson)
 SUBDIRS += snax-versacore-dse-matmul-profile
