@@ -24,8 +24,10 @@ import chisel3.util._
   * node density as the old 512-over-[-16,16] table at N=256, halving both ROMs while staying within <=1
   * FP16 ULP (the prior uniform 256-node [-16,16] table measured 3 ULP at x~-10.8; symmetry fixes that).
   *
-  * Same shape and role as FpExp (one ROM family + one interp FMA): it plugs into StreamMap as func=SILU
-  * exactly where EXP routes through FpExp.
+  * Same shape and role as FpExp (one ROM family + one interp FMA). NOTE: superseded in the StreamMap
+  * datapath by the merged `FpActivation` (which computes exp OR silu on shared FP units). FpSilu is kept as
+  * the standalone GOLDEN REFERENCE that FpActivationTester diff-checks silu mode against bit-for-bit; it is
+  * no longer instantiated in the generated netlist.
   */
 class FpSilu(pipelined: Boolean = false, N: Int = 256) extends Module with RequireAsyncReset {
   require(isPow2(N), "FpSilu: N must be a power of two")

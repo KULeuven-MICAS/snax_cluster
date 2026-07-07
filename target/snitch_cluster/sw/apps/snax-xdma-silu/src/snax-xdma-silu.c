@@ -7,8 +7,8 @@
 //
 //   T1  silu : StreamMap(a=1, b=0, func=SILU)   x -> out   (= x*sigmoid(x))
 //
-// SILU routes the affine result through FpSilu (a 512-entry sigmoid LUT * x; see FpSilu.scala). FP16
-// transport, FP32-internal.
+// SILU routes the affine result through the merged FpActivation core (a 256-node odd-symmetry sigmoid LUT
+// * x, sharing FP units with exp; see FpActivation.scala). FP16 transport, FP32-internal.
 //
 // LANE DATAFLOW (FP16 transport = 32 lanes per 512-b beat):
 //   StreamMap(SILU)  1 beat -> 1 beat, all 32 lanes used (clean 512b in / 512b out):
@@ -17,8 +17,8 @@
 //     beat0 [x0..x31]->int8 = LOW 32 B,  beat1 [x32..x63]->int8 = HIGH 32 B  ->  out [q0..q63] (64 int8)
 //     emitted on beat1 only; the writer drains beats/2 (needs an even beat count).
 //
-// Performance (FP16, vsim, L1<->L1) on the native-Chisel FP RTL (fpPipe=1 cut, FpSilu 256-node odd-symmetry
-// ROM) + time-mux StreamMap computeLanes=2, Fp16ToInt8=8. host = a single host vector core, full FP32 silu (op-LUT
+// Performance (FP16, vsim, L1<->L1) on the native-Chisel FP RTL (fpPipe=1 cut, FpActivation 256-node
+// odd-symmetry silu ROM) + time-mux StreamMap computeLanes=4, Fp16ToInt8=4. host = a single host vector core, full FP32 silu (op-LUT
 // baseline). Outputs match the FP64 golden to <=1 FP16 ULP at every N. The CSR orchestration is a fixed
 // ~0.7k cc (2 task setups); the datapath scales with N (CSR-bound at small N, datapath-bound for N>=1k).
 //

@@ -8,7 +8,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 /** Tier-1 accuracy test for FpSilu vs the host silu, silu(x) = x*sigmoid(x). Gating milestone: the
   * FP16-narrowed result must match within <= 1 FP16 ULP across the active range (and the saturating
   * tails). Reports the worst-case ULP. Mirrors FpExpTester; silu is signed, so the ULP is measured on a
-  * monotonic FP16 ordering key.
+  * monotonic FP16 ordering key. FpSilu is now the standalone GOLDEN REFERENCE (the datapath uses the merged
+  * FpActivation); FpActivationTester diff-checks the merged silu mode against it bit-exact.
   */
 class FpSiluTester extends AnyFlatSpec with ChiselScalatestTester {
 

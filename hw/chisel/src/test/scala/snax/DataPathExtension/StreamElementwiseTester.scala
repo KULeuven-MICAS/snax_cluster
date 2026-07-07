@@ -50,7 +50,7 @@ class StreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
 
   // op: 0=MUL, 1=ADD. pairs: Seq of (A_beat, B_beat); each beat is `lanes` FP16-bit ints.
   def run(op: Int, pairs: Seq[(Seq[Int], Seq[Int])], computeLanes: Int,
-          opList: Seq[String] = Seq("MUL_FP16", "ADD_FP16")): Seq[Seq[Float]] = {
+          opList: Seq[String] = Seq("FMA_FP16")): Seq[Seq[Float]] = {
     var outs = Seq[Seq[Float]]()
     test(new DataPathExtensionHarness(
       new HasStreamElementwise(dataWidth = testWidth, elementWidth = 16, computeLanes = computeLanes, op = opList)))
@@ -92,7 +92,7 @@ class StreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
       }
     }
 
-  def check(name: String, op: Int, computeLanes: Int, opList: Seq[String] = Seq("MUL_FP16", "ADD_FP16")): Unit = {
+  def check(name: String, op: Int, computeLanes: Int, opList: Seq[String] = Seq("FMA_FP16")): Unit = {
     val rng   = new Random(0xE1E + op + computeLanes)
     val pairs = Seq.fill(4)(
       (Seq.fill(lanes)(f32ToF16bits(rng.between(-4, 4) + rng.nextInt(4) * 0.25f)),
@@ -118,5 +118,37 @@ class StreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
   // single-op build (userCsrNum shrinks to 1; no op-select CSR)
   "StreamElementwise_mul_only" should "match A*B with a single-op build" in {
     check("mulonly", 0, 8, opList = Seq("MUL_FP16"))
+  }
+
+  // APP-LEVEL protocol test: emulate the controller across back-to-back tasks and require busy_o to fall
+  // after each drain (the completion signal the xDMA waits on; the value-only tests never check it).
+  "StreamElementwise_multitask_busy" should "return busy_o low after each back-to-back task" in {
+    test(new DataPathExtensionHarness(
+      new HasStreamElementwise(dataWidth = testWidth, elementWidth = 16, computeLanes = 8, op = Seq("FMA_FP16"))))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.io.enable_i.poke(true)
+        val rng = new Random(0xE1E)
+        def runTask(op: Int, nRows: Int): Unit = {
+          // operandCount=2 (binary): 2*nRows input beats -> nRows output beats
+          val beats = Seq.fill(2 * nRows)(Seq.fill(lanes)(f32ToF16bits(rng.between(-3, 3))))
+          dut.io.csr_i(0).poke(2.U); if (dut.io.csr_i.length > 1) dut.io.csr_i(1).poke(op.U)
+          dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+          var threads = new chiseltest.internal.TesterThreadList(Seq())
+          threads = threads.fork {
+            dut.io.data_i.valid.poke(true)
+            for (bt <- beats) { while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1); dut.io.data_i.bits.poke(packBeat(bt)); dut.clock.step(1) }
+            dut.io.data_i.valid.poke(false)
+          }
+          threads = threads.fork {
+            for (_ <- 0 until nRows) { while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1); dut.io.data_o.ready.poke(true); dut.clock.step(1); dut.io.data_o.ready.poke(false) }
+          }
+          threads.joinAndStep()
+          dut.io.data_o.ready.poke(true)
+          var w = 0; while (dut.io.busy_o.peekBoolean() && w < 400) { dut.clock.step(1); w += 1 }
+          dut.io.data_o.ready.poke(false)
+          assert(!dut.io.busy_o.peekBoolean(), s"StreamElementwise busy_o stuck high after task (op=$op) -- completion bug")
+        }
+        runTask(0, 3); runTask(1, 3); runTask(0, 3)
+      }
   }
 }

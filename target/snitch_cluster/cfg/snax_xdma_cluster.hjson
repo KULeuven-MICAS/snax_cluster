@@ -178,10 +178,12 @@ Naming convention:
                 // computeLanes time-mux the per-lane FP units for area; fpPipe = internal FP-unit pipeline
                 // depth (the per-op "cutting" knob to meet timing), range 0..2 (0 = combinational FP ops).
                 // StreamReduce also has treePipe: a SEPARATE 0..2 cut depth for the horizontal reduce-tree adds.
-                HasStreamMap: {dataWidth: 512, elementWidth: 16, computeLanes: 2, func: ["LINEAR_FP16", "EXP_FP16", "SILU_FP16"], fpPipe: 1}
-                HasStreamReduce: {dataWidth: 512, elementWidth: 16, computeLanes: 4, op: ["MAX_FP16", "ADD_FP16", "SUMSQ_FP16"], fpPipe: 1, treePipe: 1}
-                HasStreamElementwise: {dataWidth: 512, elementWidth: 16, computeLanes: 2, op: ["MUL_FP16", "ADD_FP16"], fpPipe: 1}
-                HasFp16ToInt8: {in_elementWidth: 16, out_elementWidth: 8, dataWidth: 512, computeLanes: 8, fpPipe: 1}
+                HasStreamMap: {dataWidth: 512, elementWidth: 16, computeLanes: 4, func: ["LINEAR_FP16", "EXP_FP16", "SILU_FP16"], fpPipe: 1}
+                // op-set = the single fused FMA op (add/square accumulate, op CSR selects) + the MAX compare.
+                HasStreamReduce: {dataWidth: 512, elementWidth: 16, computeLanes: 4, op: ["FMA_FP16", "MAX_FP16"], fpPipe: 1, treePipe: 1, treeLanes: 2}
+                // op-set = the single fused FMA op (MUL = acc*x, ADD = acc+x; op CSR selects).
+                HasStreamElementwise: {dataWidth: 512, elementWidth: 16, computeLanes: 4, op: ["FMA_FP16"], fpPipe: 1}
+                HasFp16ToInt8: {in_elementWidth: 16, out_elementWidth: 8, dataWidth: 512, computeLanes: 4, fpPipe: 1}
             }
         }
         // Xdiv_sqrt: true,

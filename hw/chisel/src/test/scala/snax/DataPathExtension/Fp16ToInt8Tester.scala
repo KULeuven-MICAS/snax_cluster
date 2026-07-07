@@ -164,4 +164,35 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
     for (i <- hw.indices)
       assert(hw(i) == gd(i), f"beat $i (cl=8) mismatch:\n  HW=0x${hw(i).toString(16)}\n  SW=0x${gd(i).toString(16)}")
   }
+
+  // APP-LEVEL protocol test: emulate the xDMA controller across back-to-back tasks and require busy_o to
+  // fall after each drain (the completion signal the controller waits on; the value tests never check it).
+  def runTasksCheckBusy(computeLanes: Int, taskBeats: Seq[Int]): Unit = {
+    test(new DataPathExtensionHarness(new HasFp16ToInt8(16, 8, 512, computeLanes)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+        dut.io.enable_i.poke(true)
+        val rng = new Random(0xF16)
+        for ((nBeats, ti) <- taskBeats.zipWithIndex) {
+          val inputBeats = Seq.fill(nBeats)(packFp16(Seq.fill(32)(sampleFp16(rng))))
+          dut.io.csr_i(0).poke(f32bits(16.0f).U)
+          dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+          var threads = new chiseltest.internal.TesterThreadList(Seq())
+          threads = threads.fork {
+            dut.io.data_i.valid.poke(true)
+            for (bt <- inputBeats) { while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1); dut.io.data_i.bits.poke(bt); dut.clock.step(1) }
+            dut.io.data_i.valid.poke(false)
+          }
+          threads = threads.fork {
+            for (_ <- 0 until nBeats / 2) { while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1); dut.io.data_o.ready.poke(true); dut.clock.step(1); dut.io.data_o.ready.poke(false) }
+          }
+          threads.joinAndStep()
+          dut.io.data_o.ready.poke(true)
+          var w = 0; while (dut.io.busy_o.peekBoolean() && w < 400) { dut.clock.step(1); w += 1 }
+          dut.io.data_o.ready.poke(false)
+          assert(!dut.io.busy_o.peekBoolean(), s"Fp16ToInt8 task $ti (beats=$nBeats cl=$computeLanes): busy_o stuck high -- completion bug")
+        }
+      }
+  }
+  it should "return busy_o low after each back-to-back task (cl=8)" in { runTasksCheckBusy(8, Seq(6, 4, 8)) }
+  it should "return busy_o low after each back-to-back task (cl=32 parallel)" in { runTasksCheckBusy(32, Seq(6, 4, 8)) }
 }

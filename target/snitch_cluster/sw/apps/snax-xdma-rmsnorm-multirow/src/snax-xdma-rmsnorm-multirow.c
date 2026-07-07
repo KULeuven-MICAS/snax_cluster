@@ -44,8 +44,8 @@
 
 #define XDMA_BEAT_BYTES 64
 #define FP16_PER_BEAT 32
-#define OP_SUMSQ 2u
-#define EW_MUL 0u  // StreamElementwise op CSR: 0=MUL, 1=ADD
+#define OP_SUMSQ 2u  // StreamReduce fused-FMA op, square mode (acc + x*x); MAX=0, ADD=1
+#define EW_MUL 0u    // StreamElementwise fused-FMA op CSR: 0=MUL (acc*x), 1=ADD (acc+x)
 
 static inline uint32_t fp16_mono(uint16_t h) {
     uint32_t mag = h & 0x7FFFu;

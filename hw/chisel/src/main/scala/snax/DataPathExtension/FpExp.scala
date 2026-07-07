@@ -5,6 +5,10 @@ import chisel3.util._
 
 /** FpExp: per-lane exp(x), FP32 in / FP32 out.
   *
+  * NOTE: superseded in the StreamMap datapath by the merged `FpActivation` (which shares its FP units with
+  * silu). FpExp is kept as the standalone GOLDEN REFERENCE — FpActivationTester diff-checks FpActivation's
+  * exp mode against it bit-for-bit. It is no longer instantiated in the generated netlist.
+  *
   * LUT-based 2^m design (the chosen area point): exp(x) = 2^m with m = x*log2e. Split
   * m*lutN into an integer iM = round(m*lutN); then n = iM >> log2(lutN) is the integer part of m and
   * idx = iM[log2(lutN)-1:0] indexes a `lutN`-entry ROM of 2^(idx/lutN); the leftover

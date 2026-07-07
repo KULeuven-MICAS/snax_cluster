@@ -31,20 +31,20 @@
 //   P3 ADD:  out  = tmp1  (+) tmp2     -> [ x0*c0-x1*s0   x1*c0+x0*s0  ... ]   (the rotation)
 //   Each pass is a clean 32-lane-in/32-lane-out element-wise op (the 2:1 is the interleaved-operand read).
 //
-// Performance (FP16, vsim, L1<->L1), measured on the native-Chisel FP RTL (StreamElementwise FpAdd/FpMul,
-// fpPipe=1 cut) + time-mux computeLanes=2. swap* = one-time rotate_half staging (iDMA, ~2 cyc/elem); p1/p2/p3 = the
+// Performance (FP16, vsim, L1<->L1), measured on the native-Chisel FP RTL (StreamElementwise mixed FMA,
+// fpPipe=1 cut) + time-mux computeLanes=4. swap* = one-time rotate_half staging (iDMA, ~2 cyc/elem); p1/p2/p3 = the
 // StreamElementwise passes; xdma_total = p1+p2+p3 (pure datapath); warm/cold = the 3-pass offload only
 // (swap excluded, comparable to swiglu's warm/cold); per-call = swap+warm.
 //
 //   N      beats   swap*   p1     p2     p3     xdma_total   warm     cold     per-call(swap+warm)
 //   ----   -----   -----   ----   ----   ----   ----------   ------   ------   -------------------
-//   64     2       166     93     93     93     279          1,876    2,044    2,042
-//   256    8       551     339    339    339    1,017        2,616    2,784    3,167
-//   1024   32      2,090   1,323  1,323  1,323  3,969        5,518    5,724    7,608
-//   4096   128     8,235   5,259  5,259  5,259  15,777       17,326   17,532   25,561
+//   64     2       166     48     48     48     144          1,740    1,912    1,906
+//   256    8       551     144    144    144    432          2,028    2,200    2,579
+//   1024   32      2,090   528    528    528    1,584        3,130    3,336    5,220
+//   4096   128     8,235   2,064  2,064  2,064  6,192        7,738    7,944    15,973
 //
-// worst FP16 ULP vs the 3-pass golden = 0 (N<=1024), 1 (N=4096). The datapath is ~40 cyc/beat/pass (the
-// computeLanes=2 time-mux); the ~1.6k fixed warm cost is the 3x CSR orchestration (3 memcpy_nd setups), not
+// worst FP16 ULP vs the 3-pass golden = 0 (N<=1024), 1 (N=4096). The datapath is ~16 cyc/beat/pass (the
+// computeLanes=4 time-mux; halved from cl=2); the ~1.6k fixed warm cost is the 3x CSR orchestration (3 memcpy_nd setups), not
 // the math (skill: orchestration is the bottleneck). At large N the swap (the rotate_half tax of the
 // zero-HW path) and the time-muxed datapath dominate. Reference:
 // swiglu's measured host(full) silu+mul is ~33.6*N cyc (2,308..137,799 for N=64..4096); a host
@@ -60,7 +60,7 @@
 #endif
 
 #define XDMA_BEAT_BYTES 64
-#define EW_MUL 0u  // StreamElementwise op CSR: 0=MUL, 1=ADD
+#define EW_MUL 0u  // StreamElementwise fused-FMA op CSR: 0=MUL (acc*x), 1=ADD (acc+x)
 #define EW_ADD 1u
 
 // FP16 bits -> monotonic ordering key (handles signed outputs): adjacent FP16 values map to adjacent

@@ -25,8 +25,8 @@
 // (-max for T2 is a DM-core integer sign-flip, no FP).
 //
 // Performance (FP16, vsim, L1<->L1; xDMA part) on the native-Chisel FP RTL (FpAdd/FpMul/FpFma, fpPipe=1
-// internal pipeline cut) + time-mux computeLanes (StreamMap=2, StreamReduce=4, Fp16ToInt8=8), FpExp 128-entry
-// LUT. "+host" adds the
+// internal pipeline cut) + time-mux computeLanes (StreamMap=4, StreamReduce=4, Fp16ToInt8=4), FpActivation
+// exp 32-entry LUT. "+host" adds the
 // estimated host reciprocal (~57 cc, from the fp16_reciprocal op-LUT at n=1). host = a single host vector
 // core, full FP32 LUT softmax. Outputs match the FP64 golden to <=4 ULP (worst FP16 ULP=1). The CSR
 // orchestration is a fixed ~1.3k cc (4 task setups); the datapath scales with N, so warm is CSR-bound at
@@ -49,6 +49,7 @@
 #endif
 
 #define XDMA_BEAT_BYTES 64
+// StreamReduce op CSR: MAX=0 (compare), ADD=1 (fused FMA op, acc+x). SUMSQ=2 (unused here).
 #define OP_MAX 0u
 #define OP_ADD 1u
 #define RED_TAP 0x100u       // StreamReduce op CSR bit[8]: pass row through + trailing scalar beat

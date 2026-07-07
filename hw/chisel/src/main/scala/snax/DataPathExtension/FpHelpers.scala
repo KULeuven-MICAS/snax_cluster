@@ -1,16 +1,19 @@
 package snax.DataPathExtension
 
 import chisel3._
+import chisel3.util._
 
 import fp_unit._
 import fp_native._
 
 /** Shared FP primitives for the SIMD xDMA extensions. FP16 transport, FP32 internal.
   *
-  * The native-Chisel FP units (fp_native.FpAdd/FpMul/FpFma, 1:1 ports of fpnew fp_add/fp_mul/fp_fma)
-  * support mixed in/out formats, so widen and narrow are just adds with a zero operand. fp32max/min are
-  * pure Chisel (no NaN handling — the host softmax path produces only finite values). Each arithmetic /
-  * widen / narrow call instantiates one unit at the call site (legal inside a Module body).
+  * The native-Chisel FP units (fp_native.FpAdd/FpMul/FpFma, 1:1 ports of fpnew fp_add/fp_mul/fp_fma) support
+  * mixed in/out formats. `widen` (transport->FP32) is an EXACT bit-manipulation convert (no FP unit — the
+  * value is exact in FP32); `narrow` (FP32->transport, rounds) is still an add-with-zero. The mixed `ffmaT`/
+  * `fmulT` multiply an FP32 operand by a raw transport value (a smaller multiplier than widening first).
+  * fp32max/min are pure Chisel (no NaN handling — the host softmax path produces only finite values). Each
+  * arithmetic / convert call instantiates one unit/block at the call site (legal inside a Module body).
   */
 object FpHelpers {
   // FP32 / FP16 bit-pattern literals computed at elaboration
@@ -41,11 +44,50 @@ object FpHelpers {
   def ffma(a: UInt, b: UInt, c: UInt, numPipe: Int = 0): UInt = {
     val m = Module(new FpFma(FP32, FP32, FP32, numPipe)); m.io.in_a := a; m.io.in_b := b; m.io.in_c := c; m.io.out
   }
+  // Mixed-precision FMA: a (FP32) * xT (transport, e.g. FP16) + c (FP32) -> FP32. Since a transport value is
+  // EXACT in FP32, feeding it raw (instead of widen()->FP32) is bit-identical but shrinks the multiplier from
+  // PREC_A x PREC_C (24x24) to PREC_A x PREC_T (24x11 @FP16) AND drops the widen. Use wherever an FP32 operand
+  // multiplies a transport-precision value.
+  def ffmaT(a: UInt, xT: UInt, c: UInt, tX: FpType, numPipe: Int = 0): UInt = {
+    val m = Module(new FpFma(FP32, tX, FP32, numPipe)); m.io.in_a := a; m.io.in_b := xT; m.io.in_c := c; m.io.out
+  }
+  def fmulT(a: UInt, xT: UInt, tX: FpType, numPipe: Int = 0): UInt = { // FP32 * transport -> FP32 (24xPREC_T mult)
+    val m = Module(new FpMul(FP32, tX, FP32, numPipe)); m.io.in_a := a; m.io.in_b := xT; m.io.out
+  }
 
-  // transport-type <-> FP32 conversions (exact widen; RNE narrow), via add-with-zero in the target format.
-  // `t` is the FP16/BF16/FP8/FP32 transport (element) type; the internal compute stays FP32.
+  // EXACT transport->FP32 widen. Every sub-FP32 format (FP16/BF16/FP8) has <=23 mantissa & <=8 exp bits, so
+  // it is representable in FP32 with NO rounding. This is a pure bit-manipulation convert (exp rebias +
+  // mantissa left-align, with the one non-trivial case being a subnormal source, normalized via a small lzc
+  // + shift) — it replaces `FpAdd(t,t,FP32, in_b=0)`, dropping the adder's operand-align barrel shifter and
+  // rounding path while producing the identical FP32 value. `numPipe` is preserved as output delay so the
+  // host FSM's latency accounting is unchanged.
   def widen(h: UInt, t: FpType, numPipe: Int = 0): UInt = {
-    val m = Module(new FpAdd(t, t, FP32, numPipe)); m.io.in_a := h; m.io.in_b := 0.U(t.width.W); m.io.out
+    if (t.width >= FP32.width) {
+      ShiftRegister(h, numPipe) // transport already >= FP32: widen is identity
+    } else {
+      val expW  = t.expWidth
+      val sigW  = t.sigWidth
+      val biasT = FpCommon.bias(t)
+      val sign  = h(t.width - 1)
+      val expT  = h(t.width - 2, sigW)
+      val manT  = h(sigW - 1, 0)
+      val expAllOnes = expT.andR
+      val expZero    = expT === 0.U
+      val manZero    = manT === 0.U
+      val SIG32 = FP32.sigWidth // 23
+      // normal:   exp32 = expT - biasT + 127 ; man32 = manT << (23 - sigW)
+      val expNorm = (expT +& (127 - biasT).U(8.W))(7, 0)
+      val manNorm = (manT << (SIG32 - sigW))(SIG32 - 1, 0)
+      // subnormal (exp==0, man!=0): leading one at bit (sigW-1 - lz) => exp32 = 127 - biasT - lz,
+      //   shift the fraction up by (24 - sigW + lz) (drops the implicit 1 at bit 23).
+      val (lz, _) = FpCommon.lzc(manT, sigW)
+      val expSub  = ((127 - biasT).U(9.W) - lz)(7, 0)
+      val manSub  = (manT << ((SIG32 - sigW + 1).U +& lz))(SIG32 - 1, 0)
+      val exp32 = Mux(expAllOnes, ((1 << 8) - 1).U(8.W),                     // inf/nan
+                  Mux(expZero, Mux(manZero, 0.U(8.W), expSub), expNorm))     // zero / subnormal / normal
+      val man32 = Mux(expZero, Mux(manZero, 0.U(SIG32.W), manSub), manNorm)  // subnormal normalizes; else <<
+      ShiftRegister(Cat(sign, exp32, man32), numPipe)
+    }
   }
   def narrow(f: UInt, t: FpType, numPipe: Int = 0): UInt = {
     val m = Module(new FpAdd(FP32, FP32, t, numPipe)); m.io.in_a := f; m.io.in_b := FP32_ZERO; m.io.out

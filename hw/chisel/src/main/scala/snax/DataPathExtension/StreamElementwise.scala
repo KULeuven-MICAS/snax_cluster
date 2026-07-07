@@ -35,13 +35,15 @@ class HasStreamElementwise(
   dataWidth:    Int = 512,
   fpPipe:       Int = 1      // internal pipeline depth of each FP unit (timing cut knob)
 ) extends HasDataPathExtension {
-  private val (ops, transport) = OpSpec.parse(op, Set("MUL", "ADD"), "HasStreamElementwise") // validate op names + precision
+  private val (ops, transport) = OpSpec.parse(op, Set("MUL", "ADD", "FMA"), "HasStreamElementwise") // validate op names + precision
   OpSpec.checkWidth(elementWidth, transport, "HasStreamElementwise")
   require(computeLanes > 0, "HasStreamElementwise: computeLanes must be > 0")
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
       moduleName = "StreamElementwise",
-      userCsrNum = if (ops.size > 1) 2 else 1, // operandCount + (op-select only when >1 op listed)
+      // operandCount + (op-select). The op-select CSR is needed when both combines are runtime-selectable:
+      // the fused FMA op provides both, and a legacy MUL+ADD set lists both. A single legacy op fixes it.
+      userCsrNum = if (ops.contains("FMA") || ops.size > 1) 2 else 1,
       dataWidth  = dataWidth
     )
 
@@ -64,7 +66,7 @@ class StreamElementwise(
   import FpHelpers.{widen => widenT, narrow => narrowT}
 
   // transport (element) precision comes from the op-set; internal compute stays FP32
-  val (ops, transport) = OpSpec.parse(op, Set("MUL", "ADD"), "StreamElementwise")
+  val (ops, transport) = OpSpec.parse(op, Set("MUL", "ADD", "FMA"), "StreamElementwise")
   OpSpec.checkWidth(elementWidth, transport, "StreamElementwise")
   val accWidth = 32 // FP32 internal
   val lanes    = extensionParam.dataWidth / elementWidth
@@ -72,10 +74,16 @@ class StreamElementwise(
   require(lanes % computeLanes == 0, "StreamElementwise: lanes must be a multiple of computeLanes")
   val subCycles    = lanes / computeLanes
 
-  val hasMul  = ops.contains("MUL")
-  val hasAdd  = ops.contains("ADD")
-  val multiOp = ops.size > 1
+  // The single fused "FMA" op covers BOTH combines (MUL = acc*x+0, ADD = acc*1+x), selected at runtime by
+  // the op CSR. hasMul/hasAdd are the runtime capabilities the built datapath must provide; the FMA op
+  // provides both, so `bothOps` is true and the op CSR is honoured. Legacy single-op sets still build the
+  // cheaper plain mul/add.
+  val hasFMA  = ops.contains("FMA")
+  val hasMul  = hasFMA || ops.contains("MUL")
+  val hasAdd  = hasFMA || ops.contains("ADD")
+  val bothOps = hasMul && hasAdd // both combines available => the FMA path with a runtime op-select
 
+  // op CSR (ext_csr_i(1)[7:0]) values — UNCHANGED for source-compatibility: 0=MUL, 1=ADD.
   def OP_MUL = 0.U
   def OP_ADD = 1.U
 
@@ -83,8 +91,8 @@ class StreamElementwise(
 
   val csrOperandCount = ext_csr_i(0)
   val operandCount    = Mux(csrOperandCount === 0.U, 1.U(16.W), csrOperandCount(15, 0))
-  // op-select CSR exists only when >1 op is built; otherwise the single op is fixed
-  val opcode: UInt = if (multiOp) ext_csr_i(1)(7, 0) else if (hasAdd) OP_ADD else OP_MUL
+  // op-select CSR is read only when both combines are built; a single-op build fixes the op
+  val opcode: UInt = if (bothOps) ext_csr_i(1)(7, 0) else if (hasAdd) OP_ADD else OP_MUL
 
   // ---- pipeline depth (timing) ----------------------------------------------------------------
   // Each FP unit is internally pipelined by `fpPipe` (cfg "cutting" knob); plus laneLat to register the
@@ -100,81 +108,156 @@ class StreamElementwise(
   def fadd(a: UInt, b: UInt): UInt = {
     val m = Module(new FpAdd(FP32, FP32, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := b; m.io.out
   }
+  // one FMA covers BOTH ops when both are built: MUL = prev*x+0, ADD = prev*1+x. Bit-identical to a
+  // separate FpMul/FpAdd (prev*1.0 is exact), so a single FP unit/lane replaces the mul+add pair.
+  def ffma(a: UInt, b: UInt, c: UInt): UInt = {
+    val m = Module(new FpFma(FP32, FP32, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := b; m.io.in_c := c; m.io.out
+  }
+  // Mixed-precision variants: multiply an FP32 operand by a RAW transport value (exact in FP32) -> a
+  // 24x11 (@FP16) multiplier instead of 24x24, bit-identical to widening first. Used for the combine's
+  // multiplicand (the ADD addend `c` still needs the widened FP32 value).
+  def ffmaT(a: UInt, xT: UInt, c: UInt): UInt = {
+    val m = Module(new FpFma(FP32, transport, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := xT; m.io.in_c := c; m.io.out
+  }
+  def fmulT(a: UInt, xT: UInt): UInt = {
+    val m = Module(new FpMul(FP32, transport, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := xT; m.io.out
+  }
   def widen(h:  UInt): UInt = widenT(h, transport, fpPipe) // transport -> FP32
   def narrow(f: UInt): UInt = narrowT(f, transport)        // FP32 -> transport (output; not timing-critical)
+  // +1.0 in the transport format (multiplicand for the ADD path through the mixed FMA)
+  val ONE_T = ((((1 << (transport.expWidth - 1)) - 1) << transport.sigWidth)).U(transport.width.W)
 
   // one lane's new partial: combine `laneIn` into `prev` per the active op (only built ops built).
   // first beat seeds the partial with the (widened) input; later beats fold in via mul/add.
-  // Pipeline: register the lane select (laneLat), widen (fpPipe), then mul/add (fpPipe); the seed and the
+  // Pipeline: register the lane select (laneLat), widen (fpPipe), then combine (fpPipe); the seed and the
   // accumulator are ShiftRegister-aligned to the combine output. Total issue->result latency = accLat.
+  // When both ops are built, the combine is ONE muxed FMA (prev*sel_b + sel_c) instead of a parallel
+  // mul+add; single-op configs keep the plain (cheaper) mul or add.
   def accLane(laneIn: UInt, prev: UInt, first: Bool): UInt = {
     val laneR   = sr(laneIn)                                  // +laneLat
-    val widened = widen(laneR)                                // +fpPipe
+    val widened = widen(laneR)                                // +fpPipe (kept for the ADD addend + first-beat seed)
+    val laneRd  = ShiftRegister(laneR, fpPipe)                // raw x aligned to the combine input (FP16)
     val prevA   = ShiftRegister(prev,  laneLat + fpPipe)
     val firstA  = ShiftRegister(first, laneLat + fpPipe)
-    val mulRes  = if (hasMul) fmul(prevA, widened) else FP32_ZERO // +fpPipe
-    val addRes  = if (hasAdd) fadd(prevA, widened) else FP32_ZERO
+    val combined =                                            // +fpPipe ; multiplicand fed raw (24x11 mult)
+      if (bothOps) ffmaT(prevA, Mux(opcode === OP_ADD, ONE_T, laneRd), Mux(opcode === OP_ADD, widened, FP32_ZERO))
+      else if (hasMul) fmulT(prevA, laneRd)
+      else fadd(prevA, widened)
     val seedD   = ShiftRegister(widened, fpPipe)             // first-beat seed, aligned to the combine output
     val firstAA = ShiftRegister(firstA, fpPipe)
-    val accMul  = if (hasMul) Mux(firstAA, seedD, mulRes) else FP32_ZERO
-    val accAdd  = if (hasAdd) Mux(firstAA, seedD, addRes) else FP32_ZERO
-    if (multiOp) Mux(opcode === OP_ADD, accAdd, accMul)
-    else if (hasAdd) accAdd
-    else accMul
+    Mux(firstAA, seedD, combined)
   }
 
   // ---- per-lane FP32 partials ----
   val regs = RegInit(VecInit(Seq.fill(lanes)(0.U(accWidth.W))))
 
-  // per-lane result beat: narrow each FP32 partial back to transport (lane 0 in the low bits)
-  val resultBeat = Cat((0 until lanes).map(i => narrow(regs(i))).reverse)
+  // ---- streaming time-mux + pipeline FSM --------------------------------------------------------------
+  // Continuous-issue rewrite (was: per input beat accept -> issue subCycles -> DRAIN accLat idle -> re-accept,
+  // paying the accLat drain on EVERY operand beat plus an emit stall per row). The computeLanes pipelined
+  // ALUs now issue one sub-group per cycle across back-to-back operand beats AND back-to-back rows; the
+  // per-lane partials retire accLat cycles later. A row's result (Cat(narrow(regs))) is captured the cycle
+  // its last operand beat's last sub retires and pushed into a small output Queue (skid) for backpressure.
+  //
+  // Per-lane ACCUMULATOR RECURRENCE: operand beat k+1 reads regs[L] written by beat k. The time-mux spaces
+  // successive same-lane issues by `subCycles` cycles, so the recurrence is met with NO stall when
+  // subCycles >= accLat+1. When subCycles < accLat+1 (e.g. computeLanes==lanes => subCycles==1) a compile-
+  // time `gap` = accLat+1-subCycles of idle cycles is inserted between accumulating beats WITHIN a row (row
+  // boundaries need no gap: the next row's beat 0 SEEDS, it doesn't read regs). gap==0 => fully streamed.
+  // A credit counter caps in-flight + queued rows to the queue depth (the FP pipeline has no stall input,
+  // so it keeps draining after issue stops). CONTRACT: ext_start_i only asserts when idle (ext_busy_o low).
+  val gap      = scala.math.max(0, accLat + 1 - subCycles) // inter-beat recurrence stall (compile-time)
+  val beatSpan = subCycles + gap                           // issue cycles allotted per operand beat
 
-  // ---- unified time-mux + pipeline FSM ----
-  // `computeLanes` pipelined ALUs sweep the beat over `subCycles` sub-groups (one issued/cycle); results
-  // retire `accLat` cycles later into the per-lane partials. After the last beat of a row the full beat is
-  // emitted. computeLanes == lanes ⇒ subCycles == 1. Per-beat cost = subCycles + accLat cycles.
-  val inBeat   = Reg(UInt((lanes * elementWidth).W))
-  val inLanes  = inBeat.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
-  val busy     = RegInit(false.B)
-  val outValid = RegInit(false.B)
-  val beatCnt  = RegInit(0.U(16.W))
-  val firstBeat = beatCnt === 0.U
-  val lastBeat  = beatCnt === (operandCount - 1.U)
-  val total     = subCycles - 1 + accLat
-  val step      = RegInit(0.U(log2Ceil(total + 1).max(1).W))
+  val inFlightMax = (accLat + beatSpan - 1) / beatSpan + 1 // rows still draining after issue stops
+  // minimum credit-safe depth (see StreamMap): the credit caps outstanding, so the queue never overflows
+  // below inFlightMax; slack only helps under sustained backpressure the fast writer never causes.
+  val Qdepth      = scala.math.max(2, inFlightMax)
+  val outQ = Module(new Queue(UInt((lanes * elementWidth).W), entries = Qdepth))
 
   // index of lane (s*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
   def li(s: UInt, j: Int): UInt = (s * computeLanes.U + j.U)(log2Ceil(lanes) - 1, 0)
 
-  val issuing  = busy && (step < subCycles.U)
-  val subIssue = step
+  val inBeat   = Reg(UInt((lanes * elementWidth).W))
+  val inLanes  = inBeat.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
+  val haveBeat = RegInit(false.B)                          // a beat is latched and issuing
+  val sub      = RegInit(0.U(log2Ceil(subCycles).max(1).W))
+  val beatIdx  = RegInit(0.U(16.W))                        // operand index of the beat being issued
+  val nextIdx  = RegInit(0.U(16.W))                        // operand index of the NEXT beat to accept
+  val stall    = RegInit(0.U(log2Ceil(gap + 1).max(1).W))  // remaining recurrence-gap cycles (gap>0 only)
+  val credit   = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
+
+  val lastSub        = sub === (subCycles - 1).U
+  val firstBeat      = beatIdx === 0.U
+  val lastBeatInRow  = beatIdx === (operandCount - 1.U)
+  val nextIsRowStart = nextIdx === 0.U                     // next accepted beat seeds a new row => no gap
+  val overlapOK      = if (gap == 0) true.B else nextIsRowStart
+
+  // accept a new input beat: overlap the current beat's last-sub issue when the successor needs no gap,
+  // else from idle once the gap has drained. Reserve an output credit only when starting a new row.
+  val acceptDuringIssue = haveBeat && lastSub && overlapOK
+  val acceptWhenIdle    = !haveBeat && (stall === 0.U)
+  val creditOK          = !nextIsRowStart || (credit =/= 0.U)
+  ext_data_i.ready := (acceptDuringIssue || acceptWhenIdle) && creditOK && !ext_start_i
+  val accept = ext_data_i.fire
+
+  // ---- issue ----
+  val issuing = haveBeat
   val res = Wire(Vec(computeLanes, UInt(accWidth.W)))
   for (j <- 0 until computeLanes)
-    res(j) := accLane(inLanes(li(subIssue, j)), regs(li(subIssue, j)), firstBeat)
+    res(j) := accLane(inLanes(li(sub, j)), regs(li(sub, j)), firstBeat)
 
-  val subRetire   = ShiftRegister(subIssue, accLat)
-  val retireValid = ShiftRegister(issuing, accLat, false.B, true.B)
-  when(busy && retireValid) {
-    for (j <- 0 until computeLanes) regs(li(subRetire, j)) := res(j)
-  }
-
-  ext_data_i.ready := !busy && !outValid
-
-  when(ext_start_i) {
-    busy := false.B; outValid := false.B; step := 0.U; beatCnt := 0.U
-  }.elsewhen(busy) {
-    when(step === total.U) {
-      busy := false.B; step := 0.U
-      when(lastBeat) { outValid := true.B }.otherwise { beatCnt := beatCnt + 1.U }
-    }.otherwise {
-      step := step + 1.U
+  // A valid-pulse pipeline CLEARED by ext_start_i, so a row-emit still in flight from the previous task
+  // cannot fire — and push an unreserved beat past the credit reset — after the controller restarts the
+  // next task while this pipeline is still draining.
+  def clrPipe(in: Bool, n: Int): Bool =
+    if (n <= 0) in
+    else {
+      val r = RegInit(VecInit(Seq.fill(n)(false.B)))
+      r(0) := Mux(ext_start_i, false.B, in)
+      for (i <- 1 until n) r(i) := Mux(ext_start_i, false.B, r(i - 1))
+      r(n - 1)
     }
-  }.elsewhen(ext_data_i.fire) {
-    inBeat := ext_data_i.bits; busy := true.B; step := 0.U
-  }
-  when(outValid && ext_data_o.ready && !ext_start_i) { outValid := false.B; beatCnt := 0.U }
 
-  ext_data_o.bits  := resultBeat
-  ext_data_o.valid := outValid
-  ext_busy_o       := busy || outValid || (beatCnt =/= 0.U)
+  // ---- retire: fold the partials into regs; assemble the row result at its last-sub retire ----
+  val subRetire     = ShiftRegister(sub, accLat)
+  val retireValid   = ShiftRegister(issuing, accLat, false.B, true.B)
+  val rowLastIssue  = issuing && lastSub && lastBeatInRow
+  val rowLastRetire = clrPipe(rowLastIssue, accLat)
+  val outNow = WireInit(regs)
+  when(retireValid) {
+    for (j <- 0 until computeLanes) {
+      regs(li(subRetire, j))   := res(j)
+      outNow(li(subRetire, j)) := res(j)
+    }
+  }
+  // narrow each FP32 partial to transport (lane 0 low), captured combinationally so the whole beat is
+  // grabbed before the next row's beat-0 seed (one cycle later) overwrites lane 0.
+  outQ.io.enq.valid := rowLastRetire && !ext_start_i // no stale push on the restart cycle
+  outQ.io.enq.bits  := Cat((0 until lanes).map(i => narrow(outNow(i))).reverse)
+  assert(!outQ.io.enq.valid || outQ.io.enq.ready, "StreamElementwise: output queue overflow (credit bug)")
+  outQ.io.deq.ready := ext_data_o.ready
+  ext_data_o.valid  := outQ.io.deq.valid
+  ext_data_o.bits   := outQ.io.deq.bits
+
+  // ---- issue-pointer + credit update ----
+  val deq       = outQ.io.deq.fire
+  val doReserve = accept && nextIsRowStart
+  when(ext_start_i) {
+    haveBeat := false.B; sub := 0.U; beatIdx := 0.U; nextIdx := 0.U; stall := 0.U; credit := Qdepth.U
+  }.otherwise {
+    when(stall =/= 0.U) { stall := stall - 1.U }
+    when(accept) {
+      inBeat := ext_data_i.bits; haveBeat := true.B; sub := 0.U
+      beatIdx := nextIdx
+      nextIdx := Mux(nextIdx === (operandCount - 1.U), 0.U, nextIdx + 1.U)
+    }.elsewhen(issuing) {
+      when(lastSub) {
+        when(overlapOK) { haveBeat := false.B }               // no accept this cycle: go idle
+          .otherwise { haveBeat := false.B; stall := gap.U }  // mid-row, gap>0: stall before next beat
+      }.otherwise { sub := sub + 1.U }
+    }
+    when(doReserve =/= deq) { credit := Mux(doReserve, credit - 1.U, credit + 1.U) }
+  }
+
+  ext_busy_o := (credit =/= Qdepth.U) || haveBeat || (stall =/= 0.U)
 }

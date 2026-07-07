@@ -22,18 +22,19 @@
 //      beats/2 (needs an even beat count). NOT a 512->512 op.
 //
 // Performance (FP16, vsim, L1<->L1) on the area/timing-optimized RTL: pipelined FP datapaths + time-mux
-// computeLanes (StreamMap=2, StreamElementwise=2, Fp16ToInt8=8). host(full) = a single host vector core,
+// computeLanes (StreamMap=4, StreamElementwise=4, Fp16ToInt8=4). host(full) = a single host vector core,
 // full FP32 silu_mul (op-LUT). Outputs match the FP64 golden to <=2 FP16 ULP.
 //
 //   N      beats   silu  mul    xdma_total   warm     cold     host(full)   warm speedup
 //   ----   -----   ----  -----  ----------   ------   ------   ----------   ------------
-//   64     2       59    89     148          1,991    2,247    2,308        1.2x
-//   256    8       203   323    526          2,603    2,855    8,662        3.3x
-//   1024   32      779   1,259  2,038        5,045    5,306    34,493       6.8x
-//   4096   128     3,083 5,003  8,086        14,837   15,098   137,799      9.3x
+//   64     2       38    48     86           1,891    2,151    2,308        1.2x
+//   256    8       86    144    230          2,131    2,391    8,662        4.1x
+//   1024   32      278   528    806          3,089    3,350    34,493       11.2x
+//   4096   128     1,046 2,064  3,110        6,929    7,190    137,799      19.9x
 //
-// The mul datapath (89..5,003 cc) replaces the host's O(n) (.)up, so the speedup climbs with n instead of
-// collapsing. warm ~= 1,745 fixed (three task setups: two AGU + retask) + xdma_total; the setup overhead
+// The mul datapath (48..2,064 cc) replaces the host's O(n) (.)up, so the speedup climbs with n instead of
+// collapsing (both StreamMap-silu and StreamElementwise-mul are cl=4 time-mux). warm ~= 1.8k fixed (three
+// task setups: two AGU + retask) + xdma_total; the setup overhead
 // amortizes in batched inference (one silu over all [S,F], then one mul).
 
 #include "data.h"
@@ -47,7 +48,7 @@
 
 #define XDMA_BEAT_BYTES 64
 #define ACT_SILU 2u  // StreamMap func CSR bits[1:0]: 0=LINEAR, 1=EXP, 2=SILU
-#define EW_MUL 0u     // StreamElementwise op CSR: 0=MUL, 1=ADD
+#define EW_MUL 0u     // StreamElementwise fused-FMA op CSR: 0=MUL (acc*x), 1=ADD (acc+x)
 
 // FP16 bits -> monotonic ordering key (handles signed outputs): adjacent FP16 values map to adjacent
 // keys, so |key(a)-key(b)| is the FP16-ULP distance even across zero.

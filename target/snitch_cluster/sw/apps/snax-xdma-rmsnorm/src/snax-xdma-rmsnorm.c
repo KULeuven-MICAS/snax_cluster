@@ -44,7 +44,7 @@
 #endif
 
 #define XDMA_BEAT_BYTES 64
-#define OP_SUMSQ 2u
+#define OP_SUMSQ 2u  // StreamReduce fused-FMA op, square mode (acc + x*x); MAX=0, ADD=1
 #define ACT_NONE 0u  // StreamMap func CSR bits[1:0]=0: LINEAR (out = a*x + b)
 
 // FP16 bits -> monotonic ordering key (handles signed outputs): adjacent FP16

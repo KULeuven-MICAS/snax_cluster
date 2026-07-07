@@ -46,6 +46,9 @@
 #define XDMA_BEAT_BYTES 64
 #define FP16_PER_BEAT 32
 #define FP32_PER_BEAT 16
+// StreamReduce op CSR (ext CSR 1, bits[7:0]). The datapath now has one fused "FMA" op plus the "MAX"
+// compare: MAX=0 (compare), ADD=1 (FMA acc+x, multiplicand 1.0), SUMSQ=2 (FMA acc+x*x). Values are
+// unchanged from the old MAX/ADD/SUMSQ op-set, so this interface is source-compatible.
 #define OP_MAX 0u
 #define OP_ADD 1u
 #define OP_SUMSQ 2u

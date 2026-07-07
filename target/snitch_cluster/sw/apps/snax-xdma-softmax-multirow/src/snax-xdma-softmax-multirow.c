@@ -56,9 +56,9 @@
 
 #define XDMA_BEAT_BYTES 64
 #define FP16_PER_BEAT 32
-#define OP_MAX 0u
+#define OP_MAX 0u  // StreamReduce op CSR: MAX=0 (compare), ADD=1 (fused FMA), SUMSQ=2 (FMA square)
 #define OP_ADD 1u
-#define EW_MUL 0u  // StreamElementwise op CSR: 0=MUL, 1=ADD
+#define EW_MUL 0u  // StreamElementwise fused-FMA op CSR: 0=MUL (acc*x), 1=ADD (acc+x)
 #define EW_ADD 1u
 #define ACT_EXP 1u  // StreamMap func CSR bits[1:0]=1: EXP (out = exp(a*x + b))
 

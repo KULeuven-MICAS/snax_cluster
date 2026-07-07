@@ -61,7 +61,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   /** Drive the DUT for one row and return the HW scalar (as f32) read from the output beat's low lane.
     * computeLanes>0 exercises the time-mux FSM (path B); ops selects which reductions are built. */
   def runReduce(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32,
-                ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16"),
+                ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16"),
                 fpPipe: Int = 1, treePipe: Int = 1): Float = {
     var result: Float = 0.0f
     test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16, fpPipe = fpPipe, treePipe = treePipe)))
@@ -102,7 +102,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     * low 32 bits as a raw FP32 (NO FP16 narrowing). This is the SUMSQ-overflow fix path: a reduction that
     * would saturate the FP16 grid to +inf is instead delivered to the host as the true FP32 value. */
   def runReduceFp32(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32,
-                    ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16")): Float = {
+                    ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Float = {
     var result: Float = 0.0f
     test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
@@ -142,7 +142,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     * scalar per row -- no Chisel change. Distinct per-row data lets the check catch a broken
     * row-boundary re-init: row r's scalar must equal row r's own reduction, not a running total. */
   def runReduceMultiRow(op: Int, rows: Seq[Seq[Seq[Int]]], computeLanes: Int = 32,
-                        ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16")): Seq[Float] = {
+                        ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Seq[Float] = {
     val beatsPerRow = rows.head.length
     val allBeats    = rows.flatten // rows*beatsPerRow input beats
     val results     = scala.collection.mutable.ArrayBuffer[Float]()
@@ -188,7 +188,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   def checkOp(op: Int, opName: String, nBeats: Int, mag: Int, computeLanes: Int = 32,
-              ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16"),
+              ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16"),
               fpPipe: Int = 1, treePipe: Int = 1): Unit = {
     val rng   = new Random(0x5EED + op)
     // FP16-representable inputs; magnitude kept small enough that the reduction stays in FP16 range
@@ -211,7 +211,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   /** Multi-row: nRows independent per-row reductions in one dispatch. Each row gets its OWN random data
     * so a stale carry across the row boundary (broken re-init) shows up as a wrong per-row scalar. */
   def checkMultiRow(op: Int, opName: String, nRows: Int, beatsPerRow: Int, mag: Int, computeLanes: Int = 32,
-                    ops: Seq[String] = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16")): Unit = {
+                    ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Unit = {
     val rng  = new Random(0x3A1 + op)
     val rows = Seq.tabulate(nRows) { _ =>
       Seq.fill(beatsPerRow)(Seq.fill(lanes) {
@@ -289,7 +289,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   def runReduceTap(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32): Seq[BigInt] = {
     val outs = scala.collection.mutable.ArrayBuffer[BigInt]()
     test(new DataPathExtensionHarness(
-      new HasStreamReduce(computeLanes = computeLanes, op = Seq("MAX_FP16", "ADD_FP16", "SUMSQ_FP16"), elementWidth = 16)))
+      new HasStreamReduce(computeLanes = computeLanes, op = Seq("FMA_FP16", "MAX_FP16"), elementWidth = 16)))
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
         dut.io.csr_i(0).poke(beats.length.U)
         dut.io.csr_i(1).poke((op | 0x100).U) // tap bit[8]
@@ -345,4 +345,58 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   "StreamReduce_MAX_tap" should "pass the row through and emit the max" in { checkTap(0, "MAX", 8, 32) }
   // tap in the time-mux FSM (computeLanes=8): passthrough beats + trailing scalar must still be correct.
   "StreamReduce_ADD_tap_cl8" should "tap-pass-through in the time-mux" in { checkTap(1, "ADD", 8, 32, computeLanes = 8) }
+
+  /** APP-LEVEL protocol test: emulate the xDMA controller driving ONE reduce instance across several
+    * back-to-back tasks -- pulse start, feed the row, drain the output, then WAIT for busy_o to fall (the
+    * completion signal the controller blocks on before the next task). The value-only tests above never
+    * check busy_o, so a stuck-busy / credit-overflow bug (the reduce hangs the real softmax) slips through.
+    * This mirrors softmax's T1 MAX -> T2 ADD-tap -> ... sequence in the fast Tier-1 sim. */
+  def runTasksCheckBusy(computeLanes: Int, tasks: Seq[(Int, Boolean, Int)]): Unit = {
+    test(new DataPathExtensionHarness(
+      new HasStreamReduce(computeLanes = computeLanes, op = Seq("FMA_FP16", "MAX_FP16"), elementWidth = 16)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.io.enable_i.poke(true)
+        val rng = new Random(0x1EAF)
+        for (((op, tap, nBeats), ti) <- tasks.zipWithIndex) {
+          val beats = Seq.fill(nBeats)(Seq.fill(lanes)(f32ToF16bits(rng.between(-4, 4) + rng.nextInt(4) * 0.25f)))
+          val opv   = op | (if (tap) 0x100 else 0)
+          val nOut  = if (tap) nBeats + 1 else 1
+          dut.io.csr_i(0).poke(nBeats.U)
+          dut.io.csr_i(1).poke(opv.U)
+          dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+          var threads = new chiseltest.internal.TesterThreadList(Seq())
+          threads = threads.fork {
+            dut.io.data_i.valid.poke(true)
+            for (b <- beats) {
+              while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+              dut.io.data_i.bits.poke(packBeat(b)); dut.clock.step(1)
+            }
+            dut.io.data_i.valid.poke(false)
+          }
+          threads = threads.fork {
+            for (_ <- 0 until nOut) {
+              while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+              dut.io.data_o.ready.poke(true); dut.clock.step(1); dut.io.data_o.ready.poke(false)
+            }
+          }
+          threads.joinAndStep()
+          // controller now waits for the datapath to report done (busy_o low), draining any tail beats.
+          dut.io.data_o.ready.poke(true)
+          var w = 0
+          while (dut.io.busy_o.peekBoolean() && w < 400) { dut.clock.step(1); w += 1 }
+          dut.io.data_o.ready.poke(false)
+          assert(!dut.io.busy_o.peekBoolean(),
+                 s"task $ti (op=$op tap=$tap beats=$nBeats): busy_o STUCK HIGH after drain -- completion/credit bug")
+          println(f"[StreamReduce:busy] task $ti op=$op tap=$tap beats=$nBeats -> busy fell after $w cyc")
+        }
+      }
+  }
+
+  // softmax-like sequence on one instance: MAX (non-tap) then ADD-tap then more -- each must report done.
+  "StreamReduce_multitask_busy" should "return busy_o low after each back-to-back task" in {
+    runTasksCheckBusy(4, Seq((0, false, 8), (1, true, 8), (1, false, 8), (1, true, 8)))
+  }
+  "StreamReduce_tap_busy_cl32" should "return busy_o low after a tap task (parallel)" in {
+    runTasksCheckBusy(32, Seq((1, true, 4), (0, false, 4), (1, true, 4)))
+  }
 }

@@ -7,12 +7,12 @@ import chiseltest._
 import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
 
-/** Tier-1 test for StreamMap act(a*x+b). Uses a narrow datapath (8 FP16 lanes) so the EXP path's
-  * per-lane FpExp stays cheap to build. Compares HW FP16 output (widened to f32) against an FP32 golden.
+/** Tier-1 test for StreamMap act(a*x+b). Uses a narrow datapath (8 FP16 lanes) so the EXP/SILU path's
+  * per-lane FpActivation stays cheap to build. Compares HW FP16 output (widened to f32) against an FP32 golden.
   */
 class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
 
-  val testWidth = 512 // 32 FP16 lanes -> 8-lane time-mux over 4 sub-cycles (still only 8 FpExp built)
+  val testWidth = 512 // 32 FP16 lanes -> 8-lane time-mux over 4 sub-cycles (still only 8 activation cores built)
   val lanes     = testWidth / 16
 
   def f16bitsToF32(h: Int): Float = {
@@ -117,8 +117,138 @@ class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
   // computeLanes knob: 32 -> subCycles=1 (fully parallel), 16 -> subCycles=2.
   "StreamMap_affine_cl32" should "match (fully parallel)" in { check("affine", 2.0f, -1.5f, 0, computeLanes = 32) }
   "StreamMap_exp_cl16" should "match (subCycles=2)" in { check("exp", 1.0f, -3.0f, 1, computeLanes = 16) }
-  // func=LINEAR: no FpExp built; affine only must still work.
-  "StreamMap_affine_noexp" should "match with FpExp dropped" in {
+  // func=LINEAR: no FpActivation built; affine only must still work.
+  "StreamMap_affine_noexp" should "match with the activation dropped" in {
     check("affine", 2.0f, -1.5f, 0, func = Seq("LINEAR_FP16"))
+  }
+
+  // --- streaming-pipeline stress tests (exercise the new continuous-issue FSM) ---
+
+  /** Like [[run]] but the consumer holds ready low for `outStall` cycles first, then drains one beat at a
+    * time. Feeds many beats so the credit counter saturates: input `ready` must drop (throttle) while the
+    * output Queue fills to Qdepth, then recover as beats dequeue — with every beat still correct + in order.
+    */
+  def runStall(a: Float, b: Float, act: Int, beats: Seq[Seq[Int]], computeLanes: Int,
+               func: Seq[String], outStall: Int): Seq[Seq[Float]] = {
+    var outs = Seq[Seq[Float]]()
+    test(new DataPathExtensionHarness(
+      new HasStreamMap(dataWidth = testWidth, elementWidth = 16, computeLanes = computeLanes, func = func)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.io.csr_i(0).poke(f32bits(a).U); dut.io.csr_i(1).poke(f32bits(b).U); dut.io.csr_i(2).poke(act.U)
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+        var threads = new chiseltest.internal.TesterThreadList(Seq())
+        threads = threads.fork {
+          dut.io.data_i.valid.poke(true)
+          for (bt <- beats) {
+            while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+            dut.io.data_i.bits.poke(packBeat(bt)); dut.clock.step(1)
+          }
+          dut.io.data_i.valid.poke(false)
+        }
+        threads = threads.fork {
+          dut.clock.step(outStall) // stall the consumer: force credit exhaustion + queue fill
+          for (_ <- beats.indices) {
+            while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+            val out = dut.io.data_o.bits.peekInt()
+            outs = outs :+ (0 until lanes).map(i => f16bitsToF32(((out >> (16 * i)) & 0xffff).toInt))
+            dut.io.data_o.ready.poke(true); dut.clock.step(1); dut.io.data_o.ready.poke(false)
+          }
+        }
+        threads.joinAndStep()
+      }
+    outs
+  }
+
+  "StreamMap_backpressure" should "stay correct under a stalled consumer (credit throttle + queue fill)" in {
+    val rng   = new Random(0xBEEF)
+    val beats = Seq.fill(24)(Seq.fill(lanes)(f32ToF16bits(rng.between(-4, 4) + rng.nextInt(4) * 0.25f)))
+    val (a, b) = (1.0f, -3.0f)
+    val hw = runStall(a, b, 1, beats, 8, Seq("LINEAR_FP16", "EXP_FP16"), outStall = 48)
+    val gd = golden(a, b, 1, beats)
+    assert(hw.length == beats.length, s"lost beats: got ${hw.length}/${beats.length}")
+    var maxErr = 0.0f
+    for ((hr, gr) <- hw.zip(gd); (h, g) <- hr.zip(gr)) {
+      val e = math.abs(h - g); if (e > maxErr) maxErr = e
+      assert(e <= math.max(math.abs(g) * 0.01f, 0.02f), s"backpressure mismatch hw=$h golden=$g err=$e")
+    }
+    println(f"[StreamMap:backpressure] ${beats.length} beats, outStall=48, maxErr=$maxErr%.4g")
+  }
+
+  /** Drive input always-valid + output always-ready and count cycles to process `nbeats`. The streaming FSM
+    * should reach ~subCycles cycles/beat (a one-time P-cycle fill); the old drain-per-beat FSM needed
+    * subCycles + P + 2 per beat. `-||>` harness cuts are full-bandwidth, so they don't cap the rate. */
+  def throughputCycles(computeLanes: Int, nbeats: Int, func: Seq[String], act: Int): Long = {
+    val rng   = new Random(0x7)
+    val beats = Seq.fill(nbeats)(Seq.fill(lanes)(f32ToF16bits(rng.between(-3, 3))))
+    var cyc = 0L; var got = 0
+    test(new DataPathExtensionHarness(
+      new HasStreamMap(dataWidth = testWidth, elementWidth = 16, computeLanes = computeLanes, func = func)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.io.csr_i(0).poke(f32bits(2.0f).U); dut.io.csr_i(1).poke(f32bits(-1.5f).U); dut.io.csr_i(2).poke(act.U)
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+        dut.io.data_o.ready.poke(true)
+        var fed = 0
+        dut.io.data_i.valid.poke(true); dut.io.data_i.bits.poke(packBeat(beats(0)))
+        val maxCyc = nbeats.toLong * 40 + 200
+        while (got < nbeats && cyc < maxCyc) {
+          val canFeed = fed < nbeats && dut.io.data_i.ready.peekBoolean()
+          val outNow  = dut.io.data_o.valid.peekBoolean()
+          dut.clock.step(1); cyc += 1
+          if (canFeed) {
+            fed += 1
+            dut.io.data_i.valid.poke(fed < nbeats)
+            if (fed < nbeats) dut.io.data_i.bits.poke(packBeat(beats(fed)))
+          }
+          if (outNow) got += 1
+        }
+        assert(got == nbeats, s"throughput: only $got/$nbeats outputs after $cyc cycles")
+      }
+    cyc
+  }
+
+  "StreamMap_throughput" should "stream at ~subCycles cycles/beat (not subCycles+P+2)" in {
+    val nbeats    = 64
+    val cl        = 8
+    val subCycles = lanes / cl // 4
+    val cyc       = throughputCycles(cl, nbeats, Seq("LINEAR_FP16"), 0)
+    val perBeat   = cyc.toDouble / nbeats
+    println(f"[StreamMap:throughput] cl=$cl subCycles=$subCycles: $cyc cyc / $nbeats beats = $perBeat%.2f cyc/beat")
+    // Streaming target ~subCycles (+ one-time fill). The old drain-per-beat design was subCycles+P+2 (~11).
+    assert(cyc < nbeats * (subCycles + 2), s"not streaming: $cyc cyc for $nbeats beats (>= ${nbeats * (subCycles + 2)})")
+  }
+
+  // APP-LEVEL protocol test: emulate the xDMA controller across back-to-back tasks and require busy_o to
+  // fall after each drain (the completion signal the controller waits on before the next task). The
+  // value-only tests never check busy_o -- a stuck-busy would hang the real app but pass those.
+  "StreamMap_multitask_busy" should "return busy_o low after each back-to-back task" in {
+    test(new DataPathExtensionHarness(
+      new HasStreamMap(dataWidth = testWidth, elementWidth = 16, computeLanes = 8,
+                       func = Seq("LINEAR_FP16", "EXP_FP16", "SILU_FP16"))))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.io.enable_i.poke(true)
+        val rng = new Random(0xB05)
+        def runTask(a: Float, b: Float, act: Int, nBeats: Int): Unit = {
+          val beats = Seq.fill(nBeats)(Seq.fill(lanes)(f32ToF16bits(rng.between(-3, 3))))
+          dut.io.csr_i(0).poke(f32bits(a).U); dut.io.csr_i(1).poke(f32bits(b).U); dut.io.csr_i(2).poke(act.U)
+          dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+          var threads = new chiseltest.internal.TesterThreadList(Seq())
+          threads = threads.fork {
+            dut.io.data_i.valid.poke(true)
+            for (bt <- beats) { while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1); dut.io.data_i.bits.poke(packBeat(bt)); dut.clock.step(1) }
+            dut.io.data_i.valid.poke(false)
+          }
+          threads = threads.fork {
+            for (_ <- beats.indices) { while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1); dut.io.data_o.ready.poke(true); dut.clock.step(1); dut.io.data_o.ready.poke(false) }
+          }
+          threads.joinAndStep()
+          dut.io.data_o.ready.poke(true)
+          var w = 0; while (dut.io.busy_o.peekBoolean() && w < 400) { dut.clock.step(1); w += 1 }
+          dut.io.data_o.ready.poke(false)
+          assert(!dut.io.busy_o.peekBoolean(), s"StreamMap busy_o stuck high after task (act=$act) -- completion bug")
+        }
+        runTask(2.0f, -1.5f, 0, 6); runTask(1.0f, -3.0f, 1, 6); runTask(1.0f, 0.0f, 2, 6); runTask(2.0f, -1.5f, 0, 6)
+      }
   }
 }
