@@ -33,6 +33,12 @@ endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_to_simd_cluster.hjson)
 SUBDIRS += snax/versacore-to snax/xdma
 endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_to_256KB_cluster.hjson)
+SUBDIRS += snax/versacore-to snax/xdma
+endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_to_256KB_simd_cluster.hjson)
+SUBDIRS += snax/versacore-to snax/xdma
+endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_dse_cluster.hjson)
 SUBDIRS += snax/versacore-dse
 endif

@@ -23,11 +23,11 @@ Naming convention:
     }
     cluster:
     {
-        name: snax_versacore_to_simd_cluster
+        name: snax_versacore_to_cluster
         bender_target:
         [
             snitch_cluster
-            snax_versacore_to_simd_cluster
+            snax_versacore_to_cluster
             sparse_interconnect
         ]
         boot_addr: 4096
@@ -39,8 +39,8 @@ Naming convention:
         user_width: 3
         tcdm:
         {
-            size: 512
-            banks: 64
+            size: 256
+            banks: 32
             sparse_interconnect: true
         }
         cluster_periph_size: 64
@@ -247,7 +247,7 @@ Naming convention:
         {
             bender_target:
             [
-                snax_versacore_to_simd_cluster_xdma
+                snax_versacore_to_cluster_xdma
             ]
             cfg_io_width: 32
             max_multicast: 16
