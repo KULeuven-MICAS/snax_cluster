@@ -40,7 +40,6 @@ class FpActivation(
 
   // ---- shared + per-function constants (mirrors FpExp / FpSilu exactly) ----
   val ONE     = f32lit(1.0f)
-  val NEG_ONE = f32lit(-1.0f)
   val ZERO    = FP32_ZERO
   val MAGIC   = f32lit(12582912.0f)  // 1.5 * 2^23 = 0x4B400000 (float->int round)
   val NMAGIC  = f32lit(-12582912.0f)
@@ -95,12 +94,17 @@ class FpActivation(
   val lutV   = lut(idxE)
   val baseV  = base(idxS)
   val slopeV = slope(idxS)
-  // interp: exp corr = frac*LN2_N + 1 ; silu gpos = frac*slope + base
+  // interp: exp corr = frac*LN2_N + 1 ; silu gpos = frac*slope + base  (one shared ffma; same as the old
+  // FpExp/FpSilu first S3 op)
   val interp = ffma(frac, Mux(isExp, LN2_N, slopeV), Mux(isExp, ONE, baseV))
-  // post: exp twoF = lut*corr = ffma(lut, corr, +0) ; silu 1-g = ffma(g, -1, +1)
-  val post   = ffma(Mux(isExp, lutV, interp), Mux(isExp, interp, NEG_ONE), Mux(isExp, ZERO, ONE))
+  // post — KEEP the original per-func op (fmul for exp, fadd for silu), NOT a shared ffma. The S3 critical
+  // path stays ffma->{fmul|fadd} (2 FP ops/stage) exactly like the old FpExp/FpSilu; folding both into one
+  // ffma would make S3 ffma->ffma (a deeper combinational path) and risk timing. Bit-identical either way
+  // (fmul(a,b)==ffma(a,b,+0); fadd(1,-g)==ffma(g,-1,+1)).
+  val expTwoF   = if (hasExp)  fmul(lutV, interp)      else ZERO // exp: lut * corr
+  val siluOneMg = if (hasSilu) fadd(ONE, fneg(interp)) else ZERO // silu: 1 - g
   // exp keeps twoF; silu picks g (x<=0) vs 1-g (x>0)
-  val r3     = sr(Mux(isExp, post, Mux(sgn2, interp, post))) // reg3
+  val r3 = sr(Mux(isExp, expTwoF, Mux(sgn2, interp, siluOneMg))) // reg3
   val nE     = if (hasExp) sr(iM >> LOGN_E) else sr(0.S)     // reg3 : exp integer part of m
   val xin3   = sr(xin2)
 
