@@ -5,14 +5,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Data generator for the multi-row xDMA FP16 RMSNorm test: per row, out[r,:] = x[r,:] * inv_rms[r],
-# inv_rms[r] = 1/sqrt(mean(x[r,:]^2)). This is the per-row (multi-row) form the llama3 layer needs --
-# the single-row app applies one StreamMap scalar to the whole row; here each row has its OWN inv_rms,
-# so the runtime does: multi-row StreamReduce(SUMSQ) -> DM-core scalar broadcast inv_rms[r]->[r,:] ->
-# StreamElementwise(MUL). The DM core has no FPU, so inv_rms (an rsqrt) is precomputed here and matches
+# inv_rms[r] = 1/sqrt(mean(x[r,:]^2)). This is the per-row (multi-row) form the llama3 layer
+# needs --
+# the single-row app applies one StreamMap scalar to the whole row; here each row has its OWN
+# inv_rms,
+# so the runtime does: multi-row StreamReduce(SUMSQ) -> DM-core scalar broadcast inv_rms[r]->[r,:]
+# ->
+# StreamElementwise(MUL). The DM core has no FPU, so inv_rms (an rsqrt) is precomputed here and
+# matches
 # the HW by being derived from the FP16-narrowed per-row Sx^2 (mean = Sx^2/D is exact for D=2^k).
 
 import argparse
-import math
 import os
 import pathlib
 import sys
@@ -46,7 +49,8 @@ def emit_header_file(**kwargs):
     inv_rms16 = np.empty(rows, dtype=np.float16)
     out16 = np.empty((rows, d), dtype=np.float16)
     for r in range(rows):
-        ssq16 = np.float16((xf32[r] ** 2).sum(dtype=np.float32))  # FP32 accumulate -> FP16 (HW reduce scalar)
+        # FP32 accumulate -> FP16 (HW reduce scalar)
+        ssq16 = np.float16((xf32[r] ** 2).sum(dtype=np.float32))
         mean = ssq16.astype(np.float32) / np.float32(d)           # exact: D = 2^k
         inv_rms16[r] = np.float16(np.float32(1.0) / np.float32(np.sqrt(mean)))
         out16[r] = (xf32[r] * inv_rms16[r].astype(np.float32)).astype(np.float16)
@@ -71,7 +75,8 @@ def emit_header_file(**kwargs):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generating data for the multi-row xDMA rmsnorm kernel")
+    parser = argparse.ArgumentParser(
+        description="Generating data for the multi-row xDMA rmsnorm kernel")
     parser.add_argument("-c", "--cfg", type=pathlib.Path, required=True)
     args = parser.parse_args()
     with args.cfg.open() as f:

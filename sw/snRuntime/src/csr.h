@@ -35,10 +35,11 @@ static void write_csr_multi_acc_mux(uint32_t value) {
 
 static uint32_t read_csr_multi_acc_mux(void) { return read_csr(1990); }
 
-// always_inline: with a compile-time-constant csr_address the switch constant-folds to a
-// single `csrr <imm>`. Left out-of-line, a constant address is lost across the call boundary
-// and re-dispatched at runtime via a jump-table load (.rodata, in L2) + indirect jump to a
-// scattered stub -- the dominant cost of SNAX CSR (de)configuration. All known callers pass a
+// always_inline: with a compile-time-constant csr_address the switch
+// constant-folds to a single `csrr <imm>`. Left out-of-line, a constant address
+// is lost across the call boundary and re-dispatched at runtime via a
+// jump-table load (.rodata, in L2) + indirect jump to a scattered stub -- the
+// dominant cost of SNAX CSR (de)configuration. All known callers pass a
 // constant CSR address, so this only ever shrinks code.
 __attribute__((always_inline)) static inline uint32_t csrr_ss(
     uint32_t csr_address) {
@@ -454,8 +455,9 @@ __attribute__((always_inline)) static inline uint32_t csrr_ss(
     return 0;
 }
 
-// always_inline: see csrr_ss above. A constant csr_address folds to a single `csrw <imm>`,
-// eliminating the per-write jump-table load + indirect jump that dominated xDMA CSR config.
+// always_inline: see csrr_ss above. A constant csr_address folds to a single
+// `csrw <imm>`, eliminating the per-write jump-table load + indirect jump that
+// dominated xDMA CSR config.
 __attribute__((always_inline)) static inline void csrw_ss(uint32_t csr_address,
                                                           uint32_t value) {
     switch (csr_address) {

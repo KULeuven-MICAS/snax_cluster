@@ -268,7 +268,7 @@ object XDMATopGen extends App {
                       paramValue.validate[Seq[String]] match {
                         case JsSuccess(seqStr, _) =>
                           s"Seq(${seqStr.map(s => "\"" + s + "\"").mkString(",")})"
-                        case JsError(_) =>
+                        case JsError(_)           =>
                           throw new IllegalArgumentException(
                             s"Invalid XDMA datapath extension parameter $extensionName.$paramName: expected Int, Seq[Int], String, or Seq[String]"
                           )

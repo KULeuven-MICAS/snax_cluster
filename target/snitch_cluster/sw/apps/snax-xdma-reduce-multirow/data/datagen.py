@@ -4,15 +4,20 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Data generator for the standalone multi-row xDMA StreamReduce test. Emits ROWS independent FP16 rows
+# Data generator for the standalone multi-row xDMA StreamReduce test. Emits ROWS independent
+# FP16 rows
 # of length D and the per-row FP16 goldens for SUMSQ / MAX / ADD -- the three reductions the llama3
 # per-row RMSNorm/Softmax need. Each row gets its OWN data so a broken row-boundary re-init (a stale
-# carry across rows) would show up as a wrong per-row scalar. The default rows use small values so the
+# carry across rows) would show up as a wrong per-row scalar. The default rows use small
+# values so the
 # per-row SUMSQ stays inside the FP16 range of the narrowed reduce scalar.
 #
-# It ALSO emits a second, large-magnitude input (reduce_input_big, ~+-4096) whose per-row SUMSQ ~1e8-1e9
-# is unrepresentable in fp16 (max finite 65504): the default fp16-out reduce returns garbage/inf, while
-# the fp32out reduce (op CSR bit[9]) returns the true FP32 SUMSQ (reduce_ssq_big_f32_golden). The app
+# It ALSO emits a second, large-magnitude input (reduce_input_big, ~+-4096) whose per-row SUMSQ
+# ~1e8-1e9
+# is unrepresentable in fp16 (max finite 65504): the default fp16-out reduce returns garbage/inf,
+# while
+# the fp32out reduce (op CSR bit[9]) returns the true FP32 SUMSQ (reduce_ssq_big_f32_golden). The
+# app
 # runs both on this input to demonstrate the overflow fix.
 
 import argparse
@@ -87,14 +92,16 @@ def emit_header_file(**kwargs):
                                  alignment=64, hex_bits=16, cast_hex=True)
     ]
     emit += [
-        format_vector_definition("uint32_t", "reduce_ssq_big_f32_golden", ssq_big_f32.view(np.uint32),
+        format_vector_definition("uint32_t", "reduce_ssq_big_f32_golden",
+                                 ssq_big_f32.view(np.uint32),
                                  alignment=64, hex_bits=32, cast_hex=True)
     ]
     return "\n\n".join(emit)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generating data for the xDMA multi-row reduce test")
+    parser = argparse.ArgumentParser(
+        description="Generating data for the xDMA multi-row reduce test")
     parser.add_argument("-c", "--cfg", type=pathlib.Path, required=True)
     args = parser.parse_args()
     with args.cfg.open() as f:

@@ -4,8 +4,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Data generator for the xDMA FP16 SiLU test. Emits one FP16 row of length N (a multiple of 32) and the
-# FP16 golden silu(x) = x * sigmoid(x) = x / (1 + e^-x). Inputs are snapped onto the FP16 grid first so the
+# Data generator for the xDMA FP16 SiLU test. Emits one FP16 row of length N (a multiple of 32)
+# and the
+# FP16 golden silu(x) = x * sigmoid(x) = x / (1 + e^-x). Inputs are snapped onto the FP16 grid
+# first so the
 # golden reflects exactly what the hardware consumes.
 
 import argparse

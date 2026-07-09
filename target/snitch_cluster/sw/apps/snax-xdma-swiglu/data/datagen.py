@@ -5,9 +5,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Data generator for the xDMA FP16 SwiGLU test. Emits two FP16 rows of length N (a multiple of 32):
-# `gate` and `up`. The xDMA offloads sg = silu(gate); the host then forms out = sg * up. We emit both the
+# `gate` and `up`. The xDMA offloads sg = silu(gate); the host then forms out = sg * up. We emit
+# both the
 # silu(gate) golden (verified on-cluster) and the full swiglu golden out = silu(gate)*up (the host's
-# reference). Inputs are snapped onto the FP16 grid first so the goldens reflect what the hardware consumes.
+# reference). Inputs are snapped onto the FP16 grid first so the goldens reflect what the hardware
+# consumes.
 
 import argparse
 import os
@@ -37,7 +39,8 @@ def emit_header_file(**kwargs):
 
     sg = (gate32 / (1.0 + np.exp(-gate32)))         # silu(gate), FP64
     sg16 = sg.astype(np.float16)                     # T1 (StreamMap SILU) golden
-    # swiglu = silu(gate) (.) up. Match the HW T2 (StreamElementwise MUL): fp32 product of the two FP16
+    # swiglu = silu(gate) (.) up. Match the HW T2 (StreamElementwise MUL): fp32 product of the
+    # two FP16
     # operands, narrowed to FP16.
     out16 = (sg16.astype(np.float32) * up.astype(np.float32)).astype(np.float16)
 
@@ -74,7 +77,9 @@ def emit_header_file(**kwargs):
             alignment=64, hex_bits=16, cast_hex=True,
         )
     ]
-    emit += [format_scalar_definition("uint32_t", "swiglu_inv_scale", int(inv_scale.view(np.uint32)))]
+    emit += [
+        format_scalar_definition("uint32_t", "swiglu_inv_scale", int(inv_scale.view(np.uint32)))
+    ]
     emit += [format_vector_definition("int8_t", "swiglu_golden_i8", q_i8, alignment=64)]
     return "\n\n".join(emit)
 

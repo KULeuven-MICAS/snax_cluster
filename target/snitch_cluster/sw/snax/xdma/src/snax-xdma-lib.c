@@ -261,11 +261,13 @@ int32_t snax_xdma_memcpy_nd(void* src, void* dst, uint32_t spatial_stride_src,
         enabled_chan_dst, enabled_byte_dst);
 }
 
-// Delta-reconfiguration variant of snax_xdma_memcpy_nd_full_addr: identical, but it OMITS the
-// unconditional zeroing of the XDMA_MAX_DST_COUNT-1 unused multicast destinations (32 CSR writes).
-// The xDMA config register file is sticky across tasks, so once a prior FULL memcpy_nd has zeroed
-// dst[1..15] they stay zero. Use this for every task after a one-time full descriptor to cut the
-// per-task CSR-programming overhead (~44 writes -> ~12). Single-destination (unicast) only.
+// Delta-reconfiguration variant of snax_xdma_memcpy_nd_full_addr: identical,
+// but it OMITS the unconditional zeroing of the XDMA_MAX_DST_COUNT-1 unused
+// multicast destinations (32 CSR writes). The xDMA config register file is
+// sticky across tasks, so once a prior FULL memcpy_nd has zeroed dst[1..15]
+// they stay zero. Use this for every task after a one-time full descriptor to
+// cut the per-task CSR-programming overhead (~44 writes -> ~12).
+// Single-destination (unicast) only.
 int32_t snax_xdma_memcpy_nd_full_addr_fast(
     uint64_t src, uint64_t dst, uint32_t spatial_stride_src,
     uint32_t spatial_stride_dst, uint32_t temp_dim_src,
@@ -277,13 +279,15 @@ int32_t snax_xdma_memcpy_nd_full_addr_fast(
     snax_write_xdma_cfg_reg(XDMA_SRC_ADDR_PTR_MSB, (uint32_t)(src >> 32));
     snax_write_xdma_cfg_reg(XDMA_DST_ADDR_PTR_LSB, (uint32_t)dst);
     snax_write_xdma_cfg_reg(XDMA_DST_ADDR_PTR_MSB, (uint32_t)(dst >> 32));
-    // NOTE: dst[1..15] are NOT re-zeroed here (sticky from the prior full config).
+    // NOTE: dst[1..15] are NOT re-zeroed here (sticky from the prior full
+    // config).
     snax_write_xdma_cfg_reg(XDMA_SRC_SPATIAL_STRIDE_PTR, spatial_stride_src);
     snax_write_xdma_cfg_reg(XDMA_DST_SPATIAL_STRIDE_PTR, spatial_stride_dst);
     for (uint32_t i = 0; i < temp_dim_src; i++) {
         if (i >= XDMA_SRC_TEMP_DIM) return -4;
         snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_BOUND_PTR + i, temp_bound_src[i]);
-        snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + i, temp_stride_src[i]);
+        snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + i,
+                                temp_stride_src[i]);
     }
     for (uint32_t i = temp_dim_src; i < XDMA_SRC_TEMP_DIM; i++) {
         snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_BOUND_PTR + i, 1);
@@ -292,7 +296,8 @@ int32_t snax_xdma_memcpy_nd_full_addr_fast(
     for (uint32_t i = 0; i < temp_dim_dst; i++) {
         if (i >= XDMA_DST_TEMP_DIM) return -4;
         snax_write_xdma_cfg_reg(XDMA_DST_TEMP_BOUND_PTR + i, temp_bound_dst[i]);
-        snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + i, temp_stride_dst[i]);
+        snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + i,
+                                temp_stride_dst[i]);
     }
     for (uint32_t i = temp_dim_dst; i < XDMA_DST_TEMP_DIM; i++) {
         snax_write_xdma_cfg_reg(XDMA_DST_TEMP_BOUND_PTR + i, 1);
@@ -321,10 +326,12 @@ int32_t snax_xdma_memcpy_nd_fast(
         enabled_chan_dst, enabled_byte_dst);
 }
 
-// Minimal re-task of a transfer whose temporal SHAPE (dims, strides, channels) is unchanged from a prior
-// memcpy_nd[_fast] (config is sticky): rewrites only the src/dst base addresses and the dst dim-0 bound.
-// 5 CSR writes instead of ~29. Use for successive same-shape tasks (e.g. softmax T2/T3 all stream `beats`
-// src beats; only the addresses and the writer's beat count change). Unicast only.
+// Minimal re-task of a transfer whose temporal SHAPE (dims, strides, channels)
+// is unchanged from a prior memcpy_nd[_fast] (config is sticky): rewrites only
+// the src/dst base addresses and the dst dim-0 bound. 5 CSR writes instead of
+// ~29. Use for successive same-shape tasks (e.g. softmax T2/T3 all stream
+// `beats` src beats; only the addresses and the writer's beat count change).
+// Unicast only.
 int32_t snax_xdma_retask_1d(void* src, void* dst, uint32_t dst_bound0) {
     uint64_t h = (uint64_t)snrt_cluster_base_addrh() << 32;
     uint64_t s = (uint64_t)src + h;

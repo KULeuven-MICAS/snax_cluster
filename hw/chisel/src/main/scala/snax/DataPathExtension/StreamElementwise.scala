@@ -6,36 +6,36 @@ import chisel3.util._
 import fp_unit._
 import fp_native._
 
-/** StreamElementwise: per-lane FP binary combine of `operandCount` consecutive input beats, emitted as ONE
-  * full output beat (NO horizontal collapse — the element-wise sibling of StreamReduce).
+/** StreamElementwise: per-lane FP binary combine of `operandCount` consecutive input beats, emitted as ONE full output
+  * beat (NO horizontal collapse — the element-wise sibling of StreamReduce).
   *
-  *   - Transport: configurable element type (FP16/BF16/FP8/FP32, set by the op-set; e.g. 32 FP16 lanes per
-  *     512-bit beat). Internal math: FP32 (widen on input, narrow on output). op = MUL | ADD, runtime CSR.
-  *   - The operands arrive as consecutive beats on the SINGLE input stream — the AGU interleaves them (an
-  *     inner temporal dim of count=operandCount striding between the operand L1 regions), exactly as the
-  *     ElementwiseAdd app does. For a binary op operandCount=2: out(i) = beat0(i) op beat1(i).
+  *   - Transport: configurable element type (FP16/BF16/FP8/FP32, set by the op-set; e.g. 32 FP16 lanes per 512-bit
+  *     beat). Internal math: FP32 (widen on input, narrow on output). op = MUL | ADD, runtime CSR.
+  *   - The operands arrive as consecutive beats on the SINGLE input stream — the AGU interleaves them (an inner
+  *     temporal dim of count=operandCount striding between the operand L1 regions), exactly as the ElementwiseAdd app
+  *     does. For a binary op operandCount=2: out(i) = beat0(i) op beat1(i).
   *
   * Reuses ElementwiseAdd's operand-count accumulate-then-emit FSM + StreamReduce's FP32-internal op-set and
-  * `computeLanes` time-mux, but emits the per-lane partials (Cat(regs)) instead of a reduced scalar (no
-  * reduceTree, no tap).
+  * `computeLanes` time-mux, but emits the per-lane partials (Cat(regs)) instead of a reduced scalar (no reduceTree, no
+  * tap).
   *
-  * CSR layout: csr(0) = operandCount (#beats combined per output, 0->1); csr(1) bits[7:0] = op
-  * (0=MUL, 1=ADD; present/used only when >1 op is built).
+  * CSR layout: csr(0) = operandCount (#beats combined per output, 0->1); csr(1) bits[7:0] = op (0=MUL, 1=ADD;
+  * present/used only when >1 op is built).
   *
-  * Configurable from the hjson: `op` (the LIST of supported ops, a subset of {MUL, ADD}), `computeLanes`
-  * (number of physical combine ALUs, time-muxed over `subCycles` = lanes/computeLanes cycles per beat;
-  * computeLanes = lanes ⇒ the fully-parallel 1-cycle/beat path), and `elementWidth` (must match the op-set
-  * precision: FP16/BF16⇒16, FP8⇒8, FP32⇒32). All REQUIRED, e.g.
-  * {elementWidth:16, computeLanes:8, op:["MUL_FP16","ADD_FP16"]}.
+  * Configurable from the hjson: `op` (the LIST of supported ops, a subset of {MUL, ADD}), `computeLanes` (number of
+  * physical combine ALUs, time-muxed over `subCycles` = lanes/computeLanes cycles per beat; computeLanes = lanes ⇒ the
+  * fully-parallel 1-cycle/beat path), and `elementWidth` (must match the op-set precision: FP16/BF16⇒16, FP8⇒8,
+  * FP32⇒32). All REQUIRED, e.g. {elementWidth:16, computeLanes:8, op:["MUL_FP16","ADD_FP16"]}.
   */
 class HasStreamElementwise(
   computeLanes: Int,
   op:           Seq[String], // each entry "<OP>_<PRECISION>", e.g. "MUL_FP16"
-  elementWidth: Int,         // transport element width (bits); must match the op-set precision
+  elementWidth: Int, // transport element width (bits); must match the op-set precision
   dataWidth:    Int = 512,
-  fpPipe:       Int = 1      // internal pipeline depth of each FP unit (timing cut knob)
+  fpPipe:       Int = 1 // internal pipeline depth of each FP unit (timing cut knob)
 ) extends HasDataPathExtension {
-  private val (ops, transport) = OpSpec.parse(op, Set("MUL", "ADD", "FMA"), "HasStreamElementwise") // validate op names + precision
+  private val (ops, transport) =
+    OpSpec.parse(op, Set("MUL", "ADD", "FMA"), "HasStreamElementwise") // validate op names + precision
   OpSpec.checkWidth(elementWidth, transport, "HasStreamElementwise")
   require(computeLanes > 0, "HasStreamElementwise: computeLanes must be > 0")
   implicit val extensionParam: DataPathExtensionParam =
@@ -54,25 +54,25 @@ class HasStreamElementwise(
 }
 
 class StreamElementwise(
-  computeLanesParam: Int = 0,
+  computeLanesParam: Int         = 0,
   op:                Seq[String] = Seq("MUL_FP16", "ADD_FP16"),
-  elementWidth:      Int = 16,
-  fpPipeParam:       Int = 1,
-  pipelined:         Boolean = true
-)(
-  implicit extensionParam: DataPathExtensionParam
+  elementWidth:      Int         = 16,
+  fpPipeParam:       Int         = 1,
+  pipelined:         Boolean     = true
+)(implicit
+  extensionParam:    DataPathExtensionParam
 ) extends DataPathExtension {
 
-  import FpHelpers.{widen => widenT, narrow => narrowT}
+  import FpHelpers.{narrow => narrowT, widen => widenT}
 
   // transport (element) precision comes from the op-set; internal compute stays FP32
   val (ops, transport) = OpSpec.parse(op, Set("MUL", "ADD", "FMA"), "StreamElementwise")
   OpSpec.checkWidth(elementWidth, transport, "StreamElementwise")
-  val accWidth = 32 // FP32 internal
-  val lanes    = extensionParam.dataWidth / elementWidth
-  val computeLanes = if (computeLanesParam <= 0 || computeLanesParam > lanes) lanes else computeLanesParam
+  val accWidth         = 32 // FP32 internal
+  val lanes            = extensionParam.dataWidth / elementWidth
+  val computeLanes     = if (computeLanesParam <= 0 || computeLanesParam > lanes) lanes else computeLanesParam
   require(lanes % computeLanes == 0, "StreamElementwise: lanes must be a multiple of computeLanes")
-  val subCycles    = lanes / computeLanes
+  val subCycles = lanes / computeLanes
 
   // The single fused "FMA" op covers BOTH combines (MUL = acc*x+0, ADD = acc*1+x), selected at runtime by
   // the op CSR. hasMul/hasAdd are the runtime capabilities the built datapath must provide; the FMA op
@@ -102,15 +102,15 @@ class StreamElementwise(
   val accLat  = laneLat + 2 * fpPipe
   private def sr[T <: Data](u: T): T = if (pipelined) RegNext(u) else u
 
-  def fmul(a: UInt, b: UInt): UInt = {
+  def fmul(a: UInt, b: UInt):            UInt = {
     val m = Module(new FpMul(FP32, FP32, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := b; m.io.out
   }
-  def fadd(a: UInt, b: UInt): UInt = {
+  def fadd(a: UInt, b: UInt):            UInt = {
     val m = Module(new FpAdd(FP32, FP32, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := b; m.io.out
   }
   // one FMA covers BOTH ops when both are built: MUL = prev*x+0, ADD = prev*1+x. Bit-identical to a
   // separate FpMul/FpAdd (prev*1.0 is exact), so a single FP unit/lane replaces the mul+add pair.
-  def ffma(a: UInt, b: UInt, c: UInt): UInt = {
+  def ffma(a: UInt, b: UInt, c: UInt):   UInt = {
     val m = Module(new FpFma(FP32, FP32, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := b; m.io.in_c := c; m.io.out
   }
   // Mixed-precision variants: multiply an FP32 operand by a RAW transport value (exact in FP32) -> a
@@ -119,11 +119,11 @@ class StreamElementwise(
   def ffmaT(a: UInt, xT: UInt, c: UInt): UInt = {
     val m = Module(new FpFma(FP32, transport, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := xT; m.io.in_c := c; m.io.out
   }
-  def fmulT(a: UInt, xT: UInt): UInt = {
+  def fmulT(a: UInt, xT: UInt):          UInt = {
     val m = Module(new FpMul(FP32, transport, FP32, fpPipe)); m.io.in_a := a; m.io.in_b := xT; m.io.out
   }
-  def widen(h:  UInt): UInt = widenT(h, transport, fpPipe) // transport -> FP32
-  def narrow(f: UInt): UInt = narrowT(f, transport)        // FP32 -> transport (output; not timing-critical)
+  def widen(h: UInt): UInt = widenT(h, transport, fpPipe) // transport -> FP32
+  def narrow(f: UInt): UInt = narrowT(f, transport) // FP32 -> transport (output; not timing-critical)
   // +1.0 in the transport format (multiplicand for the ADD path through the mixed FMA)
   val ONE_T = ((((1 << (transport.expWidth - 1)) - 1) << transport.sigWidth)).U(transport.width.W)
 
@@ -134,17 +134,17 @@ class StreamElementwise(
   // When both ops are built, the combine is ONE muxed FMA (prev*sel_b + sel_c) instead of a parallel
   // mul+add; single-op configs keep the plain (cheaper) mul or add.
   def accLane(laneIn: UInt, prev: UInt, first: Bool): UInt = {
-    val laneR   = sr(laneIn)                                  // +laneLat
-    val widened = widen(laneR)                                // +fpPipe (kept for the ADD addend + first-beat seed)
-    val laneRd  = ShiftRegister(laneR, fpPipe)                // raw x aligned to the combine input (FP16)
-    val prevA   = ShiftRegister(prev,  laneLat + fpPipe)
-    val firstA  = ShiftRegister(first, laneLat + fpPipe)
-    val combined =                                            // +fpPipe ; multiplicand fed raw (24x11 mult)
+    val laneR    = sr(laneIn)                     // +laneLat
+    val widened  = widen(laneR)                   // +fpPipe (kept for the ADD addend + first-beat seed)
+    val laneRd   = ShiftRegister(laneR, fpPipe)   // raw x aligned to the combine input (FP16)
+    val prevA    = ShiftRegister(prev, laneLat + fpPipe)
+    val firstA   = ShiftRegister(first, laneLat + fpPipe)
+    val combined =                                // +fpPipe ; multiplicand fed raw (24x11 mult)
       if (bothOps) ffmaT(prevA, Mux(opcode === OP_ADD, ONE_T, laneRd), Mux(opcode === OP_ADD, widened, FP32_ZERO))
       else if (hasMul) fmulT(prevA, laneRd)
       else fadd(prevA, widened)
-    val seedD   = ShiftRegister(widened, fpPipe)             // first-beat seed, aligned to the combine output
-    val firstAA = ShiftRegister(firstA, fpPipe)
+    val seedD    = ShiftRegister(widened, fpPipe) // first-beat seed, aligned to the combine output
+    val firstAA  = ShiftRegister(firstA, fpPipe)
     Mux(firstAA, seedD, combined)
   }
 
@@ -172,29 +172,29 @@ class StreamElementwise(
   // minimum credit-safe depth (see StreamMap): the credit caps outstanding, so the queue never overflows
   // below inFlightMax; slack only helps under sustained backpressure the fast writer never causes.
   val Qdepth      = scala.math.max(2, inFlightMax)
-  val outQ = Module(new Queue(UInt((lanes * elementWidth).W), entries = Qdepth))
+  val outQ        = Module(new Queue(UInt((lanes * elementWidth).W), entries = Qdepth))
 
   // index of lane (s*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
   def li(s: UInt, j: Int): UInt = (s * computeLanes.U + j.U)(log2Ceil(lanes) - 1, 0)
 
   val inBeat   = Reg(UInt((lanes * elementWidth).W))
   val inLanes  = inBeat.asTypeOf(Vec(lanes, UInt(elementWidth.W)))
-  val haveBeat = RegInit(false.B)                          // a beat is latched and issuing
+  val haveBeat = RegInit(false.B)                         // a beat is latched and issuing
   val sub      = RegInit(0.U(log2Ceil(subCycles).max(1).W))
-  val beatIdx  = RegInit(0.U(16.W))                        // operand index of the beat being issued
-  val nextIdx  = RegInit(0.U(16.W))                        // operand index of the NEXT beat to accept
-  val stall    = RegInit(0.U(log2Ceil(gap + 1).max(1).W))  // remaining recurrence-gap cycles (gap>0 only)
+  val beatIdx  = RegInit(0.U(16.W))                       // operand index of the beat being issued
+  val nextIdx  = RegInit(0.U(16.W))                       // operand index of the NEXT beat to accept
+  val stall    = RegInit(0.U(log2Ceil(gap + 1).max(1).W)) // remaining recurrence-gap cycles (gap>0 only)
   val credit   = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
 
   val lastSub        = sub === (subCycles - 1).U
   val firstBeat      = beatIdx === 0.U
   val lastBeatInRow  = beatIdx === (operandCount - 1.U)
-  val nextIsRowStart = nextIdx === 0.U                     // next accepted beat seeds a new row => no gap
+  val nextIsRowStart = nextIdx === 0.U // next accepted beat seeds a new row => no gap
   val overlapOK      = if (gap == 0) true.B else nextIsRowStart
 
   // accept a new input beat: overlap the current beat's last-sub issue when the successor needs no gap,
   // else from idle once the gap has drained. Reserve an output credit only when starting a new row.
-  val acceptDuringIssue = haveBeat && lastSub && overlapOK
+  val acceptDuringIssue = haveBeat  && lastSub && overlapOK
   val acceptWhenIdle    = !haveBeat && (stall === 0.U)
   val creditOK          = !nextIsRowStart || (credit =/= 0.U)
   ext_data_i.ready := (acceptDuringIssue || acceptWhenIdle) && creditOK && !ext_start_i
@@ -202,7 +202,7 @@ class StreamElementwise(
 
   // ---- issue ----
   val issuing = haveBeat
-  val res = Wire(Vec(computeLanes, UInt(accWidth.W)))
+  val res     = Wire(Vec(computeLanes, UInt(accWidth.W)))
   for (j <- 0 until computeLanes)
     res(j) := accLane(inLanes(li(sub, j)), regs(li(sub, j)), firstBeat)
 
@@ -223,7 +223,7 @@ class StreamElementwise(
   val retireValid   = ShiftRegister(issuing, accLat, false.B, true.B)
   val rowLastIssue  = issuing && lastSub && lastBeatInRow
   val rowLastRetire = clrPipe(rowLastIssue, accLat)
-  val outNow = WireInit(regs)
+  val outNow        = WireInit(regs)
   when(retireValid) {
     for (j <- 0 until computeLanes) {
       regs(li(subRetire, j))   := res(j)
@@ -247,13 +247,13 @@ class StreamElementwise(
   }.otherwise {
     when(stall =/= 0.U) { stall := stall - 1.U }
     when(accept) {
-      inBeat := ext_data_i.bits; haveBeat := true.B; sub := 0.U
+      inBeat  := ext_data_i.bits; haveBeat := true.B; sub := 0.U
       beatIdx := nextIdx
       nextIdx := Mux(nextIdx === (operandCount - 1.U), 0.U, nextIdx + 1.U)
     }.elsewhen(issuing) {
       when(lastSub) {
-        when(overlapOK) { haveBeat := false.B }               // no accept this cycle: go idle
-          .otherwise { haveBeat := false.B; stall := gap.U }  // mid-row, gap>0: stall before next beat
+        when(overlapOK) { haveBeat := false.B } // no accept this cycle: go idle
+          .otherwise { haveBeat := false.B; stall := gap.U } // mid-row, gap>0: stall before next beat
       }.otherwise { sub := sub + 1.U }
     }
     when(doReserve =/= deq) { credit := Mux(doReserve, credit - 1.U, credit + 1.U) }

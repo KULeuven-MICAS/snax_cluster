@@ -50,10 +50,13 @@ def emit_header_file(**kwargs):
     prod = np.clip(out16.astype(np.float32) * inv_scale, np.float32(-128.0), np.float32(128.0))
     q_i8 = np.clip(np.rint(prod.astype(np.float64)), -127, 127).astype(np.int8)
 
-    # Host-computed scalar rsqrt (1/sqrt(mean)): no longer an xDMA op. T1's SUMSQ emits Σx² narrowed to
-    # FP16; the DM core forms mean = Σx²/N via the exact exponent-field subtract (N=2^log2n), and the host
+    # Host-computed scalar rsqrt (1/sqrt(mean)): no longer an xDMA op. T1's SUMSQ emits Σx²
+    # narrowed to
+    # FP16; the DM core forms mean = Σx²/N via the exact exponent-field subtract (N=2^log2n), and
+    # the host
     # computes 1/sqrt(mean). Mirror exactly so the precomputed inverse matches the runtime reduce.
-    ssq_fp16 = np.float16((xf32 ** 2).sum(dtype=np.float32))    # FP32 accumulate -> FP16 trailing beat
+    # FP32 accumulate -> FP16 trailing beat
+    ssq_fp16 = np.float16((xf32 ** 2).sum(dtype=np.float32))
     mean_fp32 = ssq_fp16.astype(np.float32) / np.float32(n)     # = fp32(Σx²)/2^log2n (exact)
     inv_rms_fp32 = np.float32(1.0) / np.float32(np.sqrt(mean_fp32))
 
@@ -64,9 +67,14 @@ def emit_header_file(**kwargs):
     emit += [format_scalar_definition("uint32_t", "rmsnorm_n", n)]
     emit += [format_scalar_definition("uint32_t", "rmsnorm_beats", beats)]
     emit += [format_scalar_definition("uint32_t", "rmsnorm_log2n", log2n)]
-    # host-provided scalar rsqrt: FP16 Σx² (runtime-reduce check) + FP32 bits of 1/sqrt(mean) (map operand a)
-    emit += [format_scalar_definition("uint32_t", "rmsnorm_ssq_golden", int(ssq_fp16.view(np.uint16)))]
-    emit += [format_scalar_definition("uint32_t", "rmsnorm_inv_rms", int(inv_rms_fp32.view(np.uint32)))]
+    # host-provided scalar rsqrt: FP16 Σx² (runtime-reduce check) + FP32 bits of 1/sqrt(mean)
+    # (map operand a)
+    emit += [
+        format_scalar_definition("uint32_t", "rmsnorm_ssq_golden", int(ssq_fp16.view(np.uint16)))
+    ]
+    emit += [
+        format_scalar_definition("uint32_t", "rmsnorm_inv_rms", int(inv_rms_fp32.view(np.uint32)))
+    ]
     emit += [
         format_vector_definition(
             "uint16_t", "rmsnorm_input", x_u16,
@@ -79,7 +87,9 @@ def emit_header_file(**kwargs):
             alignment=64, hex_bits=16, cast_hex=True,
         )
     ]
-    emit += [format_scalar_definition("uint32_t", "rmsnorm_inv_scale", int(inv_scale.view(np.uint32)))]
+    emit += [
+        format_scalar_definition("uint32_t", "rmsnorm_inv_scale", int(inv_scale.view(np.uint32)))
+    ]
     emit += [format_vector_definition("int8_t", "rmsnorm_golden_i8", q_i8, alignment=64)]
     return "\n\n".join(emit)
 
