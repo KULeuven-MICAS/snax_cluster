@@ -1,0 +1,20 @@
+# Copyright 2025 KU Leuven.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Apps that need the FP16 SIMD reader extensions (StreamMap / StreamReduce /
+# StreamElementwise / Fp16ToInt8). They only build under a cfg that instantiates
+# those extensions -- cfg/snax_xdma_cluster.hjson -- so they are kept out of
+# snax-xdma-run.yaml, which the plain KUL cluster job also runs.
+
+runs:
+  - elf: apps/snax-xdma-softmax/build/snax-xdma-softmax.elf
+  - elf: apps/snax-xdma-rmsnorm/build/snax-xdma-rmsnorm.elf
+  - elf: apps/snax-xdma-silu/build/snax-xdma-silu.elf
+  - elf: apps/snax-xdma-swiglu/build/snax-xdma-swiglu.elf
+  - elf: apps/snax-xdma-rope/build/snax-xdma-rope.elf
+  - elf: apps/snax-xdma-reduce-multirow/build/snax-xdma-reduce-multirow.elf
+  - elf: apps/snax-xdma-rmsnorm-multirow/build/snax-xdma-rmsnorm-multirow.elf
+  - elf: apps/snax-xdma-softmax-multirow/build/snax-xdma-softmax-multirow.elf
+  - elf: apps/snax-xdma-rmsnorm-fold/build/snax-xdma-rmsnorm-fold.elf
+  - elf: apps/snax-xdma-softmax-fold/build/snax-xdma-softmax-fold.elf

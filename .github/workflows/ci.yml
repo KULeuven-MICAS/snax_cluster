@@ -189,6 +189,42 @@ jobs:
           make CFG_OVERRIDE=cfg/snax_dimc_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
 
+  snax-KUL-cluster-vlt-generic:
+    name: Simulate SW on KUL cluster w/ Verilator (Generic LLVM)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
+          activate-environment: true
+      - name: Generate RTL
+        run: |
+          make -C target/snitch_cluster rtl-gen \
+          CFG_OVERRIDE=cfg/snax_KUL_cluster.hjson
+      - name: Build Hardware
+        run: |
+          make CFG_OVERRIDE=cfg/snax_KUL_cluster.hjson \
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw \
+          CFG_OVERRIDE=cfg/snax_KUL_cluster.hjson
+      - name: Run Tests
+        working-directory: target/snitch_cluster
+        run: |-
+          ./run.py --simulator verilator \
+          sw/runtime.yaml \
+          sw/snax-xdma-run.yaml -j
+
+  # The xDMA cluster is the KUL cluster plus the FP16 SIMD reader extensions
+  # (StreamMap / StreamReduce / StreamElementwise / Fp16ToInt8). It is a
+  # separate cfg, so it gets its own job: the KUL cluster above does not build
+  # those extensions and cannot run the SIMD apps.
   snax-xdma-cluster-vlt-generic:
     name: Simulate SW on XDMA cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
@@ -219,7 +255,8 @@ jobs:
         run: |-
           ./run.py --simulator verilator \
           sw/runtime.yaml \
-          sw/snax-xdma-run.yaml -j
+          sw/snax-xdma-run.yaml \
+          sw/snax-xdma-simd-run.yaml -j
 
   snax-compiler-test-cluster-vlt-generic:
     name: Simulate SW on Compiler Test Cluster w/ Verilator (Generic LLVM)

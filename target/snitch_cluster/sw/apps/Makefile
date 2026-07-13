@@ -36,15 +36,10 @@ SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-elementwise-add
-SUBDIRS += snax-xdma-softmax
-SUBDIRS += snax-xdma-rmsnorm
-SUBDIRS += snax-xdma-silu
-SUBDIRS += snax-xdma-swiglu
-SUBDIRS += snax-xdma-rope
-SUBDIRS += snax-xdma-reduce-multirow
-SUBDIRS += snax-xdma-rmsnorm-multirow
-SUBDIRS += snax-xdma-softmax-multirow
 endif
+# The FP16 SIMD apps below need the StreamMap / StreamReduce / StreamElementwise /
+# Fp16ToInt8 reader extensions, which only cfg/snax_xdma_cluster.hjson builds --
+# they do not compile against the plain KUL cluster above.
 ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_cluster.hjson)
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-reshape-comparison
@@ -52,6 +47,9 @@ SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-elementwise-add
 SUBDIRS += snax-xdma-softmax
 SUBDIRS += snax-xdma-rmsnorm
+SUBDIRS += snax-xdma-silu
+SUBDIRS += snax-xdma-swiglu
+SUBDIRS += snax-xdma-rope
 SUBDIRS += snax-xdma-reduce-multirow
 SUBDIRS += snax-xdma-rmsnorm-multirow
 SUBDIRS += snax-xdma-rmsnorm-fold
