@@ -34,11 +34,24 @@ jobs:
         run: |
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax_alu_cluster.hjson
+      # Verilator 5.034 (the version pixi.lock resolves) compiles the
+      # precompiled header to <top>__pch.h.{fast,slow}.gch but tells the
+      # compiler `-include <top>__pch.h.{fast,slow}` -- a file it never
+      # creates. GCC only tolerates that while the .gch stays valid, and
+      # chiseltest's extra -CFLAGS invalidate it, so the fallback to the
+      # missing header aborts the build. This only bites designs Verilator
+      # splits across several .cpp files (VM_PARALLEL_BUILDS=1), i.e. the
+      # FP DataPathExtension harnesses. Blanking the two make variables
+      # drops the bad -include and builds without PCH.
       - name: Run the unit tests
         working-directory: hw/chisel
+        env:
+          MAKEFLAGS: "VK_PCH_I_FAST= VK_PCH_I_SLOW="
         run: |
           sbt test
       - name: Run the acc unit tests
         working-directory: hw/chisel_acc
+        env:
+          MAKEFLAGS: "VK_PCH_I_FAST= VK_PCH_I_SLOW="
         run: |
           sbt test

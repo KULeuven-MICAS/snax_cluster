@@ -16,6 +16,7 @@
 // Declare these as globally declared (and parsed) in tb_bin.cc
 extern bool WRAPPER_disable_tracing;
 extern char *WRAPPER_trace_prefix;
+extern bool WRAPPER_vcd;
 
 namespace sim {
 
@@ -32,12 +33,12 @@ void sim_thread_main(void *arg) { ((Sim *)arg)->main(); }
 vluint64_t TIME = 0;
 
 Sim::Sim(int argc, char **argv) : htif_t(argc, argv), ipc(argc, argv) {
-    // Search arguments for `--vcd` flag and enable waves if requested
-    for (auto i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "--vcd") == 0) {
-            printf("VCD wave generation enabled\n");
-            vlt_vcd = true;
-        }
+    // --vcd is parsed and filtered out of argv in tb_bin.cc before Sim is
+    // constructed (so it never reaches htif/Verilated, which would reject it);
+    // it reaches us via the WRAPPER_vcd global.
+    if (WRAPPER_vcd) {
+        printf("VCD wave generation enabled\n");
+        vlt_vcd = true;
     }
     Verilated::commandArgs(argc, argv);
 }

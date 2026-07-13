@@ -1,0 +1,7 @@
+// Copyright 2025 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    ROWS: 4, // independent rows reduced/scaled per dispatch
+    D: 64,   // row length (FP16 elements), a power of two, multiple of 32
+}

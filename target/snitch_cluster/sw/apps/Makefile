@@ -37,6 +37,25 @@ SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-elementwise-add
 endif
+# The FP16 SIMD apps below need the StreamMap / StreamReduce / StreamElementwise /
+# Fp16ToInt8 reader extensions, which only cfg/snax_xdma_cluster.hjson builds --
+# they do not compile against the plain KUL cluster above.
+ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_cluster.hjson)
+SUBDIRS += snax-xdma-memset
+SUBDIRS += snax-xdma-reshape-comparison
+SUBDIRS += snax-xdma-transpose
+SUBDIRS += snax-xdma-elementwise-add
+SUBDIRS += snax-xdma-softmax
+SUBDIRS += snax-xdma-rmsnorm
+SUBDIRS += snax-xdma-silu
+SUBDIRS += snax-xdma-swiglu
+SUBDIRS += snax-xdma-rope
+SUBDIRS += snax-xdma-reduce-multirow
+SUBDIRS += snax-xdma-rmsnorm-multirow
+SUBDIRS += snax-xdma-rmsnorm-fold
+SUBDIRS += snax-xdma-softmax-multirow
+SUBDIRS += snax-xdma-softmax-fold
+endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-maxpool
@@ -53,7 +72,33 @@ SUBDIRS += snax-versacore-to-matmul-profile
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-reshape-comparison
+endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_to_simd_cluster.hjson)
+SUBDIRS += snax-versacore-to-matmul
+SUBDIRS += snax-versacore-to-matmul-profile
+SUBDIRS += snax-xdma-memset
+SUBDIRS += snax-xdma-transpose
+SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-elementwise-add
+SUBDIRS += snax-xdma-reduce-multirow
+SUBDIRS += snax-xdma-rmsnorm-multirow
+endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_to_256KB_cluster.hjson)
+SUBDIRS += snax-versacore-to-matmul
+SUBDIRS += snax-versacore-to-matmul-profile
+SUBDIRS += snax-xdma-memset
+SUBDIRS += snax-xdma-transpose
+SUBDIRS += snax-xdma-reshape-comparison
+endif
+ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_to_256KB_simd_cluster.hjson)
+SUBDIRS += snax-versacore-to-matmul
+SUBDIRS += snax-versacore-to-matmul-profile
+SUBDIRS += snax-xdma-memset
+SUBDIRS += snax-xdma-transpose
+SUBDIRS += snax-xdma-reshape-comparison
+SUBDIRS += snax-xdma-elementwise-add
+SUBDIRS += snax-xdma-reduce-multirow
+SUBDIRS += snax-xdma-rmsnorm-multirow
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_dse_cluster.hjson)
 SUBDIRS += snax-versacore-dse-matmul-profile

@@ -7,6 +7,9 @@ ThisBuild / organization := "be.kuleuven.esat.micas"
 val chiselVersion   = "6.4.0"
 val playJSONVersion = "3.0.4"
 
+lazy val fpUnits  = ProjectRef(file("../chisel_acc/subprojects/chisel-float"), "chiselFloat")
+lazy val fpNative = ProjectRef(file("../chisel_acc/subprojects/fp-native"), "fpNative")
+
 lazy val root = (project in file("."))
   .settings(
     name := "snax-streamer",
@@ -29,3 +32,4 @@ lazy val root = (project in file("."))
       "org.chipsalliance" % "chisel-plugin" % chiselVersion cross CrossVersion.full
     )
   )
+  .dependsOn(fpUnits, fpUnits % "compile->test", fpNative)

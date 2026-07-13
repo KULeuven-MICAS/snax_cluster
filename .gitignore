@@ -1,6 +1,7 @@
 .bender/
 Bender.lock
 .vscode/
+.claude/
 .metals
 .bloop
 .bsp
@@ -27,3 +28,4 @@ gmon.out
 test_run_dir
 target/streams/
 target/scala*
+tmp/

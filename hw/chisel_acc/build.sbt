@@ -6,7 +6,8 @@ ThisBuild / organization := "be.kuleuven.esat.micas"
 
 val chiselVersion = "6.4.0"
 
-lazy val fpUnits = ProjectRef(file("subprojects/chisel-float"), "chiselFloat")
+lazy val fpUnits  = ProjectRef(file("subprojects/chisel-float"), "chiselFloat")
+lazy val fpNative = ProjectRef(file("subprojects/fp-native"), "fpNative")
 
 lazy val root = (project in file("."))
   .settings(
@@ -27,4 +28,4 @@ lazy val root = (project in file("."))
       "org.chipsalliance" % "chisel-plugin" % chiselVersion cross CrossVersion.full
     )
   )
-  .dependsOn(fpUnits, fpUnits % "compile->test")
+  .dependsOn(fpUnits, fpUnits % "compile->test", fpNative)

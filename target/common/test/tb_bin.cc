@@ -12,6 +12,7 @@
 // Declare these as global variables
 bool WRAPPER_disable_tracing = false;
 char *WRAPPER_trace_prefix = nullptr;
+bool WRAPPER_vcd = false;
 
 void print_usage(const char *prog_name) {
     std::cout << "Usage: " << prog_name
@@ -38,6 +39,8 @@ int main(int argc, char **argv, char **env) {
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--disable-tracing") == 0) {
             WRAPPER_disable_tracing = true;
+        } else if (strcmp(argv[i], "--vcd") == 0) {
+            WRAPPER_vcd = true;
         } else if (strncmp(argv[i], "--prefix-trace=", 15) == 0) {
             WRAPPER_trace_prefix =
                 argv[i] + 15;  // Extract the value after `--prefix-trace=`
@@ -64,6 +67,7 @@ int main(int argc, char **argv, char **env) {
     for (int i = 0; i < argc; ++i) {
         // Skip custom options
         if (strcmp(argv[i], "--disable-tracing") == 0 ||
+            strcmp(argv[i], "--vcd") == 0 ||
             strncmp(argv[i], "--prefix-trace=", 15) == 0) {
             continue;
         }
