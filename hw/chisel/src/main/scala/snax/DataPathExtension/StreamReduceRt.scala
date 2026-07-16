@@ -94,6 +94,12 @@ class StreamReduceRt(
   val csr0            = ext_csr_i(0)
   val operandCount    = Mux(csr0(15, 0) === 0.U, 1.U(16.W), csr0(15, 0))
   val fmt             = csr0(17, 16)      // 0=FP16, 1=BF16, 2=FP8
+  // RUNTIME-variable subCycles: issue only the ACTIVE lanes of the fmt (FP16/BF16=lanes/2, FP8=lanes). The
+  // fold mask below already forces lanes >= lanes/2 to the op identity for non-FP8 (== the L<activeLanes
+  // bound), so un-issued upper lanes don't corrupt the reduce. Banking meets the recurrence at runSub>=1.
+  require(isPow2(computeLanes), "StreamReduceRt: computeLanes must be a power of two (runSub shift)")
+  val activeLanes = Mux(fmt <= FMT_BF16.U, (lanes / 2).U, lanes.U)
+  val runSub      = Mux(activeLanes < computeLanes.U, 1.U, activeLanes >> log2Ceil(computeLanes))
   val opField         = ext_csr_i(1)
   val opcode          = opField(7, 0)     // 0=MAX,1=ADD,2=SUMSQ,3=ARGMAX
   val tap             = opField(8).asBool
@@ -185,17 +191,21 @@ class StreamReduceRt(
   val nextIdx  = RegInit(0.U(16.W))
   val stall    = RegInit(0.U(log2Ceil(gap + 1).max(1).W))
 
-  val lastSub        = sub === (subCycles - 1).U
+  val lastSub        = sub === (runSub - 1.U) // runtime count: narrow fmts finish in fewer subgroups
   val firstInBank    = beatIdx < nBanks.U
   val issueBank      = bankOf(beatIdx)
   val lastBeatInRow  = beatIdx === (operandCount - 1.U)
   val nextIsRowStart = nextIdx === 0.U
   val overlapOK      = if (gap == 0) true.B else nextIsRowStart
 
-  val inFlightMax = (accLat + treeLat + beatSpan - 1) / beatSpan + 1
+  // size for the SMALLEST runtime beatSpan (narrowest fmt FP16 = lanes/2 active) so the faster narrow-format
+  // beat rate doesn't starve the credit round-trip (see StreamMapRt).
+  val minRunSub   = scala.math.max(1, (lanes / 2) / computeLanes)
+  val beatSpanMin = minRunSub + gap
+  val inFlightMax = (accLat + treeLat + beatSpanMin - 1) / beatSpanMin + 1
   val creditRoundTrip = accLat + treeLat + 4
   val Qdepth = scala.math.max(3,
-    scala.math.max(inFlightMax + 1, (creditRoundTrip + beatSpan - 1) / beatSpan + 1))
+    scala.math.max(inFlightMax + 1, (creditRoundTrip + beatSpanMin - 1) / beatSpanMin + 1))
   val outQ        = Module(new Queue(UInt(extensionParam.dataWidth.W), entries = Qdepth))
   val credit      = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
   val tapDraining  = RegInit(false.B)

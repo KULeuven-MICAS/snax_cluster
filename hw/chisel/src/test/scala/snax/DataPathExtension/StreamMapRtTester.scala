@@ -170,6 +170,38 @@ class StreamMapRtTester extends AnyFlatSpec with ChiselScalatestTester {
       }
   }
 
+  "StreamMapRt_runsub_area" should "let FP16 reach util=1.0 at cl=32 (half the lanes) via runtime subCycles" in {
+    test(new DataPathExtensionHarness(new HasStreamMapRt(computeLanes = 32, func = Seq("LINEAR"))))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+        def measure(fmt: Int, beat: BigInt): Double = {
+          val nIn = 200
+          dut.io.csr_i(0).poke(f32bits(1.0f).U); dut.io.csr_i(1).poke(f32bits(0.0f).U); dut.io.csr_i(2).poke(csr2(fmt, 0).U)
+          dut.io.enable_i.poke(true)
+          dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+          dut.io.data_o.ready.poke(true)
+          dut.io.data_i.valid.poke(true); dut.io.data_i.bits.poke(beat.U)
+          var cyc = 0L; var fed = 0; var got = 0; var warm = -1L; var last = -1L
+          while (got < nIn && cyc < nIn * 40 + 400) {
+            val canFeed = fed < nIn && dut.io.data_i.ready.peekBoolean()
+            val outNow  = dut.io.data_o.valid.peekBoolean()
+            dut.clock.step(1); cyc += 1
+            if (canFeed) { fed += 1; if (fed == 8) warm = cyc; last = cyc
+              if (fed < nIn) dut.io.data_i.bits.poke(beat.U) else dut.io.data_i.valid.poke(false) }
+            if (outNow) got += 1
+          }
+          dut.io.data_i.valid.poke(false)
+          var w = 0; while (dut.io.busy_o.peekBoolean() && w < 200) { dut.clock.step(1); w += 1 }
+          (nIn - 8).toDouble / (last - warm)
+        }
+        val rng = new Random(0x1c)
+        val u16 = measure(0, packF16(Seq.fill(32)(f32ToF16bits(rng.between(-2f, 2f)))))
+        val u8  = measure(2, packF8(Seq.fill(64)(rng.nextInt(120))))
+        println(f"[StreamMapRt runSub cl=32] FP16 util=$u16%.3f (32 active lanes -> roofline), FP8 util=$u8%.3f (64 lanes -> 0.5)")
+        assert(u16 > 0.9, s"FP16 should hit util=1.0 at cl=32 via runSub, got $u16")
+        assert(u8 > 0.4 && u8 < 0.65, s"FP8 should sit ~0.5 at cl=32 (needs cl=64), got $u8")
+      }
+  }
+
   "StreamMapRt_mxfp8_roofline" should "hold the 512 b/cyc roofline at cl=64 for MXFP8 (block-scaled)" in {
     test(new DataPathExtensionHarness(new HasStreamMapRt(computeLanes = 64, func = Seq("LINEAR"))))
       .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>

@@ -68,6 +68,12 @@ class StreamElementwiseRt(
   val operandCount = Mux(csr0(15, 0) === 0.U, 1.U(16.W), csr0(15, 0))
   val fmt          = csr0(17, 16) // 0=FP16, 1=BF16, 2=FP8
   val opcode       = ext_csr_i(1)(7, 0)
+  // RUNTIME-variable subCycles: issue only the ACTIVE lanes of the current fmt (FP16/BF16 = lanes/2, FP8 =
+  // lanes), so narrow formats finish in fewer subgroups -> higher util at the same computeLanes (area). The
+  // banking (nBanks = nextPow2(accLat+1)) already meets the accumulate recurrence at the fastest runSub>=1.
+  require(isPow2(computeLanes), "StreamElementwiseRt: computeLanes must be a power of two (runSub shift)")
+  val activeLanes = Mux(fmt <= FMT_BF16.U, (lanes / 2).U, lanes.U)
+  val runSub      = Mux(activeLanes < computeLanes.U, 1.U, activeLanes >> log2Ceil(computeLanes))
 
   // ---- pipeline depth (timing) — identical to StreamElementwise (widenRt(fpPipe) == widen(fpPipe)) ----
   val fpPipe  = if (pipelined) fpPipeParam else 0
@@ -113,10 +119,14 @@ class StreamElementwiseRt(
   // ---- streaming time-mux + pipeline FSM (identical to StreamElementwise; lanes = maxLanes) ----
   val gap      = scala.math.max(0, accLat + 1 - nBanks * subCycles)
   val beatSpan = subCycles + gap
+  // size the queue for the SMALLEST runtime beatSpan (narrowest fmt FP16 = lanes/2 active): smaller runSub
+  // accepts beats faster -> deeper queue needed to hold the credit round-trip (see StreamMapRt).
+  val minRunSub  = scala.math.max(1, (lanes / 2) / computeLanes)
+  val beatSpanMin = minRunSub + gap
 
-  val inFlightMax     = (accLat + beatSpan - 1) / beatSpan + 1
+  val inFlightMax     = (accLat + beatSpanMin - 1) / beatSpanMin + 1
   val creditRoundTrip = accLat + 4
-  val Qdepth = scala.math.max(2, scala.math.max(inFlightMax, (creditRoundTrip + beatSpan - 1) / beatSpan + 1))
+  val Qdepth = scala.math.max(2, scala.math.max(inFlightMax, (creditRoundTrip + beatSpanMin - 1) / beatSpanMin + 1))
   val outQ   = Module(new Queue(UInt(extensionParam.dataWidth.W), entries = Qdepth))
 
   def li(s: UInt, j: Int): UInt = (s * computeLanes.U + j.U)(log2Ceil(lanes) - 1, 0)
@@ -138,7 +148,7 @@ class StreamElementwiseRt(
   val stall    = RegInit(0.U(log2Ceil(gap + 1).max(1).W))
   val credit   = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
 
-  val lastSub        = sub === (subCycles - 1).U
+  val lastSub        = sub === (runSub - 1.U) // runtime count: narrow fmts finish in fewer subgroups
   val firstInBank    = beatIdx < nBanks.U
   val issueBank      = bankOf(beatIdx)
   val lastBeatInRow  = beatIdx === (operandCount - 1.U)

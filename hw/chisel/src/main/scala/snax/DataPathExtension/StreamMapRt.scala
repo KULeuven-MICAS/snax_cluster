@@ -58,7 +58,8 @@ class StreamMapRt(
   val maxLanes     = extensionParam.dataWidth / 8 // 64: FP8 element count = the max lanes/beat
   val computeLanes = if (computeLanesParam > maxLanes) maxLanes else computeLanesParam
   require(maxLanes % computeLanes == 0, "StreamMapRt: maxLanes must be a multiple of computeLanes")
-  val subCycles = maxLanes / computeLanes
+  require(isPow2(computeLanes), "StreamMapRt: computeLanes must be a power of two (runtime-variable subCycles shift)")
+  val subCycles = maxLanes / computeLanes // BUILD-max (widest format); the RUNTIME subCycles is `runSub` below
 
   val hasExp    = func.contains("EXP")
   val hasSilu   = func.contains("SILU")
@@ -80,6 +81,11 @@ class StreamMapRt(
   val mxScale  = actField(12, 5) // MX shared E8M0 block scale (per-task here; per-block AGU side-stream = TODO)
   // 8-bit-element formats reuse the FP8 slicer/packer (MXFP8); MXFP6/MXFP4 need a denser slicer (maxLanes>64)
   val is8bit   = (fmt === FMT_FP8.U) || (fmt === FMT_MXFP8_E5M2.U) || (fmt === FMT_MXFP8_E4M3.U)
+  // RUNTIME-variable subCycles: issue only the ACTIVE lanes of the current fmt (narrow formats skip the empty
+  // upper-lane subgroups), so every format reaches computeUtil=1.0 and the narrow ones run proportionally
+  // FASTER at a given computeLanes (area). FP16/BF16 use maxLanes/2 lanes, FP8/MX(8-bit) use maxLanes.
+  val activeLanes = Mux(fmt <= FMT_BF16.U, (maxLanes / 2).U, maxLanes.U)
+  val runSub      = Mux(activeLanes < computeLanes.U, 1.U, activeLanes >> log2Ceil(computeLanes))
 
   // ---- pipeline depth (mirrors StreamMap so the streaming FSM is reused verbatim) ----
   // widenRt(fpPipe) replaces StreamMap's ShiftRegister(laneIn, fpPipe) (same latency); ffma == ffmaT latency;
@@ -128,17 +134,21 @@ class StreamMapRt(
     Mux(is8bit, c8, c16)
   }
 
-  val inFlightMax     = (P + subCycles - 1) / subCycles + 1
+  // Size the queue / credit round-trip for the SMALLEST runtime subCycles (narrowest fmt FP16 = maxLanes/2
+  // active lanes): a smaller runSub accepts beats FASTER -> more in flight -> a DEEPER queue. Using the build
+  // subCycles under-sizes it and the narrow formats plateau below the roofline (FP16 stuck at 0.75 @ cl=32).
+  val minRunSub       = scala.math.max(1, (maxLanes / 2) / computeLanes)
+  val inFlightMax     = (P + minRunSub - 1) / minRunSub + 1
   val creditRoundTrip = P + 4
   val Qdepth = scala.math.max(2,
-    scala.math.max(inFlightMax, (creditRoundTrip + subCycles - 1) / subCycles + 1))
+    scala.math.max(inFlightMax, (creditRoundTrip + minRunSub - 1) / minRunSub + 1))
   val outQ = Module(new Queue(UInt(extensionParam.dataWidth.W), entries = Qdepth))
 
   def li(s: UInt, j: Int): UInt = (s * computeLanes.U + j.U)(log2Ceil(maxLanes) - 1, 0)
 
   val haveBeat = RegInit(false.B)
   val sub      = RegInit(0.U(log2Ceil(subCycles).max(1).W))
-  val lastSub  = sub === (subCycles - 1).U
+  val lastSub  = sub === (runSub - 1.U) // runtime count: narrow fmts finish in fewer subgroups
   val credit   = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
 
   ext_data_i.ready := (!haveBeat || lastSub) && (credit =/= 0.U) && !ext_start_i
@@ -159,7 +169,7 @@ class StreamMapRt(
 
   val subRetire   = ShiftRegister(sub, P)
   val retireValid = clrPipe(issuing, P)
-  val lastRetire  = subRetire === (subCycles - 1).U
+  val lastRetire  = subRetire === (runSub - 1.U) // fmt (hence runSub) is stable per task, so this aligns
   val outNow      = WireInit(outSlot)
   when(retireValid) {
     for (j <- 0 until computeLanes) {
