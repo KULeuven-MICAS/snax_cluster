@@ -62,7 +62,11 @@ class HasStreamReduce(
   dataWidth:    Int = 512,
   fpPipe:       Int = 1, // accumulate FP-unit internal pipeline depth, 0..2 (per-op timing cut knob)
   treePipe:     Int = 1, // reduce-fold add internal pipeline depth, 0..2 (SEPARATE cut knob)
-  treeLanes:    Int = 2  // # of horizontal-fold ALUs (area knob): the once-per-row collapse is time-muxed
+  treeLanes:    Int = 2, // # of horizontal-fold ALUs (area knob): the once-per-row collapse is time-muxed
+  accBanks:     Int = 0, // per-lane partial banks (0 = auto = nextPow2(accLat+1) to break the accumulate
+  //                        recurrence and reach 1 beat/cycle at computeLanes=lanes; 1 = legacy single partial)
+  foldParallel: Int = 0  // 1 = fully-pipelined parallel reduce tree (rows pipeline, multi-row hits the
+  //                        roofline; costs lanes-1 FP adders); 0 = time-muxed area-saving fold (serialized)
 ) extends HasDataPathExtension {
   private val (_, transport) =
     OpSpec.parse(op, Set("MAX", "ADD", "SUMSQ", "FMA"), "HasStreamReduce") // validate op names + precision
@@ -76,7 +80,8 @@ class HasStreamReduce(
     )
 
   def instantiate(clusterName: String): StreamReduce =
-    Module(new StreamReduce(computeLanes, op, elementWidth, fpPipe, treePipe, treeLanes) {
+    Module(new StreamReduce(computeLanes, op, elementWidth, fpPipe, treePipe, treeLanes, accBanks,
+                            foldParallel != 0) {
       override def desiredName = clusterName + namePostfix
     })
 }
@@ -88,6 +93,8 @@ class StreamReduce(
   fpPipeParam:       Int         = 1,
   treePipeParam:     Int         = 1,
   treeLanesParam:    Int         = 2,
+  accBanksParam:     Int         = 0,
+  foldParallel:      Boolean     = false,
   pipelined:         Boolean     = true
 )(implicit
   extensionParam:    DataPathExtensionParam
@@ -147,6 +154,18 @@ class StreamReduce(
   val treePipe   = if (pipelined) treePipeParam else 0 // reduce-tree add pipeline depth (cfg, separate knob)
   val laneLat    = if (pipelined) 1 else 0             // register after the time-mux lane-select mux
   val accLat     = laneLat + 2 * fpPipe                // issue -> per-lane accumulate result
+  // ---- accumulator BANKING (breaks the per-lane read-after-write recurrence) ------------------
+  // Consecutive beats round-robin through `accBanks` independent per-lane partials, so the same (bank,lane)
+  // partial is reused only every accBanks beats (= accBanks*subCycles cycles). When accBanks*subCycles >=
+  // accLat+1 the retire always completes before the reuse READ, so the inter-beat `gap` is 0 and the issue
+  // streams at 1 beat/subCycles (=> 1 beat/cycle at computeLanes=lanes). Default = smallest power of two >=
+  // accLat+1 (a bank index is then a bit-slice of beatIdx, no modulo). accBanks==1 = the legacy single
+  // partial with the recurrence gap. The banks are combined once per row at the fold snapshot (see collapse).
+  val nBanks =
+    if (accBanksParam <= 0) (1 << log2Ceil(accLat + 1)) // auto: smallest power of two >= accLat+1
+    else if (accBanksParam == 1) 1                      // legacy single partial (recurrence gap kept)
+    else (1 << log2Ceil(accBanksParam))                 // explicit request, rounded up to a power of two
+  def bankOf(idx: UInt): UInt = if (nBanks == 1) 0.U(1.W) else idx(log2Ceil(nBanks) - 1, 0)
   // The ADD/SUMSQ accumulate fuses the (square)+(add) into ONE mixed-format FMA (see accLane). Give it the
   // SAME latency as the old widen/square + add (2*fpPipe) so accLat — and the whole streaming FSM built on
   // it — is unchanged; FpFma caps numPipe at 2, so for 2*fpPipe>2 the remainder is a plain output shift-reg.
@@ -213,8 +232,10 @@ class StreamReduce(
     else accAdd
   }
 
-  // ---- per-lane FP32 partials ----
-  val regs = RegInit(VecInit(Seq.fill(lanes)(0.U(accWidth.W))))
+  // ---- per-lane FP32 partials (nBanks independent partials per lane, round-robin by beat) ----
+  val regs = RegInit(VecInit(Seq.fill(lanes * nBanks)(0.U(accWidth.W))))
+  // flat index of partial (bank, lane), width-exact
+  def bankIdx(bank: UInt, laneSel: UInt): UInt = (bank * lanes.U + laneSel)(log2Ceil(lanes * nBanks) - 1, 0)
 
   // ---- streaming time-mux + pipeline FSM (accumulate core is identical to StreamElementwise) -----------
   // Continuous-issue: the computeLanes ALUs fold one sub-group per cycle into the per-lane partials across
@@ -230,8 +251,8 @@ class StreamReduce(
   // in-flight+queued OUTPUT beats to the queue depth. tap mode re-emits each input beat (passthrough) before
   // the row's scalar; to keep that order on a single stream it serializes rows (next row waits for the
   // scalar). CONTRACT: ext_start_i only asserts when idle (ext_busy_o low).
-  val gap      = scala.math.max(0, accLat + 1 - subCycles) // inter-beat recurrence stall (compile-time)
-  val beatSpan = subCycles + gap                           // issue cycles allotted per operand beat
+  val gap      = scala.math.max(0, accLat + 1 - nBanks * subCycles) // 0 when banking spaces reuse >= accLat+1
+  val beatSpan = subCycles + gap                                    // issue cycles allotted per operand beat
 
   // index of lane (s*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
   def li(s: UInt, j: Int): UInt = (s * computeLanes.U + j.U)(log2Ceil(lanes) - 1, 0)
@@ -246,7 +267,8 @@ class StreamReduce(
   val stall    = RegInit(0.U(log2Ceil(gap + 1).max(1).W)) // remaining recurrence-gap cycles (gap>0 only)
 
   val lastSub        = sub === (subCycles - 1).U
-  val firstBeat      = beatIdx === 0.U
+  val firstInBank    = beatIdx < nBanks.U    // first nBanks beats each SEED their bank; later beats accumulate
+  val issueBank      = bankOf(beatIdx)       // bank of the beat currently being issued
   val lastBeatInRow  = beatIdx === (operandCount - 1.U)
   val nextIsRowStart = nextIdx === 0.U
   val overlapOK      = if (gap == 0) true.B else nextIsRowStart
@@ -257,11 +279,21 @@ class StreamReduce(
   // of 3 keeps a tap row-start's 2-slot reserve + slack; the writer drains passthroughs faster than the
   // cl-time-muxed producer makes them, so this shallow depth costs no app throughput.
   val inFlightMax = (accLat + treeLat + beatSpan - 1) / beatSpan + 1 // beats draining after issue stops
-  val Qdepth      = scala.math.max(3, inFlightMax + 1)
+  // Cover the STEADY-STATE credit round-trip (accept -> issue -> accLat+treeLat retire/fold -> Queue enq->deq
+  // -> credit++, plus downstream ready latency), so the credit counter doesn't starve the producer below the
+  // roofline once the recurrence gap is removed (see StreamMap). Area is not the constraint at cl=lanes.
+  val creditRoundTrip = accLat + treeLat + 4
+  val Qdepth = scala.math.max(3,
+    scala.math.max(inFlightMax + 1, (creditRoundTrip + beatSpan - 1) / beatSpan + 1))
   val outQ        = Module(new Queue(UInt((lanes * elementWidth).W), entries = Qdepth))
   val credit      = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
-  val tapDraining = RegInit(false.B) // tap: a row's beats are all in, its scalar not yet emitted
-  val treeBusy    = RegInit(false.B) // the horizontal fold is running (input held off so treeBuf is safe)
+  val tapDraining  = RegInit(false.B) // tap: a row's beats are all in, its scalar not yet emitted
+  val treeBusy     = RegInit(false.B) // the horizontal fold is running (input held off so treeBuf is safe)
+  // Banking removes the inter-beat gap, so a short next row could stream in and COMPLETE while the previous
+  // row's fold is still busy (treeBuf is single-buffered) -> assert. Hold the NEXT row's start off from the
+  // moment a row's last beat issues (foldInFlight) until that row's scalar is out. Serializes rows through the
+  // fold (the fold-bound multi-row regime is unchanged); a single big row sets this only at the very end.
+  val foldInFlight = RegInit(false.B)
 
   // accept a new input beat: overlap the current beat's last-sub issue when the successor needs no gap,
   // else from idle once the gap drained. Reserve a scalar slot at a row start + a passthrough slot in tap.
@@ -272,14 +304,21 @@ class StreamReduce(
   val acceptWhenIdle    = !haveBeat && (stall === 0.U)
   val creditOK          = credit    >= reserveOnAccept
   val tapBlock          = tap       && nextIsRowStart && tapDraining // hold the next row until the scalar is out
-  ext_data_i.ready := (acceptDuringIssue || acceptWhenIdle) && creditOK && !tapBlock && !treeBusy && !ext_start_i
+  // hold the next row until the current fold completes. The `haveBeat && lastSub && lastBeatInRow` term is the
+  // COMBINATIONAL rowLastIssue: a next-row beat-0 can overlap-accept the SAME cycle a row's last beat issues,
+  // before the registered foldInFlight engages, so gate on it too (closes the same-cycle hole).
+  // parallel tree: non-tap rows pipeline through the fold (no serialization); only tap needs scalar-before-
+  // next-row ordering. Time-muxed fold: always serialize (single treeBuf).
+  val foldBlock         = nextIsRowStart && (foldInFlight || (haveBeat && lastSub && lastBeatInRow)) &&
+                          (if (foldParallel) tap else true.B)
+  ext_data_i.ready := (acceptDuringIssue || acceptWhenIdle) && creditOK && !tapBlock && !foldBlock && !treeBusy && !ext_start_i
   val accept = ext_data_i.fire
 
   // ---- issue ----
   val issuing = haveBeat
   val res     = Wire(Vec(computeLanes, UInt(accWidth.W)))
   for (j <- 0 until computeLanes)
-    res(j) := accLane(inLanes(li(sub, j)), regs(li(sub, j)), firstBeat)
+    res(j) := accLane(inLanes(li(sub, j)), regs(bankIdx(issueBank, li(sub, j))), firstInBank)
 
   // A valid-pulse pipeline that is CLEARED by ext_start_i, so an in-flight scalar pulse from the previous
   // task (still propagating through accLat + the treeLat-deep reduce tree) can never fire — and push an
@@ -296,75 +335,111 @@ class StreamReduce(
 
   // ---- retire: fold partials into regs; capture the complete row at its last-sub retire ----
   val subRetire     = ShiftRegister(sub, accLat)
+  val bankRetire    = ShiftRegister(issueBank, accLat) // bank of the beat retiring this cycle
   val retireValid   = ShiftRegister(issuing, accLat, false.B, true.B)
   val rowLastIssue  = issuing && lastSub && lastBeatInRow
   val rowLastRetire = clrPipe(rowLastIssue, accLat)
-  val outNow        = WireInit(regs)
+  val outNowBanked  = WireInit(regs)                   // all nBanks*lanes partials, retiring group overlaid
   when(retireValid) {
     for (j <- 0 until computeLanes) {
-      regs(li(subRetire, j))   := res(j)
-      outNow(li(subRetire, j)) := res(j)
+      regs(bankIdx(bankRetire, li(subRetire, j)))         := res(j)
+      outNowBanked(bankIdx(bankRetire, li(subRetire, j))) := res(j)
     }
   }
 
-  // ---- horizontal collapse: TIME-MUXED in-place log-fold (area knob) ----------------------------------
-  // Replaces the fully-parallel `lanes-1` FP adder tree (the module's dominant area) with a small fold:
-  // once per row, snapshot the captured partials (outNow) into treeBuf and reduce over numLevels rounds;
-  // round r pairs treeBuf[2i],treeBuf[2i+1] -> treeBuf[i] for i in [0,pairs) with `treeLanes` pipelined FP
-  // ops per cycle (the SAME pairwise order as the old balanced tree => bit-identical). ext_data_i.ready is
-  // held low while folding (treeBusy) so the next row cannot overwrite treeBuf: a single big row (softmax)
-  // hides the fold entirely, multi-row pays a per-row fold bubble. treeLanes trades ALUs for fold cycles.
-  val treeBuf   = Reg(Vec(lanes, UInt(accWidth.W)))
-  val foldLat   = if (pipelined) scala.math.max(treePipe, 1) else 0          // fold-ALU result latency (>=1: timing)
-  val laneIdxW  = log2Ceil(lanes)
-  val foldRound = RegInit(0.U(log2Ceil(numLevels + 1).W))                    // current round 0..numLevels-1
-  val foldCol   = RegInit(0.U(log2Ceil(lanes / 2 / treeLanes + 1).max(1).W)) // chunk within the round
-  val foldWait  = RegInit(0.U(log2Ceil(foldLat + 1).max(1).W))               // pipeline-drain wait per chunk
-
-  val roundPairs  = (lanes.U >> (foldRound + 1.U))(laneIdxW, 0)    // pairs this round = lanes >> (r+1)
-  val roundChunks = (roundPairs + (treeLanes - 1).U) / treeLanes.U // ceil(pairs / treeLanes)
-  val lastChunk   = foldCol === (roundChunks - 1.U)
-
-  // the treeLanes fold ALUs (add for ADD/SUMSQ, max for MAX), inputs muxed from treeBuf by (foldCol, k)
-  val foldRes = Wire(Vec(treeLanes, UInt(accWidth.W)))
-  for (k <- 0 until treeLanes) {
-    val pIdx = (foldCol * treeLanes.U + k.U)(laneIdxW, 0)
-    val a    = treeBuf((pIdx << 1)(laneIdxW - 1, 0))
-    val b    = treeBuf(((pIdx << 1) | 1.U)(laneIdxW - 1, 0))
-    val addA = if (hasAdd || hasSumsq) ShiftRegister(treeAdd(a, b), foldLat - treePipe) else FP32_ZERO
-    val maxv = if (hasMax) ShiftRegister(fp32max(a, b), foldLat) else FP32_ZERO
-    foldRes(k) := (if (multiOp) Mux(opcode === OP_MAX, maxv, addA) else if (hasMax) maxv else addA)
+  // ---- bank collapse: combine the nBanks per-lane partials into ONE partial per lane, once per row, into
+  // the fold input `collapsed`. Banks that received no beat in this row (operandCount < nBanks) are masked
+  // with the op identity (+0.0 for ADD/SUMSQ, -inf for MAX) so short rows are correct. MAX is associative =>
+  // bit-exact; ADD/SUMSQ reassociate the vertical sum (absorbed by the reduce tolerance). Combinational
+  // (nBanks-1 FP ops/lane, ~log2(nBanks) deep) => no extra cycle; nBanks==1 is a pass-through (legacy).
+  val collapsed = Wire(Vec(lanes, UInt(accWidth.W)))
+  if (nBanks == 1) {
+    for (L <- 0 until lanes) collapsed(L) := outNowBanked(L)
+  } else {
+    val NEG_INF    = "hFF800000".U(accWidth.W)
+    val validBanks = Mux(operandCount > nBanks.U, nBanks.U, operandCount)
+    def collapseAdd(x: UInt, y: UInt): UInt = {
+      val m = Module(new FpAdd(FP32, FP32, FP32, 0)); m.io.in_a := x; m.io.in_b := y; m.io.out
+    }
+    def collapseCombine(x: UInt, y: UInt): UInt =
+      if (multiOp) Mux(opcode === OP_MAX, fp32max(x, y), collapseAdd(x, y))
+      else if (hasMax) fp32max(x, y)
+      else collapseAdd(x, y)
+    val identity =
+      if (multiOp) Mux(opcode === OP_MAX, NEG_INF, FP32_ZERO)
+      else if (hasMax) NEG_INF
+      else FP32_ZERO
+    for (L <- 0 until lanes) {
+      // b, L are Scala Ints here -> static flat index (no dynamic-width slice); mask banks not written this row
+      val bankVals = (0 until nBanks).map(b => Mux(b.U < validBanks, outNowBanked(b * lanes + L), identity))
+      collapsed(L) := bankVals.reduceLeft((x, y) => collapseCombine(x, y))
+    }
   }
 
-  // fold FSM: hold (foldRound, foldCol) for foldLat+1 cycles, then write back the chunk and advance.
-  val foldWriteback = treeBusy && (foldWait === foldLat.U)
-  val treeDone      = RegInit(false.B) // pulse: the scalar (treeBuf(0)) is valid this cycle
-  when(ext_start_i) {
-    treeBusy := false.B; foldRound := 0.U; foldCol := 0.U; foldWait := 0.U; treeDone := false.B
-  }.otherwise {
-    treeDone := false.B
-    when(!treeBusy) {
-      when(rowLastRetire) { treeBuf := outNow; treeBusy := true.B; foldRound := 0.U; foldCol := 0.U; foldWait := 0.U }
+  // ---- horizontal fold: fully-pipelined PARALLEL tree (foldParallel: rows pipeline => multi-row hits the
+  // roofline; costs lanes-1 FP adders) OR the TIME-MUXED in-place log-fold (area knob: treeLanes ALUs/cycle,
+  // serialized by treeBusy). Both use the SAME balanced pairwise order (bit-identical scalar). ------------
+  val (scalarFP32, scalarValid) = if (foldParallel) {
+    // Pipelined balanced reduce tree: feed `collapsed` every cycle; the rowLastRetire snapshot's scalar
+    // emerges numLevels*foldLatP cycles later (valid tracked). No treeBusy => input never stalls for the fold,
+    // so consecutive rows pipeline through the tree at the accumulate rate (banked => 1 beat/cycle).
+    val foldLatP = if (pipelined) scala.math.max(treePipe, 1) else 0
+    def combineP(x: UInt, y: UInt): UInt = {
+      val addA = if (hasAdd || hasSumsq) ShiftRegister(treeAdd(x, y), foldLatP - treePipe) else FP32_ZERO
+      val maxv = if (hasMax) ShiftRegister(fp32max(x, y), foldLatP) else FP32_ZERO
+      if (multiOp) Mux(opcode === OP_MAX, maxv, addA) else if (hasMax) maxv else addA
+    }
+    var lvl: Seq[UInt] = (0 until lanes).map(i => collapsed(i))
+    for (_ <- 0 until numLevels) lvl = (0 until (lvl.length / 2)).map(i => combineP(lvl(2 * i), lvl(2 * i + 1)))
+    treeBusy := false.B // the pipelined tree never stalls the input
+    (lvl.head, clrPipe(rowLastRetire, numLevels * foldLatP))
+  } else {
+    // TIME-MUXED in-place log-fold: snapshot collapsed into treeBuf, reduce over numLevels rounds with
+    // treeLanes ALUs/cycle; treeBusy holds input off (single big row hides it, multi-row pays a bubble).
+    val treeBuf   = Reg(Vec(lanes, UInt(accWidth.W)))
+    val foldLat   = if (pipelined) scala.math.max(treePipe, 1) else 0
+    val laneIdxW  = log2Ceil(lanes)
+    val foldRound = RegInit(0.U(log2Ceil(numLevels + 1).W))
+    val foldCol   = RegInit(0.U(log2Ceil(lanes / 2 / treeLanes + 1).max(1).W))
+    val foldWait  = RegInit(0.U(log2Ceil(foldLat + 1).max(1).W))
+    val roundPairs  = (lanes.U >> (foldRound + 1.U))(laneIdxW, 0)
+    val roundChunks = (roundPairs + (treeLanes - 1).U) / treeLanes.U
+    val lastChunk   = foldCol === (roundChunks - 1.U)
+    val foldRes = Wire(Vec(treeLanes, UInt(accWidth.W)))
+    for (k <- 0 until treeLanes) {
+      val pIdx = (foldCol * treeLanes.U + k.U)(laneIdxW, 0)
+      val a    = treeBuf((pIdx << 1)(laneIdxW - 1, 0))
+      val b    = treeBuf(((pIdx << 1) | 1.U)(laneIdxW - 1, 0))
+      val addA = if (hasAdd || hasSumsq) ShiftRegister(treeAdd(a, b), foldLat - treePipe) else FP32_ZERO
+      val maxv = if (hasMax) ShiftRegister(fp32max(a, b), foldLat) else FP32_ZERO
+      foldRes(k) := (if (multiOp) Mux(opcode === OP_MAX, maxv, addA) else if (hasMax) maxv else addA)
+    }
+    val foldWriteback = treeBusy && (foldWait === foldLat.U)
+    val treeDone      = RegInit(false.B)
+    when(ext_start_i) {
+      treeBusy := false.B; foldRound := 0.U; foldCol := 0.U; foldWait := 0.U; treeDone := false.B
     }.otherwise {
-      when(foldWriteback) {
-        for (k <- 0 until treeLanes) {
-          val pIdx = (foldCol * treeLanes.U + k.U)(laneIdxW, 0)
-          when(pIdx < roundPairs) { treeBuf(pIdx(laneIdxW - 1, 0)) := foldRes(k) }
-        }
-        foldWait := 0.U
-        when(lastChunk) {
-          when(foldRound === (numLevels - 1).U) { treeBusy := false.B; treeDone := true.B }.otherwise {
-            foldRound := foldRound + 1.U; foldCol := 0.U
+      treeDone := false.B
+      when(!treeBusy) {
+        when(rowLastRetire) { treeBuf := collapsed; treeBusy := true.B; foldRound := 0.U; foldCol := 0.U; foldWait := 0.U }
+      }.otherwise {
+        when(foldWriteback) {
+          for (k <- 0 until treeLanes) {
+            val pIdx = (foldCol * treeLanes.U + k.U)(laneIdxW, 0)
+            when(pIdx < roundPairs) { treeBuf(pIdx(laneIdxW - 1, 0)) := foldRes(k) }
           }
-        }.otherwise { foldCol := foldCol + 1.U }
-      }.otherwise { foldWait := foldWait + 1.U }
+          foldWait := 0.U
+          when(lastChunk) {
+            when(foldRound === (numLevels - 1).U) { treeBusy := false.B; treeDone := true.B }.otherwise {
+              foldRound := foldRound + 1.U; foldCol := 0.U
+            }
+          }.otherwise { foldCol := foldCol + 1.U }
+        }.otherwise { foldWait := foldWait + 1.U }
+      }
     }
+    assert(!(treeBusy && rowLastRetire), "StreamReduce fold: a row completed while the fold was still busy")
+    (treeBuf(0), treeDone)
   }
-  val scalarFP32    = treeBuf(0) // final scalar, valid the cycle treeDone is high
-  val scalarValid   = treeDone
-  // treeBusy holds ext_data_i.ready low, so for operandCount>=1 the next row cannot complete and clobber
-  // treeBuf mid-fold. This guards a mis-sized treeLanes (fold slower than a 1-beat row) in sim.
-  assert(!(treeBusy && rowLastRetire), "StreamReduce fold: a row completed while the fold was still busy")
   // Output packing: narrow the FP32 scalar to the transport grid (default), or — when fp32out is set and
   // the transport is narrower than FP32 — splat the raw FP32 scalar across the 512-bit beat (dataWidth/32
   // copies). The beat stays 512-bit either way, so the writer AGU is unchanged. (FP32 transport => nothing
@@ -389,7 +464,7 @@ class StreamReduce(
   val acceptLastOfRow = accept && (nextIdx === (operandCount - 1.U))
   when(ext_start_i) {
     haveBeat := false.B; sub          := 0.U; beatIdx := 0.U; nextIdx := 0.U; stall := 0.U
-    credit   := Qdepth.U; tapDraining := false.B
+    credit   := Qdepth.U; tapDraining := false.B; foldInFlight := false.B
   }.otherwise {
     when(stall =/= 0.U) { stall := stall - 1.U }
     when(accept) {
@@ -402,8 +477,10 @@ class StreamReduce(
       }.otherwise { sub := sub + 1.U }
     }
     when(tap && acceptLastOfRow) { tapDraining := true.B }.elsewhen(scalarValid) { tapDraining := false.B }
+    // a row's fold is pending from its last-beat issue until its scalar retires: gate the next row start on it
+    when(scalarValid) { foldInFlight := false.B }.elsewhen(rowLastIssue) { foldInFlight := true.B }
     credit := credit - Mux(accept, reserveOnAccept, 0.U) + Mux(deq, 1.U, 0.U)
   }
 
-  ext_busy_o := (credit =/= Qdepth.U) || haveBeat || (stall =/= 0.U) || tapDraining || treeBusy
+  ext_busy_o := (credit =/= Qdepth.U) || haveBeat || (stall =/= 0.U) || tapDraining || treeBusy || foldInFlight
 }

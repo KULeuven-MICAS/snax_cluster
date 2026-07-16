@@ -102,6 +102,126 @@ object FpHelpers {
   // FP16 <-> FP32 (the legacy fixed-precision aliases)
   def widenF16(h:  UInt): UInt = widen(h, FP16)
   def narrowF32(f: UInt): UInt = narrow(f, FP16)
+
+  // ---- RUNTIME-selectable-precision edge converters -------------------------------------------------
+  // The whole mechanism of runtime precision: internal compute is FP32 (format-agnostic), so a single
+  // netlist serves FP16/BF16/FP8 by muxing the (cheap, compile-time) per-format widen/narrow with a 2-bit
+  // `fmt` field (0=FP16, 1=BF16, 2=FP8). `fmtOf` maps an FpType -> its runtime code so goldens line up.
+  // widenRt: raw transport bits (16-wide carrier; FP8 in the low 8) -> FP32. narrowRt: FP32 -> 16-wide
+  // carrier (FP8 zero-extended in the low 8) so a common width muxes; the beat-packer places the field.
+  val FMT_FP16 = 0
+  val FMT_BF16 = 1
+  val FMT_FP8  = 2
+  def fmtOf(t: FpType): Int =
+    if (t == FP16) FMT_FP16 else if (t == BF16) FMT_BF16 else if (t == FP8) FMT_FP8
+    else throw new IllegalArgumentException(s"fmtOf: no runtime code for $t")
+
+  def widenRt(h16: UInt, fmt: UInt, numPipe: Int = 0): UInt = {
+    val wFP16 = widen(h16(15, 0), FP16, numPipe)
+    val wBF16 = widen(h16(15, 0), BF16, numPipe)
+    val wFP8  = widen(h16(7, 0), FP8, numPipe)
+    MuxLookup(fmt, wFP16)(Seq(FMT_FP16.U -> wFP16, FMT_BF16.U -> wBF16, FMT_FP8.U -> wFP8))
+  }
+  def narrowRt(f: UInt, fmt: UInt, numPipe: Int = 0): UInt = {
+    val nFP16 = narrow(f, FP16, numPipe)                 // 16b
+    val nBF16 = narrow(f, BF16, numPipe)                 // 16b
+    val nFP8  = Cat(0.U(8.W), narrow(f, FP8, numPipe))   // 8b -> 16b carrier
+    MuxLookup(fmt, nFP16)(Seq(FMT_FP16.U -> nFP16, FMT_BF16.U -> nBF16, FMT_FP8.U -> nFP8))
+  }
+
+  // ---- MX (OCP Microscaling) INPUT widen ------------------------------------------------------------
+  // MX = a block of 32 elements sharing one 8-bit E8M0 power-of-2 scale (value 2^(X-127)); each element is a
+  // narrow FP type. widening an MX element is STILL an edge problem: decode the element to FP32 (the same
+  // exact bit-manip `widen`, but the top exponent is a NORMAL value, not inf/nan, for the MX element types)
+  // then ADD the block-scale exponent delta to the FP32 exponent — one integer add + a couple compares. No
+  // FP unit, same ShiftRegister(numPipe) latency as widenRt, so the streaming FSM / roofline are unchanged.
+  // The precision ladder widens to ~4x: MXFP4 = 4.25 bits/elem -> ~4x fewer beats/row than FP16 at the same
+  // 512 b/cyc roofline. The per-block scale arrives as a small AGU side-stream (1 scale / 32 elements).
+  //
+  // MX element FpTypes (finite-focused; NaN codepoints not expected on the activation path). Defined locally
+  // so the shared fp_unit subproject is untouched; only expWidth/sigWidth (used by the decode) matter here.
+  val FP8E4M3  = new FpType { val expWidth = 4; val sigWidth = 3; val fpnewFormatEnum = "fpnew_pkg_snax::FP8ALT" }
+  val FP6E3M2  = new FpType { val expWidth = 3; val sigWidth = 2; val fpnewFormatEnum = "" }
+  val FP6E2M3  = new FpType { val expWidth = 2; val sigWidth = 3; val fpnewFormatEnum = "" }
+  val FP4E2M1  = new FpType { val expWidth = 2; val sigWidth = 1; val fpnewFormatEnum = "" }
+
+  // FINITE-only transport->FP32 decode: like `widen` but the all-ones exponent is a NORMAL value (MX element
+  // types have no inf; E4M3's only NaN codepoint S.1111.111 decodes as a large normal, harmless on the
+  // activation path). Exact (no rounding); numPipe delay kept for latency accounting.
+  def widenFin(h: UInt, t: FpType, numPipe: Int = 0): UInt = {
+    val sigW    = t.sigWidth
+    val biasT   = FpCommon.bias(t)
+    val sign    = h(t.width - 1)
+    val expT    = h(t.width - 2, sigW)
+    val manT    = h(sigW - 1, 0)
+    val expZero = expT === 0.U
+    val manZero = manT === 0.U
+    val SIG32   = FP32.sigWidth
+    val expNorm = (expT +& (127 - biasT).U(9.W))(7, 0)
+    val manNorm = (manT << (SIG32 - sigW))(SIG32 - 1, 0)
+    val (lz, _) = FpCommon.lzc(manT, sigW)
+    val expSub  = ((127 - biasT).U(9.W) - lz)(7, 0)
+    val manSub  = (manT << ((SIG32 - sigW + 1).U +& lz))(SIG32 - 1, 0)
+    val exp32   = Mux(expZero, Mux(manZero, 0.U(8.W), expSub), expNorm)
+    val man32   = Mux(expZero, Mux(manZero, 0.U(SIG32.W), manSub), manNorm)
+    ShiftRegister(Cat(sign, exp32, man32), numPipe)
+  }
+
+  // widen an MX element by its block's E8M0 scale: FP32(element) then exponent += (scale - 127).
+  def widenMX(elem: UInt, scaleE8M0: UInt, t: FpType, numPipe: Int = 0): UInt = {
+    val w        = widenFin(elem, t, 0) // exact FP32 element (no scale yet), combinational
+    val sign     = w(31); val exp = w(30, 23); val man = w(22, 0)
+    val elemZero = (exp === 0.U) && (man === 0.U)
+    val adj      = scaleE8M0.zext - 127.S           // E8M0 bias 127 -> signed exponent delta
+    val expExt   = exp.zext + adj                   // ~10-bit signed
+    val ovf      = expExt > 254.S
+    val udf      = expExt < 1.S                      // <= 0 -> flush to zero (documented MX-subnormal approx)
+    val expOut   = Mux(ovf, 255.U(8.W), Mux(udf, 0.U(8.W), expExt(7, 0)))
+    val manOut   = Mux(ovf || udf, 0.U(23.W), man)
+    val out      = Mux(elemZero || udf, Cat(sign, 0.U(31.W)),
+                       Mux(ovf, Cat(sign, "h7F800000".U(31.W)), Cat(sign, expOut, manOut)))
+    ShiftRegister(out, numPipe)
+  }
+
+  // 3-bit runtime fmt: 0/1/2 = plain FP16/BF16/FP8 (scale ignored -> widenRt); 3..7 = MX element types.
+  val FMT_MXFP8_E5M2 = 3
+  val FMT_MXFP8_E4M3 = 4
+  val FMT_MXFP6_E3M2 = 5
+  val FMT_MXFP6_E2M3 = 6
+  val FMT_MXFP4_E2M1 = 7
+  def isMX(fmt: UInt): Bool = fmt >= FMT_MXFP8_E5M2.U
+
+  // ---- MX (OCP Microscaling) OUTPUT: derive the shared block scale + quantize each element -----------
+  // narrowMX for a 32-element block = (1) a block-max-exponent reduction over the 32 FP32 values -> the shared
+  // E8M0 scale = maxExp - emaxElem (OCP: the scale aligns the block's largest magnitude to the element's max
+  // normal), (2) per element divide by 2^(scale-127) (exponent subtract) then RNE-narrow to the element type.
+  // The block-max is a small fixed combinational/pipelined tree over the beat's lanes, so the writer still
+  // drains 1 beat/cycle (roofline preserved). emaxElem = the element format's max NORMAL unbiased exponent
+  // (E5M2=15, E4M3=8, E3M2=4, E2M3=2, E2M1=2), passed by the caller.
+  // block-scale over the FP32 lanes of one MX block (max biased-exponent - emaxElem, clamped >= 0)
+  def blockScaleE8M0(block: Seq[UInt], emaxElem: Int): UInt = {
+    val maxExp = block.map(_(30, 23)).reduceLeft((a, b) => Mux(a >= b, a, b))
+    Mux(maxExp > emaxElem.U, maxExp - emaxElem.U, 0.U(8.W))
+  }
+  // quantize one FP32 value by the block's E8M0 scale into the narrow element type (RNE via `narrow`; FTZ on
+  // underflow after the scale subtract).
+  def narrowMX(f: UInt, scaleE8M0: UInt, t: FpType, numPipe: Int = 0): UInt = {
+    val sign   = f(31); val eX = f(30, 23); val man = f(22, 0)
+    val adj    = scaleE8M0.zext - 127.S        // scale-127
+    val eShift = eX.zext - adj                 // divide by 2^(scale-127): exponent -= (scale-127)
+    val scaled = Mux(eShift < 1.S, Cat(sign, 0.U(31.W)),
+                     Mux(eShift > 254.S, Cat(sign, 254.U(8.W), man), Cat(sign, eShift(7, 0), man)))
+    narrow(scaled, t, numPipe)                 // RNE to the narrow element grid
+  }
+
+  def widenMXRt(carrier: UInt, scaleE8M0: UInt, fmt: UInt, numPipe: Int = 0): UInt =
+    MuxLookup(fmt, widenRt(carrier, fmt, numPipe))(Seq(
+      FMT_MXFP8_E5M2.U -> widenMX(carrier(7, 0), scaleE8M0, FP8,     numPipe),
+      FMT_MXFP8_E4M3.U -> widenMX(carrier(7, 0), scaleE8M0, FP8E4M3, numPipe),
+      FMT_MXFP6_E3M2.U -> widenMX(carrier(5, 0), scaleE8M0, FP6E3M2, numPipe),
+      FMT_MXFP6_E2M3.U -> widenMX(carrier(5, 0), scaleE8M0, FP6E2M3, numPipe),
+      FMT_MXFP4_E2M1.U -> widenMX(carrier(3, 0), scaleE8M0, FP4E2M1, numPipe)
+    ))
 }
 
 /** Parses the op-set list shared by the SIMD extensions. Each entry is "<OP>_<PRECISION>" where PRECISION is the

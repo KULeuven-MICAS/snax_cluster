@@ -106,11 +106,82 @@ int32_t snax_xdma_multicast_1d_full_address(uint64_t src, uint64_t* dst,
 int32_t snax_xdma_multicast_1d(void* src, void** dst, uint32_t dst_num,
                                uint32_t size);
 
-// Extension
-int32_t snax_xdma_enable_src_ext(uint8_t ext, uint32_t* csr_value);
-int32_t snax_xdma_disable_src_ext(uint8_t ext);
-int32_t snax_xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value);
-int32_t snax_xdma_disable_dst_ext(uint8_t ext);
+// Extension enable/disable.
+// INLINE (was an out-of-line .o call) so a compile-time-constant `ext` -- how the apps call these, e.g.
+// READER_EXT_STREAMMAP -- constant-folds the prefix-sum slot AND each parameter write to a single direct
+// `csrw`. Out-of-line, `ext` is a runtime arg, so the parameter address `csr_offset+i` is non-constant and
+// every ext-CSR write falls to the csrw_ss jump-table (.rodata load + indirect jump -- the dominant xDMA
+// CSR-config cost). The switch below has CONSTANT-address arms, so when the slot is constant (constant ext)
+// it collapses to one folded csrw; when ext is runtime it degrades gracefully to a small jump on the slot.
+__attribute__((always_inline)) static inline void snax_xdma_src_ext_csr_write(uint32_t slot, uint32_t val) {
+    switch (slot) {  // XDMA_SRC_EXT_CSR_NUM slots; arms are compile-time-constant addresses
+        case 0: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 0, val); break;
+        case 1: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 1, val); break;
+        case 2: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 2, val); break;
+        case 3: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 3, val); break;
+        case 4: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 4, val); break;
+        case 5: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 5, val); break;
+        case 6: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 6, val); break;
+        case 7: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 7, val); break;
+        case 8: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 8, val); break;
+        case 9: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 9, val); break;
+        // slots 10..16 hold the runtime-precision extensions (StreamMapRt 10-12,
+        // StreamElementwiseRt 13-14, StreamReduceRt 15-16). Without these arms their CSRs
+        // silently fall through to default -> the ext sees all-zero config (operandCount=1,
+        // fmt=0) and the task deadlocks. Keep this covering XDMA_SRC_EXT_CSR_NUM slots.
+        case 10: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 10, val); break;
+        case 11: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 11, val); break;
+        case 12: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 12, val); break;
+        case 13: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 13, val); break;
+        case 14: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 14, val); break;
+        case 15: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 15, val); break;
+        case 16: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 16, val); break;
+        default: break;
+    }
+}
+__attribute__((always_inline)) static inline int32_t snax_xdma_enable_src_ext(uint8_t ext,
+                                                                              uint32_t* csr_value) {
+    if (ext >= XDMA_SRC_EXT_NUM) return -1;
+    static const uint8_t custom_csr_list[XDMA_SRC_EXT_NUM] = XDMA_SRC_EXT_CUSTOM_CSR_NUM;
+    uint32_t slot = 0;
+    for (uint8_t i = 0; i < ext; i++) slot += custom_csr_list[i];
+    snax_write_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR,
+                            snax_read_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR) | (1u << ext));
+    for (uint8_t i = 0; i < custom_csr_list[ext]; i++) snax_xdma_src_ext_csr_write(slot + i, csr_value[i]);
+    return 0;
+}
+__attribute__((always_inline)) static inline int32_t snax_xdma_disable_src_ext(uint8_t ext) {
+    if (ext >= XDMA_SRC_EXT_NUM) return 0;
+    snax_write_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR,
+                            snax_read_xdma_cfg_reg(XDMA_SRC_ENABLE_PTR) & ~(1u << ext));
+    return 0;
+}
+__attribute__((always_inline)) static inline void snax_xdma_dst_ext_csr_write(uint32_t slot, uint32_t val) {
+    switch (slot) {  // XDMA_DST_EXT_CSR_NUM slots
+        case 0: snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR + 0, val); break;
+        case 1: snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR + 1, val); break;
+        case 2: snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR + 2, val); break;
+        case 3: snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR + 3, val); break;
+        default: break;
+    }
+}
+__attribute__((always_inline)) static inline int32_t snax_xdma_enable_dst_ext(uint8_t ext,
+                                                                              uint32_t* csr_value) {
+    if (ext >= XDMA_DST_EXT_NUM) return -1;
+    static const uint8_t custom_csr_list[XDMA_DST_EXT_NUM] = XDMA_DST_EXT_CUSTOM_CSR_NUM;
+    uint32_t slot = 0;
+    for (uint8_t i = 0; i < ext; i++) slot += custom_csr_list[i];
+    snax_write_xdma_cfg_reg(XDMA_DST_ENABLE_PTR,
+                            snax_read_xdma_cfg_reg(XDMA_DST_ENABLE_PTR) | (1u << ext));
+    for (uint8_t i = 0; i < custom_csr_list[ext]; i++) snax_xdma_dst_ext_csr_write(slot + i, csr_value[i]);
+    return 0;
+}
+__attribute__((always_inline)) static inline int32_t snax_xdma_disable_dst_ext(uint8_t ext) {
+    if (ext >= XDMA_DST_EXT_NUM) return 0;
+    snax_write_xdma_cfg_reg(XDMA_DST_ENABLE_PTR,
+                            snax_read_xdma_cfg_reg(XDMA_DST_ENABLE_PTR) & ~(1u << ext));
+    return 0;
+}
 
 // Start
 static inline uint32_t snax_xdma_start() {

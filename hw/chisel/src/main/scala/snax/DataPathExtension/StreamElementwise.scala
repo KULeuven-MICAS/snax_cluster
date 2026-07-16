@@ -32,7 +32,8 @@ class HasStreamElementwise(
   op:           Seq[String], // each entry "<OP>_<PRECISION>", e.g. "MUL_FP16"
   elementWidth: Int, // transport element width (bits); must match the op-set precision
   dataWidth:    Int = 512,
-  fpPipe:       Int = 1 // internal pipeline depth of each FP unit (timing cut knob)
+  fpPipe:       Int = 1, // internal pipeline depth of each FP unit (timing cut knob)
+  accBanks:     Int = 0  // per-lane partial banks (0 = auto = nextPow2(accLat+1) to break the recurrence; 1 = legacy)
 ) extends HasDataPathExtension {
   private val (ops, transport) =
     OpSpec.parse(op, Set("MUL", "ADD", "FMA"), "HasStreamElementwise") // validate op names + precision
@@ -48,7 +49,7 @@ class HasStreamElementwise(
     )
 
   def instantiate(clusterName: String): StreamElementwise =
-    Module(new StreamElementwise(computeLanes, op, elementWidth, fpPipe) {
+    Module(new StreamElementwise(computeLanes, op, elementWidth, fpPipe, accBanks) {
       override def desiredName = clusterName + namePostfix
     })
 }
@@ -58,6 +59,7 @@ class StreamElementwise(
   op:                Seq[String] = Seq("MUL_FP16", "ADD_FP16"),
   elementWidth:      Int         = 16,
   fpPipeParam:       Int         = 1,
+  accBanksParam:     Int         = 0,
   pipelined:         Boolean     = true
 )(implicit
   extensionParam:    DataPathExtensionParam
@@ -100,6 +102,15 @@ class StreamElementwise(
   val fpPipe  = if (pipelined) fpPipeParam else 0
   val laneLat = if (pipelined) 1 else 0
   val accLat  = laneLat + 2 * fpPipe
+  // accumulator banking (see StreamReduce §banking): round-robin nBanks per-lane partials so the beat-to-beat
+  // RAW recurrence is spaced nBanks beats apart; nBanks*subCycles >= accLat+1 => gap 0 => 1 beat/cycle at
+  // computeLanes=lanes. accBanks=1 = legacy single partial. No tree fold here, so the banks are combined
+  // combinationally into the output beat at row end (no fold serialization needed).
+  val nBanks =
+    if (accBanksParam <= 0) (1 << log2Ceil(accLat + 1))
+    else if (accBanksParam == 1) 1
+    else (1 << log2Ceil(accBanksParam))
+  def bankOf(idx: UInt): UInt = if (nBanks == 1) 0.U(1.W) else idx(log2Ceil(nBanks) - 1, 0)
   private def sr[T <: Data](u: T): T = if (pipelined) RegNext(u) else u
 
   def fmul(a: UInt, b: UInt):            UInt = {
@@ -148,8 +159,9 @@ class StreamElementwise(
     Mux(firstAA, seedD, combined)
   }
 
-  // ---- per-lane FP32 partials ----
-  val regs = RegInit(VecInit(Seq.fill(lanes)(0.U(accWidth.W))))
+  // ---- per-lane FP32 partials (nBanks per lane, round-robin by beat) ----
+  val regs = RegInit(VecInit(Seq.fill(lanes * nBanks)(0.U(accWidth.W))))
+  def bankIdx(bank: UInt, laneSel: UInt): UInt = (bank * lanes.U + laneSel)(log2Ceil(lanes * nBanks) - 1, 0)
 
   // ---- streaming time-mux + pipeline FSM --------------------------------------------------------------
   // Continuous-issue rewrite (was: per input beat accept -> issue subCycles -> DRAIN accLat idle -> re-accept,
@@ -165,13 +177,16 @@ class StreamElementwise(
   // boundaries need no gap: the next row's beat 0 SEEDS, it doesn't read regs). gap==0 => fully streamed.
   // A credit counter caps in-flight + queued rows to the queue depth (the FP pipeline has no stall input,
   // so it keeps draining after issue stops). CONTRACT: ext_start_i only asserts when idle (ext_busy_o low).
-  val gap      = scala.math.max(0, accLat + 1 - subCycles) // inter-beat recurrence stall (compile-time)
-  val beatSpan = subCycles + gap                           // issue cycles allotted per operand beat
+  val gap      = scala.math.max(0, accLat + 1 - nBanks * subCycles) // 0 when banking spaces reuse >= accLat+1
+  val beatSpan = subCycles + gap                                    // issue cycles allotted per operand beat
 
   val inFlightMax = (accLat + beatSpan - 1) / beatSpan + 1 // rows still draining after issue stops
-  // minimum credit-safe depth (see StreamMap): the credit caps outstanding, so the queue never overflows
-  // below inFlightMax; slack only helps under sustained backpressure the fast writer never causes.
-  val Qdepth      = scala.math.max(2, inFlightMax)
+  // Cover the STEADY-STATE credit round-trip (accept -> issue -> accLat retire -> Queue enq->deq -> credit++,
+  // plus downstream ready latency), not just the drain-after-stop: at small subCycles the round-trip exceeds
+  // inFlightMax and the credit counter starves the producer below the roofline (see StreamMap). Area is not
+  // the constraint at cl=lanes.
+  val creditRoundTrip = accLat + 4
+  val Qdepth = scala.math.max(2, scala.math.max(inFlightMax, (creditRoundTrip + beatSpan - 1) / beatSpan + 1))
   val outQ        = Module(new Queue(UInt((lanes * elementWidth).W), entries = Qdepth))
 
   // index of lane (s*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
@@ -187,7 +202,8 @@ class StreamElementwise(
   val credit   = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
 
   val lastSub        = sub === (subCycles - 1).U
-  val firstBeat      = beatIdx === 0.U
+  val firstInBank    = beatIdx < nBanks.U   // first nBanks beats each SEED their bank; later beats accumulate
+  val issueBank      = bankOf(beatIdx)      // bank of the beat currently being issued
   val lastBeatInRow  = beatIdx === (operandCount - 1.U)
   val nextIsRowStart = nextIdx === 0.U // next accepted beat seeds a new row => no gap
   val overlapOK      = if (gap == 0) true.B else nextIsRowStart
@@ -204,7 +220,7 @@ class StreamElementwise(
   val issuing = haveBeat
   val res     = Wire(Vec(computeLanes, UInt(accWidth.W)))
   for (j <- 0 until computeLanes)
-    res(j) := accLane(inLanes(li(sub, j)), regs(li(sub, j)), firstBeat)
+    res(j) := accLane(inLanes(li(sub, j)), regs(bankIdx(issueBank, li(sub, j))), firstInBank)
 
   // A valid-pulse pipeline CLEARED by ext_start_i, so a row-emit still in flight from the previous task
   // cannot fire — and push an unreserved beat past the credit reset — after the controller restarts the
@@ -220,20 +236,39 @@ class StreamElementwise(
 
   // ---- retire: fold the partials into regs; assemble the row result at its last-sub retire ----
   val subRetire     = ShiftRegister(sub, accLat)
+  val bankRetire    = ShiftRegister(issueBank, accLat) // bank of the beat retiring this cycle
   val retireValid   = ShiftRegister(issuing, accLat, false.B, true.B)
   val rowLastIssue  = issuing && lastSub && lastBeatInRow
   val rowLastRetire = clrPipe(rowLastIssue, accLat)
-  val outNow        = WireInit(regs)
+  val outNowBanked  = WireInit(regs)                   // all nBanks*lanes partials, retiring group overlaid
   when(retireValid) {
     for (j <- 0 until computeLanes) {
-      regs(li(subRetire, j))   := res(j)
-      outNow(li(subRetire, j)) := res(j)
+      regs(bankIdx(bankRetire, li(subRetire, j)))         := res(j)
+      outNowBanked(bankIdx(bankRetire, li(subRetire, j))) := res(j)
     }
   }
-  // narrow each FP32 partial to transport (lane 0 low), captured combinationally so the whole beat is
-  // grabbed before the next row's beat-0 seed (one cycle later) overwrites lane 0.
+  // collapse the nBanks per-lane partials into the per-lane result (masked: banks unwritten when
+  // operandCount<nBanks contribute the op identity, 1.0 for MUL / +0.0 for ADD). MUL and ADD are associative
+  // => banking is value-preserving within tolerance. Combinational (no fold), captured at rowLastRetire.
+  val collapsed = Wire(Vec(lanes, UInt(accWidth.W)))
+  if (nBanks == 1) {
+    for (L <- 0 until lanes) collapsed(L) := outNowBanked(L)
+  } else {
+    val FP32_ONE   = "h3F800000".U(accWidth.W)
+    val validBanks = Mux(operandCount > nBanks.U, nBanks.U, operandCount)
+    def cAdd(x: UInt, y: UInt): UInt = { val m = Module(new FpAdd(FP32, FP32, FP32, 0)); m.io.in_a := x; m.io.in_b := y; m.io.out }
+    def cMul(x: UInt, y: UInt): UInt = { val m = Module(new FpMul(FP32, FP32, FP32, 0)); m.io.in_a := x; m.io.in_b := y; m.io.out }
+    def cCombine(x: UInt, y: UInt): UInt =
+      if (bothOps) Mux(opcode === OP_ADD, cAdd(x, y), cMul(x, y))
+      else if (hasAdd) cAdd(x, y) else cMul(x, y)
+    val identity = if (bothOps) Mux(opcode === OP_ADD, FP32_ZERO, FP32_ONE) else if (hasAdd) FP32_ZERO else FP32_ONE
+    for (L <- 0 until lanes) {
+      val bankVals = (0 until nBanks).map(b => Mux(b.U < validBanks, outNowBanked(b * lanes + L), identity))
+      collapsed(L) := bankVals.reduceLeft((x, y) => cCombine(x, y))
+    }
+  }
   outQ.io.enq.valid := rowLastRetire && !ext_start_i // no stale push on the restart cycle
-  outQ.io.enq.bits  := Cat((0 until lanes).map(i => narrow(outNow(i))).reverse)
+  outQ.io.enq.bits  := Cat((0 until lanes).map(i => narrow(collapsed(i))).reverse)
   assert(!outQ.io.enq.valid || outQ.io.enq.ready, "StreamElementwise: output queue overflow (credit bug)")
   outQ.io.deq.ready := ext_data_o.ready
   ext_data_o.valid  := outQ.io.deq.valid

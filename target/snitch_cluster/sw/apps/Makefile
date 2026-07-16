@@ -55,6 +55,11 @@ SUBDIRS += snax-xdma-rmsnorm-multirow
 SUBDIRS += snax-xdma-rmsnorm-fold
 SUBDIRS += snax-xdma-softmax-multirow
 SUBDIRS += snax-xdma-softmax-fold
+SUBDIRS += snax-xdma-softmax-rt
+SUBDIRS += snax-xdma-rmsnorm-rt
+SUBDIRS += snax-xdma-silu-rt
+SUBDIRS += snax-xdma-swiglu-rt
+SUBDIRS += snax-xdma-rope-rt
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
 SUBDIRS += snax-xdma-memset

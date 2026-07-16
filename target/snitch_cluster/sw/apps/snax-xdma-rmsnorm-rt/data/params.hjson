@@ -1,0 +1,6 @@
+// Copyright 2025 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    N: 256, // row length; power of two, multiple of 64 (FP8 packs 64/beat, FP16 32/beat)
+}

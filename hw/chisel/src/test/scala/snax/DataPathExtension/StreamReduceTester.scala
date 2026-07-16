@@ -62,9 +62,9 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     * computeLanes>0 exercises the time-mux FSM (path B); ops selects which reductions are built. */
   def runReduce(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32,
                 ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16"),
-                fpPipe: Int = 1, treePipe: Int = 1): Float = {
+                fpPipe: Int = 1, treePipe: Int = 1, foldPar: Int = 0): Float = {
     var result: Float = 0.0f
-    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16, fpPipe = fpPipe, treePipe = treePipe)))
+    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16, fpPipe = fpPipe, treePipe = treePipe, foldParallel = foldPar)))
       // Serial build: fpnew blackboxes (lzc.sv UNOPTFLAT) trip a Verilator PCH parallel-build race.
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
         dut.io.csr_i(0).poke(beats.length.U)
@@ -142,11 +142,11 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     * scalar per row -- no Chisel change. Distinct per-row data lets the check catch a broken
     * row-boundary re-init: row r's scalar must equal row r's own reduction, not a running total. */
   def runReduceMultiRow(op: Int, rows: Seq[Seq[Seq[Int]]], computeLanes: Int = 32,
-                        ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Seq[Float] = {
+                        ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16"), foldPar: Int = 0): Seq[Float] = {
     val beatsPerRow = rows.head.length
     val allBeats    = rows.flatten // rows*beatsPerRow input beats
     val results     = scala.collection.mutable.ArrayBuffer[Float]()
-    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
+    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16, foldParallel = foldPar)))
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
         dut.io.csr_i(0).poke(beatsPerRow.U)
         dut.io.csr_i(1).poke(op.U)
@@ -189,7 +189,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
 
   def checkOp(op: Int, opName: String, nBeats: Int, mag: Int, computeLanes: Int = 32,
               ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16"),
-              fpPipe: Int = 1, treePipe: Int = 1): Unit = {
+              fpPipe: Int = 1, treePipe: Int = 1, foldPar: Int = 0): Unit = {
     val rng   = new Random(0x5EED + op)
     // FP16-representable inputs; magnitude kept small enough that the reduction stays in FP16 range
     // (SUMSQ over nBeats*32 squared terms must not overflow 65504).
@@ -201,7 +201,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     val golden = goldenScalar(op, vals)
     // narrow golden to FP16 grid for a fair compare with the HW (which narrows before output)
     val goldenF16 = f16bitsToF32(f32ToF16bits(golden))
-    val hw        = runReduce(op, beats, computeLanes, ops, fpPipe, treePipe)
+    val hw        = runReduce(op, beats, computeLanes, ops, fpPipe, treePipe, foldPar)
     val tol       = math.max(math.abs(goldenF16) * 0.004f, 0.05f) // ~0.4% rel + small abs floor
     val err       = math.abs(hw - goldenF16)
     println(s"[StreamReduce:$opName cl=$computeLanes ops=${ops.mkString}] beats=$nBeats golden=$goldenF16 hw=$hw err=$err tol=$tol")
@@ -211,7 +211,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   /** Multi-row: nRows independent per-row reductions in one dispatch. Each row gets its OWN random data
     * so a stale carry across the row boundary (broken re-init) shows up as a wrong per-row scalar. */
   def checkMultiRow(op: Int, opName: String, nRows: Int, beatsPerRow: Int, mag: Int, computeLanes: Int = 32,
-                    ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Unit = {
+                    ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16"), foldPar: Int = 0): Unit = {
     val rng  = new Random(0x3A1 + op)
     val rows = Seq.tabulate(nRows) { _ =>
       Seq.fill(beatsPerRow)(Seq.fill(lanes) {
@@ -219,7 +219,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
         f32ToF16bits(f)
       })
     }
-    val hw = runReduceMultiRow(op, rows, computeLanes, ops)
+    val hw = runReduceMultiRow(op, rows, computeLanes, ops, foldPar)
     assert(hw.length == nRows, s"$opName multirow: expected $nRows scalars, got ${hw.length}")
     for (r <- 0 until nRows) {
       val vals      = rows(r).flatten.map(f16bitsToF32)
@@ -286,10 +286,10 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   /** Tap mode (op | 0x100): the N input beats pass through unchanged, then one trailing scalar beat is
     * emitted (output = N+1 beats). The harness inserts -||> register cuts on both data ports, so use the
     * fork-based producer/consumer handshake. Returns all N+1 output beats (full 512-bit each). */
-  def runReduceTap(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32): Seq[BigInt] = {
+  def runReduceTap(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32, foldPar: Int = 0): Seq[BigInt] = {
     val outs = scala.collection.mutable.ArrayBuffer[BigInt]()
     test(new DataPathExtensionHarness(
-      new HasStreamReduce(computeLanes = computeLanes, op = Seq("FMA_FP16", "MAX_FP16"), elementWidth = 16)))
+      new HasStreamReduce(computeLanes = computeLanes, op = Seq("FMA_FP16", "MAX_FP16"), elementWidth = 16, foldParallel = foldPar)))
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
         dut.io.csr_i(0).poke(beats.length.U)
         dut.io.csr_i(1).poke((op | 0x100).U) // tap bit[8]
@@ -322,13 +322,13 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     outs.toSeq
   }
 
-  def checkTap(op: Int, opName: String, nBeats: Int, mag: Int, computeLanes: Int = 32): Unit = {
+  def checkTap(op: Int, opName: String, nBeats: Int, mag: Int, computeLanes: Int = 32, foldPar: Int = 0): Unit = {
     val rng   = new Random(0x7A9 + op)
     val beats = Seq.fill(nBeats)(Seq.fill(lanes) {
       val f = (rng.between(-mag, mag) + rng.nextInt(4) * 0.25f)
       f32ToF16bits(f)
     })
-    val outs = runReduceTap(op, beats, computeLanes)
+    val outs = runReduceTap(op, beats, computeLanes, foldPar)
     assert(outs.length == nBeats + 1, s"$opName tap: expected ${nBeats + 1} beats, got ${outs.length}")
     for (i <- 0 until nBeats)
       assert(outs(i) == packBeat(beats(i)), s"$opName tap: passthrough beat $i changed")
@@ -398,5 +398,22 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   }
   "StreamReduce_tap_busy_cl32" should "return busy_o low after a tap task (parallel)" in {
     runTasksCheckBusy(32, Seq((1, true, 4), (0, false, 4), (1, true, 4)))
+  }
+
+  // ---- foldParallel: fully-pipelined parallel reduce tree (same balanced pairwise order => same goldens),
+  // plus multi-row rows PIPELINING through the fold and tap scalar-before-next-row ordering ----
+  "StreamReduce_par_MAX"    should "match with the parallel tree" in { checkOp(0, "MAX", 8, 32, foldPar = 1) }
+  "StreamReduce_par_ADD"    should "match with the parallel tree" in { checkOp(1, "ADD", 8, 32, foldPar = 1) }
+  "StreamReduce_par_SUMSQ"  should "match with the parallel tree" in { checkOp(2, "SUMSQ", 8, 4, foldPar = 1) }
+  "StreamReduce_par_ADD_cl8" should "match (parallel, time-mux issue)" in {
+    checkOp(1, "ADD", 8, 32, computeLanes = 8, foldPar = 1)
+  }
+  "StreamReduce_par_SUMSQ_multirow" should "reduce each row (parallel, pipelined rows)" in {
+    checkMultiRow(2, "SUMSQ", 4, 2, 4, foldPar = 1)
+  }
+  "StreamReduce_par_ADD_multirow" should "reduce each row (parallel)" in { checkMultiRow(1, "ADD", 4, 2, 8, foldPar = 1) }
+  "StreamReduce_par_MAX_multirow" should "reduce each row (parallel)" in { checkMultiRow(0, "MAX", 4, 2, 8, foldPar = 1) }
+  "StreamReduce_par_ADD_tap" should "tap passthrough + scalar in order (parallel, serialized)" in {
+    checkTap(1, "ADD", 8, 32, foldPar = 1)
   }
 }
