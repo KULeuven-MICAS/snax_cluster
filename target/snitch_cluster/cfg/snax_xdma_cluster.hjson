@@ -189,13 +189,13 @@ Naming convention:
                 // both FP16 and FP8 stream at 1 beat/cycle (512 b/cyc). func = the activation set (NO precision
                 // tag); FP16/BF16/FP8 are ALL built via the runtime widen/narrow. Added last so the existing
                 // extensions' indices + CSR map are unchanged (this appends READER_EXT_STREAMMAPRT + its 3 CSRs).
-                HasStreamMapRt: {computeLanes: 8, func: ["LINEAR", "EXP", "SILU"], dataWidth: 512, fpPipe: 1}
+                HasStreamMapRt: {computeLanes: 8, func: ["LINEAR", "EXP", "SILU", "GELU"], dataWidth: 512, fpPipe: 1}
                 // Runtime-precision StreamElementwise + StreamReduce: complete the runtime-precision CHAIN
                 // (map|>reduce|>ew) so the WHOLE softmax/rmsnorm epilogue switches FP16/BF16/FP8 at RUNTIME
                 // (fmt CSR), not just the map. FP32-internal, built for maxLanes=64; appended last so the
                 // existing extensions' indices + CSR map are unchanged.
                 HasStreamElementwiseRt: {computeLanes: 8, dataWidth: 512, fpPipe: 1}
-                HasStreamReduceRt: {computeLanes: 8, op: ["FMA", "MAX"], dataWidth: 512, fpPipe: 1, treePipe: 1, treeLanes: 2, foldParallel: 1}
+                HasStreamReduceRt: {computeLanes: 8, op: ["FMA", "MAX", "ARGMAX"], dataWidth: 512, fpPipe: 1, treePipe: 1, treeLanes: 2, foldParallel: 1}
             }
         }
         // Xdiv_sqrt: true,
