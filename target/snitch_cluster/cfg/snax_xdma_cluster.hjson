@@ -196,6 +196,12 @@ Naming convention:
                 // existing extensions' indices + CSR map are unchanged.
                 HasStreamElementwiseRt: {computeLanes: 8, dataWidth: 512, fpPipe: 1}
                 HasStreamReduceRt: {computeLanes: 8, op: ["FMA", "MAX", "ARGMAX"], dataWidth: 512, fpPipe: 1, treePipe: 1, treeLanes: 2, foldParallel: 1}
+                // StreamCastRt: the in-transit QUANTIZER (the Cast primitive). MX/FP8 quantization is factored
+                // OUT of StreamMapRt -- activations run in BF16, cast to MX/FP8 only at the GEMM boundary. This
+                // is the WIDE (up to 128-lane MXFP4) LINEAR path: widen + per-beat E8M0 block scale + narrow,
+                // with NO activation LUT. Appended last so the existing extensions' indices + CSR map are
+                // unchanged (adds READER_EXT_STREAMCASTRT + its 1 CSR).
+                HasStreamCastRt: {dataWidth: 512, fpPipe: 1}
             }
         }
         // Xdiv_sqrt: true,

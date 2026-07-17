@@ -136,6 +136,7 @@ __attribute__((always_inline)) static inline void snax_xdma_src_ext_csr_write(ui
         case 14: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 14, val); break;
         case 15: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 15, val); break;
         case 16: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 16, val); break;
+        case 17: snax_write_xdma_cfg_reg(XDMA_SRC_EXT_CSR_PTR + 17, val); break; // StreamCastRt (1 CSR)
         default: break;
     }
 }

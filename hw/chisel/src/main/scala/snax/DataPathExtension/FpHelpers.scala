@@ -270,11 +270,25 @@ object FpHelpers {
   // the scale subtract; RNE via narrowElem).
   def narrowMX(f: UInt, scaleE8M0: UInt, t: FpType, numPipe: Int = 0): UInt = {
     val sign   = f(31); val eX = f(30, 23); val man = f(22, 0)
+    // zero (eX==0; a widened FP16/BF16 value is never FP32-subnormal, so eX==0 means exactly 0) -> zero out.
+    // WITHOUT this, an all-zero block gives blockScaleE8M0=0, and eShift = 0-(0-127) = 127 mis-scales 0.0 to a
+    // normal (1.0) -> garbage codes. The guard makes a zero/all-zero block encode as zero (verified).
+    val fZero  = eX === 0.U
     val adj    = scaleE8M0.zext - 127.S        // scale-127
     val eShift = eX.zext - adj                 // divide by 2^(scale-127): exponent -= (scale-127)
-    val scaled = Mux(eShift < 1.S, Cat(sign, 0.U(31.W)),
+    val scaled = Mux(fZero || eShift < 1.S, Cat(sign, 0.U(31.W)),
                      Mux(eShift > 254.S, Cat(sign, 254.U(8.W), man), Cat(sign, eShift(7, 0), man)))
-    narrowElem(scaled, t, numPipe)             // RNE to the narrow element grid
+    val raw    = narrowElem(scaled, t, numPipe) // RNE to the narrow element grid
+    // SATURATE overflow to max-normal. The OCP block scale aligns the block MAX to the element's top normal
+    // binade, so a max element whose mantissa rounds up past the max normal overflows. For the fpnew 8-bit grids
+    // (FP8=E5M2, FP8E4M3) the top exponent is the RESERVED inf/nan codepoint and fpnew's `narrow` EMITS inf --
+    // MX quantization must never produce inf from a finite value, so clamp exp-all-ones to max-normal. (The
+    // sub-8-bit finite MX grids use narrowFin, which already saturates and whose top exponent is a valid normal.)
+    if (t == FP8 || t == FP8E4M3) {
+      val eW = t.expWidth; val sW = t.sigWidth
+      val maxNorm = Cat(raw(eW + sW), ((1 << eW) - 2).U(eW.W), ((1 << sW) - 1).U(sW.W))
+      Mux(raw(eW + sW - 1, sW).andR, maxNorm, raw)
+    } else raw
   }
   // runtime MX narrow: FP32 -> narrow MX element (16b carrier, low bits), muxed by fmt; non-MX -> narrowRt.
   def narrowMXRt(f: UInt, scaleE8M0: UInt, fmt: UInt, numPipe: Int = 0): UInt =
