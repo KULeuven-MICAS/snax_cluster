@@ -57,7 +57,11 @@ object FpHelpers {
     val exp    = Module(new FpActivation(pipelined, true, false, false, expLutN, 256))
     exp.io.in := delta; exp.io.func := false.B; exp.io.gelu := false.B
     val lat    = if (pipelined) FpActivation.PipeLatency else 0
-    val l      = ffma(ShiftRegister(losL, lat), exp.io.out, ShiftRegister(winL, lat)) // losL*exp(delta)+winL
+    val losLA  = ShiftRegister(losL, lat); val winLA = ShiftRegister(winL, lat)
+    // gate the loser's contribution: when its l is 0 (the monoid identity or an empty shard) it adds exactly
+    // the winner -- avoids 0*exp(-huge) = 0*inf-garbage = NaN at the exp LUT's underflow edge. A real shard's
+    // l = Sexp >= 1, so l==0 uniquely tags the identity.
+    val l      = Mux(losLA === FP32_ZERO, winLA, ffma(losLA, exp.io.out, winLA)) // losL*exp(delta)+winL
     (ShiftRegister(m, lat), l, lat)
   }
 
