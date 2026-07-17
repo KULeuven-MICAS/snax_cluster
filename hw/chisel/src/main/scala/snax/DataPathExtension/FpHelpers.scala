@@ -203,16 +203,56 @@ object FpHelpers {
     val maxExp = block.map(_(30, 23)).reduceLeft((a, b) => Mux(a >= b, a, b))
     Mux(maxExp > emaxElem.U, maxExp - emaxElem.U, 0.U(8.W))
   }
-  // quantize one FP32 value by the block's E8M0 scale into the narrow element type (RNE via `narrow`; FTZ on
-  // underflow after the scale subtract).
+  // Custom bit-manip FP32 -> narrow-FP (RNE, saturate-to-max-normal, FTZ) for the FINITE MX element types
+  // (E3M2/E2M3/E2M1) that fpnew's `narrow` can't emit. The reverse of widenFin: rebias, RNE-round the mantissa
+  // to sigW bits (carry may bump the exponent), saturate (finite MX has no inf/nan so the top exp is a normal)
+  // and flush-to-zero on underflow. Exact for the common case; matches a Scala RNE reference within 1 code.
+  def narrowFin(f: UInt, t: FpType, numPipe: Int = 0): UInt = {
+    val expW = t.expWidth; val sigW = t.sigWidth; val biasT = FpCommon.bias(t)
+    val sign  = f(31); val eX = f(30, 23); val man23 = f(22, 0)
+    val fZero = (eX === 0.U) && (man23 === 0.U)
+    val eT0   = eX.zext -& (127 - biasT).S       // target biased exp (signed)
+    val drop  = 23 - sigW
+    val kept  = man23(22, drop)                  // top sigW bits
+    val rnd   = man23(drop - 1)                  // round bit
+    val sticky = if (drop >= 2) man23(drop - 2, 0).orR else false.B
+    val roundUp = rnd && (sticky || kept(0))     // RNE
+    val manSum = Cat(0.U(1.W), kept) +& roundUp  // sigW+1 bits
+    val carry  = manSum(sigW)
+    val manF   = manSum(sigW - 1, 0)
+    val eT     = Mux(carry, eT0 + 1.S, eT0)
+    val maxExp = (1 << expW) - 1                  // finite MX top exp is a normal
+    val ovf = eT > maxExp.S
+    val udf = eT < 1.S                            // subnormal not modeled -> FTZ
+    val expOut = Mux(ovf, maxExp.U(expW.W), Mux(udf, 0.U(expW.W), eT(expW - 1, 0)))
+    val manOut = Mux(ovf, ((1 << sigW) - 1).U(sigW.W), Mux(udf, 0.U(sigW.W), manF))
+    val body   = Cat(sign, expOut, manOut)
+    ShiftRegister(Mux(fZero || udf, Cat(sign, 0.U((expW + sigW).W)), body), numPipe)
+  }
+  // narrow one FP32 element to an MX element type: fpnew for the 8-bit grids (E5M2/E4M3), narrowFin for the
+  // finite sub-8-bit MX grids (E3M2/E2M3/E2M1).
+  def narrowElem(f: UInt, t: FpType, numPipe: Int = 0): UInt =
+    if (t == FP8 || t == FP8E4M3) narrow(f, t, numPipe) else narrowFin(f, t, numPipe)
+
+  // quantize one FP32 value by the block's E8M0 scale into the narrow element type (FTZ on underflow after
+  // the scale subtract; RNE via narrowElem).
   def narrowMX(f: UInt, scaleE8M0: UInt, t: FpType, numPipe: Int = 0): UInt = {
     val sign   = f(31); val eX = f(30, 23); val man = f(22, 0)
     val adj    = scaleE8M0.zext - 127.S        // scale-127
     val eShift = eX.zext - adj                 // divide by 2^(scale-127): exponent -= (scale-127)
     val scaled = Mux(eShift < 1.S, Cat(sign, 0.U(31.W)),
                      Mux(eShift > 254.S, Cat(sign, 254.U(8.W), man), Cat(sign, eShift(7, 0), man)))
-    narrow(scaled, t, numPipe)                 // RNE to the narrow element grid
+    narrowElem(scaled, t, numPipe)             // RNE to the narrow element grid
   }
+  // runtime MX narrow: FP32 -> narrow MX element (16b carrier, low bits), muxed by fmt; non-MX -> narrowRt.
+  def narrowMXRt(f: UInt, scaleE8M0: UInt, fmt: UInt, numPipe: Int = 0): UInt =
+    MuxLookup(fmt, narrowRt(f, fmt, numPipe))(Seq(
+      FMT_MXFP8_E5M2.U -> Cat(0.U(8.W), narrowMX(f, scaleE8M0, FP8,     numPipe)),
+      FMT_MXFP8_E4M3.U -> Cat(0.U(8.W), narrowMX(f, scaleE8M0, FP8E4M3, numPipe)),
+      FMT_MXFP6_E3M2.U -> Cat(0.U(10.W), narrowMX(f, scaleE8M0, FP6E3M2, numPipe)),
+      FMT_MXFP6_E2M3.U -> Cat(0.U(10.W), narrowMX(f, scaleE8M0, FP6E2M3, numPipe)),
+      FMT_MXFP4_E2M1.U -> Cat(0.U(12.W), narrowMX(f, scaleE8M0, FP4E2M1, numPipe))
+    ))
 
   def widenMXRt(carrier: UInt, scaleE8M0: UInt, fmt: UInt, numPipe: Int = 0): UInt =
     MuxLookup(fmt, widenRt(carrier, fmt, numPipe))(Seq(

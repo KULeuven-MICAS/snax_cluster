@@ -95,6 +95,36 @@ class MxWidenTester extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
+  // narrowMXRt -> widenMXRt round-trip (exercises narrowFin for the sub-8-bit MX grids E3M2/E2M3/E2M1)
+  private class MxRT(n: Int, fmtc: Int, emax: Int) extends Module with RequireAsyncReset {
+    val io = IO(new Bundle { val in = Input(Vec(n, UInt(32.W))); val out = Output(Vec(n, UInt(32.W))) })
+    val scale = blockScaleE8M0((0 until n).map(io.in(_)), emax)
+    for (i <- 0 until n) io.out(i) := widenMXRt(narrowMXRt(io.in(i), scale, fmtc.U, 0), scale, fmtc.U, 0)
+  }
+  // (fmt, sigW, emax) for the sub-8-bit MX formats
+  private val subFormats = Seq((FMT_MXFP6_E3M2, 2, 4), (FMT_MXFP6_E2M3, 3, 2), (FMT_MXFP4_E2M1, 1, 2))
+  for ((fmtc, sigW, emax) <- subFormats) {
+    s"narrowMX_sub_fmt$fmtc" should s"round-trip within the block quantization step (sigW=$sigW)" in {
+      test(new MxRT(32, fmtc, emax)) { dut =>
+        val rng = new scala.util.Random(0xb0 + fmtc)
+        var worstRel = 0.0
+        for (trial <- 0 until 8) {
+          val xs = Seq.fill(32)((rng.between(-4.0, 4.0)).toFloat)
+          for (i <- 0 until 32) dut.io.in(i).poke(f32bits(xs(i)).U)
+          val maxAbs = xs.map(x => math.abs(x.toDouble)).max
+          val step   = maxAbs / (1 << sigW) // block quantization step at the shared scale
+          for (i <- 0 until 32) {
+            val recon = f32(dut.io.out(i).peekInt())
+            val e = math.abs(recon - xs(i))
+            if (maxAbs > 0 && e / maxAbs > worstRel) worstRel = e / maxAbs
+            assert(e <= step * 1.05 + 1e-6, s"fmt$fmtc lane $i x=${xs(i)} recon=$recon step=$step")
+          }
+        }
+        println(f"[narrowMX fmt$fmtc sigW=$sigW] round-trip worst err / blockMax = $worstRel%.3f (step ~ 2^-$sigW)")
+      }
+    }
+  }
+
   for ((fmt, expW, sigW, bias, nb) <- formats) {
     val tag = s"E${expW}M${sigW}"
     s"widenMX_$tag" should s"decode $tag * 2^(scale-127) exactly" in {

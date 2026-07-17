@@ -55,7 +55,7 @@ class StreamMapRt(
 
   import FpHelpers._
 
-  val maxLanes     = extensionParam.dataWidth / 8 // 64: FP8 element count = the max lanes/beat
+  val maxLanes     = extensionParam.dataWidth / 4 // 128: MXFP4 element count = the max lanes/beat (4x FP16)
   val computeLanes = if (computeLanesParam > maxLanes) maxLanes else computeLanesParam
   require(maxLanes % computeLanes == 0, "StreamMapRt: maxLanes must be a multiple of computeLanes")
   require(isPow2(computeLanes), "StreamMapRt: computeLanes must be a power of two (runtime-variable subCycles shift)")
@@ -79,12 +79,14 @@ class StreamMapRt(
   val fmt      = actField(4, 2) // 0=FP16,1=BF16,2=FP8; 3..7=MX (E5M2/E4M3/E3M2/E2M3/E2M1). 3b (was 2b);
   //                              backward-compatible: FP16/FP8 apps set bit4=0 so codes 0..3 are unchanged.
   val mxScale  = actField(12, 5) // MX shared E8M0 block scale (per-task here; per-block AGU side-stream = TODO)
-  // 8-bit-element formats reuse the FP8 slicer/packer (MXFP8); MXFP6/MXFP4 need a denser slicer (maxLanes>64)
-  val is8bit   = (fmt === FMT_FP8.U) || (fmt === FMT_MXFP8_E5M2.U) || (fmt === FMT_MXFP8_E4M3.U)
+  // slot granularity per fmt: MXFP4 = 4-bit (128 slots); FP8/MXFP8/MXFP6 = 8-bit (64, MXFP6 6b byte-carried);
+  // FP16/BF16 = 16-bit (32).
+  val is4bit   = fmt === FMT_MXFP4_E2M1.U
+  val use8slot = (fmt >= FMT_FP8.U) && (fmt <= FMT_MXFP6_E2M3.U)
   // RUNTIME-variable subCycles: issue only the ACTIVE lanes of the current fmt (narrow formats skip the empty
   // upper-lane subgroups), so every format reaches computeUtil=1.0 and the narrow ones run proportionally
-  // FASTER at a given computeLanes (area). FP16/BF16 use maxLanes/2 lanes, FP8/MX(8-bit) use maxLanes.
-  val activeLanes = Mux(fmt <= FMT_BF16.U, (maxLanes / 2).U, maxLanes.U)
+  // FASTER at a given computeLanes (area). FP16/BF16=maxLanes/4, FP8/MXFP8/MXFP6=maxLanes/2, MXFP4=maxLanes.
+  val activeLanes = Mux(is4bit, maxLanes.U, Mux(fmt <= FMT_BF16.U, (maxLanes / 4).U, (maxLanes / 2).U))
   val runSub      = Mux(activeLanes < computeLanes.U, 1.U, activeLanes >> log2Ceil(computeLanes))
 
   // ---- pipeline depth (mirrors StreamMap so the streaming FSM is reused verbatim) ----
@@ -116,28 +118,30 @@ class StreamMapRt(
       if (!hasAct) tD
       else if (!hasLinear) actES
       else Mux(selAct, actES, tD)
-    // output narrow: true MX-out (block-scale recompute) is a separate work; MX in-fmt narrows to the FP8 grid
-    val outFmt = Mux(isMX(fmt), FMT_FP8.U, fmt)
-    sr(narrowRt(r, outFmt, fpPipe))                       // +fpPipe+1: FP32 -> runtime transport (16b carrier)
+    // output narrow: MX fmts narrow to their element grid via narrowMX with the per-task `mxScale` (true
+    // per-output-block E8M0 recompute needs the formed block -> deferred); non-MX use the plain runtime narrow.
+    sr(Mux(isMX(fmt), narrowMXRt(r, mxScale, fmt, fpPipe), narrowRt(r, fmt, fpPipe))) // +fpPipe+1 -> 16b carrier
   }
 
   // ---- streaming time-mux + pipeline FSM (identical to StreamMap; lanes = maxLanes) ----
   val inBeat  = Reg(UInt(extensionParam.dataWidth.W))              // raw beat; sliced by fmt at issue
   val outSlot = Reg(Vec(maxLanes, UInt(16.W)))                     // per-slot 16b result carriers (FP8 low 8)
 
-  // two static views of the input beat; carrierOf muxes by fmt (cheap Vec index, not a dynamic shift)
-  val fp8View = inBeat.asTypeOf(Vec(maxLanes, UInt(8.W)))          // 64 FP8 slots
-  val f16View = inBeat.asTypeOf(Vec(maxLanes / 2, UInt(16.W)))     // 32 FP16/BF16 slots
+  // three static views of the 512-bit beat (each fills 512 bits); carrierOf muxes by fmt (cheap Vec index).
+  val fp4View = inBeat.asTypeOf(Vec(maxLanes, UInt(4.W)))          // 128 MXFP4 slots
+  val fp8View = inBeat.asTypeOf(Vec(maxLanes / 2, UInt(8.W)))      // 64 FP8/MXFP8/MXFP6(byte) slots
+  val f16View = inBeat.asTypeOf(Vec(maxLanes / 4, UInt(16.W)))     // 32 FP16/BF16 slots
   def carrierOf(slot: UInt): UInt = {
-    val c8  = Cat(0.U(8.W), fp8View(slot))                        // FP8: low 8 bits
-    val c16 = Mux(slot < (maxLanes / 2).U, f16View(slot(log2Ceil(maxLanes / 2) - 1, 0)), 0.U(16.W))
-    Mux(is8bit, c8, c16)
+    val c4  = Cat(0.U(12.W), fp4View(slot))                                              // MXFP4: low 4 bits
+    val c8  = Mux(slot < (maxLanes / 2).U, Cat(0.U(8.W), fp8View(slot(log2Ceil(maxLanes / 2) - 1, 0))), 0.U(16.W))
+    val c16 = Mux(slot < (maxLanes / 4).U, f16View(slot(log2Ceil(maxLanes / 4) - 1, 0)), 0.U(16.W))
+    Mux(is4bit, c4, Mux(use8slot, c8, c16))
   }
 
   // Size the queue / credit round-trip for the SMALLEST runtime subCycles (narrowest fmt FP16 = maxLanes/2
   // active lanes): a smaller runSub accepts beats FASTER -> more in flight -> a DEEPER queue. Using the build
   // subCycles under-sizes it and the narrow formats plateau below the roofline (FP16 stuck at 0.75 @ cl=32).
-  val minRunSub       = scala.math.max(1, (maxLanes / 2) / computeLanes)
+  val minRunSub       = scala.math.max(1, (maxLanes / 4) / computeLanes) // narrowest fmt = FP16 = maxLanes/4
   val inFlightMax     = (P + minRunSub - 1) / minRunSub + 1
   val creditRoundTrip = P + 4
   val Qdepth = scala.math.max(2,
@@ -179,9 +183,11 @@ class StreamMapRt(
   }
 
   // runtime packer: FP8 -> 64 bytes; FP16/BF16 -> 32 halfwords (slots 0..31). Cat puts index 0 in the low bits.
-  val packed8  = Cat((0 until maxLanes).map(i => outNow(maxLanes - 1 - i)(7, 0)))
-  val packed16 = Cat((0 until maxLanes / 2).map(i => outNow(maxLanes / 2 - 1 - i)(15, 0)))
-  val outBeat  = Mux(is8bit, packed8, packed16)
+  // runtime packer (each = 512 bits): MXFP4 -> 128 nibbles, FP8/MXFP8/MXFP6 -> 64 bytes, FP16/BF16 -> 32 halfwords
+  val packed4  = Cat((0 until maxLanes).map(i => outNow(maxLanes - 1 - i)(3, 0)))
+  val packed8  = Cat((0 until maxLanes / 2).map(i => outNow(maxLanes / 2 - 1 - i)(7, 0)))
+  val packed16 = Cat((0 until maxLanes / 4).map(i => outNow(maxLanes / 4 - 1 - i)(15, 0)))
+  val outBeat  = Mux(is4bit, packed4, Mux(use8slot, packed8, packed16))
 
   outQ.io.enq.valid := retireValid && lastRetire && !ext_start_i
   outQ.io.enq.bits  := outBeat
