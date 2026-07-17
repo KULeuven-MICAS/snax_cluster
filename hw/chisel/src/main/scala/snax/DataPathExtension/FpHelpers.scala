@@ -32,6 +32,34 @@ object FpHelpers {
     val sa = a(31); val sb = b(31)
     Mux(Mux(sa =/= sb, sa, Mux(sa, a >= b, b >= a)), a, b)
   }
+  def fp32aWins(a: UInt, b: UInt): Bool = { // a >= b (finite FP32)
+    val sa = a(31); val sb = b(31)
+    Mux(sa =/= sb, !sa, Mux(sa, b >= a, a >= b))
+  }
+  def fneg32(u: UInt): UInt = Cat(~u(31), u(30, 0))
+
+  // ---- ONLINE-SOFTMAX MOMENT-MERGE (F2 / the in-transit nonlinear collective) ------------------------
+  // Combine two flash statistics (m, l) = (running max, Sexp) under the max-rescaled monoid:
+  //   (m,l) = ( max(ma,mb),  l_winner + l_loser * exp(m_loser - m_winner) )   [winner factor exp(0)=1, free]
+  // In (m, S=l*exp(m)) coordinates this is just (max, +) => associative + commutative, identity (-inf, 0)
+  // (doc 13 §2.2). One MAX, one subtract (loser-winner <= 0 so exp in (0,1], bounded), one EXP (reuse the
+  // StreamMap/FpActivation FP32 exp LUT), one FMA. FP32-internal so it is exact regardless of transport fmt
+  // (the stats travel FP32 via fp32out). `expLutN` = the exp LUT depth; numPipe threads the exp latency out
+  // via the returned `lat` so a fold can align the value path.
+  def momentMerge(ma: UInt, la: UInt, mb: UInt, lb: UInt, pipelined: Boolean = false,
+                  expLutN: Int = 128): (UInt, UInt, Int) = {
+    val aWins  = fp32aWins(ma, mb)
+    val m      = Mux(aWins, ma, mb)
+    val loserM = Mux(aWins, mb, ma)
+    val winL   = Mux(aWins, la, lb)
+    val losL   = Mux(aWins, lb, la)
+    val delta  = fadd(loserM, fneg32(m))                     // loser - winner <= 0
+    val exp    = Module(new FpActivation(pipelined, true, false, false, expLutN, 256))
+    exp.io.in := delta; exp.io.func := false.B; exp.io.gelu := false.B
+    val lat    = if (pipelined) FpActivation.PipeLatency else 0
+    val l      = ffma(ShiftRegister(losL, lat), exp.io.out, ShiftRegister(winL, lat)) // losL*exp(delta)+winL
+    (ShiftRegister(m, lat), l, lat)
+  }
 
   // FP32 arithmetic (a*b+c etc.) via the native-Chisel FP units. `numPipe` = internal pipeline depth of
   // the FP unit (the per-op "cutting" knob for timing; 0 = combinational). The host FSM accounts for it.
