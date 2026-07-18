@@ -6,7 +6,7 @@ import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
 
 /** Tier-1 accuracy test for FpExp vs the host Cephes exp. Gating milestone: the FP16-narrowed result
-  * must match within <=1 FP16 ULP across [-88, 8] (design-doc §5.1). Reports the worst-case ULP.
+  * must match within <=1 FP16 ULP across [-88, 8]. Reports the worst-case ULP.
   * FpExp is now the standalone GOLDEN REFERENCE (the datapath uses the merged FpActivation); this test
   * keeps the reference honest, and FpActivationTester diff-checks the merged exp mode against it bit-exact.
   */

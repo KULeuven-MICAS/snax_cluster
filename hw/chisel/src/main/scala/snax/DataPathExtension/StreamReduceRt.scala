@@ -14,8 +14,7 @@ import fp_native._
   *   - Internal math is FP32 (format-agnostic), so runtime precision is an EDGE problem only: `widenRt` on
   *     input, `narrowRt` + a runtime splat on output. The FP32 per-lane accumulate (FMA / max), the
   *     accumulator banking, the horizontal fold (parallel tree OR time-muxed log-fold), the tap passthrough
-  *     and the credit/queue FSM are ALL unchanged from StreamReduce. See FpHelpers.widenRt/narrowRt and
-  *     dev_docs/xdma_ext/10-runtime-precision.md.
+  *     and the credit/queue FSM are ALL unchanged from StreamReduce. See FpHelpers.widenRt/narrowRt.
   *   - Built for the MAX lane count `maxLanes = dataWidth/8 = 64` (FP8's element count). At FP16/BF16 only
   *     the low 32 lanes carry data; the slicer picks the layout by `fmt` and the HORIZONTAL FOLD masks the
   *     high 32 lanes to the op identity (-inf for MAX, +0 for ADD/SUMSQ) so a reduction over an all-negative

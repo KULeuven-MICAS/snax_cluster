@@ -14,7 +14,7 @@ import fp_native._
   *   - Internal math is FP32 (format-agnostic), so runtime precision is an EDGE problem only: `widenRt` on
   *     input, `narrowRt` + a runtime beat packer on output (3 compile-time converters muxed by `fmt`). The
   *     FP32 combine (FMA), the accumulator banking, credit/queue and the streaming FSM are UNCHANGED from
-  *     StreamElementwise. See FpHelpers.widenRt/narrowRt and dev_docs/xdma_ext/10-runtime-precision.md.
+  *     StreamElementwise. See FpHelpers.widenRt/narrowRt.
   *   - Built for the MAX lane count `maxLanes = dataWidth/8 = 64` (FP8's element count). At FP16/BF16 only 32
   *     of the 64 slots carry data; the slicer/packer pick the layout by `fmt`. With computeLanes = maxLanes
   *     (=64) subCycles=1, so BOTH FP16 and FP8 stream at 1 beat/cycle (full 512 b/cyc).

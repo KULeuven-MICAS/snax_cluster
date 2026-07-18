@@ -3,7 +3,7 @@ package snax.DataPathExtension
 import chisel3._
 import chisel3.util._
 
-/** StreamMomentMergeRt: the in-transit NONLINEAR collective (doc 13 §2 / F2). Folds one 512-bit beat carrying
+/** StreamMomentMergeRt: the in-transit NONLINEAR collective. Folds one 512-bit beat carrying
   * up to `maxPairs` flash statistics (m_k, l_k) = (running max, Sexp) — one per shard/cluster — into the
   * merged pair (m*, l*) under the online-softmax moment-merge monoid
   *   (m,l) = ( max(m_a,m_b), l_winner + l_loser*exp(m_loser - m_winner) ).

@@ -176,6 +176,20 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
   val enabledChannel  = UInt(readerParam.crossClusterParam.channelNum.W)
   val enabledByte     = UInt((readerParam.crossClusterParam.wordlineWidth / 8).W)
 
+  // Cross-cluster WRITER-side extension config. The DataPathExtension CSRs must cross the die-to-die link so the
+  // RECEIVER's writer-side extension is configured to process the incoming remote stream (fromRemote ->
+  // writerExtensions -> writer). Cross-cluster extension processing is WRITER-side ONLY (that is where remote data
+  // lands), so only the writer extensions' config is carried; the reader side stays bypassed cross-cluster. Sized
+  // to the writer's extensions (total userCsrNum + 1 bypass). Meaningful only on the isWriterSide frame (zeroed on
+  // the reader/src frame). This is the enabler for the in-fabric cross-cluster collective (F3) + CROSS's
+  // cross-chiplet per-channel statistic.
+  val writerExtCfg = if (writerParam.extParam.length != 0) {
+    Vec(
+      writerParam.extParam.map { i => i.extensionParam.userCsrNum }.reduce(_ + _) + 1,
+      UInt(32.W)
+    )
+  } else Vec(0, UInt(32.W))
+
   def convertFromXDMACfgIO(
     writerSide: Boolean,
     cfg:        XDMACfgIO
@@ -202,6 +216,11 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
     temporalBounds           := cfg.aguCfg.temporalBounds
     enabledChannel           := cfg.readerwriterCfg.enabledChannel
     enabledByte              := cfg.readerwriterCfg.enabledByte
+    // Carry the writer extension config only on the writer-side (dst) frame; on the reader-side (src) frame the
+    // cfg is the reader XDMACfgIO whose extCfg is the READER extensions, which are not carried cross-cluster.
+    if (writerSide) {
+      if (writerExtCfg.length != 0) writerExtCfg := cfg.extCfg
+    } else writerExtCfg.foreach(_ := 0.U)
   }
 
   def convertToXDMACfgIO(readerSide: Boolean): XDMACfgIO = {
@@ -232,8 +251,16 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
       xdmaCfg.aguCfg.temporalStrides.length
     )
 
-    if (xdmaCfg.extCfg.length != 0)
-      xdmaCfg.extCfg(0) := 0.U
+    if (xdmaCfg.extCfg.length != 0) {
+      if (readerSide) {
+        xdmaCfg.extCfg(0) := 0.U // reader/src side: extensions stay bypassed cross-cluster (bypass bit = 0)
+      } else {
+        // writer/dst side: drive the receiver's writer extension from the carried writerExtCfg so it is ACTIVE on
+        // the incoming remote stream (this is what makes the cross-cluster in-fabric collective / CROSS work).
+        if (writerExtCfg.length != 0) xdmaCfg.extCfg := writerExtCfg
+        else xdmaCfg.extCfg(0) := 0.U
+      }
+    }
 
     xdmaCfg.readerwriterCfg.enabledChannel := enabledChannel
     xdmaCfg.readerwriterCfg.enabledByte    := enabledByte
@@ -260,6 +287,7 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
 //  temporalStrides: 16b * Dim
 //  enabledChannel: 8b
 //  enabledByte: 8b
+//  writerExtCfg: 32b * (writer-ext total userCsrNum + 1 bypass)   [MSB; writer-side frame only]
 
 class XDMAInterClusterCfgIOSerializer(readerwriterParam: XDMAParam) extends Module {
   val io = IO(new Bundle {
@@ -276,8 +304,16 @@ class XDMAInterClusterCfgIOSerializer(readerwriterParam: XDMAParam) extends Modu
     ) ## io.cfgIn.bits.spatialStride ## io.cfgIn.bits.axiTransferBeatSize ## io.cfgIn.bits.writerPtr(1) ## io.cfgIn.bits
       .writerPtr(0) ## io.cfgIn.bits.readerPtr ## io.cfgIn.bits.taskID
 
+  // Append the writer-side extension config at the MSB (extracted last on the deserializer, symmetric order).
+  if (io.cfgIn.bits.writerExtCfg.length != 0)
+    cfgSerialized = io.cfgIn.bits.writerExtCfg.reverse.reduce(_ ## _) ## cfgSerialized
+
   val frameBodyLength = readerwriterParam.axiParam.dataWidth - 5
   val frameNum        = (cfgSerialized.getWidth + frameBodyLength - 1) / frameBodyLength
+  // The frame-count / frame-index head is 4 bits (see below), so at most 15 frames can be addressed. Adding
+  // writer extensions widens the serialized cfg; guard the hard ceiling at elaboration (free). Reached only at
+  // absurd writer-ext CSR counts today.
+  require(frameNum <= 15, s"XDMAInterClusterCfgIOSerializer: $frameNum frames exceeds the 4-bit frame head (max 15)")
 
   // Pad the zero at the MSB of the CFG so that the data can be aligned to the AXI bus
   cfgSerialized = 0.U((frameBodyLength * frameNum - cfgSerialized.getWidth).W) ## cfgSerialized
@@ -324,6 +360,7 @@ class XDMAInterClusterCfgIODeserializer(readerwriterParam: XDMAParam) extends Mo
 
   val frameBodyLength = readerwriterParam.axiParam.dataWidth - 5
   val frameNum        = (io.cfgOut.bits.getWidth + frameBodyLength - 1) / frameBodyLength
+  require(frameNum <= 15, s"XDMAInterClusterCfgIODeserializer: $frameNum frames exceeds the 4-bit frame head (max 15)")
   val frameBody       = RegInit(VecInit(Seq.fill(frameNum)(0.U(frameBodyLength.W))))
 
   val frameIndex   = RegInit(2.U(4.W))
@@ -473,6 +510,12 @@ class XDMAInterClusterCfgIODeserializer(readerwriterParam: XDMAParam) extends Mo
     cfgSerialized.getWidth - 1,
     readerwriterParam.crossClusterParam.wordlineWidth / 8
   )
+  // Assign the writer-side extension config (32b per CSR; symmetric to the serializer's MSB prepend). The remaining
+  // MSBs are zero padding.
+  io.cfgOut.bits.writerExtCfg.foreach { i =>
+    i := cfgSerialized(31, 0)
+    cfgSerialized = cfgSerialized(cfgSerialized.getWidth - 1, 32)
+  }
 }
 
 class XDMADataPathCfgIO(axiParam: XDMAAXIParam, crossClusterParam: XDMACrossClusterParam) extends Bundle {

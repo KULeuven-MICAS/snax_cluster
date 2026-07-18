@@ -8,10 +8,10 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import snax.DataPathExtension.FpHelpers._
 
-/** F2 — the online-softmax MOMENT-MERGE monoid (the in-transit nonlinear collective, doc 13 §2). Combining
+/** The online-softmax MOMENT-MERGE monoid (the in-transit nonlinear collective). Combining
   * flash statistics (m, l) = (running max, Sexp) under the max-rescaled monoid must reproduce the GLOBAL
   * (max, Sexp) exactly (algebraically), and be order-independent (associative + commutative). Proven here:
-  * doc 13's worked example, a random P-shard fold vs the direct global, and a shuffle-order associativity
+  * a worked example, a random P-shard fold vs the direct global, and a shuffle-order associativity
   * check. This is the collective SHARP cannot express (a max coupled to a rescaled sum).
   */
 class MomentMergeTester extends AnyFlatSpec with ChiselScalatestTester {

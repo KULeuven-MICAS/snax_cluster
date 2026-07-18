@@ -42,7 +42,7 @@ object FpHelpers {
   // Combine two flash statistics (m, l) = (running max, Sexp) under the max-rescaled monoid:
   //   (m,l) = ( max(ma,mb),  l_winner + l_loser * exp(m_loser - m_winner) )   [winner factor exp(0)=1, free]
   // In (m, S=l*exp(m)) coordinates this is just (max, +) => associative + commutative, identity (-inf, 0)
-  // (doc 13 §2.2). One MAX, one subtract (loser-winner <= 0 so exp in (0,1], bounded), one EXP (reuse the
+  // One MAX, one subtract (loser-winner <= 0 so exp in (0,1], bounded), one EXP (reuse the
   // StreamMap/FpActivation FP32 exp LUT), one FMA. FP32-internal so it is exact regardless of transport fmt
   // (the stats travel FP32 via fp32out). `expLutN` = the exp LUT depth; numPipe threads the exp latency out
   // via the returned `lat` so a fold can align the value path.

@@ -11,7 +11,7 @@ import fp_native._
   * WRITER side of the xDMA, it pairs with a reader-side StreamCastRt to model compress-at-sender /
   * decompress-at-receiver over a (locally looped-back) link: the compressed MX beats cross the reader->writer
   * path (the "link"), and the decompressor expands them back at the writer -- so a single-cluster reader->writer
-  * loopback yields real RTL numbers for the in-flight fixed-ratio compression (04 §7.2, 03 §2.6).
+  * loopback yields real RTL numbers for the in-flight fixed-ratio compression.
   *
   *   - EDGE problem, FP32-internal: widenMXRt(code, scale) -> FP32 -> narrowRt(FP32, outFmt) -> 16-bit. widenMX
   *     is EXACT (an MX element's <=3 mantissa bits fit BF16's 7 / FP16's 10), so MX->BF16 recovery is exact for

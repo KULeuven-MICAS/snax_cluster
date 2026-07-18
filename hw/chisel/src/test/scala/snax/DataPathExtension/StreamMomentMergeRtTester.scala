@@ -7,7 +7,7 @@ import chiseltest._
 import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
 
-/** StreamMomentMergeRt: the in-transit nonlinear collective as a STREAMING op (doc 13 F2). One beat carries 8
+/** StreamMomentMergeRt: the in-transit nonlinear collective as a STREAMING op. One beat carries 8
   * flash-statistic pairs (m_k, l_k); the module folds them into the global (m*, l*) via the moment-merge
   * monoid, at the 512 b/cyc roofline. Proves correctness (merged == direct global (max, Sexp)), the short-beat
   * (nValid<8) masking, and that beats stream at util ~ 1.0 (the fold is fully pipelined).
