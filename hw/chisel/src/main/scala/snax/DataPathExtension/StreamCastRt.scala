@@ -42,30 +42,36 @@ import fp_native._
   *     E5M2/E4M3 saturates too -- verified, no inf), i.e. the top element takes up to ~half-a-step of loss.
   */
 class HasStreamCastRt(
-  dataWidth: Int = 512,
-  fpPipe:    Int = 1
+  dataWidth:  Int = 512,
+  fpPipe:     Int = 1,
+  scaleBurst: Int = 1 // E8M0 scales packed per emitted scale beat (1 = v1: one scale beat per group; up to 16
+  //                     for MXFP4 fills a 64-byte scale beat -> the real 3.76:1 ratio instead of v1's 2:1)
 ) extends HasDataPathExtension {
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(moduleName = "StreamCastRt", userCsrNum = 1, dataWidth = dataWidth)
 
   def instantiate(clusterName: String): StreamCastRt =
-    Module(new StreamCastRt(fpPipe) {
+    Module(new StreamCastRt(fpPipe, scaleBurst = scaleBurst) {
       override def desiredName = clusterName + namePostfix
     })
 }
 
 class StreamCastRt(
   fpPipeParam: Int     = 1,
-  pipelined:   Boolean = true
+  pipelined:   Boolean = true,
+  scaleBurst:  Int     = 1
 )(implicit
   extensionParam: DataPathExtensionParam
 ) extends DataPathExtension {
 
   import FpHelpers._
 
+  require(scaleBurst >= 1 && scaleBurst * 4 <= extensionParam.dataWidth / 8,
+          "StreamCastRt: scaleBurst*maxGrp scales must fit one scale beat (<= 64 for 512-bit)")
   val srcLanes = extensionParam.dataWidth / 16 // 32: one input beat = one MX block of 32 (16-bit src)
   val maxDst   = extensionParam.dataWidth / 4  // 128: MXFP4 element count (the widest output packing)
   val maxGrp   = 4                             // R in {2,4}; group register holds up to 4 blocks
+  val maxScl   = scaleBurst * maxGrp           // E8M0 scale bytes accumulated before one scale beat is emitted
 
   val csr0    = ext_csr_i(0)
   val srcFmt  = csr0(1, 0) // 0=FP16, 1=BF16
@@ -103,10 +109,21 @@ class StreamCastRt(
   val packed4  = Cat((0 until maxDst).map(i => allCodes(maxDst - 1 - i)(3, 0)))         // 128 nibbles (MXFP4)
   val packed8  = Cat((0 until maxDst / 2).map(i => allCodes(maxDst / 2 - 1 - i)(7, 0))) // 64 bytes (8-bit dst)
   val dataBeat = Mux(is4bit, packed4, packed8)
-  // only the low Rbeats scale bytes are live; zero the rest so a short (8-bit dst, R=2) group cannot leak a
-  // stale scale byte left over from a previous MXFP4 (R=4) group.
-  val sclByte  = (0 until maxGrp).map(k => Mux(k.U < Rbeats, sNow(k), 0.U(8.W)))
-  val sclBeat  = Cat(0.U((extensionParam.dataWidth - 8 * maxGrp).W), sclByte(3), sclByte(2), sclByte(1), sclByte(0))
+
+  // ---- SCALE PACKING: accumulate `scaleBurst` groups' E8M0 scales, emit ONE full scale beat per burst
+  // (scales-last). The 64-byte scale beat is then FILLED (1 byte/block) instead of v1's 4-of-64, giving the
+  // real MXFP4 3.76:1 (vs v1's 2:1). scaleBurst=1 == v1 (a scale beat every group). Scales are laid out
+  // contiguously so scale byte `burstCnt*R + k` = block k of the burstCnt-th data beat (== the decompressor's read).
+  val burstCnt    = RegInit(0.U(log2Ceil(scaleBurst).max(1).W))
+  val isBurstLast = burstCnt === (scaleBurst - 1).U
+  val sclAcc      = Reg(Vec(maxScl, UInt(8.W)))
+  val sclAccNow   = WireInit(sclAcc) // this completing group's R scales overlaid at burstCnt*R
+  for (k <- 0 until maxGrp) when(k.U < Rbeats) {
+    sclAccNow((burstCnt * Rbeats + k.U)(log2Ceil(maxScl) - 1, 0)) := sNow(k)
+  }
+  val sclLow  = Cat((0 until maxScl).reverse.map(sclAccNow(_))) // maxScl bytes, index 0 -> low byte
+  val sclBeat = if (8 * maxScl >= extensionParam.dataWidth) sclLow
+                else Cat(0.U((extensionParam.dataWidth - 8 * maxScl).W), sclLow)
 
   // ---- output FSM: credit + Queue; emit the data beat on the completing accept, then a trailing scale beat ----
   val Qdepth = 4
@@ -114,7 +131,7 @@ class StreamCastRt(
   val credit     = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
   val sclPending = RegInit(false.B)
   val sclBeatReg = Reg(UInt(extensionParam.dataWidth.W))
-  val needSlots  = Mux(emitScl, 2.U, 1.U)
+  val needSlots  = Mux(emitScl && isBurstLast, 2.U, 1.U) // the scale beat is emitted only on the burst-last group
 
   // non-completing beats never emit (just fill a block); completing beats need output slots + no pending scale
   ext_data_i.ready := (!completing || (credit >= needSlots && !sclPending)) && !ext_start_i
@@ -132,16 +149,22 @@ class StreamCastRt(
   val enqFire = outQ.io.enq.fire
   val deq     = outQ.io.deq.fire
   when(ext_start_i) {
-    grp := 0.U; credit := Qdepth.U; sclPending := false.B
+    grp := 0.U; credit := Qdepth.U; sclPending := false.B; burstCnt := 0.U
   }.otherwise {
     when(accept) {
       quarters(grp) := code; sclSlot(grp) := blkScale
       grp := Mux(completing, 0.U, grp + 1.U)
+      when(completing) { // register this group's R scales into the burst accumulator; advance the burst
+        for (k <- 0 until maxGrp) when(k.U < Rbeats) {
+          sclAcc((burstCnt * Rbeats + k.U)(log2Ceil(maxScl) - 1, 0)) := sNow(k)
+        }
+        burstCnt := Mux(isBurstLast, 0.U, burstCnt + 1.U)
+      }
     }
-    when(doDataEnq) { sclPending := emitScl; sclBeatReg := sclBeat }
+    when(doDataEnq && isBurstLast) { sclPending := emitScl; sclBeatReg := sclBeat }
       .elsewhen(doSclEnq) { sclPending := false.B }
     when(enqFire =/= deq) { credit := Mux(enqFire, credit - 1.U, credit + 1.U) }
   }
 
-  ext_busy_o := (credit =/= Qdepth.U) || (grp =/= 0.U) || sclPending
+  ext_busy_o := (credit =/= Qdepth.U) || (grp =/= 0.U) || sclPending || (burstCnt =/= 0.U)
 }

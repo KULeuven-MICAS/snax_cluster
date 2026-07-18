@@ -171,6 +171,12 @@ Naming convention:
             writer_extensions:
             {
                 HasVerilogMemset: {}
+                // StreamDecompressRt: the in-transit DECOMPRESSOR (MX/FP8 -> FP16/BF16), the writer-side mirror
+                // of the reader-side StreamCastRt compressor. Placed here, a reader(compress)->writer(decompress)
+                // loopback models compress-at-sender / decompress-at-receiver: the compressed MX beats cross the
+                // reader->writer path (the mimicked "link"), giving real RTL numbers for in-flight fixed-ratio
+                // compression (04 §7.2). 1:R expansion (mirror of StreamCast's R:1). Adds 1 DST-ext CSR.
+                HasStreamDecompressRt: {dataWidth: 512, fpPipe: 1, scaleBurst: 16}
             }
             reader_extensions: {
                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
@@ -201,7 +207,7 @@ Naming convention:
                 // is the WIDE (up to 128-lane MXFP4) LINEAR path: widen + per-beat E8M0 block scale + narrow,
                 // with NO activation LUT. Appended last so the existing extensions' indices + CSR map are
                 // unchanged (adds READER_EXT_STREAMCASTRT + its 1 CSR).
-                HasStreamCastRt: {dataWidth: 512, fpPipe: 1}
+                HasStreamCastRt: {dataWidth: 512, fpPipe: 1, scaleBurst: 16}
             }
         }
         // Xdiv_sqrt: true,

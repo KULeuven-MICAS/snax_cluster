@@ -46,6 +46,7 @@ SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-elementwise-add
 SUBDIRS += snax-xdma-softmax
+SUBDIRS += snax-xdma-mxcompress-loop
 SUBDIRS += snax-xdma-rmsnorm
 SUBDIRS += snax-xdma-silu
 SUBDIRS += snax-xdma-swiglu

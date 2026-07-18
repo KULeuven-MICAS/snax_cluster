@@ -243,23 +243,45 @@ object FpHelpers {
     val expW = t.expWidth; val sigW = t.sigWidth; val biasT = FpCommon.bias(t)
     val sign  = f(31); val eX = f(30, 23); val man23 = f(22, 0)
     val fZero = (eX === 0.U) && (man23 === 0.U)
-    val eT0   = eX.zext -& (127 - biasT).S       // target biased exp (signed)
-    val drop  = 23 - sigW
-    val kept  = man23(22, drop)                  // top sigW bits
-    val rnd   = man23(drop - 1)                  // round bit
+    val eT0   = eX.zext -& (127 - biasT).S        // target biased exp (signed), assuming the implicit 1
+    val maxExp = (1 << expW) - 1                   // finite MX top exp is a normal (no inf/nan)
+
+    // ---- NORMAL path (eT0 >= 1): drop the low mantissa bits, RNE; a round carry may bump the exponent ----
+    val drop   = 23 - sigW
+    val kept   = man23(22, drop)                  // top sigW bits
+    val rnd    = man23(drop - 1)                  // round bit
     val sticky = if (drop >= 2) man23(drop - 2, 0).orR else false.B
-    val roundUp = rnd && (sticky || kept(0))     // RNE
-    val manSum = Cat(0.U(1.W), kept) +& roundUp  // sigW+1 bits
+    val roundUp = rnd && (sticky || kept(0))      // RNE
+    val manSum = Cat(0.U(1.W), kept) +& roundUp   // sigW+1 bits
     val carry  = manSum(sigW)
     val manF   = manSum(sigW - 1, 0)
-    val eT     = Mux(carry, eT0 + 1.S, eT0)
-    val maxExp = (1 << expW) - 1                  // finite MX top exp is a normal
-    val ovf = eT > maxExp.S
-    val udf = eT < 1.S                            // subnormal not modeled -> FTZ
-    val expOut = Mux(ovf, maxExp.U(expW.W), Mux(udf, 0.U(expW.W), eT(expW - 1, 0)))
-    val manOut = Mux(ovf, ((1 << sigW) - 1).U(sigW.W), Mux(udf, 0.U(sigW.W), manF))
-    val body   = Cat(sign, expOut, manOut)
-    ShiftRegister(Mux(fZero || udf, Cat(sign, 0.U((expW + sigW).W)), body), numPipe)
+    val eTn    = Mux(carry, eT0 + 1.S, eT0)
+    val ovfN   = eTn > maxExp.S
+    val normBody = Cat(sign, Mux(ovfN, maxExp.U(expW.W), eTn(expW - 1, 0)),
+                             Mux(ovfN, ((1 << sigW) - 1).U(sigW.W), manF))
+
+    // ---- SUBNORMAL path (eT0 <= 0): the finite MX grids HAVE subnormals, and E2M1's 0.5 is the code a
+    // wide-dynamic-range MXFP4 block lands its small elements on (e.g. 2.0 in a max-24 block -> 2.0/4 = 0.5).
+    // Encode subMant = RNE(fullSig >> sh), fullSig = 1.man23, sh = 24 - sigW - eT0; a round-up to 2^sigW promotes
+    // the subnormal to the min normal (exp=1). WITHOUT this the whole subnormal binade FTZ'd to 0 -- the vsim
+    // loopback showed 15% of elements (every value that scaled to 0.5) silently zeroed. ----
+    val fullSig = Cat(1.U(1.W), man23)            // 24 bits: 1.man23 (bit23 = implicit 1)
+    val shW     = (24 - sigW).S -& eT0            // >= 24-sigW since eT0 <= 0 here
+    val sh      = Mux(shW >= 32.S, 31.U(5.W), shW(4, 0)) // clamp; >= 32 fully underflows to 0
+    val one     = 1.U(48.W)
+    val half    = (one << sh) >> 1                // 2^(sh-1) (sh >= 21 here, so >>1 is exact)
+    val remMask = (one << sh) - one               // 2^sh - 1
+    val remW    = Cat(0.U(24.W), fullSig) & remMask
+    val qSub    = fullSig >> sh                    // integer part of fullSig/2^sh (0..1 for the top binade)
+    val keptSub = qSub(sigW - 1, 0)
+    val subRU   = (remW > half) || ((remW === half) && keptSub(0)) // RNE (tie to even)
+    val subSum  = Cat(0.U(1.W), keptSub) +& subRU // sigW+1 bits; == 2^sigW -> promote to the min normal
+    val subOvf  = subSum(sigW)
+    val subBody = Cat(sign, Mux(subOvf, 1.U(expW.W), 0.U(expW.W)),
+                            Mux(subOvf, 0.U(sigW.W), subSum(sigW - 1, 0)))
+
+    val isSub = eT0 < 1.S
+    ShiftRegister(Mux(fZero, Cat(sign, 0.U((expW + sigW).W)), Mux(isSub, subBody, normBody)), numPipe)
   }
   // narrow one FP32 element to an MX element type: fpnew for the 8-bit grids (E5M2/E4M3), narrowFin for the
   // finite sub-8-bit MX grids (E3M2/E2M3/E2M1).
