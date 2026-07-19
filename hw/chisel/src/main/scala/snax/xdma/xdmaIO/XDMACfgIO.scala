@@ -290,6 +290,17 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
 //  writerExtCfg: 32b * (writer-ext total userCsrNum + 1 bypass)   [MSB; writer-side frame only]
 
 class XDMAInterClusterCfgIOSerializer(readerwriterParam: XDMAParam) extends Module {
+  // Disambiguate the generated Verilog module name by the writer-ext CSR total (the quantity that
+  // sizes writerExtCfg's Vec, hence this module's port list). Without this, two SEPARATE Chisel
+  // elaboration runs with DIFFERENT writer-extension sets (e.g. the chip-level hemaia_xdma_cfg,
+  // whose writer_extensions is empty, vs. a per-cluster xdma cfg with real writer extensions) both
+  // emit a module literally named "XDMAInterClusterCfgIOSerializer" -- when both land in the SAME
+  // Verilog compilation (any HeMAiA SoC-level build), the simulator's work library keeps only ONE
+  // definition and every instantiation site expecting the OTHER one's ports fails to elaborate
+  // (vopt-2912 "Port ... not found"). This does not affect a standalone single-elaboration build
+  // (snax_cluster's own sim flow, or a chiseltest), which is why neither surfaced it.
+  override def desiredName: String =
+    "XDMAInterClusterCfgIOSerializer_wext" + readerwriterParam.extParam.map(_.extensionParam.userCsrNum).sum
   val io = IO(new Bundle {
     val cfgIn  = Flipped(Decoupled(new XDMAInterClusterCfgIO(readerwriterParam, readerwriterParam)))
     val cfgOut = Decoupled(UInt(readerwriterParam.axiParam.dataWidth.W))
@@ -353,6 +364,9 @@ class XDMAInterClusterCfgIOSerializer(readerwriterParam: XDMAParam) extends Modu
 }
 
 class XDMAInterClusterCfgIODeserializer(readerwriterParam: XDMAParam) extends Module {
+  // See XDMAInterClusterCfgIOSerializer's desiredName override for why this is needed.
+  override def desiredName: String =
+    "XDMAInterClusterCfgIODeserializer_wext" + readerwriterParam.extParam.map(_.extensionParam.userCsrNum).sum
   val io = IO(new Bundle {
     val cfgIn  = Flipped(Decoupled(UInt(readerwriterParam.axiParam.dataWidth.W)))
     val cfgOut = Decoupled(new XDMAInterClusterCfgIO(readerwriterParam, readerwriterParam))
