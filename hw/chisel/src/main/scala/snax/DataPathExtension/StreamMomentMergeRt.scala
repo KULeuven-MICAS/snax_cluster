@@ -42,7 +42,13 @@ import chisel3.util._
   * Accumulate mode admits ONE beat in flight (the slot is a read-modify-write hazard across beats), so
   * `ext_data_i.ready` is gated while an accumulate is in flight. That costs nothing for the intended use,
   * where each producer's push is a single-beat task. Stateless mode is untouched and still streams at the
-  * roofline. Slots reset to the monoid identity (ID_M, 0) so an un-armed slot merges harmlessly.
+  * roofline.
+  *
+  * IMPORTANT: the slots deliberately SURVIVE `ext_start_i`. That signal means "a new stream is coming", so it
+  * pulses for every incoming remote push at the receiver; clearing the accumulators there would wipe the
+  * running merge on each producer's arrival and silently degrade accEn back to last-writer-wins. Arming is
+  * the software's job -- exactly one push per collective sets accInit=1 -- and that arming push must be
+  * ordered before the folding ones (a Bingo edge), since accInit=1 overwrites rather than folds.
   */
 class HasStreamMomentMergeRt(
   dataWidth: Int = 512,
@@ -114,7 +120,9 @@ class StreamMomentMergeRt(
   val lStar = ls.head
 
   // ---- accumulate-on-arrival: fold the beat's pair INTO a persistent slot ----
-  // Slots hold the monoid identity at reset and at every task start, so an un-armed slot merges harmlessly.
+  // Slots hold the monoid identity at RESET only -- they intentionally persist across streams/tasks (see the
+  // header note on ext_start_i). An un-armed slot therefore still merges harmlessly, and software arms a slot
+  // for a fresh collective with accInit=1.
   val accM = RegInit(VecInit(Seq.fill(numAccSlots)(ID_M)))
   val accL = RegInit(VecInit(Seq.fill(numAccSlots)(FP32_ZERO)))
   val slotSel = if (numAccSlots == 1) 0.U else accSlot(log2Ceil(numAccSlots) - 1, 0)
@@ -156,10 +164,12 @@ class StreamMomentMergeRt(
   // stable across the accumulate window because only one beat is in flight, so no extra alignment is needed.
   val newM = Mux(accInit, mStar, accMergedM)
   val newL = Mux(accInit, lStar, accMergedL)
-  when(ext_start_i) {
-    // a task start re-arms every slot to the monoid identity
-    for (s <- 0 until numAccSlots) { accM(s) := ID_M; accL(s) := FP32_ZERO }
-  }.elsewhen(outValidAcc && accEn) {
+  // NOTE: the slots deliberately SURVIVE ext_start_i. `ext_start_i` means "a new stream is coming"
+  // (DataPathExtension.scala:42) and therefore pulses for EVERY incoming remote push at the receiver -- so
+  // clearing the accumulators here would wipe the running merge on each producer's arrival and silently
+  // degrade accEn back to last-writer-wins. Arming is the SOFTWARE's job via accInit=1 on exactly one push;
+  // RegInit only provides a defined power-on value.
+  when(outValidAcc && accEn) {
     accM(slotSel) := newM
     accL(slotSel) := newL
   }
