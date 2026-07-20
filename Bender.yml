@@ -34,7 +34,7 @@ dependencies:
   hypercorex:         { git: "https://github.com/KULeuven-MICAS/hypercorex.git",     rev: hypercorex_v1.0.1 }
   dimc:               { git: "https://github.com/KULeuven-MICAS/snax-dimc.git",      rev: main }
   cgra:               { git: "https://github.com/KULeuven-MICAS/snax_cgra.git",      rev: main }
-  xdma_axi_adapter:   { git: https://github.com/KULeuven-MICAS/xdma_axi_adapter.git, rev: 8d73e22df1098cbfdb1da7ac96895514b9f7a426 }
+  xdma_axi_adapter:   { git: https://github.com/KULeuven-MICAS/xdma_axi_adapter.git, rev: 44ab067915dcfaffd8488e299e56556d8de4df34 }
   idma:               { git: https://github.com/KULeuven-MICAS/iDMA,                 rev: master }
 
 vendor_package:
