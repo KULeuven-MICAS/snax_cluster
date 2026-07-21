@@ -189,6 +189,9 @@ in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hjson).
                 // running global as it is written -- the in-transit collective, not gather-then-local. Enabled cross
                 // -cluster by the writerExtCfg field on XDMAInterClusterCfgIO. Adds 1 DST-ext CSR (DST_EXT_NUM 2->3).
                 HasStreamMomentMergeRt: {dataWidth: 512}
+                // StreamNormStatMergeRt: the 2nd monoid of the collective algebra -- distributed
+                // LayerNorm/RMSNorm statistics (Sx, Sxx) folded in-fabric on the same accEn substrate.
+                HasStreamNormStatMergeRt: {dataWidth: 512, fpPipe: 1}
             }
             reader_extensions: {
                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
