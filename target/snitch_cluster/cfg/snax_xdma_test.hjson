@@ -192,6 +192,11 @@ in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hjson).
                 // StreamNormStatMergeRt: the 2nd monoid of the collective algebra -- distributed
                 // LayerNorm/RMSNorm statistics (Sx, Sxx) folded in-fabric on the same accEn substrate.
                 HasStreamNormStatMergeRt: {dataWidth: 512, fpPipe: 1}
+                // StreamTopKMergeRt: the 3rd monoid -- distributed MoE top-k expert routing. A beat carries
+                // (logit, expert-id) candidate pairs; the writer sorts+merges them in-fabric into the running
+                // global top-8 table (SW reads the top-k prefix). GENUINELY beyond-SHARP by expressibility: a
+                // compare-exchange sorting network, not a linear reduce (SHARP cannot select an ordered top-k).
+                HasStreamTopKMergeRt: {dataWidth: 512}
             }
             reader_extensions: {
                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
