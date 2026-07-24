@@ -163,6 +163,14 @@ __attribute__((always_inline)) static inline void snax_xdma_dst_ext_csr_write(ui
         case 1: snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR + 1, val); break;
         case 2: snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR + 2, val); break;
         case 3: snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR + 3, val); break;
+        // slots 4..6 hold the later writer-side collective merge extensions
+        // (StreamTopKMergeRt 4, StreamAttnMergeRt 5, UnifiedMonoidMergeRt 6). Without
+        // these arms their CSRs silently fall through to default -> the ext sees all-zero
+        // config (combineMode=SUM, nValid=0 -> every lane masked to the identity, so the
+        // fold emits zero). Keep this covering XDMA_DST_EXT_CSR_NUM slots.
+        case 4: snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR + 4, val); break;
+        case 5: snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR + 5, val); break;
+        case 6: snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR + 6, val); break;
         default: break;
     }
 }

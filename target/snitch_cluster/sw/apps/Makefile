@@ -64,6 +64,12 @@ SUBDIRS += snax-xdma-rope-rt
 SUBDIRS += snax-xdma-gelu-rt
 SUBDIRS += snax-xdma-moe-rt
 endif
+# In-fabric collective experiment (F3): the writer-side unified merge extension lives
+# only in cfg/snax_xdma_test.hjson. The app #error-guards on its WRITER_EXT_* macro.
+ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_test.hjson)
+SUBDIRS += snax-xdma-memset
+SUBDIRS += snax-xdma-unified-merge-rt
+endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-maxpool

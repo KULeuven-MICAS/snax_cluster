@@ -182,25 +182,16 @@ in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hjson).
                 // StreamDecompressRt: the in-transit DECOMPRESSOR (MX/FP8 -> FP16/BF16), the writer-side mirror
                 // of the reader-side StreamCastRt compressor (local compress->decompress loopback).
                 HasStreamDecompressRt: {dataWidth: 512, fpPipe: 1, scaleBurst: 16}
-                // StreamMomentMergeRt: THE FLAG on the WRITER side (the F3 enabler). The nonlinear moment-merge
-                // monoid (m, l) = (max, l_win + l_los*exp(delta)) -- the online-softmax merge SHARP cannot express.
-                // Placed on the writer so it processes the CROSS-CLUSTER stream arriving at fromRemote: a remote
-                // cluster ships its local partial (m_i, l_i), and this writer extension merges it in-fabric with the
-                // running global as it is written -- the in-transit collective, not gather-then-local. Enabled cross
-                // -cluster by the writerExtCfg field on XDMAInterClusterCfgIO. Adds 1 DST-ext CSR (DST_EXT_NUM 2->3).
-                HasStreamMomentMergeRt: {dataWidth: 512}
-                // StreamNormStatMergeRt: the 2nd monoid of the collective algebra -- distributed
-                // LayerNorm/RMSNorm statistics (Sx, Sxx) folded in-fabric on the same accEn substrate.
-                HasStreamNormStatMergeRt: {dataWidth: 512, fpPipe: 1}
-                // StreamTopKMergeRt: the 3rd monoid -- distributed MoE top-k expert routing. A beat carries
-                // (logit, expert-id) candidate pairs; the writer sorts+merges them in-fabric into the running
-                // global top-8 table (SW reads the top-k prefix). GENUINELY beyond-SHARP by expressibility: a
-                // compare-exchange sorting network, not a linear reduce (SHARP cannot select an ordered top-k).
-                HasStreamTopKMergeRt: {dataWidth: 512}
-                // StreamAttnMergeRt: the COMPLETE distributed flash-attention collective -- the (m, ℓ, O)
-                // triple. Folds each shard's partial (m, ℓ, O=Σexp(s-m)·v) in-transit; O rescaled by the same
-                // exp(Δ) as ℓ. The whole distributed attention (not just the softmax normalizer) in-fabric.
-                HasStreamAttnMergeRt: {dataWidth: 512, dHead: 8}
+                // UnifiedMonoidMergeRt: ONE configurable combine cell folding the whole arithmetic-reduction
+                // family into one netlist, mode-selected per transfer by the 3-bit combineMode CSR field
+                // (csr(0)[15:13]): SUM (LayerNorm/RMSNorm Σx,Σx²), MOMENT (softmax normalizer m,ℓ -- the online-
+                // softmax merge SHARP cannot express), ATTN (the flash-attention (m,ℓ,O) triple), MAXPOOL. It
+                // SUPERSEDES the former separate StreamMomentMergeRt / StreamNormStatMergeRt / StreamAttnMergeRt
+                // fixed modules (the arithmetic collective family), and is the Gate-B reuse artifact -- one CSR,
+                // accEn slot + credit/Queue chassis shared, so the inter-cluster cfg serdes is untouched. Placed
+                // on the writer so it folds the CROSS-CLUSTER stream in-fabric (the in-transit collective). Adds
+                // 1 DST-ext CSR. (Top-k routing is a sort, provably outside this arithmetic cell -- dropped.)
+                HasUnifiedMonoidMergeRt: {dataWidth: 512, dHead: 8, expLutN: 128}
             }
             reader_extensions: {
                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
