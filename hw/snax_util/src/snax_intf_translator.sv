@@ -88,17 +88,24 @@ module snax_intf_translator #(
 
   // We need a demux to split the requests
   logic snax_csr_req_sel;
+  logic snax_csr_req_ready;
+  logic snax_csr_req_can_accept;
+  logic rsp_fifo_full, rsp_fifo_empty;
   assign snax_csr_req_sel = (snax_req_i.data_argb[11:0]==CSR_SNAX_READ_TASK_READY_QUEUE) ||
                             (snax_req_i.data_argb[11:0]==CSR_SNAX_WRITE_TASK_DONE_QUEUE);
+  // Writes do not consume a response ID entry. Reads must only reach a CSR
+  // target when there is room to remember their accelerator request ID.
+  assign snax_csr_req_can_accept = write_csr || !rsp_fifo_full;
   stream_demux #(
     .N_OUP(2)
   ) i_snax_csr_req_demux (
-    .inp_valid_i ( snax_qvalid_i        ),
-    .inp_ready_o ( snax_qready_o        ),
+    .inp_valid_i ( snax_qvalid_i && snax_csr_req_can_accept ),
+    .inp_ready_o ( snax_csr_req_ready   ),
     .oup_sel_i   ( snax_csr_req_sel     ),
     .oup_valid_o ( {snax_csr_req_top_valid_o, snax_csr_req_acc_valid_o}  ),
     .oup_ready_i ( {snax_csr_req_top_ready_i, snax_csr_req_acc_ready_i}  )
   );
+  assign snax_qready_o = snax_csr_req_ready && snax_csr_req_can_accept;
 
   assign snax_csr_req_o.data  = snax_req_i.data_arga[31:0];
   assign snax_csr_req_o.addr  = snax_req_i.data_argb - CsrAddrOffset;
@@ -115,22 +122,19 @@ module snax_intf_translator #(
   // fifo buffer to align the request id
 
   acc_req_t rsp_fifo_out;
-  logic rsp_fifo_full, rsp_fifo_empty;
   logic rsp_fifo_push, rsp_fifo_pop;
+  logic read_req_fire, rsp_fire, rsp_bypass;
 
   // Combinational logic
 
-  // We push everytime there is a new read request
-  // but then the response is not immediatley available
-  // and when the fifo is not full!
-  assign rsp_fifo_push =   snax_qvalid_i
-                        && !write_csr
-                        && !snax_pvalid_o
-                        && !rsp_fifo_full;
+  assign read_req_fire = snax_qvalid_i && snax_qready_o && !write_csr;
+  assign rsp_fire      = snax_pvalid_o && snax_pready_i;
+  assign rsp_bypass    = rsp_fifo_empty && read_req_fire;
 
-  // We pop when the response is valid and the fifo is not empty
-  assign rsp_fifo_pop  =   snax_pvalid_o
-                        && !rsp_fifo_empty;
+  // An immediate response can bypass an empty FIFO. If that response is
+  // backpressured, retain the request ID until the response is accepted.
+  assign rsp_fifo_push = read_req_fire && !(rsp_bypass && rsp_fire);
+  assign rsp_fifo_pop  = rsp_fire && !rsp_fifo_empty;
 
   // Buffer for aligning request id
   fifo_v3 #(
@@ -151,15 +155,18 @@ module snax_intf_translator #(
     .pop_i        ( rsp_fifo_pop        )
   );
 
-  // Ready only when snax is ready and fifo is not full
-  assign snax_csr_rsp_ready_o = snax_pready_i && !rsp_fifo_full;
-
   // We need a mux to select between the two response sources (ACC or Top-level)
-  // The selection is based on the fifo out signal
+  // according to the oldest outstanding request. For an immediate response
+  // with an empty FIFO, use the currently accepted read request.
+  acc_req_t rsp_req;
+  assign rsp_req = rsp_fifo_empty ? snax_req_i : rsp_fifo_out;
   logic snax_csr_rsp_sel;
-  assign snax_csr_rsp_sel = (rsp_fifo_out.data_argb[11:0]==CSR_SNAX_READ_TASK_READY_QUEUE) ||
-                            (rsp_fifo_out.data_argb[11:0]==CSR_SNAX_WRITE_TASK_DONE_QUEUE);
+  assign snax_csr_rsp_sel = (rsp_req.data_argb[11:0]==CSR_SNAX_READ_TASK_READY_QUEUE) ||
+                            (rsp_req.data_argb[11:0]==CSR_SNAX_WRITE_TASK_DONE_QUEUE);
   csr_rsp_t snax_csr_rsp;
+  logic snax_csr_rsp_valid, snax_csr_rsp_ready;
+  logic rsp_context_valid;
+  assign rsp_context_valid = !rsp_fifo_empty || read_req_fire;
   stream_mux #(
     .DATA_T   ( csr_rsp_t ),
     .N_INP    ( 2         )
@@ -169,14 +176,15 @@ module snax_intf_translator #(
     .inp_ready_o( {snax_csr_rsp_top_ready_o, snax_csr_rsp_acc_ready_o}    ),
     .inp_sel_i  ( snax_csr_rsp_sel        ),
     .oup_data_o ( snax_csr_rsp            ),
-    .oup_valid_o( snax_pvalid_o           ),
-    .oup_ready_i( snax_pready_i           )
+    .oup_valid_o( snax_csr_rsp_valid      ),
+    .oup_ready_i( snax_csr_rsp_ready      )
   );
 
+  assign snax_pvalid_o      = snax_csr_rsp_valid && rsp_context_valid;
+  assign snax_csr_rsp_ready = snax_pready_i && rsp_context_valid;
+
   assign snax_resp_o.data     = snax_csr_rsp.data;
-  // If fifo is not empty, use the one from the FIFO
-  // Else just make it pass through
-  assign snax_resp_o.id       = (!rsp_fifo_empty) ? rsp_fifo_out.id: snax_req_i.id;
+  assign snax_resp_o.id       = rsp_req.id;
   // Leave this as always no error for now
   assign snax_resp_o.error    = 1'b0;
 
