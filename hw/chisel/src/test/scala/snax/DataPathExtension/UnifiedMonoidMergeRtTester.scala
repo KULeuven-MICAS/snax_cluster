@@ -22,6 +22,7 @@ class UnifiedMonoidMergeRtTester extends AnyFlatSpec with ChiselScalatestTester 
   private val dHead = 8
 
   private val MODE_SUM = 0; private val MODE_MOMENT = 1; private val MODE_ATTN = 2; private val MODE_MAXPOOL = 3
+  private val MODE_ARGMAX = 4; private val MODE_MOMENT2 = 5
 
   private def f32(f: Double): BigInt = BigInt(java.lang.Float.floatToIntBits(f.toFloat).toLong & 0xffffffffL)
   private def dec(b: BigInt): Double = java.lang.Float.intBitsToFloat(b.toInt).toDouble
@@ -121,6 +122,56 @@ class UnifiedMonoidMergeRtTester extends AnyFlatSpec with ChiselScalatestTester 
                  s"trial $trial max=${lane(out, 0)} vs ${vals.max}")
         }
         println(f"[Unified/MAXPOOL] max-reduce over 8 field0 lanes exact over 10 trials")
+      }
+  }
+
+  "UnifiedMonoidMergeRt_ARGMAX" should "reduce (logit, idx) pairs to the max logit + its carried index" in {
+    test(new DataPathExtensionHarness(new HasUnifiedMonoidMergeRt(dHead = dHead)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+        val rng = new Random(0x66dd)
+        for (trial <- 0 until 10) {
+          // distinct logits (WSEL ties break to the first operand; distinct keys make the argmax unambiguous)
+          val logits = rng.shuffle((0 until 8).map(i => -4.0 + i * 1.1).toList)
+          val pairs  = logits.zipWithIndex.map { case (lg, i) => (lg, i.toDouble) } // field1 carries the index
+          val out    = runBeat(dut, csrWord(MODE_ARGMAX, nValid = 8), packPairs(pairs))
+          val gmax   = logits.max; val gidx = logits.indexOf(gmax).toDouble
+          assert(math.abs(lane(out, 0) - gmax) <= math.abs(gmax) * 1e-6 + 1e-9, s"argmax trial $trial max")
+          assert(lane(out, 1) == gidx, s"argmax trial $trial idx=${lane(out, 1)} vs $gidx")
+        }
+        println(f"[Unified/ARGMAX] top-1 (max logit + carried index) exact over 10 trials")
+      }
+  }
+
+  "UnifiedMonoidMergeRt_MOMENT2" should "fold the exp-weighted moment bank (m, ℓ, Σeˢv, Σeˢv²)" in {
+    test(new DataPathExtensionHarness(new HasUnifiedMonoidMergeRt(dHead = dHead)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+        val rng = new Random(0x2b02)
+        // reference flash merge of (m, ℓ, A, B): m*=max ; ℓ,A,B rescaled by exp(m_k − m*)
+        def ref(sh: Seq[(Double, Double, Double, Double)]): (Double, Double, Double, Double) = {
+          val ms = sh.map(_._1).max
+          def w(sel: ((Double, Double, Double, Double)) => Double) = sh.map(s => sel(s) * math.exp(s._1 - ms)).sum
+          (ms, w(_._2), w(_._3), w(_._4))
+        }
+        for (trial <- 0 until 6) {
+          // each shard's local partial: ℓ=Σeˢ, A=Σeˢv, B=Σeˢv² (B >= 0), all at the shard's own max m
+          val shards = Seq.fill(4) {
+            val m = rng.between(-2.0, 5.0); val l = rng.between(1.0, 5.0)
+            val a = rng.between(-4.0, 4.0); val b = rng.between(0.5, 6.0)
+            (m, l, a, b)
+          }
+          runBeat(dut, csrWord(MODE_MOMENT2, 1, accEn = 1, accInit = 1),
+                  packAttn(shards(0)._1, shards(0)._2, Seq(shards(0)._3, shards(0)._4)))
+          var out = BigInt(0)
+          for (i <- 1 until 4)
+            out = runBeat(dut, csrWord(MODE_MOMENT2, 1, accEn = 1, accInit = 0),
+                          packAttn(shards(i)._1, shards(i)._2, Seq(shards(i)._3, shards(i)._4)))
+          val (gm, gl, ga, gb) = ref(shards)
+          assert(math.abs(lane(out, 0) - gm) <= math.abs(gm) * 1e-6 + 1e-9, s"m2 trial $trial m")
+          assert(math.abs(lane(out, 1) - gl) / gl <= 1.5e-2, s"m2 trial $trial ℓ")
+          assert(math.abs(lane(out, 2) - ga) / (math.abs(ga) + 1e-6) <= 2e-2, s"m2 trial $trial A=Σeˢv")
+          assert(math.abs(lane(out, 3) - gb) / gb <= 2e-2, s"m2 trial $trial B=Σeˢv²")
+        }
+        println(f"[Unified/MOMENT2] exp-weighted (m, ℓ, Σeˢv, Σeˢv²) 4-shard accEn fold matches reference")
       }
   }
 

@@ -4,20 +4,34 @@
 //
 // Local-loopback smoke test of UnifiedMonoidMergeRt -- ONE configurable combine
 // cell driven through the REAL SW CSR path (snax_xdma_enable_dst_ext), exercised
-// in every mode of the arithmetic-reduction family on the same netlist:
-//   MOMENT  : softmax normalizer (m, ℓ)      paired-tree fold, one full beat
-//   SUM     : LayerNorm/RMSNorm (Σx, Σx²)    paired-tree fold, one full beat
-//   MAXPOOL : max-reduce                     paired-tree fold, one full beat
-//   ATTN    : flash-attention (m, ℓ, O)      single-partial accEn fold, two beats
-// The 3-bit combineMode lives in csr(0)[15:13]; everything else (nValid/accEn/
-// accInit/accSlot) is the SAME single user CSR the four fixed merge modules use.
+// in every supported mode of the in-fabric reduction family on the same netlist.
+//
+// SUPPORTED OPS (combineMode = csr(0)[15:13]; role vector per field):
+//   #  mode      op                              beat / fold          role vector
+//   0  SUM       LayerNorm/RMSNorm (Σx, Σx²)      8 pairs, paired tree (SUM,  SUM)
+//   1  MOMENT    softmax normalizer (m, ℓ)        8 pairs, paired tree (KEY,  RSUM)
+//   2  ATTN      flash-attention (m, ℓ, O[dHead]) 1 partial, accEn slot (KEY, RSUM, RSUM×dHead)
+//   3  MAXPOOL   max-reduce                       8 pairs, paired tree (KEY,  OFF…)
+//   4  ARGMAX    top-1 (max logit + index)        8 pairs, paired tree (KEY,  WSEL)
+//   5  MOMENT2   exp-wtd moments (m,ℓ,Σeˢv,Σeˢv²) 1 partial, accEn slot (KEY, RSUM, RSUM, RSUM)
+// Roles: KEY = max (produces the shared α=exp(Δ)); RSUM = winner + α·loser (one FMA);
+// SUM = a+b (the SAME FMA, α=1); WSEL = the winner's carried payload (a mux, no FMA);
+// OFF = parked. One exp LUT per combine node feeds every RSUM lane. The 3-bit mode
+// is the ONLY difference between ops; nValid/accEn/accInit/accSlot are the same
+// single user CSR the family shares, so the inter-cluster serdes is untouched.
+//
+// This engine SUPERSEDES the former separate StreamMomentMergeRt / NormStatMergeRt /
+// AttnMergeRt fixed modules. It does NOT cover top-k (k>1) routing: that is a sort
+// (a comparator mesh), provably outside this (max,+)-shared-exponent cell -- only the
+// k=1 slice (ARGMAX) folds in. The v² payload of MOMENT2 is produced upstream by the
+// SIMD egress square feature; the merge here only aligned-adds it (a new RSUM lane).
 //
 // No FPU on the DM core, so all checks are pure-integer:
-//   m*/S1/S2/max are sums/maxes of already-materialized FP32 values -> compared
-//   as positive-FP32 ULP distance (bit pattern reinterpreted as int32 is
-//   monotonic for non-negative values; SUM S1 can be negative so it is compared
-//   with a small signed tolerance via its magnitude). The exp-LUT (depth 128)
-//   ULP bound for ℓ/O matches the ~1.5e-2 relative error the Chisel testers use.
+//   m*/S1/S2/max/logit/idx are sums/maxes/selects of already-materialized FP32 values
+//   -> compared as positive-FP32 ULP distance (bit pattern reinterpreted as int32 is
+//   monotonic for non-negative values; a value that can be negative is compared on its
+//   magnitude with the sign checked separately). The exp-LUT (depth 128) ULP bound for
+//   the rescaled sums matches the ~1.5e-2 relative error the Chisel testers use.
 
 #include "data.h"
 #include "snax-xdma-lib.h"
@@ -36,6 +50,8 @@
 #define MODE_MOMENT 1u
 #define MODE_ATTN 2u
 #define MODE_MAXPOOL 3u
+#define MODE_ARGMAX 4u
+#define MODE_MOMENT2 5u
 
 // csr(0): [7:0] nValid | [8] accEn | [9] accInit | [12:10] accSlot | [15:13] mode
 static inline uint32_t csr_word(uint32_t mode, uint32_t nvalid, uint32_t accen,
@@ -75,7 +91,7 @@ int main() {
         uint8_t *base = (uint8_t *)snrt_cluster_base_addrl();
         uint8_t *in_buf = base;
         uint8_t *out_buf = base + XDMA_BEAT_BYTES;
-        printf("[Unified] local-loopback: one configurable cell, four modes\n");
+        printf("[Unified] local-loopback: one configurable cell, six modes\n");
 
         // ---- MOMENT: softmax normalizer (m*, l*), stateless paired-tree fold ----
         if (load_and_run(in_buf, out_buf, moment_beat_in,
@@ -123,6 +139,49 @@ int main() {
             if (!ok) err++;
         } else {
             printf("[Unified] MAXPOOL: setup failed\n");
+            err++;
+        }
+        snax_xdma_disable_dst_ext(WRITER_EXT_UNIFIEDMONOIDMERGERT);
+
+        // ---- ARGMAX: 8 (logit, idx) candidates -> max logit + its carried index ----
+        if (load_and_run(in_buf, out_buf, argmax_beat_in,
+                         csr_word(MODE_ARGMAX, 8, 0, 0, 0)) == 0) {
+            uint32_t *o = (uint32_t *)out_buf;
+            int m_ok = (o[0] == argmax_m_golden);   // max logit: bit-exact (a max of materialized values)
+            int i_ok = (o[1] == argmax_idx_golden); // carried index: passed through verbatim (WSEL, no math)
+            printf("[Unified] ARGMAX : logit=%08x/%08x %s idx=%08x/%08x %s\n", o[0],
+                   argmax_m_golden, m_ok ? "OK" : "BAD", o[1], argmax_idx_golden,
+                   i_ok ? "OK" : "BAD");
+            if (!(m_ok && i_ok)) err++;
+        } else {
+            printf("[Unified] ARGMAX : setup failed\n");
+            err++;
+        }
+        snax_xdma_disable_dst_ext(WRITER_EXT_UNIFIEDMONOIDMERGERT);
+
+        // ---- MOMENT2: (m, ℓ, Σeˢv, Σeˢv²) two-shard accEn fold (arm slot 0, then fold) ----
+        int m2_ok = 1;
+        if (load_and_run(in_buf, out_buf, moment2_beat0_in,
+                         csr_word(MODE_MOMENT2, 1, 1, 1, 0)) != 0)
+            m2_ok = 0;
+        if (m2_ok && load_and_run(in_buf, out_buf, moment2_beat1_in,
+                                  csr_word(MODE_MOMENT2, 1, 1, 0, 0)) != 0)
+            m2_ok = 0;
+        if (m2_ok) {
+            uint32_t *o = (uint32_t *)out_buf;
+            int m_ok = (o[0] == moment2_m_golden);
+            uint32_t lu = fp32_pos_ulp_dist(o[1], moment2_l_golden);
+            uint32_t bu = fp32_pos_ulp_dist(o[3], moment2_b_golden);  // B=Σeˢv² >= 0
+            // A=Σeˢv can be negative: compare magnitude + sign
+            uint32_t au = fp32_pos_ulp_dist(o[2] & 0x7fffffffu, moment2_a_golden & 0x7fffffffu);
+            int a_sign = (o[2] >> 31) == (moment2_a_golden >> 31);
+            int l_ok = lu <= L_TOL_ULP, a_ok = a_sign && au <= L_TOL_ULP, b_ok = bu <= L_TOL_ULP;
+            printf("[Unified] MOMENT2: m*=%08x/%08x %s l*=%08x ulp=%u %s A ulp=%u %s B ulp=%u %s\n",
+                   o[0], moment2_m_golden, m_ok ? "OK" : "BAD", o[1], lu, l_ok ? "OK" : "BAD",
+                   au, a_ok ? "OK" : "BAD", bu, b_ok ? "OK" : "BAD");
+            if (!(m_ok && l_ok && a_ok && b_ok)) err++;
+        } else {
+            printf("[Unified] MOMENT2: setup failed\n");
             err++;
         }
         snax_xdma_disable_dst_ext(WRITER_EXT_UNIFIEDMONOIDMERGERT);

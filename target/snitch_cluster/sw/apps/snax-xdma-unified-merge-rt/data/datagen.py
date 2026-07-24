@@ -46,7 +46,7 @@ def pack_attn(m, l, o):
     beat = np.zeros(2 * MAX_PAIRS, dtype=np.float32)
     beat[0] = m
     beat[1] = l
-    beat[2:2 + DHEAD] = o
+    beat[2:2 + len(o)] = o  # payload length varies: dHead for ATTN, 2 (A,B) for MOMENT2
     return beat.view(np.uint32)
 
 
@@ -82,6 +82,44 @@ def emit_header_file(**kwargs):
     emit += [format_vector_definition("uint32_t", "maxpool_beat_in", pack_pairs(v8, j8),
                                       alignment=64, hex_bits=32, cast_hex=True)]
     emit += [format_scalar_definition("uint32_t", "maxpool_m_golden", u32(np.max(v8)))]
+
+    # ---- ARGMAX: 8 (logit, idx) candidates -> max logit + its carried index (top-1) ----
+    # distinct logits so the argmax is unambiguous (WSEL ties break to the first operand). Force the max to a
+    # NONZERO index so the carried-index check is meaningful (a zero idx would alias a zeroed/masked field).
+    perm = rng.permutation(8)
+    logits = (-4.0 + perm.astype(np.float32) * 1.1).astype(np.float32)
+    win = 5  # put the largest logit at index 5
+    hi = int(np.argmax(logits))
+    logits[hi], logits[win] = logits[win], logits[hi]
+    idxf = np.arange(8, dtype=np.float32)  # field1 carries the index (as a float, passed through verbatim)
+    gmax = float(np.max(logits))
+    gidx = float(int(np.argmax(logits)))
+    emit += [format_vector_definition("uint32_t", "argmax_beat_in", pack_pairs(logits, idxf),
+                                      alignment=64, hex_bits=32, cast_hex=True)]
+    emit += [format_scalar_definition("uint32_t", "argmax_m_golden", u32(gmax))]
+    emit += [format_scalar_definition("uint32_t", "argmax_idx_golden", u32(gidx))]
+
+    # ---- MOMENT2: two shard partials (m, ℓ=Σeˢ, A=Σeˢv, B=Σeˢv²) -> exp-weighted moment bank ----
+    # B (the 2nd moment) is produced upstream by the SIMD egress square feature; here the beats carry the
+    # pre-computed per-shard partials, exactly as MOMENT/ATTN carry pre-summed statistics.
+    m2 = []
+    for _ in range(2):
+        m = float(rng.uniform(-2.0, 5.0))
+        ll = float(rng.uniform(1.0, 5.0))
+        a = float(rng.uniform(-4.0, 4.0))
+        b = float(rng.uniform(0.5, 6.0))
+        m2.append((m, ll, a, b))
+    m2ms = max(s[0] for s in m2)
+    m2l = sum(s[1] * np.exp(s[0] - m2ms) for s in m2)
+    m2a = sum(s[2] * np.exp(s[0] - m2ms) for s in m2)
+    m2b = sum(s[3] * np.exp(s[0] - m2ms) for s in m2)
+    for i, (m, ll, a, b) in enumerate(m2):
+        emit += [format_vector_definition("uint32_t", f"moment2_beat{i}_in", pack_attn(m, ll, [a, b]),
+                                          alignment=64, hex_bits=32, cast_hex=True)]
+    emit += [format_scalar_definition("uint32_t", "moment2_m_golden", u32(m2ms))]
+    emit += [format_scalar_definition("uint32_t", "moment2_l_golden", u32(m2l))]
+    emit += [format_scalar_definition("uint32_t", "moment2_a_golden", u32(m2a))]
+    emit += [format_scalar_definition("uint32_t", "moment2_b_golden", u32(m2b))]
 
     # ---- ATTN: two shard partials (m, ℓ, O) -> flash-attention merged triple ----
     shards = []

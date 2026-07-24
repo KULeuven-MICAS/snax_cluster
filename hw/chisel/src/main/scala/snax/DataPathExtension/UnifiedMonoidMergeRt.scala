@@ -16,24 +16,32 @@ import chisel3.util._
   *   KEY   out = max(a,b) (= m*)                     one distinguished field; produces the shared rescale α=exp(Δ)
   *   RSUM  out = winner + α·loser                    exponent-aligned sum (softmax ℓ, attention O)  [one FMA]
   *   SUM   out = a + b                               plain sum (norm Σx, Σx²)                        [the SAME FMA, α=1]
+  *   WSEL  out = winner's payload                    the KEY's argmax carry (top-1 index)            [a mux, no FMA]
   *   OFF   out = identity (0)                         lane parked
   * SUM and RSUM are the SAME FMA (`a+b = ffma(b, 1.0, a)`), so a value field is one FMA + two config muxes
-  * (a winner-swap and a scale ∈ {α, 1} select); KEY taps the front-end max; ONE exp LUT per combine unit feeds
-  * every RSUM lane (Lemma 3 -- adding lanes never adds exp hardware).
+  * (a winner-swap and a scale ∈ {α, 1} select); WSEL taps the same winner-swap mux WITHOUT the add; KEY taps the
+  * front-end max; ONE exp LUT per combine unit feeds every RSUM lane (Lemma 3 -- adding lanes never adds exp HW).
   *
   * combineMode (csr(0)[15:13]) selects the role vector; `roleOf` is a tiny runtime decode of (mode, field):
   *   SUM      -> NormStat        : (SUM, SUM)                      no key, α idle
   *   MOMENT   -> softmax (m, ℓ)  : (KEY, RSUM)
   *   ATTN     -> (m, ℓ, O[dHead]): (KEY, RSUM, RSUM×dHead)        one α shared across ℓ and all O lanes
   *   MAXPOOL  -> max-reduce      : (KEY, OFF…)
+  *   ARGMAX   -> top-1 (max,idx) : (KEY, WSEL)                    the key's max + the winner's carried index
+  *   MOMENT2  -> exp-wtd moments : (KEY, RSUM, RSUM, RSUM)        (m, ℓ=Σeˢ, A=Σeˢv, B=Σeˢv²) -- one α for all
+  *
+  * ARGMAX recovers the k=1 slice of top-k (a single shared max + a selected index) that a general top-k sort
+  * needs a comparator mesh for; useful for greedy decode + top-1 MoE routing. MOMENT2 is the "add a moment"
+  * closure demo: Σeˢv² is just another RSUM sharing the same α (zero new merge silicon -- the v² payload is
+  * produced upstream by the SIMD egress square feature; the merge only aligned-adds).
   *
   * TWO wrapper topologies around the one combine (both always built; the mode picks which drives the output):
-  *   - PAIRED-TREE (SUM / MOMENT / MAXPOOL): the beat packs 8 two-field partials (field0 = lanes 0..7, field1 =
-  *     lanes 8..15); an 8->4->2->1 tree of identical combine nodes reduces them intra-beat. MOMENT and SUM share
-  *     this tree verbatim, differing only in the per-node role -- the clean 2-for-1.
-  *   - SINGLE-PARTIAL (ATTN): the beat is one (m, ℓ, O) partial (F = 2+dHead lanes); there is no intra-beat tree,
-  *     the fold IS the accEn slot merge. The beat is delayed to the tree's retire point so the slot merge sees one
-  *     aligned Fmax-field partial regardless of mode.
+  *   - PAIRED-TREE (SUM / MOMENT / MAXPOOL / ARGMAX): the beat packs 8 two-field partials (field0 = lanes 0..7,
+  *     field1 = lanes 8..15); an 8->4->2->1 tree of identical combine nodes reduces them intra-beat. MOMENT/SUM/
+  *     ARGMAX share this tree verbatim, differing only in the per-node role -- the clean N-for-1.
+  *   - SINGLE-PARTIAL (ATTN / MOMENT2): the beat is one (m, ℓ, …) partial (F = 2+dHead lanes); there is no intra-
+  *     beat tree, the fold IS the accEn slot merge. The beat is delayed to the tree's retire point so the slot
+  *     merge sees one aligned Fmax-field partial regardless of mode.
   *
   * The intra-beat result (`arm`, an Fmax-field partial: the tree's (m*,ℓ*) padded, or the ATTN beat) then folds
   * into the persistent accEn slot under ONE more combine node -- so P producers push straight at the merger
@@ -50,7 +58,7 @@ import chisel3.util._
   * arm (accInit=1) on its first push -- the same "arming is software's job" contract the fixed modules carry.
   * FP32-internal throughout, so the crossing stats stay exact at any transport precision (they travel FP32).
   */
-object MonoidRole { val OFF = 0; val KEY = 1; val SUM = 2; val RSUM = 3 }
+object MonoidRole { val OFF = 0; val KEY = 1; val SUM = 2; val RSUM = 3; val WSEL = 4 }
 
 class HasUnifiedMonoidMergeRt(
   dataWidth:   Int = 512,
@@ -93,6 +101,11 @@ class UnifiedMonoidMergeRt(
   val MODE_MOMENT  = 1
   val MODE_ATTN    = 2
   val MODE_MAXPOOL = 3
+  val MODE_ARGMAX  = 4  // (KEY, WSEL): max logit + the winner's carried index (top-1 / greedy decode)
+  val MODE_MOMENT2 = 5  // (KEY, RSUM, RSUM, RSUM): (m, ℓ=Σeˢ, A=Σeˢv, B=Σeˢv²) exp-weighted moment bank
+
+  // fields carried by the single-partial MOMENT2 moment bank (m, ℓ, A, B): KEY then 3 RSUM lanes
+  val MOMENT2_RSUM_HI = 3
 
   val nValid      = ext_csr_i(0)(7, 0)
   val accEn       = ext_csr_i(0)(8)
@@ -100,7 +113,9 @@ class UnifiedMonoidMergeRt(
   val accSlot     = ext_csr_i(0)(12, 10)
   val combineMode = ext_csr_i(0)(15, 13)
 
-  val isAttn     = combineMode === MODE_ATTN.U
+  // SINGLE-PARTIAL modes carry one multi-field (m, ℓ, …) partial per beat (no intra-beat tree); the rest reduce
+  // 8 two-field partials on the paired tree.
+  val isSingle   = (combineMode === MODE_ATTN.U) || (combineMode === MODE_MOMENT2.U)
   def modeHasKey: Bool = combineMode =/= MODE_SUM.U    // only SUM lacks a key (max + exp idle => α = 1)
 
   // role(mode, field): a runtime decode of the structured role vectors (field f is elaboration-time)
@@ -109,11 +124,15 @@ class UnifiedMonoidMergeRt(
     val momRole  = if (f == 0) MonoidRole.KEY.U else if (f == 1) MonoidRole.RSUM.U else MonoidRole.OFF.U
     val attnRole = if (f == 0) MonoidRole.KEY.U else if (f <= 1 + dHead) MonoidRole.RSUM.U else MonoidRole.OFF.U
     val maxRole  = if (f == 0) MonoidRole.KEY.U else MonoidRole.OFF.U
+    val argRole  = if (f == 0) MonoidRole.KEY.U else if (f == 1) MonoidRole.WSEL.U else MonoidRole.OFF.U
+    val mom2Role = if (f == 0) MonoidRole.KEY.U else if (f <= MOMENT2_RSUM_HI) MonoidRole.RSUM.U else MonoidRole.OFF.U
     MuxLookup(combineMode, sumRole)(Seq(
       MODE_SUM.U     -> sumRole,
       MODE_MOMENT.U  -> momRole,
       MODE_ATTN.U    -> attnRole,
-      MODE_MAXPOOL.U -> maxRole
+      MODE_MAXPOOL.U -> maxRole,
+      MODE_ARGMAX.U  -> argRole,
+      MODE_MOMENT2.U -> mom2Role
     ))
   }
 
@@ -134,13 +153,16 @@ class UnifiedMonoidMergeRt(
       val isKey = role === MonoidRole.KEY.U
       val isOff = role === MonoidRole.OFF.U
       val rsum  = role === MonoidRole.RSUM.U
-      val swap  = rsum && !aWins                      // RSUM winner-swap; SUM is commutative (no swap)
+      val wsel  = role === MonoidRole.WSEL.U
+      // RSUM and WSEL both take the winner-swap (so `win` is the winner's field); SUM is commutative (no swap)
+      val swap  = (rsum || wsel) && !aWins
       val los   = ShiftRegister(Mux(swap, a(f), b(f)), lat)
       val win   = ShiftRegister(Mux(swap, b(f), a(f)), lat)
       val scale = Mux(rsum, alpha, F32_ONE)           // α (RSUM) or 1.0 (SUM): the whole SUM/RSUM difference
       // 0-loser guard (as in the fixed modules): a 0 value adds exactly the winner, avoiding 0*exp(-huge)=NaN
       val fma   = Mux(los === FP32_ZERO, win, ffma(los, scale, win))
-      Mux(isKey, ShiftRegister(mStar, lat), Mux(isOff, FP32_ZERO, fma))  // KEY | OFF | (SUM & RSUM => the FMA)
+      // KEY -> m* ; OFF -> 0 ; WSEL -> the winner's carried payload (no add) ; SUM & RSUM -> the shared FMA
+      Mux(isKey, ShiftRegister(mStar, lat), Mux(isOff, FP32_ZERO, Mux(wsel, win, fma)))
     }
     (out, lat)
   }
@@ -168,15 +190,15 @@ class UnifiedMonoidMergeRt(
   }
   val (treeM, treeL) = parts.head
 
-  // SINGLE-PARTIAL (ATTN): the beat's own Fmax-field partial, delayed to the tree's retire point so the slot
-  // merge sees ONE aligned partial regardless of mode.
-  val attnFields = (0 until Fmax).map(f => ShiftRegister(lanes(f), foldLat))
+  // SINGLE-PARTIAL (ATTN / MOMENT2): the beat's own Fmax-field partial, delayed to the tree's retire point so the
+  // slot merge sees ONE aligned partial regardless of mode.
+  val singleFields = (0 until Fmax).map(f => ShiftRegister(lanes(f), foldLat))
 
-  // `arm` = this beat's intra-beat-folded partial (tree result padded for paired modes; the beat for ATTN).
+  // `arm` = this beat's intra-beat-folded partial (tree result padded for paired modes; the beat for single ones).
   val arm = (0 until Fmax).map { f =>
-    if (f == 0) Mux(isAttn, attnFields(0), treeM)
-    else if (f == 1) Mux(isAttn, attnFields(1), treeL)
-    else Mux(isAttn, attnFields(f), FP32_ZERO)
+    if (f == 0) Mux(isSingle, singleFields(0), treeM)
+    else if (f == 1) Mux(isSingle, singleFields(1), treeL)
+    else Mux(isSingle, singleFields(f), FP32_ZERO)
   }
 
   // ---- accumulate-on-arrival: fold `arm` into a persistent slot under one more combine node ----
@@ -223,13 +245,13 @@ class UnifiedMonoidMergeRt(
     .elsewhen(accept && accEn) { accBusy := true.B }
     .elsewhen(outValidAcc) { accBusy := false.B }
 
-  // output beat: ATTN lays the (m, ℓ, O) partial into lanes 0,1,2..; paired modes splat (field0, field1) across
-  // the beat's low 64 bits for the writer (m*/S1 in 0..31, ℓ*/S2 in 32..63), as the fixed modules do.
-  val attnLanes = Wire(Vec(nLanes, UInt(accWidth.W)))
-  for (f <- 0 until Fmax) attnLanes(f) := emitFields(f)
-  for (f <- Fmax until nLanes) attnLanes(f) := FP32_ZERO
+  // output beat: single-partial modes lay the (m, ℓ, …) partial into lanes 0,1,2..; paired modes splat
+  // (field0, field1) across the beat's low 64 bits for the writer (m*/S1/logit in 0..31, ℓ*/S2/idx in 32..63).
+  val singleLanes = Wire(Vec(nLanes, UInt(accWidth.W)))
+  for (f <- 0 until Fmax) singleLanes(f) := emitFields(f)
+  for (f <- Fmax until nLanes) singleLanes(f) := FP32_ZERO
   val pairedBeat = Cat(Seq.fill(extensionParam.dataWidth / 64)(Cat(emitFields(1), emitFields(0))))
-  val outBeat    = Mux(isAttn, attnLanes.asUInt, pairedBeat)
+  val outBeat    = Mux(isSingle, singleLanes.asUInt, pairedBeat)
 
   outQ.io.enq.valid := Mux(accEn, outValidAcc, outValid) && !ext_start_i
   outQ.io.enq.bits  := outBeat
