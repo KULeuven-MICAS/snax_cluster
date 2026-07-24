@@ -1,0 +1,966 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.2.11">
+    
+    
+      
+        <title>Summary and Exercise - SNAX Cluster</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8c5ef100.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.9647289d.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#summarizing-the-steps" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="SNAX Cluster" class="md-header__button md-logo" aria-label="SNAX Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SNAX Cluster
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Summary and Exercise
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/KULeuven-MICAS/snitch_cluster/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KULeuven-MICAS/snitch_cluster
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="SNAX Cluster" class="md-nav__button md-logo" aria-label="SNAX Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    SNAX Cluster
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/KULeuven-MICAS/snitch_cluster/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KULeuven-MICAS/snitch_cluster
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/getting_started.html" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/directory_structure.html" class="md-nav__link">
+        Repository Structure
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/documentation.html" class="md-nav__link">
+        Documentation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Reference Manual
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference Manual" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Reference Manual
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Hardware
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Hardware" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Hardware
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snitch.html" class="md-nav__link">
+        Snitch
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_2" type="checkbox" id="__nav_3_1_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_2">
+          Snitch Cluster
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Snitch Cluster" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          Snitch Cluster
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snitch_cluster.html" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/peripherals.html" class="md-nav__link">
+        Peripherals
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schema-doc/snitch_cluster.html" class="md-nav__link">
+        Schema
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snax_cluster.html" class="md-nav__link">
+        SNAX Cluster
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/reqrsp_interface.html" class="md-nav__link">
+        Reqrsp Interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/custom_instructions.html" class="md-nav__link">
+        Custom Instructions
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          SNAX Tutorial
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="SNAX Tutorial" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          SNAX Tutorial
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="introduction.html" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architectural_overview.html" class="md-nav__link">
+        Architectural Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="accelerator_design.html" class="md-nav__link">
+        1. Accelerator Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="csrman_design.html" class="md-nav__link">
+        2. CSR Manager Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="streamer_design.html" class="md-nav__link">
+        3. Streamer Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build_system.html" class="md-nav__link">
+        4. Building the System
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="programming.html" class="md-nav__link">
+        5. Programming the System
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="other_tools.html" class="md-nav__link">
+        Other Tools
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="summary_and_exercise.html" class="md-nav__link md-nav__link--active">
+        Summary and Exercise
+      </a>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../publications.html" class="md-nav__link">
+        Publications
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/KULeuven-MICAS/snitch_cluster/edit/master/docs/tutorial/summary_and_exercise.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<h1 id="summarizing-the-steps">Summarizing the Steps</h1>
+<p>Congratulations! You're now an expert in using the SNAX shell. Let's review the major steps you worked on.</p>
+<p>1 - Building your accelerator.</p>
+<ul>
+<li>We first built the toy SNAX ALU accelerator.</li>
+<li>The important component is to have an accelerator shell that complies with the interface of our system.</li>
+</ul>
+<p>2 - Configuring the CSR manager for your accelerator.</p>
+<ul>
+<li>Specifying the planned number of read-write (RW) and read-only (RO) registers.</li>
+</ul>
+<p>3 - Configuring the streamer for your accelerator.</p>
+<ul>
+<li>Specifying the number of read and write ports of your accelerator.</li>
+<li>Configuring the data widths, FIFO depths, even the spatial parallelism considerations, etc.</li>
+</ul>
+<p>4 - Configuring the system according to your needs.</p>
+<ul>
+<li>Attaching the accelerator configurations.</li>
+<li>Specifying the memory sizes.</li>
+</ul>
+<p>5 - Setting up the file list and makefiles.</p>
+<ul>
+<li>Modifying the <code>Bender.yml</code> to add the file list.</li>
+<li>Modifying <code>Makefiles</code> </li>
+</ul>
+<p>6 - Programming your system.</p>
+<ul>
+<li>Making the C code.</li>
+<li>Making the data generation.</li>
+<li>Building the software.</li>
+<li>Run the RISC-V binary program</li>
+</ul>
+<p>7 - Profiling your system.</p>
+<ul>
+<li>Using waveforms.</li>
+<li>Using stack tracing with <code>spike</code>.</li>
+</ul>
+<h1 id="summarizing-commands">Summarizing Commands</h1>
+<p>For generating the RTL files you do:</p>
+<div class="highlight"><pre><span></span><code>make <span class="nv">CFG_OVERRIDE</span><span class="o">=</span>cfg/snax-alu.hjson rtl-gen
+</code></pre></div>
+<p>For building hardware you do:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span> target/snitch_cluster
+make <span class="nv">CFG_OVERRIDE</span><span class="o">=</span>cfg/snax-alu.hjson bin/snitch_cluster.vlt
+</code></pre></div>
+<p>For building software you do:</p>
+<div class="highlight"><pre><span></span><code>make <span class="nv">CFG_OVERRIDE</span><span class="o">=</span>cfg/snax-alu.hjson <span class="nv">SELECT_RUNTIME</span><span class="o">=</span>rtl-generic <span class="nv">SELECT_TOOLCHAIN</span><span class="o">=</span>llvm-generic sw
+</code></pre></div>
+<h1 id="you-need-an-exercise-to-get-strong">You Need an Exercise to Get Strong!!!</h1>
+<p>With everything you've learned, let's do a simple exercise for a new accelerator! The figure below shows the accelerator data path of interest. This accelerator is built for you already but you need to integrate it into the SNAX system.</p>
+<p><img alt="image" src="https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/28f30943-75e0-455b-bb32-957651ba720e" /></p>
+<p>You can get the <code>snax_exercise</code> RTL files from the <code>snax-exercise-tutorial</code> branch.</p>
+<div class="highlight"><pre><span></span><code>git checkout snax-exercise-tutorial
+</code></pre></div>
+<h2 id="accelerator-datapath-specifications">Accelerator Datapath Specifications</h2>
+<p>There are specific features for this accelerator:</p>
+<ul>
+<li>
+<p>Let's name the accelerator <code>snax_exercise</code></p>
+</li>
+<li>
+<p>Name your accelerator configuration file as <code>snax_exercise.hjson</code></p>
+</li>
+<li>
+<p>The accelerator processes the kernel fully combinationally. Written in pseudo-code as:</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">O</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"></span>
+<span class="n">parfor</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">8</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="o">:</span><span class="w"></span>
+<span class="w">    </span><span class="n">O</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"></span>
+<span class="n">O</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">bias</span><span class="w"></span>
+</code></pre></div>
+<ul>
+<li>
+<p>Take note that the <code>parfor</code> indicates that the MAC needs to be processed spatially in 8 parallel ports.</p>
+</li>
+<li>
+<p>The accelerator is an oversimplified MAC with a bias addition that takes in 16 inputs, 8 parallel ports for input A, and 8 parallel ports for input B.</p>
+</li>
+<li>
+<p>Each input port takes in 64 bits of data. Each input port for A and B is multiplied together and accumulated at the end. This should be done fully-combinationally.</p>
+</li>
+<li>
+<p>We also add a feature that adds a 64-bit fixed bias.</p>
+</li>
+<li>
+<p>Since the bias is 64 bits wide, you need to set the upper and lower bits of the bias through CSR registers.</p>
+</li>
+<li>
+<p>The output produces a single 128-bit output.</p>
+</li>
+<li>
+<p>For the inputs and outputs, make sure to comply with the decoupled interface.</p>
+</li>
+<li>
+<p>The CSR registers it has are tabulated below:</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">register name</th>
+<th style="text-align: center;">register offset</th>
+<th style="text-align: center;">type</th>
+<th style="text-align: left;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">upper bias</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">RW</td>
+<td style="text-align: left;">Upper 32 bits of the bias.</td>
+</tr>
+<tr>
+<td style="text-align: center;">lower bias</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">RW</td>
+<td style="text-align: left;">Lower 32 bits of the bias.</td>
+</tr>
+<tr>
+<td style="text-align: center;">num. of iter.</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">RW</td>
+<td style="text-align: left;">Number of iterations to process.</td>
+</tr>
+<tr>
+<td style="text-align: center;">accelerator start</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">RW</td>
+<td style="text-align: left;">Set 1 to LSB only to start the accelerator</td>
+</tr>
+<tr>
+<td style="text-align: center;">busy</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">RO</td>
+<td style="text-align: left;">Busy status. 1 - busy, 0 - idle</td>
+</tr>
+<tr>
+<td style="text-align: center;">perf. counter</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">RO</td>
+<td style="text-align: left;">Performance counter indicating number of cycles</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>
+<p>There is a <code>snax_exercise_top.sv</code> which is the top module already of the data path shown above.</p>
+</li>
+<li>
+<p>The control side signals are unpacked registers but with the labels per port. They should correspond to the register table above.</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">//-------------------------------</span>
+<span class="c1">// Register RW from CSR manager</span>
+<span class="c1">//-------------------------------</span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="n">RegDataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w">   </span><span class="n">csr_rw_reg_upper_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="n">RegDataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w">   </span><span class="n">csr_rw_reg_lower_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="n">RegDataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w">   </span><span class="n">csr_rw_reg_len_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="n">RegDataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w">   </span><span class="n">csr_rw_reg_start_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w">                      </span><span class="n">csr_rw_reg_valid_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w">                      </span><span class="n">csr_rw_reg_ready_o</span><span class="p">,</span><span class="w"></span>
+<span class="c1">//-------------------------------</span>
+<span class="c1">// Register RO to CSR manager</span>
+<span class="c1">//-------------------------------</span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="n">RegDataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w">   </span><span class="n">csr_ro_reg_busy_o</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="n">RegDataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w">   </span><span class="n">csr_ro_reg_perf_count_o</span><span class="p">,</span><span class="w"></span>
+</code></pre></div>
+<ul>
+<li>The data ports are packed signals. Observe that we have the 8 input ports of size <code>DataWidth</code>. We have only 1 output port of size <code>2*DataWidth</code>.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="c1">//-------------------------------</span>
+<span class="c1">// Data path IO</span>
+<span class="c1">//-------------------------------</span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="mh">7</span><span class="o">:</span><span class="mh">0</span><span class="p">][</span><span class="n">DataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">a_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w">                      </span><span class="n">a_valid_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w">                      </span><span class="n">a_ready_o</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="mh">7</span><span class="o">:</span><span class="mh">0</span><span class="p">][</span><span class="n">DataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">b_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w">                      </span><span class="n">b_valid_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w">                      </span><span class="n">b_ready_o</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="mh">2</span><span class="o">*</span><span class="n">DataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w">    </span><span class="n">out_o</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w">                      </span><span class="n">out_valid_o</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w">                      </span><span class="n">out_ready_i</span><span class="w"></span>
+</code></pre></div>
+<h2 id="csr-manager-and-streamer-specifications">CSR Manager and Streamer Specifications</h2>
+<p>For the CSR manager, you just need to ensure that the register configurations match that of the accelerator's register specs.</p>
+<p>For the streamer, you have the following specifications:</p>
+<ul>
+<li>
+<p>You need to feed 512 bits for each input port A and B. Then you split them inside the accelerator's data path, just like in the <code>snax_alu</code> example.</p>
+</li>
+<li>
+<p>This necessitates 16 TCDM ports for all the inputs.</p>
+</li>
+<li>
+<p>The output is just a single 128-bit port output and hence leads to 2 TCDM ports only.</p>
+</li>
+<li>
+<p>This leads to a total of 18 TCDM ports for the streamer.</p>
+</li>
+<li>
+<p>Use a depth of 16 for all FIFOs.</p>
+</li>
+<li>
+<p>Let's keep 1 loop dimension only.</p>
+</li>
+</ul>
+<h2 id="your-goal">Your Goal</h2>
+<p>Since the accelerator is already prepared for you, your goals are to:</p>
+<ol>
+<li>Create the <code>snax_exercise_shell_wrapper.sv</code> that complies with the interface of the generated <code>snax_exericse_wrapper.sv</code>.</li>
+<li>Modify the necessary RTL setups: <code>snax_exercise.hjson</code>, <code>Bender.yml</code>, and the <code>Makefile</code> for handling HW builds.</li>
+<li>Plan and create a simple C-code test, have your own data generation, and modify the necessary <code>Makefiles</code> for handling SW builds.</li>
+<li>Run your code and see if it works!</li>
+<li>Have fun!</li>
+</ol>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="other_tools.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Other Tools" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Other Tools
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../publications.html" class="md-footer__link md-footer__link--next" aria-label="Next: Publications" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Publications
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.748e2769.min.js"></script>
+      
+    
+  </body>
+</html>
