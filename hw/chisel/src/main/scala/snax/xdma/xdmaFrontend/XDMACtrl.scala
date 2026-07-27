@@ -217,6 +217,14 @@ class DstConfigRouter(dataType: XDMACfgIO, clusterName: String = "unnamed_cluste
     XDMAChainRole.MIDDLE.U,
     XDMAChainRole.TAIL.U
   )
+  // The port-0 loopback shift updates writerPtr but NOT aguCfg.ptr. A locally-terminated chain -- which is
+  // exactly the ChainGather collector's TAIL -- would otherwise arm its writer AGU at the ORIGINAL
+  // writerPtr(0) (the far source's offset) instead of this node's own dst, so the fold lands at the wrong
+  // local address and the real dst is never written. Re-point the writer AGU at the current terminal, the
+  // same re-derivation a remotely-received frame does in convertToXDMACfgIO. No-op for a plain local write
+  // (writerPtr(0) was never shifted); gather-MIDDLE and ChainWrite terminals are unaffected.
+  io.to.local.bits.aguCfg.ptr := outputCfgSplitter.io.out(1).bits
+    .writerPtr(0)(io.to.local.bits.aguCfg.ptr.getWidth - 1, 0)
   // Port 2: The remote Cfg
   outputCfgSplitter.io.sel(2) := forwardToRemote
   outputCfgSplitter.io.out(2) <> io.to.remote
