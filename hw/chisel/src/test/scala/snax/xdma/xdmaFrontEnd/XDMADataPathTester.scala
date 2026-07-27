@@ -45,7 +45,7 @@ class DMADataPathTester extends AnyFreeSpec with ChiselScalatestTester {
         )
       )
     )
-  ).withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+  ).withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
     // ************************ Prepare the simulation data ************************//
 
     // Prepare the data in the tcdm

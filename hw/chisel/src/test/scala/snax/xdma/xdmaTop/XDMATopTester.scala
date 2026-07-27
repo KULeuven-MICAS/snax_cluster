@@ -61,7 +61,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
         )
       )
     )
-  ).withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+  ).withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
     // ************************ Start Simulation **********************************//
     // The thread list for the concurrent elements in a tester
     var concurrent_threads = new chiseltest.internal.TesterThreadList(Seq())

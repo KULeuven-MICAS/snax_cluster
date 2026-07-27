@@ -67,7 +67,7 @@ class FpExpTester extends AnyFlatSpec with ChiselScalatestTester {
 
   "FpExp" should "match host exp within <=1 FP16 ULP after narrowing" in {
     test(new FpExp)
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
         dut => sweep(dut, latency = 0, maxUlpAllowed = 1, tag = "comb256")
       }
   }
@@ -75,7 +75,7 @@ class FpExpTester extends AnyFlatSpec with ChiselScalatestTester {
   // Area config used by StreamMap: pipelined + 128-entry ROM must stay within the relaxed <=2 FP16 ULP.
   "FpExp_pipelined_lut128" should "match host exp within <=2 FP16 ULP (pipelined, 128-entry ROM)" in {
     test(new FpExp(pipelined = true, lutN = 128))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
         dut => sweep(dut, latency = FpExp.PipeLatency, maxUlpAllowed = 2, tag = "pipe128")
       }
   }

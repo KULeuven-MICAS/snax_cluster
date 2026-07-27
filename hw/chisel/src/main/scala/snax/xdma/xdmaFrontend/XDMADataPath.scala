@@ -157,115 +157,43 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
 
   writerExtensions.io.data.in <> writerDataBeforeExtension
   writerExtensions.io.data.out <> writer.io.data
-  writerExtensions.io.connectCfgWithList(io.writerCfg.extCfg)
+  // The writer-side plugin CSR region is laid out extensions-first, junctions-second: the extension host consumes
+  // its share and hands the remainder to the switch's junction bank.
+  val writerJunctionCfg = writerExtensions.io.connectCfgWithList(io.writerCfg.extCfg.toIndexedSeq)
   writerExtensions.io.start := io.writerStart
 
-  // isChainedWrite is a signal to indicate if XDMA is inside the chained write mode
-  // isChainedWrite will be assigned in the later state machine
-  val isChainedWrite = WireInit(false.B)
-  io.writerBusy := writer.io.busy | isChainedWrite
-
-  // The following muxes and demuxes are used to do the local loopback and remote loopback, the wires connected to the reader and writer are: readerDataAfterExtension and writerDataBeforeExtension. The wires between all the demuxes and muxes should not be cutted
-  // LocalLoopbackDemux takes the data from the Reader side, and send it to either the remote cluster (0) or loopback to the writer side (1)
-  val localLoopbackDemux = Module(
-    new DemuxDecoupled(
-      chiselTypeOf(readerDataAfterExtension.bits),
-      numOutput = 2
-    ) {
-      override def desiredName = clusterName + "_xdma_datapath_local_demux"
-    }
-  )
-  // LocalLoopbackMux takes the data from either loopback or the remote side, and send it to writer
-  val localLoopbackMux   = Module(
-    new MuxDecoupled(
-      chiselTypeOf(writerDataBeforeExtension.bits),
-      numInput = 2
-    ) {
-      override def desiredName = clusterName + "_xdma_datapath_local_mux"
-    }
+  // ============================ the crossing ============================
+  // All four crossing ports and every mode that routes between them live in XDMADataSwitch. Its CHAINGATHER and
+  // GATHERROOT modes fold the arriving remote partial with this node's local operand at a DataPathJunction instead
+  // of copying it onward.
+  val dataSwitch = Module(
+    new XDMADataSwitch(
+      param       = writerParam,
+      dataWidth   = writerParam.rwParam.tcdmParam.dataWidth * writerParam.rwParam.tcdmParam.numChannel,
+      clusterName = clusterName
+    )
   )
 
-  localLoopbackDemux.io.sel := io.readerCfg.localLoopback
-  localLoopbackMux.io.sel   := io.writerCfg.localLoopback
-  readerDataAfterExtension <> localLoopbackDemux.io.in
-  localLoopbackMux.io.out <> writerDataBeforeExtension
+  readerDataAfterExtension <> dataSwitch.io.localIn
+  dataSwitch.io.localOut <> writerDataBeforeExtension
+  io.remoteXDMAData.toRemote <> dataSwitch.io.toRemote
+  dataSwitch.io.fromRemote <> io.remoteXDMAData.fromRemote
 
-  val readerLocaltoRemoteLoopback = Wire(chiselTypeOf(readerDataAfterExtension))
-  val writerLocaltoRemoteLoopback = Wire(
-    chiselTypeOf(writerDataBeforeExtension)
-  )
-
-  localLoopbackDemux.io.out(1) <> localLoopbackMux.io.in(1)
-  localLoopbackDemux.io.out(0) <> readerLocaltoRemoteLoopback
-  localLoopbackMux.io.in(0) <> writerLocaltoRemoteLoopback
-
-  // RemoteLoopbackMux takes the data from readerLocaltoRemoteLoopback(0) or the remote loopback side (1), and send it to the remote side
-  val remoteLoopbackMux = Module(
-    new MuxDecoupled(
-      chiselTypeOf(readerLocaltoRemoteLoopback.bits),
-      numInput = 2
-    ) {
-      override def desiredName = clusterName + "_xdma_datapath_remote_mux"
-    }
-  )
-
-  // The state machine to control the remote loopback datapath for the chained write
-  // isChainedWrite is a signal to indicate if the current data is a chained write
-  val stateIdle :: stateChainedWrite :: stateChainedWriteWait :: Nil = Enum(3)
-
-  val nextState    = Wire(chiselTypeOf(stateIdle))
-  val currentState = RegNext(nextState, stateIdle)
-  nextState := currentState
-
-  switch(currentState) {
-    is(stateIdle) {
-      // Mealy FSM to pull up isChainedWrite
-      when(io.writerCfg.remoteLoopback && writer.io.busy) {
-        nextState      := stateChainedWrite
-        isChainedWrite := true.B
-      }
-    }
-    is(stateChainedWrite) {
-      isChainedWrite := true.B
-      when(~writer.io.busy) {
-        nextState := stateChainedWriteWait
-      }
-    }
-    is(stateChainedWriteWait) {
-      // Moore FSM to pull down isChainedWrite
-      isChainedWrite := true.B
-      when(~io.remoteXDMAData.fromRemote.valid) {
-        nextState := stateIdle
-      }
-    }
+  dataSwitch.io.readerLocalLoopback  := io.readerCfg.localLoopback
+  dataSwitch.io.writerLocalLoopback  := io.writerCfg.localLoopback
+  dataSwitch.io.writerRemoteLoopback := io.writerCfg.remoteLoopback
+  dataSwitch.io.writerStart          := io.writerStart
+  dataSwitch.io.writerBusyRaw        := writer.io.busy
+  dataSwitch.io.readerBusy           := io.readerBusy
+  if (writerParam.junctionParam.nonEmpty) {
+    dataSwitch.io.junctionCfg.enable  := writerJunctionCfg.head
+    dataSwitch.io.junctionCfg.userCsr := writerJunctionCfg.tail.take(dataSwitch.io.junctionCfg.userCsr.length)
+  } else {
+    dataSwitch.io.junctionCfg := DontCare
   }
 
-  // The remoteLoopbackSplitter takes the data from the remote side, and always send it to writerLocaltoRemoteLoopback (0) and selectively send it to the remote loopback side (1)
-  val remoteLoopbackSplitter = Module(
-    new SplitterDecoupled(
-      chiselTypeOf(io.remoteXDMAData.fromRemote.bits),
-      numOutput = 2
-    ) {
-      override def desiredName = clusterName + "_xdma_datapath_remote_splitter"
-    }
-  )
-  remoteLoopbackMux.io.sel := isChainedWrite
-  remoteLoopbackSplitter.io.sel(0) := true.B
-  remoteLoopbackSplitter.io.sel(
-    1
-  )                                := isChainedWrite
-
-  remoteLoopbackMux.io.in(0) <> readerLocaltoRemoteLoopback
-  remoteLoopbackMux.io.in(1) <> remoteLoopbackSplitter.io.out(1)
-  remoteLoopbackSplitter.io.out(0) <> writerLocaltoRemoteLoopback
-
-  // The output of the remoteLoopbackMux is the data that will be sent to the remote side
-  io.remoteXDMAData.toRemote <> remoteLoopbackMux.io.out
-  // The input of the remoteLoopbackSplitter is the data that will be get from the remote side
-  // But the data can only be transmitted when the writer is busy
-  remoteLoopbackSplitter.io.in.valid := io.remoteXDMAData.fromRemote.valid && io.writerBusy
-  remoteLoopbackSplitter.io.in.bits  := io.remoteXDMAData.fromRemote.bits
-  io.remoteXDMAData.fromRemote.ready := remoteLoopbackSplitter.io.in.ready && io.writerBusy
+  val isChainedWrite = dataSwitch.io.isChainedWrite
+  io.writerBusy := dataSwitch.io.writerBusy
 
   // Connect the AccompaniedCfg signal
   // Create three intermediate wires to convert from XDMAIntraClusterCfgIO to XDMADataPathCfgIO
@@ -304,32 +232,49 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
     io.writerBusy
   )
 
+  // Direction tag for the ARRIVING stream. `origination` alone cannot decide it: a ChainGather's collector
+  // originates the cfg AND receives the chain's payload, so it would tag its own inbound stream a remote-read and
+  // the chain's tail bit would never be set. `collectiveMode` says the payload is chain traffic regardless of who
+  // issued the cfg; with it clear this is exactly the previous expression.
   fromRemoteAccompaniedCfg.taskType := Mux(
-    io.writerCfg.origination === io.writerCfg.originationIsFromLocal.B,
+    io.writerCfg.origination === io.writerCfg.originationIsFromLocal.B && !io.writerCfg.collectiveMode,
     fromRemoteAccompaniedCfg.taskTypeIsRemoteRead.B,
     fromRemoteAccompaniedCfg.taskTypeIsRemoteWrite.B
   )
 
+  // At a gather node the local reader runs CONCURRENTLY with the chained transfer, supplying the junction's local
+  // operand. Without the `isGather` term, `readerBusy` rising before the gather state machine would present a
+  // to-remote cfg that looks like a fresh chain HEAD: the adapter would latch a first-chained-write and emit a
+  // finish to the local core for a task that has not happened. A gather node's outgoing cfg is the CHAINED one
+  // (middle) or nothing at all (root), never this one.
   toRemoteAccompaniedCfg.readyToTransfer := Mux(
-    io.readerCfg.localLoopback,
+    io.readerCfg.localLoopback || dataSwitch.io.isGather,
     false.B,
     io.readerBusy
   )
 
+  // Direction tag for the OUTGOING stream, and the mirror of the same problem: a ChainGather HEAD is configured
+  // remotely but pushes the chain's first payload, so `origination` would tag it a remote-read and the adapter's
+  // chain FSMs -- which switch on this bit -- would not see a chain at all. With `collectiveMode` clear this is
+  // exactly the previous expression.
   toRemoteAccompaniedCfg.taskType := Mux(
-    io.readerCfg.origination === io.readerCfg.originationIsFromLocal.B,
+    io.readerCfg.origination === io.readerCfg.originationIsFromLocal.B || io.readerCfg.collectiveMode,
     toRemoteAccompaniedCfg.taskTypeIsRemoteWrite.B,
     toRemoteAccompaniedCfg.taskTypeIsRemoteRead.B
   )
 
-  toRemoteChainedWriteAccompaniedCfg.readyToTransfer := isChainedWrite
+  // A CHAINGATHER middle hop forwards the FOLD to the next hop, so it carries the same shifted (chained) cfg a
+  // CHAINWRITE middle hop does, which keeps data head-to-tail with Grant/Finish tail-to-head. A GATHERROOT is the
+  // tail and forwards nothing.
+  val isChainedForward = isChainedWrite || dataSwitch.io.isGatherMid
+  toRemoteChainedWriteAccompaniedCfg.readyToTransfer := isChainedForward
   toRemoteChainedWriteAccompaniedCfg.taskType        := toRemoteChainedWriteAccompaniedCfg.taskTypeIsRemoteWrite.B
 
   // The actual output of AccompaniedCfg is determined by the remoteLoopback signal:
   // If the remoteLoopback signal is high, toRemoteAccompaniedCfg needs to be shifted
   io.remoteXDMAData.fromRemoteAccompaniedCfg := fromRemoteAccompaniedCfg
   io.remoteXDMAData.toRemoteAccompaniedCfg   := Mux(
-    isChainedWrite,
+    isChainedForward,
     toRemoteChainedWriteAccompaniedCfg,
     toRemoteAccompaniedCfg
   )

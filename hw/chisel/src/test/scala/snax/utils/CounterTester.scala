@@ -9,7 +9,7 @@ class BasicCounterTester extends AnyFlatSpec with ChiselScalatestTester {
   println(getVerilogString(new BasicCounter(8)))
   "The basic counter" should " pass" in {
     test(new BasicCounter(8)).withAnnotations(
-      Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)
+      Seq(VerilatorBackendAnnotation)
     ) { dut =>
       dut.io.ceil.poke(28)
       for (i <- 0 until 128) {
@@ -24,7 +24,7 @@ class UpDownCounterTester extends AnyFlatSpec with ChiselScalatestTester {
   println(getVerilogString(new UpDownCounter(8)))
   "The up down counter" should " pass" in {
     test(new UpDownCounter(8)).withAnnotations(
-      Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)
+      Seq(VerilatorBackendAnnotation)
     ) { dut =>
       dut.io.ceil.poke(28)
       for (i <- 0 until 128) {

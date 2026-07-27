@@ -1,0 +1,190 @@
+package snax.DataPathJunction
+
+import chisel3._
+import chisel3.util._
+
+import fp_native._
+import fp_unit._
+
+import snax.DataPathExtension.FpHelpers
+import snax.DataPathExtension.FpHelpers._
+
+/** ============================================================================================================
+  * `ElementwiseJunction` -- the linear two-stream fold.
+  * ============================================================================================================
+  *
+  * A 2-input, per-element FP reduction (ADD / MUL / MAX / MIN) on the Junction ABI: same arity, same chain
+  * position and same per-beat throughput as `MonoidJunction`, but a per-element operator.
+  *
+  * ADD / MUL / MAX / MIN commute with routing, so a chain of these nodes computes the same result regardless of
+  * how the reduction is ordered along the route. The nonlinear family in `MonoidJunction` -- the online-softmax
+  * (m, l) merge, the flash-attention (m, l, O) triple, the exp-weighted moment bank -- is NOT expressible this
+  * way at any element granularity, because it needs a shared rescale alpha = exp(m_loser - m*) derived from the
+  * operand pair itself.
+  *
+  * ---- LANE GRID ----
+  *
+  * `elemWidth` (elaboration) sets the lane count `lanes = dataWidth / elemWidth`; internal math is always FP32, so
+  * `fmt` (runtime) selects any transport format at least `elemWidth` wide and the beat is sliced accordingly.
+  * Every supported format therefore runs at ONE BEAT PER CYCLE -- narrower formats simply light up more lanes. At
+  * the default `elemWidth = 16` that is 32 FP32 lanes covering FP16/BF16 at full beat rate and FP32 on lanes
+  * 0..15.
+  *
+  * ---- CSR(0) ----
+  * {{{
+  *   [3:0]   op    0 = ADD, 1 = MUL, 2 = MAX, 3 = MIN
+  *   [6:4]   fmt   0 = FP16, 1 = BF16, 2 = FP8, 3 = FP32   (must be >= elemWidth wide)
+  * }}}
+  */
+class HasElementwiseJunction(
+  dataWidth:   Int = 512,
+  elemWidth:   Int = 16,
+  fpPipe:      Int = 1,
+  skidDepth:   Int = 4,
+  starveLimit: Int = 4096
+) extends HasDataPathJunction {
+  implicit val junctionParam: JunctionParam =
+    new JunctionParam(
+      moduleName  = "ElementwiseJunction",
+      userCsrNum  = 1,
+      dataWidth   = dataWidth,
+      starveLimit = starveLimit
+    )
+
+  def instantiate(clusterName: String): ElementwiseJunction =
+    Module(new ElementwiseJunction(elemWidth = elemWidth, fpPipe = fpPipe, skidDepth = skidDepth) {
+      override def desiredName = clusterName + namePostfix
+    })
+}
+
+object ElementwiseJunction {
+  val OP_ADD = 0
+  val OP_MUL = 1
+  val OP_MAX = 2
+  val OP_MIN = 3
+
+  /** runtime transport formats, reusing the codes the SIMD extensions already use (FpHelpers.FMT_*) */
+  val FMT_FP32 = 3
+  val formats: Seq[(Int, Int, FpType)] = Seq(
+    (FpHelpers.FMT_FP8, 8, FP8),
+    (FpHelpers.FMT_FP16, 16, FP16),
+    (FpHelpers.FMT_BF16, 16, BF16),
+    (FMT_FP32, 32, FP32)
+  )
+}
+
+class ElementwiseJunction(
+  elemWidth:     Int = 16,
+  fpPipe:        Int = 1,
+  skidDepth:     Int = 4
+)(implicit
+  junctionParam: JunctionParam
+) extends DataPathJunction {
+
+  import ElementwiseJunction._
+
+  require(isPow2(elemWidth) && elemWidth >= 8 && elemWidth <= 32, "ElementwiseJunction: elemWidth must be 8, 16 or 32")
+  val lanes = junctionParam.dataWidth / elemWidth
+  // the transport formats this grid can carry at one beat per cycle (anything at least as wide as a lane slot)
+  val supported = formats.filter(_._2 >= elemWidth)
+  require(supported.nonEmpty, s"ElementwiseJunction: no transport format is >= elemWidth=$elemWidth")
+
+  val FP32_ONE  = "h3F800000".U(32.W)
+  val FP32_ZERO = 0.U(32.W)
+
+  val opcode = jct_csr_i(0)(3, 0)
+  val fmt    = jct_csr_i(0)(6, 4)
+
+  // ---- skid FIFOs + credit: each beat pair traverses the lane grid independently, so first-output latency is
+  // independent of payload size (cut-through, not store-and-forward)
+  val aQ = Module(new Queue(UInt(junctionParam.dataWidth.W), entries = skidDepth, pipe = true, flow = false))
+  val bQ = Module(new Queue(UInt(junctionParam.dataWidth.W), entries = skidDepth, pipe = true, flow = false))
+  aQ.io.enq <> jct_a_i
+  bQ.io.enq <> jct_b_i
+
+  val lat    = 2 * fpPipe // FMA depth + narrow depth (widen is a combinational bit-manipulation)
+  val Qdepth = scala.math.max(2, lat + 4)
+  val outQ   = Module(new Queue(UInt(junctionParam.dataWidth.W), entries = Qdepth))
+  val credit = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
+
+  val fire = aQ.io.deq.valid && bQ.io.deq.valid && (credit =/= 0.U) && !jct_start_i
+  aQ.io.deq.ready := fire
+  bQ.io.deq.ready := fire
+
+  // ---- runtime slice + exact widen to FP32 --------------------------------------------------------------
+  // For each supported format, slice the beat into dataWidth/w elements and widen. Lanes beyond a format's
+  // element count are parked at zero, so a wide format simply uses fewer lanes at the same beat rate.
+  def widenedLanes(beat: UInt, w: Int, t: FpType): IndexedSeq[UInt] = {
+    val n = junctionParam.dataWidth / w
+    (0 until lanes).map { i =>
+      if (i < n) {
+        val slice = beat(w * i + w - 1, w * i)
+        if (t == FP32) slice else FpHelpers.widen(slice, t)
+      } else FP32_ZERO
+    }
+  }
+  def laneMux(beat: UInt): IndexedSeq[UInt] = {
+    val perFmt = supported.map { case (code, w, t) => code -> widenedLanes(beat, w, t) }
+    (0 until lanes).map { i =>
+      MuxLookup(fmt, perFmt.head._2(i))(perFmt.map { case (code, v) => code.U -> v(i) })
+    }
+  }
+
+  val aW = laneMux(aQ.io.deq.bits)
+  val bW = laneMux(bQ.io.deq.bits)
+
+  // ---- the 2-input reduction, one unit per lane ---------------------------------------------------------
+  // ADD and MUL share ONE fused FMA (ADD = a*1 + b, MUL = a*b + 0), so a lane costs one FMA plus two operand
+  // muxes. MAX/MIN are pure comparison logic (finite operands), aligned to the FMA's depth so the lane retires in
+  // a single fixed latency regardless of op.
+  val isMul   = opcode === OP_MUL.U
+  val isMax   = opcode === OP_MAX.U
+  val isMin   = opcode === OP_MIN.U
+  val isMinMax = isMax || isMin
+
+  val res32 = (0 until lanes).map { i =>
+    val fmaB = Mux(isMul, bW(i), FP32_ONE)
+    val fmaC = Mux(isMul, FP32_ZERO, bW(i))
+    val fma  = Module(new FpFma(FP32, FP32, FP32, fpPipe))
+    fma.io.in_a := aW(i)
+    fma.io.in_b := fmaB
+    fma.io.in_c := fmaC
+    val mm = ShiftRegister(Mux(isMax, fp32max(aW(i), bW(i)), fp32min(aW(i), bW(i))), fpPipe)
+    Mux(isMinMax, mm, fma.io.out)
+  }
+
+  // ---- narrow back to the transport format and repack the beat ------------------------------------------
+  def packed(w: Int, t: FpType): UInt = {
+    val n     = junctionParam.dataWidth / w
+    val elems = (0 until n).map { i =>
+      if (t == FP32) ShiftRegister(res32(i), fpPipe) else FpHelpers.narrow(res32(i), t, fpPipe)
+    }
+    Cat(elems.reverse)
+  }
+  val outBeat = MuxLookup(fmt, packed(supported.head._2, supported.head._3))(
+    supported.map { case (code, w, t) => code.U -> packed(w, t) }
+  )
+
+  def clrPipe(in: Bool, n: Int): Bool =
+    if (n <= 0) in
+    else {
+      val r = RegInit(VecInit(Seq.fill(n)(false.B)))
+      r(0) := Mux(jct_start_i, false.B, in)
+      for (i <- 1 until n) r(i) := Mux(jct_start_i, false.B, r(i - 1))
+      r(n - 1)
+    }
+  val retire = clrPipe(fire, lat)
+
+  outQ.io.enq.valid := retire && !jct_start_i
+  outQ.io.enq.bits  := outBeat
+  assert(!outQ.io.enq.valid || outQ.io.enq.ready, "ElementwiseJunction: output queue overflow (credit bug)")
+  outQ.io.deq.ready := jct_data_o.ready
+  jct_data_o.valid  := outQ.io.deq.valid
+  jct_data_o.bits   := outQ.io.deq.bits
+
+  val deq = outQ.io.deq.fire
+  when(jct_start_i) { credit := Qdepth.U }
+    .otherwise { when(fire =/= deq) { credit := Mux(fire, credit - 1.U, credit + 1.U) } }
+
+  jct_busy_o := (credit =/= Qdepth.U) || aQ.io.deq.valid || bQ.io.deq.valid
+}

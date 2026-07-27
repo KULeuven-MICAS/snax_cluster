@@ -18,7 +18,7 @@ class IO64R32ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester wi
         regDataWidth    = 32,
         moduleTagName   = "Test"
       )
-    ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    )  { dut =>
       // Strobe Moves step by step
       writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("00000001", 2))
       dut.io.readWriteRegIO.bits(0).expect(0x000000ffL)
@@ -144,7 +144,7 @@ class IO64R32ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester wi
         regDataWidth    = 32,
         moduleTagName   = "Test"
       )
-    ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    )  { dut =>
       // Strobe Moves step by step
       writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("00000001", 2))
       dut.io.readWriteRegIO.bits(0).expect(0x000000ffL)

@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
-snax_xdma_test: the xDMA cluster cfg with the moment-merge COLLECTIVE on the WRITER side, for the cross-cluster
-in-fabric collective experiment (F3). Same as snax_xdma_cluster except StreamMomentMergeRt is placed in the xDMA
-`writer_extensions`. Cross-cluster data arrives at fromRemote -> writerExtensions -> writer, and the writerExtCfg
-plumbing (XDMAInterClusterCfgIO) now carries the writer-side extension config across the
-die-to-die link -- so a cluster's writer-side StreamMomentMergeRt is CONFIGURED + ACTIVE on the incoming remote
-(m, l) stream and merges it in-fabric (not gather-then-local). This is the deployable form of the flag beyond SHARP.
+snax_xdma_test: the xDMA cluster cfg carrying the in-fabric COLLECTIVE, for the cross-cluster collective
+experiment. Same as snax_xdma_cluster except the xDMA data switch is given a `writer_junctions` bank: the 2->1
+DataPathJunction operators (ElementwiseJunction, MonoidJunction) that implement the CHAINGATHER / GATHERROOT
+switch modes, folding the arriving remote partial with this node's local operand rather than gathering everything
+at a root. The junction config rides the writer-side ext-cfg region, which the writerExtCfg plumbing
+(XDMAInterClusterCfgIO) carries across the die-to-die link, so every hop of a chain is configured from one
+dispatch.
 Usable standalone (single-cluster remote-loopback bring-up) and on HeMAiA multi-cluster.
 
 Naming convention (must match for HeMAiA integration): file = snax_<name>.hjson; cluster.name = <name>;
@@ -182,16 +183,24 @@ in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hjson).
                 // StreamDecompressRt: the in-transit DECOMPRESSOR (MX/FP8 -> FP16/BF16), the writer-side mirror
                 // of the reader-side StreamCastRt compressor (local compress->decompress loopback).
                 HasStreamDecompressRt: {dataWidth: 512, fpPipe: 1, scaleBurst: 16}
-                // UnifiedMonoidMergeRt: ONE configurable combine cell folding the whole arithmetic-reduction
-                // family into one netlist, mode-selected per transfer by the 3-bit combineMode CSR field
-                // (csr(0)[15:13]): SUM (LayerNorm/RMSNorm Σx,Σx²), MOMENT (softmax normalizer m,ℓ -- the online-
-                // softmax merge SHARP cannot express), ATTN (the flash-attention (m,ℓ,O) triple), MAXPOOL. It
-                // SUPERSEDES the former separate StreamMomentMergeRt / StreamNormStatMergeRt / StreamAttnMergeRt
-                // fixed modules (the arithmetic collective family), and is the Gate-B reuse artifact -- one CSR,
-                // accEn slot + credit/Queue chassis shared, so the inter-cluster cfg serdes is untouched. Placed
-                // on the writer so it folds the CROSS-CLUSTER stream in-fabric (the in-transit collective). Adds
-                // 1 DST-ext CSR. (Top-k routing is a sort, provably outside this arithmetic cell -- dropped.)
-                HasUnifiedMonoidMergeRt: {dataWidth: 512, dHead: 8, expLutN: 128}
+            }
+            // writer_junctions: the 2->1 operator class at the DATA SWITCH (not in an extension chain). A junction
+            // consumes the arriving remote partial AND this node's local operand and emits one stream, which is what
+            // enables the CHAINGATHER / GATHERROOT switch modes -- reduce hop-by-hop along the route instead of
+            // gathering everything at a root. Both are built so the linear and the nonlinear case sit on ONE
+            // framework and can be compared like-for-like:
+            //   ElementwiseJunction -- the LINEAR baseline: a 2-input per-element FP reduction (ADD/MUL/MAX/MIN),
+            //     i.e. exactly the operator a collective-capable NoC puts inside the router. Runtime FP16/BF16/FP32.
+            //   MonoidJunction     -- the NONLINEAR family the per-element form cannot express at all: the online-
+            //     softmax (m, l) merge, the flash-attention (m, l, O) triple, exp-weighted moments, argmax. One
+            //     netlist, mode-selected by the 3-bit combineMode CSR field.
+            // Both are stateless in the operand pair, so the fold is fully pipelined (no accBusy read-modify-write)
+            // and the join is cut-through: first-output latency does not grow with payload, which is what keeps a
+            // chain latency-competitive with a star. Adds 2 DST-junction CSRs + 1 enable bitmask.
+            writer_junctions:
+            {
+                HasElementwiseJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1}
+                HasMonoidJunction: {dataWidth: 512, dHead: 8, expLutN: 128}
             }
             reader_extensions: {
                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}

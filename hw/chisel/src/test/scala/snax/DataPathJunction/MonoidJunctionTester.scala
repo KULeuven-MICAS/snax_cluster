@@ -1,0 +1,260 @@
+package snax.DataPathJunction
+
+import scala.util.Random
+
+import chisel3._
+import chiseltest._
+import chiseltest.simulator.VerilatorFlags
+import org.scalatest.flatspec.AnyFlatSpec
+
+import snax.DataPathJunction.JunctionTestUtils._
+
+/** Tier-1 for `MonoidJunction` -- the nonlinear 2->1 collective fold.
+  *
+  * What these tests pin down, beyond "the arithmetic is right":
+  *
+  *   1. Every `combineMode` folds a live operand PAIR against a numeric golden computed in double precision.
+  *   2. CHAINING: folding P = 4 partials as three successive pairwise junction ops reproduces the direct global
+  *      answer, which is the reduce-along-the-route property at component level.
+  *   3. CUT-THROUGH: the first output appears after the SAME number of cycles whether the payload is 1 beat or 64.
+  *      A store-and-forward join would make first-output latency scale with payload.
+  *   4. The fold streams at ~1 beat pair per cycle, since the combine holds no state between pairs.
+  *   5. Bypass discipline and the starvation watchdog -- the two properties the Junction CLASS guarantees.
+  */
+class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
+
+  val flags = VerilatorFlags(Seq("--build-jobs", "1"))
+  private val dHead     = 8
+  private val pairSlots = 8
+
+  import MonoidCombine._
+
+  // csr(0): [7:0] nValid | [15:13] combineMode   (bits [12:8] are the extension placement's slot fields, ignored)
+  private def csrWord(mode: Int, nValid: Int): BigInt = (BigInt(mode) << 13) | BigInt(nValid)
+
+  /** pack `pairSlots` (field0, field1) partials: field0_k = lane k, field1_k = lane pairSlots+k */
+  private def packPairs(p: Seq[(Double, Double)]): BigInt = {
+    var b = BigInt(0)
+    for ((v, k) <- p.zipWithIndex) { b |= f32(v._1) << (32 * k); b |= f32(v._2) << (32 * (pairSlots + k)) }
+    b
+  }
+
+  /** pack one (m, l, O[dHead]) partial across lanes 0..1+dHead */
+  private def packAttn(m: Double, l: Double, o: Seq[Double]): BigInt = {
+    var b = f32(m) | (f32(l) << 32)
+    for ((ov, k) <- o.zipWithIndex) b |= f32(ov) << (32 * (2 + k))
+    b
+  }
+
+  private def hasMonoid = new HasMonoidJunction(dHead = dHead, pairSlots = pairSlots)
+
+  // ---- goldens ----
+  private def momentGolden(a: (Double, Double), b: (Double, Double)): (Double, Double) = {
+    val m = math.max(a._1, b._1)
+    (m, a._2 * math.exp(a._1 - m) + b._2 * math.exp(b._1 - m))
+  }
+
+  "MonoidJunction_SUM" should "fold two streams of (Sx, Sx^2) partials slot-wise" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng = new Random(0x5011)
+      for (trial <- 0 until 6) {
+        val pa  = Seq.fill(pairSlots)((rng.between(-4.0, 4.0), rng.between(0.0, 8.0)))
+        val pb  = Seq.fill(pairSlots)((rng.between(-4.0, 4.0), rng.between(0.0, 8.0)))
+        val out = runPair(dut, csrWord(MODE_SUM, pairSlots), packPairs(pa), packPairs(pb), bDelay = trial % 3)
+        for (k <- 0 until pairSlots) {
+          val (g1, g2) = (pa(k)._1 + pb(k)._1, pa(k)._2 + pb(k)._2)
+          assert(math.abs(laneF32(out, k) - g1) <= math.abs(g1) * 1e-5 + 1e-6, s"trial $trial slot $k S1")
+          assert(math.abs(laneF32(out, pairSlots + k) - g2) <= math.abs(g2) * 1e-5 + 1e-6, s"trial $trial slot $k S2")
+        }
+      }
+      println(s"[Junction/SUM] $pairSlots independent (Sx, Sx^2) reductions folded per beat pair, 6 trials exact")
+    }
+  }
+
+  "MonoidJunction_MOMENT" should "fold two streams of softmax (m, l) normalizers slot-wise" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng   = new Random(0x2b2b)
+      var worst = 0.0
+      for (trial <- 0 until 6) {
+        val pa  = Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0)))
+        val pb  = Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0)))
+        val out = runPair(dut, csrWord(MODE_MOMENT, pairSlots), packPairs(pa), packPairs(pb), bDelay = trial % 4)
+        for (k <- 0 until pairSlots) {
+          val (gm, gl) = momentGolden(pa(k), pb(k))
+          val rel      = math.abs(laneF32(out, pairSlots + k) - gl) / gl
+          if (rel > worst) worst = rel
+          assert(math.abs(laneF32(out, k) - gm) <= math.abs(gm) * 1e-6 + 1e-9, s"trial $trial slot $k m")
+          assert(rel <= 1.5e-2, s"trial $trial slot $k l rel=$rel")
+        }
+      }
+      println(f"[Junction/MOMENT] the NONLINEAR fold (max coupled to a rescaled sum) -- worst rel err=$worst%.3g")
+    }
+  }
+
+  "MonoidJunction_ATTN" should "fold the single-partial (m, l, O) flash-attention triple" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng = new Random(0x0a44)
+      for (trial <- 0 until 5) {
+        val (ma, la, oa) = (rng.between(-2.0, 5.0), rng.between(1.0, 5.0), Seq.fill(dHead)(rng.between(-3.0, 3.0)))
+        val (mb, lb, ob) = (rng.between(-2.0, 5.0), rng.between(1.0, 5.0), Seq.fill(dHead)(rng.between(-3.0, 3.0)))
+        val out = runPair(dut, csrWord(MODE_ATTN, 1), packAttn(ma, la, oa), packAttn(mb, lb, ob), bDelay = trial % 3)
+        val gm  = math.max(ma, mb)
+        val gl  = la * math.exp(ma - gm) + lb * math.exp(mb - gm)
+        assert(math.abs(laneF32(out, 0) - gm) <= math.abs(gm) * 1e-6 + 1e-9, s"attn trial $trial m")
+        assert(math.abs(laneF32(out, 1) - gl) / gl <= 1.5e-2, s"attn trial $trial l")
+        for (j <- 0 until dHead) {
+          val go = oa(j) * math.exp(ma - gm) + ob(j) * math.exp(mb - gm)
+          val d  = math.abs(laneF32(out, 2 + j) - go) / (math.abs(go) + 1e-6)
+          assert(d <= 2e-2, s"attn trial $trial O[$j] rel=$d")
+        }
+      }
+      println(s"[Junction/ATTN] (m, l, O[$dHead]) triple folded from a live operand pair -- one shared alpha")
+    }
+  }
+
+  "MonoidJunction_MAXPOOL_ARGMAX" should "max-reduce and carry the winner's index" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng = new Random(0x3a11)
+      for (_ <- 0 until 4) {
+        val va  = Seq.fill(pairSlots)(rng.between(-9.0, 9.0))
+        val vb  = Seq.fill(pairSlots)(rng.between(-9.0, 9.0))
+        val out = runPair(dut, csrWord(MODE_MAXPOOL, pairSlots), packPairs(va.map((_, 0.0))), packPairs(vb.map((_, 0.0))))
+        for (k <- 0 until pairSlots) {
+          val g = math.max(va(k), vb(k))
+          assert(math.abs(laneF32(out, k) - g) <= math.abs(g) * 1e-6 + 1e-9, s"maxpool slot $k")
+        }
+      }
+      // ARGMAX: field1 carries the index of the winning logit (distinct logits => unambiguous)
+      for (trial <- 0 until 4) {
+        val la  = Seq.fill(pairSlots)(rng.between(-9.0, 0.0))
+        val lb  = Seq.fill(pairSlots)(rng.between(0.1, 9.0))
+        val pa  = la.zipWithIndex.map { case (v, i) => (v, i.toDouble) }
+        val pb  = lb.zipWithIndex.map { case (v, i) => (v, (pairSlots + i).toDouble) }
+        val out = runPair(dut, csrWord(MODE_ARGMAX, pairSlots), packPairs(pa), packPairs(pb))
+        for (k <- 0 until pairSlots) {
+          val aWins = la(k) >= lb(k)
+          val g     = math.max(la(k), lb(k))
+          assert(math.abs(laneF32(out, k) - g) <= math.abs(g) * 1e-6 + 1e-9, s"argmax trial $trial slot $k max")
+          assert(laneF32(out, pairSlots + k) == (if (aWins) k.toDouble else (pairSlots + k).toDouble),
+                 s"argmax trial $trial slot $k idx")
+        }
+      }
+      println("[Junction/MAXPOOL+ARGMAX] max-reduce and top-1 index carry over a live pair")
+    }
+  }
+
+  "MonoidJunction_chain" should "reproduce the global fold when P=4 partials are reduced along a chain" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      // Node i folds (arriving partial, local partial) and forwards. The output beat uses the SAME layout as the
+      // operands, so the chain is closed under its own format: a 4-node chain is three successive junction ops and
+      // must equal the direct global merge.
+      val rng = new Random(0x7c1a)
+      for (trial <- 0 until 4) {
+        val shards = Seq.fill(4)(Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0))))
+        var acc    = packPairs(shards.head)
+        for (hop <- 1 until 4)
+          acc = runPair(dut, csrWord(MODE_MOMENT, pairSlots), acc, packPairs(shards(hop)), bDelay = hop)
+        for (k <- 0 until pairSlots) {
+          val slot = shards.map(_(k))
+          val gm   = slot.map(_._1).max
+          val gl   = slot.map { case (m, l) => l * math.exp(m - gm) }.sum
+          assert(math.abs(laneF32(acc, k) - gm) <= math.abs(gm) * 1e-6 + 1e-9, s"chain trial $trial slot $k m")
+          assert(math.abs(laneF32(acc, pairSlots + k) - gl) / gl <= 3e-2, s"chain trial $trial slot $k l")
+        }
+      }
+      println("[Junction/chain] P=4 hop-by-hop fold == the direct global merge (associativity, in hardware)")
+    }
+  }
+
+  "MonoidJunction_cutthrough" should "emit its first beat after a payload-INDEPENDENT latency" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      // Feed N pairs back-to-back and time the FIRST output. A store-and-forward join would assemble the whole
+      // payload first, so this number would grow with N.
+      def firstOutLatency(n: Int): (Int, Double) = {
+        val rng   = new Random(0x99 + n)
+        val beats = Seq.fill(n)(packPairs(Seq.fill(pairSlots)((rng.between(-2.0, 4.0), rng.between(0.5, 3.0)))))
+        dut.io.csr_i(0).poke(csrWord(MODE_MOMENT, pairSlots).U)
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+        dut.io.out_o.ready.poke(true)
+        dut.io.a_i.valid.poke(true); dut.io.b_i.valid.poke(true)
+        dut.io.a_i.bits.poke(beats(0).U); dut.io.b_i.bits.poke(beats(0).U)
+        var cyc = 0; var fed = 0; var got = 0; var first = -1; var warm = -1; var last = -1
+        while (got < n && cyc < n * 40 + 600) {
+          val canFeed = fed < n && dut.io.a_i.ready.peekBoolean() && dut.io.b_i.ready.peekBoolean()
+          val outNow  = dut.io.out_o.valid.peekBoolean()
+          dut.clock.step(1); cyc += 1
+          if (canFeed) {
+            fed += 1
+            if (fed == 4) warm = cyc
+            last = cyc
+            if (fed < n) { dut.io.a_i.bits.poke(beats(fed).U); dut.io.b_i.bits.poke(beats(fed).U) }
+            else { dut.io.a_i.valid.poke(false); dut.io.b_i.valid.poke(false) }
+          }
+          if (outNow) { if (first < 0) first = cyc; got += 1 }
+        }
+        dut.io.out_o.ready.poke(false)
+        assert(got == n, s"only $got/$n beats retired at N=$n")
+        (first, if (last > warm) (n - 4).toDouble / (last - warm) else 0.0)
+      }
+      val (lat1, _)     = firstOutLatency(1)
+      val (lat64, util) = firstOutLatency(64)
+      println(f"[Junction/cut-through] first-output latency: N=1 -> $lat1 CC, N=64 -> $lat64 CC; stream util=$util%.3f")
+      assert(lat64 <= lat1 + 1,
+             s"NOT cut-through: first output slipped from $lat1 CC at N=1 to $lat64 CC at N=64 (store-and-forward)")
+      assert(lat1 <= 12, s"per-hop latency $lat1 CC exceeds budget (the harness adds 2 cut stages)")
+      // The fold is stateless in the operand pair, so it streams at one beat pair per cycle.
+      assert(util > 0.9, f"junction fold should stream at ~1 beat pair/cycle, got $util%.3f")
+    }
+  }
+
+  "MonoidJunction_bypass" should "be a transparent wire from a to out when disabled" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng   = new Random(0xbb01)
+      val beats = Seq.fill(8)(packPairs(Seq.fill(pairSlots)((rng.between(-4.0, 4.0), rng.between(0.5, 3.0)))))
+      dut.io.csr_i(0).poke(csrWord(MODE_MOMENT, pairSlots).U)
+      dut.io.enable_i.poke(false) // the bypass property every Junction inherits from the class
+      dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+      dut.io.out_o.ready.poke(true)
+      dut.io.b_i.valid.poke(false)
+      var got = List[BigInt]()
+      dut.io.a_i.valid.poke(true); dut.io.a_i.bits.poke(beats(0).U)
+      var cyc = 0; var fed = 0
+      while (got.length < beats.length && cyc < 500) {
+        val canFeed = fed < beats.length && dut.io.a_i.ready.peekBoolean()
+        val outNow  = dut.io.out_o.valid.peekBoolean()
+        val outBits = if (outNow) dut.io.out_o.bits.peekInt() else BigInt(0)
+        dut.clock.step(1); cyc += 1
+        if (canFeed) {
+          fed += 1
+          if (fed < beats.length) dut.io.a_i.bits.poke(beats(fed).U) else dut.io.a_i.valid.poke(false)
+        }
+        if (outNow) got = got :+ outBits
+      }
+      assert(got == beats.toList, "disabled junction must forward a_i byte-identically")
+      println("[Junction/bypass] enable=0 is byte-identical to a raw forward")
+    }
+  }
+
+  "MonoidJunction_watchdog" should "flag a starved join instead of hanging silently" in {
+    test(new DataPathJunctionHarness(new HasMonoidJunction(dHead = dHead, pairSlots = pairSlots, starveLimit = 64)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+        // A two-stream join stalls indefinitely if the operand beat counts disagree, which is a software contract
+        // on two independently dispatched cfgs. The watchdog turns that silent stall into an observable flag.
+        dut.io.csr_i(0).poke(csrWord(MODE_MOMENT, pairSlots).U)
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+        dut.io.out_o.ready.poke(true)
+        dut.io.b_i.valid.poke(false) // the local operand never arrives
+        dut.io.a_i.valid.poke(true); dut.io.a_i.bits.poke(BigInt(1).U)
+        var cyc = 0
+        while (!dut.io.starved_o.peekBoolean() && cyc < 400) { dut.clock.step(1); cyc += 1 }
+        assert(dut.io.starved_o.peekBoolean(), "starvation watchdog never fired on a one-sided join")
+        // and it clears once the missing operand shows up
+        dut.io.b_i.valid.poke(true); dut.io.b_i.bits.poke(BigInt(1).U)
+        dut.clock.step(4)
+        assert(!dut.io.starved_o.peekBoolean(), "watchdog must clear once the join makes progress")
+        println(s"[Junction/watchdog] starved join flagged after $cyc CC and cleared on progress")
+      }
+  }
+}

@@ -45,7 +45,7 @@ abstract class DataPathExtensionTester(
 
   suiteTestName should "pass" in {
     test(new DataPathExtensionHarness(hasExtension))
-      .withAnnotations(Seq(WriteVcdAnnotation, simBackEnd)) { dut =>
+      .withAnnotations(Seq(simBackEnd)) { dut =>
         dut.io.csr_i.zip(csr_vec).foreach { case (csrPort, csrData) =>
           csrPort.poke(csrData)
         }

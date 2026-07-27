@@ -26,7 +26,7 @@ class AsyncQueueMultiClockShell[T <: Data](dataType: T, depth: Int) extends Modu
 class AsyncQueueTester extends AnyFlatSpec with ChiselScalatestTester {
   "AsyncQueue Test" should "pass" in {
     test(new AsyncQueueMultiClockShell(UInt(8.W), 16))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
         var inputClock  = false
         var outputClock = false
         val dataBuffer  = scala.collection.mutable.Queue[Int]()
@@ -95,7 +95,7 @@ class AsyncQueueTester extends AnyFlatSpec with ChiselScalatestTester {
 class AsyncQueueMaceTester extends AnyFlatSpec with ChiselScalatestTester {
   "AsyncQueue Test Slow -> Fast" should "pass" in {
     test(new AsyncQueueMultiClockShell(UInt(8.W), 4))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
         var inputClock  = false
         var outputClock = false
         val dataBuffer  = scala.collection.mutable.Queue[Int]()
@@ -157,7 +157,7 @@ class AsyncQueueMaceTester extends AnyFlatSpec with ChiselScalatestTester {
 
   "AsyncQueue Test Fast -> Slow" should "pass" in {
     test(new AsyncQueueMultiClockShell(UInt(8.W), 4))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
         var inputClock  = false
         var outputClock = false
         val dataBuffer  = scala.collection.mutable.Queue[Int]()

@@ -38,7 +38,7 @@ class XDMAInterClusterCfgTester extends AnyFlatSpec with ChiselScalatestTester {
     axiParam          = new XDMAAXIParam,
     crossClusterParam = new XDMACrossClusterParam,
     rwParam           = new ReaderWriterParam,
-    extParam          = Seq.fill(nExt)(new HasStreamMomentMergeRt(dataWidth = 512)) // 1 CSR each
+    extParam          = Seq.fill(nExt)(new HasVerilogMemset) // 1 CSR each
   )
 
   def roundTrip(nExt: Int, tag: String): Unit = {
@@ -64,6 +64,10 @@ class XDMAInterClusterCfgTester extends AnyFlatSpec with ChiselScalatestTester {
         for (i <- 0 until 5) dut.io.cfgIn.bits.temporalStrides(i).poke((0x40 + i).U)
         dut.io.cfgIn.bits.enabledChannel.poke(0x5.U)
         dut.io.cfgIn.bits.enabledByte.poke(0x6.U)
+        // The chain position the initiator stamped. It must survive the wire: a gather head is configured
+        // remotely, so the receiver cannot re-derive its role from its own `origination`.
+        dut.io.cfgIn.bits.chainRole.poke(XDMAChainRole.MIDDLE.U)
+        dut.io.cfgIn.bits.collectiveMode.poke(true.B)
         for (i <- 0 until extLen) dut.io.cfgIn.bits.writerExtCfg(i).poke(extVals(i).U)
 
         dut.io.cfgOut.ready.poke(true.B)
@@ -81,13 +85,15 @@ class XDMAInterClusterCfgTester extends AnyFlatSpec with ChiselScalatestTester {
         assert(dut.io.cfgOut.bits.writerPtr(1).peekInt() == wp1, s"[$tag] writerPtr1")
         assert(dut.io.cfgOut.bits.enabledChannel.peekInt() == 5, s"[$tag] enabledChannel")
         assert(dut.io.cfgOut.bits.enabledByte.peekInt() == 6, s"[$tag] enabledByte")
+        assert(dut.io.cfgOut.bits.chainRole.peekInt() == XDMAChainRole.MIDDLE, s"[$tag] chainRole")
+        assert(dut.io.cfgOut.bits.collectiveMode.peekBoolean(), s"[$tag] collectiveMode")
         assert(dut.io.cfgOut.bits.temporalBounds(2).peekInt() == 0x32, s"[$tag] temporalBounds(2)")
         assert(dut.io.cfgOut.bits.temporalStrides(4).peekInt() == 0x44, s"[$tag] temporalStrides(4)")
         for (i <- 0 until extLen) {
           val got = dut.io.cfgOut.bits.writerExtCfg(i).peekInt()
           assert(got == extVals(i), f"[$tag] writerExtCfg($i) got 0x${got}%x want 0x${extVals(i)}%x")
         }
-        println(f"[XCfg $tag] round-trip EXACT: isWriterSide + taskID + ptrs + bounds/strides + $extLen writerExtCfg entries ($cyc cyc, extLen=$extLen)")
+        println(f"[XCfg $tag] round-trip EXACT: isWriterSide + taskID + ptrs + bounds/strides + chainRole + $extLen writerExtCfg entries ($cyc cyc, extLen=$extLen)")
       }
   }
 

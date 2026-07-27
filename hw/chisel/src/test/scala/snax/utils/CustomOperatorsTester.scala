@@ -33,7 +33,7 @@ class CustomOperatorsTester extends AnyFlatSpec with ChiselScalatestTester {
     var allowOut = false
 
     test(new DataCutWrapper)
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
         dut.clock.setTimeout(0)
 
         var concurrent_threads =

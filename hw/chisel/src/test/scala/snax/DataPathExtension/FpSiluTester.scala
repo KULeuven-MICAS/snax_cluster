@@ -73,7 +73,7 @@ class FpSiluTester extends AnyFlatSpec with ChiselScalatestTester {
 
   "FpSilu" should "match host silu within <= 1 FP16 ULP after narrowing" in {
     test(new FpSilu)
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
         dut => sweep(dut, latency = 0, maxUlpAllowed = 1, tag = "comb256")
       }
   }
@@ -83,7 +83,7 @@ class FpSiluTester extends AnyFlatSpec with ChiselScalatestTester {
   // missed (3 ULP at x~-10.8), so silu halves both ROMs and still validates <=1 FP16 ULP, here pipelined.
   "FpSilu_pipelined_n256" should "match host silu within <= 1 FP16 ULP (pipelined, 256-node ROMs)" in {
     test(new FpSilu(pipelined = true, N = 256))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
         dut => sweep(dut, latency = FpSilu.PipeLatency, maxUlpAllowed = 1, tag = "pipe256")
       }
   }

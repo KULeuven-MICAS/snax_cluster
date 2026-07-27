@@ -8,6 +8,7 @@ import chisel3.util._
 
 import play.api.libs.json._
 import snax.DataPathExtension._
+import snax.DataPathJunction._
 import snax.readerWriter.ReaderWriterParam
 import snax.utils._
 import snax.xdma.DesignParams._
@@ -242,6 +243,9 @@ object XDMATopGen extends App {
   )
   var readerExtensionParam = Seq[HasDataPathExtension]()
   var writerExtensionParam = Seq[HasDataPathExtension]()
+  // Junctions (2->1 folds) are instantiated at the DATA SWITCH, not in an extension chain, and are configured
+  // from the `writer_junctions` hjson object. They occupy a CSR region right after the writer extensions.
+  var writerJunctionParam  = Seq[HasDataPathJunction]()
 
   // The following complex code is to dynamically load the extension modules
   // The target is that: 1) the sequence of the extension can be specified by the user 2) users can add their own extensions in the minimal effort (Does not need to modify the generation code)
@@ -285,9 +289,11 @@ object XDMATopGen extends App {
         )
     }
 
+  // `asOpt` (not `as`) so a cfg that omits the section -- every cfg predating junctions -- yields an empty list
+  // instead of throwing.
   def datapathExtensionParams(extensionSide: String): Seq[(String, String)] =
-    (parsedXdmaCfg \ extensionSide).as[JsObject] match {
-      case obj: JsObject =>
+    (parsedXdmaCfg \ extensionSide).asOpt[JsObject] match {
+      case Some(obj) =>
         obj.fields.filter { case (k, _) =>
           k.startsWith("Has")
         }.toSeq.map { case (k, v) =>
@@ -304,6 +310,14 @@ return new $extensionName($extensionArgs)
       """))()
       .asInstanceOf[HasDataPathExtension]
 
+  def instantiateDatapathJunction(junctionName: String, junctionArgs: String): HasDataPathJunction =
+    toolbox
+      .compile(toolbox.parse(s"""
+import snax.DataPathJunction._
+return new $junctionName($junctionArgs)
+      """))()
+      .asInstanceOf[HasDataPathJunction]
+
   // Writer Side
   val writerDatapathExtensionParam = datapathExtensionParams("writer_extensions")
 
@@ -316,6 +330,13 @@ return new $extensionName($extensionArgs)
 
   readerDatapathExtensionParam.foreach { case (extensionName, extensionArgs) =>
     readerExtensionParam = readerExtensionParam :+ instantiateDatapathExtension(extensionName, extensionArgs)
+  }
+
+  // Switch side: the junction bank (CHAINGATHER / GATHERROOT)
+  val writerDatapathJunctionParam = datapathExtensionParams("writer_junctions")
+
+  writerDatapathJunctionParam.foreach { case (junctionName, junctionArgs) =>
+    writerJunctionParam = writerJunctionParam :+ instantiateDatapathJunction(junctionName, junctionArgs)
   }
 
   // SW-header-only mode (--sw-only): skip the RTL/CIRCT elaboration below. The
@@ -342,7 +363,8 @@ return new $extensionName($extensionArgs)
           axiParam,
           crossClusterParam,
           writerParam,
-          writerExtensionParam
+          writerExtensionParam,
+          writerJunctionParam
         )
       )
     )
@@ -443,7 +465,20 @@ return new $extensionName($extensionArgs)
         .sum}
 #define XDMA_DST_EXT_CUSTOM_CSR_NUM \\
     { ${writerExtensionParam.map(_.extensionParam.userCsrNum).mkString(", ")} }
-#define XDMA_START_PTR XDMA_DST_EXT_CSR_PTR + XDMA_DST_EXT_CSR_NUM
+
+// The junction region of the data switch (2->1 collective folds). Laid out exactly like the extension region --
+// one enable bitmask followed by the per-junction user CSRs -- immediately after the writer extensions, so with no
+// junction configured every pointer below collapses to the pre-junction layout.
+#define XDMA_DST_JCT_NUM ${writerJunctionParam.length}
+#define XDMA_DST_JCT_ENABLE_PTR XDMA_DST_EXT_CSR_PTR + XDMA_DST_EXT_CSR_NUM
+#define XDMA_DST_JCT_CSR_PTR XDMA_DST_JCT_ENABLE_PTR + ${if (writerJunctionParam.length > 0) 1
+      else 0}
+#define XDMA_DST_JCT_CSR_NUM ${writerJunctionParam
+        .map(_.junctionParam.userCsrNum)
+        .sum}
+#define XDMA_DST_JCT_CUSTOM_CSR_NUM \\
+    { ${writerJunctionParam.map(_.junctionParam.userCsrNum).mkString(", ")} }
+#define XDMA_START_PTR XDMA_DST_JCT_CSR_PTR + XDMA_DST_JCT_CSR_NUM
 #define XDMA_COMMIT_LOCAL_TASK_PTR XDMA_START_PTR + 1
 #define XDMA_COMMIT_REMOTE_TASK_PTR XDMA_COMMIT_LOCAL_TASK_PTR + 1
 #define XDMA_FINISH_LOCAL_TASK_PTR XDMA_COMMIT_REMOTE_TASK_PTR + 1
@@ -467,6 +502,12 @@ return new $extensionName($extensionArgs)
   for ((ext, i) <- writerExtensionParam.zipWithIndex) {
     macro_template = macro_template +
       s"""#define WRITER_EXT_${ext.extensionParam.moduleName.toUpperCase} ${i}
+"""
+  }
+
+  for ((jct, i) <- writerJunctionParam.zipWithIndex) {
+    macro_template = macro_template +
+      s"""#define WRITER_JCT_${jct.junctionParam.moduleName.toUpperCase} ${i}
 """
   }
 

@@ -9,6 +9,22 @@ import snax.readerWriter.ReaderWriterCfgIO
 import snax.utils._
 import snax.xdma.DesignParams._
 
+/** Where a node sits in a CHAIN, stamped explicitly per frame rather than inferred.
+  *
+  * ChainWrite can infer position from `origination` because the initiator IS the data head. ChainGather
+  * separates the two: the initiator is the COLLECTOR, which sits at the tail, and the head is a node the
+  * initiator configured remotely. So position has to be carried.
+  *
+  * `chainRoleDefault` reproduces the origination-based inference exactly, so a ChainWrite frame that does not
+  * override it is bit-identical to before.
+  */
+object XDMAChainRole {
+  val HEAD   = 0 // sources the chain: its to-remote cfg carries is_first_cw
+  val MIDDLE = 1 // forwards onward: neither bit
+  val TAIL   = 2 // terminates the chain: its cfg carries is_last_cw
+  val width  = 2
+}
+
 // The sturctured class that used to store the CFG of reader and writer, connected with the CSR
 // The full address (readerPtr, writerPtr) is included in this class, for the purpose of cross-cluster communication
 // The truncated version of address is assigned to aguCfg for the generation of local address which will be consumed by TCDM
@@ -45,13 +61,47 @@ class XDMACfgIO(val param: XDMAParam) extends Bundle {
   val localLoopback   = Bool()
   // The RemoteLoopback signal to control the data in fromRemoteData directly seending back to toRemoteData
   val remoteLoopback  = Bool()
+  // Position in a chain (XDMAChainRole). Carried rather than inferred -- see XDMAChainRole.
+  val chainRole       = UInt(XDMAChainRole.width.W)
+  // 1 = this cfg belongs to a ChainGather. It fixes the TRANSPORT DIRECTION tag: a gather's payload travels
+  // head -> tail exactly like a chained write, but the nodes carrying it did not originate the cfg (the head is
+  // remote-configured) and the node that did originate it sits at the tail. `origination` therefore cannot decide
+  // the direction, which is the third thing it was being asked to decide -- alongside ownership and position.
+  val collectiveMode  = Bool()
+  // LOCAL ONLY (never crosses the wire): cleared on the cfg the core submits, set on the loopback copy the unroll
+  // shifts. It distinguishes the FIRST unroll pass, whose destination is the chain head, from later passes.
+  val chainUnrolled   = Bool()
 
-  val extCfg = if (param.extParam.length != 0) {
-    Vec(
-      param.extParam.map { i => i.extensionParam.userCsrNum }.reduce(_ + _) + 1,
-      UInt(32.W)
-    ) // The total csr required by all extension + 1 for the bypass signal
-  } else Vec(0, UInt(32.W))
+  // The datapath-plugin CSR region: the extension chain (user CSRs + 1 bypass bitmask) followed by the junction
+  // bank (user CSRs + 1 enable bitmask). Holding the junction in this vector means a gather chain needs no
+  // separate serialized cfg field, since the region crosses the inter-cluster serdes on the writer-side frame.
+  val extCfg = Vec(param.pluginCsrNum, UInt(32.W))
+
+  /** The GATHER predicate.
+    *
+    * A collective gather is a chained transfer whose DataPathJunction is enabled, and the junction bank's enable
+    * bitmask is the first word of the junction region of `extCfg` -- a region that crosses the inter-cluster
+    * serdes on the writer-side frame, so every hop of a chain sees it. The control plane needs this because a
+    * gather node must run its READER concurrently with the chained transfer (it is the source of the junction's
+    * local operand), whereas a chained WRITE locks the reader out.
+    */
+  def junctionEnabled: Bool =
+    if (param.junctionCsrNum == 0) false.B else extCfg(param.extCsrNum).orR
+
+  /** The chain position implied by `origination` + `remoteLoopback` -- what ChainWrite has always used. A frame
+    * that is not explicitly stamped takes this, so ChainWrite behaviour is unchanged.
+    */
+  def chainRoleDefault: UInt = Mux(
+    origination === originationIsFromLocal.B,
+    XDMAChainRole.HEAD.U,
+    Mux(remoteLoopback, XDMAChainRole.MIDDLE.U, XDMAChainRole.TAIL.U)
+  )
+
+  /** "This node issued the task, so raise its core's finish when the chain retires." Task OWNERSHIP, which is
+    * independent of data position: for ChainWrite the initiator is the head, for ChainGather it is the collector
+    * at the tail. In both cases the owning node is the one whose cfg started locally.
+    */
+  def isInitiator: Bool = origination === originationIsFromLocal.B
 
   // Connect the readerPtr + writerPtr with the CSR list (not removed from the list)
   def connectPtrWithList(csrList: IndexedSeq[UInt]): Unit = {
@@ -115,13 +165,16 @@ class XDMAIntraClusterCfgIO(param: XDMAParam) extends Bundle {
   val localLoopback   = Bool()
   // The RemoteLoopback signal to control the data in fromRemoteData directly seending back to toRemoteData
   val remoteLoopback  = Bool()
+  // Position in a chain (XDMAChainRole), task ownership, and the ChainGather direction tag; all three are
+  // consumed by the accompany cfg.
+  val chainRole       = UInt(XDMAChainRole.width.W)
+  val isInitiator     = Bool()
+  val collectiveMode  = Bool()
 
-  val extCfg = if (param.extParam.length != 0) {
-    Vec(
-      param.extParam.map { i => i.extensionParam.userCsrNum }.reduce(_ + _) + 1,
-      UInt(32.W)
-    ) // The total csr required by all extension + 1 for the bypass signal
-  } else Vec(0, UInt(32.W))
+  // The datapath-plugin CSR region: the extension chain (user CSRs + 1 bypass bitmask) followed by the junction
+  // bank (user CSRs + 1 enable bitmask). Holding the junction in this vector means a gather chain needs no
+  // separate serialized cfg field, since the region crosses the inter-cluster serdes on the writer-side frame.
+  val extCfg = Vec(param.pluginCsrNum, UInt(32.W))
 
   // Convert the XDMACfgIO to XDMAIntraClusterCfgIO
   def convertFromXDMACfgIO(cfg: XDMACfgIO): Unit = {
@@ -149,6 +202,9 @@ class XDMAIntraClusterCfgIO(param: XDMAParam) extends Bundle {
     readerwriterCfg := cfg.readerwriterCfg
     localLoopback   := cfg.localLoopback
     remoteLoopback  := cfg.remoteLoopback
+    chainRole       := cfg.chainRole
+    isInitiator     := cfg.isInitiator
+    collectiveMode  := cfg.collectiveMode
     extCfg          := cfg.extCfg
   }
 }
@@ -183,12 +239,12 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
   // to the writer's extensions (total userCsrNum + 1 bypass). Meaningful only on the isWriterSide frame (zeroed on
   // the reader/src frame). This is the enabler for the in-fabric cross-cluster collective (F3) + CROSS's
   // cross-chiplet per-channel statistic.
-  val writerExtCfg = if (writerParam.extParam.length != 0) {
-    Vec(
-      writerParam.extParam.map { i => i.extensionParam.userCsrNum }.reduce(_ + _) + 1,
-      UInt(32.W)
-    )
-  } else Vec(0, UInt(32.W))
+  val writerExtCfg = Vec(writerParam.pluginCsrNum, UInt(32.W))
+
+  // Chain position, stamped by the initiator during the unroll. `isInitiator` is deliberately NOT carried: it is
+  // "did this cfg start here", which each node derives from its own `origination`.
+  val chainRole      = UInt(XDMAChainRole.width.W)
+  val collectiveMode = Bool()
 
   def convertFromXDMACfgIO(
     writerSide: Boolean,
@@ -216,6 +272,8 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
     temporalBounds           := cfg.aguCfg.temporalBounds
     enabledChannel           := cfg.readerwriterCfg.enabledChannel
     enabledByte              := cfg.readerwriterCfg.enabledByte
+    chainRole                := cfg.chainRole
+    collectiveMode           := cfg.collectiveMode
     // Carry the writer extension config only on the writer-side (dst) frame; on the reader-side (src) frame the
     // cfg is the reader XDMACfgIO whose extCfg is the READER extensions, which are not carried cross-cluster.
     if (writerSide) {
@@ -262,6 +320,9 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
       }
     }
 
+    xdmaCfg.chainRole                      := chainRole
+    xdmaCfg.collectiveMode                 := collectiveMode
+    xdmaCfg.chainUnrolled                  := false.B // local-only; a received frame is never re-unrolled
     xdmaCfg.readerwriterCfg.enabledChannel := enabledChannel
     xdmaCfg.readerwriterCfg.enabledByte    := enabledByte
     xdmaCfg.origination                    := xdmaCfg.originationIsFromRemote.B
@@ -300,7 +361,7 @@ class XDMAInterClusterCfgIOSerializer(readerwriterParam: XDMAParam) extends Modu
   // (vopt-2912 "Port ... not found"). This does not affect a standalone single-elaboration build
   // (snax_cluster's own sim flow, or a chiseltest), which is why neither surfaced it.
   override def desiredName: String =
-    "XDMAInterClusterCfgIOSerializer_wext" + readerwriterParam.extParam.map(_.extensionParam.userCsrNum).sum
+    "XDMAInterClusterCfgIOSerializer_wext" + readerwriterParam.pluginCsrNum
   val io = IO(new Bundle {
     val cfgIn  = Flipped(Decoupled(new XDMAInterClusterCfgIO(readerwriterParam, readerwriterParam)))
     val cfgOut = Decoupled(UInt(readerwriterParam.axiParam.dataWidth.W))
@@ -308,7 +369,7 @@ class XDMAInterClusterCfgIOSerializer(readerwriterParam: XDMAParam) extends Modu
 
   // Serialize the entire cfg to one vector
   var cfgSerialized =
-    io.cfgIn.bits.enabledByte ## io.cfgIn.bits.enabledChannel ## io.cfgIn.bits.temporalStrides.reverse.reduce(
+    io.cfgIn.bits.collectiveMode ## io.cfgIn.bits.chainRole ## io.cfgIn.bits.enabledByte ## io.cfgIn.bits.enabledChannel ## io.cfgIn.bits.temporalStrides.reverse.reduce(
       _ ## _
     ) ## io.cfgIn.bits.temporalBounds.reverse.reduce(
       _ ## _
@@ -366,7 +427,7 @@ class XDMAInterClusterCfgIOSerializer(readerwriterParam: XDMAParam) extends Modu
 class XDMAInterClusterCfgIODeserializer(readerwriterParam: XDMAParam) extends Module {
   // See XDMAInterClusterCfgIOSerializer's desiredName override for why this is needed.
   override def desiredName: String =
-    "XDMAInterClusterCfgIODeserializer_wext" + readerwriterParam.extParam.map(_.extensionParam.userCsrNum).sum
+    "XDMAInterClusterCfgIODeserializer_wext" + readerwriterParam.pluginCsrNum
   val io = IO(new Bundle {
     val cfgIn  = Flipped(Decoupled(UInt(readerwriterParam.axiParam.dataWidth.W)))
     val cfgOut = Decoupled(new XDMAInterClusterCfgIO(readerwriterParam, readerwriterParam))
@@ -524,6 +585,12 @@ class XDMAInterClusterCfgIODeserializer(readerwriterParam: XDMAParam) extends Mo
     cfgSerialized.getWidth - 1,
     readerwriterParam.crossClusterParam.wordlineWidth / 8
   )
+  // Assign the chain position (symmetric to the serializer, which appends it just above enabledByte)
+  io.cfgOut.bits.chainRole := cfgSerialized(XDMAChainRole.width - 1, 0)
+  cfgSerialized = cfgSerialized(cfgSerialized.getWidth - 1, XDMAChainRole.width)
+  // Assign the ChainGather direction tag
+  io.cfgOut.bits.collectiveMode := cfgSerialized(0)
+  cfgSerialized = cfgSerialized(cfgSerialized.getWidth - 1, 1)
   // Assign the writer-side extension config (32b per CSR; symmetric to the serializer's MSB prepend). The remaining
   // MSBs are zero padding.
   io.cfgOut.bits.writerExtCfg.foreach { i =>
@@ -541,6 +608,8 @@ class XDMADataPathCfgIO(axiParam: XDMAAXIParam, crossClusterParam: XDMACrossClus
   val taskTypeIsRemoteWrite = true
   val isFirstChainedWrite   = Bool()
   val isLastChainedWrite    = Bool()
+  // Task ownership, independent of data position: the adapter raises this node's core finish only when set.
+  val isInitiator           = Bool()
   val src                   = UInt(axiParam.addrWidth.W)
   val dst                   = UInt(axiParam.addrWidth.W)
 
@@ -561,7 +630,10 @@ class XDMADataPathCfgIO(axiParam: XDMAAXIParam, crossClusterParam: XDMACrossClus
       else cfg.writerPtr(0)
     }
 
-    isFirstChainedWrite := taskType === taskTypeIsRemoteWrite.B && cfg.origination === cfg.originationIsFromLocal.B
-    isLastChainedWrite := taskType === taskTypeIsRemoteWrite.B && cfg.origination === cfg.originationIsFromRemote.B && cfg.remoteLoopback === false.B
+    // Position comes from the explicitly carried chainRole. For ChainWrite the initiator stamps the same values
+    // the origination-based inference produced, so these two bits are unchanged for every existing transfer.
+    isFirstChainedWrite := taskType === taskTypeIsRemoteWrite.B && cfg.chainRole === XDMAChainRole.HEAD.U
+    isLastChainedWrite  := taskType === taskTypeIsRemoteWrite.B && cfg.chainRole === XDMAChainRole.TAIL.U
+    isInitiator         := cfg.isInitiator
   }
 }

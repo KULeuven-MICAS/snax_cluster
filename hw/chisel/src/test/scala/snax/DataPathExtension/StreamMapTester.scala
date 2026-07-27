@@ -51,7 +51,7 @@ class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
     var outs = Seq[Seq[Float]]()
     test(new DataPathExtensionHarness(
       new HasStreamMap(dataWidth = testWidth, elementWidth = 16, computeLanes = computeLanes, func = func)))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
         dut =>
           dut.io.csr_i(0).poke(f32bits(a).U)
           dut.io.csr_i(1).poke(f32bits(b).U)

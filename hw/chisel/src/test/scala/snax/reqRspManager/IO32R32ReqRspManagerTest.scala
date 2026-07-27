@@ -256,7 +256,7 @@ class IO32R32ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester wi
         IO32R32ReqRspManagerTestParameters.numReadOnlyReg,
         IO32R32ReqRspManagerTestParameters.addrWidth
       )
-    ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    )  { dut =>
       baseReqRspManagerTest(dut)
     }
   }

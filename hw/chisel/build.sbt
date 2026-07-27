@@ -30,6 +30,20 @@ lazy val root = (project in file("."))
     ),
     addCompilerPlugin(
       "org.chipsalliance" % "chisel-plugin" % chiselVersion cross CrossVersion.full
-    )
+    ),
+    // Run each test suite in its OWN forked JVM.
+    //
+    // chiseltest spawns a thread per forked test thread and does not reliably reap them, so running the whole
+    // suite in a single JVM accumulates threads across suites until the process hits the host's `ulimit -u` and
+    // dies mid-run with "OutOfMemoryError: unable to create native thread" -- after ~30 suites on a 5166-thread
+    // limit. That aborts `sbt test` without a per-suite result, which reads like a hang rather than a failure.
+    // One JVM per suite bounds the live thread count to a single suite's worth; the cost is one JVM start per
+    // suite. Serial, because several suites drive Verilator builds that are already parallel internally.
+    Test / fork               := true,
+    Test / testForkedParallel := false,
+    Test / javaOptions ++= Seq("-Xmx8G"),
+    Test / testGrouping := (Test / definedTests).value.map { suite =>
+      Tests.Group(name = suite.name, tests = Seq(suite), runPolicy = Tests.SubProcess((Test / forkOptions).value))
+    }
   )
   .dependsOn(fpUnits, fpUnits % "compile->test", fpNative)

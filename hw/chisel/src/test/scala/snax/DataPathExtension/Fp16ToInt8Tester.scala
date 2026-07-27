@@ -96,7 +96,7 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
   def runHarness(invScaleBits: BigInt, inputBeats: Seq[BigInt], computeLanes: Int = 0): Seq[BigInt] = {
     var outs = Seq[BigInt]()
     test(new DataPathExtensionHarness(new HasFp16ToInt8(16, 8, 512, computeLanes)))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, flags)) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
         dut.io.csr_i(0).poke(invScaleBits.U)
         dut.io.enable_i.poke(true)
         dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)

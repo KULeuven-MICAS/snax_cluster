@@ -27,7 +27,7 @@ class WidthConverter[T <: Data](gen: T) extends Module with RequireAsyncReset {
 class WidthConverterTester extends AnyFlatSpec with ChiselScalatestTester {
   "WidthConverter" should "work correctly" in {
     test(new WidthConverter(UInt(8.W))).withAnnotations(
-      Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)
+      Seq(VerilatorBackendAnnotation)
     ) { dut =>
       var concurrent_threads = new chiseltest.internal.TesterThreadList(Seq())
 

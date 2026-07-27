@@ -83,7 +83,6 @@ trait HasRegRspManagerTestUtils {
 
     dut.io.reqRspIO.req.valid.poke(0.B)
 
-
     result
   }
 }
