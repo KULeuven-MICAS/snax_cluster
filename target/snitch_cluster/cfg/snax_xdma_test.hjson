@@ -3,21 +3,74 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
-snax_xdma_test: the xDMA cluster cfg carrying the in-fabric COLLECTIVE, for the cross-cluster collective
-experiment. Same as snax_xdma_cluster except the xDMA data switch is given a `writer_junctions` bank: the 2->1
-DataPathJunction operators (ElementwiseJunction, MonoidJunction) that implement the CHAINGATHER / GATHERROOT
-switch modes, folding the arriving remote partial with this node's local operand rather than gathering everything
-at a root. The junction config rides the writer-side ext-cfg region, which the writerExtCfg plumbing
-(XDMAInterClusterCfgIO) carries across the die-to-die link, so every hop of a chain is configured from one
-dispatch.
-Usable standalone (single-cluster remote-loopback bring-up) and on HeMAiA multi-cluster.
+snax_xdma_test — the xDMA cluster cfg for the CROSS-CLUSTER COLLECTIVE experiment (ChainGather).
+THIS IS THE CFG THE HeMAiA MULTI-CLUSTER TEST BUILDS FROM.
+
+WHAT IT ADDS over snax_xdma_cluster
+-----------------------------------
+A `writer_junctions` bank on the xDMA data switch: the 2->1 DataPathJunction operators that implement the
+CHAINGATHER / GATHERROOT switch modes. A gather hop folds the arriving remote partial with its OWN local
+operand and forwards only the result, instead of every node shipping a full partial to one root.
+
+  ElementwiseJunction  linear   — 2-input per-element FP reduce (ADD/MUL/MAX/MIN), runtime FP16/BF16/FP32.
+                                  The operator a collective-capable NoC puts in the router; kept here as the
+                                  like-for-like baseline (same arity, same hop count, same beat rate).
+  MonoidJunction       nonlinear— the family a per-element reduce cannot express: online-softmax (m,l),
+                                  flash-attention (m,l,O), exp-weighted moments, argmax. One netlist,
+                                  mode-selected by the 3-bit combineMode CSR field.
+
+Both are stateless in the operand pair, so the fold is fully pipelined, and the join is CUT-THROUGH:
+first-output latency does not grow with payload (measured 9 CC / 7 CC, util 1.000). That is what keeps a
+reduce-along-the-route chain latency-competitive with a star.
+
+HOW SOFTWARE DRIVES A GATHER  (see snax-xdma-addr.h for the pointers)
+--------------------------------------------------------------------
+The collector issues ONE task; every other participant is passive, exactly like a multicast.
+
+  writerPtr[]   the chain in DATA order, ending at the collector's own destination buffer, e.g.
+                [S1, S2, DST_local]. Each entry is that node's REAL partial-buffer address — the routers
+                decode only a pointer's cluster tag, so the low bits are free to carry the true offset and
+                per-node offsets need no extra cfg field.
+  readerPtr     the collector's own partial.
+  XDMA_DST_JCT_ENABLE_PTR  bit i = 1 arms junction i. ARMING A JUNCTION IS WHAT MAKES THE TRANSFER A GATHER
+                (`collectiveMode := junctionEnabled`) — there is no separate "which collective" CSR.
+  XDMA_DST_JCT_CSR_PTR     the junction's own CSR (MonoidJunction: [7:0] nValid, [15:13] combineMode).
+
+The unroll then emits, per remote hop, a READER-side frame (read your own partial) and a WRITER-side frame
+(arm your junction and forward) — two frames, because a frame carries `isWriterSide` and the receiver
+demuxes on it, so one frame can configure a reader or a writer but never both. The chain HEAD gets the
+reader frame ONLY: nothing arrives at a head, so a writer frame would arm its junction on a stream that
+never comes. The TAIL is the collector itself and is configured locally.
+
+ADDRESSING INVARIANT THIS CFG DEPENDS ON
+----------------------------------------
+`max_mem_size_kiB: 4096` makes the cfg routers compare address bits [47:22], i.e. one cluster tag per 4 MB —
+and `cluster_base_offset` below is 4 MB. Consecutive clusters therefore land on consecutive tags, which is
+what lets a writerPtr entry name both WHICH node a frame is for and WHERE that node's partial lives. Change
+one of those two numbers and you must change the other.
+
+`max_multicast: 16` sets the writerPtr[] depth = the maximum chain length (and costs 2 CSRs per entry).
+
+⚠️ HeMAiA INTEGRATION CHECKLIST
+-------------------------------
+1. `AccompanyCfgBits` is 124, not 123 — the accompany-cfg sideband gained `is_initiator` (task ownership,
+   which for a gather sits on the TAIL, not the head). The sideband crosses as ONE PACKED VECTOR, so a
+   wrapper built against 123 does not fail loudly: every field shifts by one bit and surfaces as garbage
+   dma_length / addresses. Regenerate the wrapper (hw/templates/snax_xdma_wrapper.sv.tpl) and make sure the
+   xdma_axi_adapter in use also has `is_initiator`.
+2. Regenerate: `make rtl-snax-gen CFG_OVERRIDE=cfg/snax_xdma_test.hjson`, then rebuild SW — a stale
+   sw/snax/xdma/build/snax-xdma-lib.o carries the OLD CSR offsets and `make clean` does not remove it.
+3. Bender targets `snax_xdma_test` / `snax_xdma_test_xdma` must be present in Bender.yml (they are).
+
+STATUS: single-cluster switch modes and the cfg-plane unroll are validated by chiseltest
+(XDMADataSwitchTester, ChainUnrollTester). The multi-cluster DATA plane is not yet brought up — that is what
+this cfg exists to do on HeMAiA.
 
 Naming convention (must match for HeMAiA integration): file = snax_<name>.hjson; cluster.name = <name>;
-cluster.bender_target contains <name>; the xDMA bender_target = snax_<name>_xdma. New bender_target names also need
-a matching file list in Bender.yml (see the snax_xdma_test / snax_xdma_test_xdma targets added there).
+cluster.bender_target contains <name>; the xDMA bender_target = snax_<name>_xdma.
 
-To use on HeMAiA: point a multi-cluster workload's --hwcfg at this file (like the *_2cluster / *_4cluster workloads
-in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hjson).
+To use on HeMAiA: point a multi-cluster workload's --hwcfg at this file (like the *_2cluster / *_4cluster
+workloads in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hjson).
 **/
 {
     nr_s1_quadrant: 1,
@@ -30,7 +83,7 @@ in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hjson).
         bender_target: ["snitch_cluster", "snax_xdma_test", "sparse_interconnect"],
         boot_addr: 4096, // 0x1000
         cluster_base_addr: 268435456, // 0x1000_0000
-        cluster_base_offset: 4194304,  // 4MB
+        cluster_base_offset: 4194304,  // 4MB — MUST equal one cfg-router cluster-tag step (see header)
         cluster_base_hartid: 0,
         addr_width: 48,
         data_width: 64,
@@ -170,9 +223,10 @@ in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hjson).
                 snax_xdma_test_xdma
             ]
             cfg_io_width: 32
+            // writerPtr[] depth = the maximum chain length (2 CSRs per entry)
             max_multicast: 16
             max_dimension: 5
-            max_mem_size_kiB: 4096,
+            max_mem_size_kiB: 4096, // sets the router's cluster-tag LSB to bit 22 -> 4 MB per cluster
             reader_buffer: 12
             writer_buffer: 12
             reader_agu_temporal_dimension: 5
