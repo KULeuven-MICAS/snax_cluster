@@ -469,7 +469,10 @@ module ${cfg["name"]}_xdma_wrapper
         .axi_xdma_narrow_out_req_o       (xdma_narrow_out_req_o              ),
         .axi_xdma_narrow_out_resp_i      (xdma_narrow_out_resp_i             ),
         .axi_xdma_narrow_in_req_i        (xdma_narrow_in_req_i               ),
-        .axi_xdma_narrow_in_resp_o       (xdma_narrow_in_resp_o              )
+        .axi_xdma_narrow_in_resp_o       (xdma_narrow_in_resp_o              ),
+        // Stall-watchdog status (tied low when StallTimeout==0; safe to leave open, but
+        // list it so vopt does not emit a too-few-port-connections warning on the adapter).
+        .xdma_stall_error_o              (                                   )
     );
 
 
