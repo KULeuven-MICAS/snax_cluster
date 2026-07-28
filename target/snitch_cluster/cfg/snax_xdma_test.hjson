@@ -250,11 +250,18 @@ workloads in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hj
             //     netlist, mode-selected by the 3-bit combineMode CSR field.
             // Both are stateless in the operand pair, so the fold is fully pipelined (no accBusy read-modify-write)
             // and the join is cut-through: first-output latency does not grow with payload, which is what keeps a
-            // chain latency-competitive with a star. Adds 2 DST-junction CSRs + 1 enable bitmask.
+            // chain latency-competitive with a star.
+            //
+            // Both classes are now carried by ONE netlist, UnifiedJunction, which builds a single pool of FP32 FMA
+            // lanes and lets whichever class is armed drive it (a linear lane is a*1+b or a*b+0; a monoid value
+            // lane is loser*{alpha,1}+winner -- the same unit). CSR(0)[16] picks the class; the rest of the word is
+            // byte-identical to what the two predecessors decoded, so one software encoder still serves every
+            // placement. Adds 1 DST-junction CSR + 1 enable bitmask (was 2 + 1).
+            //   HasElementwiseJunction / HasMonoidJunction remain in the tree as the SEPARATE-operator baseline
+            //   for the area comparison; instantiate them here instead to build that baseline.
             writer_junctions:
             {
-                HasElementwiseJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1}
-                HasMonoidJunction: {dataWidth: 512, dHead: 8, expLutN: 128}
+                HasUnifiedJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1, dHead: 8, expLutN: 128, pairSlots: 8}
             }
             reader_extensions: {
                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}

@@ -252,6 +252,15 @@ module ${cfg["name"]}_xdma_wrapper
   /// FINISH
   ///---------------------
   logic                              xdma_finish;
+  ///---------------------
+  /// STALL WATCHDOG
+  ///---------------------
+  // Sticky bring-up diagnostic from the AXI adapter: a control FSM there waited longer than its
+  // `StallTimeout` parameter without advancing. That parameter defaults to 0, which removes the watchdog
+  // and ties this low, and this wrapper has no status port to surface it on -- so it terminates in a
+  // signal whose name marks it unused. Leaving the pin EMPTY instead leaves a dangling by-name connection
+  // that lint flags, which is the whole reason this signal exists.
+  logic                              unused_xdma_stall_error;
   ///---------------------------------------------------------------
   // Assign Signals
   ///---------------------------------------------------------------
@@ -470,9 +479,8 @@ module ${cfg["name"]}_xdma_wrapper
         .axi_xdma_narrow_out_resp_i      (xdma_narrow_out_resp_i             ),
         .axi_xdma_narrow_in_req_i        (xdma_narrow_in_req_i               ),
         .axi_xdma_narrow_in_resp_o       (xdma_narrow_in_resp_o              ),
-        // Stall-watchdog status (tied low when StallTimeout==0; safe to leave open, but
-        // list it so vopt does not emit a too-few-port-connections warning on the adapter).
-        .xdma_stall_error_o              (                                   )
+        // Stall-watchdog status (tied low at the default StallTimeout==0); see the declaration.
+        .xdma_stall_error_o              (unused_xdma_stall_error            )
     );
 
 

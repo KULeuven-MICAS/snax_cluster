@@ -87,11 +87,26 @@ object MonoidCombine {
   }
 
   /** ONE configurable combine over two F-field partials. Shares one exp LUT across every RSUM lane; returns the merged
-    * partial and the exp-LUT pipeline latency (the value path is aligned to it via ShiftRegister).
+    * partial and the total pipeline latency (every field is aligned to it via ShiftRegister).
     *
     * Must be called from inside a Module body (it instantiates the exp LUT and the FP units at the call site).
+    *
+    * `fmaFn` / `fmaLat` let the caller SUPPLY the value-lane FMA instead of having one instantiated per field. A
+    * standalone combine leaves it at the default (a fresh combinational unit per field); a junction that also
+    * carries a per-element linear mode hands in an allocator over a shared FMA pool, so both modes drive the same
+    * multipliers. `fmaLat` is that unit's pipeline depth, which the non-FMA roles (KEY / WSEL / the zero-loser
+    * bypass) are re-aligned to -- otherwise a pipelined pool would skew the fields of one partial against each
+    * other.
     */
-  def apply(a: Seq[UInt], b: Seq[UInt], mode: UInt, dHead: Int, expLutN: Int): (Seq[UInt], Int) = {
+  def apply(
+    a:       Seq[UInt],
+    b:       Seq[UInt],
+    mode:    UInt,
+    dHead:   Int,
+    expLutN: Int,
+    fmaFn:   Option[(UInt, UInt, UInt) => UInt] = None,
+    fmaLat:  Int = 0
+  ): (Seq[UInt], Int) = {
     require(a.length == b.length, s"MonoidCombine: operand field counts differ (${a.length} vs ${b.length})")
     val aWins  = fp32aWins(a(0), b(0)) // a.key >= b.key (only meaningful when field0 is KEY)
     val mStar  = Mux(aWins, a(0), b(0))
@@ -101,8 +116,10 @@ object MonoidCombine {
     exp.io.in   := delta
     exp.io.func := false.B
     exp.io.gelu := false.B
-    val lat   = FpActivation.PipeLatency
-    val alpha = Mux(modeHasKey(mode), exp.io.out, F32_ONE) // no key => alpha = 1.0 => the FMA is a plain add
+    val expLat = FpActivation.PipeLatency
+    val lat    = expLat + fmaLat // the whole combine: the exp LUT, then the value lane
+    val alpha  = Mux(modeHasKey(mode), exp.io.out, F32_ONE) // no key => alpha = 1.0 => the FMA is a plain add
+    val doFma  = fmaFn.getOrElse((x: UInt, y: UInt, z: UInt) => ffma(x, y, z))
 
     val out = (0 until a.length).map { f =>
       val role  = roleOf(mode, f, dHead)
@@ -112,14 +129,16 @@ object MonoidCombine {
       val wsel  = role === MonoidRole.WSEL.U
       // RSUM and WSEL both take the winner-swap (so `win` is the winner's field); SUM is commutative (no swap)
       val swap  = (rsum || wsel) && !aWins
-      val los   = ShiftRegister(Mux(swap, a(f), b(f)), lat)
-      val win   = ShiftRegister(Mux(swap, b(f), a(f)), lat)
+      val los   = ShiftRegister(Mux(swap, a(f), b(f)), expLat)
+      val win   = ShiftRegister(Mux(swap, b(f), a(f)), expLat)
       val scale = Mux(rsum, alpha, F32_ONE) // alpha (RSUM) or 1.0 (SUM): the whole SUM/RSUM difference
       // 0-loser guard: a 0 value adds exactly the winner, avoiding 0*exp(-huge) = NaN at the LUT's underflow edge.
-      // A real shard's l = Sexp >= 1, so l == 0 uniquely tags the monoid identity.
-      val fma   = Mux(los === F32_ZERO, win, ffma(los, scale, win))
+      // A real shard's l = Sexp >= 1, so l == 0 uniquely tags the monoid identity. The select and the bypassed
+      // winner ride the FMA's own pipeline depth so the guard lands on the same beat as the product.
+      val winA  = ShiftRegister(win, fmaLat)
+      val fma   = Mux(ShiftRegister(los === F32_ZERO, fmaLat), winA, doFma(los, scale, win))
       // KEY -> m* ; OFF -> 0 ; WSEL -> the winner's carried payload (no add) ; SUM & RSUM -> the shared FMA
-      Mux(isKey, ShiftRegister(mStar, lat), Mux(isOff, F32_ZERO, Mux(wsel, win, fma)))
+      Mux(isKey, ShiftRegister(mStar, lat), Mux(isOff, F32_ZERO, Mux(wsel, winA, fma)))
     }
     (out, lat)
   }
