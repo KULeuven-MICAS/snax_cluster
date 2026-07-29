@@ -16,8 +16,9 @@ import snax.DataPathExtension.FpHelpers._
   * A 2-input, per-element FP reduction (ADD / MUL / MAX / MIN) on the Junction ABI: same arity, same chain
   * position and same per-beat throughput as the monoid class, but a per-element operator.
   *
-  * SUPERSEDED as a build target: `UnifiedJunction` carries this operator and the monoid family on one netlist
-  * over a shared FMA pool. This file is retained as the SEPARATE-OPERATOR BASELINE for the area comparison.
+  * This is one of the two operators shipped on the junction socket. It satisfies the same four obligations
+  * `MonoidJunction` does -- declared latency, format closure, identity tolerance, no state between pairs --
+  * with an entirely different internal shape, which is the point: the socket constrains behaviour, not structure.
   *
   * ADD / MUL / MAX / MIN commute with routing, so a chain of these nodes computes the same result regardless of
   * how the reduction is ordered along the route. The nonlinear family in `MonoidCombine` -- the online-softmax
@@ -165,9 +166,7 @@ class ElementwiseJunction(
     Cat(elems.reverse)
   }
   // Elaborate each format's repack ONCE; the default arm reuses the first rather than building a second,
-  // unreachable copy of it. (Same fix as UnifiedJunction -- kept in step here because this module is the
-  // separate-operator BASELINE for the area comparison, and a baseline carrying a redundancy the merged design
-  // does not would flatter the merged design.)
+  // unreachable copy of it. It had been there since this module was written.
   val outPacked = supported.map { case (code, w, t) => code -> packed(w, t) }
   val outBeat   = MuxLookup(fmt, outPacked.head._2)(outPacked.map { case (code, p) => code.U -> p })
 

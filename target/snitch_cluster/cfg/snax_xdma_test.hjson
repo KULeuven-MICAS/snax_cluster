@@ -252,16 +252,16 @@ workloads in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hj
             // and the join is cut-through: first-output latency does not grow with payload, which is what keeps a
             // chain latency-competitive with a star.
             //
-            // Both classes are now carried by ONE netlist, UnifiedJunction, which builds a single pool of FP32 FMA
-            // lanes and lets whichever class is armed drive it (a linear lane is a*1+b or a*b+0; a monoid value
-            // lane is loser*{alpha,1}+winner -- the same unit). CSR(0)[16] picks the class; the rest of the word is
-            // byte-identical to what the two predecessors decoded, so one software encoder still serves every
-            // placement. Adds 1 DST-junction CSR + 1 enable bitmask (was 2 + 1).
-            //   HasElementwiseJunction / HasMonoidJunction remain in the tree as the SEPARATE-operator baseline
-            //   for the area comparison; instantiate them here instead to build that baseline.
+            // TWO OPERATORS ON ONE SOCKET. The host takes a LIST, allocates each entry its own user CSRs and
+            // arms exactly one per transfer via the enable bitmask -- so an operator is a plug-in, not a mode.
             writer_junctions:
             {
-                HasUnifiedJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1, dHead: 8, expLutN: 128}
+                HasElementwiseJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1}
+                HasMonoidJunction: {dataWidth: 512, fpPipe: 1, dHead: 8, expLutN: 128}
+                // TopKJunction: an operator from OUTSIDE the classified monoid family -- its own beat layout,
+                // no key front end, no exponential and no FMA -- on the same socket, satisfying the same four
+                // obligations. It is the evidence that the CONTRACT composes, not the monoid cell.
+                HasTopKJunction: {dataWidth: 512, k: 8}
             }
             reader_extensions: {
                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}

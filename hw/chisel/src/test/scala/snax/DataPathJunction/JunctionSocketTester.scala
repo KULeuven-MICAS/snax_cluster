@@ -10,7 +10,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import snax.DataPathExtension.FpHelpers
 import snax.DataPathJunction.JunctionTestUtils._
 
-/** Tier-1 for `UnifiedJunction` -- the ONE 2->1 netlist that carries BOTH fold families over a shared FMA pool.
+/** Tier-1 for the JUNCTION SOCKET -- the 2->1 operator contract, exercised on the two shipped operators.
   *
   * The headline check is an EQUIVALENCE, not a golden: the merged netlist must reproduce, BIT FOR BIT, what the
   * two predecessor junctions produce for the same CSR word and the same operand pair --
@@ -22,13 +22,12 @@ import snax.DataPathJunction.JunctionTestUtils._
   * Because chiseltest gives each scalatest CASE one Verilator build directory, the two reference legs are
   * separate cases that hand their beats to the equivalence case through the vars below.
   */
-class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
+class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
 
   val flags = VerilatorFlags(Seq("--build-jobs", "1"))
 
   import ElementwiseJunction._
   import MonoidCombine._
-  import UnifiedJunction._
 
   private val dHead     = 8
   private val pairSlots = 8
@@ -37,8 +36,10 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
 
   // ---- CSR encoders: the predecessors' encodings, plus one class bit ----------------------------------------
   private def csrMonoid(mode: Int, nValid: Int): BigInt = (BigInt(mode) << 13) | BigInt(nValid)
-  private def csrLinear(op: Int, fmt: Int): BigInt =
-    (BigInt(CLASS_ELEMENTWISE) << OPCLASS_BIT) | (BigInt(fmt) << 4) | BigInt(op)
+  // No opClass bit any more. Choosing between operators is the SOCKET's job -- the host's enable bitmask --
+  // not a field inside an operator's own CSR. The frozen linear beats are unaffected: the bit was ignored by
+  // `ElementwiseJunction` even when the merged netlist set it.
+  private def csrLinear(op: Int, fmt: Int): BigInt = (BigInt(fmt) << 4) | BigInt(op)
 
   // ---- transport-format codecs -------------------------------------------------------------------------------
   private def encFp16(d: Double): BigInt = BigInt(java.lang.Float.floatToFloat16(d.toFloat) & 0xffff)
@@ -101,8 +102,8 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
     )
   }
 
-  private def hasUnified =
-    new HasUnifiedJunction(elemWidth = elemWidth, fpPipe = fpPipe, dHead = dHead)
+  private def hasMonoid = new HasMonoidJunction(fpPipe = fpPipe, dHead = dHead)
+  private def hasEw     = new HasElementwiseJunction(elemWidth = elemWidth, fpPipe = fpPipe)
 
   // ---- THE FROZEN REFERENCE ---------------------------------------------------------------------------------
   // These 13 beats were CAPTURED from the two predecessor netlists -- `ElementwiseJunction` for the linear class,
@@ -138,32 +139,29 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
     "MOMENT2" -> g("402f21d34071bdd8403ef9ccbf9f5a76"),
   )
 
-  "UnifiedJunction_equivalence" should "reproduce the frozen predecessor beats bit-for-bit on ONE netlist" in {
-    assert(GOLDEN_LINEAR.size == linearCases.length && GOLDEN_MONOID.size == monoidCases.length,
-           "the frozen tables must cover every stimulus case")
-
-    // Interleave the two classes so the same elaborated instance is re-armed across the class boundary between
-    // transfers -- a merged netlist that only worked one class at a time would not be a replacement.
-    val mixed = linearCases.zipAll(monoidCases, null, null).flatMap { case (l, m) =>
-      Seq(Option(l), Option(m)).flatten
+  "Socket_frozen_linear" should "reproduce the frozen ElementwiseJunction beats bit-for-bit" in {
+    assert(GOLDEN_LINEAR.size == linearCases.length, "the frozen table must cover every linear case")
+    test(new DataPathJunctionHarness(hasEw)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      for ((c, i) <- linearCases.zipWithIndex) {
+        val got = runPair(dut, c.csr, c.a, c.b, bDelay = i % 3)
+        assert(got == GOLDEN_LINEAR(c.label),
+               f"linear ${c.label}: got 0x$got%x != frozen 0x${GOLDEN_LINEAR(c.label)}%x")
+      }
+      println(s"[Socket] the linear operator reproduces all ${linearCases.length} frozen beats bit-exactly")
     }
-    var got = Map[String, BigInt]()
-    test(new DataPathJunctionHarness(hasUnified)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
-      for ((c, i) <- mixed.zipWithIndex) got += (c.label -> runPair(dut, c.csr, c.a, c.b, bDelay = i % 3))
+  }
+
+  "Socket_frozen_monoid" should "reproduce the frozen MonoidJunction beats bit-for-bit" in {
+    assert(GOLDEN_MONOID.size == monoidCases.length, "the frozen table must cover every monoid case")
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      for ((c, i) <- monoidCases.zipWithIndex) {
+        val got = runPair(dut, c.csr, c.a, c.b, bDelay = i % 3)
+        assert(got == GOLDEN_MONOID(c.label),
+               f"monoid ${c.label}: got 0x$got%x != frozen 0x${GOLDEN_MONOID(c.label)}%x")
+      }
+      println(s"[Socket] the monoid operator reproduces all ${monoidCases.length} frozen beats bit-exactly, " +
+              "carrying the sigma geometry forward from the merged netlist")
     }
-
-    for (c <- linearCases)
-      assert(got(c.label) == GOLDEN_LINEAR(c.label),
-             f"linear ${c.label}: got 0x${got(c.label)}%x != frozen ElementwiseJunction 0x${GOLDEN_LINEAR(c.label)}%x")
-    for (c <- monoidCases)
-      assert(got(c.label) == GOLDEN_MONOID(c.label),
-             f"monoid ${c.label}: got 0x${got(c.label)}%x != frozen MonoidJunction 0x${GOLDEN_MONOID(c.label)}%x")
-
-    // one independent numeric anchor per class, so the test does not rest solely on the predecessors being right
-    val momentOut = got("MOMENT")
-    assert(laneF32(momentOut, 0).isFinite && laneF32(momentOut, pairSlots) > 0.0, "MOMENT beat is not sane")
-    println(s"[Unified] ONE netlist reproduces ${linearCases.length} linear and ${monoidCases.length} monoid " +
-            "transfers BIT-EXACTLY against the FROZEN predecessor goldens, interleaved across the class boundary")
   }
 
   // ---- RAW GEOMETRY ------------------------------------------------------------------------------------------
@@ -183,23 +181,23 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
     "MOMENT2" -> csrRaw(hasKey = 1, n = 3, nExp = 3, nAdd = 0, sigma = 0, nValid = 1)
   )
 
-  "UnifiedJunction_rawGeom" should "decode the raw geometry to the SAME beat as the legacy enum" in {
+  "Socket_rawGeom" should "decode the raw geometry to the SAME beat as the legacy enum" in {
     // The enum is a 6-entry elaboration-time ROM over the raw fields, nothing more. If these differ, the enum
     // has semantics the geometry does not -- which would mean the mode decode never really went away.
-    test(new DataPathJunctionHarness(hasUnified)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       for ((label, csr) <- rawEquivalents) {
         val c   = monoidCases.find(_.label == label).get
         val out = runPair(dut, csr, c.a, c.b)
         assert(out == GOLDEN_MONOID(label),
                f"raw $label: 0x$out%x != the frozen enum beat 0x${GOLDEN_MONOID(label)}%x")
       }
-      println(s"[Unified/rawGeom] all ${rawEquivalents.length} enum operators re-spelled as raw geometry, " +
+      println(s"[Socket/rawGeom] all ${rawEquivalents.length} enum operators re-spelled as raw geometry, " +
               "bit-identical -- the mode decode carries no semantics of its own")
     }
   }
 
-  "UnifiedJunction_beyondEnum" should "run operators the 6-mode enum cannot express, on the same netlist" in {
-    test(new DataPathJunctionHarness(hasUnified)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+  "Socket_beyondEnum" should "run operators the 6-mode enum cannot express, on the same netlist" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val rng = new Random(0x5eed)
 
       // (1) ATTN with dHead = 6: F = 8 => sigma = 1 => TWO partials per beat, where the enum's dHead is frozen
@@ -265,15 +263,15 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
         assert(math.abs(laneF32(oCar, 2 + s) - gl) / gl <= 1.5e-2, s"carry slot $s l")
         assert(laneF32(oCar, 4 + s) == (if (ma(s)._1 >= mb(s)._1) ma(s)._3 else mb(s)._3), s"carry slot $s payload")
       }
-      println("[Unified/beyondEnum] ATTN dHead=6 at 2 partials/beat, ARGMIN on a short beat, and flash+argmax " +
+      println("[Socket/beyondEnum] ATTN dHead=6 at 2 partials/beat, ARGMIN on a short beat, and flash+argmax " +
               "carry -- three operators with no enum encoding, zero RTL change")
     }
   }
 
-  "UnifiedJunction_sigmaSaturation" should "degrade an illegal sigma instead of interleaving partials" in {
+  "Socket_sigmaSaturation" should "degrade an illegal sigma instead of interleaving partials" in {
     // sigma is software-settable, so an over-large sigma is a new failure mode. Saturation turns it into
     // "fewer partials per beat" rather than two partials written into each other's lanes.
-    test(new DataPathJunctionHarness(hasUnified)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val c    = monoidCases.find(_.label == "ATTN").get
       val legal = csrRaw(1, 1 + dHead, 1 + dHead, 0, sigma = 0, nValid = 1) // F = 10 => sigma_max = 0
       val silly = csrRaw(1, 1 + dHead, 1 + dHead, 0, sigma = 3, nValid = 1) // F = 10 with sigma = 3: impossible
@@ -281,7 +279,7 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
       val b = runPair(dut, silly, c.a, c.b)
       assert(a == b, f"sigma=3 at F=10 must saturate to sigma=0: 0x$b%x != 0x$a%x")
       assert(a == GOLDEN_MONOID("ATTN"), "and still equal the frozen ATTN beat")
-      println("[Unified/sigma] an impossible geometry saturates to the widest legal one -- no illegal CSR word")
+      println("[Socket/sigma] an impossible geometry saturates to the widest legal one -- no illegal CSR word")
     }
   }
 
@@ -305,8 +303,8 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
     (ms, w(_._2), w(_._3), w(_._4))
   }
 
-  "UnifiedJunction_moment2Dense" should "fold FOUR moment banks per beat at sigma=2" in {
-    test(new DataPathJunctionHarness(hasUnified)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+  "Socket_moment2Dense" should "fold FOUR moment banks per beat at sigma=2" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val rng = new Random(0x2b02)
       val csr = csrRaw(hasKey = 1, n = 3, nExp = 3, nAdd = 0, sigma = 2, nValid = 4)
       for (trial <- 0 until 4) {
@@ -322,16 +320,16 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
           assert(math.abs(laneF32(out, 12 + s) - gb) / gb <= 2e-2, s"dense trial $trial slot $s B")
         }
       }
-      println("[Unified/MOMENT2-dense] 4 moment banks per beat (was 1), 16/16 lanes live, vs a double-precision " +
+      println("[Socket/MOMENT2-dense] 4 moment banks per beat (was 1), 16/16 lanes live, vs a double-precision " +
               "reference -- MOMENT2's first independent numeric check")
     }
   }
 
-  "UnifiedJunction_chainClosure" should "fold hop-by-hop to the global answer at EVERY geometry" in {
+  "Socket_chainClosure" should "fold hop-by-hop to the global answer at EVERY geometry" in {
     // C1 says the output beat is a legal INPUT beat. The way to know is to feed it back: P = 4 partials reduced
     // as three successive pairwise ops must equal the direct global merge. Proved PER GEOMETRY, not argued once
     // -- the lane map changes with sigma, so closure is a property of (F, sigma), not of the module.
-    test(new DataPathJunctionHarness(hasUnified)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val rng = new Random(0x7c1a)
 
       // (a) MOMENT at sigma = 3 -- 8 independent (m, l) reductions per beat
@@ -380,12 +378,12 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
         val go = ash.map { case (m, _, o) => o(j) * math.exp(m - gm) }.sum
         assert(math.abs(laneF32(acc, 2 + j) - go) / (math.abs(go) + 1e-6) <= 5e-2, s"chain sigma=0 O[$j]")
       }
-      println("[Unified/closure] P=4 hop-by-hop == the direct global merge at sigma = 3, 2 and 0 -- C1 holds " +
+      println("[Socket/closure] P=4 hop-by-hop == the direct global merge at sigma = 3, 2 and 0 -- C1 holds " +
               "per geometry, not by assertion")
     }
   }
 
-  "UnifiedJunction_infiniteKeys" should "fold two equal infinite keys with a twist of exactly 1.0" in {
+  "Socket_infiniteKeys" should "fold two equal infinite keys with a twist of exactly 1.0" in {
     // Two shards whose maxima are both +Inf (or both -Inf) make `loser - m*` = Inf - Inf = NaN. NaN must not
     // reach the exp LUT: its input clamp is built from integer comparisons that are only valid on finite
     // operands, so a NaN is not bounded by the clamp, it is LAUNDERED THROUGH it into the largest legal
@@ -393,7 +391,7 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
     // plausible, badly wrong numbers, which is the worst failure mode there is.
     //
     // Equal keys mean delta = 0 by definition, so the answer is a plain sum of the value fields.
-    test(new DataPathJunctionHarness(hasUnified)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val INF  = BigInt("7f800000", 16)
       val NINF = BigInt("ff800000", 16)
       for ((key, name) <- Seq((INF, "+Inf"), (NINF, "-Inf"))) {
@@ -421,16 +419,16 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
                  f"$name slot $k: expected the plain sum $gold%.9g (twist = 1.0), got $got%.9g")
         }
       }
-      println("[Unified/inf-keys] equal infinite keys fold with twist = 1.0, not with a laundered NaN")
+      println("[Socket/inf-keys] equal infinite keys fold with twist = 1.0, not with a laundered NaN")
     }
   }
 
-  "UnifiedJunction_zeroFieldGeometry" should "not collapse an F=0 word into an all-zero beat" in {
+  "Socket_zeroFieldGeometry" should "not collapse an F=0 word into an all-zero beat" in {
     // n = 0 with hasKey = 0 gives F = 0. Unclamped that is a cliff: sigma_max's first arm is `F <= 2` so it
     // returns 3, and `field(l) < F` is then false on every lane because the compare is unsigned -- the block
     // emits 512 zero bits. For an additive fold that is a legal identity, so a whole chain converges to zero
     // and nothing anywhere reports it.
-    test(new DataPathJunctionHarness(hasUnified)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val a = packPairs(Seq.fill(pairSlots)((3.0, 5.0)))
       val b = packPairs(Seq.fill(pairSlots)((7.0, 11.0)))
       val out = runPair(dut, csrRaw(hasKey = 0, n = 0, nExp = 0, nAdd = 0, sigma = 3, nValid = pairSlots), a, b)
@@ -438,13 +436,18 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
       // clamped to F = 1: field 0 is in range and plainly summed, everything above it is out of range
       for (k <- 0 until pairSlots)
         assert(laneF32(out, k) == 10.0, f"slot $k: expected the field-0 sum 10.0, got ${laneF32(out, k)}%.6g")
-      println("[Unified/F=0] a zero-field geometry clamps to one field instead of emitting a silent zero beat")
+      println("[Socket/F=0] a zero-field geometry clamps to one field instead of emitting a silent zero beat")
     }
   }
 
-  "UnifiedJunction_roofline" should "stream at ~1 beat pair per cycle in BOTH classes" in {
-    test(new DataPathJunctionHarness(hasUnified)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
-      def stream(csr: BigInt, beats: Seq[BigInt]): (Int, Double) = {
+  // O1 in effect: each operator publishes a fixed latency and the chassis credit-gates against it, so both
+  // stream at the beat rate despite retiring at different depths. Split across two scalatest cases because
+  // chiseltest gives each CASE one Verilator build directory -- two `test(...)` calls in one case collide.
+  private var monRoof = (0, 0.0)
+
+  private def measure(has: HasDataPathJunction, csr: BigInt, beats: Seq[BigInt]): (Int, Double) = {
+      var r = (0, 0.0)
+      test(new DataPathJunctionHarness(has)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
         val n = beats.length
         dut.io.csr_i(0).poke(csr.U)
         dut.io.enable_i.poke(true)
@@ -468,22 +471,32 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
         }
         dut.io.out_o.ready.poke(false)
         assert(rec == n, s"only $rec/$n beats retired")
-        (first, if (last > warm) (n - 4).toDouble / (last - warm) else 0.0)
+        r = (first, if (last > warm) (n - 4).toDouble / (last - warm) else 0.0)
       }
-      val rng     = new Random(0x77aa)
-      val monB    = Seq.fill(64)(packPairs(Seq.fill(pairSlots)((rng.between(-2.0, 4.0), rng.between(0.5, 3.0)))))
-      val linB    = Seq.fill(64)(packFmt(Seq.fill(FMT16.lanes)(rng.between(-4.0, 4.0)), FMT16))
-      val (lm, um) = stream(csrMonoid(MODE_MOMENT, pairSlots), monB)
-      val (ll, ul) = stream(csrLinear(OP_ADD, FMT16.code), linB)
-      println(f"[Unified/roofline] MONOID: first-out $lm CC, util=$um%.3f | ELEMENTWISE: first-out $ll CC, util=$ul%.3f")
-      assert(um > 0.9, f"monoid class should stream at ~1 beat pair/cycle, got $um%.3f")
-      assert(ul > 0.9, f"linear class should stream at ~1 beat pair/cycle, got $ul%.3f")
-      assert(ll < lm, "the linear class should retire in fewer cycles than the exp-LUT class")
-    }
+      r
   }
 
-  "UnifiedJunction_bypass" should "be a transparent wire from a to out when disabled" in {
-    test(new DataPathJunctionHarness(hasUnified)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+  "Socket_roofline_monoid" should "stream the twisted operator at ~1 beat pair per cycle" in {
+    val rng  = new Random(0x77aa)
+    val monB = Seq.fill(64)(packPairs(Seq.fill(pairSlots)((rng.between(-2.0, 4.0), rng.between(0.5, 3.0)))))
+    monRoof  = measure(hasMonoid, csrMonoid(MODE_MOMENT, pairSlots), monB)
+    assert(monRoof._2 > 0.9, f"the monoid operator should stream at ~1 beat pair/cycle, got ${monRoof._2}%.3f")
+    println(f"[Socket/roofline] MONOID: first-out ${monRoof._1} CC, util=${monRoof._2}%.3f")
+  }
+
+  "Socket_roofline_linear" should "stream the linear operator at ~1 beat pair per cycle, and retire sooner" in {
+    val rng      = new Random(0x77bb)
+    val linB     = Seq.fill(64)(packFmt(Seq.fill(FMT16.lanes)(rng.between(-4.0, 4.0)), FMT16))
+    val (ll, ul) = measure(hasEw, csrLinear(OP_ADD, FMT16.code), linB)
+    println(f"[Socket/roofline] ELEMENTWISE: first-out $ll CC, util=$ul%.3f")
+    assert(ul > 0.9, f"the linear operator should stream at ~1 beat pair/cycle, got $ul%.3f")
+    assert(monRoof._1 > 0, "run Socket_roofline_monoid first")
+    assert(ll < monRoof._1,
+           s"the linear operator ($ll CC) should retire sooner than the exp-LUT one (${monRoof._1} CC)")
+  }
+
+  "Socket_bypass" should "be a transparent wire from a to out when disabled" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val rng   = new Random(0xbb01)
       val beats = Seq.fill(8)(packPairs(Seq.fill(pairSlots)((rng.between(-4.0, 4.0), rng.between(0.5, 3.0)))))
       dut.io.csr_i(0).poke(csrMonoid(MODE_MOMENT, pairSlots).U)
@@ -507,7 +520,7 @@ class UnifiedJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
         if (outNow) got = got :+ outBits
       }
       assert(got == beats.toList, "disabled junction must forward a_i byte-identically")
-      println("[Unified/bypass] enable=0 is byte-identical to a raw forward")
+      println("[Socket/bypass] enable=0 is byte-identical to a raw forward")
     }
   }
 }
