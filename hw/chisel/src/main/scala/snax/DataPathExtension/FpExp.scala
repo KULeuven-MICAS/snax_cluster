@@ -68,9 +68,12 @@ class FpExp(pipelined: Boolean = false, lutN: Int = 256) extends Module with Req
   val twoF = sr(fmul(lut(idx), corr)) // reg3
   val n    = sr(iM >> LOGN)           // reg3 : integer part of m (arithmetic shift, signed)
 
-  // ---- S4: scale by 2^n (exponent field = n + 127; underflow -> +0, narrows to FP16 0) ----
+  // ---- S4: scale by 2^n (exponent field = n + 127) ----
+  // The guard is load-bearing, not defensive: `n + 127` is written straight into the 8-bit exponent field, so
+  // `n < -127` WRAPS. At the input clamp edge (x <= -88.035) `n = -128` gives 0xFF = +Inf -- the largest
+  // representable value exactly where the true result underflows to 0. Clamp to +0 so exp is TOTAL.
   val pow2nExp = (n + 127.S).asUInt(7, 0)
-  val pow2n    = Cat(0.U(1.W), pow2nExp, 0.U(23.W))
+  val pow2n    = Mux(n < (-127).S, 0.U(32.W), Cat(0.U(1.W), pow2nExp, 0.U(23.W)))
   io.out := fmul(twoF, pow2n)
 }
 

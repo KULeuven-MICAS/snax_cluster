@@ -14,10 +14,13 @@ import snax.DataPathExtension.FpHelpers._
   * ============================================================================================================
   *
   * A 2-input, per-element FP reduction (ADD / MUL / MAX / MIN) on the Junction ABI: same arity, same chain
-  * position and same per-beat throughput as `MonoidJunction`, but a per-element operator.
+  * position and same per-beat throughput as the monoid class, but a per-element operator.
+  *
+  * SUPERSEDED as a build target: `UnifiedJunction` carries this operator and the monoid family on one netlist
+  * over a shared FMA pool. This file is retained as the SEPARATE-OPERATOR BASELINE for the area comparison.
   *
   * ADD / MUL / MAX / MIN commute with routing, so a chain of these nodes computes the same result regardless of
-  * how the reduction is ordered along the route. The nonlinear family in `MonoidJunction` -- the online-softmax
+  * how the reduction is ordered along the route. The nonlinear family in `MonoidCombine` -- the online-softmax
   * (m, l) merge, the flash-attention (m, l, O) triple, the exp-weighted moment bank -- is NOT expressible this
   * way at any element granularity, because it needs a shared rescale alpha = exp(m_loser - m*) derived from the
   * operand pair itself.
@@ -161,9 +164,12 @@ class ElementwiseJunction(
     }
     Cat(elems.reverse)
   }
-  val outBeat = MuxLookup(fmt, packed(supported.head._2, supported.head._3))(
-    supported.map { case (code, w, t) => code.U -> packed(w, t) }
-  )
+  // Elaborate each format's repack ONCE; the default arm reuses the first rather than building a second,
+  // unreachable copy of it. (Same fix as UnifiedJunction -- kept in step here because this module is the
+  // separate-operator BASELINE for the area comparison, and a baseline carrying a redundancy the merged design
+  // does not would flatter the merged design.)
+  val outPacked = supported.map { case (code, w, t) => code -> packed(w, t) }
+  val outBeat   = MuxLookup(fmt, outPacked.head._2)(outPacked.map { case (code, p) => code.U -> p })
 
   def clrPipe(in: Bool, n: Int): Bool =
     if (n <= 0) in

@@ -9,7 +9,12 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import snax.DataPathJunction.JunctionTestUtils._
 
-/** Tier-1 for `MonoidJunction` -- the nonlinear 2->1 collective fold.
+/** Tier-1 for the MONOID CLASS of `UnifiedJunction` -- the nonlinear 2->1 collective fold.
+  *
+  * (The `MonoidJunction` placement this was written against has been deleted; `UnifiedJunction` carries the same
+  * operator. The file keeps its name because it is the monoid class's own test: it holds the tree's only
+  * INDEPENDENT double-precision goldens -- `UnifiedJunctionTester` compares against frozen predecessor beats,
+  * which proves agreement, not correctness -- and the only end-to-end C1 chain-closure proof.)
   *
   * What these tests pin down, beyond "the arithmetic is right":
   *
@@ -46,7 +51,10 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
     b
   }
 
-  private def hasMonoid = new HasMonoidJunction(dHead = dHead, pairSlots = pairSlots)
+  // Retargeted to the merged netlist: `UnifiedJunction` is the only monoid placement now. These are the tree's
+  // only INDEPENDENT double-precision goldens (and its only C1 chain-closure proof), so they must run against
+  // whatever hardware actually ships -- not against the deleted predecessor.
+  private def hasMonoid = new HasUnifiedJunction(dHead = dHead)
 
   // ---- goldens ----
   private def momentGolden(a: (Double, Double), b: (Double, Double)): (Double, Double) = {
@@ -237,7 +245,7 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   "MonoidJunction_watchdog" should "flag a starved join instead of hanging silently" in {
-    test(new DataPathJunctionHarness(new HasMonoidJunction(dHead = dHead, pairSlots = pairSlots, starveLimit = 64)))
+    test(new DataPathJunctionHarness(new HasUnifiedJunction(dHead = dHead, starveLimit = 64)))
       .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
         // A two-stream join stalls indefinitely if the operand beat counts disagree, which is a software contract
         // on two independently dispatched cfgs. The watchdog turns that silent stall into an observable flag.

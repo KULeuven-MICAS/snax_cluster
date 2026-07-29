@@ -81,6 +81,30 @@ class FpActivationTester extends AnyFlatSpec with ChiselScalatestTester {
       assert(mism == 0, s"FpActivation($tag) differs from reference in $mism/${xs.length} cases; first: $first")
     }
 
+  "FpActivation_exp_underflow" should "flush to +0 below the clamp edge, never wrap to +Inf" in {
+    // The bit-exact `diff` sweep above CANNOT catch this: it compares FpActivation against FpExp, and both
+    // constructed the exponent field as `(n + 127) & 0xFF` with no guard, so both returned +Inf for n < -127
+    // and agreed with each other. Agreement is not correctness. This checks the VALUE.
+    //
+    // Threshold: LOG2EF_N = 1.44269504 * 128, so x <= -88.035 gives iM <= -16257, n = iM >> 7 = -128, and
+    // (n + 127) & 0xFF = 0xFF = the +Inf exponent -- the largest representable float exactly where exp(x)
+    // underflows to zero. In the monoid fold this is not cosmetic: alpha = exp(m_loser - m*) rescales a real
+    // shard, so two shards whose maxima differ by more than ~88 would scale by +Inf instead of ~0.
+    test(new ActDiff(true, false, false, 128, 256)) { dut =>
+      for (x <- Seq(-88.5f, -89.0f, -90.0f, -100.0f, -1e9f, Float.NegativeInfinity)) {
+        dut.io.in.poke(bits(x).U)
+        val ref = dut.io.golden.peekInt()
+        val act = dut.io.merged.peekInt()
+        assert(act == BigInt(0), f"FpActivation exp($x%.4g) = 0x$act%08x, expected +0 (a wrap to +Inf is 0x7f800000)")
+        assert(ref == BigInt(0), f"FpExp($x%.4g) = 0x$ref%08x, expected +0")
+      }
+      // and the last input that must still produce a normal, nonzero result
+      dut.io.in.poke(bits(-87.0f).U)
+      assert(dut.io.merged.peekInt() != BigInt(0), "exp(-87) must not be flushed to zero")
+      println("[FpActivation/underflow] exp is total below the clamp edge: +0, not +Inf")
+    }
+  }
+
   "FpActivation_exp_only"  should "match FpExp bit-exact"               in { diff(true, false, false, "exp-only") }
   "FpActivation_silu_only" should "match FpSilu bit-exact"              in { diff(false, true, true, "silu-only") }
   "FpActivation_both_exp"  should "match FpExp bit-exact (both built)"  in { diff(true, true, false, "both-exp") }

@@ -108,7 +108,16 @@ class FpActivation(
   // ---- S0: input-affine. exp: fmul(clamp(x),LOG2EF_N) == ffma(_, _, +0); silu: ffma(|x|clamped, SCALE, 0) ----
   val preExp = if (hasExp) fp32max(fp32min(io.in, HI_E), LO_E) else io.in
   val preSil = if (hasG) fp32min(fabs(io.in), gClamp) else io.in
-  val s0     = sr(ffma(Mux(isExp, preExp, preSil), Mux(isExp, LOG2EF_N, gScale), Mux(isExp, ZERO, BIAS))) // reg0
+  // Only the g-family needs an ADDEND here (its BIAS); the exp path's addend is the CONSTANT +0, which makes the
+  // FMA a multiplier wearing an FMA's clothes. On an exp-only build (`hasG` false, so `isExp` is an elaboration
+  // constant) drop to `fmul` and save one FP32 adder path per instance -- and this block is instantiated once per
+  // key front end, so it is 8 of them in a junction alone. `FpExp`, the standalone golden reference, has always
+  // used `fmul` here (FpExp.scala S0), and FpActivationTester diff-checks the two BIT-EXACT across a dense sweep
+  // that includes -0.0 -- the one input where ffma(a,b,+0) and fmul(a,b) could disagree. So this is not a
+  // tolerance argument: the equality is already a passing test.
+  val s0     =
+    if (hasG) sr(ffma(Mux(isExp, preExp, preSil), Mux(isExp, LOG2EF_N, gScale), Mux(isExp, ZERO, BIAS))) // reg0
+    else sr(fmul(preExp, LOG2EF_N)) // reg0
   val xin0 = sr(io.in)     // reg0 : original signed x (silu final multiply)
   val sgn0 = sr(io.in(31)) // reg0 : sign of x (silu g/1-g reflection)
 
@@ -155,7 +164,13 @@ class FpActivation(
   val xin3      = sr(xin2)
 
   // ---- S4: exp scales by 2^n (exp-field construct); silu multiplies by the original x ----
-  val pow2n = if (hasExp) Cat(0.U(1.W), (nE + 127.S).asUInt(7, 0), 0.U(23.W)) else ZERO
+  // `nE + 127` is written straight into the 8-bit exponent field, so an `nE` below -127 WRAPS: at the input
+  // clamp edge (`in <= -88.035`, i.e. `iM <= -16257`) `nE = -128` gives `(nE+127) & 0xFF = 0xFF` = +Inf --
+  // the LARGEST representable value where the true result is ~0. Flush to zero instead. That is the correct
+  // limit, and it is what makes exp TOTAL (`exp(-inf) = 0`), which the monoid fold's identity padding depends
+  // on: two shards whose maxima differ by more than ~88 otherwise rescale by +Inf. `nE` is registered at S3,
+  // so this mux lands in S4 in front of a single fmul, off the deep S0/S3 cones.
+  val pow2n = if (hasExp) Mux(nE < (-127).S, ZERO, Cat(0.U(1.W), (nE + 127.S).asUInt(7, 0), 0.U(23.W))) else ZERO
   io.out := fmul(r3, Mux(isExp, pow2n, xin3))
 }
 

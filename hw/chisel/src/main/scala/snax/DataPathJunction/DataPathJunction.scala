@@ -23,7 +23,7 @@ import snax.utils._
   *   where               in-line in the reader/writer chain  at the crossing, in the data switch
   *   granularity         per element (map, cast, layout)     per collective (fold / combine)
   *   state               streaming or slot-accumulated       stateless in the operand pair
-  *   example             StreamMapRt, StreamCastRt           MonoidJunction, ElementwiseJunction
+  *   example             StreamMapRt, StreamCastRt           UnifiedJunction
   * }}}
   *
   * The split follows the wiring: the local operand entering a junction has already traversed the reader extension

@@ -5,7 +5,7 @@ import chiseltest._
 import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
 
-import snax.DataPathJunction.HasMonoidJunction
+import snax.DataPathJunction.HasUnifiedJunction
 import snax.DataPathJunction.MonoidCombine
 import snax.readerWriter.ReaderWriterParam
 import snax.xdma.DesignParams._
@@ -36,7 +36,7 @@ class XDMADataSwitchTester extends AnyFlatSpec with ChiselScalatestTester {
     crossClusterParam = new XDMACrossClusterParam,
     rwParam           = new ReaderWriterParam,
     extParam          = Seq(),
-    junctionParam     = Seq(new HasMonoidJunction(dataWidth = dataWidth, pairSlots = pairSlots))
+    junctionParam     = Seq(new HasUnifiedJunction(dataWidth = dataWidth))
   )
 
   private def f32(f: Double): BigInt = BigInt(java.lang.Float.floatToIntBits(f.toFloat).toLong & 0xffffffffL)

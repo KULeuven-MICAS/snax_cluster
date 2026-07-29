@@ -261,7 +261,7 @@ workloads in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hj
             //   for the area comparison; instantiate them here instead to build that baseline.
             writer_junctions:
             {
-                HasUnifiedJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1, dHead: 8, expLutN: 128, pairSlots: 8}
+                HasUnifiedJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1, dHead: 8, expLutN: 128}
             }
             reader_extensions: {
                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}

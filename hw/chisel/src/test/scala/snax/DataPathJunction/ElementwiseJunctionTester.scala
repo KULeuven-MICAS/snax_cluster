@@ -15,7 +15,7 @@ import snax.DataPathJunction.JunctionTestUtils._
   * Covers the four ops at FP16, the runtime format select (BF16 and FP32 out of one netlist), the streaming and
   * cut-through behaviour, and the class-level bypass property.
   *
-  * The last test is the reason this junction sits next to `MonoidJunction`: it shows directly that a per-element
+  * The last test is the reason the monoid class exists at all: it shows directly that a per-element
   * reduction applied to online-softmax statistics computes the WRONG answer, because the softmax merge needs a
   * rescale derived from the operand pair and is not a per-element operation at any granularity.
   */
@@ -159,11 +159,11 @@ class ElementwiseJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  "ElementwiseJunction_vs_MonoidJunction" should "be provably unable to express the softmax merge" in {
+  "ElementwiseJunction_vs_monoid" should "be provably unable to express the softmax merge" in {
     // Feed the SAME (m, l) partial pair to the linear reduction and check it against the online-softmax golden.
     // A per-element ADD gets `m` wrong (it sums two maxima) and `l` wrong (it omits the exp(m_loser - m*)
     // rescale). No choice of per-element op fixes this, because the correct `l` depends on BOTH fields of BOTH
-    // operands. MonoidJunction computes it at the same arity, hop count and beat rate -- see MonoidJunctionTester.
+    // operands. The monoid class computes it at the same arity, hop count and beat rate -- see MonoidJunctionTester.
     test(new DataPathJunctionHarness(hasEw)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val (ma, la, mb, lb) = (1.0, 2.0, 3.0, 0.5)
       val mStar = math.max(ma, mb)
