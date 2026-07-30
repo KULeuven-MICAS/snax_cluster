@@ -6,7 +6,6 @@ import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
 
 import snax.DataPathJunction.HasMonoidJunction
-import snax.DataPathJunction.MonoidCombine
 import snax.readerWriter.ReaderWriterParam
 import snax.xdma.DesignParams._
 
@@ -48,7 +47,10 @@ class XDMADataSwitchTester extends AnyFlatSpec with ChiselScalatestTester {
     for ((v, k) <- p.zipWithIndex) { b |= f32(v._1) << (32 * k); b |= f32(v._2) << (32 * (pairSlots + k)) }
     b
   }
-  private def csrMoment(nValid: Int): BigInt = (BigInt(MonoidCombine.MODE_MOMENT) << 13) | BigInt(nValid)
+  // the monoid geometry word: [7:0] nValid | [11:8] n | [21:18] nExp | [27:26] sigma. (m, l), one twisted
+  // value coordinate, 8 partials per beat.
+  private def csrMoment(nValid: Int): BigInt =
+    (BigInt(3) << 26) | (BigInt(1) << 18) | (BigInt(1) << 8) | BigInt(nValid)
 
   /** Park every input at a quiescent, non-gather, non-chained state. */
   private def idle(dut: XDMADataSwitch): Unit = {

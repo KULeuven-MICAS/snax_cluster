@@ -20,6 +20,10 @@ import snax.DataPathExtension.FpHelpers._
   * flash-attention triple, exp-weighted moment banks, max-pool, argmax/argmin -- is this one datapath under a
   * different geometry word. `MonoidCombine` holds the algebra; this file is the socket plumbing around it.
   *
+  * Every partial carries exactly one key, which is what makes it a member of this family. A partial with no key
+  * has nothing to compare and folds to the direct product -- a different algebra, and `ElementwiseJunction`'s
+  * operator on this socket.
+  *
   * ---- HOW IT MEETS THE SOCKET CONTRACT ----
   * {{{
   *   O1 declared fixed latency   latMon = MonoidCombine.latency + fpPipe, published to the chassis below
@@ -35,23 +39,24 @@ import snax.DataPathExtension.FpHelpers._
   * {{{
   *   lane = field * S + slot        slot(l) = l & (S-1)      field(l) = l >> sigma      S = 1 << sigma
   * }}}
-  * There is no second layout and no mode-shaped special case: `sigma` is a configuration field and the six
-  * legacy operators are six values of it.
+  * `sigma` is a configuration field, so the layout is one rule with one parameter and there is no per-operator
+  * special case anywhere in the block.
   *
   * ---- CSR(0) ---- (one user CSR, so the inter-cluster / D2D cfg serdes is untouched)
   * {{{
-  *   [7:0]    nValid       live partials in the beat; slots >= nValid get the monoid identity
-  *   [15:13]  combineMode  SUM | MOMENT | ATTN | MAXPOOL | ARGMAX | MOMENT2   (read when rawGeom = 0)
-  *   [17]     rawGeom      1 = read the geometry directly instead of the 6-mode enum
-  *   [12]     hasKey       [11:8] n     [21:18] nExp   [25:22] nAdd   [27:26] sigma   [28] keyPol
+  *   [7:0]    nValid   live partials in the beat; slots >= nValid get their field's identity
+  *   [11:8]   n        value coordinates; the partial is (m, v_1..v_n), so F = n + 1
+  *   [21:18]  nExp     fields 1 .. nExp take the twist
+  *   [25:22]  nAdd     fields nExp+1 .. nExp+nAdd are plainly summed; the rest carry the winner's payload
+  *   [27:26]  sigma    beat geometry, saturated to the widest legal value for F
+  *   [28]     keyPol   0 = max-monoid, 1 = min-monoid
   * }}}
-  * The enum is a six-entry ELABORATION-time table over the raw fields, so every historical word decodes exactly
-  * as it always did; the raw path is what removes `dHead` from the netlist.
+  * The word names a GEOMETRY, not an operator, which is what keeps the head width out of the netlist: a
+  * twelve-wide flash-attention head is `n = 13, nExp = 13, sigma = 0` on the same hardware.
   */
 class HasMonoidJunction(
   dataWidth:   Int = 512,
   fpPipe:      Int = 1,
-  dHead:       Int = 8,
   expLutN:     Int = 128,
   skidDepth:   Int = 4,
   starveLimit: Int = 4096
@@ -65,14 +70,13 @@ class HasMonoidJunction(
     )
 
   def instantiate(clusterName: String): MonoidJunction =
-    Module(new MonoidJunction(fpPipe = fpPipe, dHead = dHead, expLutN = expLutN, skidDepth = skidDepth) {
+    Module(new MonoidJunction(fpPipe = fpPipe, expLutN = expLutN, skidDepth = skidDepth) {
       override def desiredName = clusterName + namePostfix
     })
 }
 
 class MonoidJunction(
   fpPipe:        Int = 1,
-  dHead:         Int = 8,
   expLutN:       Int = 128,
   skidDepth:     Int = 4
 )(implicit
@@ -85,16 +89,15 @@ class MonoidJunction(
   val accWidth = 32
   val nLanes   = junctionParam.dataWidth / accWidth // FP32 lanes in one beat (16 at 512-bit)
   val nKey     = nLanes / 2                         // key front ends; see the theorem below
-  require(2 + dHead <= nLanes, s"MonoidJunction: 2+dHead (${2 + dHead}) must fit one beat ($nLanes lanes)")
-  // "eight key front ends is exactly sufficient" is a THEOREM, not a coincidence of dataWidth/64: any partial
-  // with a key has F >= 2, which forces sigma <= SIGMA_MAX, which forces S <= nLanes/2 -- so a key lane can
-  // never leave the low half of the beat, for ANY n and ANY dHead.
+  // "nLanes/2 key front ends is exactly sufficient" is a THEOREM, not a coincidence of dataWidth/64: `n` is a
+  // 4-bit field so F = n+1 <= nLanes, and every partial has a key so F >= 1; `sigma <= SIGMA_MAX` then forces
+  // S <= nLanes/2, so a key lane can never leave the low half of the beat, for ANY n.
   require((1 << SIGMA_MAX) <= nKey, s"MonoidJunction: nKey ($nKey) must cover the widest legal S")
   require(isPow2(nKey), s"MonoidJunction: nKey ($nKey) must be a power of two for the slot-class fold")
 
   // ---- CSR decode: the geometry IS the configuration --------------------------------------------------------
   val nValid = jct_csr_i(0)(7, 0)
-  val geom   = geomOf(jct_csr_i(0), dHead)
+  val geom   = geomOf(jct_csr_i(0))
   val sigma  = geom.sigma
 
   // ---- socket plumbing: elastic input, credit-gated output ---------------------------------------------------
@@ -153,10 +156,10 @@ class MonoidJunction(
   // `sigma <= SIGMA_MAX` means `field(l) >= 1` for every lane at or above `1 << SIGMA_MAX`, so no such lane can
   // EVER hold the key. State it, because the field decode lowers to a Vec lookup the tool cannot see through.
   val lIsKey    = (0 until nLanes).map(l =>
-    if (l >= (1 << SIGMA_MAX)) false.B else geom.hasKey && lField(l) === 0.U)
-  val lUseAlpha = (0 until nLanes).map(l => geom.hasKey && lField(l) >= 1.U && lField(l) <= geom.nExp)
+    if (l >= (1 << SIGMA_MAX)) false.B else lField(l) === 0.U)
+  val lUseAlpha = (0 until nLanes).map(l => lField(l) >= 1.U && lField(l) <= geom.nExp)
   // No `&& lInRange(l)`: an out-of-range lane retires zero from the outer select in `valueLane` regardless.
-  val lIsSel    = (0 until nLanes).map(l => geom.hasKey && (lField(l) > (geom.nExp +& geom.nAdd)))
+  val lIsSel    = (0 until nLanes).map(l => lField(l) > (geom.nExp +& geom.nAdd))
   val lLive     = (0 until nLanes).map(l => cLive(cls(l)))
   // O3 on the INPUT, per lane: a dead slot is fed its field's identity on BOTH sides, so it contributes the
   // identity and the emitted beat stays a legal input partial at any downstream nValid.
@@ -167,11 +170,11 @@ class MonoidJunction(
 
   // key front ends: front end `s` sits ON lane `s` and reads that lane's own masked operands (lane s IS
   // (field 0, slot s) for every sigma, which is the property field-major buys).
-  val fe       = (0 until nKey).map(s => keyFrontEnd(amL(s), bmL(s), geom.hasKey, geom.keyPol, expLutN))
+  val fe       = (0 until nKey).map(s => keyFrontEnd(amL(s), bmL(s), geom.keyPol, expLutN))
   val alphaTap = (0 until nKey).map(c => tapOf(c, (s: Int) => fe(s)._1))
   val swTap    = (0 until nKey).map(c => tapOf(c, (s: Int) => fe(s)._2))
 
-  // one FMA per lane -- an identity map, no pool and no allocator now that there is no second class to share it
+  // one FMA per lane, by an identity map: lane `l` drives FMA `l`. No pool and no allocator.
   val outBeat = VecInit((0 until nLanes).map { l =>
     valueLane(
       am       = amL(l),

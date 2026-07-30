@@ -9,16 +9,16 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import snax.DataPathJunction.JunctionTestUtils._
 
-/** Tier-1 for the MONOID CLASS of `UnifiedJunction` -- the nonlinear 2->1 collective fold.
+/** Tier-1 for `MonoidJunction` -- the nonlinear 2->1 collective fold, and the socket's twisted-family operator.
   *
-  * (The `MonoidJunction` placement this was written against has been deleted; `UnifiedJunction` carries the same
-  * operator. The file keeps its name because it is the monoid class's own test: it holds the tree's only
-  * INDEPENDENT double-precision goldens -- `UnifiedJunctionTester` compares against frozen predecessor beats,
-  * which proves agreement, not correctness -- and the only end-to-end C1 chain-closure proof.)
+  * This is the operator's own test, and it carries what `JunctionSocketTester` cannot: the tree's only
+  * INDEPENDENT double-precision goldens. The socket tester compares against FROZEN beats, which proves agreement
+  * with a captured result rather than correctness of the arithmetic; here every expected value is recomputed from
+  * the algebra. It also holds the only end-to-end C1 chain-closure proof.
   *
   * What these tests pin down, beyond "the arithmetic is right":
   *
-  *   1. Every `combineMode` folds a live operand PAIR against a numeric golden computed in double precision.
+  *   1. Every geometry folds a live operand PAIR against a numeric golden computed in double precision.
   *   2. CHAINING: folding P = 4 partials as three successive pairwise junction ops reproduces the direct global
   *      answer, which is the reduce-along-the-route property at component level.
   *   3. CUT-THROUGH: the first output appears after the SAME number of cycles whether the payload is 1 beat or 64.
@@ -34,8 +34,15 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
 
   import MonoidCombine._
 
-  // csr(0): [7:0] nValid | [15:13] combineMode   (bits [12:8] are the extension placement's slot fields, ignored)
-  private def csrWord(mode: Int, nValid: Int): BigInt = (BigInt(mode) << 13) | BigInt(nValid)
+  // csr(0): [7:0] nValid | [11:8] n | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol
+  private def csrWord(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int): BigInt =
+    (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) | (BigInt(nExp) << 18) | (BigInt(n) << 8) | BigInt(nValid)
+
+  private val MOMENT  = (1, 1, 0, 3)          // (m, l)               one twisted coordinate
+  private val ATTN    = (1 + dHead, 1 + dHead, 0, 0) // (m, l, O[dHead])  one alpha across every value lane
+  private val MAXPOOL = (0, 0, 0, 3)          // (m)                  a bare key
+  private val ARGMAX  = (1, 0, 0, 3)          // (m, payload)         field 1 is past nExp+nAdd => winner-select
+  private def csr(g: (Int, Int, Int, Int), nValid: Int): BigInt = csrWord(g._1, g._2, g._3, g._4, nValid)
 
   /** pack `pairSlots` (field0, field1) partials: field0_k = lane k, field1_k = lane pairSlots+k */
   private def packPairs(p: Seq[(Double, Double)]): BigInt = {
@@ -51,10 +58,9 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
     b
   }
 
-  // Retargeted to the merged netlist: `UnifiedJunction` is the only monoid placement now. These are the tree's
-  // only INDEPENDENT double-precision goldens (and its only C1 chain-closure proof), so they must run against
-  // whatever hardware actually ships -- not against the deleted predecessor.
-  private def hasMonoid = new HasMonoidJunction(dHead = dHead)
+  // These run against whatever hardware actually ships, since they are the tree's only INDEPENDENT
+  // double-precision goldens and its only C1 chain-closure proof.
+  private def hasMonoid = new HasMonoidJunction()
 
   // ---- goldens ----
   private def momentGolden(a: (Double, Double), b: (Double, Double)): (Double, Double) = {
@@ -62,20 +68,28 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
     (m, a._2 * math.exp(a._1 - m) + b._2 * math.exp(b._1 - m))
   }
 
-  "MonoidJunction_SUM" should "fold two streams of (Sx, Sx^2) partials slot-wise" in {
+  "MonoidJunction_plainSumFields" should "sum the value coordinates that lie past nExp, on the winner's key" in {
+    // `nExp` twisted coordinates, then `nAdd` plainly summed ones. Here nExp = 0 and nAdd = 1, so the key still
+    // decides the winner and the single value coordinate is added with no rescale -- the same FMA as a twisted
+    // lane with its scale port held at 1.0.
     test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val rng = new Random(0x5011)
       for (trial <- 0 until 6) {
         val pa  = Seq.fill(pairSlots)((rng.between(-4.0, 4.0), rng.between(0.0, 8.0)))
         val pb  = Seq.fill(pairSlots)((rng.between(-4.0, 4.0), rng.between(0.0, 8.0)))
-        val out = runPair(dut, csrWord(MODE_SUM, pairSlots), packPairs(pa), packPairs(pb), bDelay = trial % 3)
+        val w   = csrWord(n = 1, nExp = 0, nAdd = 1, sigma = 3, nValid = pairSlots)
+        val out = runPair(dut, w, packPairs(pa), packPairs(pb), bDelay = trial % 3)
         for (k <- 0 until pairSlots) {
-          val (g1, g2) = (pa(k)._1 + pb(k)._1, pa(k)._2 + pb(k)._2)
-          assert(math.abs(laneF32(out, k) - g1) <= math.abs(g1) * 1e-5 + 1e-6, s"trial $trial slot $k S1")
-          assert(math.abs(laneF32(out, pairSlots + k) - g2) <= math.abs(g2) * 1e-5 + 1e-6, s"trial $trial slot $k S2")
+          val gm = math.max(pa(k)._1, pb(k)._1)
+          val gv = pa(k)._2 + pb(k)._2
+          // the key lane SELECTS an operand, so compare the encodings: the beat carries FP32 and a
+          // double-precision golden differs from the right answer in the last mantissa bits.
+          assert(lane(out, k) == f32(gm), s"trial $trial slot $k key")
+          assert(math.abs(laneF32(out, pairSlots + k) - gv) <= math.abs(gv) * 1e-5 + 1e-6,
+                 s"trial $trial slot $k value")
         }
       }
-      println(s"[Junction/SUM] $pairSlots independent (Sx, Sx^2) reductions folded per beat pair, 6 trials exact")
+      println(s"[Junction/nAdd] $pairSlots keyed partials with an untwisted value coordinate, 6 trials exact")
     }
   }
 
@@ -86,7 +100,7 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
       for (trial <- 0 until 6) {
         val pa  = Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0)))
         val pb  = Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0)))
-        val out = runPair(dut, csrWord(MODE_MOMENT, pairSlots), packPairs(pa), packPairs(pb), bDelay = trial % 4)
+        val out = runPair(dut, csr(MOMENT, pairSlots), packPairs(pa), packPairs(pb), bDelay = trial % 4)
         for (k <- 0 until pairSlots) {
           val (gm, gl) = momentGolden(pa(k), pb(k))
           val rel      = math.abs(laneF32(out, pairSlots + k) - gl) / gl
@@ -105,7 +119,7 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
       for (trial <- 0 until 5) {
         val (ma, la, oa) = (rng.between(-2.0, 5.0), rng.between(1.0, 5.0), Seq.fill(dHead)(rng.between(-3.0, 3.0)))
         val (mb, lb, ob) = (rng.between(-2.0, 5.0), rng.between(1.0, 5.0), Seq.fill(dHead)(rng.between(-3.0, 3.0)))
-        val out = runPair(dut, csrWord(MODE_ATTN, 1), packAttn(ma, la, oa), packAttn(mb, lb, ob), bDelay = trial % 3)
+        val out = runPair(dut, csr(ATTN, 1), packAttn(ma, la, oa), packAttn(mb, lb, ob), bDelay = trial % 3)
         val gm  = math.max(ma, mb)
         val gl  = la * math.exp(ma - gm) + lb * math.exp(mb - gm)
         assert(math.abs(laneF32(out, 0) - gm) <= math.abs(gm) * 1e-6 + 1e-9, s"attn trial $trial m")
@@ -126,7 +140,7 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
       for (_ <- 0 until 4) {
         val va  = Seq.fill(pairSlots)(rng.between(-9.0, 9.0))
         val vb  = Seq.fill(pairSlots)(rng.between(-9.0, 9.0))
-        val out = runPair(dut, csrWord(MODE_MAXPOOL, pairSlots), packPairs(va.map((_, 0.0))), packPairs(vb.map((_, 0.0))))
+        val out = runPair(dut, csr(MAXPOOL, pairSlots), packPairs(va.map((_, 0.0))), packPairs(vb.map((_, 0.0))))
         for (k <- 0 until pairSlots) {
           val g = math.max(va(k), vb(k))
           assert(math.abs(laneF32(out, k) - g) <= math.abs(g) * 1e-6 + 1e-9, s"maxpool slot $k")
@@ -138,7 +152,7 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
         val lb  = Seq.fill(pairSlots)(rng.between(0.1, 9.0))
         val pa  = la.zipWithIndex.map { case (v, i) => (v, i.toDouble) }
         val pb  = lb.zipWithIndex.map { case (v, i) => (v, (pairSlots + i).toDouble) }
-        val out = runPair(dut, csrWord(MODE_ARGMAX, pairSlots), packPairs(pa), packPairs(pb))
+        val out = runPair(dut, csr(ARGMAX, pairSlots), packPairs(pa), packPairs(pb))
         for (k <- 0 until pairSlots) {
           val aWins = la(k) >= lb(k)
           val g     = math.max(la(k), lb(k))
@@ -161,7 +175,7 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
         val shards = Seq.fill(4)(Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0))))
         var acc    = packPairs(shards.head)
         for (hop <- 1 until 4)
-          acc = runPair(dut, csrWord(MODE_MOMENT, pairSlots), acc, packPairs(shards(hop)), bDelay = hop)
+          acc = runPair(dut, csr(MOMENT, pairSlots), acc, packPairs(shards(hop)), bDelay = hop)
         for (k <- 0 until pairSlots) {
           val slot = shards.map(_(k))
           val gm   = slot.map(_._1).max
@@ -181,7 +195,7 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
       def firstOutLatency(n: Int): (Int, Double) = {
         val rng   = new Random(0x99 + n)
         val beats = Seq.fill(n)(packPairs(Seq.fill(pairSlots)((rng.between(-2.0, 4.0), rng.between(0.5, 3.0)))))
-        dut.io.csr_i(0).poke(csrWord(MODE_MOMENT, pairSlots).U)
+        dut.io.csr_i(0).poke(csr(MOMENT, pairSlots).U)
         dut.io.enable_i.poke(true)
         dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
         dut.io.out_o.ready.poke(true)
@@ -220,7 +234,7 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
     test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val rng   = new Random(0xbb01)
       val beats = Seq.fill(8)(packPairs(Seq.fill(pairSlots)((rng.between(-4.0, 4.0), rng.between(0.5, 3.0)))))
-      dut.io.csr_i(0).poke(csrWord(MODE_MOMENT, pairSlots).U)
+      dut.io.csr_i(0).poke(csr(MOMENT, pairSlots).U)
       dut.io.enable_i.poke(false) // the bypass property every Junction inherits from the class
       dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
       dut.io.out_o.ready.poke(true)
@@ -245,11 +259,11 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   "MonoidJunction_watchdog" should "flag a starved join instead of hanging silently" in {
-    test(new DataPathJunctionHarness(new HasMonoidJunction(dHead = dHead, starveLimit = 64)))
+    test(new DataPathJunctionHarness(new HasMonoidJunction(starveLimit = 64)))
       .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
         // A two-stream join stalls indefinitely if the operand beat counts disagree, which is a software contract
         // on two independently dispatched cfgs. The watchdog turns that silent stall into an observable flag.
-        dut.io.csr_i(0).poke(csrWord(MODE_MOMENT, pairSlots).U)
+        dut.io.csr_i(0).poke(csr(MOMENT, pairSlots).U)
         dut.io.enable_i.poke(true)
         dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
         dut.io.out_o.ready.poke(true)

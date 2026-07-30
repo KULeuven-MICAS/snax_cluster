@@ -17,7 +17,7 @@ operand and forwards only the result, instead of every node shipping a full part
                                   like-for-like baseline (same arity, same hop count, same beat rate).
   MonoidJunction       nonlinear— the family a per-element reduce cannot express: online-softmax (m,l),
                                   flash-attention (m,l,O), exp-weighted moments, argmax. One netlist,
-                                  mode-selected by the 3-bit combineMode CSR field.
+                                  selected by the geometry fields of its CSR word.
 
 Both are stateless in the operand pair, so the fold is fully pipelined, and the join is CUT-THROUGH:
 first-output latency does not grow with payload (measured 9 CC / 7 CC, util 1.000). That is what keeps a
@@ -34,7 +34,7 @@ The collector issues ONE task; every other participant is passive, exactly like 
   readerPtr     the collector's own partial.
   XDMA_DST_JCT_ENABLE_PTR  bit i = 1 arms junction i. ARMING A JUNCTION IS WHAT MAKES THE TRANSFER A GATHER
                 (`collectiveMode := junctionEnabled`) — there is no separate "which collective" CSR.
-  XDMA_DST_JCT_CSR_PTR     the junction's own CSR (MonoidJunction: [7:0] nValid, [15:13] combineMode).
+  XDMA_DST_JCT_CSR_PTR     the junction's own CSR (MonoidJunction: [7:0] nValid, [11:8] n, [21:18] nExp, [25:22] nAdd, [27:26] sigma).
 
 The unroll then emits, per remote hop, a READER-side frame (read your own partial) and a WRITER-side frame
 (arm your junction and forward) — two frames, because a frame carries `isWriterSide` and the receiver
@@ -247,7 +247,7 @@ workloads in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hj
             //     i.e. exactly the operator a collective-capable NoC puts inside the router. Runtime FP16/BF16/FP32.
             //   MonoidJunction     -- the NONLINEAR family the per-element form cannot express at all: the online-
             //     softmax (m, l) merge, the flash-attention (m, l, O) triple, exp-weighted moments, argmax. One
-            //     netlist, mode-selected by the 3-bit combineMode CSR field.
+            //     netlist, selected by the geometry fields of its CSR word.
             // Both are stateless in the operand pair, so the fold is fully pipelined (no accBusy read-modify-write)
             // and the join is cut-through: first-output latency does not grow with payload, which is what keeps a
             // chain latency-competitive with a star.
@@ -257,7 +257,7 @@ workloads in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hj
             writer_junctions:
             {
                 HasElementwiseJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1}
-                HasMonoidJunction: {dataWidth: 512, fpPipe: 1, dHead: 8, expLutN: 128}
+                HasMonoidJunction: {dataWidth: 512, fpPipe: 1, expLutN: 128}
                 // TopKJunction: an operator from OUTSIDE the classified monoid family -- its own beat layout,
                 // no key front end, no exponential and no FMA -- on the same socket, satisfying the same four
                 // obligations. It is the evidence that the CONTRACT composes, not the monoid cell.

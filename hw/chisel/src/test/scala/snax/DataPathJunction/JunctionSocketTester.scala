@@ -35,7 +35,10 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
   private val fpPipe    = 1
 
   // ---- CSR encoders: the predecessors' encodings, plus one class bit ----------------------------------------
-  private def csrMonoid(mode: Int, nValid: Int): BigInt = (BigInt(mode) << 13) | BigInt(nValid)
+  /** the monoid geometry word: [7:0] nValid | [11:8] n | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol */
+  private def csrMonoid(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int, keyPol: Int = 0): BigInt =
+    (BigInt(keyPol) << 28) | (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) | (BigInt(nExp) << 18) |
+      (BigInt(n) << 8) | BigInt(nValid)
   // No opClass bit any more. Choosing between operators is the SOCKET's job -- the host's enable bitmask --
   // not a field inside an operator's own CSR. The frozen linear beats are unaffected: the bit was ignored by
   // `ElementwiseJunction` even when the merged netlist set it.
@@ -83,39 +86,55 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
+  /** Each case draws its operands from its OWN seeded generator, keyed by the case name. A shared stream would
+    * couple the cases to each other: adding or removing one would re-draw every case after it and move every
+    * frozen beat below, which would make the table impossible to maintain and impossible to trust.
+    */
   private val monoidCases: Seq[Vec3] = {
-    val rng = new Random(0x22dd)
-    def pr() = Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0)))
-    def idx(off: Int) = (0 until pairSlots).map(i => (rng.between(-9.0, 9.0), (off + i).toDouble))
+    def rngOf(tag: String) = new Random(0x22dd ^ tag.hashCode.toLong)
+    def pr(r: Random) = Seq.fill(pairSlots)((r.between(-3.0, 6.0), r.between(1.0, 5.0)))
+    def idx(r: Random, off: Int) = (0 until pairSlots).map(i => (r.between(-9.0, 9.0), (off + i).toDouble))
+    def pairCase(tag: String, csr: BigInt) = {
+      val r = rngOf(tag); Vec3(tag, csr, packPairs(pr(r)), packPairs(pr(r)))
+    }
+    val rArg  = rngOf("ARGMAX")
+    val rAttn = rngOf("ATTN")
+    val rM2   = rngOf("MOMENT2")
     Seq(
-      Vec3("SUM",     csrMonoid(MODE_SUM, pairSlots),     packPairs(pr()), packPairs(pr())),
-      Vec3("MOMENT",  csrMonoid(MODE_MOMENT, pairSlots),  packPairs(pr()), packPairs(pr())),
-      Vec3("MOMENT3", csrMonoid(MODE_MOMENT, 3),          packPairs(pr()), packPairs(pr())),
-      Vec3("MAXPOOL", csrMonoid(MODE_MAXPOOL, pairSlots), packPairs(pr()), packPairs(pr())),
-      Vec3("ARGMAX",  csrMonoid(MODE_ARGMAX, pairSlots),  packPairs(idx(0)), packPairs(idx(pairSlots))),
-      Vec3("ATTN",    csrMonoid(MODE_ATTN, 1),
-           packSingle(rng.between(-2.0, 5.0), rng.between(1.0, 5.0), Seq.fill(dHead)(rng.between(-3.0, 3.0))),
-           packSingle(rng.between(-2.0, 5.0), rng.between(1.0, 5.0), Seq.fill(dHead)(rng.between(-3.0, 3.0)))),
-      Vec3("MOMENT2", csrMonoid(MODE_MOMENT2, 1),
-           packSingle(rng.between(-2.0, 5.0), rng.between(1.0, 5.0), Seq(rng.between(-4.0, 4.0), rng.between(0.5, 6.0))),
-           packSingle(rng.between(-2.0, 5.0), rng.between(1.0, 5.0), Seq(rng.between(-4.0, 4.0), rng.between(0.5, 6.0))))
+      pairCase("MOMENT",  csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots)),
+      pairCase("MOMENT3", csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = 3)),
+      pairCase("MAXPOOL", csrMonoid(n = 0, nExp = 0, nAdd = 0, sigma = 3, nValid = pairSlots)),
+      Vec3("ARGMAX",  csrMonoid(n = 1, nExp = 0, nAdd = 0, sigma = 3, nValid = pairSlots),
+           packPairs(idx(rArg, 0)), packPairs(idx(rArg, pairSlots))),
+      Vec3("ATTN",    csrMonoid(n = 1 + dHead, nExp = 1 + dHead, nAdd = 0, sigma = 0, nValid = 1),
+           packSingle(rAttn.between(-2.0, 5.0), rAttn.between(1.0, 5.0),
+                      Seq.fill(dHead)(rAttn.between(-3.0, 3.0))),
+           packSingle(rAttn.between(-2.0, 5.0), rAttn.between(1.0, 5.0),
+                      Seq.fill(dHead)(rAttn.between(-3.0, 3.0)))),
+      Vec3("MOMENT2", csrMonoid(n = 3, nExp = 3, nAdd = 0, sigma = 0, nValid = 1),
+           packSingle(rM2.between(-2.0, 5.0), rM2.between(1.0, 5.0),
+                      Seq(rM2.between(-4.0, 4.0), rM2.between(0.5, 6.0))),
+           packSingle(rM2.between(-2.0, 5.0), rM2.between(1.0, 5.0),
+                      Seq(rM2.between(-4.0, 4.0), rM2.between(0.5, 6.0))))
     )
   }
 
-  private def hasMonoid = new HasMonoidJunction(fpPipe = fpPipe, dHead = dHead)
+  private def hasMonoid = new HasMonoidJunction(fpPipe = fpPipe)
   private def hasEw     = new HasElementwiseJunction(elemWidth = elemWidth, fpPipe = fpPipe)
 
   // ---- THE FROZEN REFERENCE ---------------------------------------------------------------------------------
-  // These 13 beats were CAPTURED from the two predecessor netlists -- `ElementwiseJunction` for the linear class,
-  // `MonoidJunction` for the monoid class -- driven by the deterministic stimulus above, and are now literals.
+  // One literal output beat per case, for the deterministic stimulus above. These are LITERALS on purpose.
+  // Elaborating a second instance as a live reference looks stronger and is in fact weaker: both instances call
+  // the same combine, so any change to that shared code moves the reference and the DUT together and the test
+  // passes VACUOUSLY. A frozen table cannot move, so every datapath change is checked against a behaviour that
+  // is fixed independently of the code under test.
   //
-  // They are literals ON PURPOSE. Elaborating a predecessor as a LIVE reference looks stronger and is in fact
-  // weaker: both placements call the same `MonoidCombine.apply`, so any change to that shared code moves the
-  // reference and the DUT together and this test passes VACUOUSLY. A frozen table cannot move. Every datapath
-  // refactor from here on is checked against the behaviour of the netlist as it shipped, not against itself.
+  // What this table does NOT do is prove the arithmetic: it proves that the arithmetic has not moved. The
+  // correctness evidence lives in `MonoidJunctionTester`, which recomputes every expected value from the algebra
+  // in double precision, and in the numeric tests further down this file.
   //
-  // If a beat below ever needs to change, that is a FORMAT CHANGE and must be argued as one -- never re-captured
-  // silently. Regenerate deliberately, and only alongside an independent numeric golden for the affected mode.
+  // Changing a beat below is a FORMAT CHANGE and must be argued as one -- never re-captured silently. Regenerate
+  // deliberately, and only alongside the independent numeric golden for the affected geometry.
   private def g(s: String): BigInt = BigInt(s, 16)
 
   private val GOLDEN_LINEAR: Map[String, BigInt] = Map(
@@ -128,15 +147,15 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
   )
 
   private val GOLDEN_MONOID: Map[String, BigInt] = Map(
-    "SUM"     -> g("40acaf8640e9bbc040c29950411c640d40ebea76402b656240c011344093bf0e4039645540db9c084041f3a840111e6e3ffd1490bfcaf79f409713e44067c16d"),
-    "MOMENT"  -> g("40670e05409ee9c3400a1c2a3fe7109e40ad143c40a017a140857ee3408d4eb2409e4da940babec140a0bbfe40b580ce409c97df3ff3c298407367f23feaf2f8"),
-    // nValid = 3: slots 3..7 are dead. Note their KEY lanes retire ff7fffff = ID_M, NOT zero -- a dead slot is
+    "MOMENT"  -> g("401c27a94094b18e4017585a3ff746f14032cf0c4032e873408e4f504039d6f440b31f68409f570d40b62dd040b1780f408329424078c80d40adc9ec408f7756"),
+    // nValid = 3: slots 3..7 are dead. Their KEY lanes retire ff7fffff = ID_M, not zero -- a dead slot is
     // already a legal identity partial, which is what makes the output re-foldable (C1) at any downstream nValid.
-    "MOMENT3" -> g("407dd43b40944076408bdc27ff7fffffff7fffffff7fffffff7fffffff7fffff40999e973fc41557407d963e"),
-    "MAXPOOL" -> g("4079858140a86f0240afc25c406972df40ae0d0640b454c4409506ea407a5da3"),
-    "ARGMAX"  -> g("40e0000041600000415000004140000041300000412000003f8000000000000040ae6a9240d261c140f42c16408062d9bf94544840926ed23d7d3a8640ba19b2"),
-    "ATTN"    -> g("bffe731e3ff85d1b3fde3e53c037fe514035db033f8683843dbbcbb8401584ec407d9275406d669b"),
-    "MOMENT2" -> g("402f21d34071bdd8403ef9ccbf9f5a76"),
+    "MOMENT3" -> g("401102a94073c3124002f3e0ff7fffffff7fffffff7fffffff7fffffff7fffff40471d05bea9f4a93ff724d8"),
+    // F = 1, so every field above the key is out of range and retires zero.
+    "MAXPOOL" -> g("4041bd0040102a9e40a072a63fa6d478bf2dec453fb86a5a4044cfd23fdfc7dc"),
+    "ARGMAX"  -> g("40e0000041600000415000004140000040400000412000003f8000000000000040a2da95405bc4c94100939540d9bcb2c0a60dd9c0bde6144016b8eb410e886b"),
+    "ATTN"    -> g("c00f2c093cbf8cc3c034553dbf9aeb9cbf8cd6c4bf99149fbed42f9abff7a8cc405225c13fc594fd"),
+    "MOMENT2" -> g("3fa5e98c403ce6704006333f3feacf38")
   )
 
   "Socket_frozen_linear" should "reproduce the frozen ElementwiseJunction beats bit-for-bit" in {
@@ -159,44 +178,11 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
         assert(got == GOLDEN_MONOID(c.label),
                f"monoid ${c.label}: got 0x$got%x != frozen 0x${GOLDEN_MONOID(c.label)}%x")
       }
-      println(s"[Socket] the monoid operator reproduces all ${monoidCases.length} frozen beats bit-exactly, " +
-              "carrying the sigma geometry forward from the merged netlist")
+      println(s"[Socket] the monoid operator reproduces all ${monoidCases.length} frozen beats bit-exactly")
     }
   }
 
-  // ---- RAW GEOMETRY ------------------------------------------------------------------------------------------
-  // csr: [17] rawGeom | [12] hasKey | [11:8] n | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol
-  private def csrRaw(hasKey: Int, n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int, keyPol: Int = 0): BigInt =
-    (BigInt(1) << 17) | (BigInt(keyPol) << 28) | (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) |
-      (BigInt(nExp) << 18) | (BigInt(hasKey) << 12) | (BigInt(n) << 8) | BigInt(nValid)
-
-  /** the same six operators, spelled in the raw encoding instead of the enum */
-  private val rawEquivalents: Seq[(String, BigInt)] = Seq(
-    "SUM"     -> csrRaw(hasKey = 0, n = 2, nExp = 0, nAdd = 2, sigma = 3, nValid = pairSlots),
-    "MOMENT"  -> csrRaw(hasKey = 1, n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots),
-    "MOMENT3" -> csrRaw(hasKey = 1, n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = 3),
-    "MAXPOOL" -> csrRaw(hasKey = 1, n = 0, nExp = 0, nAdd = 0, sigma = 3, nValid = pairSlots),
-    "ARGMAX"  -> csrRaw(hasKey = 1, n = 1, nExp = 0, nAdd = 0, sigma = 3, nValid = pairSlots),
-    "ATTN"    -> csrRaw(hasKey = 1, n = 1 + dHead, nExp = 1 + dHead, nAdd = 0, sigma = 0, nValid = 1),
-    "MOMENT2" -> csrRaw(hasKey = 1, n = 3, nExp = 3, nAdd = 0, sigma = 0, nValid = 1)
-  )
-
-  "Socket_rawGeom" should "decode the raw geometry to the SAME beat as the legacy enum" in {
-    // The enum is a 6-entry elaboration-time ROM over the raw fields, nothing more. If these differ, the enum
-    // has semantics the geometry does not -- which would mean the mode decode never really went away.
-    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
-      for ((label, csr) <- rawEquivalents) {
-        val c   = monoidCases.find(_.label == label).get
-        val out = runPair(dut, csr, c.a, c.b)
-        assert(out == GOLDEN_MONOID(label),
-               f"raw $label: 0x$out%x != the frozen enum beat 0x${GOLDEN_MONOID(label)}%x")
-      }
-      println(s"[Socket/rawGeom] all ${rawEquivalents.length} enum operators re-spelled as raw geometry, " +
-              "bit-identical -- the mode decode carries no semantics of its own")
-    }
-  }
-
-  "Socket_beyondEnum" should "run operators the 6-mode enum cannot express, on the same netlist" in {
+  "Socket_geometryReach" should "run operators no fixed elaboration parameter could express" in {
     test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val rng = new Random(0x5eed)
 
@@ -213,7 +199,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
         }
         b
       }
-      val outA = runPair(dut, csrRaw(1, 1 + d6, 1 + d6, 0, sigma = 1, nValid = 2), packS2(sh(0)), packS2(sh(1)))
+      val outA = runPair(dut, csrMonoid(n = 1 + d6, nExp = 1 + d6, nAdd = 0, sigma = 1, nValid = 2), packS2(sh(0)), packS2(sh(1)))
       for (s <- 0 until 2) {
         val (a, b) = (sh(0)(s), sh(1)(s))
         val gm = math.max(a._1, b._1)
@@ -234,7 +220,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
       val lb  = Seq(2.0, 9.0, 8.0) ++ Seq.fill(pairSlots - nv)(0.0)
       val pa  = la.zipWithIndex.map { case (v, i) => (v, i.toDouble) }
       val pb  = lb.zipWithIndex.map { case (v, i) => (v, (pairSlots + i).toDouble) }
-      val oMin = runPair(dut, csrRaw(1, 1, 0, 0, sigma = 3, nValid = nv, keyPol = 1), packPairs(pa), packPairs(pb))
+      val oMin = runPair(dut, csrMonoid(n = 1, nExp = 0, nAdd = 0, sigma = 3, nValid = nv, keyPol = 1), packPairs(pa), packPairs(pb))
       for (k <- 0 until nv) {
         val g = math.min(la(k), lb(k))
         assert(lane(oMin, k) == f32(g), f"argmin slot $k: 0x${lane(oMin, k)}%x != ${g} (a wrong pad wins here)")
@@ -255,7 +241,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
         }
         b
       }
-      val oCar = runPair(dut, csrRaw(1, 2, 1, 0, sigma = 1, nValid = 2), packF3(ma), packF3(mb))
+      val oCar = runPair(dut, csrMonoid(n = 2, nExp = 1, nAdd = 0, sigma = 1, nValid = 2), packF3(ma), packF3(mb))
       for (s <- 0 until 2) {
         val gm = math.max(ma(s)._1, mb(s)._1)
         val gl = ma(s)._2 * math.exp(ma(s)._1 - gm) + mb(s)._2 * math.exp(mb(s)._1 - gm)
@@ -273,8 +259,8 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
     // "fewer partials per beat" rather than two partials written into each other's lanes.
     test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val c    = monoidCases.find(_.label == "ATTN").get
-      val legal = csrRaw(1, 1 + dHead, 1 + dHead, 0, sigma = 0, nValid = 1) // F = 10 => sigma_max = 0
-      val silly = csrRaw(1, 1 + dHead, 1 + dHead, 0, sigma = 3, nValid = 1) // F = 10 with sigma = 3: impossible
+      val legal = csrMonoid(n = 1 + dHead, nExp = 1 + dHead, nAdd = 0, sigma = 0, nValid = 1) // F = 10 => sigma_max = 0
+      val silly = csrMonoid(n = 1 + dHead, nExp = 1 + dHead, nAdd = 0, sigma = 3, nValid = 1) // F = 10 with sigma = 3: impossible
       val a = runPair(dut, legal, c.a, c.b)
       val b = runPair(dut, silly, c.a, c.b)
       assert(a == b, f"sigma=3 at F=10 must saturate to sigma=0: 0x$b%x != 0x$a%x")
@@ -306,7 +292,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
   "Socket_moment2Dense" should "fold FOUR moment banks per beat at sigma=2" in {
     test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val rng = new Random(0x2b02)
-      val csr = csrRaw(hasKey = 1, n = 3, nExp = 3, nAdd = 0, sigma = 2, nValid = 4)
+      val csr = csrMonoid(n = 3, nExp = 3, nAdd = 0, sigma = 2, nValid = 4)
       for (trial <- 0 until 4) {
         def bank() = (0 until 4).map(_ =>
           (rng.between(-2.0, 5.0), rng.between(1.0, 5.0), rng.between(-4.0, 4.0), rng.between(0.5, 6.0)))
@@ -337,7 +323,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
         val shards = Seq.fill(4)(Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0))))
         var acc = packPairs(shards.head)
         for (hop <- 1 until 4)
-          acc = runPair(dut, csrRaw(1, 1, 1, 0, sigma = 3, nValid = pairSlots), acc, packPairs(shards(hop)),
+          acc = runPair(dut, csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots), acc, packPairs(shards(hop)),
                         bDelay = hop)
         for (k <- 0 until pairSlots) {
           val slot = shards.map(_(k))
@@ -354,7 +340,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
           (rng.between(-2.0, 5.0), rng.between(1.0, 5.0), rng.between(-4.0, 4.0), rng.between(0.5, 6.0))))
         var acc = packDense4(shards.head)
         for (hop <- 1 until 4)
-          acc = runPair(dut, csrRaw(1, 3, 3, 0, sigma = 2, nValid = 4), acc, packDense4(shards(hop)), bDelay = hop)
+          acc = runPair(dut, csrMonoid(n = 3, nExp = 3, nAdd = 0, sigma = 2, nValid = 4), acc, packDense4(shards(hop)), bDelay = hop)
         for (s <- 0 until 4) {
           val (gm, gl, ga, gb) = moment2Ref(shards.map(_(s)))
           assert(math.abs(laneF32(acc, s) - gm) <= math.abs(gm) * 1e-6 + 1e-9, s"chain sigma=2 trial $trial slot $s m")
@@ -368,7 +354,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
       val ash = Seq.fill(4)((rng.between(-2.0, 5.0), rng.between(1.0, 5.0), Seq.fill(dHead)(rng.between(-3.0, 3.0))))
       var acc = packSingle(ash.head._1, ash.head._2, ash.head._3)
       for (hop <- 1 until 4)
-        acc = runPair(dut, csrRaw(1, 1 + dHead, 1 + dHead, 0, sigma = 0, nValid = 1), acc,
+        acc = runPair(dut, csrMonoid(n = 1 + dHead, nExp = 1 + dHead, nAdd = 0, sigma = 0, nValid = 1), acc,
                       packSingle(ash(hop)._1, ash(hop)._2, ash(hop)._3), bDelay = hop)
       val gm = ash.map(_._1).max
       assert(math.abs(laneF32(acc, 0) - gm) <= math.abs(gm) * 1e-6 + 1e-9, "chain sigma=0 m")
@@ -407,7 +393,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
         // comparing against the literal 3e-20 would fail on the last ULP for the right answer
         val gold = (java.lang.Float.intBitsToFloat(f32(la.head).toInt) +
                       java.lang.Float.intBitsToFloat(f32(lb.head).toInt)).toDouble
-        val out  = runPair(dut, csrMonoid(MODE_MOMENT, pairSlots), pack(key, la), pack(key, lb))
+        val out  = runPair(dut, csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots), pack(key, la), pack(key, lb))
         for (k <- 0 until pairSlots) {
           assert(lane(out, k) == key, f"$name slot $k: key must survive, got 0x${lane(out, k)}%x")
           val got = laneF32(out, pairSlots + k)
@@ -423,20 +409,21 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  "Socket_zeroFieldGeometry" should "not collapse an F=0 word into an all-zero beat" in {
-    // n = 0 with hasKey = 0 gives F = 0. Unclamped that is a cliff: sigma_max's first arm is `F <= 2` so it
-    // returns 3, and `field(l) < F` is then false on every lane because the compare is unsigned -- the block
-    // emits 512 zero bits. For an additive fold that is a legal identity, so a whole chain converges to zero
-    // and nothing anywhere reports it.
+  "Socket_smallestGeometry" should "make the smallest configuration a bare key, not an empty partial" in {
+    // The field count is `n + 1`, so the smallest word this operator accepts still has one field: the key. That
+    // field is in range on every lane it occupies, so no configuration can leave `field(l) < F` false everywhere
+    // and retire 512 zero bits -- a beat that an additive fold downstream would read as a legal identity and
+    // propagate in silence. `n = 0` is a max-reduction, which is a real operator, not an empty one.
     test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
-      val a = packPairs(Seq.fill(pairSlots)((3.0, 5.0)))
-      val b = packPairs(Seq.fill(pairSlots)((7.0, 11.0)))
-      val out = runPair(dut, csrRaw(hasKey = 0, n = 0, nExp = 0, nAdd = 0, sigma = 3, nValid = pairSlots), a, b)
-      assert(out != BigInt(0), "an F=0 word retired an all-zero beat -- the geometry cliff is back")
-      // clamped to F = 1: field 0 is in range and plainly summed, everything above it is out of range
-      for (k <- 0 until pairSlots)
-        assert(laneF32(out, k) == 10.0, f"slot $k: expected the field-0 sum 10.0, got ${laneF32(out, k)}%.6g")
-      println("[Socket/F=0] a zero-field geometry clamps to one field instead of emitting a silent zero beat")
+      val a   = packPairs(Seq.fill(pairSlots)((3.0, 5.0)))
+      val b   = packPairs(Seq.fill(pairSlots)((7.0, 11.0)))
+      val out = runPair(dut, csrMonoid(n = 0, nExp = 0, nAdd = 0, sigma = 3, nValid = pairSlots), a, b)
+      assert(out != BigInt(0), "the smallest geometry retired an all-zero beat")
+      for (k <- 0 until pairSlots) {
+        assert(laneF32(out, k) == 7.0, f"slot $k: field 0 should be max(3, 7), got ${laneF32(out, k)}%.6g")
+        assert(lane(out, pairSlots + k) == BigInt(0), s"slot $k: field 1 is out of range and must retire zero")
+      }
+      println("[Socket/min] n = 0 is a bare-key max-reduction -- there is no word that means an empty partial")
     }
   }
 
@@ -479,7 +466,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
   "Socket_roofline_monoid" should "stream the twisted operator at ~1 beat pair per cycle" in {
     val rng  = new Random(0x77aa)
     val monB = Seq.fill(64)(packPairs(Seq.fill(pairSlots)((rng.between(-2.0, 4.0), rng.between(0.5, 3.0)))))
-    monRoof  = measure(hasMonoid, csrMonoid(MODE_MOMENT, pairSlots), monB)
+    monRoof  = measure(hasMonoid, csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots), monB)
     assert(monRoof._2 > 0.9, f"the monoid operator should stream at ~1 beat pair/cycle, got ${monRoof._2}%.3f")
     println(f"[Socket/roofline] MONOID: first-out ${monRoof._1} CC, util=${monRoof._2}%.3f")
   }
@@ -499,7 +486,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
     test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       val rng   = new Random(0xbb01)
       val beats = Seq.fill(8)(packPairs(Seq.fill(pairSlots)((rng.between(-4.0, 4.0), rng.between(0.5, 3.0)))))
-      dut.io.csr_i(0).poke(csrMonoid(MODE_MOMENT, pairSlots).U)
+      dut.io.csr_i(0).poke(csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots).U)
       dut.io.enable_i.poke(false)
       dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
       dut.io.out_o.ready.poke(true)

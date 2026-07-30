@@ -121,7 +121,7 @@ class ChainUnrollTester extends AnyFlatSpec with ChiselScalatestTester {
     writeCsr(8); writeCsr(1); for (_ <- 0 until 4) writeCsr(1); writeCsr(64); for (_ <- 0 until 4) writeCsr(0)
     writeCsr(0xff); writeCsr(0xff)                        // writer enabledChannel + enabledByte
     writeCsr(junctionEnable)                              // junction enable bitmask -> this is what makes it a gather
-    writeCsr(0)                                           // junction user CSR (combineMode etc.)
+    writeCsr(0)                                           // junction user CSR (the geometry word)
     writeCsr(1)                                           // start
 
     val out = collection.mutable.ArrayBuffer[Frame]()

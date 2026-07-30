@@ -43,7 +43,7 @@ class XDMADataPathParam(
   val rwParam:       ReaderWriterParam,
   val extParam:      Seq[HasDataPathExtension] = Seq[HasDataPathExtension](),
   // Junctions (2->1 folds) live at the DATA SWITCH, not in the reader/writer extension chain. They are configured
-  // from the same CSR region the extensions use, so a junction's combineMode rides the inter-cluster cfg serdes to
+  // from the same CSR region the extensions use, so a junction's own CSR word rides the inter-cluster cfg serdes to
   // every hop of a chain.
   val junctionParam: Seq[HasDataPathJunction] = Seq[HasDataPathJunction]()
 ) {

@@ -36,9 +36,9 @@ class JunctionHostHarness(junctions: Seq[HasDataPathJunction], dataWidth: Int = 
   * more than one entry -- the deployed configuration has always been a single-element list -- so the CSR
   * allocation in `connectCfgWithList` has never actually had to distribute anything.
   *
-  * The words below are chosen so that a MIS-ROUTED CSR IS DETECTABLE. Feeding the monoid word to the linear
-  * operator decodes as opcode 8 (which falls through to ADD) with fmt 0 (FP16), i.e. an FP16 ADD instead of a
-  * BF16 MUL; feeding the linear word to the monoid operator decodes as nValid = 17, combineMode = SUM. Both are
+  * The words below are chosen so that a MIS-ROUTED CSR IS DETECTABLE. The monoid word read as a linear one
+  * decodes to an FP16 ADD instead of the BF16 MUL that was asked for; the linear word read as a monoid one
+  * decodes to a different nValid and a different field count than the geometry that was asked for. Both are
   * plainly different from the right answer, which a lazier choice of words would not have been.
   */
 class JunctionHostTester extends AnyFlatSpec with ChiselScalatestTester {
@@ -55,13 +55,15 @@ class JunctionHostTester extends AnyFlatSpec with ChiselScalatestTester {
   // the operator list, in the same order as the cfg's `writer_junctions`
   private def operators: Seq[HasDataPathJunction] = Seq(
     new HasElementwiseJunction(elemWidth = elemWidth, fpPipe = fpPipe),
-    new HasMonoidJunction(fpPipe = fpPipe, dHead = dHead)
+    new HasMonoidJunction(fpPipe = fpPipe)
   )
   private val EW_SLOT  = 0
   private val MON_SLOT = 1
 
   private def csrLinear(op: Int, fmt: Int): BigInt = (BigInt(fmt) << 4) | BigInt(op)
-  private def csrMonoid(mode: Int, nValid: Int): BigInt = (BigInt(mode) << 13) | BigInt(nValid)
+  /** the monoid geometry word: [7:0] nValid | [11:8] n | [21:18] nExp | [25:22] nAdd | [27:26] sigma */
+  private def csrMonoid(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int): BigInt =
+    (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) | (BigInt(nExp) << 18) | (BigInt(n) << 8) | BigInt(nValid)
 
   private def encBf16(d: Double): BigInt = {
     val b = java.lang.Float.floatToIntBits(d.toFloat)
@@ -114,7 +116,7 @@ class JunctionHostTester extends AnyFlatSpec with ChiselScalatestTester {
     val rng = new Random(0x50c1)
     // BOTH words loaded at once, for every transfer -- that is the whole point
     val wLin = csrLinear(OP_MUL, FpHelpers.FMT_BF16)
-    val wMon = csrMonoid(MODE_MOMENT, pairSlots)
+    val wMon = csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots)
     val csrs = Seq(wLin, wMon)
 
     val lanes = 512 / 16
@@ -153,7 +155,7 @@ class JunctionHostTester extends AnyFlatSpec with ChiselScalatestTester {
     val beats = Seq.fill(6)(packPairs(Seq.fill(pairSlots)((rng.between(-4.0, 4.0), rng.between(0.5, 3.0)))))
     test(new JunctionHostHarness(operators)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
       dut.io.cfg.userCsr(0).poke(csrLinear(OP_MUL, FpHelpers.FMT_BF16).U)
-      dut.io.cfg.userCsr(1).poke(csrMonoid(MODE_MOMENT, pairSlots).U)
+      dut.io.cfg.userCsr(1).poke(csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots).U)
       dut.io.cfg.enable.poke(0.U)
       dut.io.start.poke(true); dut.clock.step(1); dut.io.start.poke(false)
       assert(!dut.io.active.peekBoolean(), "no operator armed, yet the host reports active")
