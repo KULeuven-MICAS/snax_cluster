@@ -21,7 +21,8 @@ class JunctionHostHarness(junctions: Seq[HasDataPathJunction], dataWidth: Int = 
   io.busy    := dut.io.busy
   io.active  := dut.io.active
   io.starved := dut.io.starved
-  io.cfgerr  := dut.io.cfgerr
+  io.cfgerr   := dut.io.cfgerr
+  io.identity := dut.io.identity
   dut.io.cfg   := io.cfg
   dut.io.start := io.start
 
@@ -218,4 +219,79 @@ class JunctionHostTester extends AnyFlatSpec with ChiselScalatestTester {
       println("[Host/O5] the socket reports the armed operator's configuration verdict and no one else's")
     }
   }
+
+  "JunctionHost_identityIsNeutral" should "publish a beat that folds against anything and changes nothing" in {
+    // O3 STRENGTHENED. Tolerating an identity is not the same as being able to produce one, and the difference
+    // is what a chassis needs when a shard dies. Every operator publishes its own, because none of them is a
+    // constant the socket could guess: it depends on the operator AND on its configuration word.
+    test(new JunctionHostHarness(operators)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng   = new Random(0x1de17)
+      val monW  = csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots)
+      val linW  = csrLinear(OP_MUL, FpHelpers.FMT_BF16)
+      val csrs  = Seq(linW, monW)
+      val pa    = Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0)))
+      val live  = packPairs(pa)
+
+      // read the armed operator's identity, then fold the live beat against it: the live beat must survive
+      dut.io.cfg.userCsr(0).poke(linW.U)
+      dut.io.cfg.userCsr(1).poke(monW.U)
+      dut.io.cfg.enable.poke((1 << MON_SLOT).U)
+      dut.clock.step(2)
+      val id = dut.io.identity.peek().litValue
+      // the monoid identity is the losing extreme on the key lanes and zero on the value lanes
+      for (k <- 0 until pairSlots) {
+        assert(lane(id, k) == BigInt("ff7fffff", 16), s"key lane $k of the identity should be the max-monoid pad")
+        assert(lane(id, pairSlots + k) == BigInt(0), s"value lane $k of the identity should be zero")
+      }
+      assert(runHost(dut, 1 << MON_SLOT, csrs, live, id) == live, "folding against the identity changed the beat")
+      assert(runHost(dut, 1 << MON_SLOT, csrs, id, live) == live, "the identity is not two-sided")
+      println("[Host/O3] the armed operator publishes its identity, and it is neutral from either side")
+    }
+  }
+
+  "JunctionHost_substituteMissingOperand" should "let the socket stand in for a shard that never arrives" in {
+    // A dead shard or a dropped link becomes a CONFIGURATION rather than a hang: the socket puts the armed
+    // operator's own identity on the missing operand and the fold completes with the surviving one. Bits [16]
+    // and [17] of the enable word ask for it, so this costs no CSR and does not move the address map.
+    //
+    // The missing side is driven with valid LOW throughout -- there is no shard, so there is nothing to offer.
+    // That is the whole point: without substitution this configuration is a starved join that never fires.
+    def runOneSided(dut: JunctionHostHarness, enable: Int, csrs: Seq[BigInt],
+                    beat: BigInt, onA: Boolean): BigInt = {
+      for ((c, i) <- csrs.zipWithIndex) dut.io.cfg.userCsr(i).poke(c.U)
+      dut.io.cfg.enable.poke(enable.U)
+      dut.io.start.poke(true); dut.clock.step(1); dut.io.start.poke(false)
+      val live = if (onA) dut.io.data.a else dut.io.data.b
+      val dead = if (onA) dut.io.data.b else dut.io.data.a
+      dead.valid.poke(false)
+      live.bits.poke(beat.U); live.valid.poke(true)
+      var g = 0
+      while (!live.ready.peekBoolean() && g < 200) { dut.clock.step(1); g += 1 }
+      assert(g < 200, "the live operand was never accepted -- substitution did not arm the join")
+      dut.clock.step(1); live.valid.poke(false)
+      g = 0
+      while (!dut.io.data.out.valid.peekBoolean() && g < 400) { dut.clock.step(1); g += 1 }
+      assert(g < 400, "no beat retired -- the join is still waiting for the operand that will never come")
+      val out = dut.io.data.out.bits.peekInt()
+      dut.io.data.out.ready.poke(true); dut.clock.step(1); dut.io.data.out.ready.poke(false)
+      out
+    }
+
+    test(new JunctionHostHarness(operators)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng  = new Random(0x5ab5)
+      val monW = csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots)
+      val linW = csrLinear(OP_MUL, FpHelpers.FMT_BF16)
+      val csrs = Seq(linW, monW)
+      val live = packPairs(Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0))))
+
+      // B's shard never arrives
+      assert(runOneSided(dut, (1 << MON_SLOT) | (1 << 17), csrs, live, onA = true) == live,
+             "substituting B did not reproduce the surviving operand")
+      // A's shard never arrives -- the same, from the other side
+      assert(runOneSided(dut, (1 << MON_SLOT) | (1 << 16), csrs, live, onA = false) == live,
+             "substituting A did not reproduce the surviving operand")
+      println("[Host/O3] an operand that never arrives is replaced by the identity and the fold still completes")
+    }
+  }
+
 }

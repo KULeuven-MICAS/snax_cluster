@@ -192,6 +192,10 @@ class MonoidJunction(
   // The scan's key identity is 1.0, not the losing extreme: a dead slot must be NEUTRAL under multiplication.
   val padKey    = keyIdentity(geom.keyPol, keyMul)
   val lPad      = (0 until nLanes).map(l => Mux(lIsKey(l), padKey, F32_ZERO))
+  // O3 strengthened: `lPad` is already the identity partial, lane by lane -- key fields get the monoid's neutral
+  // element and value fields get zero -- so publishing it costs nothing but the wire.
+  jct_identity_o := VecInit(lPad).asUInt
+
   val amL       = (0 until nLanes).map(l => Mux(lLive(l), aLanes(l), lPad(l)))
   val bmL       = (0 until nLanes).map(l => Mux(lLive(l), bLanes(l), lPad(l)))
 

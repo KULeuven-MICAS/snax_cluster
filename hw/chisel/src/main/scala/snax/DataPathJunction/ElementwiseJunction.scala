@@ -220,6 +220,30 @@ class ElementwiseJunction(
     Cat(elems.reverse)
   }
 
+  // ---- O3 strengthened: the identity beat, which is a function of BOTH the op and the format --------------
+  // ADD wants zero, MUL wants one, MAX wants the format's most-negative value and MIN its most-positive. None of
+  // those is a constant the chassis could know, because "one" and "the most negative value" are different bit
+  // patterns in every format this operator carries.
+  def idElem(w: Int, t: FpType, isInt: Boolean): UInt = {
+    val (one, lo, hi) =
+      if (isInt) (BigInt(1), BigInt(1) << (w - 1), (BigInt(1) << (w - 1)) - 1) // two's complement
+      else {
+        val (ew, mw) = (t.expWidth, t.sigWidth)
+        val bias     = (BigInt(1) << (ew - 1)) - 1
+        val maxFin   = (((BigInt(1) << ew) - 2) << mw) | ((BigInt(1) << mw) - 1) // largest finite, sign 0
+        (bias << mw, maxFin | (BigInt(1) << (w - 1)), maxFin)                    // 1.0, -maxFin, +maxFin
+      }
+    MuxLookup(opcode, 0.U(w.W))(Seq(
+      OP_ADD.U -> 0.U(w.W), OP_MUL.U -> one.U(w.W), OP_MAX.U -> lo.U(w.W), OP_MIN.U -> hi.U(w.W)
+    ))
+  }
+  val idPerFmt = supported.map { case (code, w, t) =>
+    code -> Fill(junctionParam.dataWidth / w, idElem(w, t, isInt = false))
+  } ++ supportedInt.map { case (code, w) =>
+    code -> Fill(junctionParam.dataWidth / w, idElem(w, FP32, isInt = true))
+  }
+  jct_identity_o := MuxLookup(fmt, idPerFmt.head._2)(idPerFmt.map { case (c, v) => c.U -> v })
+
   // Elaborate each format's repack ONCE; the default arm reuses the first rather than building a second,
   // unreachable copy of it.
   val outPacked = supported.map { case (code, w, t) => code -> packed(w, t) } ++

@@ -20,6 +20,10 @@ class XDMACtrlIO(readerParam: XDMAParam, writerParam: XDMAParam) extends Bundle 
   val clusterBaseAddress = Input(
     UInt(writerParam.axiParam.addrWidth.W)
   )
+  // O5 and the starvation watchdog, from the data switch. Both were dead-ended there: the hardware knew and
+  // nothing above it could ask. They terminate in the read-only CSR bank.
+  val junctionStarved    = Input(Bool())
+  val junctionCfgErr     = Input(Bool())
   // Local DMADatapath control signal (Which is connected to DMADataPath)
   val localXDMACfg       = new Bundle {
     val readerCfg = Output(new XDMAIntraClusterCfgIO(readerParam))
@@ -290,8 +294,11 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
         } +                                                      // Enabled Byte for writer
         writerparam.pluginCsrNum + // writer extensions (custom CSR + bypass CSR) + the switch's junction bank
         1, // The start CSR
-      numReadOnlyReg  = 7,
-      // Set to four at current, 1) The number of submitted local request; 2) The number of submitted remote request; 3) The number of finished local request; 4) The number of finished remote request; 5) The XDMA task performance counter 6) Reader performance counter 7) Writer performance counter
+      numReadOnlyReg  = 8,
+      // 1) submitted local requests 2) submitted remote requests 3) finished local requests 4) finished remote
+      // requests 5) XDMA task performance counter 6) reader performance counter 7) writer performance counter
+      // 8) junction status -- O5 configuration error and the starvation watchdog, sticky since the last start.
+      // Appended at the END of the read-only bank so no read-write pointer moves.
       addrWidth       = readerparam.cfgParam.addrWidth,
       ioDataWidth     = readerparam.cfgParam.dataWidth,
       regDataWidth    = 32,
@@ -656,6 +663,22 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   remoteFinishedTaskIDCounter.io.tick  := io.remoteTaskFinished
 
   // Connect the finished task counter to the read-only CSR
+  // ---- junction status ---------------------------------------------------------------------------------
+  // STICKY since the last start. A configuration error and a starved join are both transient by nature -- the
+  // error is asserted only while the offending word is armed, and the watchdog clears the moment a pair fires --
+  // so a register that merely sampled them would report a clean transfer for a broken one.
+  val jctCfgErrSticky  = RegInit(false.B)
+  val jctStarvedSticky = RegInit(false.B)
+  when(io.localXDMACfg.writerStart) {
+    jctCfgErrSticky  := false.B
+    jctStarvedSticky := false.B
+  }.otherwise {
+    when(io.junctionCfgErr) { jctCfgErrSticky := true.B }
+    when(io.junctionStarved) { jctStarvedSticky := true.B }
+  }
+  csrManager.io.readOnlyReg(7) := Cat(0.U(29.W), io.junctionStarved || io.junctionCfgErr,
+                                      jctStarvedSticky, jctCfgErrSticky)
+
   csrManager.io.readOnlyReg(2) := localFinishedTaskIDCounter.io.value
   csrManager.io.readOnlyReg(3) := remoteFinishedTaskIDCounter.io.value
 

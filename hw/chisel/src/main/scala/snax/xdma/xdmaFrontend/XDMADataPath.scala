@@ -33,6 +33,12 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
     // writer_busy_o signal == 0 indicates that the writer side is available for next task
     val writerBusy  = Output(Bool())
 
+    /** O5 and the starvation watchdog, on their way to a software-readable register. Both were dead-ended at the
+      * data switch: the hardware knew, and nothing above it could ask.
+      */
+    val junctionStarved = Output(Bool())
+    val junctionCfgErr  = Output(Bool())
+
     // TCDM request and response signal
     val tcdmReader = new Bundle {
       val req = Vec(
@@ -178,6 +184,9 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
   dataSwitch.io.localOut <> writerDataBeforeExtension
   io.remoteXDMAData.toRemote <> dataSwitch.io.toRemote
   dataSwitch.io.fromRemote <> io.remoteXDMAData.fromRemote
+
+  io.junctionStarved := dataSwitch.io.junctionStarved
+  io.junctionCfgErr  := dataSwitch.io.junctionCfgErr
 
   dataSwitch.io.readerLocalLoopback  := io.readerCfg.localLoopback
   dataSwitch.io.writerLocalLoopback  := io.writerCfg.localLoopback

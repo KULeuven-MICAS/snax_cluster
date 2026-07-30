@@ -152,6 +152,8 @@ class XDMATop(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: Strin
   xdmaCtrl.io.localXDMACfg.readerBusy := xdmaDatapath.io.readerBusy
 
   xdmaCtrl.io.localXDMACfg.writerBusy := xdmaDatapath.io.writerBusy
+  xdmaCtrl.io.junctionStarved         := xdmaDatapath.io.junctionStarved
+  xdmaCtrl.io.junctionCfgErr          := xdmaDatapath.io.junctionCfgErr
 
   // The status signal
   io.status.readerBusy := xdmaCtrl.io.localXDMACfg.readerBusy
@@ -486,6 +488,9 @@ return new $junctionName($junctionArgs)
 #define XDMA_PERF_CTR_TASK XDMA_FINISH_REMOTE_TASK_PTR + 1
 #define XDMA_PERF_CTR_READER XDMA_PERF_CTR_TASK + 1
 #define XDMA_PERF_CTR_WRITER XDMA_PERF_CTR_READER + 1
+// Junction status, sticky since the last start: [0] the armed operator could not honour its
+// configuration word (O5); [1] the join starved; [2] a junction is busy right now.
+#define XDMA_JCT_STATUS XDMA_PERF_CTR_WRITER + 1
 """
 
   // Append CSR Extension Information in to Macro

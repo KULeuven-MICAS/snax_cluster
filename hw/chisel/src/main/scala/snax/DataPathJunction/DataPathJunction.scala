@@ -77,6 +77,7 @@ abstract class DataPathJunction(implicit junctionParam: JunctionParam) extends M
     val busy_o    = Output(Bool())
     val starved_o = Output(Bool()) // watchdog: one operand stream has starved the join
     val cfgerr_o  = Output(Bool()) // O5: this operator cannot honour the configuration word it was given
+    val identity_o = Output(UInt(junctionParam.dataWidth.W)) // the beat that folds against anything and changes nothing
   })
 
   private[this] val bypass_data = Wire(Decoupled(UInt(junctionParam.dataWidth.W)))
@@ -106,6 +107,18 @@ abstract class DataPathJunction(implicit junctionParam: JunctionParam) extends M
   val jct_cfgerr_o = WireDefault(false.B)
   dontTouch(jct_cfgerr_o)
 
+  /** O3, STRENGTHENED. Tolerating an identity is not the same as being able to PRODUCE one, and the difference
+    * matters the moment a shard dies or a link drops: the chassis needs a beat it can put on the missing operand,
+    * and only the operator knows what that beat is. It is not a constant and not even a per-operator constant --
+    * it is a function of the configuration word (a max-monoid's key identity is the most-negative float, a
+    * min-monoid's the most-positive, an ordered scan's is 1.0, and `AND`'s is all ones where `OR`'s is all zeros).
+    * Asking the chassis to guess it is how a fold gets silently annihilated.
+    *
+    * Defaults to zero, which is the additive identity, so an operator that never carries a key needs no override.
+    */
+  val jct_identity_o = WireDefault(0.U(junctionParam.dataWidth.W))
+  dontTouch(jct_identity_o)
+
   // ---- bypass structure on the a-path: a demux/mux pair steered by enable_i ----
   private[this] val inputDemux = Module(
     new DemuxDecoupled(UInt(junctionParam.dataWidth.W), numOutput = 2) {
@@ -134,7 +147,8 @@ abstract class DataPathJunction(implicit junctionParam: JunctionParam) extends M
   io.b_i.ready  := jct_b_i.ready && io.enable_i
 
   io.busy_o   := jct_busy_o || (io.enable_i && (io.a_i.valid || io.b_i.valid))
-  io.cfgerr_o := jct_cfgerr_o && io.enable_i
+  io.cfgerr_o   := jct_cfgerr_o && io.enable_i
+  io.identity_o := jct_identity_o
 
   // ---- starvation watchdog ----
   // Counts consecutive cycles in which the join is enabled and exactly one operand is offered. A legitimate skew
@@ -168,7 +182,11 @@ class DataPathJunctionHostIO(junctionList: Seq[HasDataPathJunction], dataWidth: 
     val out = Decoupled(UInt(dataWidth.W))
   }
   val cfg = new Bundle {
-    val enable  = Input(UInt(scala.math.max(1, junctionList.length).W))
+    /** `[n-1:0]` one enable bit per operator. `[16]` and `[17]` ask the socket to SUBSTITUTE the armed operator's
+      * identity for operand A or operand B, so a dead shard or a dropped link is a configuration rather than a
+      * hang. They ride the spare bits of the enable word, so no new CSR and no change to the address map.
+      */
+    val enable  = Input(UInt(32.W))
     val userCsr = Input(Vec(scala.math.max(1, junctionList.map(_.junctionParam.userCsrNum).sum), UInt(32.W)))
   }
   val start   = Input(Bool())
@@ -176,6 +194,7 @@ class DataPathJunctionHostIO(junctionList: Seq[HasDataPathJunction], dataWidth: 
   val active  = Output(Bool()) // any junction selected: the switch uses this to arm the collective dataflow
   val starved = Output(Bool())
   val cfgerr  = Output(Bool()) // O5: the armed junction cannot honour its configuration word
+  val identity = Output(UInt(dataWidth.W)) // the armed operator's identity beat
 
   /** Consume the leading `1 + sum(userCsrNum)` CSRs of `csrList` -- enable bitmask first, then the per-junction user
     * CSRs -- and return the remainder.
@@ -211,6 +230,7 @@ class DataPathJunctionHost(
     io.active       := false.B
     io.starved      := false.B
     io.cfgerr       := false.B
+    io.identity     := 0.U
   } else {
     var remainingCSR = io.cfg.userCsr.toIndexedSeq
     val enables      = io.cfg.enable.asBools.take(junctionList.length)
@@ -240,12 +260,26 @@ class DataPathJunctionHost(
     assert(PopCount(VecInit(enables)) <= 1.U,
            "DataPathJunctionHost: at most one junction may be enabled per transfer")
 
+    // ---- identity substitution -----------------------------------------------------------------------------
+    // The armed operator publishes the beat that folds against anything and changes nothing; the socket can put
+    // that beat on an operand whose shard is not coming. The substituted side then tracks the LIVE side's valid,
+    // so pairs fire at the surviving stream's rate rather than waiting for a partner that will never arrive.
+    val identity = Mux1H(enables, junctions.map(_.io.identity_o))
+    val substA   = io.cfg.enable(16)
+    val substB   = io.cfg.enable(17)
+    assert(!(substA && substB), "DataPathJunctionHost: substituting BOTH operands folds identity into identity")
+
+    val aVal  = Mux(substA, io.data.b.valid, io.data.a.valid)
+    val bVal  = Mux(substB, io.data.a.valid, io.data.b.valid)
+    val aBits = Mux(substA, identity, io.data.a.bits)
+    val bBits = Mux(substB, identity, io.data.b.bits)
+
     // Operand routing: only the selected junction sees `valid`, so the others' internal bypass stays quiet.
     junctions.zip(enables).foreach { case (j, en) =>
-      j.io.a_i.valid    := io.data.a.valid && en
-      j.io.a_i.bits     := io.data.a.bits
-      j.io.b_i.valid    := io.data.b.valid && en
-      j.io.b_i.bits     := io.data.b.bits
+      j.io.a_i.valid    := aVal && en
+      j.io.a_i.bits     := aBits
+      j.io.b_i.valid    := bVal && en
+      j.io.b_i.bits     := bBits
       j.io.out_o.ready  := io.data.out.ready && en
     }
 
@@ -254,8 +288,9 @@ class DataPathJunctionHost(
     def selBits(f: DataPathJunction => UInt): UInt =
       Mux1H(enables, junctions.map(f))
 
-    io.data.a.ready   := Mux(anyEnable, sel(_.io.a_i.ready), io.data.out.ready)
-    io.data.b.ready   := sel(_.io.b_i.ready)
+    // A substituted operand is never CONSUMED: there is no stream behind it to advance.
+    io.data.a.ready   := Mux(anyEnable, !substA && sel(_.io.a_i.ready), io.data.out.ready)
+    io.data.b.ready   := !substB && sel(_.io.b_i.ready)
     io.data.out.valid := Mux(anyEnable, sel(_.io.out_o.valid), io.data.a.valid)
     io.data.out.bits  := Mux(anyEnable, selBits(_.io.out_o.bits), io.data.a.bits)
 
@@ -263,6 +298,7 @@ class DataPathJunctionHost(
     io.active  := anyEnable
     io.starved := sel(_.io.starved_o)
     // Only the ARMED operator's verdict counts: the others were handed CSR words meant for someone else.
-    io.cfgerr  := sel(_.io.cfgerr_o)
+    io.cfgerr   := sel(_.io.cfgerr_o)
+    io.identity := identity
   }
 }

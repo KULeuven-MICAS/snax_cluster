@@ -157,6 +157,12 @@ class TopKJunction(
     (Entry(Mux(xw, x.v, y.v), Mux(xw, x.p, y.p)), Entry(Mux(xw, y.v, x.v), Mux(xw, y.p, x.p)))
   }
 
+  // O3 strengthened: a list of nothing but the losing extreme, with zero payloads. Note it follows `keyPol`:
+  // the max-polarity identity WINS every min, so a chassis that cached one constant would be wrong half the time.
+  jct_identity_o := VecInit(Seq.fill(nLanes / (2 * k))(
+    VecInit(Seq.fill(k)(ID) ++ Seq.fill(k)(0.U(accWidth.W))).asUInt
+  )).asUInt
+
   val outLanes = Wire(Vec(nLanes, UInt(accWidth.W)))
 
   for (p <- 0 until nParts) {

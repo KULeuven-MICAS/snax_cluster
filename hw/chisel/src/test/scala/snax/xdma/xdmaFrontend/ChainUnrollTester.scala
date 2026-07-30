@@ -29,6 +29,8 @@ class ChainUnrollHarness(readerParam: XDMAParam, writerParam: XDMAParam) extends
 
   io.csrIO <> ctrl.io.csrIO
   ctrl.io.clusterBaseAddress := io.clusterBaseAddress
+  ctrl.io.junctionStarved := false.B
+  ctrl.io.junctionCfgErr  := false.B
   des.io.cfgIn <> ctrl.io.remoteXDMACfg.toRemote
   io.frame <> des.io.cfgOut
 

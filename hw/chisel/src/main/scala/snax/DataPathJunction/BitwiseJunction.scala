@@ -89,6 +89,11 @@ class BitwiseJunction(
 
   jct_cfgerr_o := opcode > OP_XOR.U // O5: only three of the four encodable ops exist
 
+  // O3 strengthened, and the clearest case for publishing it rather than assuming it: AND's identity is all
+  // ONES. A chassis that filled a missing operand with zeros -- the obvious default, and right for OR and XOR --
+  // would zero every AND fold in the chain and produce a perfectly well-formed empty intersection.
+  jct_identity_o := Mux(opcode === OP_AND.U, ~0.U(junctionParam.dataWidth.W), 0.U)
+
   val fire = aQ.io.deq.valid && bQ.io.deq.valid && (credit =/= 0.U) && !jct_start_i
   aQ.io.deq.ready := fire
   bQ.io.deq.ready := fire
