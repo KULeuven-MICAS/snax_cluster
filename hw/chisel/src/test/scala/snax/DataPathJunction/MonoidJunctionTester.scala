@@ -35,8 +35,9 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
   import MonoidCombine._
 
   // csr(0): [7:0] nValid | [11:8] n | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol
-  private def csrWord(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int): BigInt =
-    (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) | (BigInt(nExp) << 18) | (BigInt(n) << 8) | BigInt(nValid)
+  private def csrWord(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int, keyMul: Int = 0): BigInt =
+    (BigInt(keyMul) << 29) | (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) | (BigInt(nExp) << 18) |
+      (BigInt(n) << 8) | BigInt(nValid)
 
   private val MOMENT  = (1, 1, 0, 3)          // (m, l)               one twisted coordinate
   private val ATTN    = (1 + dHead, 1 + dHead, 0, 0) // (m, l, O[dHead])  one alpha across every value lane
@@ -162,6 +163,127 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
         }
       }
       println("[Junction/MAXPOOL+ARGMAX] max-reduce and top-1 index carry over a live pair")
+    }
+  }
+
+
+  // ================================================================================================
+  // THE ORDERED SCAN -- keyMul = 1. The key monoid is (R, x) and the twist is the B-side key:
+  //     (k_A, v_A) (+) (k_B, v_B)  =  ( k_A*k_B ,  k_B*v_A + v_B )
+  // This is the chunked recurrence of linear attention / RetNet / GLA / Mamba-2, on the same lanes and
+  // the same FMA as the softmax family. It is associative and DELIBERATELY NOT commutative.
+  // ================================================================================================
+
+  /** one scan step, in double precision, on one slot */
+  private def scanStep(a: (Double, Double), b: (Double, Double)): (Double, Double) =
+    (a._1 * b._1, b._1 * a._2 + b._2)
+
+  /** The state update is a SUM of two terms, so its error must be judged against the larger term, not against
+    * the result: `k_B*v_A + v_B` can cancel to nearly zero, and relative error on a cancelling sum is unbounded
+    * in any finite precision. This is the standard way to state a floating-point summation bound.
+    */
+  private def sumScale(a: (Double, Double), b: (Double, Double)): Double =
+    math.max(math.abs(b._1 * a._2), math.abs(b._2))
+
+  "MonoidJunction_scan" should "fold a chunked linear-attention recurrence slot-wise" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng   = new Random(0x5ca7)
+      var worst = 0.0
+      for (trial <- 0 until 6) {
+        // decays in (0,1) and states of order 1 -- the regime a real gated recurrence runs in
+        val pa  = Seq.fill(pairSlots)((rng.between(0.1, 0.99), rng.between(-2.0, 2.0)))
+        val pb  = Seq.fill(pairSlots)((rng.between(0.1, 0.99), rng.between(-2.0, 2.0)))
+        val csr = csrWord(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots, keyMul = 1)
+        val out = runPair(dut, csr, packPairs(pa), packPairs(pb), bDelay = trial % 3)
+        for (k <- 0 until pairSlots) {
+          val (gk, gv) = scanStep(pa(k), pb(k))
+          val ek = math.abs(laneF32(out, k) - gk) / math.abs(gk)
+          val ev = math.abs(laneF32(out, pairSlots + k) - gv) / sumScale(pa(k), pb(k))
+          assert(ek <= 1e-6, f"trial $trial slot $k decay: ${laneF32(out, k)}%.8f vs $gk%.8f")
+          assert(ev <= 1e-6, f"trial $trial slot $k state: ${laneF32(out, pairSlots + k)}%.8f vs $gv%.8f")
+          worst = math.max(worst, math.max(ek, ev))
+        }
+      }
+      println(f"[Junction/scan] $pairSlots independent (decay, state) recurrences per beat pair, " +
+              f"worst rel err=$worst%.2e")
+    }
+  }
+
+  "MonoidJunction_scan_chain" should "reproduce the global recurrence when 4 chunks fold along a chain" in {
+    // Associativity in hardware, for the NON-commutative operator: folding chunk 0..3 hop by hop must equal
+    // running the recurrence straight through. This is the property that makes the scan a legal collective.
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng    = new Random(0x0117)
+      val chunks = Seq.fill(4)(Seq.fill(pairSlots)((rng.between(0.2, 0.95), rng.between(-2.0, 2.0))))
+      val csr    = csrWord(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots, keyMul = 1)
+      // A = what arrived from the previous hop (the EARLIER chunks), B = this node's own. Order is the route.
+      var acc = packPairs(chunks(0))
+      for (hop <- 1 until 4) acc = runPair(dut, csr, acc, packPairs(chunks(hop)), bDelay = hop)
+      var worst = 0.0
+      for (k <- 0 until pairSlots) {
+        val gold  = (1 until 4).foldLeft(chunks(0)(k))((st, h) => scanStep(st, chunks(h)(k)))
+        // the chain accumulates three sums, so scale by the largest term seen at any hop
+        val scale = (1 until 4).foldLeft((chunks(0)(k), 0.0)) { case ((st, mx), h) =>
+          (scanStep(st, chunks(h)(k)), math.max(mx, sumScale(st, chunks(h)(k))))
+        }._2
+        val ek   = math.abs(laneF32(acc, k) - gold._1) / math.abs(gold._1)
+        val ev   = math.abs(laneF32(acc, pairSlots + k) - gold._2) / scale
+        assert(ek <= 5e-6, f"slot $k decay: ${laneF32(acc, k)}%.8f vs ${gold._1}%.8f")
+        assert(ev <= 5e-6, f"slot $k state: ${laneF32(acc, pairSlots + k)}%.8f vs ${gold._2}%.8f")
+        worst = math.max(worst, math.max(ek, ev))
+      }
+      println(f"[Junction/scan] 4 chunks folded hop-by-hop == the direct recurrence, worst rel err=$worst%.2e")
+    }
+  }
+
+  "MonoidJunction_scan_ordered" should "be deliberately NOT commutative, with A the earlier chunk" in {
+    // The obligation this operator adds to the socket. Every other operator here is commutative, so the chassis
+    // has never had to promise an operand ORDER. This one does: A is what arrived from upstream, i.e. earlier in
+    // the sequence. Swapping the operands must change the answer -- if it did not, the decay would be applied to
+    // the wrong side and the recurrence would be silently wrong rather than loudly different.
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng = new Random(0x0dd1)
+      val pa  = Seq.fill(pairSlots)((rng.between(0.2, 0.9), rng.between(-2.0, 2.0)))
+      val pb  = Seq.fill(pairSlots)((rng.between(0.2, 0.9), rng.between(-2.0, 2.0)))
+      val csr = csrWord(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots, keyMul = 1)
+      val ab  = runPair(dut, csr, packPairs(pa), packPairs(pb))
+      val ba  = runPair(dut, csr, packPairs(pb), packPairs(pa))
+      assert(ab != ba, "the scan returned the same beat with the operands swapped -- it is not ordered")
+      // the key field IS commutative (a product), so only the state lanes may differ
+      for (k <- 0 until pairSlots)
+        assert(lane(ab, k) == lane(ba, k), s"slot $k: the decay product must not depend on operand order")
+      // and A is the earlier chunk: A's state is the one that gets scaled
+      for (k <- 0 until pairSlots) {
+        val (_, gv) = scanStep(pa(k), pb(k))
+        assert(math.abs(laneF32(ab, pairSlots + k) - gv) / sumScale(pa(k), pb(k)) <= 1e-6,
+               s"slot $k: A is not being treated as the earlier chunk")
+      }
+      println("[Junction/scan] operand order is semantic: A = upstream = earlier; the decay product is not")
+    }
+  }
+
+  "MonoidJunction_scan_identity" should "pad a dead slot with (1, 0), the scan's identity" in {
+    // O3 for a monoid whose key identity is NOT the losing extreme. A max-monoid pad here would multiply the
+    // running decay by -3.4e38 and annihilate the chain; the neutral element of (R, x) is 1.0.
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val live = 3
+      val rng  = new Random(0x1de1)
+      val pa   = Seq.fill(pairSlots)((rng.between(0.2, 0.9), rng.between(-2.0, 2.0)))
+      val pb   = Seq.fill(pairSlots)((rng.between(0.2, 0.9), rng.between(-2.0, 2.0)))
+      val csr  = csrWord(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = live, keyMul = 1)
+      val out  = runPair(dut, csr, packPairs(pa), packPairs(pb))
+      for (k <- 0 until live) {
+        val (gk, gv) = scanStep(pa(k), pb(k))
+        assert(math.abs(laneF32(out, k) - gk) / math.abs(gk) <= 1e-6, s"live slot $k decay")
+        assert(math.abs(laneF32(out, pairSlots + k) - gv) / sumScale(pa(k), pb(k)) <= 1e-6,
+               s"live slot $k state")
+      }
+      // a dead slot folds identity against identity: 1*1 = 1, and 1*0 + 0 = 0. Both must be exact.
+      for (k <- live until pairSlots) {
+        assert(laneF32(out, k) == 1.0, s"dead slot $k decay should be exactly 1.0, got ${laneF32(out, k)}")
+        assert(laneF32(out, pairSlots + k) == 0.0, s"dead slot $k state should be exactly 0.0")
+      }
+      println(s"[Junction/scan] slots >= $live carry (1.0, 0.0) exactly -- the neutral element of (R, x)")
     }
   }
 

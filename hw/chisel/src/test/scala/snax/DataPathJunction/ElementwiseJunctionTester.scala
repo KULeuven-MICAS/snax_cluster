@@ -12,8 +12,9 @@ import snax.DataPathJunction.JunctionTestUtils._
 
 /** Tier-1 for `ElementwiseJunction` -- the linear 2->1 fold.
   *
-  * Covers the four ops at FP16, the runtime format select (BF16 and FP32 out of one netlist), the streaming and
-  * cut-through behaviour, and the class-level bypass property.
+  * Covers the four ops at FP16, the runtime format select (BF16 and FP32 out of one netlist), the INTEGER grid
+  * and the three properties that only it has -- exactness, route-independence and idempotent max -- the streaming
+  * and cut-through behaviour, and the class-level bypass property.
   *
   * The last test is the reason the monoid class exists at all: it shows directly that a per-element
   * reduction applied to online-softmax statistics computes the WRONG answer, because the softmax merge needs a
@@ -156,6 +157,142 @@ class ElementwiseJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
       }
       assert(got == beats.toList, "disabled junction must forward a_i byte-identically")
       println("[EW/bypass] enable=0 is byte-identical to a raw forward")
+    }
+  }
+
+
+  // ================================================================================================
+  // THE INTEGER GRID -- exact, native-width, and the merge rule of the standard mergeable summaries.
+  // Every golden below is computed in Scala from the same integers the hardware sees, so these are
+  // INDEPENDENT numeric checks, not frozen beats: integer arithmetic has no rounding to agree about.
+  // ================================================================================================
+
+  /** pack `512/w` two's-complement lanes, low lane first */
+  private def packInt(v: Seq[BigInt], w: Int): BigInt = {
+    val mask = (BigInt(1) << w) - 1
+    v.zipWithIndex.foldLeft(BigInt(0)) { case (acc, (x, i)) => acc | ((x & mask) << (w * i)) }
+  }
+  /** unpack as SIGNED lanes */
+  private def unpackInt(beat: BigInt, w: Int): Seq[BigInt] = {
+    val mask = (BigInt(1) << w) - 1
+    (0 until 512 / w).map { i =>
+      val u = (beat >> (w * i)) & mask
+      if (u.testBit(w - 1)) u - (BigInt(1) << w) else u
+    }
+  }
+  private def wrap(x: BigInt, w: Int): BigInt = {
+    val u = x & ((BigInt(1) << w) - 1)
+    if (u.testBit(w - 1)) u - (BigInt(1) << w) else u
+  }
+
+  private def checkInt(dut: DataPathJunctionHarness, code: Int, w: Int, op: Int, opName: String,
+                       ref: (BigInt, BigInt) => BigInt, seed: Int): Unit = {
+    val rng  = new Random(seed)
+    val n    = 512 / w
+    val lo   = -(BigInt(1) << (w - 1))
+    val hi   = (BigInt(1) << (w - 1)) - 1
+    def draw() = BigInt(rng.between(lo.toLong, hi.toLong + 1))
+    for (trial <- 0 until 4) {
+      // trial 0 pins the corners on lane 0 and 1 so wraparound is exercised deliberately, not by luck
+      val va = if (trial == 0) Seq(hi, lo) ++ Seq.fill(n - 2)(draw()) else Seq.fill(n)(draw())
+      val vb = if (trial == 0) Seq(hi, lo) ++ Seq.fill(n - 2)(draw()) else Seq.fill(n)(draw())
+      val out = unpackInt(runPair(dut, csrWord(op, code), packInt(va, w), packInt(vb, w), bDelay = trial % 3), w)
+      for (i <- 0 until n) {
+        val g = wrap(ref(va(i), vb(i)), w)
+        assert(out(i) == g, s"INT$w/$opName trial $trial lane $i: ${out(i)} != $g  (a=${va(i)} b=${vb(i)})")
+      }
+    }
+    println(s"[EW/INT$w] $opName exact on $n native lanes, 4 trials incl. the wraparound corners")
+  }
+
+  "ElementwiseJunction_integer" should "reduce INT8 / INT16 / INT32 exactly, at native width" in {
+    test(new DataPathJunctionHarness(hasEw)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      for ((code, w, seed) <- Seq((FMT_INT8, 8, 0x1a), (FMT_INT16, 16, 0x2b), (FMT_INT32, 32, 0x3c))) {
+        checkInt(dut, code, w, OP_ADD, "ADD", (a, b) => a + b, seed)
+        checkInt(dut, code, w, OP_MUL, "MUL", (a, b) => a * b, seed + 1)
+        checkInt(dut, code, w, OP_MAX, "MAX", (a, b) => a.max(b), seed + 2)
+        checkInt(dut, code, w, OP_MIN, "MIN", (a, b) => a.min(b), seed + 3)
+      }
+    }
+  }
+
+  "ElementwiseJunction_routeIndependence" should "return ONE answer over every reduction order, in integer" in {
+    // THE PROPERTY FLOATING-POINT ADDITION DOES NOT HAVE. An in-network reducer that adds in FP returns an
+    // answer that depends on the reduction tree, because FP addition is not associative. Wrapping integer
+    // addition is the group operation of Z_2^w -- exactly associative, exactly commutative -- so every one of
+    // the 4! chain orders of the same four shards must be BIT-IDENTICAL.
+    //
+    // Both arms run here so the contrast is measured rather than asserted: same shards, same operator, same
+    // netlist, only `fmt` differs.
+    test(new DataPathJunctionHarness(hasEw)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val orders = Seq(0, 1, 2, 3).permutations.toSeq
+      def foldAll(csr: BigInt, beat: Int => BigInt): Seq[BigInt] =
+        orders.map(o => o.tail.foldLeft(beat(o.head))((acc, i) => runPair(dut, csr, acc, beat(i))))
+
+      // ---- arm 1: INT32, wrapping ------------------------------------------------------------------------
+      val w    = 32
+      val n    = 512 / w
+      val rngI = new Random(0xa550c)
+      val si   = Seq.fill(4)(Seq.fill(n)(BigInt(rngI.between(-(1L << 30), 1L << 30))))
+      val ri   = foldAll(csrWord(OP_ADD, FMT_INT32), i => packInt(si(i), w)).distinct
+      assert(ri.length == 1,
+             s"wrapping integer add is not route-independent: ${ri.length} distinct answers over ${orders.length}")
+      val goldI = (0 until n).map(i => wrap(si.map(_(i)).sum, w))
+      assert(unpackInt(ri.head, w) == goldI, "route-independent, but not equal to the reference sum")
+
+      // ---- arm 2: FP32, the same shape ---------------------------------------------------------------------
+      // Magnitudes are spread deliberately: cancellation is where FP associativity fails, and a reducer that
+      // never sees it would look reproducible by luck.
+      val rngF = new Random(0xf10a7)
+      val sf   = Seq.fill(4)(Seq.fill(16)(rngF.between(-1.0, 1.0) * math.pow(2.0, rngF.between(-12, 13))))
+      val fp32 = Fmt(FMT_FP32, 32, d => BigInt(java.lang.Float.floatToIntBits(d.toFloat).toLong & 0xffffffffL),
+                     b => java.lang.Float.intBitsToFloat(b.toInt).toDouble, "FP32")
+      val rf   = foldAll(csrWord(OP_ADD, FMT_FP32), i => pack(sf(i), fp32)).distinct
+
+      println(f"[EW/route] ${orders.length} reduction orders of 4 shards: " +
+              f"INT32 -> ${ri.length} distinct beat(s), FP32 -> ${rf.length}")
+      assert(rf.length > 1,
+             "FP32 addition returned one answer over all orders -- the stimulus is not exercising cancellation, " +
+               "so the integer arm's route-independence is not evidence of anything")
+      println("[EW/route] the integer grid is certified route-independent; the FP grid is measurably not")
+    }
+  }
+
+
+  "ElementwiseJunction_hyperloglog" should "merge HyperLogLog registers by per-register max, over a chain" in {
+    // The most widely deployed mergeable summary there is. An HLL's registers merge by elementwise max, so the
+    // union of four shards' sketches is one INT8 MAX fold along the chain -- and because max is idempotent and
+    // commutative the answer cannot depend on the route or on a duplicated beat.
+    test(new DataPathJunctionHarness(hasEw)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val w   = 8
+      val n   = 512 / w // 64 registers per beat
+      val rng = new Random(0x1177)
+      val shard = Seq.fill(4)(Seq.fill(n)(BigInt(rng.between(0, 40)))) // HLL registers: small, non-negative
+      val csr = csrWord(OP_MAX, FMT_INT8)
+      var acc = packInt(shard(0), w)
+      for (h <- 1 until 4) acc = runPair(dut, csr, acc, packInt(shard(h), w), bDelay = h)
+      val gold = (0 until n).map(i => shard.map(_(i)).max)
+      assert(unpackInt(acc, w) == gold, "chained HLL register merge != the elementwise max of the four shards")
+      // idempotence: folding a shard in twice cannot change the result
+      val again = runPair(dut, csr, acc, packInt(shard(2), w))
+      assert(again == acc, "a duplicated beat changed the result -- max is not being applied idempotently")
+      println(s"[EW/HLL] 64 registers merged over a 4-shard chain; a duplicate beat is a no-op")
+    }
+  }
+
+  "ElementwiseJunction_intClosure" should "let an integer output beat re-enter as an input beat" in {
+    // O2 on the integer grid. Nothing about the format changes across the operator, so the third shard folds in
+    // with no repack -- the same obligation the monoid and top-k operators are checked against.
+    test(new DataPathJunctionHarness(hasEw)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val w = 16; val n = 512 / w
+      val rng = new Random(0xc105e)
+      val s = Seq.fill(3)(Seq.fill(n)(BigInt(rng.between(-3000, 3000))))
+      val csr = csrWord(OP_ADD, FMT_INT16)
+      val ab  = runPair(dut, csr, packInt(s(0), w), packInt(s(1), w))
+      val abc = runPair(dut, csr, ab, packInt(s(2), w), bDelay = 2)
+      val gold = (0 until n).map(i => wrap(s.map(_(i)).sum, w))
+      assert(unpackInt(abc, w) == gold, "the output beat is not a legal input beat on the integer grid")
+      println("[EW/O2] an INT16 sum beat re-enters the same operator unchanged and a third shard folds in")
     }
   }
 

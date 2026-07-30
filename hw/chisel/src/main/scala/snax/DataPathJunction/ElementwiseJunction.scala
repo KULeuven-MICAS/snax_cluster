@@ -13,8 +13,8 @@ import snax.DataPathExtension.FpHelpers._
   * `ElementwiseJunction` -- the linear two-stream fold.
   * ============================================================================================================
   *
-  * A 2-input, per-element FP reduction (ADD / MUL / MAX / MIN) on the Junction ABI: same arity, same chain
-  * position and same per-beat throughput as the monoid class, but a per-element operator.
+  * A 2-input, per-element reduction (ADD / MUL / MAX / MIN) on the Junction ABI: same arity, same chain position
+  * and same per-beat throughput as the monoid operator, but per element and with no coupling between lanes.
   *
   * This is one of the two operators shipped on the junction socket. It satisfies the same four obligations
   * `MonoidJunction` does -- declared latency, format closure, identity tolerance, no state between pairs --
@@ -26,24 +26,40 @@ import snax.DataPathExtension.FpHelpers._
   * way at any element granularity, because it needs a shared rescale alpha = exp(m_loser - m*) derived from the
   * operand pair itself.
   *
-  * ---- LANE GRID ----
+  * ---- TWO GRIDS ----
   *
-  * `elemWidth` (elaboration) sets the lane count `lanes = dataWidth / elemWidth`; internal math is always FP32, so
-  * `fmt` (runtime) selects any transport format at least `elemWidth` wide and the beat is sliced accordingly.
-  * Every supported format therefore runs at ONE BEAT PER CYCLE -- narrower formats simply light up more lanes. At
-  * the default `elemWidth = 16` that is 32 FP32 lanes covering FP16/BF16 at full beat rate and FP32 on lanes
+  * FLOATING POINT. `elemWidth` (elaboration) sets the lane count `lanes = dataWidth / elemWidth`; the math is
+  * always FP32, so `fmt` (runtime) selects any transport format at least `elemWidth` wide and the beat is sliced
+  * accordingly. Every supported format runs at ONE BEAT PER CYCLE -- narrower formats simply light up more lanes.
+  * At the default `elemWidth = 16` that is 32 FP32 lanes covering FP16/BF16 at full beat rate, and FP32 on lanes
   * 0..15.
+  *
+  * INTEGER. `intWidths` (elaboration) selects which of INT8 / INT16 / INT32 are built. Integers are combined at
+  * their NATIVE width -- no widen, no narrow, no rounding -- so an integer format is exact and the beat is
+  * `dataWidth / w` lanes wide whatever `elemWidth` is. Two properties follow, and both are the point of having
+  * this grid at all:
+  *
+  *   - `ADD` and `MUL` WRAP, i.e. they are the group and ring operations of Z_2^w. Wrapping addition is
+  *     EXACTLY associative and exactly commutative, so a chain of these nodes returns one answer whatever the
+  *     route -- which floating-point addition, on the grid above, does not.
+  *   - `MAX` / `MIN` are SIGNED comparisons.
+  *
+  * That makes the integer grid the merge rule of the standard mergeable summaries: a HyperLogLog merges by
+  * per-register `MAX` over INT8, a Count-Min sketch by elementwise `ADD` over INT32, a G-Counter by per-replica
+  * `MAX`, and a tropical `(min, +)` distance vector by elementwise `MIN`.
   *
   * ---- CSR(0) ----
   * {{{
   *   [3:0]   op    0 = ADD, 1 = MUL, 2 = MAX, 3 = MIN
   *   [6:4]   fmt   0 = FP16, 1 = BF16, 2 = FP8, 3 = FP32   (must be >= elemWidth wide)
+  *                 4 = INT8, 5 = INT16, 6 = INT32          (must be listed in intWidths)
   * }}}
   */
 class HasElementwiseJunction(
   dataWidth:   Int = 512,
   elemWidth:   Int = 16,
   fpPipe:      Int = 1,
+  intWidths:   Seq[Int] = Seq(8, 16, 32),
   skidDepth:   Int = 4,
   starveLimit: Int = 4096
 ) extends HasDataPathJunction {
@@ -56,7 +72,8 @@ class HasElementwiseJunction(
     )
 
   def instantiate(clusterName: String): ElementwiseJunction =
-    Module(new ElementwiseJunction(elemWidth = elemWidth, fpPipe = fpPipe, skidDepth = skidDepth) {
+    Module(new ElementwiseJunction(elemWidth = elemWidth, fpPipe = fpPipe, intWidths = intWidths,
+                                   skidDepth = skidDepth) {
       override def desiredName = clusterName + namePostfix
     })
 }
@@ -75,11 +92,18 @@ object ElementwiseJunction {
     (FpHelpers.FMT_BF16, 16, BF16),
     (FMT_FP32, 32, FP32)
   )
+
+  /** integer transport formats, combined at their native width */
+  val FMT_INT8  = 4
+  val FMT_INT16 = 5
+  val FMT_INT32 = 6
+  val intFormats: Seq[(Int, Int)] = Seq((FMT_INT8, 8), (FMT_INT16, 16), (FMT_INT32, 32))
 }
 
 class ElementwiseJunction(
   elemWidth:     Int = 16,
   fpPipe:        Int = 1,
+  intWidths:     Seq[Int] = Seq(8, 16, 32),
   skidDepth:     Int = 4
 )(implicit
   junctionParam: JunctionParam
@@ -92,6 +116,11 @@ class ElementwiseJunction(
   // the transport formats this grid can carry at one beat per cycle (anything at least as wide as a lane slot)
   val supported = formats.filter(_._2 >= elemWidth)
   require(supported.nonEmpty, s"ElementwiseJunction: no transport format is >= elemWidth=$elemWidth")
+  // The integer grid is independent of `elemWidth`: it never touches the FP32 lanes, so an INT8 merge runs on
+  // dataWidth/8 native lanes whatever the float grid was elaborated for.
+  val supportedInt = intFormats.filter { case (_, w) => intWidths.contains(w) }
+  require(intWidths.forall(w => Seq(8, 16, 32).contains(w)),
+          s"ElementwiseJunction: intWidths must be drawn from 8, 16, 32 (got $intWidths)")
 
   val FP32_ONE  = "h3F800000".U(32.W)
   val FP32_ZERO = 0.U(32.W)
@@ -110,6 +139,12 @@ class ElementwiseJunction(
   val Qdepth = scala.math.max(2, lat + 4)
   val outQ   = Module(new Queue(UInt(junctionParam.dataWidth.W), entries = Qdepth))
   val credit = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
+
+  // O5: an `fmt` naming a format this instance was not elaborated for would fall through the repack MuxLookup
+  // to the first arm and silently reinterpret the beat in a different number system. That is the single most
+  // dangerous word this operator can be given, and it is the reason the port exists.
+  val builtFmts = (supported.map(_._1) ++ supportedInt.map(_._1)).distinct
+  jct_cfgerr_o := (opcode > OP_MIN.U) || !VecInit(builtFmts.map(c => fmt === c.U)).asUInt.orR
 
   val fire = aQ.io.deq.valid && bQ.io.deq.valid && (credit =/= 0.U) && !jct_start_i
   aQ.io.deq.ready := fire
@@ -165,9 +200,30 @@ class ElementwiseJunction(
     }
     Cat(elems.reverse)
   }
+  // ---- the integer grid ---------------------------------------------------------------------------------
+  // Native width, so there is nothing to widen and nothing to round: the result of a lane IS the transport
+  // element. ADD and MUL wrap (Z_2^w), MAX and MIN are signed. Delay-matched to `lat` so the operator retires at
+  // one published latency whatever `fmt` selects -- O1 must not depend on a runtime field.
+  def packedInt(w: Int): UInt = {
+    val n = junctionParam.dataWidth / w
+    val elems = (0 until n).map { i =>
+      val a   = aQ.io.deq.bits(w * i + w - 1, w * i).asSInt
+      val b   = bQ.io.deq.bits(w * i + w - 1, w * i).asSInt
+      val add = (a + b).asUInt                 // wraps: exactly associative, exactly commutative
+      val mul = ((a * b).asUInt)(w - 1, 0)     // low half, wraps
+      val mx  = Mux(a > b, a, b).asUInt
+      val mn  = Mux(a < b, a, b).asUInt
+      ShiftRegister(MuxLookup(opcode, add)(
+        Seq(OP_ADD.U -> add, OP_MUL.U -> mul, OP_MAX.U -> mx, OP_MIN.U -> mn)
+      ), lat)
+    }
+    Cat(elems.reverse)
+  }
+
   // Elaborate each format's repack ONCE; the default arm reuses the first rather than building a second,
-  // unreachable copy of it. It had been there since this module was written.
-  val outPacked = supported.map { case (code, w, t) => code -> packed(w, t) }
+  // unreachable copy of it.
+  val outPacked = supported.map { case (code, w, t) => code -> packed(w, t) } ++
+    supportedInt.map { case (code, w) => code -> packedInt(w) }
   val outBeat   = MuxLookup(fmt, outPacked.head._2)(outPacked.map { case (code, p) => code.U -> p })
 
   def clrPipe(in: Bool, n: Int): Bool =

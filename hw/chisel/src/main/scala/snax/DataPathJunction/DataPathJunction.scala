@@ -76,6 +76,7 @@ abstract class DataPathJunction(implicit junctionParam: JunctionParam) extends M
     val out_o     = Decoupled(UInt(junctionParam.dataWidth.W))
     val busy_o    = Output(Bool())
     val starved_o = Output(Bool()) // watchdog: one operand stream has starved the join
+    val cfgerr_o  = Output(Bool()) // O5: this operator cannot honour the configuration word it was given
   })
 
   private[this] val bypass_data = Wire(Decoupled(UInt(junctionParam.dataWidth.W)))
@@ -91,6 +92,19 @@ abstract class DataPathJunction(implicit junctionParam: JunctionParam) extends M
   val jct_start_i = io.start_i
   val jct_busy_o  = Wire(Bool())
   dontTouch(jct_busy_o)
+
+  /** O5 -- DECLARED SCHEMA. A junction's configuration arrives over a serdes from another die and nothing on the
+    * path checks it, so a word that this operator cannot honour would otherwise produce a finite, format-legal,
+    * silently wrong beat -- the species of bug that has already been found twice in this block. Raise this
+    * instead, from the CSR alone, so it is stream-constant and asserted before the first pair fires.
+    *
+    * It reports; it does not refuse. The datapath still emits its safest interpretation, because a fold that
+    * stops mid-chain is worse than one that completes and is flagged.
+    *
+    * Defaults to false so an operator that has nothing to check needs no boilerplate.
+    */
+  val jct_cfgerr_o = WireDefault(false.B)
+  dontTouch(jct_cfgerr_o)
 
   // ---- bypass structure on the a-path: a demux/mux pair steered by enable_i ----
   private[this] val inputDemux = Module(
@@ -119,7 +133,8 @@ abstract class DataPathJunction(implicit junctionParam: JunctionParam) extends M
   jct_b_i.bits  := io.b_i.bits
   io.b_i.ready  := jct_b_i.ready && io.enable_i
 
-  io.busy_o := jct_busy_o || (io.enable_i && (io.a_i.valid || io.b_i.valid))
+  io.busy_o   := jct_busy_o || (io.enable_i && (io.a_i.valid || io.b_i.valid))
+  io.cfgerr_o := jct_cfgerr_o && io.enable_i
 
   // ---- starvation watchdog ----
   // Counts consecutive cycles in which the join is enabled and exactly one operand is offered. A legitimate skew
@@ -160,6 +175,7 @@ class DataPathJunctionHostIO(junctionList: Seq[HasDataPathJunction], dataWidth: 
   val busy    = Output(Bool())
   val active  = Output(Bool()) // any junction selected: the switch uses this to arm the collective dataflow
   val starved = Output(Bool())
+  val cfgerr  = Output(Bool()) // O5: the armed junction cannot honour its configuration word
 
   /** Consume the leading `1 + sum(userCsrNum)` CSRs of `csrList` -- enable bitmask first, then the per-junction user
     * CSRs -- and return the remainder.
@@ -194,6 +210,7 @@ class DataPathJunctionHost(
     io.busy         := false.B
     io.active       := false.B
     io.starved      := false.B
+    io.cfgerr       := false.B
   } else {
     var remainingCSR = io.cfg.userCsr.toIndexedSeq
     val enables      = io.cfg.enable.asBools.take(junctionList.length)
@@ -245,5 +262,7 @@ class DataPathJunctionHost(
     io.busy    := junctions.map(_.io.busy_o).reduce(_ || _)
     io.active  := anyEnable
     io.starved := sel(_.io.starved_o)
+    // Only the ARMED operator's verdict counts: the others were handed CSR words meant for someone else.
+    io.cfgerr  := sel(_.io.cfgerr_o)
   }
 }

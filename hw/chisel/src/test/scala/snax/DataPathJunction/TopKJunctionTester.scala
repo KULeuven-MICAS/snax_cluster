@@ -16,6 +16,7 @@ import snax.DataPathJunction.JunctionTestUtils._
   * end, no exponential, no FMA -- while satisfying the same four obligations. So the tests below are deliberately
   * the CONTRACT tests, not a feature list:
   *
+  *   T-bottom-k     keyPol = 1 keeps the k SMALLEST instead -- the same network, a KMV / MinHash sketch merge
   *   T-O2 closure   the output of one instance is a legal input to the next, checked against a 3-input reference
   *   T-O3 identity  a short list is padded with the identity and the live entries are unaffected
   *   T-O1 latency   retire is fire delayed by the published constant
@@ -29,7 +30,8 @@ class TopKJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
 
   private def hasTopK = new HasTopKJunction(k = k)
 
-  private def csrWord(nValid: Int): BigInt = BigInt(nValid)
+  private def csrWord(nValid: Int, keyPol: Int = 0): BigInt = (BigInt(keyPol) << 28) | BigInt(nValid)
+  private val ID_MAX_D = java.lang.Float.intBitsToFloat(0x7f7fffff).toDouble
 
   /** pack one descending sorted list: values on lanes 0..k-1, payloads on k..2k-1 */
   private def pack(vals: Seq[Double], pays: Seq[Double]): BigInt = {
@@ -78,6 +80,57 @@ class TopKJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
         for (i <- 1 until k) assert(gotV(i - 1) >= gotV(i), s"trial $trial: output not descending at $i")
       }
       println(s"[TopK] k=$k merge of two sorted lists == the k largest of the union, payloads carried, 8 trials")
+    }
+  }
+
+
+  "TopK_bottomK" should "keep the k SMALLEST of the union when keyPol = 1" in {
+    // The same network under negation of every value: one XOR per comparator and the opposite identity. This
+    // reading is a bottom-k / KMV sketch merge -- keeping the k smallest hashes of a union is how MinHash
+    // estimates Jaccard similarity and how a Theta sketch estimates cardinality -- on the shipped 20 comparators.
+    test(new DataPathJunctionHarness(hasTopK)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng = new Random(0xb077)
+      /** an ASCENDING list, which is what a min-polarity partial carries */
+      def asc(live: Int, tag: Int): Seq[(Double, Double)] = {
+        val vs = Seq.fill(live)(rng.between(-50.0, 50.0))
+          .map(d => java.lang.Float.intBitsToFloat(f32(d).toInt).toDouble).distinct.sorted
+        val ps = vs.indices.map(i => (tag * 100 + i).toDouble)
+        (vs.zip(ps) ++ Seq.fill(k - vs.length)((ID_MAX_D, 0.0))).take(k)
+      }
+      for (trial <- 0 until 6) {
+        val A = asc(k, 1)
+        val B = asc(k, 2)
+        val out = runPair(dut, csrWord(k, keyPol = 1), pack(A.map(_._1), A.map(_._2)),
+                          pack(B.map(_._1), B.map(_._2)), bDelay = trial % 3)
+        val gold = (A ++ B).sortBy(_._1).take(k)
+        val gotV = unpackV(out)
+        val gotP = unpackP(out)
+        for (i <- 0 until k) {
+          assert(gotV(i) == gold(i)._1, f"trial $trial entry $i: value ${gotV(i)}%.4f vs ${gold(i)._1}%.4f")
+          assert(gotP(i) == gold(i)._2, f"trial $trial entry $i: payload ${gotP(i)} vs ${gold(i)._2}")
+        }
+        for (i <- 1 until k) assert(gotV(i - 1) <= gotV(i), s"trial $trial: output not ascending at $i")
+      }
+      println(s"[TopK/bottom-k] keyPol=1 keeps the $k smallest of the union, ascending -- a KMV / MinHash merge")
+    }
+  }
+
+  "TopK_bottomK_identity" should "pad a short min-polarity list with the value that loses every min" in {
+    // O3 under the flipped polarity. The identity is NOT a constant: it is whichever value loses every
+    // comparison, so the max-polarity pad would WIN every min and silently replace the real answer.
+    test(new DataPathJunctionHarness(hasTopK)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val live = 3
+      val av = Seq(-4.0, 1.0, 6.0) ++ Seq.fill(k - live)(ID_MAX_D)
+      val bv = Seq(-2.0, 2.0, 9.0) ++ Seq.fill(k - live)(ID_MAX_D)
+      val ap = (0 until k).map(_.toDouble)
+      val bp = (0 until k).map(i => (10 + i).toDouble)
+      val out  = runPair(dut, csrWord(live, keyPol = 1), pack(av, ap), pack(bv, bp))
+      val gotV = unpackV(out)
+      val gold = (av.take(live) ++ bv.take(live)).sorted
+      for (i <- gold.indices) assert(gotV(i) == gold(i), f"entry $i: ${gotV(i)}%.4f vs ${gold(i)}%.4f")
+      for (i <- gold.length until k)
+        assert(gotV(i) == ID_MAX_D, s"entry $i should be the min-monoid identity, got ${gotV(i)}")
+      println("[TopK/bottom-k] a short list pads with the most-POSITIVE finite float; live entries untouched")
     }
   }
 

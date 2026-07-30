@@ -21,6 +21,7 @@ class JunctionHostHarness(junctions: Seq[HasDataPathJunction], dataWidth: Int = 
   io.busy    := dut.io.busy
   io.active  := dut.io.active
   io.starved := dut.io.starved
+  io.cfgerr  := dut.io.cfgerr
   dut.io.cfg   := io.cfg
   dut.io.start := io.start
 
@@ -190,6 +191,31 @@ class JunctionHostTester extends AnyFlatSpec with ChiselScalatestTester {
         assert(dut.io.active.peekBoolean() == want, s"enable=$en: active should be $want")
       }
       println("[Host] `active` tracks the enable bitmask -- it is what arms the collective dataflow")
+    }
+  }
+
+  "JunctionHost_cfgErrIsPerArmedOperator" should "report only the armed operator's verdict" in {
+    // O5 through the socket. Both operators hold a CSR word at all times, and a word that is nonsense for one is
+    // routine for the other -- so the host must report the ARMED operator's verdict and nobody else's, or every
+    // transfer would raise an error on behalf of an operator that is not running.
+    test(new JunctionHostHarness(operators)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      def check(en: Int, lin: BigInt, mon: BigInt): Boolean = {
+        dut.io.cfg.userCsr(0).poke(lin.U)
+        dut.io.cfg.userCsr(1).poke(mon.U)
+        dut.io.cfg.enable.poke(en.U)
+        dut.clock.step(2)
+        dut.io.cfgerr.peekBoolean()
+      }
+      val linOk  = csrLinear(OP_MUL, FpHelpers.FMT_BF16)
+      val monOk  = csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots)
+      val monBad = csrMonoid(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = 0) // no live slot
+      assert(!check(1 << EW_SLOT, linOk, monOk), "two good words must not raise")
+      assert(!check(1 << MON_SLOT, linOk, monOk), "two good words must not raise, either operator armed")
+      // the monoid word is nonsense, but the LINEAR operator is the one armed -- silence is correct
+      assert(!check(1 << EW_SLOT, linOk, monBad), "a bad word for an operator that is not armed must be silent")
+      assert(check(1 << MON_SLOT, linOk, monBad), "the armed operator's bad word must be reported")
+      assert(!check(0, linOk, monBad), "with nothing armed the socket has no verdict to report")
+      println("[Host/O5] the socket reports the armed operator's configuration verdict and no one else's")
     }
   }
 }

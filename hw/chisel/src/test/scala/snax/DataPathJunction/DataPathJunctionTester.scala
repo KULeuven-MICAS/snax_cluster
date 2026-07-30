@@ -14,6 +14,7 @@ class DataPathJunctionHarness(junction: HasDataPathJunction) extends Module with
 
   io.busy_o       := dut.io.busy_o
   io.starved_o    := dut.io.starved_o
+  io.cfgerr_o     := dut.io.cfgerr_o
   dut.io.csr_i    := io.csr_i
   dut.io.enable_i := io.enable_i
   dut.io.start_i  := io.start_i

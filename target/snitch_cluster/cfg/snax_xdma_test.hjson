@@ -262,6 +262,8 @@ workloads in HeMAiA/target/sw/... do for snax_versacore_to_256KB_simd_cluster.hj
                 // no key front end, no exponential and no FMA -- on the same socket, satisfying the same four
                 // obligations. It is the evidence that the CONTRACT composes, not the monoid cell.
                 HasTopKJunction: {dataWidth: 512, k: 8}
+                // the operator with no arithmetic: OR / AND / XOR over the raw beat
+                HasBitwiseJunction: {dataWidth: 512}
             }
             reader_extensions: {
                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}

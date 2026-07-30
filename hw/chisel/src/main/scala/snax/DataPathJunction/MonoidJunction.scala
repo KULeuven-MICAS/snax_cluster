@@ -24,6 +24,13 @@ import snax.DataPathExtension.FpHelpers._
   * has nothing to compare and folds to the direct product -- a different algebra, and `ElementwiseJunction`'s
   * operator on this socket.
   *
+  * The key lives in one of two monoids, chosen by `keyMul`. At `keyMul = 0` it is `(R, max)` and the twist is
+  * `exp(m_lose - m*)`: the commutative family above. At `keyMul = 1` it is `(R, x)` and the twist is the B-side
+  * key, which makes the operator the ORDERED SCAN
+  * `(k_A, v_A) (+) (k_B, v_B) = ( k_A*k_B , k_B*v_A + v_B )` -- the chunked recurrence of linear attention and
+  * of state-space models. That one is NOT commutative: `A` must be the earlier chunk. See `MonoidCombine` for
+  * the algebra and for why both reach the same FMA.
+  *
   * ---- HOW IT MEETS THE SOCKET CONTRACT ----
   * {{{
   *   O1 declared fixed latency   latMon = MonoidCombine.latency + fpPipe, published to the chassis below
@@ -49,7 +56,8 @@ import snax.DataPathExtension.FpHelpers._
   *   [21:18]  nExp     fields 1 .. nExp take the twist
   *   [25:22]  nAdd     fields nExp+1 .. nExp+nAdd are plainly summed; the rest carry the winner's payload
   *   [27:26]  sigma    beat geometry, saturated to the widest legal value for F
-  *   [28]     keyPol   0 = max-monoid, 1 = min-monoid
+  *   [28]     keyPol   0 = max-monoid, 1 = min-monoid            (read only when keyMul = 0)
+  *   [29]     keyMul   0 = the key monoid is (R, max), 1 = it is (R, x) -- the ordered scan
   * }}}
   * The word names a GEOMETRY, not an operator, which is what keeps the head width out of the netlist: a
   * twelve-wide flash-attention head is `n = 13, nExp = 13, sigma = 0` on the same hardware.
@@ -58,6 +66,7 @@ class HasMonoidJunction(
   dataWidth:   Int = 512,
   fpPipe:      Int = 1,
   expLutN:     Int = 128,
+  hasScan:     Boolean = true,
   skidDepth:   Int = 4,
   starveLimit: Int = 4096
 ) extends HasDataPathJunction {
@@ -70,7 +79,8 @@ class HasMonoidJunction(
     )
 
   def instantiate(clusterName: String): MonoidJunction =
-    Module(new MonoidJunction(fpPipe = fpPipe, expLutN = expLutN, skidDepth = skidDepth) {
+    Module(new MonoidJunction(fpPipe = fpPipe, expLutN = expLutN, hasScan = hasScan,
+                              skidDepth = skidDepth) {
       override def desiredName = clusterName + namePostfix
     })
 }
@@ -78,6 +88,7 @@ class HasMonoidJunction(
 class MonoidJunction(
   fpPipe:        Int = 1,
   expLutN:       Int = 128,
+  hasScan:       Boolean = true,
   skidDepth:     Int = 4
 )(implicit
   junctionParam: JunctionParam
@@ -99,6 +110,9 @@ class MonoidJunction(
   val nValid = jct_csr_i(0)(7, 0)
   val geom   = geomOf(jct_csr_i(0))
   val sigma  = geom.sigma
+  // The key monoid is (R, x) rather than (R, max): the ordered scan. `hasScan = false` ties it off at
+  // elaboration, so a build that does not want the scan pays nothing for it -- see the alignment note below.
+  val keyMul = if (hasScan) geom.keyMul else false.B
 
   // ---- socket plumbing: elastic input, credit-gated output ---------------------------------------------------
   // Skid depth >= 1 is required for CORRECTNESS (the join must not be a combinational loop between the two
@@ -120,6 +134,14 @@ class MonoidJunction(
   val fire = aQ.io.deq.valid && bQ.io.deq.valid && (credit =/= 0.U) && !jct_start_i
   aQ.io.deq.ready := fire
   bQ.io.deq.ready := fire
+
+  // ---- O5: what this operator cannot honour --------------------------------------------------------------
+  // All three are stream-constant, read from the CSR before a pair fires, and all three would otherwise be
+  // SILENT: the beat that comes out is finite, format-legal and wrong in a way no downstream hop can detect.
+  val cfgSigmaSaturated = jct_csr_i(0)(27, 26) > sigmaMaxOf(geom.F) // asked for a layout that does not exist
+  val cfgRolesOverflow  = (geom.nExp +& geom.nAdd) > jct_csr_i(0)(11, 8) // more value roles than value fields
+  val cfgNoLiveSlot     = nValid === 0.U                            // every slot masked to the identity
+  jct_cfgerr_o := cfgSigmaSaturated || cfgRolesOverflow || cfgNoLiveSlot
 
   // `nValid = 0` masks EVERY slot to the identity, so the fold emits an identity partial: finite, format-legal
   // and numerically empty. Legal, but indistinguishable from a stale CSR -- and the single-partial geometries
@@ -157,32 +179,57 @@ class MonoidJunction(
   // EVER hold the key. State it, because the field decode lowers to a Vec lookup the tool cannot see through.
   val lIsKey    = (0 until nLanes).map(l =>
     if (l >= (1 << SIGMA_MAX)) false.B else lField(l) === 0.U)
-  val lUseAlpha = (0 until nLanes).map(l => lField(l) >= 1.U && lField(l) <= geom.nExp)
+  // In the scan the key lane is scaled too, because `k_A * k_B` is the same `los * scale` the value lanes use.
+  val lUseAlpha = (0 until nLanes).map(l =>
+    (lIsKey(l) && keyMul) || (lField(l) >= 1.U && lField(l) <= geom.nExp))
   // No `&& lInRange(l)`: an out-of-range lane retires zero from the outer select in `valueLane` regardless.
   val lIsSel    = (0 until nLanes).map(l => lField(l) > (geom.nExp +& geom.nAdd))
+  // ... and it therefore stops SELECTING a winner: in the scan it computes one.
+  val lSelOrKey = (0 until nLanes).map(l => (lIsKey(l) && !keyMul) || lIsSel(l))
   val lLive     = (0 until nLanes).map(l => cLive(cls(l)))
   // O3 on the INPUT, per lane: a dead slot is fed its field's identity on BOTH sides, so it contributes the
   // identity and the emitted beat stays a legal input partial at any downstream nValid.
-  val padKey    = keyIdentity(geom.keyPol)
+  // The scan's key identity is 1.0, not the losing extreme: a dead slot must be NEUTRAL under multiplication.
+  val padKey    = keyIdentity(geom.keyPol, keyMul)
   val lPad      = (0 until nLanes).map(l => Mux(lIsKey(l), padKey, F32_ZERO))
   val amL       = (0 until nLanes).map(l => Mux(lLive(l), aLanes(l), lPad(l)))
   val bmL       = (0 until nLanes).map(l => Mux(lLive(l), bLanes(l), lPad(l)))
 
   // key front ends: front end `s` sits ON lane `s` and reads that lane's own masked operands (lane s IS
   // (field 0, slot s) for every sigma, which is the property field-major buys).
-  val fe       = (0 until nKey).map(s => keyFrontEnd(amL(s), bmL(s), geom.keyPol, expLutN))
-  val alphaTap = (0 until nKey).map(c => tapOf(c, (s: Int) => fe(s)._1))
-  val swTap    = (0 until nKey).map(c => tapOf(c, (s: Int) => fe(s)._2))
+  val fe = (0 until nKey).map(s => keyFrontEnd(amL(s), bmL(s), geom.keyPol, expLutN))
+
+  // The two cross-lane wires, and the only place the key monoid is visible outside the lane decode.
+  //   twist: the lookup's output, or -- in the scan -- the B-side key itself, straight off lane `s`.
+  //   swap:  whichever side lost, or -- in the scan -- always A, because A is always the earlier chunk.
+  // The lookup still runs in the scan and its output is simply unread, the same way it is for a partial whose
+  // value coordinates are all plainly summed.
+  //
+  // ALIGNMENT. `valueLane` delays its operands by the lookup's depth, because in the twisted family the twist
+  // comes OUT of the lookup and is already that old. The scan's twist is a raw beat lane, so it must be aged to
+  // match or it arrives at the multiplier several cycles ahead of the value it is meant to scale. That delay is
+  // the scan's whole marginal cost: nKey * 32 * MonoidCombine.latency flip-flops, built only when `hasScan`.
+  //
+  // (There is a cheaper form available if this ever matters: lane `s`'s own `win` register already holds exactly
+  // this value, aged exactly this much. Reaching it means `valueLane` returning its delayed winner, which is a
+  // change to the one function every lane of every configuration shares -- not worth it for a knob.)
+  val bDel     = if (hasScan) (0 until nKey).map(s => ShiftRegister(bmL(s), MonoidCombine.latency)) else Seq()
+  val alphaSrc = (s: Int) => if (hasScan) Mux(keyMul, bDel(s), fe(s)._1) else fe(s)._1
+  val swSrc    = (s: Int) => fe(s)._2 || keyMul
+  val alphaTap = (0 until nKey).map(c => tapOf(c, alphaSrc))
+  val swTap    = (0 until nKey).map(c => tapOf(c, swSrc))
 
   // one FMA per lane, by an identity map: lane `l` drives FMA `l`. No pool and no allocator.
   val outBeat = VecInit((0 until nLanes).map { l =>
     valueLane(
       am       = amL(l),
-      bm       = bmL(l),
+      // Driving the key lane's B operand to zero is what turns `los*scale + win` into the product `k_A * k_B`.
+      // Only the value lane sees this; the twist tap above still reads the real key off lane `s`.
+      bm       = (if (l >= (1 << SIGMA_MAX)) bmL(l) else Mux(keyMul && lIsKey(l), F32_ZERO, bmL(l))),
       sw       = swTap(cls(l)),
       alpha    = alphaTap(cls(l)),
       useAlpha = lUseAlpha(l),
-      selOrKey = lIsKey(l) || lIsSel(l),
+      selOrKey = lSelOrKey(l),
       inRange  = lInRange(l),
       fma      = (x: UInt, y: UInt, z: UInt) => {
         val m = Module(new FpFma(FP32, FP32, FP32, fpPipe))

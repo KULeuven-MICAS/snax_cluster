@@ -45,9 +45,30 @@ import snax.DataPathExtension.FpHelpers._
 object MonoidCombine {
 
   // EVERY PARTIAL THIS FILE FOLDS HAS EXACTLY ONE KEY, so the field count is `F = n + 1` for every configuration
-  // it accepts. The key is what the twist is a function of: it decides the winner, and `exp(m_k - m*)` is the
-  // factor the loser's value coordinates are scaled by. A partial without one has nothing to compare and folds to
-  // the direct product instead -- a different algebra, and `ElementwiseJunction`'s operator on the same socket.
+  // it accepts. The key is what the twist is a function of, and it is what makes the object a semidirect product
+  // `M (x)_phi (R^n, +)` rather than a plain vector. A partial without one has nothing to compare and folds to the
+  // direct product instead -- a different algebra, and `ElementwiseJunction`'s operator on the same socket.
+  //
+  // TWO KEY MONOIDS RIDE THE SAME LANES, selected by `keyMul`:
+  //
+  //   keyMul = 0   M = (R, max)   phi = exp(m_lose - m*)      the twisted family: softmax statistics, the flash
+  //                                                           triple, moment banks, max-pool, argmax/argmin.
+  //                                                           COMMUTATIVE.
+  //   keyMul = 1   M = (R, x)     phi = the B-side key        the ORDERED SCAN:
+  //                                    (k_A, v_A) (+) (k_B, v_B) = ( k_A*k_B , k_B*v_A + v_B )
+  //                                                           NOT commutative -- A must be the EARLIER operand.
+  //
+  // Both are `phi(loser) * v_lose + v_win` on one FMA. The second is the chunked recurrence of linear attention,
+  // RetNet, gated linear attention and Mamba-2/SSD: a decay acting on a running state. It reaches the same lanes
+  // by three stream-constant differences and no new arithmetic --
+  //
+  //   1. the twist comes from the B-side key lane instead of the exponential lookup,
+  //   2. the winner-swap is forced (A is always the scaled side, because A is always the earlier chunk),
+  //   3. the key lane computes `k_A * k_B` instead of selecting a winner, which it does by having its `win` port
+  //      driven to zero -- the product then falls out of the same `los*scale + win` the value lanes use.
+  //
+  // ASSOCIATIVITY, which is what makes it a legal collective at all:
+  //   ((a,S)(+)(b,T))(+)(c,U) = (cba, c(bS+T)+U) = (cba, cbS+cT+U) = (a,S)(+)((b,T)(+)(c,U))   .
 
   val F32_ONE  = "h3F800000".U(32.W) // 1.0f  (the scale of a plain sum / the winner's factor)
   val ID_M     = "hFF7FFFFF".U(32.W) // most-negative FINITE fp32: loses every max, and id-vs-id delta = +0.
@@ -66,7 +87,7 @@ object MonoidCombine {
     * summed, and anything above that but still in range carries the winner's payload instead of being added.
     * `keyPol` picks the MIN-monoid instead of the max (argmin / softmin).
     */
-  case class Geom(F: UInt, sigma: UInt, nExp: UInt, nAdd: UInt, keyPol: Bool)
+  case class Geom(F: UInt, sigma: UInt, nExp: UInt, nAdd: UInt, keyPol: Bool, keyMul: Bool)
 
   /** The largest legal sigma for `F` fields: `F * S <= nLanes`, i.e. sigma <= 4 - ceil(log2 F), capped at
     * SIGMA_MAX. Applying it as a SATURATION rather than a check is what makes every one of the 2^k possible CSR
@@ -83,7 +104,8 @@ object MonoidCombine {
   //   [21:18]  nExp     how many value coordinates take the twist -- fields 1 .. nExp
   //   [25:22]  nAdd     how many are plainly summed -- fields nExp+1 .. nExp+nAdd
   //   [27:26]  sigma    beat geometry; saturated to `sigmaMaxOf(F)` so no word can name an illegal layout
-  //   [28]     keyPol   0 = max-monoid, 1 = min-monoid
+  //   [28]     keyPol   0 = max-monoid, 1 = min-monoid            (read only when keyMul = 0)
+  //   [29]     keyMul   0 = the key monoid is (R, max), 1 = it is (R, x) -- the ordered scan
   // }}}
   // Any field above `nExp + nAdd` and still below `F` carries the winner's payload instead of being combined,
   // so the three ranges partition a partial's value coordinates with no further encoding.
@@ -103,7 +125,8 @@ object MonoidCombine {
       sigma  = csr(27, 26),
       nExp   = csr(21, 18),
       nAdd   = csr(25, 22),
-      keyPol = csr(28)
+      keyPol = csr(28),
+      keyMul = csr(29)
     )
     g.copy(sigma = Mux(g.sigma < sigmaMaxOf(g.F), g.sigma, sigmaMaxOf(g.F))) // saturate: no illegal geometry
   }
@@ -152,7 +175,13 @@ object MonoidCombine {
     * identity-vs-identity delta at zero, and a padded key still loses, so a winner-select payload stays
     * unreachable.
     */
-  def keyIdentity(keyPol: Bool): UInt = Mux(keyPol, ID_MAX, ID_M)
+  /** The identity of a KEY field, which is not a constant but a function of which monoid the key lives in: the
+    * value that loses every comparison in a max or a min, and `1.0` in the multiplicative monoid of the ordered
+    * scan. Getting this wrong is silent -- a max-monoid pad wins every min, and a `-max_float` pad annihilates a
+    * product -- so it is derived here rather than written at each call site.
+    */
+  def keyIdentity(keyPol: Bool, keyMul: Bool = false.B): UInt =
+    Mux(keyMul, F32_ONE, Mux(keyPol, ID_MAX, ID_M))
 
   /** ONE value lane -- identical for every lane of every operator; only the stream-constant control bits differ.
     * `am`/`bm` arrive already masked to the field identity, so C4 is enforced on the INPUT, per lane.

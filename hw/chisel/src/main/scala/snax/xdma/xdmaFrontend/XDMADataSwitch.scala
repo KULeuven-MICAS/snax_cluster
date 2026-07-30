@@ -89,6 +89,7 @@ class XDMADataSwitch(param: XDMAParam, dataWidth: Int, clusterName: String = "un
     val writerBusy      = Output(Bool()) // the composed level the rest of the datapath must use
     val junctionBusy    = Output(Bool())
     val junctionStarved = Output(Bool())
+    val junctionCfgErr  = Output(Bool()) // O5: the armed junction cannot honour its configuration word
   })
 
   // ============================ the junction bank ============================
@@ -174,6 +175,7 @@ class XDMADataSwitch(param: XDMAParam, dataWidth: Int, clusterName: String = "un
   io.writerBusy      := io.writerBusyRaw | isChainedWrite | isGather
   io.junctionBusy    := junctionHost.io.busy
   io.junctionStarved := junctionHost.io.starved
+  io.junctionCfgErr  := junctionHost.io.cfgerr
 
   // ============================ the crossing datapath ============================
   // (1) reader side: either loop back locally, or head for the crossing.
