@@ -46,13 +46,11 @@ class JunctionHostHarness(junctions: Seq[HasDataPathJunction], dataWidth: Int = 
 class JunctionHostTester extends AnyFlatSpec with ChiselScalatestTester {
 
   val flags = VerilatorFlags(Seq("--build-jobs", "1"))
-  private val dHead     = 8
   private val pairSlots = 8
   private val elemWidth = 16
   private val fpPipe    = 1
 
   import ElementwiseJunction._
-  import MonoidCombine._
 
   // the operator list, in the same order as the cfg's `writer_junctions`
   private def operators: Seq[HasDataPathJunction] = Seq(

@@ -6,7 +6,6 @@ import chisel3.util._
 import fp_native._
 import fp_unit._
 
-import snax.DataPathExtension.FpHelpers._
 
 /** ============================================================================================================
   * `MonoidJunction` -- the TWISTED operator on the junction socket.
@@ -144,8 +143,8 @@ class MonoidJunction(
   jct_cfgerr_o := cfgSigmaSaturated || cfgRolesOverflow || cfgNoLiveSlot
 
   // `nValid = 0` masks EVERY slot to the identity, so the fold emits an identity partial: finite, format-legal
-  // and numerically empty. Legal, but indistinguishable from a stale CSR -- and the single-partial geometries
-  // used to ignore `nValid` altogether. Simulation-only, so it cannot break a real transfer.
+  // and numerically empty. Legal, but indistinguishable from a stale CSR. Simulation-only, so it cannot break a
+  // real transfer; `jct_cfgerr_o` above is what reports it to software.
   assert(!(fire && nValid === 0.U),
          "MonoidJunction: fired with nValid = 0 -- every slot is masked to the identity")
 
@@ -201,7 +200,11 @@ class MonoidJunction(
 
   // key front ends: front end `s` sits ON lane `s` and reads that lane's own masked operands (lane s IS
   // (field 0, slot s) for every sigma, which is the property field-major buys).
-  val fe = (0 until nKey).map(s => keyFrontEnd(amL(s), bmL(s), geom.keyPol, expLutN))
+  // In the ordered scan the twist is a beat lane and the swap is forced, so NOTHING downstream reads this block:
+  // neither its lookup output nor its comparison. Hold its operands still rather than let eight exponential
+  // units -- the most expensive arithmetic in the operator -- switch for a result no lane consumes.
+  def feOperand(x: UInt): UInt = if (hasScan) Mux(keyMul, F32_ZERO, x) else x
+  val fe = (0 until nKey).map(s => keyFrontEnd(feOperand(amL(s)), feOperand(bmL(s)), geom.keyPol, expLutN))
 
   // The two cross-lane wires, and the only place the key monoid is visible outside the lane decode.
   //   twist: the lookup's output, or -- in the scan -- the B-side key itself, straight off lane `s`.

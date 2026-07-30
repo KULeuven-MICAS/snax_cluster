@@ -27,7 +27,6 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
   val flags = VerilatorFlags(Seq("--build-jobs", "1"))
 
   import ElementwiseJunction._
-  import MonoidCombine._
 
   private val dHead     = 8
   private val pairSlots = 8

@@ -169,8 +169,23 @@ class ElementwiseJunction(
     }
   }
 
-  val aW = laneMux(aQ.io.deq.bits)
-  val bW = laneMux(bQ.io.deq.bits)
+  // The float grid and the integer grid are MUTUALLY EXCLUSIVE -- one `fmt` selects one of them, and the other's
+  // result is discarded at the output multiplexer. Left ungated, both compute on every beat, so half this
+  // operator's arithmetic switches for a result nothing reads. Holding the idle grid's operands still costs one
+  // 512-bit mask per operand per grid and stops that entirely.
+  //
+  // An `fmt` naming no built format falls to the float grid, which is where the output multiplexer's default arm
+  // sends it too, so the gating does not change what an invalid word produces. O5 reports it either way.
+  val intArmed =
+    if (supportedInt.isEmpty) false.B
+    else VecInit(supportedInt.map { case (c, _) => fmt === c.U }).asUInt.orR
+  val aFp  = Mux(intArmed, 0.U, aQ.io.deq.bits)
+  val bFp  = Mux(intArmed, 0.U, bQ.io.deq.bits)
+  val aInt = Mux(intArmed, aQ.io.deq.bits, 0.U)
+  val bInt = Mux(intArmed, bQ.io.deq.bits, 0.U)
+
+  val aW = laneMux(aFp)
+  val bW = laneMux(bFp)
 
   // ---- the 2-input reduction, one unit per lane ---------------------------------------------------------
   // ADD and MUL share ONE fused FMA (ADD = a*1 + b, MUL = a*b + 0), so a lane costs one FMA plus two operand
@@ -207,8 +222,8 @@ class ElementwiseJunction(
   def packedInt(w: Int): UInt = {
     val n = junctionParam.dataWidth / w
     val elems = (0 until n).map { i =>
-      val a   = aQ.io.deq.bits(w * i + w - 1, w * i).asSInt
-      val b   = bQ.io.deq.bits(w * i + w - 1, w * i).asSInt
+      val a   = aInt(w * i + w - 1, w * i).asSInt
+      val b   = bInt(w * i + w - 1, w * i).asSInt
       val add = (a + b).asUInt                 // wraps: exactly associative, exactly commutative
       val mul = ((a * b).asUInt)(w - 1, 0)     // low half, wraps
       val mx  = Mux(a > b, a, b).asUInt

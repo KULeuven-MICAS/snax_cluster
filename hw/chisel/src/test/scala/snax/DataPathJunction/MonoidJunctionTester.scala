@@ -32,7 +32,6 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
   private val dHead     = 8
   private val pairSlots = 8
 
-  import MonoidCombine._
 
   // csr(0): [7:0] nValid | [11:8] n | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol
   private def csrWord(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int, keyMul: Int = 0): BigInt =

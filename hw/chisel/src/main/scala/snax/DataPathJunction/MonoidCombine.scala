@@ -34,13 +34,14 @@ import snax.DataPathExtension.FpHelpers._
   * "eight key front ends" a theorem rather than a coincidence of `dataWidth/64`: `F >= 2` forces `sigma <= 3`
   * forces `S <= 8`, so a key lane can never leave lanes 0..7.
   *
-  * THE ROLES ARE GONE. What was a five-value role enum decoded per field is now two lane predicates and one
-  * control bit, because:
-  *   - KEY and WSEL are the SAME WIRE. With a mode-uniform winner swap, field 0's own `win` register already
-  *     holds `m*`, so the key is a COORDINATE OF THE OUTPUT PARTIAL, not a value broadcast to every field.
+  * WHAT A FIELD DOES is TWO PREDICATES AND ONE CONTROL BIT -- there is no per-field role enum anywhere, because
+  * the distinctions one would encode all collapse:
+  *   - Carrying the key and carrying the winner's payload are the SAME WIRE. The winner swap is uniform across a
+  *     partial, so field 0's own `win` register already holds `m*`: the key is a COORDINATE OF THE OUTPUT
+  *     PARTIAL, not a value broadcast to every field.
   *   - A twisted value coordinate and a plainly-summed one are the SAME FMA, differing only in whether `scale`
   *     is `alpha` or `1.0`. `nExp` counts the first kind, `nAdd` the second.
-  *   - OFF is not a role at all: it is `field(l) >= F`.
+  *   - Being switched off is not a property of a field at all: it is `field(l) >= F`.
   */
 object MonoidCombine {
 
@@ -110,9 +111,10 @@ object MonoidCombine {
   // Any field above `nExp + nAdd` and still below `F` carries the winner's payload instead of being combined,
   // so the three ranges partition a partial's value coordinates with no further encoding.
   //
-  // Naming the geometry rather than an operator is what keeps `dHead` out of the netlist: a `dHead = 12` flash
-  // attention is `n = 13, nExp = 13, sigma = 0`, and a flash merge carrying an argmax index alongside its
-  // normalizer is the same word with a larger `n`. Both run on this hardware with no elaboration parameter.
+  // Naming the GEOMETRY rather than an operator is what keeps a head width out of the netlist: a twelve-wide
+  // flash attention is `n = 13, nExp = 13, sigma = 0`, and a flash merge carrying an argmax index alongside its
+  // normalizer is the same word with a larger `n`. Neither needs an elaboration parameter, and neither needs a
+  // name anywhere in this file.
 
   /** The geometry of the armed operator, read straight out of the configuration word. */
   def geomOf(csr: UInt): Geom = {
