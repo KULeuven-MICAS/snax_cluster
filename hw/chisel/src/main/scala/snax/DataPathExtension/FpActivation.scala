@@ -111,7 +111,13 @@ class FpActivation(
   val xin3      = sr(xin2)
 
   // ---- S4: exp scales by 2^n (exp-field construct); silu multiplies by the original x ----
-  val pow2n = if (hasExp) Cat(0.U(1.W), (nE + 127.S).asUInt(7, 0), 0.U(23.W)) else ZERO
+  // `nE + 127` is written straight into the 8-bit exponent field, so an `nE` below -127 WRAPS: at the input
+  // clamp edge (`in <= -88.035`, i.e. `iM <= -16257`) `nE = -128` gives `(nE+127) & 0xFF = 0xFF` = +Inf --
+  // the LARGEST representable value where the true result is ~0. Flush to zero instead. That is the correct
+  // limit, and it is what makes exp TOTAL (`exp(-inf) = 0`), which the monoid fold's identity padding depends
+  // on: two shards whose maxima differ by more than ~88 otherwise rescale by +Inf. `nE` is registered at S3,
+  // so this mux lands in S4 in front of a single fmul, off the deep S0/S3 cones.
+  val pow2n = if (hasExp) Mux(nE < (-127).S, ZERO, Cat(0.U(1.W), (nE + 127.S).asUInt(7, 0), 0.U(23.W))) else ZERO
   io.out := fmul(r3, Mux(isExp, pow2n, xin3))
 }
 

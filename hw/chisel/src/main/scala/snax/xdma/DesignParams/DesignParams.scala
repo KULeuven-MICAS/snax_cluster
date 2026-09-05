@@ -2,6 +2,7 @@ package snax.xdma.DesignParams
 import chisel3.util.log2Ceil
 
 import snax.DataPathExtension.HasDataPathExtension
+import snax.DataPathJunction.HasDataPathJunction
 import snax.readerWriter.ReaderWriterParam
 
 /*
@@ -39,14 +40,29 @@ class XDMAConfigParam(val addrWidth: Int, val dataWidth: Int)
 
 // DMA Params
 class XDMADataPathParam(
-  val rwParam:  ReaderWriterParam,
-  val extParam: Seq[HasDataPathExtension] = Seq[HasDataPathExtension]()
-)
+  val rwParam:       ReaderWriterParam,
+  val extParam:      Seq[HasDataPathExtension] = Seq[HasDataPathExtension](),
+  // Junctions (2->1 folds) live at the DATA SWITCH, not in the reader/writer extension chain. They are configured
+  // from the same CSR region the extensions use, so a junction's own CSR word rides the inter-cluster cfg serdes to
+  // every hop of a chain.
+  val junctionParam: Seq[HasDataPathJunction]  = Seq[HasDataPathJunction]()
+) {
+
+  /** CSRs occupied by the extension chain: every extension's user CSRs plus one enable/bypass bitmask (0 if none). */
+  def extCsrNum: Int = if (extParam.isEmpty) 0 else extParam.map(_.extensionParam.userCsrNum).sum + 1
+
+  /** CSRs occupied by the junction bank, laid out identically and placed AFTER the extension region (0 if none). */
+  def junctionCsrNum: Int = if (junctionParam.isEmpty) 0 else junctionParam.map(_.junctionParam.userCsrNum).sum + 1
+
+  /** The whole datapath-plugin CSR region carried by `XDMACfgIO.extCfg`: extensions first, then junctions. */
+  def pluginCsrNum: Int = extCsrNum + junctionCsrNum
+}
 
 class XDMAParam(
   val cfgParam:          XDMAConfigParam,
   val axiParam:          XDMAAXIParam,
   val crossClusterParam: XDMACrossClusterParam,
   rwParam:               ReaderWriterParam,
-  extParam:              Seq[HasDataPathExtension] = Seq[HasDataPathExtension]()
-) extends XDMADataPathParam(rwParam, extParam)
+  extParam:              Seq[HasDataPathExtension] = Seq[HasDataPathExtension](),
+  junctionParam:         Seq[HasDataPathJunction]  = Seq[HasDataPathJunction]()
+) extends XDMADataPathParam(rwParam, extParam, junctionParam)

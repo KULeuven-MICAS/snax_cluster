@@ -8,6 +8,7 @@ import snax.utils.DemuxDecoupled
 import snax.utils._
 import snax.xdma.DesignParams.XDMAParam
 import snax.xdma.xdmaIO.XDMACfgIO
+import snax.xdma.xdmaIO.XDMAChainRole
 import snax.xdma.xdmaIO.XDMAInterClusterCfgIO
 import snax.xdma.xdmaIO.XDMAInterClusterCfgIODeserializer
 import snax.xdma.xdmaIO.XDMAInterClusterCfgIOSerializer
@@ -19,6 +20,10 @@ class XDMACtrlIO(readerParam: XDMAParam, writerParam: XDMAParam) extends Bundle 
   val clusterBaseAddress = Input(
     UInt(writerParam.axiParam.addrWidth.W)
   )
+  // O5 and the starvation watchdog, from the data switch. Both were dead-ended there: the hardware knew and
+  // nothing above it could ask. They terminate in the read-only CSR bank.
+  val junctionStarved    = Input(Bool())
+  val junctionCfgErr     = Input(Bool())
   // Local DMADatapath control signal (Which is connected to DMADataPath)
   val localXDMACfg       = new Bundle {
     val readerCfg = Output(new XDMAIntraClusterCfgIO(readerParam))
@@ -123,8 +128,12 @@ class DstConfigRouter(dataType: XDMACfgIO, clusterName: String = "unnamed_cluste
       val local  = Decoupled(dataType)
     })
     val to                 = new Bundle {
-      val remote = Decoupled(dataType)
-      val local  = Decoupled(dataType)
+      val remote       = Decoupled(dataType)
+      val local        = Decoupled(dataType)
+      // ChainGather only: the READER-side companion frame for the hop this pass dispatched. A frame crossing the
+      // wire carries `isWriterSide` and the receiver demuxes on it, so one frame configures either a reader or a
+      // writer -- never both. A gather hop needs both, so the unroll emits two.
+      val remoteReader = Decoupled(dataType)
     }
   })
 
@@ -163,12 +172,20 @@ class DstConfigRouter(dataType: XDMACfgIO, clusterName: String = "unnamed_cluste
     } else false.B
   } && bufferedCfg.bits.origination === bufferedCfg.bits.originationIsFromLocal.B
 
-  val forwardToRemote = ~forwardToLocal && bufferedCfg.bits.writerPtr(0) =/= 0.U
+  val destIsRemote = ~forwardToLocal && bufferedCfg.bits.writerPtr(0) =/= 0.U
+
+  // The FIRST unroll pass of a gather dispatches the chain HEAD. A head only sources -- nothing arrives at it --
+  // so it must not be given a writer-side frame: that would arm its junction on a stream that never comes and
+  // park the join on a starved operand. Every later hop gets both frames.
+  val gatherHeadPass      = bufferedCfg.bits.collectiveMode && (~bufferedCfg.bits.chainUnrolled)
+  val forwardToRemote     = destIsRemote                    && (~gatherHeadPass)
+  // Every remote hop of a gather also needs its reader configured, on its own partial.
+  val emitReaderCompanion = destIsRemote                    && bufferedCfg.bits.collectiveMode
 
   val outputCfgSplitter = Module(
     new SplitterDecoupled(
       dataType  = chiselTypeOf(bufferedCfg.bits),
-      numOutput = 3
+      numOutput = 4
     ) {
       override val desiredName =
         s"${clusterName}_xdma_ctrl_DstConfigRouter_Splitter"
@@ -191,13 +208,57 @@ class DstConfigRouter(dataType: XDMACfgIO, clusterName: String = "unnamed_cluste
       a := b
     }
   inputCfgArbiter.io.in(0).bits.writerPtr.last := 0.U
+  // Distinguishes later passes from the first one, whose destination is the chain head.
+  inputCfgArbiter.io.in(0).bits.chainUnrolled  := true.B
 
   // Port 1: The local Cfg
   outputCfgSplitter.io.sel(1) := forwardToLocal
   outputCfgSplitter.io.out(1) <> io.to.local
+  // Same stamp as the remote port: a frame landing on this node's writer forwards onward if it still has a next
+  // hop, and terminates the chain otherwise. This is the value the receiver used to derive for itself.
+  io.to.local.bits.chainRole  := Mux(
+    outputCfgSplitter.io.out(1).bits.writerPtr(1) =/= 0.U,
+    XDMAChainRole.MIDDLE.U,
+    XDMAChainRole.TAIL.U
+  )
+  // The port-0 loopback shift updates writerPtr but NOT aguCfg.ptr. A locally-terminated chain -- which is
+  // exactly the ChainGather collector's TAIL -- would otherwise arm its writer AGU at the ORIGINAL
+  // writerPtr(0) (the far source's offset) instead of this node's own dst, so the fold lands at the wrong
+  // local address and the real dst is never written. Re-point the writer AGU at the current terminal, the
+  // same re-derivation a remotely-received frame does in convertToXDMACfgIO. No-op for a plain local write
+  // (writerPtr(0) was never shifted); gather-MIDDLE and ChainWrite terminals are unaffected.
+  io.to.local.bits.aguCfg.ptr := outputCfgSplitter.io
+    .out(1)
+    .bits
+    .writerPtr(0)(io.to.local.bits.aguCfg.ptr.getWidth - 1, 0)
   // Port 2: The remote Cfg
   outputCfgSplitter.io.sel(2) := forwardToRemote
   outputCfgSplitter.io.out(2) <> io.to.remote
+  // Stamp the destination's position in the chain. The receiving node used to infer this from its own
+  // `writerPtr(1) =/= 0` after the frame landed; computing it here from the same pointer produces the identical
+  // value, but it also works when position cannot be inferred locally -- a gather head is remote-configured, so
+  // its `origination` says "from remote" while its role is HEAD.
+  io.to.remote.bits.chainRole := Mux(
+    outputCfgSplitter.io.out(2).bits.writerPtr(1) =/= 0.U,
+    XDMAChainRole.MIDDLE.U,
+    XDMAChainRole.TAIL.U
+  )
+
+  // Port 3: the ChainGather reader-side companion. It says "read YOUR OWN partial and send it on":
+  //   readerPtr    := writerPtr(0)   -- the hop's own operand, which is what routes this frame to it
+  //   writerPtr(0) := writerPtr(1)   -- its next hop
+  // At the head that is the whole configuration (it sources the chain). At a middle the switch steers the reader
+  // into the junction instead, so writerPtr(0) only has to be non-zero, and the head is the one pass whose role
+  // cannot be re-derived downstream -- hence the explicit stamp.
+  outputCfgSplitter.io.sel(3)            := emitReaderCompanion
+  io.to.remoteReader.valid               := outputCfgSplitter.io.out(3).valid
+  outputCfgSplitter.io.out(3).ready      := io.to.remoteReader.ready
+  io.to.remoteReader.bits                := outputCfgSplitter.io.out(3).bits
+  io.to.remoteReader.bits.readerPtr      := outputCfgSplitter.io.out(3).bits.writerPtr(0)
+  io.to.remoteReader.bits.writerPtr(0)   := outputCfgSplitter.io.out(3).bits.writerPtr(1)
+  io.to.remoteReader.bits.writerPtr.drop(1).foreach(_ := 0.U)
+  io.to.remoteReader.bits.chainRole      := Mux(gatherHeadPass, XDMAChainRole.HEAD.U, XDMAChainRole.MIDDLE.U)
+  io.to.remoteReader.bits.collectiveMode := true.B
 }
 
 class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: String = "unnamed_cluster")
@@ -222,13 +283,8 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
         {
           if (readerparam.rwParam.configurableChannel) 1 else 0
         } +                                                      // Enabled Channel for reader
-        0 + // Enabled Byte for reader: non-effective, so donot assign CSR
-        {
-          if (readerparam.extParam.length == 0) 0
-          else
-            readerparam.extParam.map { i => i.extensionParam.userCsrNum }
-              .reduce(_ + _) + 1
-        } + // The total num of param on reader extension (custom CSR + bypass CSR)
+        0 +                        // Enabled Byte for reader: non-effective, so donot assign CSR
+        readerparam.pluginCsrNum + // reader extensions (custom CSR + bypass CSR) + reader junctions, if any
         numCSRPerPtr * writerparam.crossClusterParam.maxMulticastDest + // Writer Pointer needs numCSRPerPtr * maxMulticastDest CSRs
         writerparam.crossClusterParam.maxSpatialDimension +      // Spatial Strides for writer
         writerparam.crossClusterParam.maxTemporalDimension * 2 + // Temporal Strides + Bounds for writer
@@ -238,15 +294,13 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
         {
           if (writerparam.rwParam.configurableByteMask) 1 else 0
         } +                                                      // Enabled Byte for writer
-        {
-          if (writerparam.extParam.length == 0) 0
-          else
-            writerparam.extParam.map { i => i.extensionParam.userCsrNum }
-              .reduce(_ + _) + 1
-        } + // The total num of param on writer (custom CSR + bypass CSR)
+        writerparam.pluginCsrNum + // writer extensions (custom CSR + bypass CSR) + the switch's junction bank
         1, // The start CSR
-      numReadOnlyReg  = 7,
-      // Set to four at current, 1) The number of submitted local request; 2) The number of submitted remote request; 3) The number of finished local request; 4) The number of finished remote request; 5) The XDMA task performance counter 6) Reader performance counter 7) Writer performance counter
+      numReadOnlyReg  = 8,
+      // 1) submitted local requests 2) submitted remote requests 3) finished local requests 4) finished remote
+      // requests 5) XDMA task performance counter 6) reader performance counter 7) writer performance counter
+      // 8) junction status -- O5 configuration error and the starvation watchdog, sticky since the last start.
+      // Appended at the END of the read-only bank so no read-write pointer moves.
       addrWidth       = readerparam.cfgParam.addrWidth,
       ioDataWidth     = readerparam.cfgParam.dataWidth,
       regDataWidth    = 32,
@@ -304,6 +358,20 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   // Connect the loopBack signal: currently, the remoteLoopback signal is always set to false; it will be judgen after the cfgRouter
   preRoute_src_local.bits.remoteLoopback := false.B
   preRoute_dst_local.bits.remoteLoopback := false.B
+
+  // A locally-originated cfg is the head of whatever chain it starts -- which is what `chainRoleDefault`
+  // evaluates to for origination = fromLocal, so this is the existing inference written down rather than a
+  // change. Frames leaving for a remote node are stamped in DstConfigRouter instead.
+  preRoute_src_local.bits.chainRole := XDMAChainRole.HEAD.U
+  preRoute_dst_local.bits.chainRole := XDMAChainRole.HEAD.U
+
+  // A transfer is a ChainGather exactly when software armed a junction on it -- the junction bank's enable bit
+  // already rides the writer-side cfg region, so no separate "which collective" CSR is needed. The cfg the core
+  // submits has not been unrolled yet.
+  preRoute_src_local.bits.collectiveMode := preRoute_dst_local.bits.junctionEnabled
+  preRoute_dst_local.bits.collectiveMode := preRoute_dst_local.bits.junctionEnabled
+  preRoute_src_local.bits.chainUnrolled  := false.B
+  preRoute_dst_local.bits.chainUnrolled  := false.B
 
   // axiTransferBeatSize: The cycle of transfer for this cfg
   // Since the writer side connects the Datapath Extensions with the number of data beats unchanged, both reader and writer side take the value from the writer side
@@ -376,7 +444,7 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   val cfgToRemoteMux = Module(
     new Arbiter(
       gen = new XDMAInterClusterCfgIO(readerparam, writerparam),
-      n   = 2
+      n   = 3
     ) {
       override val desiredName = s"${clusterName}_xdma_ctrl_remoteCfgMux"
     }
@@ -440,9 +508,18 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   )
   postRoute_dst_local <> dstCfgRouter.io.to.local
   // The remote side is connected to the Serializer
-  cfgToRemoteMux.io.in(1).valid   := dstCfgRouter.io.to.remote.valid
-  dstCfgRouter.io.to.remote.ready := cfgToRemoteMux.io.in(1).ready
-  cfgToRemoteMux.io.in(1).bits.convertFromXDMACfgIO(writerSide = true, cfg = dstCfgRouter.io.to.remote.bits)
+  // The ChainGather reader-side companion, emitted as writerSide=false so the receiver's demux lands it on its
+  // READER path. It takes the lower Arbiter index (= higher priority) than the writer-side frame below, so a hop
+  // is told what to read before it is told to fold. Liveness does not depend on that order -- a gather node's
+  // switch only leaves its idle state once its reader runs, and the junction's skid FIFOs absorb the skew -- but
+  // arming the operand source first keeps the arriving stream from waiting on a reader that has no cfg yet.
+  cfgToRemoteMux.io.in(1).valid         := dstCfgRouter.io.to.remoteReader.valid
+  dstCfgRouter.io.to.remoteReader.ready := cfgToRemoteMux.io.in(1).ready
+  cfgToRemoteMux.io.in(1).bits.convertFromXDMACfgIO(writerSide = false, cfg = dstCfgRouter.io.to.remoteReader.bits)
+
+  cfgToRemoteMux.io.in(2).valid   := dstCfgRouter.io.to.remote.valid
+  dstCfgRouter.io.to.remote.ready := cfgToRemoteMux.io.in(2).ready
+  cfgToRemoteMux.io.in(2).bits.convertFromXDMACfgIO(writerSide = true, cfg = dstCfgRouter.io.to.remote.bits)
 
   // Judge remoteLoopback signal
   postRoute_src_local.bits.remoteLoopback := false.B
@@ -488,8 +565,12 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   switch(currentStateSrc) {
     is(sIdle) {
       when {
-        // Cfg at source side is valid, Reader is not busy, the Writer's current / next cfg is not Chained Write
-        currentCfgSrc.valid && (~(currentCfgDst.valid && currentCfgDst.bits.remoteLoopback)) && (
+        // Cfg at source side is valid, Reader is not busy, the Writer's current / next cfg is not Chained Write.
+        // INTERLOCK HALF 1 of 2. A chained WRITE locks the reader out: it has nothing to contribute to a broadcast.
+        // A chained GATHER does not, because the reader is what supplies the junction's local operand and must run
+        // concurrently with the chained transfer. The matching half is in the Dst path below; both must agree.
+        currentCfgSrc.valid                       && (~(currentCfgDst.valid && currentCfgDst.bits.remoteLoopback &&
+          (~currentCfgDst.bits.junctionEnabled))) && (
           // The local loopback condition: The next cfg at the writer side is its counterpart
           (currentCfgSrc.bits.localLoopback && currentCfgSrc.bits.readerPtr === currentCfgDst.bits.readerPtr && currentCfgSrc.bits
             .writerPtr(0) === currentCfgDst.bits.writerPtr(0)) ||
@@ -531,7 +612,10 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
             // The remote write condition: All loopback is false
             (currentCfgDst.bits.localLoopback === false.B && currentCfgDst.bits.remoteLoopback === false.B) ||
             // The remote chained write condition: The remote loopback is true and the next state of the counterpart is sIdle
-            (currentCfgDst.bits.remoteLoopback === true.B && currentStateSrc === sIdle)
+            // INTERLOCK HALF 2 of 2. Symmetric to the Src path above: a chained WRITE waits for an idle reader, a
+            // chained GATHER requires a concurrently running reader. Both halves must agree.
+            (currentCfgDst.bits.remoteLoopback === true.B &&
+              (currentStateSrc === sIdle || currentCfgDst.bits.junctionEnabled))
         )
       } {
         // Start the reader side
@@ -581,6 +665,22 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   remoteFinishedTaskIDCounter.io.tick  := io.remoteTaskFinished
 
   // Connect the finished task counter to the read-only CSR
+  // ---- junction status ---------------------------------------------------------------------------------
+  // STICKY since the last start. A configuration error and a starved join are both transient by nature -- the
+  // error is asserted only while the offending word is armed, and the watchdog clears the moment a pair fires --
+  // so a register that merely sampled them would report a clean transfer for a broken one.
+  val jctCfgErrSticky  = RegInit(false.B)
+  val jctStarvedSticky = RegInit(false.B)
+  when(io.localXDMACfg.writerStart) {
+    jctCfgErrSticky  := false.B
+    jctStarvedSticky := false.B
+  }.otherwise {
+    when(io.junctionCfgErr) { jctCfgErrSticky := true.B }
+    when(io.junctionStarved) { jctStarvedSticky := true.B }
+  }
+  csrManager.io
+    .readOnlyReg(7) := Cat(0.U(29.W), io.junctionStarved || io.junctionCfgErr, jctStarvedSticky, jctCfgErrSticky)
+
   csrManager.io.readOnlyReg(2) := localFinishedTaskIDCounter.io.value
   csrManager.io.readOnlyReg(3) := remoteFinishedTaskIDCounter.io.value
 

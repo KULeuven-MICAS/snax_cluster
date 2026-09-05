@@ -144,6 +144,11 @@ module ${cfg["name"]}_xdma_wrapper
     logic  ready_to_transfer;
     logic  is_first_cw;
     logic  is_last_cw;
+    // Task ownership, independent of data position: the adapter's finish manager raises this node's core
+    // finish only when set. ChainWrite puts it on the head, ChainGather on the collector at the tail.
+    // Must stay the LAST field -- it matches xdma_accompany_cfg_t in xdma_axi_adapter_top.sv, and the
+    // sideband crosses as one packed vector, so a mismatch shifts every field rather than failing loudly.
+    logic  is_initiator;
   } xdma_accompany_cfg_t;
   typedef struct packed {
     id_t   dma_id;
@@ -220,6 +225,7 @@ module ${cfg["name"]}_xdma_wrapper
   logic                                xdma_to_remote_data_accompany_cfg_ready_to_transfer;
   logic                                xdma_to_remote_data_accompany_cfg_is_first_cw;
   logic                                xdma_to_remote_data_accompany_cfg_is_last_cw;
+  logic                                xdma_to_remote_data_accompany_cfg_is_initiator;
   ///---------------------
   /// FROM REMOTE
   ///---------------------
@@ -241,10 +247,20 @@ module ${cfg["name"]}_xdma_wrapper
   logic                              xdma_from_remote_data_accompany_cfg_ready_to_transfer;
   logic                              xdma_from_remote_data_accompany_cfg_is_first_cw;
   logic                              xdma_from_remote_data_accompany_cfg_is_last_cw;
+  logic                              xdma_from_remote_data_accompany_cfg_is_initiator;
   ///---------------------
   /// FINISH
   ///---------------------
   logic                              xdma_finish;
+  ///---------------------
+  /// STALL WATCHDOG
+  ///---------------------
+  // Sticky bring-up diagnostic from the AXI adapter: a control FSM there waited longer than its
+  // `StallTimeout` parameter without advancing. That parameter defaults to 0, which removes the watchdog
+  // and ties this low, and this wrapper has no status port to surface it on -- so it terminates in a
+  // signal whose name marks it unused. Leaving the pin EMPTY instead leaves a dangling by-name connection
+  // that lint flags, which is the whole reason this signal exists.
+  logic                              unused_xdma_stall_error;
   ///---------------------------------------------------------------
   // Assign Signals
   ///---------------------------------------------------------------
@@ -258,7 +274,8 @@ module ${cfg["name"]}_xdma_wrapper
     dma_length:        xdma_to_remote_data_accompany_cfg_dma_length,
     ready_to_transfer: xdma_to_remote_data_accompany_cfg_ready_to_transfer,
     is_first_cw:       xdma_to_remote_data_accompany_cfg_is_first_cw,
-    is_last_cw:        xdma_to_remote_data_accompany_cfg_is_last_cw
+    is_last_cw:        xdma_to_remote_data_accompany_cfg_is_last_cw,
+    is_initiator:      xdma_to_remote_data_accompany_cfg_is_initiator
   };
   assign xdma_from_remote_data_accompany_cfg = xdma_accompany_cfg_t'{
     dma_id:            xdma_from_remote_data_accompany_cfg_dma_id,
@@ -268,7 +285,8 @@ module ${cfg["name"]}_xdma_wrapper
     dma_length:        xdma_from_remote_data_accompany_cfg_dma_length,
     ready_to_transfer: xdma_from_remote_data_accompany_cfg_ready_to_transfer,
     is_first_cw:       xdma_from_remote_data_accompany_cfg_is_first_cw,
-    is_last_cw:        xdma_from_remote_data_accompany_cfg_is_last_cw
+    is_last_cw:        xdma_from_remote_data_accompany_cfg_is_last_cw,
+    is_initiator:      xdma_from_remote_data_accompany_cfg_is_initiator
   };
 
   // Streamer module that is generated
@@ -356,6 +374,7 @@ module ${cfg["name"]}_xdma_wrapper
     .io_remoteXDMAData_fromRemoteAccompaniedCfg_dst                 (xdma_from_remote_data_accompany_cfg_dst_addr         ),
     .io_remoteXDMAData_fromRemoteAccompaniedCfg_isFirstChainedWrite (xdma_from_remote_data_accompany_cfg_is_first_cw      ),
     .io_remoteXDMAData_fromRemoteAccompaniedCfg_isLastChainedWrite  (xdma_from_remote_data_accompany_cfg_is_last_cw       ),
+    .io_remoteXDMAData_fromRemoteAccompaniedCfg_isInitiator          (xdma_from_remote_data_accompany_cfg_is_initiator     ),
 
     // toRemote data
     .io_remoteXDMAData_toRemote_ready                               (xdma_to_remote_data_ready                            ),
@@ -377,6 +396,7 @@ module ${cfg["name"]}_xdma_wrapper
     // Status signal for the Chain Write
     .io_remoteXDMAData_toRemoteAccompaniedCfg_isFirstChainedWrite   (xdma_to_remote_data_accompany_cfg_is_first_cw        ),
     .io_remoteXDMAData_toRemoteAccompaniedCfg_isLastChainedWrite    (xdma_to_remote_data_accompany_cfg_is_last_cw         ),
+    .io_remoteXDMAData_toRemoteAccompaniedCfg_isInitiator            (xdma_to_remote_data_accompany_cfg_is_initiator       ),
 
     // 512 bit Cfg
     .io_remoteXDMACfg_fromRemote_valid                              (xdma_from_remote_cfg_valid                           ),
@@ -458,7 +478,9 @@ module ${cfg["name"]}_xdma_wrapper
         .axi_xdma_narrow_out_req_o       (xdma_narrow_out_req_o              ),
         .axi_xdma_narrow_out_resp_i      (xdma_narrow_out_resp_i             ),
         .axi_xdma_narrow_in_req_i        (xdma_narrow_in_req_i               ),
-        .axi_xdma_narrow_in_resp_o       (xdma_narrow_in_resp_o              )
+        .axi_xdma_narrow_in_resp_o       (xdma_narrow_in_resp_o              ),
+        // Stall-watchdog status (tied low at the default StallTimeout==0); see the declaration.
+        .xdma_stall_error_o              (unused_xdma_stall_error            )
     );
 
 

@@ -24,14 +24,19 @@ object FpHelpers {
   val FP16_ZERO = 0.U(16.W)
 
   // Combinational FP32 max / min for finite operands.
-  def fp32max(a: UInt, b: UInt): UInt = {
+  def fp32max(a: UInt, b: UInt):   UInt = {
     val sa = a(31); val sb = b(31)
     Mux(Mux(sa =/= sb, !sa, Mux(sa, b >= a, a >= b)), a, b)
   }
-  def fp32min(a: UInt, b: UInt): UInt = {
+  def fp32min(a: UInt, b: UInt):   UInt = {
     val sa = a(31); val sb = b(31)
     Mux(Mux(sa =/= sb, sa, Mux(sa, a >= b, b >= a)), a, b)
   }
+  def fp32aWins(a: UInt, b: UInt): Bool = { // a >= b (finite FP32)
+    val sa = a(31); val sb = b(31)
+    Mux(sa =/= sb, !sa, Mux(sa, b >= a, a >= b))
+  }
+  def fneg32(u: UInt): UInt = Cat(~u(31), u(30, 0))
 
   // FP32 arithmetic (a*b+c etc.) via the native-Chisel FP units. `numPipe` = internal pipeline depth of
   // the FP unit (the per-op "cutting" knob for timing; 0 = combinational). The host FSM accounts for it.
@@ -102,6 +107,15 @@ object FpHelpers {
   // FP16 <-> FP32 (the legacy fixed-precision aliases)
   def widenF16(h:  UInt): UInt = widen(h, FP16)
   def narrowF32(f: UInt): UInt = narrow(f, FP16)
+
+  // ---- RUNTIME transport-format codes ---------------------------------------------------------------
+  // A 2-bit field naming the TRANSPORT type of a beat, so one netlist can serve several element formats
+  // (internal compute stays FP32, which is format-agnostic; only the edge widen/narrow is selected).
+  // ElementwiseJunction reads its `fmt` CSR field against these, and extends the range with its own codes
+  // for FP32 and the integer grid.
+  val FMT_FP16 = 0
+  val FMT_BF16 = 1
+  val FMT_FP8  = 2
 }
 
 /** Parses the op-set list shared by the SIMD extensions. Each entry is "<OP>_<PRECISION>" where PRECISION is the
