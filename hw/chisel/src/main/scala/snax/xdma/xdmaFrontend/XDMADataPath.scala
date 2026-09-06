@@ -124,7 +124,8 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
 
   writer.io.aguCfg          := io.writerCfg.aguCfg
   writer.io.readerwriterCfg := io.writerCfg.readerwriterCfg
-  writer.io.start           := io.writerStart
+  // writer.io.start is driven after the data switch is elaborated: a ChainGather MIDDLE hop must not start the
+  // writer engine at all, and that predicate lives in the switch.
   // writer_busy_o is connected later as the busy signal from the signal is needed
 
   // Connect the extension
@@ -187,6 +188,13 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
 
   io.junctionStarved := dataSwitch.io.junctionStarved
   io.junctionCfgErr  := dataSwitch.io.junctionCfgErr
+
+  // The writer engine is held out of a ChainGather MIDDLE transfer: that hop folds and forwards and writes
+  // nothing to local TCDM, so starting its address generator would arm an address stream nothing can drain and
+  // pin `writer.io.busy` forever (see `localWriteSuppressed` in XDMADataSwitch). Only the ENGINE is suppressed:
+  // `io.writerStart` still reaches the writer extension host, the junction bank and the switch, so the hop is
+  // still armed, still counted as participating, and still forwards the fold.
+  writer.io.start := io.writerStart && !dataSwitch.io.localWriteSuppressed
 
   dataSwitch.io.readerLocalLoopback  := io.readerCfg.localLoopback
   dataSwitch.io.writerLocalLoopback  := io.writerCfg.localLoopback

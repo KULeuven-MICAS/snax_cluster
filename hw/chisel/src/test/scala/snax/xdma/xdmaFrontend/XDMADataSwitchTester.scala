@@ -3,6 +3,7 @@ package snax.xdma.xdmaFrontend
 import chisel3._
 import chiseltest._
 import chiseltest.simulator.VerilatorFlags
+import chiseltest.WriteVcdAnnotation
 import org.scalatest.flatspec.AnyFlatSpec
 
 import snax.DataPathJunction.HasMonoidJunction
@@ -201,6 +202,80 @@ class XDMADataSwitchTester extends AnyFlatSpec with ChiselScalatestTester {
         assert(math.abs(laneF32(out, pairSlots + k) - gl) / gl <= 1.5e-2, s"slot $k l")
       }
       println("[Switch/GATHERROOT] reduce tail: ((4),(1)) -> junction -> (3), the answer lands here")
+    }
+  }
+
+  /** REGRESSION: two gathers back to back through the SAME middle node.
+    *
+    * Measured on HeMAiA (2x2 and 4x4, VCS): the FIRST ChainGather through a chain that has a
+    * middle node folds correctly (P=4 linear, 551 cycles, byte-exact); every SUBSEQUENT one
+    * returns nothing -- the transfer retires in ~26 cycles, the junction reports neither
+    * cfgerr nor starved, and the destination keeps its pre-fill sentinel. A chain with NO
+    * middle node (P=2) repeats indefinitely without trouble, and a >100k-cycle quiesce between
+    * rounds does not help, so it is stuck state rather than a drain window.
+    *
+    * Every existing test in this file performs exactly ONE gather, which is why this was never
+    * caught here. The node is returned to idle between the two rounds, exactly as the real
+    * flow does (the transfer ends, readerBusy drops, the junction drains).
+    */
+  "XDMADataSwitch_CHAINGATHER_TWICE" should "fold on the SECOND gather too, not just the first" in {
+    test(new XDMADataSwitch(param, dataWidth, "sw"))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, WriteVcdAnnotation, flags)) { dut =>
+
+      def arm(): Unit = {
+        dut.io.writerRemoteLoopback.poke(true) // a next hop exists -> middle of the chain
+        dut.io.junctionCfg.enable.poke(1)
+        dut.io.junctionCfg.userCsr(0).poke(csrMoment(pairSlots).U)
+        dut.io.writerBusyRaw.poke(false)
+        dut.io.readerBusy.poke(true)
+        dut.clock.step(2)
+      }
+
+      def disarm(): Unit = {
+        // end of transfer: the engines go idle and the junction drains
+        dut.io.readerBusy.poke(false)
+        dut.io.writerBusyRaw.poke(false)
+        dut.io.localIn.valid.poke(false)
+        dut.io.fromRemote.valid.poke(false)
+        dut.clock.step(40)
+      }
+
+      def foldedOk(out: BigInt): Boolean =
+        (0 until pairSlots).forall { k =>
+          val (ma, la, mb, lb) = (1.0 + k, 2.0, 3.0 + k, 0.5)
+          val gm = math.max(ma, mb)
+          val gl = la * math.exp(ma - gm) + lb * math.exp(mb - gm)
+          math.abs(laneF32(out, k) - gm) <= math.abs(gm) * 1e-6 + 1e-9 &&
+          math.abs(laneF32(out, pairSlots + k) - gl) / gl <= 1.5e-2
+        }
+
+      idle(dut)
+
+      // ---- round 1
+      arm()
+      assert(dut.io.isGather.peekBoolean(), "round 1: gather state never entered")
+      val (lo1, tr1) = pump(dut, Some(beatA), Some(beatB))
+      assert(lo1.isEmpty, s"round 1: a middle node must write nothing locally, got $lo1")
+      assert(tr1.isDefined, "round 1: no forwarded beat")
+      assert(foldedOk(tr1.get), "round 1: forwarded beat is not the fold")
+      println("[Switch/GATHER x2] round 1 folded and forwarded correctly")
+
+      disarm()
+      println(s"[Switch/GATHER x2] between rounds: isGather=${dut.io.isGather.peekBoolean()} " +
+              s"writerBusy=${dut.io.writerBusy.peekBoolean()} " +
+              s"junctionBusy=${dut.io.junctionBusy.peekBoolean()}")
+      assert(!dut.io.isGather.peekBoolean(),
+             "between gathers the switch must return to idle; it is still asserting isGather, " +
+             "so the node stays busy and can never be armed for a second gather")
+
+      // ---- round 2: identical stimulus, identical configuration
+      arm()
+      assert(dut.io.isGather.peekBoolean(), "round 2: gather state never re-entered")
+      val (lo2, tr2) = pump(dut, Some(beatA), Some(beatB))
+      assert(lo2.isEmpty, s"round 2: a middle node must write nothing locally, got $lo2")
+      assert(tr2.isDefined, "round 2: NO forwarded beat -- the second gather produced nothing")
+      assert(foldedOk(tr2.get), "round 2: forwarded beat is not the fold")
+      println("[Switch/GATHER x2] round 2 folded and forwarded correctly")
     }
   }
 }

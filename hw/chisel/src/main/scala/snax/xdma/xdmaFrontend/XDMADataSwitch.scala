@@ -82,14 +82,17 @@ class XDMADataSwitch(param: XDMAParam, dataWidth: Int, clusterName: String = "un
       val userCsr = Input(Vec(nJunctionCsr, UInt(32.W)))
     }
 
-    val isChainedWrite  = Output(Bool())
-    val isGather        = Output(Bool()) // a gather transfer is in flight at this node (either gather mode)
-    val isGatherMid     = Output(Bool()) // ... and it forwards to a next hop (CHAINGATHER)
-    val isGatherRoot    = Output(Bool()) // ... and it is the tail (GATHERROOT)
-    val writerBusy      = Output(Bool()) // the composed level the rest of the datapath must use
-    val junctionBusy    = Output(Bool())
-    val junctionStarved = Output(Bool())
-    val junctionCfgErr  = Output(Bool()) // O5: the armed junction cannot honour its configuration word
+    val isChainedWrite       = Output(Bool())
+    val isGather             = Output(Bool()) // a gather transfer is in flight at this node (either gather mode)
+    // This node's cfg says it folds and forwards, so it writes NOTHING to local TCDM. The datapath must keep the
+    // writer engine out of the transfer entirely -- see the comment on `localWriteSuppressed` below.
+    val localWriteSuppressed = Output(Bool())
+    val isGatherMid          = Output(Bool()) // ... and it forwards to a next hop (CHAINGATHER)
+    val isGatherRoot         = Output(Bool()) // ... and it is the tail (GATHERROOT)
+    val writerBusy           = Output(Bool()) // the composed level the rest of the datapath must use
+    val junctionBusy         = Output(Bool())
+    val junctionStarved      = Output(Bool())
+    val junctionCfgErr       = Output(Bool()) // O5: the armed junction cannot honour its configuration word
   })
 
   // ============================ the junction bank ============================
@@ -138,12 +141,29 @@ class XDMADataSwitch(param: XDMAParam, dataWidth: Int, clusterName: String = "un
   val gCurrentState = RegNext(gNextState, gIdle)
   gNextState := gCurrentState
 
+  // A gather MIDDLE node's writer engine is NOT started (see `localWriteSuppressed`), so `writerBusyRaw` can
+  // never mark it busy, and its local reader takes a handful of cycles to raise `readerBusy`. Between the start
+  // pulse and that first busy cycle the node would look completely idle: `io.writerBusy` would be low, so the
+  // grant manager would not arm, `remoteSplitter` would refuse the arriving partial, and the node would drop out
+  // of the chain -- which is exactly how a P=4 gather truncates to the P=2 answer. `gatherPending` bridges that
+  // window: raised by the start pulse, dropped as soon as the local reader has taken over.
+  //
+  // Every writer start REDEFINES the hold rather than only setting it, so the bridge cannot outlive the transfer
+  // that raised it: a later non-gather task at this node clears it unconditionally. Within a gather it is dropped
+  // by the first sign of real work -- the local reader running, or the junction holding an operand.
+  val gatherPending = RegInit(false.B)
+  when(io.writerStart) {
+    gatherPending := gatherCfg
+  }.elsewhen(io.readerBusy || junctionHost.io.busy) {
+    gatherPending := false.B
+  }
+
   // The ENTRY condition depends only on signals outside the switch's own dataflow. `isGather` gates the splitter
   // that feeds the junction, so making entry depend on the junction's busy level would close a combinational loop
-  // (isGather -> splitter -> junction.a.valid -> junction.busy -> isGather). Entry keys on the local reader /
-  // writer only; the junction's busy level is consulted for the EXIT decision, which is registered, so a fold
-  // still in flight cannot drop the mode early.
-  val gatherTrigger = io.readerBusy || io.writerBusyRaw
+  // (isGather -> splitter -> junction.a.valid -> junction.busy -> isGather). Entry keys on the local reader, the
+  // local writer and the start pulse only; the junction's busy level is consulted for the EXIT decision, which is
+  // registered, so a fold still in flight cannot drop the mode early.
+  val gatherTrigger = io.readerBusy || io.writerBusyRaw || gatherPending || io.writerStart
   val gatherWorking = gatherTrigger || junctionHost.io.busy
 
   switch(gCurrentState) {
@@ -165,6 +185,24 @@ class XDMADataSwitch(param: XDMAParam, dataWidth: Int, clusterName: String = "un
 
   val isGatherMid  = isGather && io.writerRemoteLoopback
   val isGatherRoot = isGather && !io.writerRemoteLoopback
+
+  // ---- WHY THE WRITER ENGINE MUST BE KEPT OUT OF A GATHER MIDDLE HOP -------------------------------------
+  // A gather middle hop writes nothing locally: `remoteSplitter.io.sel(0) := !isGather` steers the arriving
+  // partial into the junction and the fold leaves through `toRemote`. But the hop is still handed a full
+  // writer-side frame (that is what arms its junction and names its next hop), so `writer.io.start` would fire
+  // and the writer's address generator would produce a complete local-write address stream that NOTHING ever
+  // drains -- the write data buffer is never filled, so the TCDM requestors never issue and never pop an
+  // address. `Writer.io.busy = addressgen.busy | ~addressgen.bufferEmpty` then stays asserted for the rest of
+  // the simulation, which pins `gatherWorking` and leaves this hop in `gActive` forever: the FIRST gather
+  // through a middle hop folds correctly and every later one finds the hop still busy and cannot form a chain.
+  //
+  // This is a CFG-level predicate, not an FSM state: `junctionHost.io.active` is combinational from
+  // `io.junctionCfg.enable`, so it is already valid on the very cycle `io.writerStart` pulses, which is when
+  // the datapath has to decide whether to start the writer. It is false at a GATHERROOT (no next hop, the fold
+  // lands in local TCDM and the writer is genuinely needed), at a plain ChainWrite middle hop (no junction
+  // armed) and at every non-collective transfer.
+  val localWriteSuppressed = gatherCfg && io.writerRemoteLoopback
+  io.localWriteSuppressed := localWriteSuppressed
 
   io.isChainedWrite  := isChainedWrite
   io.isGather        := isGather
