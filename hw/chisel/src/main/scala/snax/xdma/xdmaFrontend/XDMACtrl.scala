@@ -645,6 +645,31 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   // Data Signals in Dst Path
   io.localXDMACfg.writerCfg.convertFromXDMACfgIO(currentCfgDst.bits)
 
+  // ---- THE JUNCTION ENABLE MUST NOT OUTLIVE ITS OWN TRANSFER ------------------------------
+  // `currentCfgDst` is a one-entry `-|>` cut, and `RegQueue.io.deq.bits` keeps presenting the
+  // last frame after it is popped (`io.deq.bits := ram(deq_ptr.value)`, ungated on empty). The
+  // datapath reads this bundle unconditionally, so between tasks it is shown the DEQUEUED
+  // frame -- junction enable bitmask included.
+  //
+  // That matters because the enable is what makes a transfer a gather. With it stuck asserted,
+  // `junctionHost.io.active` stays high while the node is idle, and the switch's gather FSM --
+  // whose entry is `gatherCfg && (readerBusy || ...)` -- latches on the NEXT task's local
+  // reader, which at a collector starts before that task's writer frame has arrived. The
+  // resulting few-cycle `isGather` pulse raises `io.writerBusy`, which IS
+  // `fromRemoteAccompaniedCfg.readyToTransfer`, which is what the finish manager's tail FSM
+  // arms and retires on: it sees `ready_to_transfer` rise and fall and reports a COMPLETED tail
+  // write for a transfer that never happened. The bogus finish credit is then spent by a later
+  // round, which retires instantly having moved nothing -- the "only the first gathers work"
+  // symptom, and the reason it needs THREE rounds at P=2 to show up but only two with a middle
+  // hop.
+  //
+  // Gate only the plugin region: the rest of the cfg is harmless while stale (nothing consumes
+  // it without a start pulse), and zeroing it wholesale would disturb the loopback bits the
+  // switch reads combinationally.
+  when(!currentCfgDst.valid) {
+    io.localXDMACfg.writerCfg.extCfg.foreach(_ := 0.U)
+  }
+
   // Counter for finished task
   val localFinishedTaskIDCounter = Module(new BasicCounter(8, hasCeil = false) {
     override val desiredName =

@@ -379,6 +379,18 @@ sources:
       # Level 1
       - target/snitch_cluster/generated/snax_xdma_cluster_xdma/snax_xdma_cluster_xdma_wrapper.sv
 
+  # N-endpoint ChainGather testbenches. Needs `snax_xdma_cluster_xdma` too, since the DUT is
+  # that wrapper (Chisel frontend + xdma_axi_adapter_top) instantiated N times behind two AXI
+  # crossbars. See hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/README.md.
+  - target: xdma_chain_tb
+    files:
+      - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/xdma_chaingather_body.sv
+      - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_p2.sv
+      - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_p3.sv
+      - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_p4.sv
+      - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_p16.sv
+      - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_sweep.sv
+
   - target: test
     files:
       - hw/snitch_cluster/test/snitch_tcdm_interconnect_tb.sv
