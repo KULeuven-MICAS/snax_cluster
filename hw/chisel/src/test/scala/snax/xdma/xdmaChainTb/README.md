@@ -35,9 +35,15 @@ make sim-p3      # 3 endpoints, ONE middle hop -- the smallest reproducer
 make sim-p2      # the control: no middle hop
 make sim-p4      # two middle hops, the HeMAiA failing case
 make sim-p16     # 16 endpoints, one width
+make sim-role    # ~1 min: can a node that COLLECTED then be a MIDDLE HOP?
+make sim-tree4   # the balanced G=4 two-stage tree + the barrier question
+make sim-tree    # every tree shape, G in {2,4,8}
 make sim-all     # p2, p3, p4
 make gui-p3      # same, in the GUI
 ```
+
+`sim-role` is the fastest gate for the adapter's stranded-AW-descriptor bug (§ *The role change*
+below) and `sim-tree4` for the tree; run both after any adapter change.
 
 These are SystemVerilog testbenches living in the Scala test tree so that everything testing the
 xDMA sits in one place. **sbt does not see them** -- only `bender` does, through the
@@ -80,22 +86,27 @@ and prints the same table the HeMAiA app prints:
   printed so the bound can be tightened. Geometry word `0x0C040101` puts `m` at lane 0 and `l`
   at lane 8.
 
-### Measured (16 endpoints, 3 rounds each, both fixes in)
+### Measured (16 endpoints, 3 rounds each, all three fixes in)
 
 ```
 [Sweep]   P  fold  task_cc  wall_cc  result
 [Sweep]   2  lin       56       60  PASS
-[Sweep]   4  lin      169      174  PASS
-[Sweep]   8  lin      413      418  PASS
-[Sweep]  16  lin      901      906  PASS
+[Sweep]   4  lin      171      176  PASS
+[Sweep]   8  lin      415      420  PASS
+[Sweep]  16  lin      903      908  PASS
 [Sweep]   2  mom       59       64  PASS
-[Sweep]   4  mom      178      182  PASS
-[Sweep]   8  mom      434      438  PASS
-[Sweep]  16  mom      946      950  PASS
+[Sweep]   4  mom      180      184  PASS
+[Sweep]   8  mom      436      440  PASS
+[Sweep]  16  mom      948      952  PASS
 ```
 
+These are **2 cycles higher at P >= 4** than the numbers this file used to quote (169/413/901,
+178/434/946). That is not drift: the `xdma_req_backend` fix moved the write grant from descriptor
+emission to descriptor acceptance, which costs one round trip once per transfer. P=2 is
+unchanged. If you measure the older numbers, you are running without that fix.
+
 The fold scales linearly in the chain width: about **60 cycles per additional hop**
-(`(901-56)/(16-2) = 60.4` for the linear arm), with the nonlinear merge costing a further 3-5%
+(`(903-56)/(16-2) = 60.5` for the linear arm), with the nonlinear merge costing a further 3-5%
 — consistent with its deeper operator. `task_cc` is `XDMA_PERF_CTR_TASK`; `wall_cc` is the
 testbench's own count from the start-CSR write to the finish counter reaching its target, so the
 few-cycle gap between them is the CSR round trip.
@@ -114,6 +125,56 @@ and a middle hop is the only node that both receives and forwards — the only o
 `xdma_grant_manager`'s `WRITE_MIDDLE` and `xdma_finish_manager`'s `WriteMiddleBusy` /
 `SendToPreviousHop`, and the only one handed a writer-side frame for a local write it must
 never perform.
+
+## The role change, and the tree
+
+A flat ChainGather never changes a node's role: the collector is fixed and everyone else only
+ever forwards to the same neighbour, in every round and at every width. A **tree** is the first
+structure that asks a node to collect a group and then be a middle hop of a second stage — and
+that turned out to be a whole bug class of its own.
+
+`make sim-role` is the minimal reproducer, three endpoints, about a minute:
+
+```
+CONTROL: ep2 -> ep1 -> ep0, twice          (ep1 is a MIDDLE both times)
+TEST:    ep1 COLLECTS  (ep2 -> ep1)
+         ep2 -> ep1 -> ep0                 (ep1 is now a MIDDLE)
+```
+
+The control runs the identical chain twice, so "a second task at that node" is controlled for;
+the only difference in the test is the change of role. It **deadlocked** until the fix in
+`xdma_axi_adapter/src/xdma_req_backend.sv`: AW descriptors were pushed into an emitter FIFO
+unconditionally but popped only once the write was granted, and that FIFO has `flush_i` tied to
+`1'b0`, so an ungranted descriptor outlived its own transfer and mis-routed the next write to the
+*previous* transfer's destination. Invisible whenever the destination does not change — which is
+why the flat sweep never caught it.
+
+`make sim-tree4` then runs the balanced G=4 tree (four group gathers to ep0/4/8/12, then a chain
+over those to ep0), which folds all 16 partials and is therefore byte-comparable with the flat
+P=16 chain: **342 vs 903 cycles, 2.64x**. Its PHASE 0 runs stage 2's *shape* alone on a fresh
+design, which is what separated "the shape is wrong" from "the role change is wrong".
+
+### The barrier probe, and its positive control
+
+`sim-tree4` also answers whether stage 2 needs a barrier behind stage 1. It does not — but it
+does need every stage-2 participant's own stage-1 task to be **submitted to that node's queue**
+before the stage-2 cfg arrives. Nothing need have completed: a stage-2 cfg queues behind the
+node's stage-1 task, which retires only once its group result has landed in that node's TCDM, and
+every group result is read by the node that produced it.
+
+Two schedules run, differing only in when the straggler group is programmed. Group slots are
+pre-filled with `0xDEADBEEF`, so an early read cannot pass as a plausible stale value:
+
+- **pre-issue** — straggler still programmed before stage 2 is issued: passes at every skew up to
+  1600 cycles, more than nine times a whole group gather.
+- **post-issue** — straggler programmed after stage 2 is issued: **fails at zero skew.**
+
+The post-issue schedule is *supposed* to fail, so it runs under an `expect_fail` flag: its
+failure is printed as `[expected-FAIL]` and does not fail the simulation. It is a **positive
+control** — it proves the sentinel and the checker can actually detect a premature read — and the
+verdict complains loudly if it ever starts passing, because that would mean the probe has stopped
+proving anything. The probe stops at the first failing skew and prints `not run` for the rest
+rather than backfilling passes it never measured.
 
 ## Why three rounds
 

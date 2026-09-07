@@ -12,6 +12,7 @@
 #   make sim-p4          # two middle hops, the HeMAiA failing case
 #   make sim-p16         # 16 endpoints, one width
 #   make sim-sweep       # THE SWEEP: P in {2,4,8,16} x {lin,mom}, with a latency table
+#   make sim-tree        # tree vs chain, and whether stage 2 needs a barrier
 #   make sim-all         # p2, p3, p4 in order
 #   make gui-p3          # same, with the GUI
 #
@@ -86,7 +87,7 @@ gui-$(1): compile
 	cd $(ROOT) && $(QUESTA_ENV) $(VSIM) -64 -work $(LIB) tb_xdma_chaingather_$(1)_opt
 endef
 
-$(foreach tb,p2 p3 p4 p16 sweep,$(eval $(call RUN_TB,$(tb))))
+$(foreach tb,p2 p3 p4 p16 sweep tree tree4 role,$(eval $(call RUN_TB,$(tb))))
 
 sim-all: sim-p2 sim-p3 sim-p4
 

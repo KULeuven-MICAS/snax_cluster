@@ -390,6 +390,9 @@ sources:
       - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_p4.sv
       - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_p16.sv
       - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_sweep.sv
+      - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_tree.sv
+      - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_tree4.sv
+      - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_role.sv
 
   - target: test
     files:
