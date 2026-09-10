@@ -427,7 +427,23 @@
                                     dataWidth: 512
                                 }
                             }
-                            reader_extensions: {}
+                            // Reader-side extension socket on the xDMA.
+                            //
+                            // The four-engine split moved the compute extensions to the SIMD
+                            // block and emptied this list. But the Transposer is not compute --
+                            // it is a pure wire permutation, matrixOutput(j)(i) := matrixInput(i)(j)
+                            // -- so it belongs with data movement, and with the list empty there
+                            // was nowhere on this cluster for snax-xdma-transpose to run at all.
+                            //
+                            // Same declaration as the unsplit cluster, so it generates the id
+                            // TRANSPOSERROW8_8COL8_8BIT8_16 that the kernel selects first.
+                            //
+                            // NOTE: this is the ONLY reader_extensions key in this block. Adding a
+                            // second one earlier silently did nothing -- a later duplicate key wins.
+                            reader_extensions:
+                            {
+                                HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
+                            }
                         }
                         xdma: false
                         xssr: false
