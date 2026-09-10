@@ -17,6 +17,14 @@ import fp_unit._
 class FpFma(val typeA: FpType, val typeB: FpType, val typeC: FpType, val numPipe: Int = 0)
     extends Module
     with RequireAsyncReset {
+  // The module name encodes the parameterisation. Without this, CIRCT names variants FpAdd, FpAdd_1, ...
+  // in elaboration order, so the same name denotes different hardware in two separately elaborated files --
+  // which is a hard compile error the moment both are in one design (measured: a 4-core split cluster where
+  // the xDMA's FpAdd is 16-bit-out and the SIMD block's is 32-bit-out).
+  override def desiredName =
+    s"FpFma_e${typeA.expWidth}m${typeA.sigWidth}_e${typeB.expWidth}m${typeB.sigWidth}_" +
+      s"e${typeC.expWidth}m${typeC.sigWidth}_p${numPipe}"
+
   require(numPipe >= 0 && numPipe <= 2, "FpFma: numPipe must be 0..2")
   val latency: Int = numPipe
 

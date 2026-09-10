@@ -11,6 +11,9 @@ import chisel3._
   */
 
 class BasicCounter(width: Int, hasCeil: Boolean = true) extends Module with RequireAsyncReset {
+  // Parameter-derived name so two separately elaborated blocks cannot end up with same-named, differently
+  // shaped counters. Instantiation sites that override desiredName themselves are unaffected.
+  override def desiredName = s"BasicCounter_w$width" + (if (hasCeil) "_ceil" else "")
   val io        = IO(new Bundle {
     val tick  = Input(Bool())
     val reset = Input(Bool())

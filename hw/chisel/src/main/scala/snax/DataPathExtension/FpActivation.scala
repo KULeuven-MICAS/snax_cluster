@@ -22,6 +22,11 @@ class FpActivation(
   siluN:     Int     = 256
 ) extends Module
     with RequireAsyncReset {
+  // Parameter-derived name: see the note in fp_native.FpAdd. Two blocks in one design can hold different
+  // FpActivation builds (exp-only vs exp+silu, different LUT depths) and must not share a module name.
+  override def desiredName =
+    s"FpActivation" + (if (hasExp) s"_exp$expLutN" else "") + (if (hasSilu) s"_silu$siluN" else "") +
+      (if (pipelined) "_pipe" else "")
   require(hasExp || hasSilu, "FpActivation: at least one of exp/silu must be built")
   require(!hasExp || isPow2(expLutN), "FpActivation: expLutN must be a power of two")
   require(!hasSilu || isPow2(siluN), "FpActivation: siluN must be a power of two")
