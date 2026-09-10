@@ -119,6 +119,27 @@ SECTIONS
   __bss_end = .;
   _end = .; PROVIDE (end = .);
 
+  /* Hot data, in the cluster TCDM.
+     Everything above lands in L3 (DRAM). That is the right default for code and
+     for anything touched once, but it is a trap for data a kernel reads per
+     beat: a `static` array of accelerator descriptors parked in .bss cost 4500
+     cycles a run in snax-flashattn, purely in L3 round trips, until it was
+     moved here. Declare such objects with SNRT_L1_DATA.
+
+     NOLOAD: this is uninitialised scratch and TCDM is not part of the loadable
+     image, so anything placed here must be written before it is read. The
+     64-byte tail alignment matters -- snrt_l1_start_addr() returns __l1_end, so
+     it is what every heap allocation and every `snrt_l1_next() + offset` in a
+     kernel inherits, and the accelerators require beat-aligned buffers. */
+  .l1 (NOLOAD) :
+  {
+    . = ALIGN(8);
+    __l1_start = .;
+    *(.l1 .l1.*)
+    . = ALIGN(64);
+    __l1_end = .;
+  } >L1
+
   /* Uninitialized data section in L3 */
   .dram :
   {
