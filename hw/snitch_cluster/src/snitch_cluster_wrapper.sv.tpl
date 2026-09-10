@@ -370,6 +370,7 @@ for core_id in range(len(cfg['cores'])):
   snax_acc_dict = {}
   snax_acc_flag = False
   snax_xdma_flag = False
+  snax_simd_flag = False
   snax_acc_multi_flag = False
   snax_use_custom_ports = False
   snax_num_acc = None
@@ -446,6 +447,32 @@ for core_id in range(len(cfg['cores'])):
     tcdm_offset_start += snax_tcdm_ports
     total_snax_narrow_ports += snax_narrow_tcdm_ports
 
+  elif ('snax_simd_cfg' in cfg['cores'][core_id]):
+    snax_simd_flag = True
+    simd_cfg = cfg['cores'][core_id]['snax_simd_cfg']
+
+    # num_channel read ports + num_channel write ports. Unlike the xDMA this is a cfg
+    # knob: the SIMD beat is sized to the lane count, not to the DMA beat width.
+    simd_num_channel = simd_cfg['num_channel'] if 'num_channel' in simd_cfg else round(cfg['dma_data_width'] / cfg['data_width'])
+    snax_narrow_tcdm_ports = simd_num_channel * 2
+
+    # Note that the order is from last core to the first core
+    snax_narrow_tcdm_ports_list.append(snax_narrow_tcdm_ports)
+
+    curr_snax_acc = "i_snax_core_" + str(core_id) + "_simd"
+
+    snax_tcdm_ports = snax_narrow_tcdm_ports
+    tcdm_offset_stop += snax_tcdm_ports
+
+    snax_acc_dict[curr_snax_acc] = {
+          'snax_acc_name': 'simd',
+          'snax_tcdm_ports': snax_tcdm_ports,
+          'snax_tcdm_offset_start': tcdm_offset_start,
+          'snax_tcdm_offset_stop': tcdm_offset_stop
+        }
+    tcdm_offset_start += snax_tcdm_ports
+    total_snax_narrow_ports += snax_narrow_tcdm_ports
+
   else:
 
     # Consider cases without accelerators
@@ -460,6 +487,7 @@ for core_id in range(len(cfg['cores'])):
   snax_core_acc[curr_snax_acc_core] = {
     'snax_acc_flag': snax_acc_flag,
     'snax_xdma_flag': snax_xdma_flag,
+    'snax_simd_flag': snax_simd_flag,
     'snax_acc_multi_flag':snax_acc_multi_flag,
     'snax_use_custom_ports': snax_use_custom_ports,
     'snax_num_acc': snax_num_acc,
@@ -1038,6 +1066,53 @@ total_snax_tcdm_ports = total_snax_narrow_ports
   assign snax_resp    [${idx}] = '0;
   assign snax_pvalid  [${idx}] = '0;
   // Tie barrier to 0
+  assign snax_barrier [${idx}] = '0;
+
+    % endfor
+
+  % elif snax_core_acc[idx_key]['snax_simd_flag']:
+    % for jdx, jdx_key in enumerate(snax_core_acc[idx_key]['snax_acc_dict']):
+  // Instantiation of the SIMD wrapper. No AXI: the SIMD engine is local TCDM<->TCDM only,
+  // which leaves the cluster's single set of inter-cluster xdma_* ports owned by the xDMA.
+  ${cfg['name']}_simd_wrapper # (
+    .tcdm_req_t ( ${cfg['pkg_name']}::tcdm_req_t ),
+    .tcdm_rsp_t ( ${cfg['pkg_name']}::tcdm_rsp_t )
+  ) ${jdx_key} (
+    //-----------------------------
+    // Clock and reset
+    //-----------------------------
+    .clk_i            ( clk_i  ),
+    .rst_ni           ( rst_ni ),
+    //-----------------------------
+    // CSR format control ports
+    //-----------------------------
+    // Request
+    .csr_req_bits_data_i  ( snax_csr_req[${idx}].data      ),
+    .csr_req_bits_strb_i  ( '1 ),
+    .csr_req_bits_addr_i  ( snax_csr_req[${idx}].addr[31:0]),
+    .csr_req_bits_write_i ( snax_csr_req[${idx}].write     ),
+    .csr_req_valid_i      ( snax_csr_req_acc_valid[${idx}] ),
+    .csr_req_ready_o      ( snax_csr_req_acc_ready[${idx}] ),
+    // Response
+    .csr_rsp_bits_data_o  ( snax_csr_rsp_acc[${idx}].data  ),
+    .csr_rsp_valid_o      ( snax_csr_rsp_acc_valid[${idx}] ),
+    .csr_rsp_ready_i      ( snax_csr_rsp_acc_ready[${idx}] ),
+    //-----------------------------
+    // Status
+    //-----------------------------
+    .busy_o           (  ),
+    //-----------------------------
+    // TCDM ports
+    //-----------------------------
+    .tcdm_req_o  ( snax_tcdm_req[${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_stop']}:${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_start']}] ),
+    .tcdm_rsp_i  ( snax_tcdm_rsp[${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_stop']}:${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_start']}] )
+  );
+
+  // Tie unused custom instruction ports to 0
+  assign snax_qready  [${idx}] = '0;
+  assign snax_resp    [${idx}] = '0;
+  assign snax_pvalid  [${idx}] = '0;
+  // The SIMD block has no hardware barrier port
   assign snax_barrier [${idx}] = '0;
 
     % endfor
