@@ -144,12 +144,24 @@ object SimdTopGen extends App {
 """
 
   macroTemplate = macroTemplate + """
-// Extension Information
+// Operator ids, and the CONSTANT CSR base of each one.
+//
+// The base matters as much as the id: csrw_ss is a switch over the CSR number
+// (RISC-V csrw takes an immediate), so a write whose address the compiler can
+// fold costs one instruction while a computed one costs a jump-table load from
+// L2 plus an indirect jump. Emitting the per-operator base here lets software
+// write operator CSRs at compile-time-constant addresses instead of walking
+// SIMD_EXT_CUSTOM_CSR_NUM at run time.
 """
+  var csrCursor = 0
   for ((ext, i) <- extensionParam.zipWithIndex) {
+    val name = ext.extensionParam.moduleName.toUpperCase
     macroTemplate = macroTemplate +
-      s"""#define SIMD_EXT_${ext.extensionParam.moduleName.toUpperCase} ${i}
+      s"""#define SIMD_EXT_${name} ${i}
+#define SIMD_EXT_${name}_CSR (SIMD_EXT_CSR_PTR + ${csrCursor})
+#define SIMD_EXT_${name}_CSR_NUM ${ext.extensionParam.userCsrNum}
 """
+    csrCursor += ext.extensionParam.userCsrNum
   }
 
   val macroPath   = java.nio.file.Paths.get(macroDir)

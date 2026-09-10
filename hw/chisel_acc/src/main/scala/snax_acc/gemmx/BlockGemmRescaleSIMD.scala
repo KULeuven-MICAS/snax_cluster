@@ -241,10 +241,44 @@ object BlockGemmRescaleSIMDGen {
       sharedScaleFactorPerGroupSize = meshRow
     )
 
+    // The pipelined rescale SIMD must follow the MESH, exactly as the
+    // non-pipelined one does. snax_acc.simd.PipelinedConfig.rescaleSIMDConfig is a
+    // fixed config (dataLen = the 8x8 default, readWriteCsrNum = 13,
+    // sharedScaleFactorPerGroupSize = 1) and using it verbatim silently built a
+    // rescale unit for a different mesh than the GEMM in front of it:
+    //
+    //   * the shell wrapper's port list IS derived from the mesh
+    //     (SIMDReadWriteCsrNum = 2 + meshCol/4 + meshCol + 1), so at 16x16 it drove
+    //     23 simd_ctrl pins into a module that had 13 -- a build error;
+    //   * with a stale shell wrapper the widths happened to match and the design
+    //     built, but the rescale unit expected dataLen = 64 values per tile while
+    //     the GEMM produced meshRow*meshCol = 256, so the pipeline stalled and the
+    //     cluster hung in the gemmX completion poll.
+    //
+    // Only laneLen stays at the pipelined value: that is the deliberate time-mux
+    // width, and it is independent of the mesh.
+    val SIMDParamsWithPipeline = RescaleSIMDParams(
+      inputType                     = RescaleSIMDConstant.inputType,
+      outputType                    = RescaleSIMDConstant.outputType,
+      constantType                  = RescaleSIMDConstant.constantType,
+      constantMulType               = RescaleSIMDConstant.constantMulType,
+      dataLen                       = meshRow * meshCol,
+      // laneLen is the pipelined time-mux width: the tile is processed laneLen
+      // values per cycle, so meshRow steps per tile. It must also satisfy
+      // laneLen / sharedScaleFactorPerGroupSize == the number of scale-factor
+      // groups, which is meshCol (SIMDReadWriteCsrNum carries meshCol
+      // multipliers). laneLen = meshCol with group size 1 satisfies both, and at
+      // 8x8 it reproduces PipelinedConfig exactly (dataLen 64, laneLen 8,
+      // group size 1, 13 CSRs) -- so this is a generalisation of the shipped
+      // default, not a change to it.
+      laneLen                       = meshCol,
+      readWriteCsrNum               = SIMDReadWriteCsrNum,
+      sharedScaleFactorPerGroupSize = 1
+    )
+
     val params = BlockGemmRescaleSIMDParams(
       gemmParams,
-      (if (withPipeline == true)
-         snax_acc.simd.PipelinedConfig.rescaleSIMDConfig
+      (if (withPipeline == true) SIMDParamsWithPipeline
        else SIMDParamsWithoutPipeline),
       withPipeline,
       C32_D32_width = serialC32D32Width,
