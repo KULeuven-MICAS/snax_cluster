@@ -38,6 +38,7 @@ make sim-p16     # 16 endpoints, one width
 make sim-role    # ~1 min: can a node that COLLECTED then be a MIDDLE HOP?
 make sim-tree4   # the balanced G=4 two-stage tree + the barrier question
 make sim-tree    # every tree shape, G in {2,4,8}
+make sim-bench   # sw baseline vs chain vs tree: latency, hops, SRAM; P and volume sweeps
 make sim-all     # p2, p3, p4
 make gui-p3      # same, in the GUI
 ```
@@ -125,6 +126,49 @@ and a middle hop is the only node that both receives and forwards — the only o
 `xdma_grant_manager`'s `WRITE_MIDDLE` and `xdma_finish_manager`'s `WriteMiddleBusy` /
 `SendToPreviousHop`, and the only one handed a writer-side frame for a local write it must
 never perform.
+
+## The collective comparison (`make sim-bench`)
+
+Three ways to reduce the same data, measured side by side: a **software baseline** (the root DMAs
+each partial in and folds it with the cluster SIMD, double-buffered), the **chain**, and the
+**tree**. Volume per endpoint is fixed and P is swept, then P is fixed and volume is swept.
+
+Reported per scheme: end-to-end latency, xDMA-busy latency, fabric transactions and beats,
+**hop·beats** (beats weighted by Manhattan distance on the 4x4 chiplet array), total TCDM word
+accesses and the busiest endpoint's share, and the number of task submissions.
+
+Headline at P=16, 4 KiB per endpoint: chain is **3.4x** faster end-to-end than the baseline and
+uses **4.5x** less SRAM in total — **31x** less through the busiest endpoint. The tree is **2.1x**
+the chain on xDMA-busy time and is the only scheme whose every transfer is nearest-neighbour
+(1.0 hops per beat, against the chain's 1.6 and the baseline's 3.2). Full write-up and the volume
+analysis: `tmp/collective-comparison.md`.
+
+Two things about this bench specifically:
+
+- **The fetch is real RTL; the SIMD accumulate is modelled** at `SimdBytesPerCycle` (default 64
+  B/cycle, the same width the xDMA datapath gets — the most favourable assumption available, so
+  the baseline is never beaten by a strawman). Its TCDM traffic is counted into separate
+  `sram_*_model` counters so measured and modelled are never mixed.
+- **Volume is a runtime quantity** (`set_volume()`), so the volume sweep is one elaboration. The
+  TCDM map is sized for the compile-time `NumBeats`, which is therefore the maximum.
+
+## Traps this bench exposed (all now fixed)
+
+Three latent bugs surfaced the first time anything ran at more than one beat or compared more
+than one scheme. Worth knowing about, because two of them make a *wrong* run look right:
+
+1. **The goldens disagreed with the seed for multi-beat transfers.** `seed_partials()` gives every
+   lane a distinct value; the checker compared against `golden_lin(width, lane % LanesPerBeat)`.
+   Identical at one beat — but at 64 beats the checker would have passed a transfer that replayed
+   beat 0 sixty-four times.
+2. **The SRAM/fabric counters under-counted by up to 16x.** One `always_ff` per port and per
+   endpoint, all assigning the same variable: several drivers, and with nonblocking assignment
+   only the last write per cycle survives, so 16 simultaneous TCDM accesses were recorded as one.
+   Now one `always_ff` accumulates across the whole array.
+3. **The Makefile ran stale designs after a compile error.** The guard grepped `^\*\* Error`, but
+   `vsim -c` prefixes echoed lines with `# `, so it never matched — a `vlog` failure went straight
+   on to `vopt`/`vsim`, which ran the *previous* design and produced a complete, plausible,
+   entirely stale set of results. Fixed, and the same guard added after `vopt`.
 
 ## The role change, and the tree
 

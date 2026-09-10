@@ -77,6 +77,13 @@ module xdma_chaingather_body #(
     parameter int unsigned TreeOnlyG    = 0,
     /// Beats per transfer. 1 beat = 64 B = 16 FP32 lanes.
     parameter int unsigned NumBeats     = 1,
+    // The collective comparison: software baseline vs chain vs tree, at a fixed volume, sweeping
+    // the endpoint count. See run_bench_experiment().
+    parameter bit          Bench        = 1'b0,
+    // Throughput assumed for the cluster SIMD that folds a partial in the software baseline.
+    // 64 B/cycle = 512 bit/cycle, the same width as the xDMA datapath -- deliberately the most
+    // favourable assumption available, so the baseline is never beaten by a strawman.
+    parameter int unsigned SimdBytesPerCycle = 64,
     /// 0 = per-round summary only. 1 = + commit/finish counters and every completion pulse.
     /// 2 = + every edge of the composed busy level with its components (very noisy at P=16, but
     /// it is what localises a spurious completion to a cycle).
@@ -111,10 +118,37 @@ module xdma_chaingather_body #(
   // measured here and a number measured on HeMAiA refer to the same layout. Each endpoint keeps
   // BOTH partials; the collector's two results land clear of them, so a fold that accidentally
   // writes over an operand shows up as a wrong answer rather than a pass.
-  localparam int unsigned LinSrcOffset = 32'h0000_0000;
-  localparam int unsigned LinDstOffset = 32'h0000_0040;
-  localparam int unsigned MomSrcOffset = 32'h0000_0080;
-  localparam int unsigned MomDstOffset = 32'h0000_00C0;
+  localparam int unsigned BeatBytes = 64;
+  localparam int unsigned XferBytes = BeatBytes * NumBeats;
+  localparam int unsigned LanesPerBeat = 16;  // 64 B / 4 B
+
+  // The volume actually used by a run. It defaults to the compile-time NumBeats, so every bench
+  // that does not touch it behaves exactly as before -- but the collective comparison can sweep
+  // it at RUNTIME, which is what makes a volume sweep one simulation instead of one per point.
+  // The TCDM map above stays sized for the compile-time maximum, so shrinking is always safe.
+  int unsigned cur_beats = NumBeats;
+  int unsigned cur_bytes = XferBytes;
+
+  task automatic set_volume(input int unsigned beats);
+    begin
+      cur_beats = beats;
+      cur_bytes = beats * BeatBytes;
+    end
+  endtask
+
+  // Laid out in units of ONE TRANSFER, so the map scales with NumBeats instead of aliasing the
+  // moment the transfer grows past 64 B. At NumBeats=1 these evaluate to 0x00/0x40/0x80/0xC0 --
+  // byte-identical to the hand-written map this replaces, and to the HeMAiA app's.
+  localparam int unsigned LinSrcOffset = 0 * XferBytes;
+  localparam int unsigned LinDstOffset = 1 * XferBytes;
+  localparam int unsigned MomSrcOffset = 2 * XferBytes;
+  localparam int unsigned MomDstOffset = 3 * XferBytes;
+
+  // Scratch for the SOFTWARE baseline, which needs somewhere to land a fetched partial and
+  // somewhere to keep the running sum. Double-buffered so a fetch can overlap the accumulate of
+  // the previous one, which is the whole point of the baseline.
+  localparam int unsigned SwBufOffset[2] = '{5 * XferBytes, 6 * XferBytes};
+  localparam int unsigned SwAccOffset    = 7 * XferBytes;
 
   localparam int unsigned ModeLin = 0;
   localparam int unsigned ModeMom = 1;
@@ -140,13 +174,17 @@ module xdma_chaingather_body #(
   // why) if the key spread in mom_m() is ever pushed further into the LUT's tails.
   localparam logic [31:0] LTolUlps = 32'h0000_0100;
 
-  localparam int unsigned BeatBytes = 64;
-  localparam int unsigned XferBytes = BeatBytes * NumBeats;
-  localparam int unsigned LanesPerBeat = 16;  // 64 B / 4 B
-
   function automatic tb_addr_t cluster_base(input int unsigned i);
     return ClusterBaseAddr + i * ClusterAddressSpace;
   endfunction
+
+  function automatic int unsigned to_ep(input tb_addr_t a);
+    begin
+      if (a < ClusterBaseAddr) return 99;
+      return (a - ClusterBaseAddr) / ClusterAddressSpace;
+    end
+  endfunction
+
 
   // ==========================================================================================
   // CSR map. Indices are PLAIN 0-BASED REGISTER INDICES.
@@ -489,6 +527,149 @@ module xdma_chaingather_body #(
   end
 
   // ==========================================================================================
+  // Instrumentation: the three quantities the collective comparison is about.
+  //
+  //   SRAM accesses -- every TCDM port handshake, counted where it happens. One access is one
+  //     64-bit word, which is the bank access the real macro sees; bytes = words * 8.
+  //   Fabric payload -- counted at the ADDRESS phase from `len`, not by watching beats, so no
+  //     outstanding-transaction tracking is needed and the count is exact for any run that
+  //     completes. Writes leave the master (e -> d); reads bring payload back (d -> e).
+  //   Hop distance -- the same payload weighted by Manhattan distance on the chiplet mesh. This
+  //     is the metric that actually separates the three schemes: they all move a similar NUMBER
+  //     of transfers, but a chain moves each one between NEIGHBOURS while the software baseline
+  //     drags every one of them across the array to a single node.
+  // ==========================================================================================
+  localparam int unsigned MeshW = 4;  // HeMAiA's chiplet array is 4x4, row-major chip ids
+
+  function automatic int unsigned mesh_dist(input int unsigned a, input int unsigned b);
+    int unsigned ax, ay, bx, by;
+    begin
+      ax = a % MeshW; ay = a / MeshW;
+      bx = b % MeshW; by = b / MeshW;
+      mesh_dist = ((ax > bx) ? (ax - bx) : (bx - ax)) + ((ay > by) ? (ay - by) : (by - ay));
+    end
+  endfunction
+
+  longint unsigned sram_rd[NumEndpoints];   // 64-bit word reads
+  longint unsigned sram_wr[NumEndpoints];   // 64-bit word writes
+  longint unsigned fab_bursts;              // wide payload transactions
+  longint unsigned fab_beats;               // wide payload beats (64 B each)
+  longint unsigned fab_hopbeats;            // the same beats x mesh distance
+  longint unsigned ctl_bursts;              // narrow (cfg / grant / finish) transactions
+  longint unsigned ctl_hops;                // narrow transactions x mesh distance
+
+  // Modelled contributions, kept SEPARATE from anything the RTL actually did. The software
+  // baseline's accumulate runs on the cluster SIMD, which this bench does not instantiate, so
+  // its TCDM traffic is added here analytically and reported in its own column. Nothing else
+  // ever touches these.
+  longint unsigned sram_rd_model, sram_wr_model;
+
+  // ONE always_ff for the whole array, deliberately. A per-port (or per-endpoint) always_ff
+  // block per counter would give the same variable several drivers, and with nonblocking
+  // assignments only the last write in a cycle survives -- so simultaneous accesses on the 16
+  // TCDM ports would all collapse into a count of one, under-reporting SRAM traffic by up to
+  // 16x and fabric traffic whenever two endpoints handshake in the same cycle. Accumulate into
+  // a local sum first, assign once.
+  always_ff @(posedge clk) begin
+    if (rst_n) begin
+      for (int unsigned e = 0; e < NumEndpoints; e++) begin
+        automatic int unsigned nrd = 0;
+        automatic int unsigned nwr = 0;
+        for (int unsigned pp = 0; pp < TcdmNumPorts; pp++) begin
+          if (tcdm_req[e][pp].q_valid && tcdm_rsp[e][pp].q_ready) begin
+            if (tcdm_req[e][pp].q.write) nwr++;
+            else nrd++;
+          end
+        end
+        sram_rd[e] <= sram_rd[e] + nrd;
+        sram_wr[e] <= sram_wr[e] + nwr;
+      end
+    end
+  end
+
+  always_ff @(posedge clk) begin
+    if (rst_n) begin
+      begin
+        automatic longint unsigned d_bursts = 0;
+        automatic longint unsigned d_beats = 0;
+        automatic longint unsigned d_hop = 0;
+        automatic longint unsigned d_ctlb = 0;
+        automatic longint unsigned d_ctlh = 0;
+        for (int unsigned e = 0; e < NumEndpoints; e++) begin
+          if (wide_mst_req[e].aw_valid && wide_mst_rsp[e].aw_ready) begin
+            d_bursts += 1;
+            d_beats  += (wide_mst_req[e].aw.len + 1);
+            d_hop    += (wide_mst_req[e].aw.len + 1) * mesh_dist(e, to_ep(wide_mst_req[e].aw.addr));
+          end
+          if (wide_mst_req[e].ar_valid && wide_mst_rsp[e].ar_ready) begin
+            d_bursts += 1;
+            d_beats  += (wide_mst_req[e].ar.len + 1);
+            d_hop    += (wide_mst_req[e].ar.len + 1) * mesh_dist(e, to_ep(wide_mst_req[e].ar.addr));
+          end
+          if (narrow_mst_req[e].aw_valid && narrow_mst_rsp[e].aw_ready) begin
+            d_ctlb += 1;
+            d_ctlh += mesh_dist(e, to_ep(narrow_mst_req[e].aw.addr));
+          end
+        end
+        fab_bursts   <= fab_bursts + d_bursts;
+        fab_beats    <= fab_beats + d_beats;
+        fab_hopbeats <= fab_hopbeats + d_hop;
+        ctl_bursts   <= ctl_bursts + d_ctlb;
+        ctl_hops     <= ctl_hops + d_ctlh;
+      end
+    end
+  end
+
+  // Free-running cycle counter, the timebase for every latency this bench reports.
+  logic [31:0] cyc_cnt;
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) cyc_cnt <= '0;
+    else cyc_cnt <= cyc_cnt + 1;
+  end
+
+  bit trace_bus;
+
+  task automatic ctr_clear();
+    begin
+      for (int unsigned e = 0; e < NumEndpoints; e++) begin
+        sram_rd[e] = '0;
+        sram_wr[e] = '0;
+      end
+      fab_bursts    = '0;
+      fab_beats     = '0;
+      fab_hopbeats  = '0;
+      ctl_bursts    = '0;
+      ctl_hops      = '0;
+      sram_rd_model = '0;
+      sram_wr_model = '0;
+    end
+  endtask
+
+  function automatic longint unsigned sram_total();
+    longint unsigned t;
+    begin
+      t = sram_rd_model + sram_wr_model;
+      for (int unsigned e = 0; e < NumEndpoints; e++) t += sram_rd[e] + sram_wr[e];
+      sram_total = t;
+    end
+  endfunction
+
+  // The busiest single endpoint. A collective spreads its SRAM traffic; the software baseline
+  // funnels all of it into the root, and that hot spot is what limits it long before the totals
+  // do -- so it is reported alongside the total rather than hidden inside it.
+  function automatic longint unsigned sram_hotspot();
+    longint unsigned m, v;
+    begin
+      m = '0;
+      for (int unsigned e = 0; e < NumEndpoints; e++) begin
+        v = sram_rd[e] + sram_wr[e] + ((e == 0) ? (sram_rd_model + sram_wr_model) : 64'd0);
+        if (v > m) m = v;
+      end
+      sram_hotspot = m;
+    end
+  endfunction
+
+  // ==========================================================================================
   // The "software": two CSR tasks. `csr_req_bits_addr_i` is a plain 0-based register index.
   // ==========================================================================================
   localparam int unsigned SpinLimit = 200000;
@@ -621,7 +802,7 @@ module xdma_chaingather_body #(
     begin
       for (int unsigned e = 0; e < NumEndpoints; e++) begin
         // linear: 16 lanes of a distinct ramp
-        for (int unsigned bt = 0; bt < NumBeats; bt++) begin
+        for (int unsigned bt = 0; bt < cur_beats; bt++) begin
           for (int unsigned wi = 0; wi < BeatBytes / 8; wi++) begin
             lane = bt * LanesPerBeat + wi * 2;
             w    = {lin_lane(e, lane + 1), lin_lane(e, lane)};
@@ -645,7 +826,7 @@ module xdma_chaingather_body #(
     int unsigned off;
     begin
       off = (mode == ModeLin) ? LinDstOffset : MomDstOffset;
-      for (int unsigned wi = 0; wi < XferBytes / 8; wi++) begin
+      for (int unsigned wi = 0; wi < cur_bytes / 8; wi++) begin
         mem[0][(off + wi * 8)>>3] = {32'hDEAD_BEEF, 32'hDEAD_BEEF};
       end
     end
@@ -714,14 +895,14 @@ module xdma_chaingather_body #(
 
       // strides and bounds. Unused temporal dims must be 1, NOT 0.
       csr_wr(ep, CSR_SRC_SPAT_STRIDE, 32'd8);
-      csr_wr(ep, CSR_SRC_TEMP_BOUND + 0, NumBeats);
+      csr_wr(ep, CSR_SRC_TEMP_BOUND + 0, cur_beats);
       for (int unsigned d = 1; d < 5; d++) csr_wr(ep, CSR_SRC_TEMP_BOUND + d, 32'd1);
       csr_wr(ep, CSR_SRC_TEMP_STRIDE + 0, 32'd64);
       for (int unsigned d = 1; d < 5; d++) csr_wr(ep, CSR_SRC_TEMP_STRIDE + d, 32'd0);
       csr_wr(ep, CSR_SRC_ENAB_CHAN, 32'hFFFF_FFFF);
 
       csr_wr(ep, CSR_DST_SPAT_STRIDE, 32'd8);
-      csr_wr(ep, CSR_DST_TEMP_BOUND + 0, NumBeats);
+      csr_wr(ep, CSR_DST_TEMP_BOUND + 0, cur_beats);
       for (int unsigned d = 1; d < 5; d++) csr_wr(ep, CSR_DST_TEMP_BOUND + d, 32'd1);
       csr_wr(ep, CSR_DST_TEMP_STRIDE + 0, 32'd64);
       for (int unsigned d = 1; d < 5; d++) csr_wr(ep, CSR_DST_TEMP_STRIDE + d, 32'd0);
@@ -766,15 +947,145 @@ module xdma_chaingather_body #(
   endtask
 
   // ==========================================================================================
+  // THE SOFTWARE BASELINE
+  //
+  // What a cluster does without a collective: the root pulls each remote partial into local
+  // scratch with an ordinary DMA read and folds it in with the cluster's own SIMD, double
+  // buffering so the fetch of partial k+1 overlaps the accumulate of partial k.
+  //
+  //     for k in 1..P-1:  fetch ep_k -> buf[k%2]   ||   acc += buf[(k-1)%2]
+  //
+  // The FETCH is real: a genuine xDMA remote read through the same RTL the collectives use, so
+  // its latency, its fabric traffic and its TCDM accesses are all measured, not assumed. The
+  // ACCUMULATE is modelled, because this bench instantiates the xDMA wrapper and not the SIMD
+  // accelerator. Two things follow, and both are deliberately generous to the baseline:
+  //
+  //   * the model runs at `SimdBytesPerCycle`, defaulting to 64 B/cycle -- the SAME 512 bit per
+  //     cycle the xDMA datapath gets. A real cluster SIMD is unlikely to beat that, so the
+  //     baseline is being given the best compute engine in the system;
+  //   * the model ignores TCDM port contention between the SIMD and the in-flight DMA write,
+  //     which on real hardware would slow both.
+  //
+  // Its TCDM traffic is still counted -- two operand reads and one result write per word -- but
+  // into `sram_*_model`, kept separate from anything the RTL did so the two are never confused.
+  // ==========================================================================================
+  localparam int unsigned ComputeCycles = (XferBytes + SimdBytesPerCycle - 1) / SimdBytesPerCycle;
+
+  // A plain remote read: one source, one destination, no junction and no extensions. Same CSR
+  // sequence as program_gather minus the collective parts, so any difference between the two
+  // schemes is the scheme and not the programming.
+  task automatic program_copy(input int unsigned ep, input tb_addr_t src_ptr,
+                              input tb_addr_t dst_ptr);
+    begin
+      csr_wr64(ep, CSR_SRC_ADDR, src_ptr);
+      csr_wr64(ep, CSR_DST_ADDR, dst_ptr);
+      for (int unsigned k = 1; k < 16; k++) csr_wr64(ep, CSR_DST_ADDR + 2 * k, '0);
+
+      csr_wr(ep, CSR_SRC_SPAT_STRIDE, 32'd8);
+      csr_wr(ep, CSR_SRC_TEMP_BOUND + 0, cur_beats);
+      for (int unsigned d = 1; d < 5; d++) csr_wr(ep, CSR_SRC_TEMP_BOUND + d, 32'd1);
+      csr_wr(ep, CSR_SRC_TEMP_STRIDE + 0, 32'd64);
+      for (int unsigned d = 1; d < 5; d++) csr_wr(ep, CSR_SRC_TEMP_STRIDE + d, 32'd0);
+      csr_wr(ep, CSR_SRC_ENAB_CHAN, 32'hFFFF_FFFF);
+
+      csr_wr(ep, CSR_DST_SPAT_STRIDE, 32'd8);
+      csr_wr(ep, CSR_DST_TEMP_BOUND + 0, cur_beats);
+      for (int unsigned d = 1; d < 5; d++) csr_wr(ep, CSR_DST_TEMP_BOUND + d, 32'd1);
+      csr_wr(ep, CSR_DST_TEMP_STRIDE + 0, 32'd64);
+      for (int unsigned d = 1; d < 5; d++) csr_wr(ep, CSR_DST_TEMP_STRIDE + d, 32'd0);
+      csr_wr(ep, CSR_DST_ENAB_CHAN, 32'hFFFF_FFFF);
+      csr_wr(ep, CSR_DST_ENAB_BYTE, 32'h0000_00FF);
+
+      csr_wr(ep, CSR_SRC_ENABLE, 32'd0);
+      csr_wr(ep, CSR_DST_ENABLE, 32'd0);
+      csr_wr(ep, CSR_DST_EXT, 32'd0);
+      csr_wr(ep, CSR_DST_JCT_ENABLE, 32'd0);
+    end
+  endtask
+
+  // acc[] += buf[], in FP32, plus the SRAM traffic the SIMD would have generated doing it.
+  task automatic sw_accumulate(input int unsigned buf_off);
+    logic [63:0] a, b;
+    begin
+      for (int unsigned wi = 0; wi < cur_bytes / 8; wi++) begin
+        a = mem[0][(LinDstOffset + wi * 8)>>3];
+        b = mem[0][(buf_off + wi * 8)>>3];
+        mem[0][(LinDstOffset + wi * 8)>>3] = {
+          $shortrealtobits($bitstoshortreal(a[63:32]) + $bitstoshortreal(b[63:32])),
+          $shortrealtobits($bitstoshortreal(a[31:0]) + $bitstoshortreal(b[31:0]))
+        };
+      end
+      sram_rd_model = sram_rd_model + 2 * (cur_bytes / 8);
+      sram_wr_model = sram_wr_model + (cur_bytes / 8);
+    end
+  endtask
+
+  task automatic run_sw_baseline(input int unsigned width, output logic [31:0] wall_cc,
+                                 output logic [31:0] hw_cc, output int unsigned n_cfg,
+                                 output int unsigned sw_err);
+    logic [31:0] want, t0, tp;
+    bit          is_loc, ok, ok_f;
+    int unsigned buf_cur, buf_prev;
+    begin
+      sw_err = 0;
+      n_cfg  = 0;
+      hw_cc  = '0;
+      fill_sentinel(ModeLin);
+
+      // Seed the accumulator with the root's OWN partial -- one SIMD-speed pass, counted.
+      for (int unsigned wi = 0; wi < cur_bytes / 8; wi++)
+        mem[0][(LinDstOffset + wi * 8)>>3] = mem[0][(LinSrcOffset + wi * 8)>>3];
+      sram_rd_model = sram_rd_model + (cur_bytes / 8);
+      sram_wr_model = sram_wr_model + (cur_bytes / 8);
+      repeat (5) @(posedge clk);
+
+      if (Verbose >= 2) trace_bus = 1'b1;
+      t0 = cyc_cnt;
+      for (int unsigned k = 1; k < width; k++) begin
+        buf_cur  = (k - 1) % 2;  // this fetch lands here
+        buf_prev = k % 2;        // the previous fetch landed here, and is folded in meanwhile
+        program_copy(k, cluster_base(k) + LinSrcOffset, cluster_base(0) + SwBufOffset[buf_cur]);
+        n_cfg++;
+        tp = cyc_cnt;  // hardware time starts once the descriptor is armed
+        issue_start(k, want, is_loc, ok);
+        if (!ok) begin
+          sw_err++;
+          wall_cc = cyc_cnt - t0;
+          return;
+        end
+        fork
+          begin
+            wait_finish(k, want, is_loc, "sw fetch", ok_f);
+            if (!ok_f) sw_err++;
+          end
+          begin
+            if (k > 1) begin
+              repeat (ComputeCycles) @(posedge clk);
+              sw_accumulate(SwBufOffset[buf_prev]);
+            end
+          end
+        join
+        hw_cc = hw_cc + (cyc_cnt - tp);
+        if (sw_err != 0) begin
+          wall_cc = cyc_cnt - t0;
+          return;
+        end
+      end
+
+      // The last partial fetched has nothing left to overlap with.
+      if (width > 1) begin
+        repeat (ComputeCycles) @(posedge clk);
+        sw_accumulate(SwBufOffset[(width - 2) % 2]);
+        hw_cc = hw_cc + ComputeCycles;
+      end
+      wall_cc = cyc_cnt - t0;
+    end
+  endtask
+
+  // ==========================================================================================
   // Start + wait, reproducing xdma_start(): read both commit counters, launch, see which one
   // moved, then poll the MATCHING finish counter. Bounded, always.
   // ==========================================================================================
-  logic [31:0] cyc_cnt;
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n) cyc_cnt <= '0;
-    else cyc_cnt <= cyc_cnt + 1;
-  end
-
   task automatic start_and_wait(input int unsigned round, output logic [31:0] task_cycles,
                                 output logic [31:0] wall_cycles, output bit ok);
     logic [31:0] cl0, cr0, cl1, cr1, fl0, fr0, fin, jct, t0;
@@ -937,11 +1248,13 @@ module xdma_chaingather_body #(
   // result before it is written, it folds 0xDEADBEEF (a huge negative float) and the answer is
   // unmistakably wrong rather than subtly stale.
   // ==========================================================================================
-  localparam int unsigned GrpDstOffset = 32'h0000_0100;
+  localparam int unsigned GrpDstOffset = 4 * XferBytes;   // 0x100 at NumBeats=1, as before
 
-  task automatic run_tree(input int unsigned group_size, input int unsigned mode,
+
+  task automatic run_tree(input int unsigned n_ep, input int unsigned group_size, input int unsigned mode,
                           input bit sync_stages, input int unsigned last_group_skew,
-                          input bit defer_last_group, output logic [31:0] stage1_cc,
+                          input bit defer_last_group, input bit par_program,
+                          output logic [31:0] stage1_cc,
                           output logic [31:0] stage2_cc, output logic [31:0] total_wall,
                           output int unsigned tree_err);
     int unsigned n_groups, coll, src_off, last_coll;
@@ -954,13 +1267,13 @@ module xdma_chaingather_body #(
       tree_err   = 0;
       stage1_cc  = '0;
       stage2_cc  = '0;
-      n_groups   = NumEndpoints / group_size;
+      n_groups   = n_ep / group_size;
       src_off    = (mode == ModeLin) ? LinSrcOffset : MomSrcOffset;
 
       // Sentinel every group slot AND the final destination, so a stage-2 read that outruns a
       // stage-1 write cannot be mistaken for a correct answer.
       for (int unsigned g = 0; g < n_groups; g++) begin
-        for (int unsigned wi = 0; wi < XferBytes / 8; wi++) begin
+        for (int unsigned wi = 0; wi < cur_bytes / 8; wi++) begin
           mem[g*group_size][(GrpDstOffset + wi * 8)>>3] = {32'hDEAD_BEEF, 32'hDEAD_BEEF};
         end
       end
@@ -979,7 +1292,39 @@ module xdma_chaingather_body #(
       // 0xDEADBEEF sentinel. That is the hazard a barrier would exist to prevent, so this is the
       // measurement that decides whether one is needed.
       last_coll = (n_groups - 1) * group_size;
+
+      // `par_program` models the thing this bench otherwise gets wrong about a tree: its N/G
+      // group gathers are programmed at N/G DIFFERENT endpoints, each of which has its own core
+      // on real hardware and programs its own gather concurrently. One stimulus thread walking
+      // them in turn charges the tree N/G serial task submissions it would never pay -- about
+      // 145 cycles each here, which is enough to hide a 2x hardware win. The CSR ports are
+      // per-endpoint arrays, so concurrent processes driving different `ep` do not collide.
+      if (par_program) begin
+        for (int unsigned g = 0; g < n_groups; g++) begin
+          automatic int unsigned gi = g;
+          if (gi == n_groups - 1 && defer_last_group) continue;
+          fork
+            begin
+              automatic tb_addr_t    pch[16];
+              automatic int unsigned pcoll = gi * group_size;
+              automatic bit          pok;
+              for (int unsigned k = 0; k < group_size; k++) begin
+                pch[k] = (k == group_size - 1)
+                             ? (cluster_base(pcoll) + GrpDstOffset)
+                             : (cluster_base(pcoll + group_size - 1 - k) + src_off);
+              end
+              for (int unsigned k = group_size; k < 16; k++) pch[k] = '0;
+              program_gather(pcoll, cluster_base(pcoll) + src_off, pch, group_size, mode);
+              issue_start(pcoll, want[gi], is_loc[gi], pok);
+              if (!pok) tree_err++;
+            end
+          join_none
+        end
+        wait fork;
+      end
+
       for (int unsigned g = 0; g < n_groups; g++) begin
+        if (par_program) break;
         // Two ways to be late. WITHIN stage 1 (`defer_last_group`=0): the straggler is delayed
         // but stage 2 is still issued after it, so every node still sees its own stage-1 task
         // before the stage-2 cfg and the queue ordering holds. AFTER stage 2 (=1): the straggler
@@ -1078,7 +1423,7 @@ module xdma_chaingather_body #(
       sentinel_left = 1'b0;
       off           = (mode == ModeLin) ? LinDstOffset : MomDstOffset;
 
-      for (int unsigned wi = 0; wi < XferBytes / 8; wi++) begin
+      for (int unsigned wi = 0; wi < cur_bytes / 8; wi++) begin
         if (mem[0][(off + wi * 8)>>3] === {32'hDEAD_BEEF, 32'hDEAD_BEEF}) sentinel_left = 1'b1;
       end
       if (sentinel_left) begin
@@ -1091,12 +1436,16 @@ module xdma_chaingather_body #(
 
       if (mode == ModeLin) begin
         // Small integer-valued FP32 operands -> the sum is exact -> byte-exact compare.
-        for (int unsigned wi = 0; wi < XferBytes / 8; wi++) begin
+        for (int unsigned wi = 0; wi < cur_bytes / 8; wi++) begin
           w = mem[0][(off + wi * 8)>>3];
           for (int unsigned h = 0; h < 2; h++) begin
             lane = wi * 2 + h;
             got  = w[h*32+:32];
-            exp  = golden_lin(width, lane % LanesPerBeat);
+            // Absolute lane, NOT lane % LanesPerBeat: seed_partials() gives every lane in the
+            // whole transfer a distinct value, so the golden must too. The two only agreed while
+            // every bench ran at one beat, which hid the inconsistency -- and worse, made a
+            // multi-beat transfer that replayed beat 0 sixty-four times look correct.
+            exp  = golden_lin(width, lane);
             if (got !== exp) begin
               if (bad < 4) begin
                 $display("      lane %0d: got 0x%08x (%f) want 0x%08x (%f)", lane, got, r32(got),
@@ -1108,7 +1457,7 @@ module xdma_chaingather_body #(
         end
         if (bad != 0) begin
           fail($sformatf("round %0d (P=%0d lin): %0d/%0d lanes wrong", round, width, bad,
-                         XferBytes / 4));
+                         cur_bytes / 4));
           ok = 1'b0;
         end
       end else begin
@@ -1414,7 +1763,7 @@ module xdma_chaingather_body #(
                  NumEndpoints / g, g, NumEndpoints / g);
 
         for (int unsigned r = 1; r <= NumRounds; r++) begin
-          run_tree(g, mode, 1'b1, 0, 1'b0, s1, s2, tw, te);
+          run_tree(NumEndpoints, g, mode, 1'b1, 0, 1'b0, 1'b0, s1, s2, tw, te);
           check_result(r, NumEndpoints, mode, ok_data);
           check_idle(r, NumEndpoints, ok_idle);
           round_ok = (te == 0) && ok_data && ok_idle;
@@ -1455,7 +1804,8 @@ module xdma_chaingather_body #(
           for (int unsigned r = 1; r <= NumRounds; r++) begin
             nosync_rounds++;
             nosync_skew_rounds[dm][si]++;
-            run_tree(TreeUnsyncG, mode, 1'b0, SkewCC[si], defer_last, s1, s2, tw, te);
+            run_tree(NumEndpoints, TreeUnsyncG, mode, 1'b0, SkewCC[si], defer_last, 1'b0,
+                     s1, s2, tw, te);
             check_result(r, NumEndpoints, mode, ok_data);
             check_idle(r, NumEndpoints, ok_idle);
             round_ok = (te == 0) && ok_data && ok_idle;
@@ -1543,14 +1893,6 @@ module xdma_chaingather_body #(
   // ==========================================================================================
   `define DP(e) gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath
 
-  function automatic int unsigned to_ep(input tb_addr_t a);
-    begin
-      if (a < ClusterBaseAddr) return 99;
-      return (a - ClusterBaseAddr) / ClusterAddressSpace;
-    end
-  endfunction
-
-  bit trace_bus;
 
   // The OUTGOING accompanied cfg, logged on every to-remote data beat that actually fires. `dst`
   // is what the adapter routes by, and `isChainedForward` chooses which of the two candidate
@@ -1758,6 +2100,173 @@ module xdma_chaingather_body #(
   // If the control passes and the test deadlocks, a node cannot be re-used in a different chain
   // role, and that -- not synchronisation -- is what blocks the tree.
   // ==========================================================================================
+  // ==========================================================================================
+  // THE COLLECTIVE COMPARISON: software baseline vs chain reduce vs tree reduce.
+  //
+  // Volume per endpoint is FIXED (NumBeats * 64 B); the endpoint count is swept. All three
+  // schemes fold the same P partials into the same answer at ep0 and are checked against the
+  // same golden, so the numbers are like-for-like.
+  //
+  // Reported per scheme:
+  //   lat_cc     end-to-end cycles at the root, from first task start to the answer being
+  //              complete. For the collectives this includes their chain/tree unroll; for the
+  //              baseline it includes its P-1 reprogrammings, because a core really does pay
+  //              those. `cfg` counts them so that cost can be separated out.
+  //   bursts     wide-fabric payload transactions
+  //   beats      wide-fabric payload beats (64 B each)
+  //   hop.beats  the same beats weighted by Manhattan distance on the 4x4 chiplet mesh. THIS is
+  //              the metric that separates the schemes -- they move similar amounts of data, but
+  //              a chain moves it between neighbours and the baseline drags all of it to ep0.
+  //   sram       total TCDM word accesses, RTL-measured plus the modelled SIMD passes
+  //   hot        the busiest single endpoint's share of that
+  // ==========================================================================================
+  localparam int unsigned NumBenchP = 8;
+  localparam int unsigned BenchP[NumBenchP] = '{2, 4, 6, 8, 10, 12, 14, 16};
+
+  // Volumes for the second phase, in beats. Capped at the compile-time NumBeats because the TCDM
+  // map is sized for that; a larger point needs a larger build, not a larger runtime value.
+  localparam int unsigned NumBenchV = 4;
+  localparam int unsigned BenchV[NumBenchV] = '{1, 4, 16, 64};
+
+  // Balanced tree split: the largest divisor of p not exceeding sqrt(p). Minimises
+  // chain(G) + chain(p/G), which is what the tree costs.
+  function automatic int unsigned bench_tree_g(input int unsigned p);
+    int unsigned g;
+    begin
+      g = 1;
+      for (int unsigned c = 2; c * c <= p; c++) if ((p % c) == 0) g = c;
+      bench_tree_g = g;
+    end
+  endfunction
+
+  task automatic run_chain_once(input int unsigned width, output logic [31:0] task_cc,
+                                output logic [31:0] wall_cc, output int unsigned err);
+    bit          ok_start, ok_data;
+    logic [31:0] t0, wc_inner;
+    begin
+      err = 0;
+      fill_sentinel(ModeLin);
+      repeat (5) @(posedge clk);
+      t0 = cyc_cnt;
+      issue_gather(width, ModeLin);
+      start_and_wait(1, task_cc, wc_inner, ok_start);
+      wall_cc = cyc_cnt - t0;
+      repeat (50) @(posedge clk);
+      check_result(1, width, ModeLin, ok_data);
+      if (!ok_start || !ok_data) err++;
+    end
+  endtask
+
+  task automatic bench_row(input string scheme, input int unsigned p, input logic [31:0] lat,
+                           input logic [31:0] hw, input int unsigned cfg, input bit pass);
+    begin
+      $display("[Bench] %4d  %-5s  %8d  %8d  %6d  %7d  %9d  %8d  %8d  %5d %5d  %4d  %s", p,
+               scheme, lat, hw, fab_bursts, fab_beats, fab_hopbeats, sram_total(), sram_hotspot(),
+               ctl_bursts, ctl_hops, cfg, pass ? "PASS" : "FAIL");
+    end
+  endtask
+
+  task automatic vol_row(input int unsigned bytes, input string scheme, input logic [31:0] lat,
+                         input logic [31:0] hw, input int unsigned cfg, input bit pass);
+    begin
+      $display("[Bench] %6d  %-5s  %8d  %8d  %6d  %7d  %9d  %8d  %8d  %5d %5d  %4d  %s", bytes,
+               scheme, lat, hw, fab_bursts, fab_beats, fab_hopbeats, sram_total(),
+               sram_hotspot(), ctl_bursts, ctl_hops, cfg, pass ? "PASS" : "FAIL");
+    end
+  endtask
+
+  task automatic run_bench_experiment();
+    logic [31:0] lat, hw, tc, wc, s1, s2, tw;
+    int unsigned e, cfg, g, p;
+    bit          ok;
+    begin
+      $display("");
+      $display("================================================================");
+      $display("[Bench] volume per endpoint = %0d B (%0d beats), SIMD model = %0d B/cycle",
+               XferBytes, NumBeats, SimdBytesPerCycle);
+      $display("[Bench] mesh = %0dx%0d, chip ids row-major; hop.beats = beats x Manhattan hops",
+               MeshW, MeshW);
+      $display("");
+      $display({"[Bench]    P  sch      lat_cc     hw_cc  bursts    beats  hop.beats      sram",
+                "       hot ctl.b ctl.h   cfg  res"});
+
+      for (int unsigned pi = 0; pi < NumBenchP; pi++) begin
+        p = BenchP[pi];
+        if (p > NumEndpoints) continue;
+
+        // ---- 1. software baseline: P-1 remote fetches, SIMD folds ----
+        ctr_clear();
+        run_sw_baseline(p, lat, hw, cfg, e);
+        repeat (50) @(posedge clk);
+        check_result(1, p, ModeLin, ok);
+        bench_row("sw", p, lat, hw, cfg, (e == 0) && ok);
+
+        // ---- 2. chain reduce: one CHAINGATHER over all P ----
+        ctr_clear();
+        run_chain_once(p, tc, wc, e);
+        bench_row("chain", p, wc, tc, 1, (e == 0));
+
+        // ---- 3. tree reduce: P/G group gathers, then a chain over the collectors ----
+        g = bench_tree_g(p);
+        if (g > 1) begin
+          ctr_clear();
+          run_tree(p, g, ModeLin, 1'b1, 0, 1'b0, 1'b0, s1, s2, tw, e);
+          repeat (50) @(posedge clk);
+          check_result(1, p, ModeLin, ok);
+          bench_row($sformatf("tr/%0d", g), p, tw, s1 + s2, (p / g) + 1, (e == 0) && ok);
+
+          // the same tree, with each group gather programmed by its own chiplet
+          ctr_clear();
+          run_tree(p, g, ModeLin, 1'b1, 0, 1'b0, 1'b1, s1, s2, tw, e);
+          repeat (50) @(posedge clk);
+          check_result(1, p, ModeLin, ok);
+          bench_row($sformatf("tr/%0d|", g), p, tw, s1 + s2, 2, (e == 0) && ok);
+        end
+        $display("[Bench]");
+      end
+
+      // ==== PHASE 2: fix the endpoint count, sweep the VOLUME. ====
+      // The three schemes have different FIXED costs (task submissions, chain/tree unroll) and
+      // different PER-BYTE costs, so which one wins is a function of volume, not only of P.
+      // Sweeping it is what turns "the collective is faster" into "the collective is faster
+      // above X bytes, and here is why".
+      p = (NumEndpoints >= 16) ? 16 : NumEndpoints;
+      $display("");
+      $display("[Bench] volume sweep at P=%0d", p);
+      $display({"[Bench]  bytes  sch      lat_cc     hw_cc  bursts    beats  hop.beats      sram",
+                "       hot ctl.b ctl.h   cfg  res"});
+      for (int unsigned vi = 0; vi < NumBenchV; vi++) begin
+        if (BenchV[vi] > NumBeats) continue;
+        set_volume(BenchV[vi]);
+        seed_partials();
+        repeat (5) @(posedge clk);
+
+        ctr_clear();
+        run_sw_baseline(p, lat, hw, cfg, e);
+        repeat (50) @(posedge clk);
+        check_result(1, p, ModeLin, ok);
+        vol_row(cur_bytes, "sw", lat, hw, cfg, (e == 0) && ok);
+
+        ctr_clear();
+        run_chain_once(p, tc, wc, e);
+        vol_row(cur_bytes, "chain", wc, tc, 1, (e == 0));
+
+        g = bench_tree_g(p);
+        if (g > 1) begin
+          ctr_clear();
+          run_tree(p, g, ModeLin, 1'b1, 0, 1'b0, 1'b1, s1, s2, tw, e);
+          repeat (50) @(posedge clk);
+          check_result(1, p, ModeLin, ok);
+          vol_row(cur_bytes, $sformatf("tr/%0d", g), tw, s1 + s2, (p / g) + 1, (e == 0) && ok);
+        end
+        $display("[Bench]");
+      end
+      set_volume(NumBeats);
+      seed_partials();
+      $display("================================================================");
+    end
+  endtask
+
   task automatic run_role_change();
     tb_addr_t    ch[16];
     logic [31:0] w;
@@ -1802,7 +2311,7 @@ module xdma_chaingather_body #(
       // buries the one line that matters. Set `.Verbose(2)` in tb_xdma_chaingather_role.sv to
       // bring the per-beat trace back when this ever fails again.
       trace_bus = (Verbose > 1);
-      for (int unsigned wi = 0; wi < XferBytes / 8; wi++) begin
+      for (int unsigned wi = 0; wi < cur_bytes / 8; wi++) begin
         mem[1][(GrpDstOffset + wi * 8)>>3] = {32'hDEAD_BEEF, 32'hDEAD_BEEF};
       end
       repeat (5) @(posedge clk);
@@ -1901,6 +2410,9 @@ module xdma_chaingather_body #(
     $display("================================================================");
     if (RoleChange) begin
       $display(" MINIMAL ROLE-CHANGE REPRODUCER: 3 endpoints");
+    end else if (Bench) begin
+      $display(" COLLECTIVE COMPARISON: software baseline vs chain reduce vs tree reduce");
+      $display("   %0d endpoints max, %0d B per endpoint, sweeping P", NumEndpoints, XferBytes);
     end else if (Tree) begin
       $display(" TREE vs CHAIN reduction: %0d endpoints, %0d rounds per configuration",
                NumEndpoints, NumRounds);
@@ -1920,6 +2432,8 @@ module xdma_chaingather_body #(
 
     if (RoleChange) begin
       run_role_change();
+    end else if (Bench) begin
+      run_bench_experiment();
     end else if (Tree) begin
       run_tree_experiment();
     end else if (Sweep) begin
@@ -1940,7 +2454,7 @@ module xdma_chaingather_body #(
                    (mode == ModeLin) ? "lin" : "mom", tc, wc, (ce == 0) ? "PASS" : "FAIL");
         end
       end
-    end else if (!Tree && !RoleChange) begin
+    end else if (!Tree && !RoleChange && !Bench) begin
       run_config(ChainWidth, JunctionId, tc, wc, ce);
       $display(" P=%0d %s: %0d task cycles, %0d wall cycles  %s", ChainWidth,
                (JunctionId == 0) ? "lin" : "mom", tc, wc, (ce == 0) ? "PASS" : "FAIL");
