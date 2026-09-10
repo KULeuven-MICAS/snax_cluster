@@ -17,9 +17,11 @@
 /sw/snax/versacore-dse/include/snax_versacore_stationarity.h
 /sw/**/include/*csr_addr_map.h
 /sw/**/include/*params.h
-# xDMA SW address-map header: generated from the cfg by XDMATopGen (also in
-# sw_only builds now), same as the streamer's *csr_addr_map.h above. Keeping it
-# committed let it go stale when the cfg moved extensions reader<->writer.
-/sw/snax/xdma/include/snax-xdma-addr.h
+# SW address-map headers for the xDMA and the SIMD block: generated from the cfg
+# by XDMATopGen / SimdTopGen (also in sw_only builds now), same as the streamer's
+# *csr_addr_map.h above. Keeping one committed let it go stale when the cfg moved
+# extensions reader<->writer, and every rtl-gen showed it as a spurious diff.
+# One pattern so a new block cannot be forgotten the way snax-simd-addr.h was.
+/sw/snax/*/include/snax-*-addr.h
 
 **/data.h
