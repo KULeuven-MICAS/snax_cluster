@@ -18,18 +18,18 @@
 #define SIMD_SRC_ENABLED_CHAN_PTR SIMD_SRC_TEMP_STRIDE_PTR + SIMD_SRC_TEMP_DIM
 
 // Extension region
-#define SIMD_EXT_NUM 6
+#define SIMD_EXT_NUM 7
 #define SIMD_EXT_ENABLE_PTR SIMD_SRC_ENABLED_CHAN_PTR + 1
 #define SIMD_EXT_CSR_PTR SIMD_EXT_ENABLE_PTR + 1
-#define SIMD_EXT_CSR_NUM 10
+#define SIMD_EXT_CSR_NUM 11
 #define SIMD_EXT_CUSTOM_CSR_NUM \
-    { 1, 1, 3, 2, 2, 1 }
+    { 1, 1, 3, 2, 2, 1, 1 }
 
 // Writer region
 #define SIMD_DST_ADDR_PTR_LSB SIMD_EXT_CSR_PTR + SIMD_EXT_CSR_NUM
 #define SIMD_DST_ADDR_PTR_MSB SIMD_DST_ADDR_PTR_LSB + 1
 #define SIMD_DST_SPATIAL_STRIDE_PTR SIMD_DST_ADDR_PTR_MSB + 1
-#define SIMD_DST_TEMP_DIM 5
+#define SIMD_DST_TEMP_DIM 3
 #define SIMD_DST_TEMP_BOUND_PTR SIMD_DST_SPATIAL_STRIDE_PTR + 1
 #define SIMD_DST_TEMP_STRIDE_PTR SIMD_DST_TEMP_BOUND_PTR + SIMD_DST_TEMP_DIM
 #define SIMD_DST_ENABLED_CHAN_PTR SIMD_DST_TEMP_STRIDE_PTR + SIMD_DST_TEMP_DIM
@@ -48,12 +48,34 @@
 #define SIMD_STATUS SIMD_PERF_CTR_WRITER + 1
 
 // Total read-write CSRs, for a compile-time cross-check against SIMD_START_PTR + 1.
-#define SIMD_RW_CSR_NUM 41
+#define SIMD_RW_CSR_NUM 38
 
-// Extension Information
+// Operator ids, and the CONSTANT CSR base of each one.
+//
+// The base matters as much as the id: csrw_ss is a switch over the CSR number
+// (RISC-V csrw takes an immediate), so a write whose address the compiler can
+// fold costs one instruction while a computed one costs a jump-table load from
+// L2 plus an indirect jump. Emitting the per-operator base here lets software
+// write operator CSRs at compile-time-constant addresses instead of walking
+// SIMD_EXT_CUSTOM_CSR_NUM at run time.
 #define SIMD_EXT_TRANSPOSERROW8_8COL8_8BIT8_16 0
+#define SIMD_EXT_TRANSPOSERROW8_8COL8_8BIT8_16_CSR (SIMD_EXT_CSR_PTR + 0)
+#define SIMD_EXT_TRANSPOSERROW8_8COL8_8BIT8_16_CSR_NUM 1
 #define SIMD_EXT_ELEMENTWISEADDBIT32 1
+#define SIMD_EXT_ELEMENTWISEADDBIT32_CSR (SIMD_EXT_CSR_PTR + 1)
+#define SIMD_EXT_ELEMENTWISEADDBIT32_CSR_NUM 1
 #define SIMD_EXT_STREAMMAP 2
+#define SIMD_EXT_STREAMMAP_CSR (SIMD_EXT_CSR_PTR + 2)
+#define SIMD_EXT_STREAMMAP_CSR_NUM 3
 #define SIMD_EXT_STREAMREDUCE 3
+#define SIMD_EXT_STREAMREDUCE_CSR (SIMD_EXT_CSR_PTR + 5)
+#define SIMD_EXT_STREAMREDUCE_CSR_NUM 2
 #define SIMD_EXT_STREAMELEMENTWISE 4
+#define SIMD_EXT_STREAMELEMENTWISE_CSR (SIMD_EXT_CSR_PTR + 7)
+#define SIMD_EXT_STREAMELEMENTWISE_CSR_NUM 2
 #define SIMD_EXT_FP16TOINT8 5
+#define SIMD_EXT_FP16TOINT8_CSR (SIMD_EXT_CSR_PTR + 9)
+#define SIMD_EXT_FP16TOINT8_CSR_NUM 1
+#define SIMD_EXT_INT32TOFP16CONVERTER_512 6
+#define SIMD_EXT_INT32TOFP16CONVERTER_512_CSR (SIMD_EXT_CSR_PTR + 10)
+#define SIMD_EXT_INT32TOFP16CONVERTER_512_CSR_NUM 1

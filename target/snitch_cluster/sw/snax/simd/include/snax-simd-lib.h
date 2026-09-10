@@ -2,14 +2,41 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Driver for the standalone SIMD block (<cluster>_simd): the reader-side
-// operator bank of the xDMA on its own core.
+// Driver for the standalone SIMD block (<cluster>_simd) on the four-engine
+// cluster: hart 1's vector engine.
 //
-// Deliberately shaped like snax-xdma-lib so porting an app is mechanical:
-// same memcpy_nd argument order, same enable_ext/start/wait contract. What is
-// absent is everything cross-cluster -- there is no multicast, no remote
-// destination, no chained transfer and no full-address variant, because the
-// SIMD block has no AXI. Every pointer is a local TCDM address.
+// THIS IS NOT A DMA. The first version of this header was a direct
+// transliteration of snax-xdma-lib -- `memcpy_nd(src, dst, ...)` with thirteen
+// positional arguments, `spatial_stride`, `enabled_byte_dst` -- which described
+// a transfer that happens to compute something on the way. That is backwards.
+// The block reads a stream, applies a chain of operators to it, and writes a
+// stream; the addresses and strides are the *shape of the iteration space*, not
+// a transfer descriptor. A copy is just the degenerate case with no operator.
+//
+// So the interface is three nouns:
+//
+//   snax_simd_shape_t   what to sweep -- base, lane layout, nested bounds/strides
+//   snax_simd_op_t      what to compute -- an operator and its configuration
+//   a task              = input shape + operator chain -> output shape
+//
+// and the verbs are configure / launch / wait, or `run` for all three:
+//
+//   snax_simd_shape_t in, out;
+//   snax_simd_op_t    op;
+//   snax_simd_shape_flat(&in,  x, beats);
+//   snax_simd_shape_flat(&out, y, beats);
+//   snax_simd_op_map(&op, SIMD_EXT_STREAMMAP, SIMD_FUNC_EXP,
+//                    SIMD_F32_ONE, snax_simd_f32_neg(max_bits));
+//   snax_simd_run(&in, &out, &op, 1);
+//
+// The input and output shapes are programmed independently ON PURPOSE, and this
+// is the thing a DMA framing hides: the operator chain decides how many beats
+// come out. A reduce turns N beats into 1 (or N+1 in tap mode); a quantiser
+// turns N into N/2. The caller states both shapes because only it knows the
+// chain. `snax_simd_out_beats()` computes the common cases.
+//
+// Everything cross-cluster is absent: no multicast, no remote destination, no
+// chained transfer, no AXI. Every pointer is a local TCDM address.
 
 #pragma once
 #include <stdbool.h>
@@ -24,6 +51,14 @@
 // different harts, so there is no conflict.
 #define SIMD_CFG_ADDR 960
 
+// Bytes moved per beat, and bytes per lane within a beat.
+#define SIMD_BEAT_BYTES SIMD_WIDTH
+#define SIMD_LANE_BYTES (SIMD_WIDTH / SIMD_SPATIAL_CHAN)
+
+// Deepest nested sweep the hardware supports, and the widest operator CSR block.
+#define SIMD_MAX_DIM SIMD_SRC_TEMP_DIM
+#define SIMD_MAX_OP_CSR 4
+
 // always_inline so a compile-time-constant `addr` propagates into the
 // csrr_ss/csrw_ss switch and constant-folds to a single direct csrr/csrw <imm>.
 // Without it every CSR access pays a jump-table load from L2 plus an indirect
@@ -37,44 +72,241 @@ __attribute__((always_inline)) static inline void snax_write_simd_cfg_reg(
     csrw_ss(SIMD_CFG_ADDR + addr, value);
 }
 
-// ---------------------------------------------------------------- task setup
+// ============================================================== shapes
 
-// Program an n-dimensional TCDM->TCDM pass. Returns 0 on success, negative on a
-// configuration error. This only writes the CSRs; snax_simd_start() launches.
-int32_t snax_simd_memcpy_nd(void* src, void* dst, uint32_t spatial_stride_src,
-                            uint32_t spatial_stride_dst, uint32_t temp_dim_src,
-                            uint32_t* temp_stride_src, uint32_t* temp_bound_src,
-                            uint32_t temp_dim_dst, uint32_t* temp_stride_dst,
-                            uint32_t* temp_bound_dst, uint32_t enabled_chan_src,
-                            uint32_t enabled_chan_dst,
-                            uint32_t enabled_byte_dst);
+// The iteration space of one side of a task.
+//
+// `bound`/`stride` are the nested loops, innermost first, in BEATS and BYTES
+// respectively. `lane_stride` is the distance between adjacent lanes inside one
+// beat -- SIMD_LANE_BYTES for contiguous data, something else for a strided
+// gather. `lane_mask` selects participating lanes; `byte_mask` (output only)
+// selects which bytes of each word are written.
+typedef struct {
+    void* base;  // must be SIMD_BEAT_BYTES aligned
+    uint32_t lane_stride;
+    uint32_t lane_mask;
+    uint32_t byte_mask;
+    uint32_t dim;
+    uint32_t bound[SIMD_MAX_DIM];
+    uint32_t stride[SIMD_MAX_DIM];
+} snax_simd_shape_t;
 
-// Contiguous `size` bytes. `size` must be a multiple of SIMD_WIDTH.
-int32_t snax_simd_memcpy_1d(void* src, void* dst, uint32_t size);
+// Constructors fill a caller-owned struct rather than returning one: a 60-byte
+// by-value return lowers to a memcpy() call, and this is a freestanding runtime
+// with no libc.
 
-// ---------------------------------------------------------------- extensions
+// `beats` consecutive beats from `base`.
+void snax_simd_shape_flat(snax_simd_shape_t* s, void* base, uint32_t beats);
 
-// Set the extension's enable bit and write its user CSRs. `csr_value` must hold
-// at least as many words as SIMD_EXT_CUSTOM_CSR_NUM gives for this extension.
-int32_t snax_simd_enable_ext(uint8_t ext, uint32_t* csr_value);
-int32_t snax_simd_disable_ext(uint8_t ext);
+// `rows` rows of `beats_per_row` beats each, rows `row_stride` bytes apart.
+// This is the shape a row-wise reduction sweeps.
+void snax_simd_shape_rows(snax_simd_shape_t* s, void* base, uint32_t rows,
+                          uint32_t beats_per_row, uint32_t row_stride);
 
-// Clear every extension enable bit. Cheaper and less error-prone than disabling
-// them one by one between passes of a multi-pass chain.
-void snax_simd_disable_all_ext(void);
+// One beat, presented `beats` times. Stride 0 drives the reader's repeat path,
+// which is how a per-row scalar is broadcast against a full row without
+// materialising it.
+// A 2-D sweep with strides given outright, innermost first, in BYTES. The two
+// patterns the rows/flat helpers cannot express both live here:
+//   stride0 == 0                 re-present one beat bound0 times (broadcast)
+//   bound0 == 2, stride0 == d    interleave two operand streams d apart, which
+//                                is how a 2-operand StreamElementwise is fed
+// `d` must be POSITIVE: the AGU stride is unsigned, so a second operand placed
+// below the first wraps the address, reads outside TCDM and writes X while the
+// task still reports complete.
+void snax_simd_shape_2d(snax_simd_shape_t* s, void* base, uint32_t bound0,
+                        uint32_t stride0, uint32_t bound1, uint32_t stride1);
 
-// ---------------------------------------------------------------- run control
+void snax_simd_shape_broadcast(snax_simd_shape_t* s, void* base,
+                               uint32_t beats);
 
-// Launch the staged task. Returns its id: the value the submitted-task counter
-// reaches once the block has accepted the configuration.
-static inline uint32_t snax_simd_start() {
-    uint32_t submitted = snax_read_simd_cfg_reg(SIMD_SUBMITTED_TASK_PTR);
-    snax_write_simd_cfg_reg(SIMD_START_PTR, 1);
-    while (snax_read_simd_cfg_reg(SIMD_SUBMITTED_TASK_PTR) == submitted) {
-        // The task queue was full; the write is held until it drains.
-    }
-    return snax_read_simd_cfg_reg(SIMD_SUBMITTED_TASK_PTR);
+// Total beats a shape sweeps (the product of its bounds).
+uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
+
+// ============================================================== operators
+
+// Operator ids come from the generated header as SIMD_EXT_<NAME>; which ones
+// exist depends on the cluster cfg.
+
+// StreamMap: out = func(a * x + b), elementwise. csr(2) bits[1:0] select func.
+#define SIMD_FUNC_LINEAR 0u
+#define SIMD_FUNC_EXP 1u
+#define SIMD_FUNC_SILU 2u
+
+// StreamReduce: fold a row of `operand_beats` down to one scalar beat.
+#define SIMD_RED_MAX 0u
+#define SIMD_RED_ADD 1u
+#define SIMD_RED_SUMSQ 2u
+// Pass the row through AND emit the scalar as a trailing beat, so one task
+// yields both a transformed row and its reduction: N beats in, N+1 out.
+#define SIMD_RED_TAP 0x100u
+// Emit the scalar as FP32 rather than narrowing to the transport grid -- needed
+// when the sum would overflow FP16.
+#define SIMD_RED_FP32OUT 0x200u
+
+// StreamElementwise: combine `operand_beats` interleaved operands into one.
+#define SIMD_EW_MUL 0u
+#define SIMD_EW_ADD 1u
+
+typedef struct {
+    uint8_t id;
+    uint8_t csr_num;
+    uint32_t csr[SIMD_MAX_OP_CSR];
+} snax_simd_op_t;
+
+// out = func(a * x + b). `a` and `b` are FP32 BIT PATTERNS -- see the note on
+// floats above; SIMD_F32_ONE and snax_simd_f32_from_f16() cover most cases.
+void snax_simd_op_map(snax_simd_op_t* op, uint8_t ext, uint32_t func,
+                      uint32_t a_bits, uint32_t b_bits);
+
+// Fold `operand_beats` beats into one scalar beat. `mode` is one of
+// SIMD_RED_* optionally OR-ed with SIMD_RED_TAP / SIMD_RED_FP32OUT.
+void snax_simd_op_reduce(snax_simd_op_t* op, uint8_t ext, uint32_t mode,
+                         uint32_t operand_beats);
+
+// Combine `operand_beats` interleaved operands elementwise.
+void snax_simd_op_elementwise(snax_simd_op_t* op, uint8_t ext, uint32_t mode,
+                              uint32_t operand_beats);
+
+// FP16 -> INT8 quantisation by `inv_scale` (FP32 bits). Halves the beat count.
+void snax_simd_op_quantise(snax_simd_op_t* op, uint8_t ext,
+                           uint32_t inv_scale_bits);
+
+// Any operator, given its raw CSR words -- the escape hatch for an extension
+// this header does not model yet.
+void snax_simd_op_raw(snax_simd_op_t* op, uint8_t ext, const uint32_t* csr,
+                      uint32_t csr_num);
+
+// NO `float` ANYWHERE IN THIS API, DELIBERATELY.
+//
+// The cores that drive the SIMD block are rv32ima -- integer only, no FPU. A
+// `float` parameter compiles to an FP instruction and traps with an illegal
+// instruction the moment the kernel runs. (Found exactly that way: `fmv.w.x`,
+// opcode 0xf00005d3, on hart 1.) The operator CSRs take FP32 BIT PATTERNS, and
+// the kernels already build those with integer arithmetic, so the API takes
+// bits too.
+
+#define SIMD_F32_ZERO 0x00000000u
+#define SIMD_F32_ONE 0x3F800000u
+#define SIMD_F32_NEG_ONE 0xBF800000u
+
+// Flip the sign of an FP32 bit pattern -- integer-only, as the kernels do it.
+static inline uint32_t snax_simd_f32_neg(uint32_t bits) {
+    return bits ^ 0x80000000u;
 }
+
+// Widen an FP16 bit pattern to FP32 bits. Pure integer: the per-row scalars a
+// reduction produces come back as FP16 and usually need widening before they
+// can be fed to the next operator's `a`/`b`.
+static inline uint32_t snax_simd_f32_from_f16(uint16_t h) {
+    uint32_t sign = (uint32_t)(h >> 15) & 0x1u;
+    uint32_t exp = (uint32_t)(h >> 10) & 0x1Fu;
+    uint32_t mant = (uint32_t)(h & 0x3FFu);
+    if (exp == 0) {
+        if (mant == 0) return sign << 31;  // +-0
+        int shift = 0;
+        while ((mant & 0x400u) == 0) {
+            mant <<= 1;
+            shift++;
+        }
+        mant &= 0x3FFu;
+        exp = 127 - 15 - shift + 1;
+        return (sign << 31) | (exp << 23) | (mant << 13);
+    }
+    if (exp == 0x1F) return (sign << 31) | 0x7F800000u | (mant << 13);
+    return (sign << 31) | ((exp - 15 + 127) << 23) | (mant << 13);
+}
+
+// ============================================================== tasks
+
+// Program a task: sweep `in`, apply `ops` in order, write `out`. Does not
+// launch. Returns 0, or negative on a shape/operator error.
+int32_t snax_simd_configure(const snax_simd_shape_t* in,
+                            const snax_simd_shape_t* out,
+                            const snax_simd_op_t* ops, uint32_t n_ops);
+
+// Launch the configured task; returns its id. Polls until the block has taken
+// the configuration.
+uint32_t snax_simd_launch(void);
+
+// Launch without the confirm-poll. The block has a 2-deep task queue, so a kernel
+// that stages the next task immediately overlaps its own CSR writes with the
+// running task instead of serialising behind it. Wait on the finished counter.
+uint32_t snax_simd_launch_async(void);
+
+// MEASURED unit costs on this block, 64 accesses warm: a csrw is 1.0 cycle
+// (posted -- ReqRspManager answers combinationally and snax_csr_mux_demux is
+// pure always_comb), a csrr is 5.1 cycles, because the core stalls on the
+// accelerator round trip until writeback. Reads are what cost; there is nothing
+// to shave inside SNAX, so the lever is issuing fewer of them. Note in
+// particular that launch_async() below reads the submitted-task counter back,
+// which is 5 cycles a call if the caller discards it.
+
+// Program a task from two shapes with nothing but CSR writes -- no validation,
+// no branches, no calls. See the note in the .c: the checked entry point costs
+// 313 cycles for 23 CSR writes because its 752-byte footprint misses in L1I,
+// and this is what removes that. The shapes' unused dimensions must carry the
+// neutral bound=1/stride=0 that the snax_simd_shape_* constructors install.
+void snax_simd_program_fast(const snax_simd_shape_t* in,
+                            const snax_simd_shape_t* out);
+
+// Arm an operator with all-constant CSR addresses.
+//
+// snax_simd_enable_ext() has to walk SIMD_EXT_CUSTOM_CSR_NUM at run time to find
+// the operator's CSR block, so every write it makes has a computed address and
+// pays the jump-table dispatch. These macros take the generated
+// SIMD_EXT_<NAME>_CSR base instead, so the whole arming is a handful of
+// `csrw imm`. Use the arity that matches SIMD_EXT_<NAME>_CSR_NUM.
+// Arm exactly one operator and disable every other, in a SINGLE csrw.
+//
+// The arm0 family below read-modify-writes the enable mask, and a read is 5
+// cycles against a write's 1. But every call site here is
+// `disable_all_ext(); arm<N>(...)`, whose combined effect on the mask is just
+// `1 << id` -- a value that needs no reading to compute. These replace 1 write
+// + 1 read + 1 write with 1 write.
+#define snax_simd_use0(id) \
+    snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, 1u << (id))
+#define snax_simd_use1(id, base, c0)               \
+    do {                                           \
+        snax_simd_use0(id);                        \
+        snax_write_simd_cfg_reg((base) + 0, (c0)); \
+    } while (0)
+#define snax_simd_use2(id, base, c0, c1)           \
+    do {                                           \
+        snax_simd_use1(id, base, c0);              \
+        snax_write_simd_cfg_reg((base) + 1, (c1)); \
+    } while (0)
+#define snax_simd_use3(id, base, c0, c1, c2)       \
+    do {                                           \
+        snax_simd_use2(id, base, c0, c1);          \
+        snax_write_simd_cfg_reg((base) + 2, (c2)); \
+    } while (0)
+
+#define snax_simd_arm0(id)                                        \
+    snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR,                  \
+                            snax_read_simd_cfg_reg(SIMD_EXT_ENABLE_PTR) | (1u << (id)))
+#define snax_simd_arm1(id, base, c0)          \
+    do {                                      \
+        snax_simd_arm0(id);                   \
+        snax_write_simd_cfg_reg((base) + 0, (c0)); \
+    } while (0)
+#define snax_simd_arm2(id, base, c0, c1)      \
+    do {                                      \
+        snax_simd_arm1(id, base, c0);         \
+        snax_write_simd_cfg_reg((base) + 1, (c1)); \
+    } while (0)
+#define snax_simd_arm3(id, base, c0, c1, c2)  \
+    do {                                      \
+        snax_simd_arm2(id, base, c0, c1);     \
+        snax_write_simd_cfg_reg((base) + 2, (c2)); \
+    } while (0)
+
+// Write one operator CSR at a CONSTANT address. `base` must be a compile-time
+// constant -- use the generated SIMD_EXT_<NAME>_CSR macros. This is the cheap way
+// to change a coefficient between passes: one `csrw imm` rather than a
+// jump-table dispatch.
+#define snax_simd_set_op_csr(base, idx, val) \
+    snax_write_simd_cfg_reg((base) + (idx), (val))
 
 // Block until the task with this id has retired.
 static inline void snax_simd_wait(uint32_t task_id) {
@@ -82,30 +314,100 @@ static inline void snax_simd_wait(uint32_t task_id) {
     }
 }
 
-// Block until the engine is idle -- every submitted task has retired.
-static inline void snax_simd_wait_all() {
+// Block until every submitted task has retired.
+static inline void snax_simd_wait_all(void) {
     snax_simd_wait(snax_read_simd_cfg_reg(SIMD_SUBMITTED_TASK_PTR));
 }
 
-// ---------------------------------------------------------------- status
+// configure + launch + wait. Returns 0 or the configure error.
+int32_t snax_simd_run(const snax_simd_shape_t* in, const snax_simd_shape_t* out,
+                      const snax_simd_op_t* ops, uint32_t n_ops);
 
-static inline uint32_t snax_simd_last_task_cycle() {
+// Re-point an already-configured task at new buffers and a new output beat
+// count, keeping its geometry and operators. This is what a multi-pass chain
+// uses between passes: five CSR writes instead of a full reprogram.
+int32_t snax_simd_repoint(void* in_base, void* out_base, uint32_t out_beats);
+
+// How many beats a chain emits for `in_beats` consumed. Covers the shapes this
+// header models; a chain it cannot predict returns 0 and the caller must state
+// the output shape itself.
+uint32_t snax_simd_out_beats(const snax_simd_op_t* ops, uint32_t n_ops,
+                             uint32_t in_beats);
+
+// ============================================================== convenience
+
+// Elementwise map over `beats` beats: out = func(a * x + b).
+int32_t snax_simd_map(uint8_t ext, void* in, void* out, uint32_t beats,
+                      uint32_t func, uint32_t a_bits, uint32_t b_bits);
+
+// Row-wise reduction: `rows` rows of `beats_per_row`, one scalar beat per row.
+int32_t snax_simd_reduce_rows(uint8_t ext, void* in, void* out, uint32_t rows,
+                              uint32_t beats_per_row, uint32_t mode);
+
+// Row-major transpose through the Transposer operator. `rows`/`cols` must be
+// multiples of the tile width (8); `element_width_bits` is 8 or 16.
+int32_t snax_simd_transpose(void* in, void* out, uint32_t rows, uint32_t cols,
+                            uint32_t element_width_bits);
+
+// A plain copy -- no operator, launched and waited for. Useful for moving a tile
+// within TCDM without waking the DM core, and as the smoke test that the engine
+// is alive. Note it CLEARS the operator chain, because that is what "copy"
+// means; use snax_simd_program_flat() if you have already armed an operator.
+int32_t snax_simd_copy(void* in, void* out, uint32_t bytes);
+
+// Geometry only: sweep `beats` beats in and out, contiguous, leaving the
+// operator chain exactly as it is. This is the shape-setting half of a task for
+// kernels that manage their own operators.
+int32_t snax_simd_program_flat(void* in, void* out, uint32_t beats);
+
+// ============================================================== status
+
+static inline uint32_t snax_simd_last_task_cycle(void) {
     return snax_read_simd_cfg_reg(SIMD_PERF_CTR_TASK);
 }
-static inline uint32_t snax_simd_last_read_cycle() {
+static inline uint32_t snax_simd_last_read_cycle(void) {
     return snax_read_simd_cfg_reg(SIMD_PERF_CTR_READER);
 }
-static inline uint32_t snax_simd_last_write_cycle() {
+static inline uint32_t snax_simd_last_write_cycle(void) {
     return snax_read_simd_cfg_reg(SIMD_PERF_CTR_WRITER);
 }
-
-static inline bool snax_simd_busy() {
+static inline bool snax_simd_busy(void) {
     return (snax_read_simd_cfg_reg(SIMD_STATUS) & 0x1) != 0;
 }
 
-// Sticky since the last start: a task was launched whose AGU never became busy,
+// Sticky since the last launch: a task was started whose AGU never became busy,
 // i.e. the geometry was degenerate. The block drops such a task rather than
 // hanging, so this bit is the only evidence it happened.
-static inline bool snax_simd_bad_config() {
+static inline bool snax_simd_bad_config(void) {
     return (snax_read_simd_cfg_reg(SIMD_STATUS) & 0x2) != 0;
 }
+
+// ============================================================== legacy
+
+// The flat, xDMA-shaped entry point. Kept because snax-simd-compat.h maps the
+// ported kernels' `snax_xdma_*` calls onto it, so they build unchanged for both
+// cluster shapes. New code should use the shape/operator API above.
+int32_t snax_simd_program(void* in, void* out, uint32_t in_lane_stride,
+                          uint32_t out_lane_stride, uint32_t in_dim,
+                          uint32_t* in_stride, uint32_t* in_bound,
+                          uint32_t out_dim, uint32_t* out_stride,
+                          uint32_t* out_bound, uint32_t in_lane_mask,
+                          uint32_t out_lane_mask, uint32_t out_byte_mask);
+
+#define snax_simd_memcpy_nd snax_simd_program
+#define snax_simd_memcpy_nd_fast snax_simd_program
+// Geometry only -- the xDMA's memcpy_1d never touched the operator chain either.
+#define snax_simd_memcpy_1d(in, out, bytes) \
+    snax_simd_program_flat((in), (out), (bytes) / SIMD_BEAT_BYTES)
+#define snax_simd_retask_1d snax_simd_repoint
+#define snax_simd_row_major_transpose snax_simd_transpose
+#define snax_simd_start snax_simd_launch
+
+// ============================================================== operators (raw)
+
+// Arm an operator by id with its raw CSR words, and clear one or all of them.
+// snax_simd_configure() does this for you; these are for kernels that manage
+// the operator chain across several tasks themselves.
+int32_t snax_simd_enable_ext(uint8_t ext, uint32_t* csr_value);
+int32_t snax_simd_disable_ext(uint8_t ext);
+void snax_simd_disable_all_ext(void);
