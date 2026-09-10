@@ -215,7 +215,7 @@ this cfg's junction bank exists to do on HeMAiA.
             // writerPtr[] depth = the maximum ChainGather/multicast chain length (2 CSRs per entry)
             max_multicast: 16
             max_dimension: 5
-            max_mem_size_kiB: 4096, // sets the router's cluster-tag LSB to bit 22 -> 4 MB per cluster
+            max_mem_size_kiB: 65536, // sets the router's cluster-tag LSB to bit 22 -> 4 MB per cluster
             reader_buffer: 12
             writer_buffer: 12
             reader_agu_temporal_dimension: 5
