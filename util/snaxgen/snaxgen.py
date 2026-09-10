@@ -326,6 +326,20 @@ def find_keys_with_keyword(data, keyword, parent_key=""):
     return results
 
 
+def find_core_cfg(cfg_cores, num_cores, key):
+    """Return the single core cfg blob carrying `key`, or None."""
+    found = None
+    for i in range(num_cores):
+        if key in cfg_cores[i]:
+            if found is not None:
+                raise ValueError(
+                    f"More than one core carries {key}. One such block per "
+                    "cluster is supported by the cluster wrapper."
+                )
+            found = cfg_cores[i][key]
+    return found
+
+
 def generate_xdma(cfg, cfg_cores, num_cores, args):
     """Generate the cluster xDMA.
 
@@ -342,6 +356,7 @@ def generate_xdma(cfg, cfg_cores, num_cores, args):
             snax_xdma_cfg = cfg_cores[i]["snax_xdma_cfg"]
     if snax_xdma_cfg is None:
         return
+    snax_simd_cfg = find_core_cfg(cfg_cores, num_cores, "snax_simd_cfg")
 
     print("------------------------------------------------")
     print("    Generate XDMA" + (" (SW header only)" if sw_only else ""))
@@ -374,6 +389,17 @@ def generate_xdma(cfg, cfg_cores, num_cores, args):
         + str(cfg["cluster"]["tcdm"]["size"])
         + " --xdmaCfg "
         + hjson.dumpsJSON(obj=snax_xdma_cfg, separators=(",", ":")).replace(" ", "")
+        # A cluster that also carries a SIMD block emits BOTH blocks from this one
+        # Chisel elaboration, into <name>_blocks.sv. Two elaborations would emit two
+        # differently-optimised copies of the library modules they share (BasicCounter,
+        # the Fp* units, the width converters) under the same names -- a hard compile
+        # error once both files are in one design. See ClusterBlocks in XDMATop.scala.
+        + (
+            " --simdCfg "
+            + hjson.dumpsJSON(obj=snax_simd_cfg, separators=(",", ":")).replace(" ", "")
+            if snax_simd_cfg is not None
+            else ""
+        )
         + " --hw-target-dir "
         + args.gen_path
         + cfg["cluster"]["name"]
@@ -382,6 +408,84 @@ def generate_xdma(cfg, cfg_cores, num_cores, args):
         + args.gen_path
         + "../sw/snax/xdma/include/snax-xdma-addr.h"
         + (" --sw-only" if sw_only else ""),
+    )
+
+
+def generate_simd(cfg, cfg_cores, num_cores, args):
+    """Generate the cluster SIMD block.
+
+    Mirrors generate_xdma: the SW #define header (snax-simd-addr.h) is always
+    (re)generated so it tracks the active cfg, while in sw_only mode the RTL
+    wrapper and the SimdTopGen RTL emission are skipped.
+
+    Unlike the xDMA there is at most one SIMD block per cluster by the same
+    convention (one CSR-attached block per core, and the cluster wrapper wires
+    exactly one), so a second `snax_simd_cfg` is an error rather than a silent
+    last-one-wins.
+    """
+    sw_only = args.sw_only == "true"
+    snax_simd_cfg = find_core_cfg(cfg_cores, num_cores, "snax_simd_cfg")
+    if snax_simd_cfg is None:
+        return
+
+    # When the cluster also has an xDMA, generate_xdma has already emitted the SIMD
+    # RTL as part of <name>_blocks.sv (one elaboration for both blocks -- see the
+    # comment there). Only the SW header is still this function's job.
+    combined_rtl = find_core_cfg(cfg_cores, num_cores, "snax_xdma_cfg") is not None
+
+    header_only = sw_only or combined_rtl
+    print("------------------------------------------------")
+    print(
+        "    Generate SIMD"
+        + (
+            " (SW header only; RTL came from the combined elaboration)"
+            if combined_rtl and not sw_only
+            else (" (SW header only)" if sw_only else "")
+        )
+    )
+    print("------------------------------------------------")
+
+    num_channel = snax_simd_cfg.get(
+        "num_channel",
+        round(cfg["cluster"]["dma_data_width"] / cfg["cluster"]["data_width"]),
+    )
+
+    # RTL wrapper SystemVerilog is RTL-only; skip it in sw_only mode.
+    if not sw_only:
+        tpl_rtl_wrapper = get_template(args.tpl_path + "snax_simd_wrapper.sv.tpl")
+        simd_wrapper_cfg = dict(cfg["cluster"])
+        simd_wrapper_cfg["simd_num_channel"] = num_channel
+        simd_wrapper_cfg["simd_cfg_io_width"] = snax_simd_cfg.get("cfg_io_width", 32)
+        gen_file(
+            cfg=simd_wrapper_cfg,
+            tpl=tpl_rtl_wrapper,
+            target_path=args.gen_path + cfg["cluster"]["name"] + "_simd/",
+            file_name=cfg["cluster"]["name"] + "_simd_wrapper.sv",
+        )
+
+    gen_chisel_file(
+        chisel_path=args.chisel_path,
+        chisel_param="snax.simd.SimdTopGen",
+        gen_path=" --clusterName "
+        + str(cfg["cluster"]["name"])
+        + " --tcdmDataWidth "
+        + str(cfg["cluster"]["data_width"])
+        + " --axiDataWidth "
+        + str(cfg["cluster"]["dma_data_width"])
+        + " --axiAddrWidth "
+        + str(cfg["cluster"]["addr_width"])
+        + " --tcdmSize "
+        + str(cfg["cluster"]["tcdm"]["size"])
+        + " --simdCfg "
+        + hjson.dumpsJSON(obj=snax_simd_cfg, separators=(",", ":")).replace(" ", "")
+        + " --hw-target-dir "
+        + args.gen_path
+        + cfg["cluster"]["name"]
+        + "_simd/"
+        + " --sw-target-dir "
+        + args.gen_path
+        + "../sw/snax/simd/include/snax-simd-addr.h"
+        + (" --sw-only" if header_only else ""),
     )
 
 
@@ -646,6 +750,7 @@ def main():
         # it tracks the active cfg, then skip the RTL-only accelerator /
         # sparse-interconnect generation.
         generate_xdma(cfg, cfg_cores, num_cores, args)
+        generate_simd(cfg, cfg_cores, num_cores, args)
         print("Skipping accelerator / sparse-interconnect generation (sw_only)")
         return
 
@@ -711,6 +816,9 @@ def main():
     # Generate xdma for the whole cluster (RTL + SW header; see generate_xdma).
     generate_xdma(cfg, cfg_cores, num_cores, args)
 
+    # Generate the SIMD block for the whole cluster (RTL + SW header).
+    generate_simd(cfg, cfg_cores, num_cores, args)
+
     # ---------------------------------------
     # Generating Sparse Interconnect
     # ---------------------------------------
@@ -739,6 +847,21 @@ def main():
             if "snax_xdma_cfg" in cfg_cores[i]:
                 narrow_ports += 16
                 sparse_config.append((16, 1))
+            if "snax_simd_cfg" in cfg_cores[i]:
+                # num_channel read ports + num_channel write ports. Sized to the
+                # lane count, not to the DMA beat -- see the plan's Track B 6.3.
+                simd_ports = (
+                    cfg_cores[i]["snax_simd_cfg"].get(
+                        "num_channel",
+                        round(
+                            cfg["cluster"]["dma_data_width"]
+                            / cfg["cluster"]["data_width"]
+                        ),
+                    )
+                    * 2
+                )
+                narrow_ports += simd_ports
+                sparse_config.append((simd_ports, 1))
         # then come the cores
         for i in range(num_cores):
             narrow_ports += 1  # core connection (no ssr assumed)

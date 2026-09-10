@@ -24,6 +24,12 @@ ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster.hjson)
 SUBDIRS += snax/xdma
 endif
 
+# The four-engine split cluster: gemmX on hart 0, the SIMD block on hart 1, the
+# xDMA on hart 2, the classic iDMA on hart 3.
+ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_split_cluster.hjson)
+SUBDIRS += snax/xdma snax/simd
+endif
+
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
 SUBDIRS += snax/xdma
 endif
@@ -59,12 +65,12 @@ endif
 all: $(SUBDIRS)
 
 # Explicit dependency of apps on runtime
-apps: math $(RUNTIME) snax/snax-alu snax/mac snax/data-reshuffler snax/gemmx snax/versacore-to snax/versacore-dse snax/xdma snax/hypercorex
+apps: math $(RUNTIME) snax/snax-alu snax/mac snax/data-reshuffler snax/gemmx snax/versacore-to snax/versacore-dse snax/xdma snax/simd snax/hypercorex
 	$(MAKE) -C $@ TARGET=$(TARGET)
 
 # Explicit dependency of tests on runtime
-tests: math $(RUNTIME) snax/snax-alu snax/mac snax/data-reshuffler snax/gemmx snax/versacore-to snax/versacore-dse snax/xdma snax/hypercorex
+tests: math $(RUNTIME) snax/snax-alu snax/mac snax/data-reshuffler snax/gemmx snax/versacore-to snax/versacore-dse snax/xdma snax/simd snax/hypercorex
 	$(MAKE) -C $@ $(TARGET)
 
-runtime/rtl runtime/banshee runtime/rtl-generic math snax/snax-alu snax/mac snax/data-reshuffler snax/gemmx snax/versacore-to snax/versacore-dse snax/xdma snax/hypercorex:
+runtime/rtl runtime/banshee runtime/rtl-generic math snax/snax-alu snax/mac snax/data-reshuffler snax/gemmx snax/versacore-to snax/versacore-dse snax/xdma snax/simd snax/hypercorex:
 	$(MAKE) -C $@ $(TARGET)

@@ -9,6 +9,13 @@
 MK_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 include $(MK_DIR)/../toolchain.mk
 
+# The four-engine split cluster puts the xDMA and the SIMD block on their own harts.
+# snax-core-roles.h keys off this to resolve snax_is_xdma_core() / snax_is_simd_core();
+# without it they fall back to snrt_is_dm_core(), which is correct for every other cfg.
+ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_split_cluster.hjson)
+RISCV_CFLAGS += -DSNAX_SPLIT_ENGINES
+endif
+
 ###############
 # Directories #
 ###############

@@ -37,6 +37,14 @@ SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-elementwise-add
 endif
+
+# The four-engine split cluster. The reader-side extensions moved to the SIMD
+# block on hart 1, so the SIMD apps live here; the xDMA keeps its writer
+# extension and the junctions, so the memset app still applies to it.
+ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_split_cluster.hjson)
+SUBDIRS += snax-simd-test
+SUBDIRS += snax-xdma-memset
+endif
 # The FP16 SIMD apps below need the StreamMap / StreamReduce / StreamElementwise /
 # Fp16ToInt8 reader extensions, which only cfg/snax_xdma_cluster.hjson builds --
 # they do not compile against the plain KUL cluster above.

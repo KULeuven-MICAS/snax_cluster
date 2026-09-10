@@ -67,7 +67,10 @@ $(BUILDDIR)/compile.tcl: $(ROOT)/Bender.yml $(ROOT)/Bender.lock $(TB_SRCS) $(DUT
 compile: $(BUILDDIR)/compile.tcl
 	cd $(ROOT) && $(QUESTA_ENV) $(VSIM) -64 -c -do "source $(BUILDDIR)/compile.tcl; quit" \
 	  | tee $(BUILDDIR)/compile.log
-	@! grep -q "^\*\* Error" $(BUILDDIR)/compile.log
+	@# vsim -c prefixes every echoed line with "# ", so an anchored "^\*\* Error" never matched
+	@# and a vlog failure used to sail straight through to vopt/vsim -- which then happily ran
+	@# the PREVIOUS design and produced a full, plausible, completely stale set of results.
+	@! grep -qE "^(# )?\*\* Error" $(BUILDDIR)/compile.log
 
 # $(1) = testbench suffix (p2, p3, ...)
 define RUN_TB
@@ -75,6 +78,8 @@ define RUN_TB
 sim-$(1): compile
 	cd $(ROOT) && $(QUESTA_ENV) $(VOPT) $(VOPT_FLAGS) -work $(LIB) tb_xdma_chaingather_$(1) \
 	  -o tb_xdma_chaingather_$(1)_opt | tee $(BUILDDIR)/vopt_$(1).log
+	@# same trap one stage later: vopt failing leaves the previously optimised design in place.
+	@! grep -qE "^(# )?\*\* Error" $(BUILDDIR)/vopt_$(1).log
 	cd $(ROOT) && $(QUESTA_ENV) $(VSIM) $(VSIM_FLAGS) -work $(LIB) tb_xdma_chaingather_$(1)_opt \
 	  -do "run -all; quit" | tee $(BUILDDIR)/sim_$(1).log
 	@grep -q "RESULT: PASS" $(BUILDDIR)/sim_$(1).log || \
@@ -87,7 +92,7 @@ gui-$(1): compile
 	cd $(ROOT) && $(QUESTA_ENV) $(VSIM) -64 -work $(LIB) tb_xdma_chaingather_$(1)_opt
 endef
 
-$(foreach tb,p2 p3 p4 p16 sweep tree tree4 role,$(eval $(call RUN_TB,$(tb))))
+$(foreach tb,p2 p3 p4 p16 sweep tree tree4 role bench,$(eval $(call RUN_TB,$(tb))))
 
 sim-all: sim-p2 sim-p3 sim-p4
 

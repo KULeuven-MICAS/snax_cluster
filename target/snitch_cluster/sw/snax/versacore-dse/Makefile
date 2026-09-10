@@ -74,5 +74,12 @@ clean:
 $(BUILDDIR):
 	mkdir -p $@
 
+# -MMD -MP records the headers each object actually included, so a regenerated CSR map
+# (snax-*-addr.h, streamer_csr_addr_map.h) rebuilds the object instead of leaving a stale
+# one behind. Without this the rule depends on the .c alone: switching cluster cfg changed
+# the CSR offsets, the .c did not change, and the old object was silently linked in --
+# the "make clean doesn't clean it" trap. The apps already do this (see apps/common.mk).
 $(BUILDDIR)/%.o: $(SRC_DIR)/%.c | $(BUILDDIR)
-	$(RISCV_CC) $(RISCV_CFLAGS) -c $< -o $@
+	$(RISCV_CC) $(RISCV_CFLAGS) -MMD -MP -c $< -o $@
+
+-include $(OBJS:.o=.d)

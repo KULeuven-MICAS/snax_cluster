@@ -56,7 +56,7 @@ INCDIRS += $(ROOT)/target/snitch_cluster/sw/runtime/$(RUNTIME_DIR)/include
 ## Outputs #
 ############
 
-OBJS        = $(BUILDDIR)/snax-xdma-lib.o
+OBJS        = $(BUILDDIR)/snax-simd-lib.o
 ALL_OUTPUTS = $(OBJS)
 
 
