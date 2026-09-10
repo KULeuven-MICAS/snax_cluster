@@ -3,13 +3,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Cluster configuration for a matmul testbench system.
+//
+// M=8, N=4 (not 4, 8) because FlashAttention here is computed TRANSPOSED:
+// S^T = (Q.K^T)^T = K.Q^T is the same GEMM with its operands swapped, so
+// D = [M*meshRow, N*meshCol] = [64, 32] = [Bc, Br]. That orientation is what
+// lets StreamReduce's LANEWISE mode do rowmax with no horizontal fold -- one
+// lane is one query row, so the reduction runs along beats. See snax-flashattn.c.
 {
   // gemm configurations
   transposed_A: 0,
   transposed_B: 0,
   K: 8,
-  N: 8,
-  M: 4,
+  N: 4,
+  M: 8,
   bypassSIMD: 1,
   // broadcast_C won't work in the serial C input
   broadcast_C: 0,
