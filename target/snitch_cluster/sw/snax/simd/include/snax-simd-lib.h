@@ -144,6 +144,21 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 // when the sum would overflow FP16.
 #define SIMD_RED_FP32OUT 0x200u
 
+// Emit the per-lane partials as one beat -- the reduction ACROSS beats -- instead
+// of folding them to a scalar.
+//
+// The fold, its treeBuf serialisation and the scalar drain all exist to turn the
+// lane partials into ONE number, and they are what makes a short row expensive:
+// a 2-beat row costs ~40 cycles on the folding path, nearly all of it bubble.
+// The partials are already the across-beat reduction, computed for free in the
+// accumulator as the row streams past. Orient the data so the axis you want to
+// reduce runs along BEATS and this returns exactly what you want, with no fold
+// at all -- one output beat per row, `operandCount` beats in.
+//
+// For FlashAttention that means storing the score tile transposed: one lane is
+// one query row, so a LANEWISE MAX over the key beats IS rowmax.
+#define SIMD_RED_LANEWISE 0x400u
+
 // StreamElementwise: combine `operand_beats` interleaved operands into one.
 #define SIMD_EW_MUL 0u
 #define SIMD_EW_ADD 1u
@@ -233,6 +248,27 @@ uint32_t snax_simd_launch(void);
 // that stages the next task immediately overlaps its own CSR writes with the
 // running task instead of serialising behind it. Wait on the finished counter.
 uint32_t snax_simd_launch_async(void);
+
+// Submit the staged task and return immediately -- no counter read at all.
+//
+// This is what lets the 2-entry taskQueue do its job. SimdTop snapshots the
+// WHOLE task (both AGU configs, the extension enable mask and the operator
+// CSRs) into the queue on the start pulse, so the core can arm and program task
+// i+1 while task i is still running, and the CSR write itself back-pressures
+// when the queue is full -- the core stalls on exactly the right cycle without
+// polling. launch_async()'s discarded counter read is 5 cycles per call and
+// launch()'s confirm-poll is worse; neither is needed when a batch is retired
+// with snax_simd_wait_all().
+void snax_simd_fire(void);
+
+// Cumulative engine-busy cycles since reset, free-running.
+//
+// Use this, not snax_simd_last_task_cycle(), to measure a MULTI-task sequence:
+// the per-task counters restart on every start pulse, so reading them forces a
+// wait after each task and destroys the overlap.
+__attribute__((always_inline)) static inline uint32_t snax_simd_busy_cycles(void) {
+    return snax_read_simd_cfg_reg(SIMD_BUSY_CYCLES);
+}
 
 // MEASURED unit costs on this block, 64 accesses warm: a csrw is 1.0 cycle
 // (posted -- ReqRspManager answers combinationally and snax_csr_mux_demux is

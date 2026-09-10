@@ -5,37 +5,44 @@
 // FlashAttention inner loop on the four-engine cluster, instrumented for
 // hardware utilisation.
 //
-// One (query tile, KV tile) pair: Br = 32, Bc = d = 64, i.e. 4x8x8 GEMM tiles of
-// 8x8. A score row is 64 FP16 = 128 B = 2 SIMD beats, deliberately: StreamReduce
-// asserts on operandCount = 1, so a one-beat row cannot be reduced at all. And
-// d == Bc makes S = Q.K^T and O = P.V the same shape, so one streamer
-// configuration drives both matmuls.
+// One (query tile, KV tile) pair: Br = 32, Bc = d = 64. d == Bc makes S = Q.K^T
+// and O = P.V the same shape, so ONE streamer configuration drives both matmuls
+// and only the five base pointers move between them.
 //
-//   GEMM (hart 0)   S = Q.K^T                   INT8 x INT8 -> INT32
-//   SIMD (hart 1)   S16   = fp16(S)             Int32ToFp16
-//                   m[r]  = rowmax(S16[r])      StreamReduce MAX
-//                   P16   = exp(S16 - m)        broadcast / EW ADD / StreamMap EXP
-//                   P8    = int8(P16)           Fp16ToInt8
-//   GEMM (hart 0)   O = P.V
+//   GEMM (hart 0)   S^T   = K.Q^T                INT8 x INT8 -> INT32
+//   SIMD (hart 1)   S16   = fp16(S^T)            Int32ToFp16
+//                   m     = lanewise max(S16)    StreamReduce MAX | LANEWISE
+//                   -m    = replicate, negate    StreamMap LINEAR, a = -1
+//                   sm    = S16 + (-m)           StreamElementwise ADD, 2 operands
+//                   P8^T  = int8(exp(sm))        StreamMap EXP + Fp16ToInt8, FUSED
+//   GEMM (hart 0)   O^T   = V^T.P^T
 //
-// THE POINT IS THE OVERLAP. These are two engines on two harts, and the whole
-// reason FlashAttention is the driving workload is that its softmax can run on
-// the SIMD engine while the GEMM works on the next KV tile. So the loop below
-// is software-pipelined across NKV key/value tiles:
+// TWO IDEAS CARRY THIS KERNEL.
 //
-//   GEMM core:  S(0) ; then per j:  S(j+1)  ||  <SIMD does tile j>  ; O(j)
-//   SIMD core:  per j: wait for S(j), softmax it, publish P8(j)
+// 1. THE OVERLAP. Two engines on two harts, and the reason FlashAttention is the
+//    driving workload is that its softmax can run on the SIMD engine while the
+//    GEMM works on the next KV tile. The loop is software-pipelined over NKV
+//    key/value tiles:
 //
-// S and P8 are double-buffered so producer and consumer never touch the same
-// memory, and the handoff is two monotonically increasing counters in TCDM
-// rather than snrt_cluster_hw_barrier(), which would serialise the two cores
-// again -- and would also drag harts 2 and 3 in.
+//      GEMM core:  S(0) ; then per j:  S(j+1)  ||  <SIMD does tile j>  ; O(j)
+//      SIMD core:  per j: wait for S(j), softmax it, publish P8(j)
+//
+//    S and P8 are double-buffered so producer and consumer never touch the same
+//    memory, and the handoff is two monotonically increasing counters in TCDM
+//    rather than snrt_cluster_hw_barrier(), which would re-serialise the two
+//    cores and drag harts 2 and 3 in. Within a tile the five SIMD tasks are
+//    fired back to back with no wait between them; see the note in the loop.
+//
+// 2. THE TRANSPOSE. Everything is computed in [Bc, Br] rather than [Br, Bc], so
+//    one beat holds one value per QUERY ROW and the softmax reduction runs along
+//    BEATS instead of across lanes. See the block above the tile constants: it is
+//    what lets StreamReduce skip its horizontal fold entirely.
 //
 // WHAT IS AND IS NOT VALIDATED. The softmax is checked against an exact
-// invariant: exp(x - max(x)) must contain exactly 1.0 in every row, because
-// exp(0) = 1. That one check covers the reduce, the per-row subtract and the
-// exponential together, and it is what the numbers below rest on. Every KV tile
-// is fed the same K, so checking the final tile's P16 checks them all.
+// invariant in two halves -- sm must contain +-0.0 and P8^T must contain 1, for
+// every query row -- which together cover the reduce, the subtract, the
+// exponential and the quantiser. Every KV tile is fed the same K, so the final
+// tile stands for all of them. See the check itself for why it is split.
 //
 // The second GEMM is shape- and dataflow-accurate but its operands are not a
 // numerically validated attention output, and O is overwritten per tile rather
@@ -51,33 +58,32 @@
 #include "snax-simd-lib.h"
 #include "snrt.h"
 
-#define BR 32  // query rows in this tile      (M * meshRow)
-#define BC 64  // key columns in this tile      (N * meshCol)
-// d == BC so both matmuls have the same shape and one streamer config serves both.
-#define BEATS_PER_ROW (BC * 2 / SIMD_BEAT_BYTES)
+#define BR 32  // query rows in this tile
+#define BC 64  // key columns in this tile  (d == BC, so both matmuls have one shape)
 #define NKV 4  // key/value tiles to stream through the pipeline
 
-// TCDM map, above the GEMM buffers that data.h lays out (which end at
-// delta_local_d32 + BR*BC*4 = 22528). Contiguous and in address order, so a
-// collision is visible by reading down the column -- OFF_PUB was originally
-// placed inside OFF_MREP and survived only because the report is written after
-// the broadcast buffer is dead.
+// EVERYTHING IS TRANSPOSED. The score tile is stored [Bc, Br], not [Br, Bc]:
 //
-//   S16/P16/MREP/SM   64 beats  = 4 KiB each
-//   STAT              BR beats  = 2 KiB
-//   a D32 tile        BR*BC*4   = 8 KiB
-//   a P8 tile         BR*BC     = 2 KiB
-#define OFF_S16 22528     // ..26624
-#define OFF_P16 26624     // ..30720
-#define OFF_STAT 30720    // ..32768
-#define OFF_MREP 32768    // ..36864
-#define OFF_SM 36864      // ..40960
-#define OFF_D32_B 40960   // ..49152  second S buffer; the first is delta_local_d32
-#define OFF_P8_0 49152    // ..51200
-#define OFF_P8_1 51200    // ..53248
-#define OFF_OACC 53248    // ..61440  O destination, rewritten per tile
-#define OFF_PUB 61440     // ..61696  the report handoff
-#define OFF_SYNC 61696    // ..61760  the two pipeline counters
+//   S^T = (Q.K^T)^T = K.Q^T
+//
+// which is the same GEMM with its two operands swapped -- M and N exchanged in
+// params.hjson, no extra pass, no transposer. One beat of S^T is 32 FP16 = one
+// value per QUERY ROW at a fixed key, so:
+//
+//   rowmax   = LANEWISE MAX over the Bc beats. The reduction runs ALONG BEATS,
+//              which is the accumulator StreamReduce already keeps for free, so
+//              the horizontal fold, its treeBuf serialisation and the scalar
+//              drain are all skipped. One task, one output beat, no per-row
+//              bubble -- against ~40 cycles per row on the folding path.
+//   m        = ONE beat (32 lanes = 32 query rows), not BR scalars.
+//   exp(S-m) = the same broadcast/add/exp chain, but the broadcast operand is a
+//              single beat replicated, not a per-row scalar re-armed BR times.
+//
+// This is Track C 7.3 of the decoupling plan. The measured cost before it was
+// rowmax = 1296 of 2407 SIMD engine cycles per KV tile, i.e. 54% of all engine
+// time spent folding 32 short rows.
+#define SBEATS BC        // S^T beats: one per key, 32 query lanes each
+#define PBEATS (BC / 2)  // after Fp16ToInt8 halves them
 
 // A spin that cannot hang the simulation for ever. A deadlock here is a real
 // possibility -- the two cores are hand-synchronised -- and an infinite loop in
@@ -154,21 +160,30 @@ int main() {
     int8_t *local_a = (int8_t *)(l1 + delta_local_a);
     int8_t *local_b = (int8_t *)(l1 + delta_local_b);
     int32_t *local_c = (int32_t *)(l1 + delta_local_c);
-    uint8_t *s16 = l1 + OFF_S16;
-    uint8_t *p16 = l1 + OFF_P16;
-    uint8_t *stat = l1 + OFF_STAT;
-    uint8_t *mrep = l1 + OFF_MREP;
-    uint8_t *sm = l1 + OFF_SM;
+
+    // Scratch laid out at run time from where data.h actually ends, not from
+    // hardcoded offsets: swapping M and N moves every delta_local_*, and a
+    // hardcoded map silently overlapped once already.
+    uint32_t top = ((uint32_t)delta_local_d32 + BR * BC * 4 + 63u) & ~63u;
+    uint8_t *s16 = l1 + top;    top += SBEATS * SIMD_BEAT_BYTES;   // S^T, FP16
+    uint8_t *stat = l1 + top;   top += SIMD_BEAT_BYTES;            // m, ONE beat
+    uint8_t *mrep = l1 + top;   top += SBEATS * SIMD_BEAT_BYTES;   // -m replicated
+    uint8_t *sm = l1 + top;     top += SBEATS * SIMD_BEAT_BYTES;   // S^T - m
+    uint32_t d32_b = top;       top += BR * BC * 4;                // 2nd S^T buffer
+    uint32_t p8_0 = top;        top += PBEATS * SIMD_BEAT_BYTES;   // P^T, INT8
+    uint32_t p8_1 = top;        top += PBEATS * SIMD_BEAT_BYTES;
+    uint32_t oacc = top;        top += BR * BC * 4;                // O^T, per tile
+    volatile uint32_t *pub = (volatile uint32_t *)(l1 + top); top += 256;
+    volatile uint32_t *sync = (volatile uint32_t *)(l1 + top);
 
     // Double buffers, indexed by tile parity.
-    const int32_t d32_delta[2] = {delta_local_d32, OFF_D32_B};
-    const int32_t p8_delta[2] = {OFF_P8_0, OFF_P8_1};
+    const int32_t d32_delta[2] = {delta_local_d32, (int32_t)d32_b};
+    const int32_t p8_delta[2] = {(int32_t)p8_0, (int32_t)p8_1};
 
     // The handoff. sync[0] counts S tiles the GEMM has finished producing;
     // sync[1] counts softmax tiles the SIMD core has finished consuming and
     // whose P8 is ready. Both only ever increase, so a reader never needs a
     // lock -- it just waits for the count to pass a threshold.
-    volatile uint32_t *sync = (volatile uint32_t *)(l1 + OFF_SYNC);
 
     uint32_t gemm_cycles = 0, simd_cycles = 0, gemm_stream_cycles = 0;
     uint32_t gemm_wall = 0, simd_wall = 0;
@@ -223,34 +238,35 @@ int main() {
     snax_simd_shape_t *ew_in = &shapes[6], *ew_out = &shapes[7];
     snax_simd_shape_t *ex_in = &shapes[8], *ex_out = &shapes[9];
     snax_simd_shape_t *qz_in = &shapes[10], *qz_out = &shapes[11];
-    const uint32_t sbeats = BR * BEATS_PER_ROW;
     if (snax_is_simd_core()) {
-        // (a) INT32 scores -> FP16: 64 beats in, 32 beats out.
+        // (a) INT32 S^T -> FP16: 128 beats in, SBEATS out.
         snax_simd_shape_flat(cv_in, l1 + d32_delta[0], BR * BC * 4 / SIMD_BEAT_BYTES);
-        snax_simd_shape_flat(cv_out, s16, sbeats);
-        // (b) per-row max, one task: BR rows of BEATS_PER_ROW -> BR scalar beats.
-        snax_simd_shape_rows(mx_in, s16, BR, BEATS_PER_ROW,
-                             BEATS_PER_ROW * SIMD_BEAT_BYTES);
-        snax_simd_shape_flat(mx_out, stat, BR);
-        // (c) exp(S - m) in three tasks. A stride-0 inner loop re-presents each
-        // row's max beat, and the reduce already splatted the scalar across the
-        // beat, so no lane fixup is needed. The negation is the `a` coefficient,
-        // which is what removes the 24-cycle software f16->f32 per row.
-        snax_simd_shape_2d(b_in, stat, BEATS_PER_ROW, 0, BR, SIMD_BEAT_BYTES);
-        snax_simd_shape_flat(b_out, mrep, sbeats);
-        // The two operands of the elementwise add come from ONE address stream:
-        // the inner loop of 2 steps by (mrep - s16). That delta must be
-        // positive -- the AGU stride is unsigned, and an operand placed below
-        // its partner wraps the address, reads outside TCDM and writes X while
-        // the task still reports complete.
-        snax_simd_shape_2d(ew_in, s16, 2, (uint32_t)(mrep - s16), sbeats,
+        snax_simd_shape_flat(cv_out, s16, SBEATS);
+
+        // (b) the row maxima, LANEWISE: SBEATS beats in, ONE beat out.
+        //
+        // operandCount is the whole tile, not a row: the "row" being reduced is
+        // the key axis, which runs along beats. Lane i of the result is the max
+        // over all Bc keys for query row i. No fold, no per-row bubble, and the
+        // operandCount==1 assert that forced the old 2-beat row shape is moot.
+        snax_simd_shape_flat(mx_in, s16, SBEATS);
+        snax_simd_shape_flat(mx_out, stat, 1);
+
+        // (c) exp(S^T - m). E1 replicates the single m beat SBEATS times with a
+        // stride-0 inner loop, negating it via the LINEAR `a` coefficient.
+        snax_simd_shape_2d(b_in, stat, SBEATS, 0, 1, 0);
+        snax_simd_shape_flat(b_out, mrep, SBEATS);
+        // E2 feeds both operands from ONE address stream: inner loop of 2
+        // stepping by (mrep - s16), which must be POSITIVE -- the AGU stride is
+        // unsigned, and an operand below its partner wraps the address, reads
+        // outside TCDM and writes X while the task still reports complete.
+        snax_simd_shape_2d(ew_in, s16, 2, (uint32_t)(mrep - s16), SBEATS,
                            SIMD_BEAT_BYTES);
-        snax_simd_shape_flat(ew_out, sm, sbeats);
-        snax_simd_shape_flat(ex_in, sm, sbeats);
-        snax_simd_shape_flat(ex_out, p16, sbeats);
-        // (d) quantise P to INT8 for the second GEMM.
-        snax_simd_shape_flat(qz_in, p16, sbeats);
-        snax_simd_shape_flat(qz_out, l1 + p8_delta[0], BR * BC / SIMD_BEAT_BYTES);
+        snax_simd_shape_flat(ew_out, sm, SBEATS);
+        // E3 exponentiates AND quantises in one armed task: StreamMap is
+        // extension 1, Fp16ToInt8 is 4, so Map is upstream. SBEATS in, PBEATS out.
+        snax_simd_shape_flat(ex_in, sm, SBEATS);
+        snax_simd_shape_flat(qz_out, l1 + p8_delta[0], PBEATS);
     }
     snrt_cluster_hw_barrier();
 
@@ -281,8 +297,11 @@ int main() {
                 uint32_t w0 = snrt_mcycle();
                 SNAX_SPIN_UNTIL(sync[1] >= j, timeouts);
                 gemm_stall += snrt_mcycle() - w0;
-                set_gemmx_bases(p8_delta[(j - 1) & 1], delta_local_b, -1, -1,
-                                OFF_OACC);
+                // Transposed: O^T = V^T.P^T, so P^T is the B operand (it is
+                // [Bc, Br] = [64, 32], exactly B's shape at M=8, N=4) and V^T
+                // stays in A. In the untransposed form P was A instead.
+                set_gemmx_bases(delta_local_a, p8_delta[(j - 1) & 1], -1, -1,
+                                (int32_t)oacc);
                 set_gemmx_streamer_start();
                 set_gemmx_start();
                 wait_gemmx_and_streamer();
@@ -295,6 +314,7 @@ int main() {
 
     if (snax_is_simd_core()) {
         uint32_t s0 = snrt_mcycle();
+        uint32_t simd_busy0 = snax_simd_busy_cycles();
         for (uint32_t j = 0; j < NKV; j++) {
             uint32_t w0 = snrt_mcycle();
             SNAX_SPIN_UNTIL(sync[0] >= j + 1, timeouts);
@@ -303,87 +323,114 @@ int main() {
             cv_in->base = l1 + d32_delta[j & 1];
             qz_out->base = l1 + p8_delta[j & 1];
 
+            // FIVE tasks, submitted back to back with NO wait between them.
+            //
+            // SimdTop snapshots the whole task -- both AGU configs, the enable
+            // mask and the operator CSRs -- into a 2-entry queue on the start
+            // pulse, so arming and programming task i+1 overlaps task i running.
+            // The engine still executes them strictly in order, which is what
+            // makes the read-after-write chain between them safe. The start CSR
+            // write back-pressures when the queue is full, so the core paces
+            // itself without polling.
+            //
+            // Waiting after each task instead cost ~178 cycles of config on the
+            // critical path six times over -- 1070 of a 3477-cycle tile. The
+            // only reason the loop was written that way is that
+            // snax_simd_last_task_cycle() restarts per task, so reading a
+            // breakdown REQUIRED serialising. SIMD_BUSY_CYCLES is free-running
+            // and is sampled once per tile instead.
+
             // (a) INT32 -> FP16.
             snax_simd_use1(SIMD_EXT_INT32TOFP16CONVERTER_512,
                            SIMD_EXT_INT32TOFP16CONVERTER_512_CSR, 0);
             snax_simd_program_fast(cv_in, cv_out);
-            snax_simd_wait(snax_simd_launch_async());
-            c_conv = snax_simd_last_task_cycle();
+            snax_simd_fire();
 
             // (b) row maxima.
             snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR,
-                           BEATS_PER_ROW, SIMD_RED_MAX);
+                           SBEATS, SIMD_RED_MAX | SIMD_RED_LANEWISE);
             snax_simd_program_fast(mx_in, mx_out);
-            snax_simd_wait(snax_simd_launch_async());
-            c_max = snax_simd_last_task_cycle();
+            snax_simd_fire();
 
-            // (c) exp(S - m), three tasks.
+            // (c) exp(S - m). E1 broadcasts and negates the row maxima with a
+            // stride-0 inner loop; E2 adds the two operands from one address
+            // stream; E3 exponentiates AND quantises in a single armed task,
+            // because StreamMap is extension 1 and Fp16ToInt8 is 4, so Map sits
+            // upstream of the quantiser in the chain. That fusion removes both a
+            // task and a 4 KiB round trip through p16.
             //
-            // It used to be one task per row, because StreamMap's `b` is a
-            // scalar CSR: 2320 cycles for 800 of engine time, all of it a
-            // software f16->f32 of the max, a repoint and a discarded counter
-            // read, 32 times over. StreamMap sits UPSTREAM of
-            // StreamElementwise in the chain (ids 2 and 4), so E2 and E3 cannot
-            // be fused -- the exp would be applied to the -m operand too.
+            // E2 and E3 cannot be fused the same way: StreamElementwise is 3,
+            // DOWNSTREAM of Map, so the exp would be applied to the -m operand
+            // as well.
             snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR,
                            snax_simd_f32_neg(SIMD_F32_ONE), 0, SIMD_FUNC_LINEAR);
             snax_simd_program_fast(b_in, b_out);
-            snax_simd_wait(snax_simd_launch_async());
-            c_exp = snax_simd_last_task_cycle();
+            snax_simd_fire();
 
             snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE,
                            SIMD_EXT_STREAMELEMENTWISE_CSR, 2, SIMD_EW_ADD);
             snax_simd_program_fast(ew_in, ew_out);
-            snax_simd_wait(snax_simd_launch_async());
-            c_exp += snax_simd_last_task_cycle();
+            snax_simd_fire();
 
+            // exp + quantise, one task: read sm, write P8 directly.
             snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR,
                            SIMD_F32_ONE, 0, SIMD_FUNC_EXP);
-            snax_simd_program_fast(ex_in, ex_out);
-            snax_simd_wait(snax_simd_launch_async());
-            c_exp += snax_simd_last_task_cycle();
+            snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR,
+                                    (1u << SIMD_EXT_STREAMMAP) |
+                                        (1u << SIMD_EXT_FP16TOINT8));
+            snax_write_simd_cfg_reg(SIMD_EXT_FP16TOINT8_CSR, SIMD_F32_ONE);
+            snax_simd_program_fast(ex_in, qz_out);
+            snax_simd_fire();
 
-            // (d) quantise for the second GEMM.
-            snax_simd_use1(SIMD_EXT_FP16TOINT8, SIMD_EXT_FP16TOINT8_CSR,
-                           SIMD_F32_ONE);
-            snax_simd_program_fast(qz_in, qz_out);
-            snax_simd_wait(snax_simd_launch_async());
-            c_quant = snax_simd_last_task_cycle();
-
-            simd_cycles += c_conv + c_max + c_exp + c_quant;
+            snax_simd_wait_all();
             sync[1] = j + 1;
         }
+        simd_cycles = snax_simd_busy_cycles() - simd_busy0;
         simd_wall = snrt_mcycle() - s0;
     }
     snrt_cluster_hw_barrier();
 
-    // ---- the invariant: exp(x - max x) contains exactly 1.0 in every row ----
-    // Every KV tile is fed the same K, so the final tile's P16 stands for all
-    // of them. Checked after the loop so the check is not inside the clock.
+    // ---- the invariant, in two halves ---------------------------------------
+    //
+    // exp(x - max x) contains exactly 1.0 in every query row, because exp(0)=1.
+    // Fusing exp with the quantiser means no FP16 P tile is ever written, so the
+    // same ground is covered either side of the fusion:
+    //
+    //   sm  must contain exactly +-0.0 for every query row   the reduce + subtract
+    //   P^T must contain exactly 1    for every query row    the exp + quantiser
+    //                                                        (exp(0)=1, inv_scale=1)
+    //
+    // Transposed, a query row is a LANE and the scan runs over beats (keys) --
+    // the mirror image of the old row-major walk. That the check had to be
+    // rewritten this way is the clearest statement of what LANEWISE changed.
     if (snax_is_simd_core()) {
-        for (uint32_t r = 0; r < BR; r++) {
-            volatile uint8_t *row = p16 + r * BEATS_PER_ROW * SIMD_BEAT_BYTES;
-            int found_one = 0;
-            for (uint32_t i = 0; i < BC; i++) {
-                if (fp16_at(row, i) == 0x3C00u) found_one = 1;
+        volatile int8_t *p8t = (volatile int8_t *)(l1 + p8_delta[(NKV - 1) & 1]);
+        for (uint32_t i = 0; i < BR; i++) {  // i = query row = lane
+            int found_zero = 0, found_one = 0;
+            for (uint32_t j = 0; j < SBEATS; j++) {  // j = key = beat
+                uint16_t v = fp16_at(sm + j * SIMD_BEAT_BYTES, i);
+                if (v == 0x0000u || v == 0x8000u) found_zero = 1;
+                if (p8t[j * BR + i] == 1) found_one = 1;
             }
-            if (!found_one) {
-                // Diagnose rather than just report: is the hardware max wrong, or
-                // is exp(0) not returning exactly 1.0?
-                uint16_t hw_max = fp16_at(stat + r * SIMD_BEAT_BYTES, 0);
-                volatile uint8_t *srow = s16 + r * BEATS_PER_ROW * SIMD_BEAT_BYTES;
-                uint16_t sw_max = fp16_at(srow, 0);
-                for (uint32_t i = 1; i < BC; i++) {
-                    uint16_t v = fp16_at(srow, i);
+            if (!found_zero || !found_one) {
+                // Diagnose: is the lane-wise max wrong, or does the subtract/exp
+                // not land exactly on 0 / 1?
+                uint16_t hw_max = fp16_at(stat, i);
+                uint16_t sw_max = fp16_at(s16, i);
+                for (uint32_t j = 1; j < SBEATS; j++) {
+                    uint16_t v = fp16_at(s16 + j * SIMD_BEAT_BYTES, i);
                     // FP16 compare via sign/magnitude, integer only.
-                    int32_t a = (sw_max & 0x8000u) ? -(int32_t)(sw_max & 0x7FFFu)
+                    int32_t x = (sw_max & 0x8000u) ? -(int32_t)(sw_max & 0x7FFFu)
                                                    : (int32_t)sw_max;
-                    int32_t b = (v & 0x8000u) ? -(int32_t)(v & 0x7FFFu) : (int32_t)v;
-                    if (b > a) sw_max = v;
+                    int32_t y = (v & 0x8000u) ? -(int32_t)(v & 0x7FFFu) : (int32_t)v;
+                    if (y > x) sw_max = v;
                 }
-                printf("row %2u: hw_max=%04x sw_max=%04x s16[0..3]=%04x %04x %04x %04x\n",
-                       r, hw_max, sw_max, fp16_at(srow, 0), fp16_at(srow, 1),
-                       fp16_at(srow, 2), fp16_at(srow, 3));
+                printf("query %2u: zero=%d one=%d hw_max=%04x sw_max=%04x "
+                       "sm[k0..3]=%04x %04x %04x %04x\n",
+                       i, found_zero, found_one, hw_max, sw_max,
+                       fp16_at(sm, i), fp16_at(sm + SIMD_BEAT_BYTES, i),
+                       fp16_at(sm + 2 * SIMD_BEAT_BYTES, i),
+                       fp16_at(sm + 3 * SIMD_BEAT_BYTES, i));
                 err++;
             }
         }
@@ -391,7 +438,6 @@ int main() {
 
     // ---- report -------------------------------------------------------------
     // Each core owns its own totals; publish through TCDM so one core prints.
-    volatile uint32_t *pub = (volatile uint32_t *)(l1 + OFF_PUB);
     if (snax_is_simd_core()) {
         pub[0] = simd_cycles;
         pub[1] = (uint32_t)err;
@@ -419,20 +465,23 @@ int main() {
                BR, BC, NKV, meshRow, tileSize, meshCol);
         printf("  GEMM streamer    %5u cycles (operand feed + D32 drain)\n",
                gemm_stream_cycles);
-        printf("  engine busy      GEMM %5u   SIMD %5u\n", gemm_cycles, simd_total);
-        printf("  SIMD per tile    convert %u  rowmax %u  exp(3 tasks) %u  quant %u\n",
-               pub[4], pub[5], pub[6], pub[7]);
-        printf("  core wall        GEMM %5u   SIMD %5u   pipeline %u\n",
-               gemm_wall, simd_wall_r, pipeline);
-        printf("  waiting on peer  GEMM %5u   SIMD %5u\n", gemm_stall, pub[8]);
-        if (pipeline) {
-            printf("  utilisation      GEMM %2u%%     SIMD %2u%%     overall %u%%\n",
-                   100u * gemm_cycles / pipeline, 100u * simd_total / pipeline,
-                   100u * busy / pipeline);
-            uint32_t orch = pipeline > busy ? pipeline - busy : 0;
-            printf("  orchestration    %u cycles (%u%% of the pipeline)\n", orch,
-                   100u * orch / pipeline);
-        }
+        printf("  pipeline         %5u cycles, %u per KV tile\n", pipeline,
+               pipeline / NKV);
+        // Per core: what it spent running its engine, blocked on the other
+        // core, and writing CSRs. The three must sum to that core's wall.
+        printf("  GEMM core        busy %5u (%2u%%)  peer-wait %5u  config %5u\n",
+               gemm_cycles, 100u * gemm_cycles / pipeline, gemm_stall,
+               gemm_wall > gemm_cycles + gemm_stall
+                   ? gemm_wall - gemm_cycles - gemm_stall : 0);
+        printf("  SIMD core        busy %5u (%2u%%)  peer-wait %5u  config %5u\n",
+               simd_total, 100u * simd_total / pipeline, pub[8],
+               simd_wall_r > simd_total + pub[8]
+                   ? simd_wall_r - simd_total - pub[8] : 0);
+        // Two engines run concurrently, so this is out of 200%, not 100%:
+        // above 100% means both were busy at once for part of the run. It is
+        // engine-seconds delivered per second of wall clock.
+        printf("  occupancy        %u%% of the pipeline (200%% = both engines saturated)\n",
+               100u * busy / pipeline);
         if (pub[9]) printf("  WARNING: %u spin timeouts -- the handoff deadlocked\n", pub[9]);
         printf("  %s (%u invariant, %u config)\n",
                (pub[1] == 0 && pub[2] == 0 && pub[9] == 0) ? "PASS" : "FAIL",

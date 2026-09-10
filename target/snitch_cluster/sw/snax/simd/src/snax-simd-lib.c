@@ -404,6 +404,8 @@ uint32_t snax_simd_launch(void) {
     return snax_read_simd_cfg_reg(SIMD_SUBMITTED_TASK_PTR);
 }
 
+void snax_simd_fire(void) { snax_write_simd_cfg_reg(SIMD_START_PTR, 1); }
+
 uint32_t snax_simd_launch_async(void) {
     // No poll: the caller reads the submitted counter itself, or simply waits on
     // the finished counter later. Skipping the confirm-poll is what lets task
