@@ -1,0 +1,21 @@
+# Copyright 2025 KU Leuven.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# The SIMD kernels: everything driven by the FP16 compute extensions
+# (StreamMap / StreamReduce / StreamElementwise / Fp16ToInt8). They only build
+# under a cfg that instantiates those, so they are kept out of
+# snax-xdma-run.yaml, which the plain KUL cluster job also runs and which is
+# genuinely about data movement.
+
+runs:
+  - elf: apps/snax-simd-softmax/build/snax-simd-softmax.elf
+  - elf: apps/snax-simd-rmsnorm/build/snax-simd-rmsnorm.elf
+  - elf: apps/snax-simd-silu/build/snax-simd-silu.elf
+  - elf: apps/snax-simd-swiglu/build/snax-simd-swiglu.elf
+  - elf: apps/snax-simd-rope/build/snax-simd-rope.elf
+  - elf: apps/snax-simd-reduce-multirow/build/snax-simd-reduce-multirow.elf
+  - elf: apps/snax-simd-rmsnorm-multirow/build/snax-simd-rmsnorm-multirow.elf
+  - elf: apps/snax-simd-softmax-multirow/build/snax-simd-softmax-multirow.elf
+  - elf: apps/snax-simd-rmsnorm-fold/build/snax-simd-rmsnorm-fold.elf
+  - elf: apps/snax-simd-softmax-fold/build/snax-simd-softmax-fold.elf

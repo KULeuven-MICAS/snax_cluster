@@ -256,7 +256,7 @@ jobs:
           ./run.py --simulator verilator \
           sw/runtime.yaml \
           sw/snax-xdma-run.yaml \
-          sw/snax-xdma-simd-run.yaml -j
+          sw/snax-simd-run.yaml -j
 
   snax-compiler-test-cluster-vlt-generic:
     name: Simulate SW on Compiler Test Cluster w/ Verilator (Generic LLVM)

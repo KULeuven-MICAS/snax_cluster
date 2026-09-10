@@ -27,7 +27,7 @@ endif
 # The four-engine split cluster: gemmX on hart 0, the SIMD block on hart 1, the
 # xDMA on hart 2, the classic iDMA on hart 3.
 ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_split_cluster.hjson)
-SUBDIRS += snax/xdma snax/simd
+SUBDIRS += snax/xdma snax/simd snax/gemmx
 endif
 
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)

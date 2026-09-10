@@ -5,6 +5,7 @@
 // Yunhao Deng <yunhao.deng@kuleuven.be>
 
 #include "data.h"
+#include "snax-core-roles.h"
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 
@@ -22,10 +23,9 @@ int main() {
         (uint8_t *)(tcdm_baseaddress +
                     (matrix_size * sizeof(uint8_t) * 8 + 7) / 8);
 
-    if (snrt_is_dm_core() && snrt_cluster_idx() == 0) {
+    if (snax_is_xdma_core() && snrt_cluster_idx() == 0) {
         // First we need to transfer the input data from L3->TCDM
-        snrt_dma_start_1d(tcdm_in, input_matrix, matrix_size * sizeof(uint8_t));
-        snrt_dma_wait_all();
+        snax_stage_1d(tcdm_in, input_matrix, matrix_size * sizeof(uint8_t));
 
         // --------------------- Configure the AGU --------------------- //
         snax_xdma_memcpy_nd(
@@ -81,11 +81,9 @@ int main() {
         snrt_start_perf_counter(SNRT_PERF_CNT0, SNRT_PERF_CNT_DMA_BUSY,
                                 snrt_hartid());
         for (int i = 0; i < TOTAL_ITERATIONS_IDMA; i++) {
-            snrt_dma_start_2d(dst_addr[i], src_addr[i], size_idma,
+            snax_stage_2d(dst_addr[i], src_addr[i], size_idma,
                               dst_stride_idma, src_stride_idma, repeat_idma);
         }
-        snrt_dma_wait_all();
-
         printf("The IDMA copy is finished in %d cycles\r\n",
                snrt_get_perf_counter(SNRT_PERF_CNT0));
         snrt_reset_perf_counter(SNRT_PERF_CNT0);

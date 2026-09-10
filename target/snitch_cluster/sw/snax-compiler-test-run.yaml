@@ -7,9 +7,9 @@
 
 runs:
   - elf: apps/snax-xdma-memset/build/snax-xdma-memset.elf
-  - elf: apps/snax-xdma-maxpool/build/snax-xdma-maxpool.elf
+  - elf: apps/snax-simd-maxpool/build/snax-simd-maxpool.elf
   - elf: apps/snax-xdma-reshape-comparison/build/snax-xdma-reshape-comparison.elf
-  - elf: apps/snax-xdma-elementwise-add/build/snax-xdma-elementwise-add.elf
-  - elf: apps/snax-xdma-rescale-down/build/snax-xdma-rescale-down.elf
-  - elf: apps/snax-xdma-rescale-up/build/snax-xdma-rescale-up.elf
-  - elf: apps/snax-xdma-avgpool/build/snax-xdma-avgpool.elf
+  - elf: apps/snax-simd-elementwise-add/build/snax-simd-elementwise-add.elf
+  - elf: apps/snax-simd-rescale-down/build/snax-simd-rescale-down.elf
+  - elf: apps/snax-simd-rescale-up/build/snax-simd-rescale-up.elf
+  - elf: apps/snax-simd-avgpool/build/snax-simd-avgpool.elf

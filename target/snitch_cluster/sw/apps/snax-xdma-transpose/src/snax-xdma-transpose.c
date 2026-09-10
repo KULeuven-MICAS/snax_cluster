@@ -5,6 +5,7 @@
 // Yunhao Deng <yunhao.deng@kuleuven.be>
 
 #include "data.h"
+#include "snax-core-roles.h"
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 
@@ -26,7 +27,7 @@ int main() {
     uint8_t* tcdm_in = (uint8_t*)tcdm_baseaddress;
     uint8_t* tcdm_out = tcdm_in + align_up(max_case_input_bytes, XDMA_WIDTH);
 
-    if (snrt_is_dm_core()) {
+    if (snax_is_xdma_core()) {
         for (uint32_t case_idx = 0; case_idx < transpose_test_case_count;
              case_idx++) {
             transpose_test_case_t* test_case = &transpose_test_cases[case_idx];
@@ -38,9 +39,8 @@ int main() {
                 case_idx, test_case->name, test_case->M, test_case->N,
                 test_case->bit_width, test_case->enable_transpose);
 
-            snrt_dma_start_1d(tcdm_in, test_case->input_matrix_bytes,
+            snax_stage_1d(tcdm_in, test_case->input_matrix_bytes,
                               test_case->input_bytes);
-            snrt_dma_wait_all();
 
             // --------------------- Configure the Ext / Helper
             // --------------------- //

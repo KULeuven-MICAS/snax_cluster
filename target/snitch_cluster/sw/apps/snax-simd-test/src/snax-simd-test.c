@@ -5,7 +5,7 @@
 // Bring-up test for the standalone SIMD block on the four-engine split cluster.
 //
 // This is the first thing that exercises <cluster>_simd inside a real cluster:
-// its own hart, its own CSR file, the sparse interconnect, real TCDM. The
+// its own hart, its own CSR file, the TCDM interconnect, real memory. The
 // chiseltest suite covers the block in isolation; what is new here is the
 // integration -- CSR window, TCDM port slice, and the fact that hart 1 drives
 // it while the other three harts are doing nothing but waiting at barriers.
@@ -26,11 +26,6 @@
 #define BEATS 16
 #define BYTES (BEATS * SIMD_WIDTH)
 #define WORDS (BYTES / 4)
-
-// StreamMap user CSRs: {a (FP32 bits), b (FP32 bits), func}. func bits[1:0] = 0
-// selects LINEAR, out = a*x + b.
-#define ACT_LINEAR 0u
-#define FP32_ONE 0x3F800000u
 
 static int check(const char *what, volatile uint32_t *got,
                  volatile uint32_t *want, uint32_t words) {
@@ -76,14 +71,11 @@ int main() {
         printf("SIMD core is hart %u; block has %d extensions, %d RW CSRs\n",
                snrt_cluster_core_idx(), SIMD_EXT_NUM, SIMD_RW_CSR_NUM);
 
-        // ---- T1: plain copy -------------------------------------------------
-        snax_simd_disable_all_ext();
-        if (snax_simd_memcpy_1d((void *)src, (void *)dst1, BYTES) != 0) {
+        // ---- T1: plain copy -- the degenerate task, no operator -------------
+        if (snax_simd_copy((void *)src, (void *)dst1, BYTES) != 0) {
             printf("T1: configuration failed\n");
             err++;
         } else {
-            uint32_t id = snax_simd_start();
-            snax_simd_wait(id);
             printf("T1 copy: %u cycles (reader %u, writer %u)\n",
                    snax_simd_last_task_cycle(), snax_simd_last_read_cycle(),
                    snax_simd_last_write_cycle());
@@ -91,23 +83,19 @@ int main() {
         }
 
 #ifdef SIMD_EXT_STREAMMAP
-        // ---- T2: StreamMap identity ----------------------------------------
-        uint32_t csr_identity[3] = {FP32_ONE, 0u, ACT_LINEAR};
-        snax_simd_disable_all_ext();
-        if (snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr_identity) != 0) {
-            printf("T2: could not enable StreamMap\n");
-            err++;
-        } else if (snax_simd_memcpy_1d((void *)src, (void *)dst2, BYTES) != 0) {
+        // ---- T2: an operator -- out = 1.0f * x + 0.0f -----------------------
+        // Identity through the full FP datapath, so it needs no golden data:
+        // multiplying an FP16 value by 1.0f in FP32 and narrowing back is exact.
+        if (snax_simd_map(SIMD_EXT_STREAMMAP, (void *)src, (void *)dst2, BEATS,
+                          SIMD_FUNC_LINEAR, SIMD_F32_ONE,
+                          SIMD_F32_ZERO) != 0) {
             printf("T2: configuration failed\n");
             err++;
         } else {
-            uint32_t id = snax_simd_start();
-            snax_simd_wait(id);
-            printf("T2 StreamMap identity: %u cycles\n",
+            printf("T2 map(identity): %u cycles\n",
                    snax_simd_last_task_cycle());
-            err += check("T2 StreamMap identity", dst2, src, WORDS);
+            err += check("T2 map(identity)", dst2, src, WORDS);
         }
-        snax_simd_disable_all_ext();
 #else
         printf("T2 skipped: this SIMD block has no StreamMap\n");
 #endif
@@ -115,17 +103,21 @@ int main() {
         // ---- T3: two queued tasks ------------------------------------------
         // Stage both before waiting, so the second sits in the task queue while
         // the first runs. An early retire would let them overlap and corrupt.
-        snax_simd_disable_all_ext();
-        if (snax_simd_memcpy_1d((void *)src, (void *)dst3, BYTES) != 0) {
+        snax_simd_shape_t a_in, a_out, b_in, b_out;
+        snax_simd_shape_flat(&a_in, (void *)src, BEATS);
+        snax_simd_shape_flat(&a_out, (void *)dst3, BEATS);
+        snax_simd_shape_flat(&b_in, (void *)dst3, BEATS);
+        snax_simd_shape_flat(&b_out, (void *)dst1, BEATS);
+        if (snax_simd_configure(&a_in, &a_out, 0, 0) != 0) {
             printf("T3: first configuration failed\n");
             err++;
         } else {
-            uint32_t id1 = snax_simd_start();
-            if (snax_simd_memcpy_1d((void *)dst3, (void *)dst1, BYTES) != 0) {
+            uint32_t id1 = snax_simd_launch();
+            if (snax_simd_configure(&b_in, &b_out, 0, 0) != 0) {
                 printf("T3: second configuration failed\n");
                 err++;
             } else {
-                uint32_t id2 = snax_simd_start();
+                uint32_t id2 = snax_simd_launch();
                 snax_simd_wait(id2);
                 printf("T3 queued tasks: ids %u and %u\n", id1, id2);
                 err += check("T3 queued task A", dst3, src, WORDS);
