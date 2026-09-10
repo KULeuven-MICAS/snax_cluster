@@ -18,4 +18,11 @@
     (CLUSTER_PERIPH_BASE_ADDR + SNITCH_CLUSTER_PERIPHERAL_HW_BARRIER_REG_OFFSET)
 
 // Software configuration
-#define SNRT_LOG2_STACK_SIZE 10
+// 4 KiB a hart. Was 10 (1 KiB), which a kernel holding a dozen accelerator
+// descriptor structs plus a printf frame overflows -- into the NEXT hart's
+// stack, since they are carved contiguously downward from the top of the TCDM.
+// That corruption surfaces wherever the victim next restores a saved register:
+// in snax-flashattn it was a misaligned amoadd in snrt_main's exit path, with
+// no visible relation to its cause. Costs CFG_CLUSTER_NR_CORES * 3 KiB of TCDM
+// (12 KiB more on the 4-core split cluster, of 128 KiB).
+#define SNRT_LOG2_STACK_SIZE 12

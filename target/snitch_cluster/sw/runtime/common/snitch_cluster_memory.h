@@ -30,8 +30,32 @@
 // snRuntime interface functions
 //===============================================================
 
+// Place an object in the cluster TCDM instead of DRAM.
+//
+// The default for a `static` or a global is .bss/.data, which this target maps
+// to L3 -- correct for cold data, expensive for anything a kernel reads per
+// beat. SNRT_L1_DATA moves the object into the .l1 section, which base.ld maps
+// to the TCDM.
+//
+// The section is NOLOAD, so an SNRT_L1_DATA object is NOT zero-initialised and
+// cannot carry an initialiser: write it before you read it. It is also shared
+// by every hart in the cluster, exactly like any other static -- give each hart
+// its own element if they both write.
+//
+// The alternative, a large automatic, is usually wrong here: SNRT_LOG2_STACK_SIZE
+// bounds a hart's stack, and overflowing it runs into the neighbouring hart's
+// stack silently.
+#define SNRT_L1_DATA __attribute__((section(".l1")))
+
+// End of the .l1 output section (base.ld). Zero-sized when no object is
+// declared SNRT_L1_DATA, in which case this is the plain TCDM base.
+extern uint32_t __l1_end;
+
 inline uint32_t __attribute__((const)) snrt_l1_start_addr() {
-    return CLUSTER_TCDM_START_ADDR;
+    // The heap starts after whatever .l1 claimed, not at the TCDM base --
+    // otherwise the allocator would hand out memory the linker has already
+    // given to SNRT_L1_DATA objects.
+    return (uint32_t)&__l1_end;
 }
 
 inline uint32_t __attribute__((const)) snrt_l1_end_addr() {
