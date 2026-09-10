@@ -74,5 +74,7 @@ class SimdParam(
   /** Read-only CSRs, in order: submitted tasks, finished tasks, last-task cycles, last-reader cycles,
     * last-writer cycles, status.
     */
-  def totalRoCsrNum: Int = 6
+  // submitted, finished, last-task cycles, last-reader cycles, last-writer
+  // cycles, status, cumulative busy.
+  def totalRoCsrNum: Int = 7
 }

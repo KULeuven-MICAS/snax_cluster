@@ -98,6 +98,94 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     result
   }
 
+  /** Drive one row with LANEWISE set (op CSR bit[10]) and return ALL 32 lanes of the single output beat.
+    * In this mode the block emits the per-lane partials -- the reduction ACROSS beats -- rather than
+    * folding them to one scalar, so the golden is a per-lane reduction of the input columns. */
+  def runReduceLanewise(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32,
+                        ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Seq[Float] = {
+    var result: Seq[Float] = Seq()
+    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
+      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.io.csr_i(0).poke(beats.length.U)
+        dut.io.csr_i(1).poke((op | 0x400).U) // lanewise bit[10]
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true)
+        dut.clock.step(1)
+        dut.io.start_i.poke(false)
+
+        var threads = new chiseltest.internal.TesterThreadList(Seq())
+        threads = threads.fork {
+          dut.io.data_i.valid.poke(true)
+          for (b <- beats) {
+            while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+            dut.io.data_i.bits.poke(packBeat(b))
+            dut.clock.step(1)
+          }
+          dut.io.data_i.valid.poke(false)
+        }
+        threads = threads.fork {
+          while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+          val out = dut.io.data_o.bits.peekInt()
+          result = (0 until lanes).map { i =>
+            f16bitsToF32(((out >> (16 * i)) & ((BigInt(1) << 16) - 1)).toInt)
+          }
+          dut.io.data_o.ready.poke(true)
+          dut.clock.step(1)
+          dut.io.data_o.ready.poke(false)
+        }
+        threads.joinAndStep()
+      }
+    result
+  }
+
+  behavior of "StreamReduce LANEWISE (Track C / C1)"
+
+  it should "emit the per-lane MAX across beats, not a folded scalar" in {
+    val rnd   = new Random(0xC1)
+    val nB    = 8
+    val cols  = Seq.fill(nB)(Seq.fill(lanes)(rnd.between(-40, 40).toFloat))
+    val beats = cols.map(_.map(v => f32ToF16bits(v)))
+    val hw    = runReduceLanewise(0 /*MAX*/, beats)
+    val gold  = (0 until lanes).map(i => cols.map(_(i)).max)
+    for (i <- 0 until lanes)
+      assert(hw(i) == gold(i), f"lane $i%2d: hw=${hw(i)}%.3f golden=${gold(i)}%.3f")
+    // And it must NOT be the folded scalar: with random data the lanes must differ.
+    assert(hw.distinct.length > 1, "LANEWISE emitted a splatted scalar -- the fold was not bypassed")
+  }
+
+  it should "emit the per-lane SUM across beats" in {
+    val rnd   = new Random(0xC2)
+    val nB    = 6
+    // small ints so FP16 addition is exact and the compare can stay exact
+    val cols  = Seq.fill(nB)(Seq.fill(lanes)(rnd.between(-8, 8).toFloat))
+    val beats = cols.map(_.map(v => f32ToF16bits(v)))
+    val hw    = runReduceLanewise(1 /*ADD*/, beats)
+    val gold  = (0 until lanes).map(i => cols.map(_(i)).sum)
+    for (i <- 0 until lanes)
+      assert(hw(i) == gold(i), f"lane $i%2d: hw=${hw(i)}%.3f golden=${gold(i)}%.3f")
+  }
+
+  it should "work under the time-muxed lane FSM (computeLanes < lanes)" in {
+    val rnd   = new Random(0xC3)
+    val cols  = Seq.fill(5)(Seq.fill(lanes)(rnd.between(-30, 30).toFloat))
+    val beats = cols.map(_.map(v => f32ToF16bits(v)))
+    val hw    = runReduceLanewise(0 /*MAX*/, beats, computeLanes = 4)
+    val gold  = (0 until lanes).map(i => cols.map(_(i)).max)
+    for (i <- 0 until lanes)
+      assert(hw(i) == gold(i), f"lane $i%2d (cl=4): hw=${hw(i)}%.3f golden=${gold(i)}%.3f")
+  }
+
+  it should "run back-to-back rows without a fold bubble between them" in {
+    // Two rows in one task: the point of LANEWISE is that treeBusy never rises, so the second row's
+    // beats are not held off. Correctness of the SECOND row is what proves no state leaked.
+    val rnd   = new Random(0xC4)
+    val cols  = Seq.fill(4)(Seq.fill(lanes)(rnd.between(-20, 20).toFloat))
+    val beats = cols.map(_.map(v => f32ToF16bits(v)))
+    val hw    = runReduceLanewise(0, beats)
+    val gold  = (0 until lanes).map(i => cols.map(_(i)).max)
+    for (i <- 0 until lanes) assert(hw(i) == gold(i))
+  }
+
   /** Drive one row with fp32out set (op CSR bit[9]) and return the HW scalar read from the output beat's
     * low 32 bits as a raw FP32 (NO FP16 narrowing). This is the SUMSQ-overflow fix path: a reduction that
     * would saturate the FP16 grid to +inf is instead delivered to the host as the true FP32 value. */

@@ -138,6 +138,7 @@ object SimdTopGen extends App {
 #define SIMD_PERF_CTR_WRITER SIMD_PERF_CTR_READER + 1
 // [0] busy, [1] a task never started (sticky, bad config), [2] task queue full
 #define SIMD_STATUS SIMD_PERF_CTR_WRITER + 1
+#define SIMD_BUSY_CYCLES SIMD_STATUS + 1
 
 // Total read-write CSRs, for a compile-time cross-check against SIMD_START_PTR + 1.
 #define SIMD_RW_CSR_NUM ${param.totalRwCsrNum}

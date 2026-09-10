@@ -300,4 +300,16 @@ class SimdTop(param: SimdParam, clusterName: String = "unnamed_cluster") extends
 
   // [0] busy now, [1] a task never started (sticky since the last start pulse), [2] the task queue is full.
   csrManager.io.readOnlyReg(5) := Cat(0.U(29.W), ~taskQueue.io.enq.ready, stuckSticky, busy)
+
+  // Cumulative engine-busy cycles, free-running and never reset.
+  //
+  // The three counters above restart on every task, so they can only report the
+  // LAST one. That forces software to wait after each task in order to read it --
+  // which serialises exactly the config/execute overlap the 2-entry taskQueue
+  // exists to enable, and makes the measurement perturb what it measures. A
+  // monotonic total can be sampled once per outer iteration instead, whatever
+  // order tasks were submitted in. Wraps at 2^32, which at 1 GHz is ~4 s.
+  private val busyTotal = RegInit(0.U(32.W))
+  when(busy) { busyTotal := busyTotal + 1.U }
+  csrManager.io.readOnlyReg(6) := busyTotal
 }

@@ -17,6 +17,8 @@ import fp_native._
   * reduceTree (tree order; small numeric tolerance accepted per design decision #4).
   *
   * CSR layout: csr(0) = operandCount (#beats in the row), csr(1) = op: bits[7:0] = 0=MAX,1=ADD,2=SUMSQ; bit[8] = tap;
+  * bit[10] = lanewise (emit the per-lane partials as one beat -- the reduction ACROSS beats -- instead of
+  * folding them to a scalar; see the note at the decode below);
   * bit[9] = fp32out (emit the scalar in FP32 instead of narrowing to the transport grid — for a reduction that
   * overflows FP16, e.g. an unscaled-GEMM SUMSQ ~1e9, this delivers the true value to the host instead of inf; the
   * scalar is splatted as FP32 so the host reads the beat's low 32 bits as a float). When tap=1 the row is passed
@@ -129,6 +131,18 @@ class StreamReduce(
   val opField         = ext_csr_i(1)
   val opcode          = opField(7, 0)     // 0=MAX,1=ADD,2=SUMSQ (used only when >1 op is built)
   val tap             = opField(8).asBool // pass the row through + emit the scalar as a trailing beat
+  // LANEWISE (bit[10]): emit the per-lane partials as one beat instead of collapsing them.
+  //
+  // Everything expensive about this block -- the horizontal fold, its treeBuf serialisation, the scalar
+  // drain -- exists to turn `lanes` partials into ONE number. The partials themselves are already the
+  // reduction ACROSS beats, computed for free in regs[] as the row streams past. A caller whose data is
+  // oriented so that the axis it wants to reduce runs along BEATS (not along lanes) wants exactly those
+  // partials, and every cycle spent folding them is waste.
+  //
+  // FlashAttention is that caller: with the score tile stored transposed, one lane is one query row, so a
+  // LANEWISE MAX over Bc beats IS rowmax -- one output beat, no fold, no per-row bubble. Measured on the
+  // shipped path a row-reduce costs ~40 cycles for 2 beats of actual work.
+  val lanewise        = opField(10).asBool
   val fp32out         = opField(9).asBool // emit the scalar in FP32 (no narrow) so a large reduction (e.g. an
   //                                 unscaled-GEMM SUMSQ ~1e9) reaches the host as the true value instead
   //                                 of overflowing the transport FP16 range to inf/garbage. Splatted as FP32.
@@ -344,7 +358,10 @@ class StreamReduce(
   }.otherwise {
     treeDone := false.B
     when(!treeBusy) {
-      when(rowLastRetire) { treeBuf := outNow; treeBusy := true.B; foldRound := 0.U; foldCol := 0.U; foldWait := 0.U }
+      // LANEWISE skips the fold entirely, so treeBusy never rises and the input is never held off.
+      when(rowLastRetire && !lanewise) {
+        treeBuf := outNow; treeBusy := true.B; foldRound := 0.U; foldCol := 0.U; foldWait := 0.U
+      }
     }.otherwise {
       when(foldWriteback) {
         for (k <- 0 until treeLanes) {
@@ -360,8 +377,23 @@ class StreamReduce(
       }.otherwise { foldWait := foldWait + 1.U }
     }
   }
+  // LANEWISE: narrow each lane's partial in place and emit them as one beat, registered so the timing
+  // matches treeDone (one cycle after rowLastRetire). The row still produces exactly ONE output beat, so
+  // the credit reservation and the tap ordering above are unchanged.
+  val laneBeatReg = Reg(UInt((lanes * elementWidth).W))
+  val laneDone    = RegInit(false.B)
+  when(ext_start_i) {
+    laneDone := false.B
+  }.otherwise {
+    laneDone := false.B
+    when(rowLastRetire && lanewise) {
+      laneBeatReg := Cat((0 until lanes).reverse.map(i => narrow(outNow(i))))
+      laneDone    := true.B
+    }
+  }
+
   val scalarFP32    = treeBuf(0) // final scalar, valid the cycle treeDone is high
-  val scalarValid   = treeDone
+  val scalarValid   = treeDone || laneDone
   // treeBusy holds ext_data_i.ready low, so for operandCount>=1 the next row cannot complete and clobber
   // treeBuf mid-fold. This guards a mis-sized treeLanes (fold slower than a 1-beat row) in sim.
   assert(!(treeBusy && rowLastRetire), "StreamReduce fold: a row completed while the fold was still busy")
@@ -377,7 +409,7 @@ class StreamReduce(
   // ---- push to the output queue: passthrough beat (tap, on accept) then the row's scalar (scalarValid) ----
   val passPush = tap && accept
   outQ.io.enq.valid := (scalarValid || passPush) && !ext_start_i // no stale push on the restart cycle
-  outQ.io.enq.bits  := Mux(passPush, ext_data_i.bits, scalarBeat)
+  outQ.io.enq.bits  := Mux(passPush, ext_data_i.bits, Mux(laneDone, laneBeatReg, scalarBeat))
   assert(!(scalarValid && passPush), "StreamReduce: passthrough/scalar output collision (tap ordering bug)")
   assert(!outQ.io.enq.valid || outQ.io.enq.ready, "StreamReduce: output queue overflow (credit bug)")
   outQ.io.deq.ready := ext_data_o.ready
