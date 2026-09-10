@@ -45,5 +45,48 @@ lazy val root = (project in file("."))
     Test / testGrouping := (Test / definedTests).value.map { suite =>
       Tests.Group(name = suite.name, tests = Seq(suite), runPolicy = Tests.SubProcess((Test / forkOptions).value))
     }
+    ,
+    // ---------------------------------------------------------------------------------------------
+    // Fallback for the generated streamer parameters.
+    //
+    // snaxgen writes src/main/scala/snax/streamer/StreamParamGen.scala, which is (correctly) listed in
+    // .gitignore: it is a build artifact of `make rtl-gen` and its contents depend on the active cluster
+    // cfg. But `Streamer.scala` references the object it defines, so a tree that has not run rtl-gen --
+    // a fresh clone, or CI's Lint Scala job -- would not compile without it. That is the only reason the
+    // file was ever committed, and being committed is what made it show up as a spurious diff after every
+    // rtl-gen.
+    //
+    // Emit a neutral default into src_managed instead, but ONLY when the real generated file is absent,
+    // so the two can never both define the object.
+    // ---------------------------------------------------------------------------------------------
+    Compile / sourceGenerators += Def.task {
+      val generated = (Compile / scalaSource).value / "snax" / "streamer" / "StreamParamGen.scala"
+      if (generated.exists) Seq.empty[File]
+      else {
+        val out = (Compile / sourceManaged).value / "snax" / "streamer" / "StreamParamGenFallback.scala"
+        IO.write(
+          out,
+          """// AUTO-GENERATED FALLBACK -- do not edit, do not commit.
+            |//
+            |// Emitted by build.sbt only when src/main/scala/snax/streamer/StreamParamGen.scala is absent,
+            |// i.e. when `make rtl-gen` has not run in this tree. It exists so the project compiles from a
+            |// clean checkout. Running rtl-gen replaces it with the real, cfg-derived parameters.
+            |package snax.streamer
+            |
+            |import snax.readerWriter._
+            |
+            |object StreamerParametersGen {
+            |  def hasCrossClockDomain = false
+            |  def readerParams        = Seq[ReaderWriterParam]()
+            |  def writerParams        = Seq[ReaderWriterParam]()
+            |  def readerWriterParams  = Seq[ReaderWriterParam]()
+            |  def tagName             = "unconfigured_streamer_"
+            |  def headerFilepath      = "generated"
+            |}
+            |""".stripMargin
+        )
+        Seq(out)
+      }
+    }.taskValue
   )
   .dependsOn(fpUnits, fpUnits % "compile->test", fpNative)

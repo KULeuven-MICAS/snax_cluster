@@ -164,6 +164,38 @@ class XDMATop(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: Strin
   xdmaCtrl.io.remoteTaskFinished := io.remoteTaskFinished
 }
 
+/** A holder that instantiates the xDMA and the SIMD block side by side.
+  *
+  * Its only purpose is to force ONE Chisel elaboration for both blocks. The two share a lot of library
+  * hardware -- `BasicCounter`, the native `Fp*` units, the width converters -- and CIRCT names and optimises
+  * those per circuit. Elaborated separately, the two files end up with same-named modules of different shapes
+  * (measured: `FpAdd` 16-bit-out vs 32-bit-out, a `BasicCounter` with and without its `io_reset` port), which
+  * is a hard compile error the moment both files are in one design. Elaborated together, CIRCT dedups what is
+  * identical and gives distinct names to what is not.
+  *
+  * This module itself is never instantiated: the SV wrappers instantiate `<cluster>_xdma` and `<cluster>_simd`
+  * directly. It exists only as an elaboration root, so its ports are tied off rather than exposed.
+  */
+class ClusterBlocks(
+  xdmaReaderParam: XDMAParam,
+  xdmaWriterParam: XDMAParam,
+  simdParam:       snax.simd.SimdParam,
+  clusterName:     String
+) extends Module
+    with RequireAsyncReset {
+  override val desiredName = s"${clusterName}_blocks"
+
+  val xdma = Module(new XDMATop(readerParam = xdmaReaderParam, writerParam = xdmaWriterParam, clusterName = clusterName))
+  val simd = Module(new snax.simd.SimdTop(param = simdParam, clusterName = clusterName))
+
+  // Tie both children off. DontCare on the inputs and a single OR of the outputs keeps the children from being
+  // optimised away without dragging their full port lists onto this holder.
+  xdma.io := DontCare
+  simd.io := DontCare
+  dontTouch(xdma.io)
+  dontTouch(simd.io)
+}
+
 object XDMATopGen extends App {
   val parsedArgs = snax.utils.ArgParser.parse(args)
   // The xdmaCfg region is passed to chisel generator as a JSON string
@@ -348,28 +380,54 @@ return new $junctionName($junctionArgs)
   // Mirrors snax.streamer.StreamerSwHeaderGen.
   val swOnly = parsedArgs.contains("sw-only")
 
+  // When a `--simdCfg` is supplied the cluster carries a SIMD block too, and BOTH blocks are emitted from this
+  // one elaboration into a single `<cluster>_blocks.sv`. See ClusterBlocks for why they cannot be elaborated
+  // separately. Without it, behaviour is exactly as before: XDMATop alone into `<cluster>_xdma.sv`.
+  val simdCfgArg     = parsedArgs.find(_._1 == "simdCfg")
+  val parsedSimdCfg  = simdCfgArg.map(a => Json.parse(a._2))
+
   // Generation of the hardware (skipped in --sw-only mode)
   if (!swOnly) {
-    var sv_string = getVerilogString(
-      new XDMATop(
-        clusterName = parsedArgs.getOrElse("clusterName", ""),
-        readerParam = new XDMAParam(
-          cfgParam,
-          axiParam,
-          crossClusterParam,
-          readerParam,
-          readerExtensionParam
-        ),
-        writerParam = new XDMAParam(
-          cfgParam,
-          axiParam,
-          crossClusterParam,
-          writerParam,
-          writerExtensionParam,
-          writerJunctionParam
-        )
-      )
+    val xdmaReaderXParam = new XDMAParam(
+      cfgParam,
+      axiParam,
+      crossClusterParam,
+      readerParam,
+      readerExtensionParam
     )
+    val xdmaWriterXParam = new XDMAParam(
+      cfgParam,
+      axiParam,
+      crossClusterParam,
+      writerParam,
+      writerExtensionParam,
+      writerJunctionParam
+    )
+
+    var sv_string = parsedSimdCfg match {
+      case Some(simdJson) =>
+        getVerilogString(
+          new ClusterBlocks(
+            xdmaReaderParam = xdmaReaderXParam,
+            xdmaWriterParam = xdmaWriterXParam,
+            simdParam       = snax.simd.SimdCfgParser(
+              simdJson,
+              tcdmDataWidth = parsedArgs("tcdmDataWidth").toInt,
+              axiDataWidth  = parsedArgs("axiDataWidth").toInt,
+              tcdmSize      = parsedArgs("tcdmSize").toInt
+            ),
+            clusterName     = parsedArgs.getOrElse("clusterName", "")
+          )
+        )
+      case None           =>
+        getVerilogString(
+          new XDMATop(
+            clusterName = parsedArgs.getOrElse("clusterName", ""),
+            readerParam = xdmaReaderXParam,
+            writerParam = xdmaWriterXParam
+          )
+        )
+    }
 
     // Perform dirty fix on the Chisel's bug that append the file list at the end of the file
     val truncated = sv_string
@@ -396,7 +454,7 @@ return new $junctionName($junctionArgs)
     val hardware_dir = parsedArgs.getOrElse(
       "hw-target-dir",
       "generated"
-    ) + "/" + s"${parsedArgs.getOrElse("clusterName", "")}_xdma.sv"
+    ) + "/" + s"${parsedArgs.getOrElse("clusterName", "")}" + (if (parsedSimdCfg.isDefined) "_blocks.sv" else "_xdma.sv")
     java.nio.file.Files.write(
       java.nio.file.Paths.get(hardware_dir),
       sv_string.getBytes(java.nio.charset.StandardCharsets.UTF_8)
