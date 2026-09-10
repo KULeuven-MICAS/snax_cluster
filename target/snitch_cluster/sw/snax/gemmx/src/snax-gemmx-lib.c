@@ -11,6 +11,42 @@
 #include "stdint.h"
 #include "streamer_csr_addr_map.h"
 
+// Write a vector of CSRs at COMPILE-TIME-CONSTANT addresses.
+//
+// csrw_ss (snRuntime/src/csr.h) is a switch over the CSR number, because the RISC-V
+// csrw instruction takes an immediate. A constant address folds to one `csrw imm`;
+// an address computed in a loop becomes a jump-table load out of L2 plus an indirect
+// jump -- roughly 20 cycles instead of 1. Configuring the streamer from `for` loops
+// therefore cost ~1000 cycles per launch, which on a four-engine cluster showed up as
+// the GEMM sitting idle while its core wrote CSRs.
+//
+// `num` is always a compile-time constant here (S_STRIDE_NUM_*, T_BOUND_NUM_*,
+// T_STRIDE_NUM_*), so every test below folds away and only the real writes remain.
+#define SNAX_CSR_WRITE_ZEROS(base, num)                                       \
+    do {                                                                       \
+        if ((num) > 0) csrw_ss((base) + 0, 0);                                 \
+        if ((num) > 1) csrw_ss((base) + 1, 0);                                 \
+        if ((num) > 2) csrw_ss((base) + 2, 0);                                 \
+        if ((num) > 3) csrw_ss((base) + 3, 0);                                 \
+        if ((num) > 4) csrw_ss((base) + 4, 0);                                 \
+        if ((num) > 5) csrw_ss((base) + 5, 0);                                 \
+        if ((num) > 6) csrw_ss((base) + 6, 0);                                 \
+        if ((num) > 7) csrw_ss((base) + 7, 0);                                 \
+    } while (0)
+
+#define SNAX_CSR_WRITE_VEC(base, arr, num)                                    \
+    do {                                                                       \
+        if ((num) > 0) csrw_ss((base) + 0, (arr)[0]);                          \
+        if ((num) > 1) csrw_ss((base) + 1, (arr)[1]);                          \
+        if ((num) > 2) csrw_ss((base) + 2, (arr)[2]);                          \
+        if ((num) > 3) csrw_ss((base) + 3, (arr)[3]);                          \
+        if ((num) > 4) csrw_ss((base) + 4, (arr)[4]);                          \
+        if ((num) > 5) csrw_ss((base) + 5, (arr)[5]);                          \
+        if ((num) > 6) csrw_ss((base) + 6, (arr)[6]);                          \
+        if ((num) > 7) csrw_ss((base) + 7, (arr)[7]);                          \
+    } while (0)
+
+
 int32_t gen_size_config(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N) {
     return ((int32_t)Batch << 24) | ((int32_t)M << 16) | ((int32_t)K << 8) |
            (int32_t)N;
@@ -33,6 +69,30 @@ int32_t gen_csr1_config(bool double_round_i) {
 }
 
 // Set STREAMER configuration CSR
+// Re-point a configured GEMM at new buffers: five CSR writes, nothing else.
+//
+// Two matmuls of the same shape differ only in where their operands live -- in
+// FlashAttention, S = Q.K^T and O = P.V are exactly that. Re-issuing
+// set_gemmx_streamer_csr() to write ~84 identical numbers costs about a
+// thousand cycles, most of it instruction fetch rather than the writes
+// themselves. Pass a NULL-equivalent (-1) for any buffer that should keep its
+// current base.
+//
+// The strides, bounds, remap indices and accelerator CSRs are untouched, so the
+// caller is asserting the shape is unchanged. If it is not, reconfigure.
+void set_gemmx_bases(int32_t delta_local_a, int32_t delta_local_b,
+                     int32_t delta_local_d8, int32_t delta_local_c,
+                     int32_t delta_local_d32) {
+    uint32_t l1 = (uint32_t)snrt_l1_next();
+    if (delta_local_a >= 0) csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)delta_local_a + l1);
+    if (delta_local_b >= 0) csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)delta_local_b + l1);
+    if (delta_local_d8 >= 0) csrw_ss(BASE_PTR_WRITER_0_LOW, (uint32_t)delta_local_d8 + l1);
+    if (delta_local_c >= 0)
+        csrw_ss(BASE_PTR_READER_WRITER_0_LOW, (uint32_t)delta_local_c + l1);
+    if (delta_local_d32 >= 0)
+        csrw_ss(BASE_PTR_READER_WRITER_1_LOW, (uint32_t)delta_local_d32 + l1);
+}
+
 void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
                             int32_t* Atlstride, int32_t set_addr_remap_index_A,
 
@@ -62,19 +122,13 @@ void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
     csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)(delta_local_a + snrt_l1_next()));
 
     // spatial strides for A
-    for (int i = 0; i < S_STRIDE_NUM_READER_0; i++) {
-        csrw_ss(S_STRIDE_BASE_READER_0 + i, Aslstride[i]);
-    }
+    SNAX_CSR_WRITE_VEC(S_STRIDE_BASE_READER_0, Aslstride, S_STRIDE_NUM_READER_0);
 
     // loop bounds, from innermost to outermost, for data mover A
-    for (int i = 0; i < T_BOUND_NUM_READER_0; i++) {
-        csrw_ss(T_BOUND_BASE_READER_0 + i, Atlbound[i]);
-    }
+    SNAX_CSR_WRITE_VEC(T_BOUND_BASE_READER_0, Atlbound, T_BOUND_NUM_READER_0);
 
     // temporal strides for A
-    for (int i = 0; i < T_STRIDE_NUM_READER_0; i++) {
-        csrw_ss(T_STRIDE_BASE_READER_0 + i, Atlstride[i]);
-    }
+    SNAX_CSR_WRITE_VEC(T_STRIDE_BASE_READER_0, Atlstride, T_STRIDE_NUM_READER_0);
 
     // set the address remap index for A
 #ifdef ADDR_REMAP_INDEX_READER_0
@@ -89,19 +143,13 @@ void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
     csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)(delta_local_b + snrt_l1_next()));
 
     // spatial strides for B
-    for (int i = 0; i < S_STRIDE_NUM_READER_1; i++) {
-        csrw_ss(S_STRIDE_BASE_READER_1 + i, Bslstride[i]);
-    }
+    SNAX_CSR_WRITE_VEC(S_STRIDE_BASE_READER_1, Bslstride, S_STRIDE_NUM_READER_1);
 
     // loop bounds, from innermost to outermost, for data mover B
-    for (int i = 0; i < T_BOUND_NUM_READER_1; i++) {
-        csrw_ss(T_BOUND_BASE_READER_1 + i, Btlbound[i]);
-    }
+    SNAX_CSR_WRITE_VEC(T_BOUND_BASE_READER_1, Btlbound, T_BOUND_NUM_READER_1);
 
     // temporal strides for B
-    for (int i = 0; i < T_STRIDE_NUM_READER_1; i++) {
-        csrw_ss(T_STRIDE_BASE_READER_1 + i, Btlstride[i]);
-    }
+    SNAX_CSR_WRITE_VEC(T_STRIDE_BASE_READER_1, Btlstride, T_STRIDE_NUM_READER_1);
 
     // set the address remap index for B
 #ifdef ADDR_REMAP_INDEX_READER_1
@@ -115,25 +163,17 @@ void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
     csrw_ss(BASE_PTR_WRITER_0_LOW, (uint32_t)(delta_local_d8 + snrt_l1_next()));
 
     // spatial strides for D8
-    for (int i = 0; i < S_STRIDE_NUM_WRITER_0; i++) {
-        csrw_ss(S_STRIDE_BASE_WRITER_0 + i, D8slstride[i]);
-    }
+    SNAX_CSR_WRITE_VEC(S_STRIDE_BASE_WRITER_0, D8slstride, S_STRIDE_NUM_WRITER_0);
 
     // for D8, from N to M
     if (bypassSIMD == 1) {
-        for (int i = 0; i < T_BOUND_NUM_WRITER_0; i++) {
-            csrw_ss(T_BOUND_BASE_WRITER_0 + i, 0);
-        }
+        SNAX_CSR_WRITE_ZEROS(T_BOUND_BASE_WRITER_0, T_BOUND_NUM_WRITER_0);
     } else {
-        for (int i = 0; i < T_BOUND_NUM_WRITER_0; i++) {
-            csrw_ss(T_BOUND_BASE_WRITER_0 + i, D8tlbound[i]);
-        }
+        SNAX_CSR_WRITE_VEC(T_BOUND_BASE_WRITER_0, D8tlbound, T_BOUND_NUM_WRITER_0);
     }
 
     // temporal strides for D8
-    for (int i = 0; i < T_STRIDE_NUM_WRITER_0; i++) {
-        csrw_ss(T_STRIDE_BASE_WRITER_0 + i, D8tlstride[i]);
-    }
+    SNAX_CSR_WRITE_VEC(T_STRIDE_BASE_WRITER_0, D8tlstride, T_STRIDE_NUM_WRITER_0);
 
     // set the address remap index for D8
 #ifdef ADDR_REMAP_INDEX_WRITER_0
@@ -148,19 +188,13 @@ void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
             (uint32_t)(delta_local_c + snrt_l1_next()));
 
     // spatial strides for C
-    for (int i = 0; i < S_STRIDE_NUM_READER_WRITER_0; i++) {
-        csrw_ss(S_STRIDE_BASE_READER_WRITER_0 + i, Cslstride[i]);
-    }
+    SNAX_CSR_WRITE_VEC(S_STRIDE_BASE_READER_WRITER_0, Cslstride, S_STRIDE_NUM_READER_WRITER_0);
 
     // loop bounds, from innermost to outermost, for data mover C
-    for (int i = 0; i < T_BOUND_NUM_READER_WRITER_0; i++) {
-        csrw_ss(T_BOUND_BASE_READER_WRITER_0 + i, Ctlbound[i]);
-    }
+    SNAX_CSR_WRITE_VEC(T_BOUND_BASE_READER_WRITER_0, Ctlbound, T_BOUND_NUM_READER_WRITER_0);
 
     // temporal strides for C
-    for (int i = 0; i < T_STRIDE_NUM_READER_WRITER_0; i++) {
-        csrw_ss(T_STRIDE_BASE_READER_WRITER_0 + i, Ctlstride[i]);
-    }
+    SNAX_CSR_WRITE_VEC(T_STRIDE_BASE_READER_WRITER_0, Ctlstride, T_STRIDE_NUM_READER_WRITER_0);
 
     // set the address remap index for C
 #ifdef ADDR_REMAP_INDEX_READER_WRITER_0
@@ -169,9 +203,7 @@ void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
 
     // set the channel enable
 #ifdef ENABLED_CHANNEL_READER_WRITER_0
-    for (int i = 0; i < ENABLED_CHANNEL_READER_WRITER_0_CSR_NUM; i++) {
-        csrw_ss(ENABLED_CHANNEL_READER_WRITER_0 + i, channel_en_C[i]);
-    }
+    SNAX_CSR_WRITE_VEC(ENABLED_CHANNEL_READER_WRITER_0, channel_en_C, ENABLED_CHANNEL_READER_WRITER_0_CSR_NUM);
 #endif
 
     // ----------------------------------D32-----------------------------------
@@ -182,25 +214,17 @@ void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
             (uint32_t)(delta_local_d32 + snrt_l1_next()));
 
     // spatial strides for D32
-    for (int i = 0; i < S_STRIDE_NUM_READER_WRITER_1; i++) {
-        csrw_ss(S_STRIDE_BASE_READER_WRITER_1 + i, D32slstride[i]);
-    }
+    SNAX_CSR_WRITE_VEC(S_STRIDE_BASE_READER_WRITER_1, D32slstride, S_STRIDE_NUM_READER_WRITER_1);
 
     // for D32, from N to M
     if (bypassSIMD == 0) {
-        for (int i = 0; i < T_BOUND_NUM_READER_WRITER_1; i++) {
-            csrw_ss(T_BOUND_BASE_READER_WRITER_1 + i, 0);
-        }
+        SNAX_CSR_WRITE_ZEROS(T_BOUND_BASE_READER_WRITER_1, T_BOUND_NUM_READER_WRITER_1);
     } else {
-        for (int i = 0; i < T_BOUND_NUM_READER_WRITER_1; i++) {
-            csrw_ss(T_BOUND_BASE_READER_WRITER_1 + i, D32tlbound[i]);
-        }
+        SNAX_CSR_WRITE_VEC(T_BOUND_BASE_READER_WRITER_1, D32tlbound, T_BOUND_NUM_READER_WRITER_1);
     }
 
     // temporal strides for D32
-    for (int i = 0; i < T_STRIDE_NUM_READER_WRITER_1; i++) {
-        csrw_ss(T_STRIDE_BASE_READER_WRITER_1 + i, D32tlstride[i]);
-    }
+    SNAX_CSR_WRITE_VEC(T_STRIDE_BASE_READER_WRITER_1, D32tlstride, T_STRIDE_NUM_READER_WRITER_1);
 
     // set the address remap index for D32
 #ifdef ADDR_REMAP_INDEX_READER_WRITER_1

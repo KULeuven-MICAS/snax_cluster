@@ -42,6 +42,13 @@ int32_t gen_csr0_config(uint8_t input_zp_i, uint8_t output_zp_i,
 int32_t gen_csr1_config(bool double_round_i);
 
 // Set STREAMER configuration CSR
+// Re-point an already-configured GEMM at new buffers without touching its
+// shape: five csrw against set_gemmx_streamer_csr()'s ~84. Pass -1 to leave a
+// buffer where it is. See the .c for when this is and is not legitimate.
+void set_gemmx_bases(int32_t delta_local_a, int32_t delta_local_b,
+                     int32_t delta_local_d8, int32_t delta_local_c,
+                     int32_t delta_local_d32);
+
 void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
                             int32_t* Atlstride, int32_t set_addr_remap_index_A,
 
