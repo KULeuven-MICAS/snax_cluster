@@ -84,6 +84,83 @@ class StreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
     outs
   }
 
+  /** Drive STICKY-B (op CSR bit[8]) with operandCount=1: the first beat is latched as operand B and every
+    * later beat is combined against it. N+1 beats in, N+1 beats out -- output 0 is the latched value
+    * passing through, which the caller discards. */
+  def runSticky(op: Int, bcast: Seq[Int], data: Seq[Seq[Int]], computeLanes: Int): Seq[Seq[Float]] = {
+    var outs = Seq[Seq[Float]]()
+    test(new DataPathExtensionHarness(
+      new HasStreamElementwise(dataWidth = testWidth, elementWidth = 16, computeLanes = computeLanes,
+                               op = Seq("FMA_FP16"))))
+      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+        dut =>
+          dut.io.csr_i(0).poke(1.U)              // each beat is its own row
+          dut.io.csr_i(1).poke((op | 0x100).U)   // sticky-B bit[8]
+          dut.io.enable_i.poke(true)
+          dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+
+          val inBeats = bcast +: data
+          var threads = new chiseltest.internal.TesterThreadList(Seq())
+          threads = threads.fork {
+            dut.io.data_i.valid.poke(true)
+            for (bt <- inBeats) {
+              while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+              dut.io.data_i.bits.poke(packBeat(bt)); dut.clock.step(1)
+            }
+            dut.io.data_i.valid.poke(false)
+          }
+          threads = threads.fork {
+            for (_ <- inBeats.indices) {
+              while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+              val out = dut.io.data_o.bits.peekInt()
+              outs = outs :+ (0 until lanes).map(i => f16bitsToF32(((out >> (16 * i)) & 0xffff).toInt))
+              dut.io.data_o.ready.poke(true); dut.clock.step(1); dut.io.data_o.ready.poke(false)
+            }
+          }
+          threads.joinAndStep()
+      }
+    outs
+  }
+
+  behavior of "StreamElementwise STICKY-B"
+
+  it should "combine every beat against the latched first beat (ADD)" in {
+    val rng   = new Random(0x5B1)
+    val bcast = Seq.fill(lanes)(f32ToF16bits(rng.between(-4, 4) + rng.nextInt(4) * 0.25f))
+    val data  = Seq.fill(6)(Seq.fill(lanes)(f32ToF16bits(rng.between(-4, 4) + rng.nextInt(4) * 0.25f)))
+    val hw    = runSticky(1 /*ADD*/, bcast, data, computeLanes = 32)
+    assert(hw.length == data.length + 1, s"expected ${data.length + 1} beats, got ${hw.length}")
+    for (k <- data.indices; i <- 0 until lanes) {
+      val want = f16bitsToF32(f32ToF16bits(f16bitsToF32(bcast(i)) + f16bitsToF32(data(k)(i))))
+      assert(hw(k + 1)(i) == want, f"beat $k lane $i: hw=${hw(k + 1)(i)}%.4f want=$want%.4f")
+    }
+  }
+
+  it should "hold the latch across many beats and under the time-mux (MUL, cl=8)" in {
+    val rng   = new Random(0x5B2)
+    val bcast = Seq.fill(lanes)(f32ToF16bits(rng.between(1, 3).toFloat))
+    val data  = Seq.fill(10)(Seq.fill(lanes)(f32ToF16bits(rng.between(-4, 4).toFloat)))
+    val hw    = runSticky(0 /*MUL*/, bcast, data, computeLanes = 8)
+    // The LAST beat is the real test: if the latch were overwritten by an intermediate result the
+    // early beats would still look right and the tail would drift.
+    for (k <- data.indices; i <- 0 until lanes) {
+      val want = f16bitsToF32(f32ToF16bits(f16bitsToF32(bcast(i)) * f16bitsToF32(data(k)(i))))
+      assert(hw(k + 1)(i) == want, f"beat $k lane $i: hw=${hw(k + 1)(i)}%.4f want=$want%.4f")
+    }
+  }
+
+  it should "leave the non-sticky path unchanged (same op, operandCount=2)" in {
+    // Regression guard: with bit[8] clear the block must behave exactly as before.
+    val rng   = new Random(0x5B3)
+    val pairs = Seq.fill(4)(
+      (Seq.fill(lanes)(f32ToF16bits(rng.between(-4, 4).toFloat)),
+       Seq.fill(lanes)(f32ToF16bits(rng.between(-4, 4).toFloat))))
+    val hw = run(1, pairs, 8)
+    val gd = golden(1, pairs)
+    for (k <- pairs.indices; i <- 0 until lanes)
+      assert(hw(k)(i) == gd(k)(i), f"beat $k lane $i: hw=${hw(k)(i)}%.4f want=${gd(k)(i)}%.4f")
+  }
+
   def golden(op: Int, pairs: Seq[(Seq[Int], Seq[Int])]): Seq[Seq[Float]] =
     pairs.map { case (a, b) =>
       a.zip(b).map { case (x, y) =>

@@ -116,8 +116,27 @@ def emit_matmul_data(**kwargs):
     # streamer c32 settings
     # -----------------------------------------------------------
     # spatial settings
+    # The C/D32 ports declare spatial_bounds [[8, 4]] -- TWO spatial dimensions, 32
+    # channels -- so the streamer wants TWO spatial strides (S_STRIDE_NUM_READER_WRITER_*
+    # is 2). Emitting only stride0 made the app pass a 1-element array to a 2-element CSR
+    # write, so the second stride came from off the end of a stack array. Per
+    # AddressGenUnit, channel i addresses stride0*(i%8) + stride1*(i/8), so 24 of the 32
+    # channels took their address from that garbage -- harmless-looking at 8x8, and the
+    # out-of-bounds write that corrupted a neighbouring hart's stack at 16x16.
+    #
+    # The three strides are one consistent progression over a serialised chunk:
+    #   spatial 0 : 8 channels x bankWidth/8            =  64 B
+    #   spatial 1 : 4 groups   x 64 B                   = 256 B  (one whole chunk)
+    #   temporal 0: steps to the NEXT chunk             = 256 B
+    # Note stride1 is the value that used to be assigned to Ctlstride0 -- it belongs to
+    # the spatial axis, not the temporal loop, which is why the temporal step was 4x short.
     data_str += [format_scalar_definition("int32_t", "Cslstride0", bankWidth / 8)]
     c32_spatial_bound_0 = 8
+    data_str += [
+        format_scalar_definition(
+            "int32_t", "Cslstride1", c32_spatial_bound_0 * (bankWidth / 8)
+        )
+    ]
     # temporal settings
     # serial input for C
     data_str += [
@@ -129,7 +148,7 @@ def emit_matmul_data(**kwargs):
     ]
     data_str += [
         format_scalar_definition(
-            "int32_t", "Ctlstride0", c32_spatial_bound_0 * (bankWidth / 8)
+            "int32_t", "Ctlstride0", snax_gemmx_serial_c32_d32_width / 8
         )
     ]
     data_str += [format_scalar_definition("int32_t", "Ctlbound1", kwargs["N"])]
@@ -153,8 +172,27 @@ def emit_matmul_data(**kwargs):
     # streamer d32 settings
     # -----------------------------------------------------------
     # spatial settings
+    # The C/D32 ports declare spatial_bounds [[8, 4]] -- TWO spatial dimensions, 32
+    # channels -- so the streamer wants TWO spatial strides (S_STRIDE_NUM_READER_WRITER_*
+    # is 2). Emitting only stride0 made the app pass a 1-element array to a 2-element CSR
+    # write, so the second stride came from off the end of a stack array. Per
+    # AddressGenUnit, channel i addresses stride0*(i%8) + stride1*(i/8), so 24 of the 32
+    # channels took their address from that garbage -- harmless-looking at 8x8, and the
+    # out-of-bounds write that corrupted a neighbouring hart's stack at 16x16.
+    #
+    # The three strides are one consistent progression over a serialised chunk:
+    #   spatial 0 : 8 channels x bankWidth/8            =  64 B
+    #   spatial 1 : 4 groups   x 64 B                   = 256 B  (one whole chunk)
+    #   temporal 0: steps to the NEXT chunk             = 256 B
+    # Note stride1 is the value that used to be assigned to Ctlstride0 -- it belongs to
+    # the spatial axis, not the temporal loop, which is why the temporal step was 4x short.
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
     d32_spatial_bound_0 = 8
+    data_str += [
+        format_scalar_definition(
+            "int32_t", "D32slstride1", d32_spatial_bound_0 * (bankWidth / 8)
+        )
+    ]
     # temporal settings
     data_str += [
         format_scalar_definition(
@@ -165,7 +203,7 @@ def emit_matmul_data(**kwargs):
     ]
     data_str += [
         format_scalar_definition(
-            "int32_t", "D32tlstride0", d32_spatial_bound_0 * (bankWidth / 8)
+            "int32_t", "D32tlstride0", snax_gemmx_serial_c32_d32_width / 8
         )
     ]
     data_str += [format_scalar_definition("int32_t", "D32tlbound1", kwargs["N"])]

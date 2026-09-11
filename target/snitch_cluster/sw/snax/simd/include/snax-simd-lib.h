@@ -163,6 +163,19 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 #define SIMD_EW_MUL 0u
 #define SIMD_EW_ADD 1u
 
+// Latch the FIRST beat of the task as operand B and combine every later beat
+// against it, instead of taking both operands from the stream.
+//
+// Use with operandCount = 1, so each beat is its own row. The task consumes
+// 1 + N beats and produces 1 + N: output beat 0 is the latched operand passing
+// through, so point the writer ONE BEAT EARLY and let it land on a dummy slot.
+//
+// Without this a broadcast operand has to be physically replicated once per data
+// beat -- a whole extra pass to write it and a doubled read stream to consume
+// it -- and the AGU cannot avoid that, because one affine address stream cannot
+// hold one operand's address fixed while the other walks.
+#define SIMD_EW_STICKY_B 0x100u
+
 typedef struct {
     uint8_t id;
     uint8_t csr_num;

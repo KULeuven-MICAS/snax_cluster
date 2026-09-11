@@ -19,7 +19,8 @@ import fp_native._
   * `computeLanes` time-mux, but emits the per-lane partials (Cat(regs)) instead of a reduced scalar (no reduceTree, no
   * tap).
   *
-  * CSR layout: csr(0) = operandCount (#beats combined per output, 0->1); csr(1) bits[7:0] = op (0=MUL, 1=ADD;
+  * CSR layout: csr(0) = operandCount (#beats combined per output, 0->1); csr(1) bit[8] = sticky-B (latch the
+  * first beat as operand B and combine every later beat against it -- see the decode below); csr(1) bits[7:0] = op (0=MUL, 1=ADD;
   * present/used only when >1 op is built).
   *
   * Configurable from the hjson: `op` (the LIST of supported ops, a subset of {MUL, ADD}), `computeLanes` (number of
@@ -93,6 +94,24 @@ class StreamElementwise(
   val operandCount    = Mux(csrOperandCount === 0.U, 1.U(16.W), csrOperandCount(15, 0))
   // op-select CSR is read only when both combines are built; a single-op build fixes the op
   val opcode: UInt = if (bothOps) ext_csr_i(1)(7, 0) else if (hasAdd) OP_ADD else OP_MUL
+
+  // STICKY-B (op CSR bit[8]): latch the FIRST beat of the task as operand B and combine every LATER beat
+  // against it, instead of taking both operands from the stream.
+  //
+  // With operandCount=2 the two operands must arrive interleaved, which means a broadcast operand has to be
+  // physically replicated once per data beat first -- a whole extra pass to write it and a doubled read
+  // stream to consume it. The AGU cannot avoid that: a single affine address stream cannot hold one
+  // operand's address fixed while the other walks, so the replication is not removable in software.
+  //
+  // This is worth a bit precisely because a broadcast operand is common ONCE THE DATA IS TRANSPOSED. In
+  // FlashAttention the row maxima are one beat for the whole tile (one lane per query row), so `sm = S - m`
+  // is a single latched beat against a 64-beat stream. In the untransposed form m varied per row and this
+  // mode would not have applied at all.
+  //
+  // Use it with operandCount=1, so each beat is its own row: beat 0 seeds the latch and passes through
+  // (its output is the broadcast value itself -- point the writer one beat early and discard it), and beats
+  // 1..N emit op(B, beat). Input and output stay 1:1, so the credit accounting below is untouched.
+  val stickyB: Bool = if (extensionParam.userCsrNum >= 2) ext_csr_i(1)(8).asBool else false.B
 
   // ---- pipeline depth (timing) ----------------------------------------------------------------
   // Each FP unit is internally pipelined by `fpPipe` (cfg "cutting" knob); plus laneLat to register the
@@ -186,6 +205,19 @@ class StreamElementwise(
   val stall    = RegInit(0.U(log2Ceil(gap + 1).max(1).W)) // remaining recurrence-gap cycles (gap>0 only)
   val credit   = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
 
+  // The seed beat is the one that loads the sticky operand; it clears once that beat has been ISSUED, so
+  // the next accepted beat combines against it rather than overwriting it.
+  val seedPhase = RegInit(false.B)
+  // ... and `regs` only holds the operand accLat cycles later, when the seed RETIRES. Every later beat
+  // reads regs, so acceptance is held off until then.
+  //
+  // This is NOT the accumulate path's beat-to-beat recurrence: in sticky mode regs is held, so beat k+1
+  // does not depend on beat k. The dependency is on the seed alone, which makes this a ONE-TIME wait of
+  // accLat cycles per task instead of the `gap` inserted between every accumulating beat. Getting that
+  // wrong is silent -- with operandCount=1 every beat looks like a row start, so the existing gap logic
+  // inserts nothing and the first data beats read a stale latch.
+  val seedDone = RegInit(false.B)
+
   val lastSub        = sub === (subCycles - 1).U
   val firstBeat      = beatIdx === 0.U
   val lastBeatInRow  = beatIdx === (operandCount - 1.U)
@@ -194,17 +226,28 @@ class StreamElementwise(
 
   // accept a new input beat: overlap the current beat's last-sub issue when the successor needs no gap,
   // else from idle once the gap has drained. Reserve an output credit only when starting a new row.
-  val acceptDuringIssue = haveBeat  && lastSub && overlapOK
+  // Never overlap acceptance with the seed beat's own issue, or the successor would be latched before the
+  // stall below can take effect.
+  val acceptDuringIssue = haveBeat  && lastSub && overlapOK && !(stickyB && seedPhase)
   val acceptWhenIdle    = !haveBeat && (stall === 0.U)
   val creditOK          = !nextIsRowStart || (credit =/= 0.U)
-  ext_data_i.ready := (acceptDuringIssue || acceptWhenIdle) && creditOK && !ext_start_i
+  val stickyStall       = stickyB && !seedPhase && !seedDone // seed issued, latch not yet written
+  ext_data_i.ready := (acceptDuringIssue || acceptWhenIdle) && creditOK && !ext_start_i && !stickyStall
   val accept = ext_data_i.fire
 
   // ---- issue ----
   val issuing = haveBeat
+  val stickySeed = stickyB && seedPhase
+  when(ext_start_i) {
+    seedPhase := true.B
+  }.elsewhen(issuing && lastSub && seedPhase) {
+    seedPhase := false.B
+  }
   val res     = Wire(Vec(computeLanes, UInt(accWidth.W)))
   for (j <- 0 until computeLanes)
-    res(j) := accLane(inLanes(li(sub, j)), regs(li(sub, j)), firstBeat)
+    // In sticky mode only the seed beat seeds; every later beat reads regs (the latched operand B) as
+    // `prev` and combines against it, which is exactly accLane's non-first path.
+    res(j) := accLane(inLanes(li(sub, j)), regs(li(sub, j)), Mux(stickyB, stickySeed, firstBeat))
 
   // A valid-pulse pipeline CLEARED by ext_start_i, so a row-emit still in flight from the previous task
   // cannot fire — and push an unreserved beat past the credit reset — after the controller restarts the
@@ -223,11 +266,28 @@ class StreamElementwise(
   val retireValid   = ShiftRegister(issuing, accLat, false.B, true.B)
   val rowLastIssue  = issuing && lastSub && lastBeatInRow
   val rowLastRetire = clrPipe(rowLastIssue, accLat)
-  val outNow        = WireInit(regs)
+  // Under the time mux a beat's result is assembled from `regs` at its LAST sub's retire, which works
+  // because each earlier sub-group has already written its result there. Sticky mode holds regs (that is
+  // the whole point), so the earlier sub-groups have nowhere to land and the assembled beat reads back the
+  // broadcast in every lane but the last group's. `outRegs` is that landing place: always written, never
+  // read as an operand. Costs lanes x 32 flops; invisible at computeLanes == lanes, which is why this only
+  // showed up in the cl=8 test.
+  val outRegs       = Reg(Vec(lanes, UInt(accWidth.W)))
+  val seedRetiring  = ShiftRegister(stickySeed && issuing, accLat, false.B, true.B)
+  // The latch is only complete when the seed's LAST sub-group has retired, not its first: under the time
+  // mux the seed writes regs over `subCycles` cycles, so releasing on the leading edge lets the next beat
+  // read lanes that are still stale. Same alignment as rowLastRetire.
+  val seedFullyRetired = ShiftRegister(stickySeed && issuing && lastSub, accLat, false.B, true.B)
+  when(ext_start_i) { seedDone := false.B }.elsewhen(seedFullyRetired) { seedDone := true.B }
+  val holdSticky    = stickyB && !seedRetiring // keep operand B; only the result leaves
+  val outBase       = Wire(Vec(lanes, UInt(accWidth.W)))
+  for (i <- 0 until lanes) outBase(i) := Mux(stickyB, outRegs(i), regs(i))
+  val outNow        = WireInit(outBase)
   when(retireValid) {
     for (j <- 0 until computeLanes) {
-      regs(li(subRetire, j))   := res(j)
-      outNow(li(subRetire, j)) := res(j)
+      when(!holdSticky) { regs(li(subRetire, j)) := res(j) }
+      outRegs(li(subRetire, j)) := res(j)
+      outNow(li(subRetire, j))  := res(j)
     }
   }
   // narrow each FP32 partial to transport (lane 0 low), captured combinationally so the whole beat is

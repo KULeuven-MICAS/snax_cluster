@@ -21,7 +21,7 @@
         user_width: 3
         tcdm:
         {
-            size: 128
+            size: 512
             banks: 32
             sparse_interconnect: false
         }
@@ -95,11 +95,15 @@
                                     snax_gemmX
                                 ]
                                 snax_tcdm_ports: 56
-                                snax_num_rw_csr: 19
+                                snax_num_rw_csr: 29  // = 4 + (2 + meshCol/4 + meshCol + 1) + 2, by hand; 19 at meshCol=8
                                 snax_num_ro_csr: 2
-                                snax_gemmx_mesh_row: 8
-                                snax_gemmx_tile_size: 8
-                                snax_gemmx_mesh_col: 8
+                                // 16x4x16 = 1024 INT8 MAC/cycle, double 8x8x8, at IDENTICAL operand
+                                // bandwidth: operand bytes/MAC = 1/meshRow + 1/meshCol, independent of
+                                // tileSize, so A stays meshRow*tileSize = 64 B and B stays
+                                // tileSize*meshCol = 64 B and the streamer ports are unchanged.
+                                snax_gemmx_mesh_row: 16
+                                snax_gemmx_tile_size: 4
+                                snax_gemmx_mesh_col: 16
                                 snax_gemmx_serial_c32_d32_width: 2048
                                 snax_gemmx_serial_d8_width: 512
                                 with_pipeline: true
@@ -309,11 +313,30 @@
                             writer_agu_temporal_dimension: 3
                             reader_extensions:
                             {
+                                // ORDER IS THE CHAIN ORDER: a task arms a subset and data flows through them in
+                                // declaration order, so what can be fused into one pass is decided HERE.
+                                // Int32ToFp16Converter first lets a GEMM's INT32 output be converted AND
+                                // reduced in a single pass (the reduce in tap mode passes the converted tile
+                                // through and appends its statistics).
+                                HasInt32ToFp16Converter:
+                                {
+                                    dataWidth: 512
+                                }
                                 HasElementwiseAdd:
                                 {
                                     elementWidth: 32
                                     dataWidth: 512
                                 }
+                                // computeLanes 16, NOT 32, on the FP16 operators. MEASURED: doubling them bought
+                                // 8% latency (1284 -> 1189 cycles/KV tile on FlashAttention) and HALVED SIMD
+                                // efficiency, 72% -> 40% of peak -- the extra ALUs sit idle, because the block
+                                // stopped being ALU-bound once the sticky-B broadcast removed the replication
+                                // pass. 2x the FP units in three operators is not worth 8%.
+                                //
+                                // StreamElementwise has a second reason: at computeLanes=32 (subCycles=1) the FSM
+                                // inserts gap = accLat+1-subCycles = 3 idle cycles between the beats of a
+                                // MULTI-operand row, so 2-operand kernels (rmsnorm-fold, softmax-fold, rope) get
+                                // SLOWER than at 16 while using twice the area.
                                 HasStreamMap:
                                 {
                                     dataWidth: 512
@@ -327,11 +350,23 @@
                                     ]
                                     fpPipe: 1
                                 }
+// computeLanes 16 with accPartials 2 (Track C / C2).
+                                //
+                                // 8 was the CAP, not a choice: the accumulate recurrence needs
+                                // subCycles >= accLat+1 = 4, i.e. computeLanes <= lanes/4 = 8, and at 16 the
+                                // FSM inserted gap=2 and landed on the same 4 cycles/beat with twice the ALUs.
+                                // Two rotating partials make the same bank re-read only every P*subCycles = 4
+                                // cycles, which is exactly the recurrence, so 16 lanes now stream at 2
+                                // cycles/beat -- half the reduce time.
+                                //
+                                // Costs: one extra bank of lanes x FP32 partial registers, plus a per-lane
+                                // combinational fold at the row boundary. accPartials defaults to 1, which is
+                                // bit-identical to the previous hardware, so this is measurable and revertible.
                                 HasStreamReduce:
                                 {
                                     dataWidth: 512
                                     elementWidth: 16
-                                    computeLanes: 8
+                                    computeLanes: 16
                                     op:
                                     [
                                         FMA_FP16
@@ -340,8 +375,9 @@
                                     fpPipe: 1
                                     treePipe: 1
                                     treeLanes: 2
+                                    accPartials: 2
                                 }
-                                HasStreamElementwise:
+                                                                HasStreamElementwise:
                                 {
                                     dataWidth: 512
                                     elementWidth: 16
@@ -352,17 +388,13 @@
                                     ]
                                     fpPipe: 1
                                 }
-                                HasFp16ToInt8:
+                                                                HasFp16ToInt8:
                                 {
                                     in_elementWidth: 16
                                     out_elementWidth: 8
                                     dataWidth: 512
                                     computeLanes: 16
                                     fpPipe: 1
-                                }
-                                HasInt32ToFp16Converter:
-                                {
-                                    dataWidth: 512
                                 }
                             }
                         }
@@ -698,11 +730,13 @@
                     snax_gemmX
                 ]
                 snax_tcdm_ports: 56
-                snax_num_rw_csr: 19
+                snax_num_rw_csr: 29  // = 4 + (2 + meshCol/4 + meshCol + 1) + 2, by hand; 19 at meshCol=8
                 snax_num_ro_csr: 2
-                snax_gemmx_mesh_row: 8
-                snax_gemmx_tile_size: 8
-                snax_gemmx_mesh_col: 8
+                // MUST track the live core above: the data generator reads the mesh from THIS
+                // template, the RTL from the core, and nothing checks that they agree.
+                snax_gemmx_mesh_row: 16
+                snax_gemmx_tile_size: 4
+                snax_gemmx_mesh_col: 16
                 snax_gemmx_serial_c32_d32_width: 2048
                 snax_gemmx_serial_d8_width: 512
                 with_pipeline: true

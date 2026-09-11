@@ -102,9 +102,11 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     * In this mode the block emits the per-lane partials -- the reduction ACROSS beats -- rather than
     * folding them to one scalar, so the golden is a per-lane reduction of the input columns. */
   def runReduceLanewise(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32,
-                        ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Seq[Float] = {
+                        ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16"),
+                        accPartials: Int = 1): Seq[Float] = {
     var result: Seq[Float] = Seq()
-    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
+    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops,
+                                                          elementWidth = 16, accPartials = accPartials)))
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
         dut.io.csr_i(0).poke(beats.length.U)
         dut.io.csr_i(1).poke((op | 0x400).U) // lanewise bit[10]
@@ -138,7 +140,120 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     result
   }
 
+  /** LANEWISE + TAP: the row is passed through 1:1 AND the per-lane partials follow as one trailing beat,
+    * so N beats in -> N+1 beats out. This is what lets a convert+reduce chain produce both the converted
+    * tile and its statistics in a single pass. */
+  def runReduceLanewiseTap(op: Int, beats: Seq[Seq[Int]], computeLanes: Int = 32,
+                           ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Seq[Seq[Float]] = {
+    var result: Seq[Seq[Float]] = Seq()
+    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
+      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.io.csr_i(0).poke(beats.length.U)
+        dut.io.csr_i(1).poke((op | 0x500).U) // lanewise bit[10] | tap bit[8]
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true)
+        dut.clock.step(1)
+        dut.io.start_i.poke(false)
+
+        var threads = new chiseltest.internal.TesterThreadList(Seq())
+        threads = threads.fork {
+          dut.io.data_i.valid.poke(true)
+          for (b <- beats) {
+            while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+            dut.io.data_i.bits.poke(packBeat(b))
+            dut.clock.step(1)
+          }
+          dut.io.data_i.valid.poke(false)
+        }
+        threads = threads.fork {
+          for (_ <- 0 to beats.length) { // N passthroughs + 1 statistics beat
+            while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+            val out = dut.io.data_o.bits.peekInt()
+            result = result :+ (0 until lanes).map(i =>
+              f16bitsToF32(((out >> (16 * i)) & ((BigInt(1) << 16) - 1)).toInt))
+            dut.io.data_o.ready.poke(true)
+            dut.clock.step(1)
+            dut.io.data_o.ready.poke(false)
+          }
+        }
+        threads.joinAndStep()
+      }
+    result
+  }
+
   behavior of "StreamReduce LANEWISE (Track C / C1)"
+
+  it should "pass the row through AND emit the per-lane MAX as a trailing beat (tap)" in {
+    val rnd   = new Random(0xC5)
+    val cols  = Seq.fill(6)(Seq.fill(lanes)(rnd.between(-40, 40).toFloat))
+    val beats = cols.map(_.map(v => f32ToF16bits(v)))
+    val hw    = runReduceLanewiseTap(0 /*MAX*/, beats)
+    assert(hw.length == beats.length + 1, s"expected ${beats.length + 1} beats, got ${hw.length}")
+    // the passthroughs must be the input, unchanged
+    for (k <- cols.indices; i <- 0 until lanes)
+      assert(hw(k)(i) == cols(k)(i), f"passthrough beat $k lane $i: ${hw(k)(i)}%.1f != ${cols(k)(i)}%.1f")
+    // the trailing beat must be the per-lane max
+    val gold = (0 until lanes).map(i => cols.map(_(i)).max)
+    for (i <- 0 until lanes)
+      assert(hw(beats.length)(i) == gold(i), f"stat lane $i: ${hw(beats.length)(i)}%.1f != ${gold(i)}%.1f")
+  }
+
+  // Track C / C2. P changes only WHEN a partial is re-read, never WHAT is computed, so each of these
+  // compares against the plain Scala golden. Beat counts are deliberately NOT multiples of P, so the
+  // banks end a row holding different numbers of contributions.
+  it should "match the golden with 2 rotating partials (C2, P=2)" in {
+    val rnd   = new Random(0xC7)
+    val cols  = Seq.fill(37)(Seq.fill(lanes)(rnd.between(-50, 50).toFloat))
+    val beats = cols.map(_.map(v => f32ToF16bits(v)))
+    val hw    = runReduceLanewise(0 /*MAX*/, beats, computeLanes = 8, accPartials = 2)
+    val gold  = (0 until lanes).map(i => cols.map(_(i)).max)
+    for (i <- 0 until lanes) assert(hw(i) == gold(i), f"lane $i: ${hw(i)}%.1f != ${gold(i)}%.1f")
+  }
+
+  it should "match the golden with 4 rotating partials (C2, P=4)" in {
+    val rnd   = new Random(0xC7)
+    val cols  = Seq.fill(37)(Seq.fill(lanes)(rnd.between(-50, 50).toFloat))
+    val beats = cols.map(_.map(v => f32ToF16bits(v)))
+    val hw    = runReduceLanewise(0 /*MAX*/, beats, computeLanes = 8, accPartials = 4)
+    val gold  = (0 until lanes).map(i => cols.map(_(i)).max)
+    for (i <- 0 until lanes) assert(hw(i) == gold(i), f"lane $i: ${hw(i)}%.1f != ${gold(i)}%.1f")
+  }
+
+  it should "unlock computeLanes past the recurrence cap (P=4, cl=32)" in {
+    // cl=32 means subCycles=1, which at P=1 forces gap=3 -- 4 cycles/beat with 4x the ALUs, i.e. no gain.
+    // P=4 makes P*subCycles = accLat+1, so beats stream back to back.
+    val rnd   = new Random(0xC8)
+    val cols  = Seq.fill(64)(Seq.fill(lanes)(rnd.between(-50, 50).toFloat))
+    val beats = cols.map(_.map(v => f32ToF16bits(v)))
+    val hw    = runReduceLanewise(0 /*MAX*/, beats, computeLanes = 32, accPartials = 4)
+    val gold  = (0 until lanes).map(i => cols.map(_(i)).max)
+    for (i <- 0 until lanes) assert(hw(i) == gold(i), f"lane $i: ${hw(i)}%.1f != ${gold(i)}%.1f")
+  }
+
+  it should "sum correctly with rotating partials (the fold must ADD, not MAX)" in {
+    val rnd   = new Random(0xC9)
+    val cols  = Seq.fill(16)(Seq.fill(lanes)(rnd.between(-8, 8).toFloat)) // exact in FP16
+    val beats = cols.map(_.map(v => f32ToF16bits(v)))
+    val hw    = runReduceLanewise(1 /*ADD*/, beats, computeLanes = 16, accPartials = 2)
+    val gold  = (0 until lanes).map(i => cols.map(_(i)).sum)
+    for (i <- 0 until lanes) assert(hw(i) == gold(i), f"lane $i: ${hw(i)}%.1f != ${gold(i)}%.1f")
+  }
+
+  it should "tap+lanewise the CLUSTER config: computeLanes=8, a 64-beat row" in {
+    // The shipped SIMD block builds StreamReduce at computeLanes=8, and FlashAttention
+    // reduces a whole 64-beat tile in one row. The earlier tap test used the default
+    // cl=32 and 6 beats, which is not the same FSM path.
+    val rnd   = new Random(0xC6)
+    val cols  = Seq.fill(64)(Seq.fill(lanes)(rnd.between(-40, 40).toFloat))
+    val beats = cols.map(_.map(v => f32ToF16bits(v)))
+    val hw    = runReduceLanewiseTap(0 /*MAX*/, beats, computeLanes = 8)
+    assert(hw.length == beats.length + 1, s"expected ${beats.length + 1} beats, got ${hw.length}")
+    for (k <- cols.indices; i <- 0 until lanes)
+      assert(hw(k)(i) == cols(k)(i), f"passthrough beat $k lane $i")
+    val gold = (0 until lanes).map(i => cols.map(_(i)).max)
+    for (i <- 0 until lanes)
+      assert(hw(64)(i) == gold(i), f"stat lane $i: ${hw(64)(i)}%.1f != ${gold(i)}%.1f")
+  }
 
   it should "emit the per-lane MAX across beats, not a folded scalar" in {
     val rnd   = new Random(0xC1)

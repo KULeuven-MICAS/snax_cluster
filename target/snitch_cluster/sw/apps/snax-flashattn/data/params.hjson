@@ -4,7 +4,18 @@
 
 // Cluster configuration for a matmul testbench system.
 //
-// M=8, N=4 (not 4, 8) because FlashAttention here is computed TRANSPOSED:
+// M=8, N=2, K=32  ->  Bc = M*meshRow = 128, Br = N*meshCol = 32, d = K*tileSize = 128,
+// at mesh 16x4x16. The TILE is unchanged; only how it maps onto the larger mesh is.
+//
+// Bc and d grow TOGETHER on purpose. The GEMM does 2*Bc*Br*d MACs per KV tile while the SIMD
+// does ~5*Bc*Br element-ops, so the work ratio is proportional to d: growing Bc alone leaves it
+// flat, and growing d alone breaks the kernel, because d == Bc is exactly what makes
+// S^T = K.Q^T and O^T = V^T.P^T the same shape and lets ONE streamer config drive both matmuls.
+// Tied, doubling them doubles the GEMM:SIMD ratio (25.6 -> 51) and amortises the fixed ~382
+// cycles/tile of configuration over twice the work.
+//
+// M and N are swapped relative to the untransposed form because FlashAttention here is
+// computed TRANSPOSED:
 // S^T = (Q.K^T)^T = K.Q^T is the same GEMM with its operands swapped, so
 // D = [M*meshRow, N*meshCol] = [64, 32] = [Bc, Br]. That orientation is what
 // lets StreamReduce's LANEWISE mode do rowmax with no horizontal fold -- one
@@ -13,8 +24,8 @@
   // gemm configurations
   transposed_A: 0,
   transposed_B: 0,
-  K: 8,
-  N: 4,
+  K: 32,
+  N: 2,
   M: 8,
   bypassSIMD: 1,
   // broadcast_C won't work in the serial C input

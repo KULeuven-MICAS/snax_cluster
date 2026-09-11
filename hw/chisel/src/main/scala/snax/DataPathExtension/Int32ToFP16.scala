@@ -141,7 +141,9 @@ class Int32ToFp16Converter(
   counter.io.ceil  := numConversions * extra_loop
   counter.io.reset := ext_start_i
   counter.io.tick  := ext_data_i.fire
-  ext_busy_o       := counter.io.value =/= 0.U
+  // Declared here because ext_busy_o needs it; driven by the handshake at the bottom.
+  val outValid     = RegInit(false.B)
+  ext_busy_o       := (counter.io.value =/= 0.U) || outValid
 
   // -------------------------
   // PE Array
@@ -191,8 +193,13 @@ class Int32ToFp16Converter(
   val phase   = counter.io.value % numConversions // which phase we are in
   val batchId = counter.io.value / numConversions // which batch of outputs
 
-  val update_previous_regs = ext_data_i.fire  && (counter.io.value =/= (numConversions * extra_loop - 1.U))
-  val update_final_regs    = ext_data_i.valid && (counter.io.value === (numConversions * extra_loop - 1.U))
+  val update_previous_regs = ext_data_i.fire && (counter.io.value =/= (numConversions * extra_loop - 1.U))
+  // .fire, NOT .valid. The counter ticks on fire, so while a completed group is waiting for a
+  // back-pressured consumer this condition stayed true for EVERY stalled cycle and re-pulsed the output
+  // valid below -- emitting duplicate beats and breaking the frame count downstream. Invisible when the
+  // consumer is the writer (it rarely stalls); fatal when this feeds a time-muxed operator such as
+  // StreamReduce at computeLanes=8, which accepts one beat every 4 cycles.
+  val update_final_regs    = ext_data_i.fire && (counter.io.value === (numConversions * extra_loop - 1.U))
 
   for (i <- 0 until numPEs) {
     // dynamic index in regs for this PE
@@ -212,13 +219,17 @@ class Int32ToFp16Converter(
   // concatenate all regs to form output
   ext_data_o.bits := Cat(regs.reverse).asTypeOf(ext_data_o.bits)
 
-  val data_valid      = RegNext(update_final_regs)
-  val keep_data_valid = RegInit(false.B)
-  keep_data_valid := ext_data_o.valid && !ext_data_o.ready
-
-  ext_data_o.valid := data_valid || keep_data_valid
-
-  ext_data_i.ready := !(ext_data_o.valid && !ext_data_o.ready) && !keep_data_valid
+  // A plain set/clear output handshake: raised when a group completes, held until the consumer takes it.
+  // Input is accepted whenever no output is pending, or the pending one is being taken this cycle.
+  when(ext_start_i) {
+    outValid := false.B
+  }.elsewhen(update_final_regs) {
+    outValid := true.B                       // wins over the clear: a 1-beat group emits back to back
+  }.elsewhen(ext_data_o.ready) {
+    outValid := false.B
+  }
+  ext_data_o.valid := outValid
+  ext_data_i.ready := !outValid || ext_data_o.ready
 }
 
 class HasInt32ToFp16Converter(dataWidth: Int = 512) extends HasDataPathExtension {
