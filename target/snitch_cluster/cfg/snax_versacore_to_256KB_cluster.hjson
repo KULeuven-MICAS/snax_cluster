@@ -136,7 +136,7 @@ Naming convention:
                 [
                     snax_versacore
                 ]
-                snax_tcdm_ports: 96
+                snax_tcdm_ports: 88
                 sparse_interconnect_config:
                 [
                     [
@@ -145,11 +145,11 @@ Naming convention:
                     ]
                     [
                         64
-                        4
+                        16
                     ]
                     [
-                        16
-                        16
+                        8
+                        8
                     ]
                 ]
                 snax_num_rw_csr: 7
@@ -192,8 +192,8 @@ Naming convention:
                 ]
                 snax_versacore_array_input_a_width: 1024
                 snax_versacore_array_input_b_width: 4096
-                snax_versacore_array_input_c_width: 32768
-                snax_versacore_array_output_d_width: 32768
+                snax_versacore_array_input_c_width: 8192
+                snax_versacore_array_output_d_width: 8192
                 snax_versacore_serial_a_width: 1024
                 snax_versacore_serial_b_width: 4096
                 snax_versacore_serial_c_d_width: 1024
@@ -204,9 +204,9 @@ Naming convention:
                 [
                     [
                         [
-                            32
-                            2
-                            32
+                            8
+                            16
+                            16
                         ]
                         [
                             1
@@ -229,8 +229,8 @@ Naming convention:
                     $ref: "#/snax_versacore_streamer_template"
                 }
                 granularity_a: 2
-                granularity_b: 4
-                granularity_c_d: 16
+                granularity_b: 16
+                granularity_c_d: 8
             }
         ]
         snax_use_custom_ports: false
@@ -261,10 +261,31 @@ Naming convention:
             writer_agu_temporal_dimension: 5
             writer_extensions:
             {
-                HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
-                HasElementwiseAdd: {elementWidth: 32, dataWidth: 512}
+                HasTransposer:
+                {
+                    row:
+                    [
+                        8
+                        8
+                    ]
+                    col:
+                    [
+                        8
+                        8
+                    ]
+                    elementWidth:
+                    [
+                        8
+                        16
+                    ]
+                }
+                HasElementwiseAdd:
+                {
+                    elementWidth: 32
+                    dataWidth: 512
+                }
             }
-            reader_extensions: 
+            reader_extensions:
             {
                 HasVerilogMemset: {}
             }
@@ -343,13 +364,13 @@ Naming convention:
                     {
                         row:
                         [
-                            32
+                            8
                             1
                             16
                         ]
                         col:
                         [
-                            2
+                            16
                             16
                             8
                         ]
@@ -371,13 +392,13 @@ Naming convention:
                     {
                         row:
                         [
-                            2
+                            16
                             16
                             8
                         ]
                         col:
                         [
-                            32
+                            16
                             32
                             16
                         ]
@@ -407,10 +428,10 @@ Naming convention:
             spatial_bounds:
             [
                 [
-                    16
+                    8
                 ]
                 [
-                    16
+                    8
                 ]
             ]
             temporal_dim:
@@ -420,8 +441,8 @@ Naming convention:
             ]
             num_channel:
             [
-                16
-                16
+                8
+                8
             ]
             fifo_depth:
             [

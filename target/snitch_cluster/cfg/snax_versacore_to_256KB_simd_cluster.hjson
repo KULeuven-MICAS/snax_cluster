@@ -136,7 +136,7 @@ Naming convention:
                 [
                     snax_versacore
                 ]
-                snax_tcdm_ports: 96
+                snax_tcdm_ports: 88
                 sparse_interconnect_config:
                 [
                     [
@@ -145,11 +145,11 @@ Naming convention:
                     ]
                     [
                         64
-                        4
+                        16
                     ]
                     [
-                        16
-                        16
+                        8
+                        8
                     ]
                 ]
                 snax_num_rw_csr: 7
@@ -192,11 +192,11 @@ Naming convention:
                 ]
                 snax_versacore_array_input_a_width: 1024
                 snax_versacore_array_input_b_width: 4096
-                snax_versacore_array_input_c_width: 32768
-                snax_versacore_array_output_d_width: 32768
+                snax_versacore_array_input_c_width: 8192
+                snax_versacore_array_output_d_width: 8192
                 snax_versacore_serial_a_width: 1024
                 snax_versacore_serial_b_width: 4096
-                snax_versacore_serial_c_d_width: 1024
+                snax_versacore_serial_c_d_width: 512
                 // Chunks per D serializer group: a power of two, at least 2.
                 snax_versacore_p2s_chunks_per_group: 2
                 snax_versacore_adder_tree_delay: 0
@@ -204,9 +204,9 @@ Naming convention:
                 [
                     [
                         [
-                            32
-                            2
-                            32
+                            8
+                            16
+                            16
                         ]
                         [
                             1
@@ -229,8 +229,8 @@ Naming convention:
                     $ref: "#/snax_versacore_streamer_template"
                 }
                 granularity_a: 2
-                granularity_b: 4
-                granularity_c_d: 16
+                granularity_b: 16
+                granularity_c_d: 8
             }
         ]
         snax_use_custom_ports: false
@@ -261,17 +261,78 @@ Naming convention:
             writer_agu_temporal_dimension: 5
             writer_extensions:
             {
-                HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
-                HasElementwiseAdd: {elementWidth: 32, dataWidth: 512}
+                HasTransposer:
+                {
+                    row:
+                    [
+                        8
+                        8
+                    ]
+                    col:
+                    [
+                        8
+                        8
+                    ]
+                    elementWidth:
+                    [
+                        8
+                        16
+                    ]
+                }
+                HasElementwiseAdd:
+                {
+                    elementWidth: 32
+                    dataWidth: 512
+                }
             }
-            reader_extensions: 
+            reader_extensions:
             {
-                HasStreamMap: {dataWidth: 512, elementWidth: 16, computeLanes: 4, func: ["LINEAR_FP16", "EXP_FP16", "SILU_FP16"], fpPipe: 1}
-                // op-set = the single fused FMA op (add/square accumulate, op CSR selects) + the MAX compare.
-                HasStreamReduce: {dataWidth: 512, elementWidth: 16, computeLanes: 4, op: ["FMA_FP16", "MAX_FP16"], fpPipe: 1, treePipe: 1, treeLanes: 2}
-                // op-set = the single fused FMA op (MUL = acc*x, ADD = acc+x; op CSR selects).
-                HasStreamElementwise: {dataWidth: 512, elementWidth: 16, computeLanes: 4, op: ["FMA_FP16"], fpPipe: 1}
-                HasFp16ToInt8: {in_elementWidth: 16, out_elementWidth: 8, dataWidth: 512, computeLanes: 4, fpPipe: 1}
+                HasStreamMap:
+                {
+                    dataWidth: 512
+                    elementWidth: 16
+                    computeLanes: 4
+                    func:
+                    [
+                        LINEAR_FP16
+                        EXP_FP16
+                        SILU_FP16
+                    ]
+                    fpPipe: 1
+                }
+                HasStreamReduce:
+                {
+                    dataWidth: 512
+                    elementWidth: 16
+                    computeLanes: 4
+                    op:
+                    [
+                        FMA_FP16
+                        MAX_FP16
+                    ]
+                    fpPipe: 1
+                    treePipe: 1
+                    treeLanes: 2
+                }
+                HasStreamElementwise:
+                {
+                    dataWidth: 512
+                    elementWidth: 16
+                    computeLanes: 4
+                    op:
+                    [
+                        FMA_FP16
+                    ]
+                    fpPipe: 1
+                }
+                HasFp16ToInt8:
+                {
+                    in_elementWidth: 16
+                    out_elementWidth: 8
+                    dataWidth: 512
+                    computeLanes: 4
+                    fpPipe: 1
+                }
             }
         }
         xdma: true
@@ -348,13 +409,13 @@ Naming convention:
                     {
                         row:
                         [
-                            32
+                            8
                             1
                             16
                         ]
                         col:
                         [
-                            2
+                            16
                             16
                             8
                         ]
@@ -376,13 +437,13 @@ Naming convention:
                     {
                         row:
                         [
-                            2
+                            16
                             16
                             8
                         ]
                         col:
                         [
-                            32
+                            16
                             32
                             16
                         ]
@@ -412,10 +473,10 @@ Naming convention:
             spatial_bounds:
             [
                 [
-                    16
+                    8
                 ]
                 [
-                    16
+                    8
                 ]
             ]
             temporal_dim:
@@ -425,8 +486,8 @@ Naming convention:
             ]
             num_channel:
             [
-                16
-                16
+                8
+                8
             ]
             fifo_depth:
             [
