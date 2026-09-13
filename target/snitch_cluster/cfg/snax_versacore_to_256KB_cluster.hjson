@@ -136,7 +136,7 @@ Naming convention:
                 [
                     snax_versacore
                 ]
-                snax_tcdm_ports: 96
+                snax_tcdm_ports: 88
                 sparse_interconnect_config:
                 [
                     [
@@ -148,8 +148,8 @@ Naming convention:
                         8
                     ]
                     [
-                        16
-                        16
+                        8
+                        8
                     ]
                 ]
                 snax_num_rw_csr: 7
@@ -196,7 +196,7 @@ Naming convention:
                 snax_versacore_array_output_d_width: 2048
                 snax_versacore_serial_a_width: 1024
                 snax_versacore_serial_b_width: 4096
-                snax_versacore_serial_c_d_width: 1024
+                snax_versacore_serial_c_d_width: 512
                 // Chunks per D serializer group: a power of two, at least 2.
                 snax_versacore_p2s_chunks_per_group: 4
                 snax_versacore_adder_tree_delay: 0
@@ -225,7 +225,7 @@ Naming convention:
                 }
                 granularity_a: 2
                 granularity_b: 8
-                granularity_c_d: 16
+                granularity_c_d: 8
             }
         ]
         snax_use_custom_ports: false
@@ -327,8 +327,8 @@ Naming convention:
             ]
             fifo_depth:
             [
-                3
-                3
+                8
+                8
             ]
             configurable_channel:
             [
@@ -417,10 +417,10 @@ Naming convention:
             spatial_bounds:
             [
                 [
-                    16
+                    8
                 ]
                 [
-                    16
+                    8
                 ]
             ]
             temporal_dim:
@@ -430,8 +430,8 @@ Naming convention:
             ]
             num_channel:
             [
-                16
-                16
+                8
+                8
             ]
             fifo_depth:
             [
@@ -464,11 +464,11 @@ Naming convention:
                     {
                         in_elementWidth: 32
                         out_elementWidth: 8
-                        dataWidth: 1024
+                        dataWidth: 512
                     }
                     HasInt32ToFp16Converter:
                     {
-                        dataWidth: 1024
+                        dataWidth: 512
                     }
                 }
             ]
