@@ -136,7 +136,7 @@ Naming convention:
                 [
                     snax_versacore
                 ]
-                snax_tcdm_ports: 88
+                snax_tcdm_ports: 96
                 sparse_interconnect_config:
                 [
                     [
@@ -148,8 +148,8 @@ Naming convention:
                         16
                     ]
                     [
-                        8
-                        8
+                        16
+                        16
                     ]
                 ]
                 snax_num_rw_csr: 7
@@ -230,7 +230,7 @@ Naming convention:
                 }
                 granularity_a: 2
                 granularity_b: 16
-                granularity_c_d: 8
+                granularity_c_d: 16
             }
         ]
         snax_use_custom_ports: false
@@ -473,10 +473,10 @@ Naming convention:
             spatial_bounds:
             [
                 [
-                    8
+                    16
                 ]
                 [
-                    8
+                    16
                 ]
             ]
             temporal_dim:
@@ -486,8 +486,8 @@ Naming convention:
             ]
             num_channel:
             [
-                8
-                8
+                16
+                16
             ]
             fifo_depth:
             [
