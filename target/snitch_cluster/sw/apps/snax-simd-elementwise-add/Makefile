@@ -10,7 +10,7 @@ INCDIRS = data
 
 # The reader extensions this kernel drives live on the SIMD block for the split
 # cluster and on the xDMA everywhere else; snax-simd-compat.h hides the difference.
-ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_split_cluster.hjson)
+ifeq ($(CFG_OVERRIDE), cfg/snax_split_cluster.hjson)
 INCDIRS += ../../snax/simd/include
 RISCV_LDFLAGS += ../../snax/simd/build/snax-simd-lib.o
 else

@@ -383,17 +383,17 @@ sources:
   # <name>_blocks.sv -- they share library modules (BasicCounter, the Fp* units, the width
   # converters) that CIRCT names and optimises per circuit, so two elaborations would emit
   # same-named modules of different shapes. See ClusterBlocks in XDMATop.scala.
-  - target: snax_xdma_split_cluster_xdma
+  - target: snax_split_cluster_xdma
     files:
       # Level 0 -- both blocks
-      - target/snitch_cluster/generated/snax_xdma_split_cluster_xdma/snax_xdma_split_cluster_blocks.sv
+      - target/snitch_cluster/generated/snax_split_cluster_xdma/snax_split_cluster_blocks.sv
       # Level 1
-      - target/snitch_cluster/generated/snax_xdma_split_cluster_xdma/snax_xdma_split_cluster_xdma_wrapper.sv
+      - target/snitch_cluster/generated/snax_split_cluster_xdma/snax_split_cluster_xdma_wrapper.sv
 
-  - target: snax_xdma_split_cluster_simd
+  - target: snax_split_cluster_simd
     files:
       # Level 1 only: the block RTL is in <name>_blocks.sv above.
-      - target/snitch_cluster/generated/snax_xdma_split_cluster_simd/snax_xdma_split_cluster_simd_wrapper.sv
+      - target/snitch_cluster/generated/snax_split_cluster_simd/snax_split_cluster_simd_wrapper.sv
 
   # N-endpoint ChainGather testbenches. Needs `snax_xdma_cluster_xdma` too, since the DUT is
   # that wrapper (Chisel frontend + xdma_axi_adapter_top) instantiated N times behind two AXI
@@ -467,9 +467,9 @@ sources:
     files:
       - target/snitch_cluster/generated/snax_xdma_cluster_wrapper.sv
 
-  - target: snax_xdma_split_cluster
+  - target: snax_split_cluster
     files:
-      - target/snitch_cluster/generated/snax_xdma_split_cluster_wrapper.sv
+      - target/snitch_cluster/generated/snax_split_cluster_wrapper.sv
   #---------------------------
   # Test harness declaration
   #---------------------------

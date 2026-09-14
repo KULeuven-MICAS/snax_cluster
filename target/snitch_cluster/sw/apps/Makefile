@@ -41,7 +41,7 @@ endif
 # The four-engine split cluster. The reader-side extensions moved to the SIMD
 # block on hart 1, so the SIMD apps live here; the xDMA keeps its writer
 # extension and the junctions, so the memset app still applies to it.
-ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_split_cluster.hjson)
+ifeq ($(CFG_OVERRIDE), cfg/snax_split_cluster.hjson)
 # Bring-up and the concurrency proof
 SUBDIRS += snax-simd-test
 SUBDIRS += snax-simd-xdma-concurrent
@@ -51,7 +51,6 @@ SUBDIRS += snax-simd-xdma-concurrent
 # rescale-*, which belong to snax_compiler_test_cluster and index their
 # extensions positionally) do NOT apply here.
 SUBDIRS += snax-xdma-transpose
-SUBDIRS += snax-simd-elementwise-add
 SUBDIRS += snax-simd-softmax
 SUBDIRS += snax-simd-rmsnorm
 SUBDIRS += snax-simd-silu

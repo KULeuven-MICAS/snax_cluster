@@ -6,11 +6,11 @@
     }
     cluster:
     {
-        name: snax_xdma_split_cluster
+        name: snax_split_cluster
         bender_target:
         [
             snitch_cluster
-            snax_xdma_split_cluster
+            snax_split_cluster
         ]
         boot_addr: 4096
         cluster_base_addr: 268435456
@@ -279,11 +279,24 @@
                                                     outputLength: 2048
                                                 }
                                             }
-                                            {}
+                                            // Slots are [read, write]: slot 0 is C's read path
+                                            // (the broadcaster), slot 1 is the D32 write path.
+                                            {
+                                                HasInt32ToFp16Converter:
+                                                {
+                                                    // 2048 = 32 TCDM channels x 64 b
+                                                    dataWidth: 2048
+                                                }
+                                            }
                                         ]
                                     }
                                     has_transpose: true
                                     has_C_broadcast: true
+                                    // Must match the Chisel streamer_csr_addr_map.h: the converter
+                                    // adds its user CSR (the flag) plus the enable of the D32
+                                    // extension host, which was empty before (the explicit +1).
+                                    has_int32_to_fp16_converter: true
+                                    extra_streamer_csr: 1
                                     snax_library_name: gemmx
                                 }
                             }
@@ -303,7 +316,7 @@
                         {
                             bender_target:
                             [
-                                snax_xdma_split_cluster_simd
+                                snax_split_cluster_simd
                             ]
                             cfg_io_width: 32
                             num_channel: 8
@@ -312,91 +325,116 @@
                             reader_agu_temporal_dimension: 3
                             writer_agu_temporal_dimension: 3
                             reader_extensions:
-                            {
-                                // ORDER IS THE CHAIN ORDER: a task arms a subset and data flows through them in
-                                // declaration order, so what can be fused into one pass is decided HERE.
-                                // Int32ToFp16Converter first lets a GEMM's INT32 output be converted AND
-                                // reduced in a single pass (the reduce in tap mode passes the converted tile
-                                // through and appends its statistics).
-                                HasInt32ToFp16Converter:
-                                {
-                                    dataWidth: 512
-                                }
-                                HasElementwiseAdd:
-                                {
-                                    elementWidth: 32
-                                    dataWidth: 512
-                                }
-                                // computeLanes 16, NOT 32, on the FP16 operators. MEASURED: doubling them bought
-                                // 8% latency (1284 -> 1189 cycles/KV tile on FlashAttention) and HALVED SIMD
-                                // efficiency, 72% -> 40% of peak -- the extra ALUs sit idle, because the block
-                                // stopped being ALU-bound once the sticky-B broadcast removed the replication
-                                // pass. 2x the FP units in three operators is not worth 8%.
+                            [
+                                // ORDER IS THE CHAIN ORDER: a task arms a subset with the enable bitmask and
+                                // data flows through the armed stages in declaration order, so what can be
+                                // fused into ONE pass over memory is decided HERE.
                                 //
-                                // StreamElementwise has a second reason: at computeLanes=32 (subCycles=1) the FSM
-                                // inserts gap = accLat+1-subCycles = 3 idle cycles between the beats of a
-                                // MULTI-operand row, so 2-operand kernels (rmsnorm-fold, softmax-fold, rope) get
-                                // SLOWER than at 16 while using twice the area.
-                                HasStreamMap:
-                                {
-                                    dataWidth: 512
-                                    elementWidth: 16
-                                    computeLanes: 16
-                                    func:
-                                    [
-                                        LINEAR_FP16
-                                        EXP_FP16
-                                        SILU_FP16
-                                    ]
-                                    fpPipe: 1
-                                }
-// computeLanes 16 with accPartials 2 (Track C / C2).
+                                // Read the order as the epilogue of a quantised layer:
+                                //     combine -> transform -> reduce -> combine -> narrow
                                 //
-                                // 8 was the CAP, not a choice: the accumulate recurrence needs
-                                // subCycles >= accLat+1 = 4, i.e. computeLanes <= lanes/4 = 8, and at 16 the
-                                // FSM inserted gap=2 and landed on the same 4 cycles/beat with twice the ALUs.
-                                // Two rotating partials make the same bank re-read only every P*subCycles = 4
-                                // cycles, which is exactly the recurrence, so 16 lanes now stream at 2
-                                // cycles/beat -- half the reduce time.
+                                // The INT32 -> FP16 convert belongs to the PRODUCER, not here: an INT32
+                                // beat carries half as many values as an FP16 one, so converting at the
+                                // consumer doubles both the beats it reads and the TCDM the tile occupies.
+                                // It now sits on the GEMM's own D32 output port.
                                 //
-                                // Costs: one extra bank of lanes x FP32 partial registers, plus a per-lane
-                                // combinational fold at the row boundary. accPartials defaults to 1, which is
-                                // bit-identical to the previous hardware, so this is measurable and revertible.
-                                HasStreamReduce:
+                                // ElementwiseAdd (INT32) used to lead this chain; it is gone, because with
+                                // no INT32 entering the SIMD it had nothing upstream and only its own test
+                                // downstream. Every stage below is FP16 transport / FP32 internal.
+                                // ARRAY form (not the keyed object): a JSON object cannot repeat a key, and
+                                // StreamElementwise has to appear TWICE -- see below.
+                                // PRE-MAP elementwise. The chain is a fixed linear order, so it can express
+                                // reduce(f(x)) but not f(x - s): a combine against a broadcast operand that
+                                // must happen BEFORE the pointwise transform has nowhere to go. Two important
+                                // kernels need exactly that and today pay an extra full pass over the tile:
+                                //   - attention's second pass, quantise(exp(S - m))
+                                //   - dequantise-then-activate, the standard quantised-inference epilogue
+                                // One more instance is about a StreamMap's worth of area and removes a whole
+                                // pass; a general routing crossbar over the chain would cost far more and put
+                                // muxes in the critical path of a wire-speed pipeline.
                                 {
-                                    dataWidth: 512
-                                    elementWidth: 16
-                                    computeLanes: 16
-                                    op:
-                                    [
-                                        FMA_FP16
-                                        MAX_FP16
-                                    ]
-                                    fpPipe: 1
-                                    treePipe: 1
-                                    treeLanes: 2
-                                    accPartials: 2
+                                    HasStreamElementwise:
+                                    {
+                                        dataWidth: 512
+                                        elementWidth: 16
+                                        computeLanes: 16
+                                        op:
+                                        [
+                                            FMA_FP16
+                                        ]
+                                        fpPipe: 1
+                                    }
                                 }
-                                                                HasStreamElementwise:
                                 {
-                                    dataWidth: 512
-                                    elementWidth: 16
-                                    computeLanes: 16
-                                    op:
-                                    [
-                                        FMA_FP16
-                                    ]
-                                    fpPipe: 1
+                                    HasStreamMap:
+                                    {
+                                        dataWidth: 512
+                                        elementWidth: 16
+                                        computeLanes: 16
+                                        func:
+                                        [
+                                            LINEAR_FP16
+                                            EXP_FP16
+                                            SILU_FP16
+                                        ]
+                                        fpPipe: 1
+                                    }
                                 }
-                                                                HasFp16ToInt8:
+                                // accPartials 4.
+                                //
+                                // The accumulate recurrence needs subCycles*accPartials >= accLat+1 = 4. With a
+                                // single bank that caps computeLanes at lanes/4 = 8; four rotating partials make
+                                // the same bank re-read only every accPartials*subCycles cycles, which lifts the
+                                // cap entirely -- the lane count is then free to be chosen on area/throughput
+                                // grounds rather than forced by the recurrence.
+                                //
+                                // Cost: three extra banks of lanes x FP32 partial registers plus a per-lane
+                                // combinational fold at the row boundary. NOTE a short row (fewer beats than
+                                // accPartials) leaves the top banks holding the PREVIOUS task's partials --
+                                // the fold masks them to the op's identity, see StreamReduce.banksUsed.
                                 {
-                                    in_elementWidth: 16
-                                    out_elementWidth: 8
-                                    dataWidth: 512
-                                    computeLanes: 16
-                                    fpPipe: 1
+                                    HasStreamReduce:
+                                    {
+                                        dataWidth: 512
+                                        elementWidth: 16
+                                        computeLanes: 16
+                                        op:
+                                        [
+                                            FMA_FP16
+                                            MAX_FP16
+                                        ]
+                                        fpPipe: 1
+                                        treePipe: 1
+                                        treeLanes: 2
+                                        accPartials: 4
+                                    }
                                 }
-                            }
+                                // POST-MAP elementwise: SwiGLU (silu(a)*b) and any scale-after-reduce need the
+                                // combine on this side of the map. Same operator, other position.
+                                {
+                                    HasStreamElementwise:
+                                    {
+                                        dataWidth: 512
+                                        elementWidth: 16
+                                        computeLanes: 16
+                                        op:
+                                        [
+                                            FMA_FP16
+                                        ]
+                                        fpPipe: 1
+                                    }
+                                }
+                                {
+                                    HasFp16ToInt8:
+                                    {
+                                        in_elementWidth: 16
+                                        out_elementWidth: 8
+                                        dataWidth: 512
+                                        computeLanes: 16
+                                        fpPipe: 1
+                                    }
+                                }
+                            ]
                         }
                         xdma: false
                         xssr: false
@@ -421,7 +459,7 @@
                         {
                             bender_target:
                             [
-                                snax_xdma_split_cluster_xdma
+                                snax_split_cluster_xdma
                             ]
                             cfg_io_width: 32
                             max_multicast: 16
@@ -702,11 +740,26 @@
                         outputLength: 2048
                     }
                 }
-                {}
+                // Slots are [read, write] for the one reader_writer: slot 0 is the C read
+                // path (the broadcaster above), slot 1 is the D32 write path.
+                {
+                    HasInt32ToFp16Converter:
+                    {
+                        // 2048 = the D32 port's beat: 32 TCDM channels x 64 b.
+                        dataWidth: 2048
+                    }
+                }
             ]
         }
         has_transpose: true
         has_C_broadcast: true
+        // snaxgen sizes the accelerator's CSR window from these flags, and it MUST agree with
+        // the Chisel-generated streamer_csr_addr_map.h. The converter adds 2 registers here --
+        // its own user CSR, plus the enable of the reader_writer WRITE host, which was empty
+        // before. The flag only covers the first (in the cfg it was written for, the converter
+        // shares a host whose enable another flag already paid for), so the second is explicit.
+        has_int32_to_fp16_converter: true
+        extra_streamer_csr: 1
         snax_library_name: gemmx
     }
     snax_streamer_gemmX_core_template:
