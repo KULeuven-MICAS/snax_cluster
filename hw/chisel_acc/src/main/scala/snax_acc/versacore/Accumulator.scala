@@ -81,9 +81,18 @@ class Accumulator(
     Module(new AccumulatorBlock(inputType, outputType))
   }
 
-  // accumulation update logic, considering the handshake and the accumulator enable at runtime
+  // Join the dot product with C only when starting an accumulation. Neither
+  // operand may be consumed on its own, and unused C must remain upstream.
+  val outputValid = RegInit(false.B)
+  val canAccept   = !outputValid || io.out.ready
+  val enabled     = io.enable.asUInt.orR
+  io.in1.ready  := canAccept && enabled && (!io.accAddExtIn || io.in2.valid)
+  io.in2.ready  := canAccept && enabled && io.accAddExtIn && io.in1.valid
+  io.inputReady := io.in1.ready
+
+  // Every accepted dot product updates the enabled accumulator lanes.
   val accUpdate = VecInit(
-    (0 until numElements).map(i => io.in1.fire && io.enable(i) && (!io.accAddExtIn || (io.in2.fire && io.accAddExtIn)))
+    (0 until numElements).map(i => io.in1.fire && io.enable(i))
   )
   io.accUpdate := accUpdate.reduce(_ || _)
 
@@ -95,22 +104,15 @@ class Accumulator(
     accumulator_blocks(i).io.enable      := accUpdate(i)
   }
 
-  val inputDataReady = io.in1.ready && io.enable(0) && (!io.accAddExtIn || (io.in2.ready && io.accAddExtIn))
-  val inputDataFire  = RegNext(accUpdate(0), false.B) // assuming all accUpdate are the same for handshake
-  val keepOutput     = RegInit(false.B)
-  val keepOutputNext = io.out.valid && !io.out.ready
-  keepOutput := keepOutputNext
-
-  // handshake
-  io.in1.ready := (!keepOutput) && (!keepOutputNext)
-  io.in2.ready := (!keepOutput) && (!keepOutputNext)
+  // Hold both data and valid while stalled. An output can be consumed and
+  // replaced by the next accumulation on the same edge.
+  when(canAccept) {
+    outputValid := io.in1.fire
+  }
 
   // Connect the outputs of each AccumulatorBlock to the output interface
   io.out.bits  := VecInit(accumulator_blocks.map(_.io.out))
-  io.out.valid := inputDataFire || keepOutput
-
-  // input ready
-  io.inputReady := inputDataReady
+  io.out.valid := outputValid
 }
 
 object AccumulatorEmitterUInt extends App {
