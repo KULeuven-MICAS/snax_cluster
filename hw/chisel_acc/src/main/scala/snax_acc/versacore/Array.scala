@@ -208,16 +208,27 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     val output_bits  = VecInit(muls.map(_.io.out.bits))
     val output_valid = muls.map(_.io.out.valid).reduce(_ && _)
 
-    // create a Decoupled output for the multipliers' results, which will be connected to the adder tree input through a pipeline register (-|>)
+    // create a Decoupled output for the multipliers' results, which will be connected to the adder tree input through a pipeline register (-\>)
     val muls_out_data =
       Wire(Decoupled(Vec(params.multiplierNum(dataTypeIdx), UInt(params.inputTypeC(dataTypeIdx).width.W))))
     muls_out_data.bits  := output_bits
     muls_out_data.valid := output_valid
-    // The multipliers' ready signal comes from the pipeline register (-|>).
+    // The multipliers' ready signal comes from the pipeline register (-\>).
     muls.foreach(_.io.out.ready := muls_out_data.ready)
 
-    // Use the -|> operator to insert a pipeline register
-    muls_out_data -|> tree.io.in
+    // -\> (DataCut, delay = 1), NOT -|>. This register sits on the per-array-pass datapath,
+    // so its acceptance rate IS the array's throughput. -|> is Queue(entries = 1, pipe =
+    // false) -- the operator names itself FullCutHalfBandwidth -- and with no pipe bypass a
+    // one-entry queue drives enq.ready = !full, accepting on alternate cycles however ready
+    // the consumer is. That halves the array: measured 2.00 cycles per pass on a 16x4x16
+    // INT8 unrolling where the arithmetic floor is 1.
+    //
+    // DataCut holds the same single register, so the data path is cut exactly as before and
+    // the area is unchanged, but it re-arms whenever the consumer takes the value, which
+    // gives full rate. The cost is that ready is combinational through the cut, so the
+    // accumulator's backpressure reaches the streamer in one cycle. -||> cuts ready as well,
+    // at two entries -- twice this register stage, 1024 lanes x 32 b of it.
+    muls_out_data -\> tree.io.in
   }
 
   // adder tree runtime configuration
