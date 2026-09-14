@@ -90,6 +90,11 @@ class ParallelToSerialGroup(serialWidth: Int, storedChunks: Int) extends Module 
   * For example, 32 chunks and a group size of 8 partition storage into 7/8/8/8 chunks.
   * The total payload storage is unchanged; the additional group-output selection trades mux logic for shorter shift
   * chains and smaller shift-enable domains. A group size >= the ratio retains a single shift group for comparison.
+  *
+  * For ratios greater than one, is_busy_cstate gates input ready only. Callers must prevent a first-chunk output
+  * transfer while not busy; VersaCore does this by keeping input valid low outside its busy state.
+  * counter_value_reset discards the remaining word at the next clock edge; it does not suppress an output transfer
+  * on that edge. A subsequent first-chunk transfer reloads all payload storage.
   */
 class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
