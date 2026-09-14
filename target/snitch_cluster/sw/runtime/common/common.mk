@@ -65,8 +65,15 @@ clean:
 $(BUILDDIR):
 	mkdir -p $@
 
+# -MMD -MP here for the same reason as the .c rule below, and it matters more:
+# start.S reads SNRT_LOG2_STACK_SIZE, SNRT_TCDM_SIZE, CLUSTER_ADDRWIDTH and
+# CLUSTER_BASE_ADDR out of snitch_cluster_defs.h / snitch_cluster_addrmap.h to
+# lay out the stacks. Without dependency tracking those are invisible to make,
+# so changing the stack size or the cluster's TCDM size leaves an object that
+# still carves the stacks the old way -- and nothing about the app can reveal
+# it, because the stacks end up somewhere the heap now believes it owns.
 $(BUILDDIR)/%.o: $(SRC_DIR)/%.S | $(BUILDDIR)
-	$(RISCV_CC) $(RISCV_CFLAGS) -c $< -o $@
+	$(RISCV_CC) $(RISCV_CFLAGS) -MMD -MP -c $< -o $@
 
 # -MMD -MP records the headers each object actually included, so a regenerated CSR map
 # (snax-*-addr.h, streamer_csr_addr_map.h) rebuilds the object instead of leaving a stale
@@ -76,10 +83,11 @@ $(BUILDDIR)/%.o: $(SRC_DIR)/%.S | $(BUILDDIR)
 $(BUILDDIR)/%.o: $(SRC_DIR)/%.c | $(BUILDDIR)
 	$(RISCV_CC) $(RISCV_CFLAGS) -MMD -MP -c $< -o $@
 
+# Only ever include the .d files -MMD wrote next to their object; never ask make
+# to *build* one. A %.d: %.c pattern rule matches the .d of an assembled source
+# against a same-named .c, and the bogus prerequisites it records then hold the
+# real object up to date indefinitely.
 -include $(OBJS:.o=.d)
-
-$(BUILDDIR)/%.d: $(SRC_DIR)/%.c | $(BUILDDIR)
-	$(RISCV_CC) $(RISCV_CFLAGS) -MM -MT '$(@:.d=.o)' $< > $@
 
 $(LIB): $(OBJS) | $(BUILDDIR)
 	$(RISCV_AR) $(RISCV_ARFLAGS) $@ $^
@@ -87,6 +95,3 @@ $(LIB): $(OBJS) | $(BUILDDIR)
 $(DUMP): $(LIB) | $(BUILDDIR)
 	$(RISCV_OBJDUMP) -D $< > $@
 
-ifneq ($(MAKECMDGOALS),clean)
--include $(DEPS)
-endif
