@@ -115,14 +115,6 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     })
   }
 
-  val in_c_before_pipe = Wire(Decoupled(chiselTypeOf(io.array_data.in_c.bits)))
-  in_c_before_pipe.bits := io.array_data.in_c.bits
-  // The actual valid/ready logic for in_c_before_pipe is handled in the handshake section later
-
-  // Synchronize and pipeline in_c to match the multiplier + register stage latency
-  val in_c_after_pipe = Wire(Decoupled(chiselTypeOf(io.array_data.in_c.bits)))
-  in_c_before_pipe -|> in_c_after_pipe
-
   val inputC = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
       dataForwardN(
@@ -132,7 +124,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
         Seq(dim(0), dim(2), 1),
         // stride_Mu, stride_Nu, stride_Ku
         Seq(dim(2), 1, 0),
-        in_c_after_pipe.bits
+        io.array_data.in_c.bits
       )
     })
   }
@@ -208,16 +200,16 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     val output_bits  = VecInit(muls.map(_.io.out.bits))
     val output_valid = muls.map(_.io.out.valid).reduce(_ && _)
 
-    // create a Decoupled output for the multipliers' results, which will be connected to the adder tree input through a pipeline register (-|>)
+    // Collect the multiplier results before the pipeline register.
     val muls_out_data =
       Wire(Decoupled(Vec(params.multiplierNum(dataTypeIdx), UInt(params.inputTypeC(dataTypeIdx).width.W))))
     muls_out_data.bits  := output_bits
     muls_out_data.valid := output_valid
-    // The multipliers' ready signal comes from the pipeline register (-|>).
+    // The multipliers' ready signal comes from the pipeline register.
     muls.foreach(_.io.out.ready := muls_out_data.ready)
 
-    // Use the -|> operator to insert a pipeline register
-    muls_out_data -|> tree.io.in
+    // Use the -\> operator to insert a pipeline register
+    muls_out_data -\> tree.io.in
   }
 
   // adder tree runtime configuration
@@ -247,7 +239,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     // ------------------------------------------
     acc.io.in1.bits                     := adderTree(dataTypeIdx).io.out.bits
     acc.io.in1.valid                    := adderTree(dataTypeIdx).io.out.valid
-    // The adder tree's ready signal comes from the accumulator's inputReady, considering both the input1 and input2 are ready in different cases
+    // The accumulator stalls the dot product until its required C is available.
     adderTree(dataTypeIdx).io.out.ready := acc.io.inputReady
 
     // ------------------------------------------
@@ -261,8 +253,8 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
       (0 until params.arrayDim(dataTypeIdx).length).map(j => j.U -> inputC(dataTypeIdx)(j))
     )
 
-    // The in2 valid should come from the pipelined in_c
-    acc.io.in2.valid := in_c_after_pipe.valid
+    // Join C directly from upstream with its corresponding dot product.
+    acc.io.in2.valid := io.array_data.in_c.valid && io.ctrl.cstate_is_busy
 
     accumulatorIn2Ready(dataTypeIdx)  := acc.io.in2.ready
     accumulatorAccUpdate(dataTypeIdx) := acc.io.accUpdate
@@ -281,7 +273,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     }
   }
 
-  // The multipliers' ready signal comes from its pipeline register (-|>)
+  // The selected multiplier pipeline supplies A/B backpressure.
   val muls_ready = MuxLookup(
     io.ctrl.dataTypeCfg,
     multipliers(0)(0).io.in.ready
@@ -306,22 +298,16 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   // ---------------------------------------------------
   // Top-level input synchronization
   // ---------------------------------------------------
-  // A, B and C (if enabled) must fire together to ensure the input wave enters the pipeline correctly.
-  val in_c_active  = io.ctrl.accAddExtIn
-  val common_valid =
-    io.array_data.in_a.valid && io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && io.ctrl.cstate_is_busy
-  val common_accept_data_ready = muls_ready && (in_c_before_pipe.ready || !in_c_active) && io.ctrl.cstate_is_busy
+  // A and B form one multiplier transaction. The accumulator synchronizes C
+  // with the dot product independently of A/B input admission.
+  val abValid = io.array_data.in_a.valid && io.array_data.in_b.valid && io.ctrl.cstate_is_busy
+  io.array_data.in_a.ready := io.array_data.in_b.valid && muls_ready && io.ctrl.cstate_is_busy
+  io.array_data.in_b.ready := io.array_data.in_a.valid && muls_ready && io.ctrl.cstate_is_busy
+  multipliers.zipWithIndex.foreach { case (muls, dataTypeIdx) =>
+    muls.foreach(_.io.in.valid := abValid && io.ctrl.dataTypeCfg === dataTypeIdx.U)
+  }
 
-  // sync a and b ready signals for the three inputs based on the common valid and the pipeline ready
-  io.array_data.in_a.ready := io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && common_accept_data_ready && io.ctrl.cstate_is_busy
-  io.array_data.in_b.ready := io.array_data.in_a.valid && (io.array_data.in_c.valid || !in_c_active) && common_accept_data_ready && io.ctrl.cstate_is_busy
-  // only takes in c when accAddExtIn is true to accept new c input data
-  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid && common_accept_data_ready && io.ctrl.cstate_is_busy && in_c_active
-
-  // Drive the valid signals for the first stage
-  multipliers.foreach(_.foreach(_.io.in.valid := common_valid))
-  in_c_before_pipe.valid := common_valid
-  in_c_after_pipe.ready  := selectedIn2Ready
+  io.array_data.in_c.ready := selectedIn2Ready && io.ctrl.cstate_is_busy
 
   // output data and valid signals
   io.array_data.out_d.bits := MuxLookup(
