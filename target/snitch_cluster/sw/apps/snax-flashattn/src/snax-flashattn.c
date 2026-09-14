@@ -175,37 +175,116 @@
 // (The 1/sqrt(d) score scaling is not applied here. The operands are bounded instead, so
 // the scores stay inside FP16 without a scaling pass; see QSHIFT in data.h.)
 //
+// THE TAP, the reduce's other trick. A reduce normally SWALLOWS its input: N beats go
+// in, one comes out. Softmax needs both halves, though -- the maximum AND the tile it
+// came from, because the very next step subtracts one from the other. Reducing the
+// plain way throws the tile away and the next task has to read it all over again:
+//
+//     beat 0 [   3   9   1   4 ]
+//     beat 1 [   7   2   1   8 ]   ->   [   7   9   1   8 ]   the tile is gone
+//     beat 2 [   5   6   0   2 ]
+//
+// TAP mode passes the input straight through and APPENDS the result, so the same
+// single pass delivers both -- 3 beats in, 4 out:
+//
+//     beat 0 [   3   9   1   4 ]   ->   [   3   9   1   4 ]
+//     beat 1 [   7   2   1   8 ]   ->   [   7   2   1   8 ]
+//     beat 2 [   5   6   0   2 ]   ->   [   5   6   0   2 ]
+//                                       [   7   9   1   8 ]  <- the reduction, appended
+//
+// At Bc = 512 that is the difference between reading the score tile once and reading
+// it twice. The pass-through also decides WHERE the copy lands, and the chain depends
+// on that: the next task is a sticky-B pass that needs its broadcast operand sitting
+// immediately before the tile, and the tap writes the tile exactly there.
+//
 // ONE KV TILE. Br = 32 query rows, Bc = 512 keys, d = 128, NKV = 4 tiles. Bc and d are
 // INDEPENDENT, so the two matmuls have different shapes; gemm_set_shape() switches between
 // them per dispatch, rewriting only the twelve CSRs that depend on M and K. A beat is
 // 512 bits = 64 B = 32 FP16 lanes = one value per query row.
 //
-//   GEMM (hart 0)  S^T = K.Q^T          K [512,128] i8   64 KiB  ]  2.10 M MAC
-//                                     Q^T [128, 32] i8    4 KiB  ]  2048 cycles
-//                                  -> S^T [512, 32] f16  32 KiB     at 1024 MAC/cycle
+//   Every name carries its PRECISION: 8 = INT8, 16 = FP16, 32 = INT32. Beat counts are
+//   in -> out, and a beat is one task's worth of 32 lanes.
+//
+//   GEMM (hart 0)  S16^T = K8 . Q8^T        K8 [512,128]  64 KiB  ]  2.10 M MAC
+//                                         Q8^T [128, 32]   4 KiB  ]  2048 cycles
+//                                     -> S16^T [512, 32]  32 KiB     at 1024 MAC/cycle
 //                     the mesh computes INT32, and Int32ToFp16 on the D32 writer port
-//                     converts it FREE as the tile drains -- which also HALVES the
-//                     beats written, so S^T reaches TCDM as 512 FP16 beats, not 1024
-//   SIMD (hart 1)  m   = rowmax(S^T)  512 beats -> 513  StreamReduce MAX|LANEWISE|TAP
-//                  -m  = negate m       2 beats -> 2    StreamMap LINEAR, a = -1
-//                  corr= exp(m_old-m)   2 beats -> 2    StreamMap EXP
-//                  P   = exp(S^T - m) 513 beats -> 513  ) FUSED: EW0 (sticky ADD)
-//                  rowsum = sum over keys of P          ) -> Map (EXP) -> Reduce TAP
-//                  P8^T= int8(P)      512 beats -> 256  Fp16ToInt8
-//                  O  *= corr         129 beats -> 128  StreamElementwise sticky MUL
-//                  l, m commit          8 beats -> 6    the online-softmax recurrence
+//                     converts it FREE as the tile drains -- which also HALVES the beats
+//                     written, so S16^T reaches TCDM as 512 FP16 beats, not 1024
+//   SIMD (hart 1), in the order the loop fires them:
 //
-//                  rowmax/sum over keys = the per-query-row reduction defined above:
-//                  32 lanes in, 32 results out, one per query row, in ONE beat.
+//                  rmax16 = rowmax(S16^T)        512 -> 513  StreamReduce MAX|LANEWISE|TAP
+//                  m16    = max(m16_old, rmax16)     2 -> 1  StreamReduce MAX|LANEWISE
+//                  -m16   = negate m16               2 -> 2  StreamMap LINEAR, a = -1
 //
-//                  TAP means the reduce does not swallow its input. The tile streams
-//                  straight through to the output and the result beat is APPENDED, so
-//                  512 beats in become 513 out. That is why one pass both delivers m
-//                  and leaves the tile sitting where the next task needs it -- directly
-//                  after the broadcast operand that the sticky-B chain reads first.
-//   GEMM (hart 0)  O^T = V^T.P^T      V^T [128,512] i8  64 KiB  ]  2.10 M MAC
-//                                     P^T [512, 32] i8  16 KiB  ]  2048 cycles
-//                                  -> O^T [128, 32] i32 16 KiB     accumulated in place
+//                       [ -m16 ][ S16^T  x512 ]        [ -m16 ][ m16_old ]
+//                         negmS  s16                     rmax    mrun
+//                         \___ the fused pass latches     \___ reduced as a pair to
+//                              -m16, then adds it to            delta below
+//                              all 512 beats of the tile
+//
+//                     ONE value at TWO addresses. Operands here are paired by ADJACENCY
+//                     -- a task reads one flat stream and pairs whatever is next to each
+//                     other in it -- and -m16 has two different partners, so one copy
+//                     cannot serve both. The task reads mnew TWICE at stride 0 and
+//                     writes both: 2 in, 2 out, one fill+drain instead of two.
+//
+//                  delta  = m16_old - m16            2 -> 1  StreamReduce ADD|LANEWISE
+//                  corr16 = exp(delta)               2 -> 2  StreamMap EXP
+//
+//                       [ corr16 ][ l16_old ]        [ corr16 ][ O16^T  x128 ]
+//                         corrL     lrun               corrO     oacc
+//                         \___ sticky MUL gives         \___ sticky MUL rescales
+//                              lsc16, below                  all 128 beats of O
+//
+//                     The same fan-out for the same reason: corr16 pairs with l16_old
+//                     in one task and with the O tile in another.
+//
+//                  P16    = exp(S16^T - m16)     513 -> 513  ) FUSED: EW0 (sticky ADD)
+//                  sum16  = sum of P16 over keys             ) -> Map (EXP) -> Reduce TAP
+//
+//                     sum16 has no task of its own: it is the TAP beat of the row above,
+//                     the 513th written after the 512 beats of P16. One pass over the
+//                     tile produces both.
+//
+//                       read   [ -m16 ][ S16^T  x512 ]     negmS, then the tile
+//                       write  [ P16   x512 ][ sum16 ]     p16, then rsum
+//                                              \___ lsc16 is written beside it later,
+//                                                   so the l16 row reads the adjacent
+//                                                   pair [ sum16 ][ lsc16 ]
+//
+//                  P8^T   = int8(P16)            512 -> 256  Fp16ToInt8
+//                  O16^T *= corr16               129 -> 128  StreamElementwise sticky MUL
+//
+//                     ---- P8^T and the rescaled O16^T are published to the GEMM here.
+//                          Everything below only prepares the NEXT tile, so the GEMM
+//                          never waits on it. ----
+//
+//                  lsc16  = corr16 * l16_old         2 -> 1  StreamElementwise sticky MUL
+//                  l16    = sum16 + lsc16            2 -> 1  StreamReduce ADD|LANEWISE
+//                  m16_old, l16_old <- m16, l16      2 -> 2  StreamMap LINEAR, a = 1
+//
+//                     The "commit". Old and new live in SEPARATE beats all tile long,
+//                     because delta needs m16_old after m16 already exists, and lsc16
+//                     needs l16_old after l16 is being formed -- so nothing may
+//                     overwrite the old pair until both readers are done. The last task
+//                     of the tile copies the new pair over the old one, which is all
+//                     that carries state into tile j+1:
+//
+//                       mnew -> mrun        m16 becomes the next tile's m16_old
+//                       lnew -> lrun        l16 becomes the next tile's l16_old
+//
+//                     An identity StreamMap (a = 1, b = 0) is how a copy is expressed
+//                     here -- the core has no cheaper way to move TCDM beats -- and one
+//                     strided 2-beat task does both, the same trick as the fan-outs
+//                     above run in reverse: two sources, two destinations, one pass.
+//
+//   GEMM (hart 0)  O32^T += V8^T . P8^T    V8^T [128,512]  64 KiB  ]  2.10 M MAC
+//                                          P8^T [512, 32]  16 KiB  ]  2048 cycles
+//                                     -> O32^T [128, 32]  16 KiB     accumulated in place
+//
+//   O16^T and O32^T are the two representations of O described below: the SIMD rescales
+//   the FP16 copy, the GEMM accumulates the INT32 one, and they are never joined.
 //
 // Per KV tile that is 4.19 M MAC and 4096 GEMM cycles against ~1680 beats read and ~1420
 // written on the SIMD side, so the arithmetic floor is GEMM-bound and the softmax has to
