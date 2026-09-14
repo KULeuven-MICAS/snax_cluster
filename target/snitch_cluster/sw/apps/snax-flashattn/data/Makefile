@@ -18,19 +18,12 @@ DATA_H = $(DATA_DIR)/data.h
 # then considers up to date, which is how this was found.)
 HW_CFG := $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE)
 
-DATA_H2 = $(DATA_DIR)/data_shape2.h
-
 $(DATA_H): $(DATA_DIR)/datagen.py $(DATA_CFG) $(HW_CFG) 
 	$< --swcfg $(DATA_CFG) --hwcfg $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE) > $@
-
-# The SECOND matmul shape (O^T = V^T.P^T), derived from the first by the same generator.
-# Generated, never committed -- exactly like data.h -- and depends on the same inputs.
-$(DATA_H2): $(DATA_DIR)/datagen.py $(DATA_CFG) $(HW_CFG)
-	$< --swcfg $(DATA_CFG) --hwcfg $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE) --shape2 > $@
 
 .PHONY: clean-data clean
 
 clean-data:
-	rm -f $(DATA_H) $(DATA_H2)
+	rm -f $(DATA_H)
 
 clean: clean-data

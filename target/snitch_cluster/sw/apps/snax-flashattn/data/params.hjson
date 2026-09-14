@@ -2,30 +2,34 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Cluster configuration for a matmul testbench system.
+// FlashAttention tile shape, for datagen.py.
 //
-// M=8, N=2, K=32  ->  Bc = M*meshRow = 128, Br = N*meshCol = 32, d = K*tileSize = 128,
-// at mesh 16x4x16. The TILE is unchanged; only how it maps onto the larger mesh is.
+// SHAPE 1 only: S^T = K.Q^T. The geometry the kernel sees follows from these and the mesh
+// in the cluster cfg, and datagen.py emits it into data.h:
 //
-// These are SHAPE 1 only: S^T = K.Q^T, so M*meshRow = Bc and K*tileSize = d.
+//   Bc = M*meshRow    key columns  -- the tiling knob, grow it until TCDM is full
+//   Br = N*meshCol    query rows
+//   d  = K*tileSize   head dimension -- a property of the MODEL, not a knob
 //
-// Bc and d used to be forced equal, because that made both matmuls the same shape and let one
-// streamer config drive both. They are independent now -- shape 2 (O^T = V^T.P^T, M*meshRow = d,
-// K*tileSize = Bc) is generated into data_shape2.h by gen_shape2.sh and switched in per
-// dispatch. So d is set by the MODEL and Bc is the tiling knob, free to fill TCDM.
+// At M=32, N=2, K=32 on a 16x4x16 mesh that is Bc=512, Br=32, d=128.
 //
-// MEASURED at d = 128, computeLanes = 16: Bc 128 -> 512 takes the mesh from 47.7% to 64.2% of
-// peak (14.68 -> 10.91 cycles per key) because the fixed per-tile costs amortise over 4x the
-// beats. Keep NKV >= 4 so the software pipeline still hides the per-tile fill and drain.
+// Bc and d are independent, so the two matmuls have different shapes. datagen.py derives
+// shape 2 (O^T = V^T.P^T, M*meshRow = d, K*tileSize = Bc) from the same values and appends
+// its S2_* descriptors to data.h; gemm_set_shape() switches between them per dispatch.
 //
-// M and N are swapped relative to the untransposed form because FlashAttention here is
-// computed TRANSPOSED:
-// S^T = (Q.K^T)^T = K.Q^T is the same GEMM with its operands swapped, so
-// D = [M*meshRow, N*meshCol] = [64, 32] = [Bc, Br]. That orientation is what
-// lets StreamReduce's LANEWISE mode do rowmax with no horizontal fold -- one
-// lane is one query row, so the reduction runs along beats. See snax-flashattn.c.
+// M and N are swapped relative to the untransposed form because attention is computed
+// TRANSPOSED here: S^T = (Q.K^T)^T = K.Q^T is the same GEMM with its operands swapped, so
+// D = [M*meshRow, N*meshCol] = [Bc, Br]. That orientation is what lets StreamReduce's
+// LANEWISE mode take the rowmax with no horizontal fold -- one lane is one query row, so
+// the reduction runs along beats. See snax-flashattn.c.
+
 {
   // gemm configurations
+  // KV tiles the software pipeline streams. Keep it >= 4, so the pipeline has enough
+  // tiles to hide the per-tile fill and drain, and a power of two, so the kernel's
+  // l-recurrence invariant can check l == NKV * rowsum by its exponent alone.
+  NKV: 4,
+
   transposed_A: 0,
   transposed_B: 0,
   K: 32,

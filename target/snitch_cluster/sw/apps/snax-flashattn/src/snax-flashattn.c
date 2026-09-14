@@ -32,13 +32,13 @@
 //    S and P8 are double-buffered so producer and consumer never touch the same
 //    memory, and the handoff is two monotonically increasing counters in TCDM
 //    rather than snrt_cluster_hw_barrier(), which would re-serialise the two
-//    cores and drag harts 2 and 3 in. Within a tile the five SIMD tasks are
-//    fired back to back with no wait between them; see the note in the loop.
+//    cores and drag harts 2 and 3 in. Within a tile the SIMD tasks are fired
+//    back to back with no wait between them; see the note in the loop.
 //
 // 2. THE TRANSPOSE. Everything is computed in [Bc, Br] rather than [Br, Bc], so
 //    one beat holds one value per QUERY ROW and the softmax reduction runs along
-//    BEATS instead of across lanes. See the block above the tile constants: it is
-//    what lets StreamReduce skip its horizontal fold entirely.
+//    BEATS instead of across lanes. That is what lets StreamReduce skip its
+//    horizontal fold entirely; see the block below the includes.
 //
 // WHAT IS AND IS NOT VALIDATED. The softmax is checked against an exact
 // invariant in two halves -- P must contain exactly 1.0 and P8^T exactly 1, for
@@ -52,29 +52,17 @@
 // cycle measurement -- one P.V matmul per KV tile, which is the right load --
 // not as a result.
 
-// DIAGNOSTIC: arm the converter but leave the D32 descriptor at its full length.
-
 #include <stdint.h>
 #include "data.h"
-#include "data_shape2.h"
 #include "snax-core-roles.h"
 #include "snax-gemmx-lib.h"
 #include "snax-gemmx-params.h"
 #include "snax-simd-lib.h"
 #include "snrt.h"
 
-#define BR 32  // query rows in this tile
-#define BC 512  // key columns in this KV tile (the tiling knob)
-#define NKV 4  // key/value tiles to stream through the pipeline
-
-// Operand bound, DERIVED from d rather than hardcoded.
-//
-// A score is a sum of d INT8 products, so |S| <= (127>>QSHIFT)^2 * DHEAD, and it has to stay
-// inside FP16's 65504 or Int32ToFp16 returns inf, exp(inf-inf) is NaN, and the softmax
-// invariant fails on exactly the overflowing rows. At d=128 a shift of 3 sufficed
-// (|S| <= 16384); at d=448 the same shift gives 114,688 and overflows. Deriving it means
-// the tile size can move without silently reintroducing that failure.
-#define QSHIFT ((DHEAD) <= 128 ? 3 : ((DHEAD) <= 512 ? 4 : 5))
+// BR, BC, DHEAD, NKV and QSHIFT arrive from data.h. They are derived there from the same
+// M/N/K and mesh that produced the streamer descriptors, so the kernel's idea of the tile
+// and the descriptors' idea of it cannot drift apart. Change them in data/params.hjson.
 
 // EVERYTHING IS TRANSPOSED. The score tile is stored [Bc, Br], not [Br, Bc]:
 //
@@ -85,30 +73,24 @@
 // value per QUERY ROW at a fixed key, so:
 //
 //   rowmax   = LANEWISE MAX over the Bc beats. The reduction runs ALONG BEATS,
-//              which is the accumulator StreamReduce already keeps for free, so
-//              the horizontal fold, its treeBuf serialisation and the scalar
-//              drain are all skipped. One task, one output beat, no per-row
-//              bubble -- against ~40 cycles per row on the folding path.
+//              which is the accumulator StreamReduce already keeps, so the
+//              horizontal fold, its treeBuf serialisation and the scalar drain
+//              are all skipped: one task, one output beat, no per-row bubble.
 //   m        = ONE beat (32 lanes = 32 query rows), not BR scalars.
-//   exp(S-m) = the same broadcast/add/exp chain, but the broadcast operand is a
-//              single beat replicated, not a per-row scalar re-armed BR times.
+//   exp(S-m) = a broadcast/add/exp chain whose broadcast operand is a single beat
+//              replicated, not a per-row scalar re-armed BR times.
 //
-// This is Track C 7.3 of the decoupling plan. The measured cost before it was
-// rowmax = 1296 of 2407 SIMD engine cycles per KV tile, i.e. 54% of all engine
-// time spent folding 32 short rows.
-// d, the HEAD dimension, is a property of the model -- not a tiling knob. It used to be
-// tied to BC because that makes S^T = K.Q^T and O^T = V^T.P^T the same shape, so ONE
-// streamer config drove both matmuls. That coupling is now broken: BC is free to grow to
-// fill TCDM while d stays at the value the model actually has.
-#define DHEAD 128        // head dimension (d)
+// BC and DHEAD are independent. Bc is the tiling knob, free to grow until TCDM is
+// full; d is a property of the model. The two matmuls therefore have different
+// shapes, which gemm_set_shape() switches between per dispatch.
 
 #define SBEATS BC        // S^T / P beats: one per KEY, 32 query lanes each
 #define DBEATS DHEAD     // O^T beats:     one per HEAD element, 32 query lanes each
 #define PBEATS (BC / 2)  // after Fp16ToInt8 halves them
 
-// A spin that cannot hang the simulation for ever. A deadlock here is a real
-// possibility -- the two cores are hand-synchronised -- and an infinite loop in
-// Verilator just burns wall-clock with no diagnosis.
+// A spin that cannot hang the simulation for ever. The two cores are hand-synchronised,
+// so a deadlock is possible, and an infinite loop in Verilator burns wall-clock with no
+// diagnosis.
 #define SPIN_LIMIT 2000000u
 #define SNAX_SPIN_UNTIL(cond, timeout_flag)          \
     do {                                             \
@@ -121,19 +103,15 @@
         }                                            \
     } while (0)
 
-// The twelve task geometries. In TCDM, not on the stack and not in .bss:
-// program_fast() reads every field of two of these per task, so a DRAM-backed
-// .bss object costs an L3 round trip per field -- 4500 cycles a run when this
-// was plain `static`. Only the SIMD core touches them.
+// The task geometries. In TCDM, not on the stack and not in .bss: program_fast() reads
+// every field of two of these per task, and .bss maps to DRAM on this target, so each
+// field would cost an L3 round trip. Only the SIMD core touches them.
 SNRT_L1_DATA static snax_simd_shape_t shapes[32];
 
-// SNRT_L1_DATA lives in .l1, which is NOLOAD -- it is NOT zero-initialised. A
-// shape that is declared but never filled therefore programs the AGU from
-// whatever was in TCDM, and the task still completes: it reads and writes the
-// wrong addresses and the result is silently wrong rather than faulted. That
-// cost a full bisect (the reduce looked broken in the cluster while passing
-// every unit test, because its output shape was garbage). Clear them once, so
-// an unfilled shape is an empty task the library REFUSES instead.
+// SNRT_L1_DATA lives in .l1, which is NOLOAD -- it is NOT zero-initialised. A shape that
+// is declared but never filled programs the AGU from whatever was in TCDM, and the task
+// still completes: it reads and writes the wrong addresses, silently wrong rather than
+// faulted. Clear them once, so an unfilled shape is an empty task the library REFUSES.
 static inline void snax_simd_shapes_clear(snax_simd_shape_t *sh, uint32_t n) {
     for (uint32_t i = 0; i < n; i++) {
         uint8_t *b = (uint8_t *)&sh[i];
@@ -149,17 +127,13 @@ static inline uint16_t fp16_at(volatile uint8_t *p, uint32_t i) {
 // Called ONCE, for shape 1. Everything that differs between the two matmul shapes is then
 // patched per dispatch by gemm_set_shape() -- twelve registers instead of these ~84.
 //
-// Do not call this per dispatch. Measured: it costs ~2,150 cycles a time, because the
-// library function is out of line and every CSR address inside it is opaque to the
-// csrw_ss switch, so each access pays a jump-table load plus an indirect jump. Doing it
-// on both shapes took GEMM configuration from 837 to 15,062 cycles in a single run.
+// Not for per-dispatch use: it costs ~2,150 cycles a call, because the library function
+// is out of line and every CSR address inside it is opaque to the csrw_ss switch, so each
+// access pays a jump-table load plus an indirect jump.
 //
-// The fifteen streamer arrays live in THIS frame rather than main's on purpose:
-// SNRT_LOG2_STACK_SIZE is 10, so a hart has 1 KiB, and carrying these alongside
-// main's shape structs and a printf frame overflowed into the neighbouring
-// hart's stack. main then returned with a corrupted s2, which surfaced as a
-// misaligned amoadd in snrt_main's exit path -- a trap with no visible relation
-// to its cause.
+// The fifteen streamer arrays live in THIS frame rather than main's: SNRT_LOG2_STACK_SIZE
+// is 10, so a hart has 1 KiB, and carrying these alongside main's shape structs and a
+// printf frame overflows into the neighbouring hart's stack.
 static void gemm_configure_once(void) {
     int32_t Aslstride[] = {Aslstride0};
     int32_t Atlbound[] = {Atlbound0, Atlbound1, Atlbound2, Atlbound3, Atlbound4, Atlbound5};
@@ -170,9 +144,9 @@ static void gemm_configure_once(void) {
     int32_t D8slstride[] = {D8slstride0};
     int32_t D8tlbound[] = {D8tlbound0, D8tlbound1, D8tlbound2, D8tlbound3};
     int32_t D8tlstride[] = {D8tlstride0, D8tlstride1, D8tlstride2, D8tlstride3};
-    // TWO spatial strides: the C port declares spatial_bounds [[8, 4]] and the
-    // streamer reads S_STRIDE_NUM_READER_WRITER_0 = 2 of them. A 1-element array
-    // here fed the second one from off the end of the stack.
+    // TWO spatial strides: the C port declares spatial_bounds [[8, 4]] and the streamer
+    // reads S_STRIDE_NUM_READER_WRITER_0 = 2 of them. A 1-element array would feed the
+    // second from off the end of the stack.
     int32_t Cslstride[] = {Cslstride0, Cslstride1};
     int32_t Ctlbound[] = {Ctlbound0, Ctlbound1, Ctlbound2, Ctlbound3};
     int32_t Ctlstride[] = {Ctlstride0, Ctlstride1, Ctlstride2, Ctlstride3};
@@ -201,15 +175,10 @@ static void gemm_configure_once(void) {
 //   S^T = K.Q^T    M1 = Bc/meshRow, K1 = d/tileSize
 //   O^T = V^T.P^T  M2 = d/meshRow,  K2 = Bc/tileSize
 //
-// Only M and K move, so only the CSRs that depend on them are rewritten. Diffing the two
-// generated descriptor sets shows that is NINE stream registers plus three GEMM bounds --
-// not the ~84 a full `set_gemmx_streamer_csr()` writes.
-//
-// That distinction is worth 15,000 cycles, measured. Re-running the full programming per
-// dispatch cost 15,062 cycles of GEMM configuration against a 837-cycle baseline: the
-// library function is out of line, so every one of its CSR addresses is opaque and pays a
-// jump-table load plus an indirect jump. Written here with compile-time-constant addresses
-// through the always_inline csrw_ss, each store folds to a single `csrw <imm>`.
+// Only M and K move, so only the CSRs that depend on them are rewritten: nine stream
+// registers plus three GEMM bounds, against the ~84 a full set_gemmx_streamer_csr()
+// writes. Every address here is a compile-time constant, so each store folds through the
+// always_inline csrw_ss to a single `csrw <imm>`.
 #define GEMM_SHAPE_S1 0
 #define GEMM_SHAPE_S2 1
 static inline void gemm_set_shape(int shape) {
@@ -242,11 +211,10 @@ static inline void gemm_set_shape(int shape) {
 // arrive. Both layouts are contiguous, so halving the innermost bound and the two outer
 // strides is the whole change.
 //
-// The descriptor values come in as ARGUMENTS, not read from the D32tl* globals. Those
-// globals live in .bss, which this target maps to DRAM, so reading them here cost an L3
-// round trip per field per dispatch -- visible as ~18-cycle gaps between these csrw's and
-// worth ~420 cycles of GEMM config time across the kernel. The caller hoists them into
-// locals once, where they stay in registers.
+// The descriptor values come in as ARGUMENTS rather than read from the D32tl* globals.
+// Those globals live in .bss, which this target maps to DRAM, so reading them here would
+// cost an L3 round trip per field per dispatch. The caller hoists them into locals once,
+// where they stay in registers.
 static inline void gemmx_d32_emit_fp16(int on, uint32_t bound0, uint32_t stride1,
                                        uint32_t stride2) {
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 0, on ? 1u : 0u);  // enable bitmask
@@ -280,14 +248,10 @@ int main() {
     uint8_t *corrL = l1 + top;  top += BEAT;          // exp(delta)  ] latch for corr*l_old
     uint8_t *lrun  = l1 + top;  top += BEAT;          // running l   ]
     uint8_t *lnew  = l1 + top;  top += BEAT;
-    // `sm` (S^T - m_new) used to be materialised between tasks 8 and 9. The fused pass keeps it
-    // inside the chain, so the buffer is gone -- 128 beats of TCDM and a full read+write with it.
     uint8_t *p16   = l1 + top;  top += SBEATS * BEAT; // P = exp(S-m)
-    // The tapped rowsum lands here (immediately after p16), and corr*l_old is placed
-    // immediately after IT so that task 13 can read the pair [rowsum][corr*l_old]
-    // directly. That is what removes the old copy task: the adjacency the LANEWISE
-    // 2-beat reduce needs is arranged by the ALLOCATION rather than by moving a beat
-    // at run time. Placement is the cheapest form of data movement.
+    // The tapped rowsum lands immediately after p16 and corr*l_old immediately after IT,
+    // so task 13 reads the pair [rowsum][corr*l_old] directly. The adjacency a LANEWISE
+    // 2-beat reduce needs comes from the ALLOCATION, not from moving a beat at run time.
     uint8_t *rsum  = l1 + top;  top += BEAT;          // tapped rowsum ] pair for l_new
     uint8_t *lsc   = l1 + top;  top += BEAT;          // corr*l_old    ]
     uint8_t *corrO = l1 + top;  top += BEAT;          // exp(delta)  ] latch for O *= corr
@@ -333,29 +297,13 @@ int main() {
         snrt_dma_start_1d(local_b, B, N * K * tileSize * meshCol * sizeof(int8_t));
         snrt_dma_wait_all();
 
-        // C is the GEMM's accumulator input. The matmul data generator fills it
-        // with a RANDOM bias, which attention does not have -- and which dominated
-        // the scores: with Q,K bounded to +-16 the products cannot exceed 16384,
-        // yet S came out at -78529, i.e. essentially all C. Zero it.
+        // C is the GEMM's accumulator input. The data generator fills it with a random
+        // bias, which attention does not have and which would dominate the scores. Zero it.
         for (uint32_t i = 0; i < (uint32_t)(M * N * meshRow * meshCol); i++)
             local_c[i] = 0;
 
-        // Bound the operands so the scores stay inside FP16.
-        //
-        // A score is a sum of d = 64 INT8 products, so with full-range operands it
-        // reaches ~1e6 -- far past FP16's 65504. Int32ToFp16 then returns inf for
-        // those rows, exp(inf - inf) is NaN, and the softmax invariant fails on
-        // exactly the overflowing rows (3 of 32 were, before this). Real attention
-        // scales scores by 1/sqrt(d) for the same reason; here it is cheaper to
-        // bound the inputs. >>2 was NOT enough: it gives |q|,|k| <= 32, so
-        // |S| <= 32*32*64 = 65536 -- just past FP16's 65504, and three rows of 32
-        // did overflow to -inf (diagnosed as hw_max == sw_max == 0xfc00, i.e. the
-        // reduce was right and the conversion had already saturated). >>3 gives
-        // |q|,|k| <= 16 and |S| <= 16384, comfortably inside the format.
-        for (uint32_t i = 0; i < (uint32_t)(M * K * meshRow * tileSize); i++)
-            local_a[i] >>= QSHIFT;
-        for (uint32_t i = 0; i < (uint32_t)(N * K * tileSize * meshCol); i++)
-            local_b[i] >>= QSHIFT;
+        // A and B arrive ALREADY bounded by >>QSHIFT, so the scores stay inside FP16.
+        // datagen.py applies the shift when it writes the data.
 
         // Online-softmax initial state. m starts at the most negative FINITE FP16
         // (-65504) rather than -inf: max(m, rowmax) is then just rowmax, and
@@ -377,11 +325,10 @@ int main() {
         sync[1] = 0;
     }
     if (snax_is_gemm_core()) {
-        // TCDM footprint guard. The largest tile sits at ~96% of the 512 kB scratchpad by
-        // calculation; a silent overrun would corrupt whatever follows rather than fault,
-        // so check it rather than trust the arithmetic.
-        printf("  TCDM footprint  %lu bytes of %u  (Bc=d=%d, QSHIFT=%d)\n",
-               (unsigned long)top, 512u * 1024u, BC, QSHIFT);
+        // TCDM footprint guard. An overrun corrupts whatever follows rather than
+        // faulting, so check the layout rather than trust the arithmetic.
+        printf("  TCDM footprint  %lu bytes of %u  (Bc=%d, d=%d, QSHIFT=%d)\n",
+               (unsigned long)top, 512u * 1024u, BC, DHEAD, QSHIFT);
         if (top > 512u * 1024u) {
             printf("  TCDM OVERFLOW: tile does not fit -- reduce M\n");
             cfg_err++;
@@ -389,12 +336,11 @@ int main() {
     }
     snrt_cluster_hw_barrier();
 
-    // The kernel's tile constants must agree with what data.h and data_shape2.h were
-    // generated from. `d == BC` used to be required -- it made both matmuls the same shape
-    // so one streamer config served both -- and is NOT any more: the two shapes are
-    // programmed separately by gemm_set_shape(). What must hold now is that each generated
-    // descriptor set matches the dimension it is meant to walk, on BOTH shapes. Getting
-    // this wrong does not fault; the second matmul quietly uses the first one's bounds.
+    // Each descriptor set must match the dimension it walks, on BOTH shapes. data.h carries
+    // the geometry and the descriptors together, so what this catches is a stale data.h
+    // against a rebuilt cluster cfg: the mesh comes from snax-gemmx-params.h and moves
+    // independently. A mismatch does not fault -- the second matmul quietly uses the
+    // first one's bounds.
     if (snax_is_gemm_core()) {
         if (M * meshRow != BC || N * meshCol != BR || K * tileSize != DHEAD) {
             printf("shape 1 mismatch: M*meshRow=%ld (want Bc=%d)  N*meshCol=%ld (want Br=%d)"
@@ -415,8 +361,8 @@ int main() {
     if (snax_is_gemm_core()) gemm_configure_once();
 
 
-    // The six softmax tasks likewise have fixed geometry. Build every shape up
-    // front so the loop body is arm + program_fast + launch and nothing else.
+    // Every task geometry is fixed, so build them all up front: the loop body is then
+    // arm + program_fast + launch and nothing else.
     snax_simd_shape_t *sh = shapes;
     if (snax_is_simd_core()) {
         snax_simd_shapes_clear(shapes, 32);
@@ -429,33 +375,31 @@ int main() {
         // 2  m_new = max(m_old, rowmax): LANEWISE over the adjacent pair [rmax][mrun].
         snax_simd_shape_flat(&sh[2], rmax, 2);
         snax_simd_shape_flat(&sh[3], mnew, 1);
-        // 3,4  -m_new, written TWICE: once before s16 (latch for P) and once into the
-        //      rmax slot, which task 2 has already consumed, so it pairs with mrun.
-        // 3+4 fused: read m_new twice (stride 0) and fan the negated value out
-        // to BOTH latches in one task. Two 1-beat tasks cost two lots of
-        // reader/extension/writer fill+drain; one 2-beat task costs one.
+        // 3+4  -m_new into both latches in one task: read m_new twice (stride 0) and fan
+        //      the negated value out, once before s16 (the latch for P) and once into the
+        //      rmax slot, which task 2 has consumed so it now pairs with mrun. One 2-beat
+        //      task pays one reader/extension/writer fill+drain where two 1-beat tasks
+        //      pay two.
         snax_simd_shape_broadcast(&sh[4], mnew, 2);
         snax_simd_shape_2d(&sh[5], negmS, 2, (uint32_t)(rmax - negmS), 1, 0);
         // 5  delta = m_old - m_new: LANEWISE ADD over [-m_new][m_old].
         snax_simd_shape_flat(&sh[8], rmax, 2);
         snax_simd_shape_flat(&sh[9], delta, 1);
-        // 6,7  corr = exp(delta), twice: one before l_old, one before O.
-        // 6+7 fused, same trick: exp(delta) fanned out to corrL and corrO.
+        // 6+7  corr = exp(delta), fanned out to both latches (corrL before l_old, corrO
+        //      before O) in one task, the same way as 3+4.
         snax_simd_shape_broadcast(&sh[10], delta, 2);
         snax_simd_shape_2d(&sh[11], corrL, 2, (uint32_t)(corrO - corrL), 1, 0);
         // 8+9 FUSED into one pass over the tile.
         //
-        // The chain is [EW0, Map, Reduce, EW1, Fp16ToInt8] in that fixed order, so a combine that must
-        // happen BEFORE the pointwise transform has to use EW0. That was impossible while sticky-B
-        // passed its seed beat through: the junk beat would reach Map, become exp(-m_new), and be folded
-        // into the Reduce's rowsum. With the seed suppressed in hardware, EW0 emits exactly the 128 data
-        // beats and the whole epilogue is one pass:
+        // The chain is [EW0, Map, Reduce, EW1, Fp16ToInt8] in that fixed order, so a combine
+        // that must happen BEFORE the pointwise transform uses EW0. Sticky-B suppresses its
+        // seed beat, so EW0 emits exactly the SBEATS data beats and the epilogue is one pass:
         //
-        //     read [negmS][S^T x128]  ->  EW0: sticky ADD  ->  Map: EXP  ->  Reduce: ADD|LANEWISE|TAP
-        //     write [P x128][rowsum]
+        //     read [negmS][S^T x Bc]  ->  EW0: sticky ADD -> Map: EXP -> Reduce: ADD|LANEWISE|TAP
+        //     write [P x Bc][rowsum]
         //
-        // This removes a complete read+write of the tile (the `sm` intermediate), which at 128 beats is
-        // the single largest avoidable cost in the softmax.
+        // Fusing them keeps S^T - m_new inside the chain, so it is never written out: a whole
+        // read+write of the tile that does not happen.
         snax_simd_shape_flat(&sh[14], negmS, 1 + SBEATS);
         snax_simd_shape_flat(&sh[17], p16, SBEATS + 1);
         // 10 quantise P for the second matmul.
@@ -504,10 +448,9 @@ int main() {
                     SNAX_SPIN_UNTIL(sync[1] >= j - 1, timeouts);
                     gemm_stall += snrt_mcycle() - w0;
                 }
-                // C MUST be restated, not left at -1 ("keep current"): the O matmul
-                // below points C at oacc32 for its in-place accumulation, and without
-                // this S would be computed as K.Q^T + O_accumulated from the second
-                // tile onward -- which showed up as the running max drifting upward.
+                // C MUST be restated, not left at -1 ("keep current"): the O matmul below
+                // points C at oacc32 for its in-place accumulation, so without this S would
+                // be K.Q^T + O_accumulated from the second tile onward.
                 gemm_set_shape(GEMM_SHAPE_S1);  // S^T = K.Q^T
                 set_gemmx_bases(delta_local_a, delta_local_b, -1, delta_local_c,
                                 d32_delta[j & 1]);
@@ -630,9 +573,8 @@ int main() {
             snax_simd_fire();
 
             // PUBLISH HERE, not at the end of the tile. Everything below updates the running
-            // l and m for the NEXT tile; the GEMM needs none of it. Waiting for it drained the
-            // whole chain into the critical path once per tile for no reason -- the task queue
-            // already orders these before tile j+1's first task, so correctness is free.
+            // l and m for the NEXT tile and the GEMM needs none of it; the task queue already
+            // orders those ahead of tile j+1's first task, so correctness costs nothing.
             {
                 uint32_t want = snax_read_simd_cfg_reg(SIMD_SUBMITTED_TASK_PTR);
                 uint32_t spins = 0;
@@ -670,9 +612,9 @@ int main() {
 
 
         }
-        // One drain for the whole loop instead of one per tile: the trailing state
-        // updates of the last tile must land before the invariants read l and m.
-        // Bounded, so a stuck engine reports itself instead of hanging the simulator.
+        // One drain for the whole loop rather than one per tile: the last tile's trailing
+        // state updates must land before the invariants read l and m. Bounded, so a stuck
+        // engine reports itself instead of hanging the simulator.
         {
             uint32_t want = snax_read_simd_cfg_reg(SIMD_SUBMITTED_TASK_PTR);
             uint32_t spins = 0;
@@ -699,16 +641,14 @@ int main() {
     //   P^T  contains exactly 1     per query row   the quantiser
     //   l    == NKV * rowsum(one tile)              the TAPPED rowsum and the l recurrence
     //
-    // The third is the new one and it is the sharpest: every KV tile is fed the same K,
-    // so after the first tile the running max stops changing, corr = exp(0) = 1, and l
-    // must accumulate exactly NKV identical row sums. If the tap, the correction or the
-    // l update were wrong, l would drift.
+    // The third is the sharpest. Every KV tile is fed the same K, so after the first tile
+    // the running max stops changing, corr = exp(0) = 1, and l must accumulate exactly NKV
+    // identical row sums; a wrong tap, correction or l update makes it drift.
     if (snax_is_simd_core()) {
         volatile int8_t *p8t = (volatile int8_t *)(l1 + p8_delta[(NKV - 1) & 1]);
         for (uint32_t i = 0; i < BR; i++) {   // i = query row = lane
-            // The subtract now happens INSIDE the fused pass, so `sm` is never materialised.
-            // Checking exp(S-m) == 1.0 instead is strictly sharper: it pins the max, the
-            // per-lane subtract in EW0 and the exponential in Map with one test.
+            // exp(S - m) == 1.0 for the maximal key pins the running max, the per-lane
+            // subtract in EW0 and the exponential in Map with a single test.
             int found_zero = 0, found_one = 0;
             for (uint32_t j = 0; j < SBEATS; j++) {
                 if (fp16_at(p16 + j * SIMD_BEAT_BYTES, i) == 0x3C00u) found_zero = 1; // exp(0) = 1.0
@@ -729,9 +669,7 @@ int main() {
         // core has none) and still catches every failure that matters: a dead tap gives
         // l = 0, a dropped update gives l = rowsum (shift 0), a doubled one gives 2x.
         if ((NKV & (NKV - 1)) == 0) {
-            // log2(NKV), computed rather than enumerated -- the old ternary chain silently
-            // returned 3 for every NKV above 8, so the check passed on the wrong exponent.
-            uint32_t shift = 0u;
+            uint32_t shift = 0u;  // log2(NKV)
             for (uint32_t t = NKV; t > 1u; t >>= 1) shift++;
             for (uint32_t i = 0; i < BR; i++) {
                 uint16_t r = fp16_at(rsum, i), lv = fp16_at(lrun, i);

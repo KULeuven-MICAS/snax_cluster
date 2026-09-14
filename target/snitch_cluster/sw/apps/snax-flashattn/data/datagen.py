@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# NOTE: this is a COPY of snax-gemmx-matmul/data/datagen.py with FlashAttention's
-# parameters. The two drift silently -- the C/D32 spatial-stride fix had to be made
-# in both. Prefer sharing the generator over copying it again.
+# NOTE: a COPY of snax-gemmx-matmul/data/datagen.py carrying FlashAttention's parameters,
+# its tile geometry and its operand bound. The two copies drift silently -- a fix to the
+# shared parts has to be made in both. Prefer sharing the generator over copying it again.
 
 # Copyright 2024 KU Leuven.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -32,9 +32,63 @@ from snax_utils import (  # noqa E402
 np.random.seed(42)
 
 
+def _mesh(kwargs):
+    cfg = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0]
+    return (
+        cfg["snax_gemmx_mesh_row"],
+        cfg["snax_gemmx_tile_size"],
+        cfg["snax_gemmx_mesh_col"],
+    )
+
+
+def attention_qshift(d):
+    """Smallest right shift on the INT8 operands that keeps every score inside FP16.
+
+    A score is a sum of d products of two shifted INT8s, so |S| <= (128>>q)^2 * d.
+    Int32ToFp16 saturates past 65504, exp(inf - inf) is NaN, and the softmax invariant
+    then fails on exactly the overflowing rows. Real attention scales by 1/sqrt(d) for the
+    same reason; bounding the inputs is cheaper here. Deriving q from d lets the head
+    dimension move without reintroducing the overflow.
+    """
+    for q in range(8):
+        if (128 >> q) ** 2 * d <= 65504:
+            return q
+    raise ValueError("no INT8 shift keeps d=%d scores inside FP16" % d)
+
+
+def emit_geometry_section(**kwargs):
+    """The tile geometry as compile-time constants, derived from the shape and the mesh.
+
+    The kernel takes BR/BC/DHEAD/NKV/QSHIFT from here rather than defining its own, so it
+    cannot disagree with the descriptors it is handed.
+    """
+    meshRow, tileSize, meshCol = _mesh(kwargs)
+    d = kwargs["K"] * tileSize
+    rows = [
+        ("BR", kwargs["N"] * meshCol, "query rows     = N*meshCol"),
+        ("BC", kwargs["M"] * meshRow, "key columns    = M*meshRow (the tiling knob)"),
+        ("DHEAD", d, "head dimension = K*tileSize (a MODEL property, not a knob)"),
+        ("NKV", kwargs["NKV"], "KV tiles streamed through the software pipeline"),
+        (
+            "QSHIFT",
+            attention_qshift(d),
+            "operand bound, ALREADY APPLIED to A and B below",
+        ),
+    ]
+    w = max(len(str(v)) for _, v, _ in rows)
+    body = "\n".join(
+        "#define %-6s %*d  // %s" % (name, w, value, note) for name, value, note in rows
+    )
+    return (
+        "// ---- TILE GEOMETRY -------------------------------------------------------"
+        "---\n" + body + "\n"
+    )
+
+
 # Add stdint.h header
 def emit_header_file(**kwargs):
     emit_str = "#include <stdint.h>\n\n"
+    emit_str += emit_geometry_section(**kwargs) + "\n"
     emit_str += emit_gemmx_data(**kwargs)
     return emit_str
 
@@ -132,8 +186,8 @@ def emit_matmul_data(**kwargs):
     #   spatial 0 : 8 channels x bankWidth/8            =  64 B
     #   spatial 1 : 4 groups   x 64 B                   = 256 B  (one whole chunk)
     #   temporal 0: steps to the NEXT chunk             = 256 B
-    # Note stride1 is the value that used to be assigned to Ctlstride0 -- it belongs to
-    # the spatial axis, not the temporal loop, which is why the temporal step was 4x short.
+    # stride1 belongs to the SPATIAL axis, not the temporal loop: assigning it to
+    # Ctlstride0 leaves the temporal step 4x short.
     data_str += [format_scalar_definition("int32_t", "Cslstride0", bankWidth / 8)]
     c32_spatial_bound_0 = 8
     data_str += [
@@ -188,8 +242,8 @@ def emit_matmul_data(**kwargs):
     #   spatial 0 : 8 channels x bankWidth/8            =  64 B
     #   spatial 1 : 4 groups   x 64 B                   = 256 B  (one whole chunk)
     #   temporal 0: steps to the NEXT chunk             = 256 B
-    # Note stride1 is the value that used to be assigned to Ctlstride0 -- it belongs to
-    # the spatial axis, not the temporal loop, which is why the temporal step was 4x short.
+    # stride1 belongs to the SPATIAL axis, not the temporal loop: assigning it to
+    # Ctlstride0 leaves the temporal step 4x short.
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
     d32_spatial_bound_0 = 8
     data_str += [
@@ -323,11 +377,19 @@ def emit_matmul_data(**kwargs):
     A = np.random.randint(
         MIN, MAX, size=(kwargs["M"], kwargs["K"], meshRow, tileSize)
     ).reshape(-1)
-    data_str += [format_vector_definition("int8_t", "A", A)]
-
     B = np.random.randint(
         MIN, MAX, size=(kwargs["K"], kwargs["N"], tileSize, meshCol)
     ).reshape(-1)
+
+    # Bound the operands so the scores stay inside FP16 -- see attention_qshift(). Doing
+    # it here rather than in the kernel keeps a shift over every element of A and B off
+    # the DM core at run time; numpy's arithmetic shift on int8 is what `>>=` on int8_t
+    # is in C, so the data is what the kernel would have produced itself.
+    qshift = attention_qshift(kwargs["K"] * tileSize)
+    A = A.astype(np.int8) >> qshift
+    B = B.astype(np.int8) >> qshift
+
+    data_str += [format_vector_definition("int8_t", "A", A)]
     data_str += [format_vector_definition("int8_t", "B", B)]
 
     enabled_channel_CSR_num = int(math.ceil(
@@ -495,8 +557,8 @@ def emit_gemmx_data(**kwargs):
 
 
 
-def emit_shape2_header(param, merged_config):
-    """Emit the SECOND matmul shape's streamer descriptors, prefixed S2_.
+def emit_shape2_section(param, merged_config):
+    """The SECOND matmul shape's streamer descriptors, prefixed S2_, appended to data.h.
 
     FlashAttention's two matmuls stop being the same shape once d != Bc:
 
@@ -530,9 +592,11 @@ def emit_shape2_header(param, merged_config):
         r"^int32_t (M|N|K|[ABCD][0-9]*[a-z]*(?:sl|tl)(?:bound|stride)[0-9]+) = "
     )
     lines = [
-        "// GENERATED by datagen.py --shape2 -- do not edit, do not commit.",
-        f"// Second matmul shape: M={m2} N={n2} K={k2}  (d={d}, Bc={bc}, derived from shape 1).",
-        "#pragma once",
+        "",
+        "// ---- SECOND MATMUL SHAPE " + "-" * 52,
+        f"// O^T = V^T.P^T : M={m2} N={n2} K={k2}   (d={d}, Bc={bc}, derived from shape 1 above).",
+        "// Switched in per dispatch by gemm_set_shape(); only the bounds and strides that",
+        "// depend on M and K differ from shape 1.",
     ]
     lines += [
         ln.replace("int32_t ", "static const int32_t S2_", 1)
@@ -557,12 +621,6 @@ def main():
         required=True,
         help="Select hardware config file kernel",
     )
-    parser.add_argument(
-        "--shape2",
-        action="store_true",
-        help="Emit the SECOND matmul shape's streamer descriptors (prefixed S2_) "
-        "instead of the full data set. See emit_shape2_header.",
-    )
     args = parser.parse_args()
 
     # Load param config file
@@ -576,11 +634,10 @@ def main():
     # Merge dictionaries (hw overrides param in case of conflicts)
     merged_config = {**param, **hw}
 
-    # Emit header file
-    if args.shape2:
-        print(emit_shape2_header(param, merged_config))
-    else:
-        print(emit_header_file(**merged_config))
+    # Emit header file: shape 1's full data set, then shape 2's descriptors appended
+    # to the SAME file. One generator, one output, one #include.
+    print(emit_header_file(**merged_config))
+    print(emit_shape2_section(param, merged_config))
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ SRCS    = src/snax-flashattn.c
 include ../common.mk
 include ./data/Makefile
 
-# Must come AFTER the include that defines DATA_H / DATA_H2. This app was missing the line
-# entirely, so neither generated header was a prerequisite of anything: editing params.hjson
-# rebuilt nothing and the app compiled against a stale tile shape. Every other app has it.
-$(DEP): $(DATA_H) $(DATA_H2)
+# Must come AFTER the include that defines DATA_H. This app was missing the line entirely,
+# so data.h was not a prerequisite of anything: editing params.hjson rebuilt nothing and the
+# app compiled against a stale tile shape. Every other app has it.
+$(DEP): $(DATA_H)
