@@ -65,7 +65,13 @@ static inline int32_t snax_simd_compat_disable_dst_ext(int ext) {
 #ifdef SIMD_EXT_STREAMREDUCE
 #define READER_EXT_STREAMREDUCE SIMD_EXT_STREAMREDUCE
 #endif
-#ifdef SIMD_EXT_STREAMELEMENTWISE
+// An operator can appear at more than one point in the fixed chain, in which case the
+// generated header suffixes each instance with its position (_0, _1, ...) and the bare
+// name does not exist. Legacy kernels mean the POST-transform combine -- SwiGLU is
+// silu(a)*b, the multiply follows the map -- so the alias resolves to the later instance.
+#if defined(SIMD_EXT_STREAMELEMENTWISE_1)
+#define READER_EXT_STREAMELEMENTWISE SIMD_EXT_STREAMELEMENTWISE_1
+#elif defined(SIMD_EXT_STREAMELEMENTWISE)
 #define READER_EXT_STREAMELEMENTWISE SIMD_EXT_STREAMELEMENTWISE
 #endif
 #ifdef SIMD_EXT_FP16TOINT8
