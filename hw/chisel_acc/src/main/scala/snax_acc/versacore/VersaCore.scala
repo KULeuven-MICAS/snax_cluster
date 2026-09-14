@@ -359,7 +359,7 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
         serialWidth             = params.serialOutputDDataWidth,
         earlyTerminate          = true,
         allowedTerminateFactors = allowedTerminateFactorsD,
-        p2sChunksPerGroup        = params.p2sChunksPerGroup
+        p2sChunksPerGroup       = params.p2sChunksPerGroup
       )
     )
   )

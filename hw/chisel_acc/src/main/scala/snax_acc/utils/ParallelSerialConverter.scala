@@ -22,7 +22,7 @@ case class ParallelAndSerialConverterParams(
   serialWidth:             Int,
   earlyTerminate:          Boolean  = false,
   allowedTerminateFactors: Seq[Int] = Seq(),
-  p2sChunksPerGroup:        Int      = ParallelAndSerialConverterParams.DefaultP2sChunksPerGroup
+  p2sChunksPerGroup:       Int      = ParallelAndSerialConverterParams.DefaultP2sChunksPerGroup
 ) {
   require(
     p2sChunksPerGroup >= 2 && isPow2(p2sChunksPerGroup),
@@ -59,8 +59,8 @@ object ParallelAndSerialConverterParams {
 
 /** Storage for one group of a ParallelToSerial converter.
   *
-  * A separate instance exposes each group's load/shift/hold muxes and registers to physical implementation.
-  * Placement and control buffering must still be checked after synthesis; this does not force physical locality.
+  * A separate instance exposes each group's load/shift/hold muxes and registers to physical implementation. Placement
+  * and control buffering must still be checked after synthesis; this does not force physical locality.
   */
 class ParallelToSerialGroup(serialWidth: Int, storedChunks: Int) extends Module {
   require(serialWidth > 0 && storedChunks > 0)
@@ -86,15 +86,15 @@ class ParallelToSerialGroup(serialWidth: Int, storedChunks: Int) extends Module 
 
 /** A module that sends a parallel input (via Decoupled I/O) out as multiple serial chunks (also Decoupled I/O).
   *
-  * The first chunk bypasses storage. All other chunks load on that transfer, then only the selected group shifts.
-  * For example, 32 chunks and a group size of 8 partition storage into 7/8/8/8 chunks.
-  * The total payload storage is unchanged; the additional group-output selection trades mux logic for shorter shift
-  * chains and smaller shift-enable domains. A group size >= the ratio retains a single shift group for comparison.
+  * The first chunk bypasses storage. All other chunks load on that transfer, then only the selected group shifts. For
+  * example, 32 chunks and a group size of 8 partition storage into 7/8/8/8 chunks. The total payload storage is
+  * unchanged; the additional group-output selection trades mux logic for shorter shift chains and smaller shift-enable
+  * domains. A group size >= the ratio retains a single shift group for comparison.
   *
   * For ratios greater than one, is_busy_cstate gates input ready only. Callers must prevent a first-chunk output
-  * transfer while not busy; VersaCore does this by keeping input valid low outside its busy state.
-  * counter_value_reset discards the remaining word at the next clock edge; it does not suppress an output transfer
-  * on that edge. A subsequent first-chunk transfer reloads all payload storage.
+  * transfer while not busy; VersaCore does this by keeping input valid low outside its busy state. counter_value_reset
+  * discards the remaining word at the next clock edge; it does not suppress an output transfer on that edge. A
+  * subsequent first-chunk transfer reloads all payload storage.
   */
 class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
@@ -151,7 +151,7 @@ class ParallelToSerial(val p: ParallelAndSerialConverterParams) extends Module w
       0.U
     }
     // Preserve the original transfer semantics, including the caller's is_busy_cstate contract.
-    val loadGroups = firstChunk && io.out.fire
+    val loadGroups = firstChunk  && io.out.fire
     val shiftGroup = !firstChunk && io.out.fire
 
     val groups = (0 until ratio by p.p2sChunksPerGroup).zipWithIndex.map { case (first, index) =>

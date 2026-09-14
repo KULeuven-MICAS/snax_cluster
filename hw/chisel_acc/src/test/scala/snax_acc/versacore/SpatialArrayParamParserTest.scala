@@ -10,31 +10,31 @@ class SpatialArrayParamParserTest extends AnyFlatSpec {
 
   // Eight integer MACs with a 2x2x2 shape produce four 32-bit output chunks.
   // A nondefault group size of two therefore exercises multiple shift groups.
-  private def config(): ujson.Obj = ujson.Obj(
-    "snax_num_rw_csr"                      -> 7,
-    "snax_versacore_mac_num"               -> ujson.Arr(8),
-    "snax_versacore_input_a_element_width"  -> ujson.Arr(8),
-    "snax_versacore_input_b_element_width"  -> ujson.Arr(8),
-    "snax_versacore_input_c_element_width"  -> ujson.Arr(32),
-    "snax_versacore_output_d_element_width" -> ujson.Arr(32),
-    "snax_versacore_input_a_data_type"      -> ujson.Arr("SInt"),
-    "snax_versacore_input_b_data_type"      -> ujson.Arr("SInt"),
-    "snax_versacore_input_c_data_type"      -> ujson.Arr("SInt"),
-    "snax_versacore_output_d_data_type"     -> ujson.Arr("SInt"),
-    "snax_versacore_array_input_a_width"    -> 32,
-    "snax_versacore_array_input_b_width"    -> 32,
-    "snax_versacore_array_input_c_width"    -> 128,
-    "snax_versacore_array_output_d_width"   -> 128,
-    "snax_versacore_spatial_unrolling"      -> ujson.Arr(ujson.Arr(ujson.Arr(2, 2, 2))),
-    "snax_versacore_serial_a_width"         -> 32,
-    "snax_versacore_serial_b_width"         -> 32,
-    "snax_versacore_serial_c_d_width"       -> 32,
-    "snax_versacore_adder_tree_delay"       -> 0,
-    "snax_versacore_temporal_unrolling"     -> ujson.Arr("output_stationary")
-  )
+  private def config(): ujson.Obj =
+    ujson.Obj(
+      "snax_num_rw_csr"                       -> 7,
+      "snax_versacore_mac_num"                -> ujson.Arr(8),
+      "snax_versacore_input_a_element_width"  -> ujson.Arr(8),
+      "snax_versacore_input_b_element_width"  -> ujson.Arr(8),
+      "snax_versacore_input_c_element_width"  -> ujson.Arr(32),
+      "snax_versacore_output_d_element_width" -> ujson.Arr(32),
+      "snax_versacore_input_a_data_type"      -> ujson.Arr("SInt"),
+      "snax_versacore_input_b_data_type"      -> ujson.Arr("SInt"),
+      "snax_versacore_input_c_data_type"      -> ujson.Arr("SInt"),
+      "snax_versacore_output_d_data_type"     -> ujson.Arr("SInt"),
+      "snax_versacore_array_input_a_width"    -> 32,
+      "snax_versacore_array_input_b_width"    -> 32,
+      "snax_versacore_array_input_c_width"    -> 128,
+      "snax_versacore_array_output_d_width"   -> 128,
+      "snax_versacore_spatial_unrolling"      -> ujson.Arr(ujson.Arr(ujson.Arr(2, 2, 2))),
+      "snax_versacore_serial_a_width"         -> 32,
+      "snax_versacore_serial_b_width"         -> 32,
+      "snax_versacore_serial_c_d_width"       -> 32,
+      "snax_versacore_adder_tree_delay"       -> 0,
+      "snax_versacore_temporal_unrolling"     -> ujson.Arr("output_stationary")
+    )
 
-  private def parse(cfg: ujson.Obj): SpatialArrayParam =
-    SpatialArrayParamParser.parseFromHjsonString(ujson.write(cfg))
+  private def parse(cfg: ujson.Obj): SpatialArrayParam = SpatialArrayParamParser.parseFromHjsonString(ujson.write(cfg))
 
   it should "default to four chunks per group when the optional setting is absent" in {
     val params = parse(config())

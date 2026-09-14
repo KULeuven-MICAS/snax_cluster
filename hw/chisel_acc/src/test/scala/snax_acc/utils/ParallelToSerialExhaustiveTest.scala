@@ -80,7 +80,7 @@ class ParallelToSerialExhaustiveTest extends AnyFlatSpec with ChiselScalatestTes
         serialWidth             = 1,
         earlyTerminate          = true,
         allowedTerminateFactors = 1 to ratio,
-        p2sChunksPerGroup        = group
+        p2sChunksPerGroup       = group
       )
       test(new GroupedParallelToSerialTestHarness(p)) { dut =>
         initialize(dut, 1)
@@ -107,7 +107,7 @@ class ParallelToSerialExhaustiveTest extends AnyFlatSpec with ChiselScalatestTes
         serialWidth             = 1024,
         earlyTerminate          = true,
         allowedTerminateFactors = 1 to 32,
-        p2sChunksPerGroup        = group
+        p2sChunksPerGroup       = group
       )
       test(new GroupedParallelToSerialTestHarness(p)) { dut =>
         val rng = new Random(0x503253L + group)
@@ -131,8 +131,8 @@ class ParallelToSerialExhaustiveTest extends AnyFlatSpec with ChiselScalatestTes
     it should s"discard interrupted words at every beat and recover after either reset with group $group" in {
       val ratio = 9
       val p     = ParallelAndSerialConverterParams(
-        parallelWidth    = ratio * 7,
-        serialWidth      = 7,
+        parallelWidth     = ratio * 7,
+        serialWidth       = 7,
         p2sChunksPerGroup = group
       )
       test(new GroupedParallelToSerialTestHarness(p)) { dut =>

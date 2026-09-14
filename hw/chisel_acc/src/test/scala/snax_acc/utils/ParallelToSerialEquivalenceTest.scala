@@ -10,9 +10,7 @@ import scala.util.Random
 
 // The pre-group implementation from commit 41825eae. Keep the single wide
 // shift register here: reusing the new grouping logic would weaken this test.
-class MonolithicParallelToSerialReference(p: ParallelAndSerialConverterParams)
-    extends Module
-    with RequireAsyncReset {
+class MonolithicParallelToSerialReference(p: ParallelAndSerialConverterParams) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val in                  = Flipped(Decoupled(UInt(p.parallelWidth.W)))
     val terminate_factor    =
@@ -41,7 +39,7 @@ class MonolithicParallelToSerialReference(p: ParallelAndSerialConverterParams)
       counter.io.ceilOpt.get := ratio.U
     }
     counter.io.reset := io.counter_value_reset
-    counter.io.tick  := io.out.fire
+    counter.io.tick := io.out.fire
 
     val shiftReg = Reg(UInt((p.parallelWidth - p.serialWidth).W))
     when(io.out.fire) {
@@ -91,15 +89,15 @@ class ParallelToSerialEquivalenceHarness(p: ParallelAndSerialConverterParams, gr
   reference.io.is_busy_cstate      := io.busy
   reference.io.counter_value_reset := io.counter_reset
   reference.io.terminate_factor.foreach(_ := io.terminate_factor)
-  io.reference.ready              := reference.io.in.ready
-  io.reference.valid              := reference.io.out.valid
-  io.reference.bits               := reference.io.out.bits
+  io.reference.ready               := reference.io.in.ready
+  io.reference.valid               := reference.io.out.valid
+  io.reference.bits                := reference.io.out.bits
 
   for ((group, index) <- groups.zipWithIndex) {
     val converter = withReset(reset.asBool.asAsyncReset) {
       Module(new ParallelToSerial(p.copy(p2sChunksPerGroup = group)))
     }
-    converter.io.in.bits             := io.in_bits
+    converter.io.in.bits := io.in_bits
     converter.io.in.valid            := io.in_valid
     converter.io.out.ready           := io.out_ready
     converter.io.is_busy_cstate      := io.busy
@@ -119,13 +117,26 @@ class ParallelToSerialEquivalenceTest extends AnyFlatSpec with ChiselScalatestTe
   // Include one-bit payloads, non-power-of-two widths/ratios, partial groups,
   // bypass, single-group layouts, both PR widths, and the original wide case.
   private val geometries = Seq(
-    (1, 1), (2, 3), (3, 7), (4, 13), (5, 1), (7, 13), (8, 32), (13, 7),
-    (16, 1), (17, 13), (32, 16), (35, 7), (4, 512), (8, 1024), (32, 1024)
+    (1, 1),
+    (2, 3),
+    (3, 7),
+    (4, 13),
+    (5, 1),
+    (7, 13),
+    (8, 32),
+    (13, 7),
+    (16, 1),
+    (17, 13),
+    (32, 16),
+    (35, 7),
+    (4, 512),
+    (8, 1024),
+    (32, 1024)
   )
 
   for {
     (ratio, serialWidth) <- geometries
-    earlyTerminate      <- Seq(false, true)
+    earlyTerminate       <- Seq(false, true)
   } {
     it should s"match every valid cycle for ratio $ratio, width $serialWidth, early termination $earlyTerminate" in {
       val p = ParallelAndSerialConverterParams(
@@ -198,7 +209,7 @@ class ParallelToSerialEquivalenceTest extends AnyFlatSpec with ChiselScalatestTe
             assert(phase == beat)
             val input = if (beat == 0) word else randomWord()
             cycle(input, valid = true, ready = false, busy = true, factor = factor)
-            cycle(input, valid = true, ready = true, busy = true, factor = factor)
+            cycle(input, valid = true, ready = true, busy  = true, factor = factor)
           }
         }
 
@@ -209,7 +220,7 @@ class ParallelToSerialEquivalenceTest extends AnyFlatSpec with ChiselScalatestTe
           .distinct
         for {
           abortAt <- abortPoints
-          ready   <- Seq(false, true)
+          ready <- Seq(false, true)
         } {
           for (_ <- 0 until abortAt) {
             cycle(randomWord(), valid = true, ready = true, busy = true, factor = ratio)

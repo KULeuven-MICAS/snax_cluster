@@ -54,7 +54,7 @@ class GroupedParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester
     dut.io.in.valid.poke((first || rng.nextBoolean()).B)
     dut.io.is_busy_cstate.poke(true.B)
 
-    val atBoundary  =
+    val atBoundary =
       beat % p.p2sChunksPerGroup == 0 || beat % p.p2sChunksPerGroup == p.p2sChunksPerGroup - 1
     val stallCycles = if (stalls) {
       rng.nextInt(3) + (if (first || beat == factor - 1 || atBoundary) 2 else 0)
@@ -117,7 +117,7 @@ class GroupedParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester
       serialWidth             = 16,
       earlyTerminate          = true,
       allowedTerminateFactors = factors,
-      p2sChunksPerGroup        = 8
+      p2sChunksPerGroup       = 8
     )
     test(new GroupedParallelToSerialTestHarness(p)) { dut =>
       val rng = new Random(0x47524f5550L)
@@ -186,7 +186,7 @@ class GroupedParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester
         serialWidth             = 13,
         earlyTerminate          = true,
         allowedTerminateFactors = factors,
-        p2sChunksPerGroup        = group
+        p2sChunksPerGroup       = group
       )
       test(new GroupedParallelToSerialTestHarness(p)) { dut =>
         val rng = new Random(1000L + ratio * 31 + group)
@@ -204,7 +204,7 @@ class GroupedParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester
       serialWidth             = 19,
       earlyTerminate          = true,
       allowedTerminateFactors = Seq(1),
-      p2sChunksPerGroup        = 8
+      p2sChunksPerGroup       = 8
     )
     test(new GroupedParallelToSerialTestHarness(p)) { dut =>
       val rng = new Random(1L)
@@ -231,8 +231,8 @@ class GroupedParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester
 
   it should "serialize the 32768-to-1024 configuration with stalls and consecutive full words" in {
     val p = ParallelAndSerialConverterParams(
-      parallelWidth    = 32768,
-      serialWidth      = 1024,
+      parallelWidth     = 32768,
+      serialWidth       = 1024,
       p2sChunksPerGroup = 8
     )
     test(new GroupedParallelToSerialTestHarness(p)) { dut =>
@@ -247,17 +247,19 @@ class GroupedParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester
   // snax_versacore_to_256KB_cluster configurations. Include the actual default
   // group size and an alternate size so both grouped and single-group layouts
   // are exercised at these application widths.
-  for ((pr, parallelWidth, serialWidth, factors, alternateGroup) <- Seq(
-    (648, 8192, 1024, Seq(1, 4, 8), 8),
-    (649, 2048, 512, Seq(2, 4), 2)
-  )) {
+  for (
+    (pr, parallelWidth, serialWidth, factors, alternateGroup) <- Seq(
+      (648, 8192, 1024, Seq(1, 4, 8), 8),
+      (649, 2048, 512, Seq(2, 4), 2)
+    )
+  ) {
     val defaultParams = ParallelAndSerialConverterParams(
       parallelWidth           = parallelWidth,
       serialWidth             = serialWidth,
       earlyTerminate          = true,
       allowedTerminateFactors = factors
     )
-    val layouts = Seq(
+    val layouts       = Seq(
       defaultParams,
       defaultParams.copy(p2sChunksPerGroup = 4),
       defaultParams.copy(p2sChunksPerGroup = alternateGroup)
