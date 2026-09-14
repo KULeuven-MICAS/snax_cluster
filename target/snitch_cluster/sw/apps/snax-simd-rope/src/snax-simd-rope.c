@@ -66,14 +66,15 @@
 // passes.
 
 #include "data.h"
-#include "snax-simd-compat.h"
+#include "snax-core-roles.h"
+#include "snax-simd-lib.h"
 #include "snrt.h"
 
-#if !defined(READER_EXT_STREAMELEMENTWISE)
+#if !defined(SIMD_EXT_STREAMELEMENTWISE_1)
 #error "Regenerate the XDMA CSR map with StreamElementwise (op=MUL/ADD)."
 #endif
 
-#define XDMA_BEAT_BYTES 64
+#define SIMD_BEAT_BYTES 64
 #define EW_MUL \
     0u  // StreamElementwise fused-FMA op CSR: 0=MUL (acc*x), 1=ADD (acc+x)
 #define EW_ADD 1u
@@ -91,7 +92,7 @@ int main() {
     if (snax_is_simd_core()) {
         uint32_t base = snrt_cluster_base_addrl();
         uint32_t beats = rope_beats;
-        uint32_t row_bytes = beats * XDMA_BEAT_BYTES;
+        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
 
         // Layout: each pass's two operands are adjacent (row_bytes apart) so
         // the interleave stride = row_bytes. P1 {x,cos}->tmp1, P2
@@ -130,9 +131,9 @@ int main() {
         // shape; only the bases change.
         uint32_t src_str[2] = {
             row_bytes,
-            XDMA_BEAT_BYTES};  // inner = operand jump, outer = beat step
+            SIMD_BEAT_BYTES};  // inner = operand jump, outer = beat step
         uint32_t src_bnd[2] = {2, beats};  // 2 operands, beats beats
-        uint32_t dst_str[1] = {XDMA_BEAT_BYTES};
+        uint32_t dst_str[1] = {SIMD_BEAT_BYTES};
         uint32_t dst_bnd[1] = {beats};
 
         uint32_t c1 = 0, c2 = 0, c3 = 0, lat_cold = 0, lat_warm = 0;
@@ -147,43 +148,43 @@ int main() {
             uint32_t csr_add[2] = {2u /*operandCount*/, EW_ADD};
 
             // P1: tmp1 = x (.) cos.
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMELEMENTWISE,
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                             csr_mul) == 0);
-            ok &= (snax_xdma_memcpy_nd_fast(
+            ok &= (snax_simd_memcpy_nd_fast(
                        x_in, tmp1, 8, 8, 2, src_str, src_bnd, 1, dst_str,
                        dst_bnd, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
             {
-                int task_id = snax_xdma_start();
-                snax_xdma_local_wait(task_id);
-                c1 = snax_xdma_last_task_cycle();
+                int task_id = snax_simd_start();
+                snax_simd_wait(task_id);
+                c1 = snax_simd_last_task_cycle();
             }
-            snax_xdma_disable_src_ext(READER_EXT_STREAMELEMENTWISE);
+            snax_simd_disable_ext(SIMD_EXT_STREAMELEMENTWISE_1);
 
             // P2: tmp2 = xswap (.) sin_signed.
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMELEMENTWISE,
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                             csr_mul) == 0);
-            ok &= (snax_xdma_memcpy_nd_fast(
+            ok &= (snax_simd_memcpy_nd_fast(
                        xswap, tmp2, 8, 8, 2, src_str, src_bnd, 1, dst_str,
                        dst_bnd, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
             {
-                int task_id = snax_xdma_start();
-                snax_xdma_local_wait(task_id);
-                c2 = snax_xdma_last_task_cycle();
+                int task_id = snax_simd_start();
+                snax_simd_wait(task_id);
+                c2 = snax_simd_last_task_cycle();
             }
-            snax_xdma_disable_src_ext(READER_EXT_STREAMELEMENTWISE);
+            snax_simd_disable_ext(SIMD_EXT_STREAMELEMENTWISE_1);
 
             // P3: out = tmp1 (+) tmp2.
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMELEMENTWISE,
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                             csr_add) == 0);
-            ok &= (snax_xdma_memcpy_nd_fast(
+            ok &= (snax_simd_memcpy_nd_fast(
                        tmp1, out_buf, 8, 8, 2, src_str, src_bnd, 1, dst_str,
                        dst_bnd, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
             {
-                int task_id = snax_xdma_start();
-                snax_xdma_local_wait(task_id);
-                c3 = snax_xdma_last_task_cycle();
+                int task_id = snax_simd_start();
+                snax_simd_wait(task_id);
+                c3 = snax_simd_last_task_cycle();
             }
-            snax_xdma_disable_src_ext(READER_EXT_STREAMELEMENTWISE);
+            snax_simd_disable_ext(SIMD_EXT_STREAMELEMENTWISE_1);
 
             uint32_t t1 = snrt_mcycle();
             if (iter == 0)

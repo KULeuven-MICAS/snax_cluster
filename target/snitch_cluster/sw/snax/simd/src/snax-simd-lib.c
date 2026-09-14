@@ -190,8 +190,7 @@ void snax_simd_disable_all_ext(void) {
 
 // ============================================================== task programming
 
-// The flat form. Everything above funnels into this; it is also what
-// snax-simd-compat.h binds the ported kernels' xDMA calls to.
+// The flat form. Everything above funnels into this.
 // EVERY CSR ADDRESS BELOW IS A COMPILE-TIME CONSTANT, DELIBERATELY.
 //
 // csrw_ss (snRuntime/src/csr.h:461) is a switch over the CSR number, because the

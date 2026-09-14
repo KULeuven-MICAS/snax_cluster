@@ -44,14 +44,15 @@
 //     total  1792 B
 
 #include "data.h"
-#include "snax-simd-compat.h"
+#include "snax-core-roles.h"
+#include "snax-simd-lib.h"
 #include "snrt.h"
 
-#if !defined(READER_EXT_STREAMREDUCE) || !defined(READER_EXT_STREAMELEMENTWISE)
+#if !defined(SIMD_EXT_STREAMREDUCE) || !defined(SIMD_EXT_STREAMELEMENTWISE_1)
 #error "Regenerate the XDMA CSR map with StreamReduce and StreamElementwise."
 #endif
 
-#define XDMA_BEAT_BYTES 64
+#define SIMD_BEAT_BYTES 64
 #define FP16_PER_BEAT 32
 #define OP_SUMSQ \
     2u  // StreamReduce fused-FMA op, square mode (acc + x*x); MAX=0, ADD=1
@@ -64,9 +65,9 @@ static inline uint32_t fp16_mono(uint16_t h) {
 }
 
 static uint32_t run_task(void) {
-    int task_id = snax_xdma_start();
-    snax_xdma_local_wait(task_id);
-    return snax_xdma_last_task_cycle();
+    int task_id = snax_simd_start();
+    snax_simd_wait(task_id);
+    return snax_simd_last_task_cycle();
 }
 
 int main() {
@@ -76,14 +77,14 @@ int main() {
         uint32_t rows = rmsmr_rows;
         uint32_t d = rmsmr_d;
         uint32_t beats = rmsmr_beats;
-        uint32_t row_bytes = beats * XDMA_BEAT_BYTES;
+        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
         uint32_t rows_bytes = rows * row_bytes;  // whole [rows,D] FP16 buffer
 
         uint8_t* x_in = (uint8_t*)base;
         uint8_t* ssq_buf = x_in + rows_bytes;  // rows splatted scalar beats
         uint8_t* inv_bcast =
             ssq_buf +
-            rows * XDMA_BEAT_BYTES;  // [rows,D] broadcast of inv_rms[r]
+            rows * SIMD_BEAT_BYTES;  // [rows,D] broadcast of inv_rms[r]
         uint8_t* out_buf = inv_bcast + rows_bytes;  // [rows,D] result
 
         printf("[RmsMR] rows=%u D=%u beats=%u\n", rows, d, beats);
@@ -92,18 +93,18 @@ int main() {
 
         // T1: per-row Sx^2 -> ssq[rows]. 2D reader {beats inner, rows outer} ->
         // 1D writer {rows}.
-        uint32_t r_str[2] = {XDMA_BEAT_BYTES, row_bytes};
+        uint32_t r_str[2] = {SIMD_BEAT_BYTES, row_bytes};
         uint32_t r_bnd[2] = {beats, rows};
-        uint32_t w_str1[1] = {XDMA_BEAT_BYTES};
+        uint32_t w_str1[1] = {SIMD_BEAT_BYTES};
         uint32_t w_bnd_rows[1] = {rows};
         uint32_t csr_ssq[2] = {beats, OP_SUMSQ};
         int ok =
-            (snax_xdma_enable_src_ext(READER_EXT_STREAMREDUCE, csr_ssq) == 0);
-        ok &= (snax_xdma_memcpy_nd_fast(x_in, ssq_buf, 8, 8, 2, r_str, r_bnd, 1,
+            (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_ssq) == 0);
+        ok &= (snax_simd_memcpy_nd_fast(x_in, ssq_buf, 8, 8, 2, r_str, r_bnd, 1,
                                         w_str1, w_bnd_rows, 0xFFFFFFFF,
                                         0xFFFFFFFF, 0xFFFFFFFF) == 0);
         uint32_t c1 = run_task();
-        snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
+        snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
 
         // bcast: inv_rms[r] (precomputed FP16) -> inv_bcast[r, 0..D). Pure
         // integer replication (no FPU).
@@ -115,18 +116,18 @@ int main() {
         // over the {x, inv_bcast} interleave: inner dim picks the two operands
         // (stride = inv_bcast - x_in), outer sweeps the rows*beats beats.
         // Element-wise, so multi-row is just the larger outer bound.
-        uint32_t ew_str[2] = {(uint32_t)(inv_bcast - x_in), XDMA_BEAT_BYTES};
+        uint32_t ew_str[2] = {(uint32_t)(inv_bcast - x_in), SIMD_BEAT_BYTES};
         uint32_t ew_bnd[2] = {2, rows * beats};
-        uint32_t w_str_all[1] = {XDMA_BEAT_BYTES};
+        uint32_t w_str_all[1] = {SIMD_BEAT_BYTES};
         uint32_t w_bnd_all[1] = {rows * beats};
         uint32_t csr_mul[2] = {2u /*operandCount*/, EW_MUL};
-        ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMELEMENTWISE,
+        ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                         csr_mul) == 0);
-        ok &= (snax_xdma_memcpy_nd_fast(x_in, out_buf, 8, 8, 2, ew_str, ew_bnd,
+        ok &= (snax_simd_memcpy_nd_fast(x_in, out_buf, 8, 8, 2, ew_str, ew_bnd,
                                         1, w_str_all, w_bnd_all, 0xFFFFFFFF,
                                         0xFFFFFFFF, 0xFFFFFFFF) == 0);
         uint32_t c2 = run_task();
-        snax_xdma_disable_src_ext(READER_EXT_STREAMELEMENTWISE);
+        snax_simd_disable_ext(SIMD_EXT_STREAMELEMENTWISE_1);
 
         if (!ok || c1 == 0xFFFFFFFFu || c2 == 0xFFFFFFFFu) {
             printf("[RmsMR] xDMA task setup failed\n");

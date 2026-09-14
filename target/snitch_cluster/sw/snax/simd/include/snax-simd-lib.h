@@ -449,9 +449,9 @@ static inline bool snax_simd_bad_config(void) {
 
 // ============================================================== legacy
 
-// The flat, xDMA-shaped entry point. Kept because snax-simd-compat.h maps the
-// ported kernels' `snax_xdma_*` calls onto it, so they build unchanged for both
-// cluster shapes. New code should use the shape/operator API above.
+// The flat entry point that the shape/operator API above funnels into. It predates that
+// API and is kept because kernels still call it directly; new code should prefer the
+// shape/operator form, which is harder to get wrong.
 int32_t snax_simd_program(void* in, void* out, uint32_t in_lane_stride,
                           uint32_t out_lane_stride, uint32_t in_dim,
                           uint32_t* in_stride, uint32_t* in_bound,

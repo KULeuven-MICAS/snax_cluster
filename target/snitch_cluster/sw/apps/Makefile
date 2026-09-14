@@ -35,7 +35,7 @@ ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster.hjson)
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-transpose
-SUBDIRS += snax-simd-elementwise-add
+SUBDIRS += snax-rdext-elementwise-add
 endif
 
 # The four-engine split cluster. The reader-side extensions moved to the SIMD
@@ -77,27 +77,17 @@ ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_cluster.hjson)
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-transpose
-SUBDIRS += snax-simd-elementwise-add
-SUBDIRS += snax-simd-softmax
-SUBDIRS += snax-simd-rmsnorm
-SUBDIRS += snax-simd-silu
-SUBDIRS += snax-simd-swiglu
-SUBDIRS += snax-simd-rope
-SUBDIRS += snax-simd-reduce-multirow
-SUBDIRS += snax-simd-rmsnorm-multirow
-SUBDIRS += snax-simd-rmsnorm-fold
-SUBDIRS += snax-simd-softmax-multirow
-SUBDIRS += snax-simd-softmax-fold
+SUBDIRS += snax-rdext-elementwise-add
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)
 SUBDIRS += snax-xdma-memset
-SUBDIRS += snax-simd-maxpool
+SUBDIRS += snax-rdext-maxpool
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-reshape-comparison
-SUBDIRS += snax-simd-elementwise-add
-SUBDIRS += snax-simd-rescale-down
-SUBDIRS += snax-simd-rescale-up
-SUBDIRS += snax-simd-avgpool
+SUBDIRS += snax-rdext-elementwise-add
+SUBDIRS += snax-rdext-rescale-down
+SUBDIRS += snax-rdext-rescale-up
+SUBDIRS += snax-rdext-avgpool
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_to_cluster.hjson)
 SUBDIRS += snax-versacore-to-matmul
@@ -112,9 +102,7 @@ SUBDIRS += snax-versacore-to-matmul-profile
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-reshape-comparison
-SUBDIRS += snax-simd-elementwise-add
-SUBDIRS += snax-simd-reduce-multirow
-SUBDIRS += snax-simd-rmsnorm-multirow
+SUBDIRS += snax-rdext-elementwise-add
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_to_256KB_cluster.hjson)
 SUBDIRS += snax-versacore-to-matmul
@@ -129,9 +117,7 @@ SUBDIRS += snax-versacore-to-matmul-profile
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-transpose
 SUBDIRS += snax-xdma-reshape-comparison
-SUBDIRS += snax-simd-elementwise-add
-SUBDIRS += snax-simd-reduce-multirow
-SUBDIRS += snax-simd-rmsnorm-multirow
+SUBDIRS += snax-rdext-elementwise-add
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_dse_cluster.hjson)
 SUBDIRS += snax-versacore-dse-matmul-profile

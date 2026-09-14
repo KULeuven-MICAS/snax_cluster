@@ -49,16 +49,17 @@
 //   4096   128     13,277      ~13,334     14,021   379,441      28.5x
 
 #include "data.h"
-#include "snax-simd-compat.h"
+#include "snax-core-roles.h"
+#include "snax-simd-lib.h"
 #include "snrt.h"
 
-#if !defined(READER_EXT_STREAMREDUCE) || !defined(READER_EXT_STREAMMAP) || \
-    !defined(READER_EXT_FP16TOINT8)
+#if !defined(SIMD_EXT_STREAMREDUCE) || !defined(SIMD_EXT_STREAMMAP) || \
+    !defined(SIMD_EXT_FP16TOINT8)
 #error \
     "Regenerate the XDMA CSR map with StreamReduce, StreamMap and Fp16ToInt8."
 #endif
 
-#define XDMA_BEAT_BYTES 64
+#define SIMD_BEAT_BYTES 64
 // StreamReduce op CSR: MAX=0 (compare), ADD=1 (fused FMA op, acc+x). SUMSQ=2
 // (unused here).
 #define OP_MAX 0u
@@ -92,10 +93,10 @@ static inline uint32_t fp16_bits_to_fp32_bits(uint16_t h) {
 // Minimal re-task launch: reuse the persisted temporal shape, rewrite only
 // addresses + dst bound.
 static uint32_t retask_and_run(void* src, void* dst, uint32_t dst_bound0) {
-    if (snax_xdma_retask_1d(src, dst, dst_bound0) != 0) return 0xFFFFFFFFu;
-    int task_id = snax_xdma_start();
-    snax_xdma_local_wait(task_id);
-    return snax_xdma_last_task_cycle();
+    if (snax_simd_retask_1d(src, dst, dst_bound0) != 0) return 0xFFFFFFFFu;
+    int task_id = snax_simd_start();
+    snax_simd_wait(task_id);
+    return snax_simd_last_task_cycle();
 }
 
 int main() {
@@ -103,15 +104,15 @@ int main() {
     if (snax_is_simd_core()) {
         uint32_t base = snrt_cluster_base_addrl();
         uint32_t beats = softmax_beats;
-        uint32_t row_bytes = beats * XDMA_BEAT_BYTES;
+        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
 
         uint8_t* x_in = (uint8_t*)base;
         uint8_t* max_buf = x_in + row_bytes;  // 1 beat
         uint8_t* exp_buf =
-            max_buf + XDMA_BEAT_BYTES;  // beats + 1 (exp row + trailing Σ)
+            max_buf + SIMD_BEAT_BYTES;  // beats + 1 (exp row + trailing Σ)
         uint8_t* out_buf =
             exp_buf +
-            (beats + 1) * XDMA_BEAT_BYTES;  // beats   (FP16 softmax result)
+            (beats + 1) * SIMD_BEAT_BYTES;  // beats   (FP16 softmax result)
         uint8_t* out_i8_buf =
             out_buf + row_bytes;  // beats/2 (INT8 packed, fused quant)
 
@@ -124,8 +125,8 @@ int main() {
         // then needs only a 5-write retask (src/dst addr + the writer beat
         // count). xDMA regs reset to 0, so the unused multicast dst pointers
         // need no zeroing.
-        uint32_t str_beat[1] = {XDMA_BEAT_BYTES};
-        uint32_t src_str_2d[2] = {XDMA_BEAT_BYTES, beats * XDMA_BEAT_BYTES};
+        uint32_t str_beat[1] = {SIMD_BEAT_BYTES};
+        uint32_t src_str_2d[2] = {SIMD_BEAT_BYTES, beats * SIMD_BEAT_BYTES};
         uint32_t src_bnd_2d[2] = {beats, 1};
         uint32_t bnd_1[1] = {1};
 
@@ -138,17 +139,17 @@ int main() {
         for (int iter = 0; iter < 2; iter++) {
             uint32_t t0 = snrt_mcycle();
             if (iter == 0)
-                ok &= (snax_xdma_memcpy_nd_fast(x_in, max_buf, 8, 8, 2,
+                ok &= (snax_simd_memcpy_nd_fast(x_in, max_buf, 8, 8, 2,
                                                 src_str_2d, src_bnd_2d, 1,
                                                 str_beat, bnd_1, 0xFFFFFFFF,
                                                 0xFFFFFFFF, 0xFFFFFFFF) == 0);
 
             // T1: row max.
             uint32_t csr_max[2] = {beats, OP_MAX};
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMREDUCE, csr_max) ==
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_max) ==
                    0);
             c1 = retask_and_run(x_in, max_buf, 1);
-            snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
+            snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
             uint32_t neg_max =
                 fp16_bits_to_fp32_bits(((uint16_t*)max_buf)[0]) ^ 0x80000000u;
 
@@ -158,12 +159,12 @@ int main() {
             uint32_t csr_exp[3] = {0x3F800000u /*1.0f*/, neg_max, ACT_EXP};
             uint32_t csr_sumtap[2] = {beats, OP_ADD | RED_TAP};
             ok &=
-                (snax_xdma_enable_src_ext(READER_EXT_STREAMMAP, csr_exp) == 0);
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMREDUCE,
+                (snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr_exp) == 0);
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE,
                                             csr_sumtap) == 0);
             c2 = retask_and_run(x_in, exp_buf, beats + 1);
-            snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
-            snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
+            snax_simd_disable_ext(SIMD_EXT_STREAMMAP);
+            snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
 
             // The host computes inv_sum = 1/Σexp from the reduce scalar (a host
             // core does the reciprocal; here it is precomputed in
@@ -171,7 +172,7 @@ int main() {
             // bits are monotonic).
             if (iter == 1) {
                 uint16_t sum_hw =
-                    ((uint16_t*)(exp_buf + beats * XDMA_BEAT_BYTES))[0];
+                    ((uint16_t*)(exp_buf + beats * SIMD_BEAT_BYTES))[0];
                 int32_t d =
                     (int32_t)sum_hw - (int32_t)(uint16_t)softmax_sum_golden;
                 if (d > 2 || d < -2)
@@ -184,20 +185,20 @@ int main() {
             // host-provided reciprocal (no operandMode).
             uint32_t csr_norm[3] = {softmax_inv_sum, 0u, ACT_NONE};
             ok &=
-                (snax_xdma_enable_src_ext(READER_EXT_STREAMMAP, csr_norm) == 0);
+                (snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr_norm) == 0);
             c3 = retask_and_run(exp_buf, out_buf, beats);
-            snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
+            snax_simd_disable_ext(SIMD_EXT_STREAMMAP);
 
             // Tq: SAME normalize pass, but Fp16ToInt8 chained after StreamMap
             // quantizes the probabilities to int8 in-stream (no re-read). The
             // writer emits beats/2 packed beats; cq - c3 is the margin.
             uint32_t csr_q[1] = {softmax_inv_scale};
             ok &=
-                (snax_xdma_enable_src_ext(READER_EXT_STREAMMAP, csr_norm) == 0);
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_FP16TOINT8, csr_q) == 0);
+                (snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr_norm) == 0);
+            ok &= (snax_simd_enable_ext(SIMD_EXT_FP16TOINT8, csr_q) == 0);
             cq = retask_and_run(exp_buf, out_i8_buf, beats / 2);
-            snax_xdma_disable_src_ext(READER_EXT_FP16TOINT8);
-            snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
+            snax_simd_disable_ext(SIMD_EXT_FP16TOINT8);
+            snax_simd_disable_ext(SIMD_EXT_STREAMMAP);
 
             uint32_t t1 = snrt_mcycle();
             if (iter == 0)

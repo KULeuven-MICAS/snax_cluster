@@ -5,7 +5,8 @@
 // Jonas Crols <jonas.crols@student.kuleuven.be>
 
 #include "data.h"
-#include "snax-simd-compat.h"
+#include "snax-core-roles.h"
+#include "snax-xdma-lib.h"
 #include "snrt.h"
 
 int main() {
@@ -31,9 +32,9 @@ int main() {
                           matrix_size * sizeof(input_matrix[0]));
 
         // --------------------- Configure the Ext --------------------- //
-
-        uint32_t ext_param[4] = {input_zp_i, multiplier_i, output_zp_i,
-                                 shift_i};
+        uint32_t ext_param_add[1] = {kernel_size};
+        uint32_t ext_param_rescale[4] = {input_zp_i, multiplier_i, output_zp_i,
+                                         shift_i};
         if (snax_xdma_disable_src_ext(0) != 0) {
             printf("Error in disabling reader xdma extension 0\n");
             err++;
@@ -44,12 +45,12 @@ int main() {
             err++;
         }
 
-        if (snax_xdma_disable_src_ext(2) != 0) {
-            printf("Error in disabling reader xdma extension 2\n");
+        if (snax_xdma_enable_src_ext(2, ext_param_add) != 0) {
+            printf("Error in enabling reader xdma extension 2\n");
             err++;
         }
 
-        if (snax_xdma_enable_src_ext(3, ext_param) != 0) {
+        if (snax_xdma_enable_src_ext(3, ext_param_rescale) != 0) {
             printf("Error in enabling reader xdma extension 3\n");
             err++;
         }
@@ -83,12 +84,15 @@ int main() {
                snax_xdma_last_task_cycle());
 
         // --------------------- Checking the Results --------------------- //
-        uint8_t *golden_result = (uint8_t *)golden_output_matrix;
-        uint8_t *tcdm_result = (uint8_t *)tcdm_out;
+        int8_t *golden_result = (int8_t *)golden_output_matrix;
+        int8_t *tcdm_result = (int8_t *)tcdm_out;
 
-        for (int i = 0; i < matrix_size * sizeof(input_matrix[0]) / 4; i++) {
+        for (int i = 0; i < output_matrix_size; i++) {
             if (tcdm_result[i] != golden_result[i]) {
-                printf("The sum is incorrect at byte %d! \n", i << 2);
+                printf(
+                    "The sum is incorrect at byte %d: Golden: %d, Received: "
+                    "%d\n",
+                    i << 2, golden_result[i], tcdm_result[i]);
             }
         }
         printf("Checking is done. All values are right\n");

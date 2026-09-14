@@ -72,16 +72,17 @@
 //   total   51264 B (~50 KiB)
 
 #include "data.h"
-#include "snax-simd-compat.h"
+#include "snax-core-roles.h"
+#include "snax-simd-lib.h"
 #include "snrt.h"
 
-#if !defined(READER_EXT_STREAMREDUCE) || \
-    !defined(READER_EXT_STREAMELEMENTWISE) || !defined(READER_EXT_FP16TOINT8)
+#if !defined(SIMD_EXT_STREAMREDUCE) || \
+    !defined(SIMD_EXT_STREAMELEMENTWISE_1) || !defined(SIMD_EXT_FP16TOINT8)
 #error \
     "Regenerate the XDMA CSR map with StreamReduce, StreamElementwise and Fp16ToInt8."
 #endif
 
-#define XDMA_BEAT_BYTES 64
+#define SIMD_BEAT_BYTES 64
 #define FP16_PER_BEAT 32
 #define OP_SUMSQ 2u  // StreamReduce fused-FMA op, square mode (acc + x*x)
 #define EW_MUL 0u    // StreamElementwise fused-FMA op CSR: 0=MUL (acc*x), 1=ADD
@@ -92,9 +93,9 @@ static inline uint32_t fp16_mono(uint16_t h) {
 }
 
 static uint32_t run_task(void) {
-    int task_id = snax_xdma_start();
-    snax_xdma_local_wait(task_id);
-    return snax_xdma_last_task_cycle();
+    int task_id = snax_simd_start();
+    snax_simd_wait(task_id);
+    return snax_simd_last_task_cycle();
 }
 
 int main() {
@@ -104,16 +105,16 @@ int main() {
         uint32_t rows = rmsf_rows;
         uint32_t d = rmsf_d;
         uint32_t beats = rmsf_beats;
-        uint32_t row_bytes = beats * XDMA_BEAT_BYTES;
+        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
         uint32_t rows_bytes = rows * row_bytes;  // whole [rows,D] FP16 buffer
-        uint32_t scal_bytes = rows * XDMA_BEAT_BYTES;
+        uint32_t scal_bytes = rows * SIMD_BEAT_BYTES;
         uint32_t all_beats = rows * beats;  // beats in a whole [rows,D] tensor
 
         uint8_t* x_in = (uint8_t*)base;
         uint8_t* ssq_buf = x_in + rows_bytes;
         uint8_t* inv_l1 = ssq_buf + scal_bytes;  // [rows] inv_rms, L1 copy
         uint8_t* inv_lane0 =
-            inv_l1 + XDMA_BEAT_BYTES;  // [rows] beats, scalar in lane 0
+            inv_l1 + SIMD_BEAT_BYTES;  // [rows] beats, scalar in lane 0
         uint8_t* inv_bc_a =
             inv_lane0 + scal_bytes;  // [rows,D] bcast, DM-core loop
         uint8_t* inv_bc_b =
@@ -140,24 +141,24 @@ int main() {
 
         // ---- AGU shapes ----
         // reduce: 2D reader {beats inner, rows outer} -> 1D writer {rows}
-        uint32_t red_str[2] = {XDMA_BEAT_BYTES, row_bytes};
+        uint32_t red_str[2] = {SIMD_BEAT_BYTES, row_bytes};
         uint32_t red_bnd[2] = {beats, rows};
-        uint32_t w_rows_str[1] = {XDMA_BEAT_BYTES};
+        uint32_t w_rows_str[1] = {SIMD_BEAT_BYTES};
         uint32_t w_rows_bnd[1] = {rows};
         // flat: 1D over the whole [rows,D] tensor
-        uint32_t flat_str[1] = {XDMA_BEAT_BYTES};
+        uint32_t flat_str[1] = {SIMD_BEAT_BYTES};
         uint32_t flat_bnd[1] = {all_beats};
         // int8 writer: Fp16ToInt8 packs 2 FP16 beats -> 1 INT8 beat
         uint32_t q_bnd[1] = {all_beats / 2};
         // BROADCAST reader: inner dim stride 0 -> the row's scalar beat is
         // re-read `beats` times; outer dim steps one scalar beat per row.
-        uint32_t bc_str[2] = {0, XDMA_BEAT_BYTES};
+        uint32_t bc_str[2] = {0, SIMD_BEAT_BYTES};
         uint32_t bc_bnd[2] = {beats, rows};
         // elementwise interleave {x_beat, bcast_beat}: inner dim picks the
         // operand (stride = the two regions' distance), outer sweeps the
         // tensor's beats.
-        uint32_t ew_a_str[2] = {(uint32_t)(inv_bc_a - x_in), XDMA_BEAT_BYTES};
-        uint32_t ew_b_str[2] = {(uint32_t)(inv_bc_b - x_in), XDMA_BEAT_BYTES};
+        uint32_t ew_a_str[2] = {(uint32_t)(inv_bc_a - x_in), SIMD_BEAT_BYTES};
+        uint32_t ew_b_str[2] = {(uint32_t)(inv_bc_b - x_in), SIMD_BEAT_BYTES};
         uint32_t ew_bnd[2] = {2, all_beats};
 
         uint32_t csr_ssq[2] = {beats, OP_SUMSQ};
@@ -180,13 +181,13 @@ int main() {
 
             // ================= T1 (shared): per-row Sx^2 =================
             t0 = snrt_mcycle();
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMREDUCE, csr_ssq) ==
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_ssq) ==
                    0);
-            ok &= (snax_xdma_memcpy_nd_fast(
+            ok &= (snax_simd_memcpy_nd_fast(
                        x_in, ssq_buf, 8, 8, 2, red_str, red_bnd, 1, w_rows_str,
                        w_rows_bnd, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
             d_red = run_task();
-            snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
+            snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
             t1 = snrt_mcycle();
             t_red = t1 - t0;
 
@@ -200,24 +201,24 @@ int main() {
 
             // A2: out_a = x (.) inv_bc_a
             t0 = snrt_mcycle();
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMELEMENTWISE,
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                             csr_mul) == 0);
-            ok &= (snax_xdma_memcpy_nd_fast(
+            ok &= (snax_simd_memcpy_nd_fast(
                        x_in, out_a, 8, 8, 2, ew_a_str, ew_bnd, 1, flat_str,
                        flat_bnd, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
             d_ewa = run_task();
-            snax_xdma_disable_src_ext(READER_EXT_STREAMELEMENTWISE);
+            snax_simd_disable_ext(SIMD_EXT_STREAMELEMENTWISE_1);
             t1 = snrt_mcycle();
             t_ewa = t1 - t0;
 
             // A3: separate quantize pass -- re-reads the whole FP16 result.
             t0 = snrt_mcycle();
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_FP16TOINT8, csr_q) == 0);
-            ok &= (snax_xdma_memcpy_nd_fast(
+            ok &= (snax_simd_enable_ext(SIMD_EXT_FP16TOINT8, csr_q) == 0);
+            ok &= (snax_simd_memcpy_nd_fast(
                        out_a, q_sep, 8, 8, 1, flat_str, flat_bnd, 1, flat_str,
                        q_bnd, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
             d_qsep = run_task();
-            snax_xdma_disable_src_ext(READER_EXT_FP16TOINT8);
+            snax_simd_disable_ext(SIMD_EXT_FP16TOINT8);
             t1 = snrt_mcycle();
             t_qsep = t1 - t0;
 
@@ -233,7 +234,7 @@ int main() {
             t0 = snrt_mcycle();
             for (uint32_t r = 0; r < rows; r++) {
                 uint32_t w = ((uint32_t)inv[r] << 16) | (uint32_t)inv[r];
-                uint32_t* beat = (uint32_t*)(inv_lane0 + r * XDMA_BEAT_BYTES);
+                uint32_t* beat = (uint32_t*)(inv_lane0 + r * SIMD_BEAT_BYTES);
                 for (uint32_t l = 0; l < FP16_PER_BEAT / 2; l++) beat[l] = w;
             }
             t1 = snrt_mcycle();
@@ -243,7 +244,7 @@ int main() {
             // scalar beat `beats` times. No extension: a plain strided copy.
             t0 = snrt_mcycle();
             ok &=
-                (snax_xdma_memcpy_nd_fast(
+                (snax_simd_memcpy_nd_fast(
                      inv_lane0, inv_bc_b, 8, 8, 2, bc_str, bc_bnd, 1, flat_str,
                      flat_bnd, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
             d_bcast = run_task();
@@ -256,15 +257,15 @@ int main() {
             // written by the unfused twin below only to prove the FP16 datapath
             // is unchanged.
             t0 = snrt_mcycle();
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMELEMENTWISE,
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                             csr_mul) == 0);
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_FP16TOINT8, csr_q) == 0);
-            ok &= (snax_xdma_memcpy_nd_fast(
+            ok &= (snax_simd_enable_ext(SIMD_EXT_FP16TOINT8, csr_q) == 0);
+            ok &= (snax_simd_memcpy_nd_fast(
                        x_in, q_fused, 8, 8, 2, ew_b_str, ew_bnd, 1, flat_str,
                        q_bnd, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
             d_ewq = run_task();
-            snax_xdma_disable_src_ext(READER_EXT_FP16TOINT8);
-            snax_xdma_disable_src_ext(READER_EXT_STREAMELEMENTWISE);
+            snax_simd_disable_ext(SIMD_EXT_FP16TOINT8);
+            snax_simd_disable_ext(SIMD_EXT_STREAMELEMENTWISE_1);
             t1 = snrt_mcycle();
             t_ewq = t1 - t0;
 
@@ -272,13 +273,13 @@ int main() {
             // FP16-out variant, and the buffer that lets out_b be compared to
             // out_a bit-exactly.
             t0 = snrt_mcycle();
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMELEMENTWISE,
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                             csr_mul) == 0);
-            ok &= (snax_xdma_memcpy_nd_fast(
+            ok &= (snax_simd_memcpy_nd_fast(
                        x_in, out_b, 8, 8, 2, ew_b_str, ew_bnd, 1, flat_str,
                        flat_bnd, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
             (void)run_task();
-            snax_xdma_disable_src_ext(READER_EXT_STREAMELEMENTWISE);
+            snax_simd_disable_ext(SIMD_EXT_STREAMELEMENTWISE_1);
             t1 = snrt_mcycle();
             t_ewb = t1 - t0;
         }

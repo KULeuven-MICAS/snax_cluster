@@ -46,15 +46,16 @@
 // FP16 ULP; the fp32out SUMSQ recovers the rows that overflow the FP16 grid.
 
 #include "data.h"
-#include "snax-simd-compat.h"
+#include "snax-core-roles.h"
+#include "snax-simd-lib.h"
 #include "snrt.h"
 
-#if !defined(READER_EXT_STREAMREDUCE)
+#if !defined(SIMD_EXT_STREAMREDUCE)
 #error \
     "Regenerate the XDMA CSR map with StreamReduce (CFG_OVERRIDE=cfg/snax_xdma_cluster.hjson)."
 #endif
 
-#define XDMA_BEAT_BYTES 64
+#define SIMD_BEAT_BYTES 64
 #define FP16_PER_BEAT 32
 #define FP32_PER_BEAT 16
 // StreamReduce op CSR (ext CSR 1, bits[7:0]). The datapath now has one fused
@@ -106,10 +107,10 @@ static inline uint32_t fp16_to_fp32_bits(uint16_t h) {
 // Minimal re-task launch: reuse the persisted 2D-reader/1D-writer shape,
 // rewrite addresses + writer bound.
 static uint32_t retask_and_run(void* src, void* dst, uint32_t dst_bound0) {
-    if (snax_xdma_retask_1d(src, dst, dst_bound0) != 0) return 0xFFFFFFFFu;
-    int task_id = snax_xdma_start();
-    snax_xdma_local_wait(task_id);
-    return snax_xdma_last_task_cycle();
+    if (snax_simd_retask_1d(src, dst, dst_bound0) != 0) return 0xFFFFFFFFu;
+    int task_id = snax_simd_start();
+    snax_simd_wait(task_id);
+    return snax_simd_last_task_cycle();
 }
 
 // Check `rows` per-row scalars (one splatted beat each: lane 0 is at uint16
@@ -196,22 +197,22 @@ int main() {
         uint32_t base = snrt_cluster_base_addrl();
         uint32_t rows = reduce_rows;
         uint32_t beats = reduce_beats;
-        uint32_t row_bytes = beats * XDMA_BEAT_BYTES;  // bytes per input row
+        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;  // bytes per input row
         uint32_t in_bytes = rows * row_bytes;          // all rows
 
         uint8_t* x_in = (uint8_t*)base;
         uint8_t* ssq_buf =
             x_in + in_bytes;  // rows beats (one splatted scalar each)
-        uint8_t* max_buf = ssq_buf + rows * XDMA_BEAT_BYTES;
-        uint8_t* sum_buf = max_buf + rows * XDMA_BEAT_BYTES;
+        uint8_t* max_buf = ssq_buf + rows * SIMD_BEAT_BYTES;
+        uint8_t* sum_buf = max_buf + rows * SIMD_BEAT_BYTES;
         uint8_t* xbig_in =
             sum_buf +
-            rows * XDMA_BEAT_BYTES;  // large-magnitude input (overflows FP16)
+            rows * SIMD_BEAT_BYTES;  // large-magnitude input (overflows FP16)
         uint8_t* ssq16_big_buf =
             xbig_in + in_bytes;  // FP16-out SUMSQ of xbig (-> inf)
         uint8_t* ssq32_big_buf =
             ssq16_big_buf +
-            rows * XDMA_BEAT_BYTES;  // FP32-out SUMSQ of xbig (true)
+            rows * SIMD_BEAT_BYTES;  // FP32-out SUMSQ of xbig (true)
 
         printf("[ReduceMR] rows=%u D=%u beats=%u\n", rows, reduce_d, beats);
 
@@ -223,32 +224,32 @@ int main() {
 
         // Program the 2D reader {beats inner, rows outer} -> 1D writer {rows}
         // ONCE; each op is a retask.
-        uint32_t str_beat[1] = {XDMA_BEAT_BYTES};
-        uint32_t src_str_2d[2] = {XDMA_BEAT_BYTES, row_bytes};
+        uint32_t str_beat[1] = {SIMD_BEAT_BYTES};
+        uint32_t src_str_2d[2] = {SIMD_BEAT_BYTES, row_bytes};
         uint32_t src_bnd_2d[2] = {beats, rows};
         uint32_t bnd_rows[1] = {rows};
 
         int ok =
-            (snax_xdma_memcpy_nd_fast(x_in, ssq_buf, 8, 8, 2, src_str_2d,
+            (snax_simd_memcpy_nd_fast(x_in, ssq_buf, 8, 8, 2, src_str_2d,
                                       src_bnd_2d, 1, str_beat, bnd_rows,
                                       0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF) == 0);
 
         // SUMSQ (RMSNorm), MAX + ADD (Softmax) -- one reduce op per dispatch,
         // all multi-row.
         uint32_t csr_ssq[2] = {beats, OP_SUMSQ};
-        ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMREDUCE, csr_ssq) == 0);
+        ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_ssq) == 0);
         uint32_t c_ssq = retask_and_run(x_in, ssq_buf, rows);
-        snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
+        snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
 
         uint32_t csr_max[2] = {beats, OP_MAX};
-        ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMREDUCE, csr_max) == 0);
+        ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_max) == 0);
         uint32_t c_max = retask_and_run(x_in, max_buf, rows);
-        snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
+        snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
 
         uint32_t csr_add[2] = {beats, OP_ADD};
-        ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMREDUCE, csr_add) == 0);
+        ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_add) == 0);
         uint32_t c_add = retask_and_run(x_in, sum_buf, rows);
-        snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
+        snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
 
         // Overflow A/B on the large-magnitude input (per-row SUMSQ ~1e9). Same
         // SUMSQ op, two output modes:
@@ -256,16 +257,16 @@ int main() {
         //   (the GAP-2 bug). fp32-out (bit[9]) : the scalar is splatted in FP32
         //   -> the host gets the true SUMSQ.
         uint32_t csr_ssq16_big[2] = {beats, OP_SUMSQ};
-        ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMREDUCE,
+        ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE,
                                         csr_ssq16_big) == 0);
         uint32_t c_big16 = retask_and_run(xbig_in, ssq16_big_buf, rows);
-        snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
+        snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
 
         uint32_t csr_ssq32_big[2] = {beats, OP_SUMSQ | REDUCE_OUT_FP32};
-        ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMREDUCE,
+        ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE,
                                         csr_ssq32_big) == 0);
         uint32_t c_big32 = retask_and_run(xbig_in, ssq32_big_buf, rows);
-        snax_xdma_disable_src_ext(READER_EXT_STREAMREDUCE);
+        snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
 
         if (!ok || c_ssq == 0xFFFFFFFFu || c_max == 0xFFFFFFFFu ||
             c_add == 0xFFFFFFFFu || c_big16 == 0xFFFFFFFFu ||

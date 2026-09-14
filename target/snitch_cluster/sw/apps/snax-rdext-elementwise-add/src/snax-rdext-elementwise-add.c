@@ -6,7 +6,8 @@
 // Yunhao Deng <yunhao.deng@kuleuven.be>
 
 #include "data.h"
-#include "snax-simd-compat.h"
+#include "snax-core-roles.h"
+#include "snax-xdma-lib.h"
 #include "snrt.h"
 
 #ifndef READER_EXT_ELEMENTWISEADDBIT32

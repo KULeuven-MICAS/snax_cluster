@@ -4,19 +4,13 @@
 #
 # Yunhao Deng <yunhao.deng@kuleuven.be>
 
-APP     = snax-simd-avgpool
-SRCS    = src/snax-simd-avgpool.c
+APP     = snax-rdext-avgpool
+SRCS    = src/snax-rdext-avgpool.c
 INCDIRS = data
 
-# The reader extensions this kernel drives live on the SIMD block for the split
-# cluster and on the xDMA everywhere else; snax-simd-compat.h hides the difference.
-ifeq ($(CFG_OVERRIDE), cfg/snax_split_cluster.hjson)
-INCDIRS += ../../snax/simd/include
-RISCV_LDFLAGS += ../../snax/simd/build/snax-simd-lib.o
-else
+# Reader extensions on the xDMA, driven from the DM core.
 INCDIRS += ../../snax/xdma/include
 RISCV_LDFLAGS += ../../snax/xdma/build/snax-xdma-lib.o
-endif
 
 include ../common.mk
 include ./data/Makefile

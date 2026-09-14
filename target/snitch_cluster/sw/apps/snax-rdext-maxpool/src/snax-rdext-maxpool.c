@@ -5,7 +5,8 @@
 // Fanchen Kong <fanchen.kong@kuleuven.be>
 
 #include "data.h"
-#include "snax-simd-compat.h"
+#include "snax-core-roles.h"
+#include "snax-xdma-lib.h"
 #include "snrt.h"
 
 int main() {

@@ -39,14 +39,15 @@
 //   4096   128     7,624   8,161   130,686    17.1x
 
 #include "data.h"
-#include "snax-simd-compat.h"
+#include "snax-core-roles.h"
+#include "snax-simd-lib.h"
 #include "snrt.h"
 
-#if !defined(READER_EXT_STREAMMAP) || !defined(READER_EXT_FP16TOINT8)
+#if !defined(SIMD_EXT_STREAMMAP) || !defined(SIMD_EXT_FP16TOINT8)
 #error "Regenerate the XDMA CSR map with StreamMap (func=SILU) and Fp16ToInt8."
 #endif
 
-#define XDMA_BEAT_BYTES 64
+#define SIMD_BEAT_BYTES 64
 #define ACT_SILU 2u  // StreamMap func CSR bits[1:0]: 0=LINEAR, 1=EXP, 2=SILU
 
 // FP16 bits -> monotonic ordering key (handles signed outputs): adjacent FP16
@@ -60,10 +61,10 @@ static inline uint32_t fp16_mono(uint16_t h) {
 // Minimal re-task launch: reuse the persisted temporal shape, rewrite only
 // addresses + dst bound.
 static uint32_t retask_and_run(void* src, void* dst, uint32_t dst_bound0) {
-    if (snax_xdma_retask_1d(src, dst, dst_bound0) != 0) return 0xFFFFFFFFu;
-    int task_id = snax_xdma_start();
-    snax_xdma_local_wait(task_id);
-    return snax_xdma_last_task_cycle();
+    if (snax_simd_retask_1d(src, dst, dst_bound0) != 0) return 0xFFFFFFFFu;
+    int task_id = snax_simd_start();
+    snax_simd_wait(task_id);
+    return snax_simd_last_task_cycle();
 }
 
 int main() {
@@ -71,7 +72,7 @@ int main() {
     if (snax_is_simd_core()) {
         uint32_t base = snrt_cluster_base_addrl();
         uint32_t beats = silu_beats;
-        uint32_t row_bytes = beats * XDMA_BEAT_BYTES;
+        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
 
         uint8_t* x_in = (uint8_t*)base;
         uint8_t* out_buf = x_in + row_bytes;  // beats   (FP16 silu result)
@@ -87,8 +88,8 @@ int main() {
         // task then needs only a 5-write retask (dst addr + writer beat count;
         // the src addr x_in is common). xDMA regs reset to 0, so unused
         // multicast dsts need no zeroing.
-        uint32_t str_beat[1] = {XDMA_BEAT_BYTES};
-        uint32_t src_str_2d[2] = {XDMA_BEAT_BYTES, beats * XDMA_BEAT_BYTES};
+        uint32_t str_beat[1] = {SIMD_BEAT_BYTES};
+        uint32_t src_str_2d[2] = {SIMD_BEAT_BYTES, beats * SIMD_BEAT_BYTES};
         uint32_t src_bnd_2d[2] = {beats, 1};
         uint32_t bnd_1[1] = {1};
 
@@ -99,7 +100,7 @@ int main() {
         for (int iter = 0; iter < 2; iter++) {
             uint32_t t0 = snrt_mcycle();
             if (iter == 0)
-                ok &= (snax_xdma_memcpy_nd_fast(x_in, out_buf, 8, 8, 2,
+                ok &= (snax_simd_memcpy_nd_fast(x_in, out_buf, 8, 8, 2,
                                                 src_str_2d, src_bnd_2d, 1,
                                                 str_beat, bnd_1, 0xFFFFFFFF,
                                                 0xFFFFFFFF, 0xFFFFFFFF) == 0);
@@ -108,20 +109,20 @@ int main() {
             // the ULP regression check)
             uint32_t csr_silu[3] = {0x3F800000u /*1.0f*/, 0u, ACT_SILU};
             ok &=
-                (snax_xdma_enable_src_ext(READER_EXT_STREAMMAP, csr_silu) == 0);
+                (snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr_silu) == 0);
             c1 = retask_and_run(x_in, out_buf, beats);
-            snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
+            snax_simd_disable_ext(SIMD_EXT_STREAMMAP);
 
             // Tq: SAME silu pass, but Fp16ToInt8 chained after StreamMap
             // quantizes the result to int8 in-stream (no re-read). The writer
             // emits beats/2 packed beats; cq - c1 is the marginal cost.
             uint32_t csr_q[1] = {silu_inv_scale};
             ok &=
-                (snax_xdma_enable_src_ext(READER_EXT_STREAMMAP, csr_silu) == 0);
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_FP16TOINT8, csr_q) == 0);
+                (snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr_silu) == 0);
+            ok &= (snax_simd_enable_ext(SIMD_EXT_FP16TOINT8, csr_q) == 0);
             cq = retask_and_run(x_in, out_i8_buf, beats / 2);
-            snax_xdma_disable_src_ext(READER_EXT_FP16TOINT8);
-            snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
+            snax_simd_disable_ext(SIMD_EXT_FP16TOINT8);
+            snax_simd_disable_ext(SIMD_EXT_STREAMMAP);
 
             uint32_t t1 = snrt_mcycle();
             if (iter == 0)

@@ -49,16 +49,17 @@
 // batched inference (one silu over all [S,F], then one mul).
 
 #include "data.h"
-#include "snax-simd-compat.h"
+#include "snax-core-roles.h"
+#include "snax-simd-lib.h"
 #include "snrt.h"
 
-#if !defined(READER_EXT_STREAMMAP) || \
-    !defined(READER_EXT_STREAMELEMENTWISE) || !defined(READER_EXT_FP16TOINT8)
+#if !defined(SIMD_EXT_STREAMMAP) || \
+    !defined(SIMD_EXT_STREAMELEMENTWISE_1) || !defined(SIMD_EXT_FP16TOINT8)
 #error \
     "Regenerate the XDMA CSR map with StreamMap (func=SILU), StreamElementwise (op=MUL) and Fp16ToInt8."
 #endif
 
-#define XDMA_BEAT_BYTES 64
+#define SIMD_BEAT_BYTES 64
 #define ACT_SILU 2u  // StreamMap func CSR bits[1:0]: 0=LINEAR, 1=EXP, 2=SILU
 #define EW_MUL \
     0u  // StreamElementwise fused-FMA op CSR: 0=MUL (acc*x), 1=ADD (acc+x)
@@ -76,7 +77,7 @@ int main() {
     if (snax_is_simd_core()) {
         uint32_t base = snrt_cluster_base_addrl();
         uint32_t beats = swiglu_beats;
-        uint32_t row_bytes = beats * XDMA_BEAT_BYTES;
+        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
 
         // Layout: sg_buf and up_in are adjacent (row_bytes apart) so T2's
         // interleave stride = row_bytes.
@@ -95,17 +96,17 @@ int main() {
         snax_stage_1d(gate_in, swiglu_gate, row_bytes);
         snax_stage_1d(up_in, swiglu_up, row_bytes);
 
-        uint32_t dst_str[1] = {XDMA_BEAT_BYTES};
+        uint32_t dst_str[1] = {SIMD_BEAT_BYTES};
         uint32_t dst_bnd[1] = {beats};
         uint32_t q_dst_bnd[1] = {
             beats /
             2};  // fused quantize packs 2 fp16 result beats -> 1 int8 beat
         // T1 src: 2D [beats,1] reading gate_in beat-by-beat.
-        uint32_t t1_src_str[2] = {XDMA_BEAT_BYTES, beats * XDMA_BEAT_BYTES};
+        uint32_t t1_src_str[2] = {SIMD_BEAT_BYTES, beats * SIMD_BEAT_BYTES};
         uint32_t t1_src_bnd[2] = {beats, 1};
         // T2 src: interleaved 2D [2,beats] -> {sg[beat], up[beat]} pairs (inner
         // dim strides sg_buf->up_in).
-        uint32_t t2_src_str[2] = {row_bytes, XDMA_BEAT_BYTES};
+        uint32_t t2_src_str[2] = {row_bytes, SIMD_BEAT_BYTES};
         uint32_t t2_src_bnd[2] = {2, beats};
 
         uint32_t c1 = 0, c2 = 0, cq = 0, lat_cold = 0, lat_warm = 0;
@@ -118,33 +119,33 @@ int main() {
             // T1: sg = silu(gate).
             uint32_t csr_silu[3] = {0x3F800000u /*1.0f*/, 0u, ACT_SILU};
             ok &=
-                (snax_xdma_enable_src_ext(READER_EXT_STREAMMAP, csr_silu) == 0);
-            ok &= (snax_xdma_memcpy_nd_fast(gate_in, sg_buf, 8, 8, 2,
+                (snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr_silu) == 0);
+            ok &= (snax_simd_memcpy_nd_fast(gate_in, sg_buf, 8, 8, 2,
                                             t1_src_str, t1_src_bnd, 1, dst_str,
                                             dst_bnd, 0xFFFFFFFF, 0xFFFFFFFF,
                                             0xFFFFFFFF) == 0);
             {
-                int task_id = snax_xdma_start();
-                snax_xdma_local_wait(task_id);
-                c1 = snax_xdma_last_task_cycle();
+                int task_id = snax_simd_start();
+                snax_simd_wait(task_id);
+                c1 = snax_simd_last_task_cycle();
             }
-            snax_xdma_disable_src_ext(READER_EXT_STREAMMAP);
+            snax_simd_disable_ext(SIMD_EXT_STREAMMAP);
 
             // T2: out = sg (.) up. StreamElementwise(MUL), operandCount=2 over
             // the interleaved {sg,up} stream.
             uint32_t csr_mul[2] = {2u /*operandCount*/, EW_MUL};
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMELEMENTWISE,
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                             csr_mul) == 0);
-            ok &= (snax_xdma_memcpy_nd_fast(sg_buf, out_buf, 8, 8, 2,
+            ok &= (snax_simd_memcpy_nd_fast(sg_buf, out_buf, 8, 8, 2,
                                             t2_src_str, t2_src_bnd, 1, dst_str,
                                             dst_bnd, 0xFFFFFFFF, 0xFFFFFFFF,
                                             0xFFFFFFFF) == 0);
             {
-                int task_id = snax_xdma_start();
-                snax_xdma_local_wait(task_id);
-                c2 = snax_xdma_last_task_cycle();
+                int task_id = snax_simd_start();
+                snax_simd_wait(task_id);
+                c2 = snax_simd_last_task_cycle();
             }
-            snax_xdma_disable_src_ext(READER_EXT_STREAMELEMENTWISE);
+            snax_simd_disable_ext(SIMD_EXT_STREAMELEMENTWISE_1);
 
             // Tq: SAME mul pass over the interleaved {sg,up} stream, but
             // Fp16ToInt8 chained after StreamElementwise quantizes the product
@@ -152,20 +153,20 @@ int main() {
             // beats/2 packed beats; cq - c2 is the marginal quantize cost.
             uint32_t csr_mul_q[2] = {2u /*operandCount*/, EW_MUL};
             uint32_t csr_q[1] = {swiglu_inv_scale};
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_STREAMELEMENTWISE,
+            ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                             csr_mul_q) == 0);
-            ok &= (snax_xdma_enable_src_ext(READER_EXT_FP16TOINT8, csr_q) == 0);
-            ok &= (snax_xdma_memcpy_nd_fast(sg_buf, out_i8_buf, 8, 8, 2,
+            ok &= (snax_simd_enable_ext(SIMD_EXT_FP16TOINT8, csr_q) == 0);
+            ok &= (snax_simd_memcpy_nd_fast(sg_buf, out_i8_buf, 8, 8, 2,
                                             t2_src_str, t2_src_bnd, 1, dst_str,
                                             q_dst_bnd, 0xFFFFFFFF, 0xFFFFFFFF,
                                             0xFFFFFFFF) == 0);
             {
-                int task_id = snax_xdma_start();
-                snax_xdma_local_wait(task_id);
-                cq = snax_xdma_last_task_cycle();
+                int task_id = snax_simd_start();
+                snax_simd_wait(task_id);
+                cq = snax_simd_last_task_cycle();
             }
-            snax_xdma_disable_src_ext(READER_EXT_FP16TOINT8);
-            snax_xdma_disable_src_ext(READER_EXT_STREAMELEMENTWISE);
+            snax_simd_disable_ext(SIMD_EXT_FP16TOINT8);
+            snax_simd_disable_ext(SIMD_EXT_STREAMELEMENTWISE_1);
 
             uint32_t t1 = snrt_mcycle();
             if (iter == 0)
