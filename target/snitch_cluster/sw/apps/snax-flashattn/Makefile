@@ -5,10 +5,10 @@
 APP     = snax-flashattn
 
 INCDIRS  = data
-INCDIRS += ../../snax/gemmx/include
+INCDIRS += ../../snax/versacore-to/include
 INCDIRS += ../../snax/simd/include
 
-RISCV_LDFLAGS += ../../snax/gemmx/build/snax-gemmx-lib.o
+RISCV_LDFLAGS += ../../snax/versacore-to/build/snax-versacore-to-lib.o
 RISCV_LDFLAGS += ../../snax/simd/build/snax-simd-lib.o
 
 SRCS    = src/snax-flashattn.c

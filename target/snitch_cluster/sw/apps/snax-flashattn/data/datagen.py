@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-# NOTE: a COPY of snax-gemmx-matmul/data/datagen.py carrying FlashAttention's parameters,
-# its tile geometry and its operand bound. The two copies drift silently -- a fix to the
-# shared parts has to be made in both. Prefer sharing the generator over copying it again.
+# Data and streamer descriptors for FlashAttention on VersaCore.
+#
+# Emits the operands, the streamer descriptors for both matmul shapes, the tile geometry
+# as compile-time constants, and a float model of the softmax for the kernel to check
+# against. The block order reaching TCDM is (M, N, meshRow, meshCol), which is what
+# block_gemm_golden_model() assumes.
 
 # Copyright 2024 KU Leuven.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -25,20 +28,31 @@ from data_utils import format_scalar_definition, format_vector_definition  # noq
 # Add golden model path
 from snax_utils import (  # noqa E402
     block_gemm_golden_model,
-    postprocessing_simd_golden_model,
     align_wide_addr,
 )  # noqa E402
 
 np.random.seed(42)
 
 
+def _acc(kwargs):
+    return kwargs["snax_versacore_core_template"]["snax_acc_cfg"][0]
+
+
 def _mesh(kwargs):
-    cfg = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0]
-    return (
-        cfg["snax_gemmx_mesh_row"],
-        cfg["snax_gemmx_tile_size"],
-        cfg["snax_gemmx_mesh_col"],
+    """meshRow, tileSize, meshCol -- VersaCore's (Mu, Ku, Nu) spatial unrolling.
+
+    VersaCore carries one triple per [data type][array shape] and selects between them at
+    run time with two CSRs. This cluster declares exactly one of each, so both CSRs are
+    always 0 and the mesh is fixed. The assert is what makes that safe to assume: adding a
+    shape to the cfg fails the generator rather than silently emitting descriptors for the
+    wrong one.
+    """
+    unrolling = _acc(kwargs)["snax_versacore_spatial_unrolling"]
+    assert len(unrolling) == 1 and len(unrolling[0]) == 1, (
+        "this kernel emits array_shape = data_type = 0; the cfg declares "
+        "%d data type(s) and %d array shape(s)" % (len(unrolling), len(unrolling[0]))
     )
+    return tuple(unrolling[0][0])
 
 
 def attention_qshift(d):
@@ -129,6 +143,12 @@ def emit_geometry_section(**kwargs):
     meshRow, tileSize, meshCol = _mesh(kwargs)
     d = kwargs["K"] * tileSize
     rows = [
+        # The array, read from the cluster cfg. It reaches the kernel through HERE, the
+        # same place the descriptors come from, which is what makes the kernel's
+        # "descriptors vs geometry" check meaningful.
+        ("meshRow", meshRow, "VersaCore Mu: output rows    per array pass"),
+        ("tileSize", tileSize, "VersaCore Ku: contraction    per array pass"),
+        ("meshCol", meshCol, "VersaCore Nu: output columns per array pass"),
         ("BR", kwargs["N"] * meshCol, "query rows     = N*meshCol"),
         ("BC", kwargs["M"] * meshRow, "key columns    = M*meshRow (the tiling knob)"),
         ("DHEAD", d, "head dimension = K*tileSize (a MODEL property, not a knob)"),
@@ -140,8 +160,10 @@ def emit_geometry_section(**kwargs):
         ),
     ]
     w = max(len(str(v)) for _, v, _ in rows)
+    n = max(len(name) for name, _, _ in rows)
     body = "\n".join(
-        "#define %-6s %*d  // %s" % (name, w, value, note) for name, value, note in rows
+        "#define %-*s %*d  // %s" % (n, name, w, value, note)
+        for name, value, note in rows
     )
     return (
         "// ---- TILE GEOMETRY -------------------------------------------------------"
@@ -153,7 +175,7 @@ def emit_geometry_section(**kwargs):
 def emit_header_file(**kwargs):
     emit_str = "#include <stdint.h>\n\n"
     emit_str += emit_geometry_section(**kwargs) + "\n"
-    emit_str += emit_gemmx_data(**kwargs)
+    emit_str += emit_versacore_data(**kwargs)
     return emit_str
 
 
@@ -168,21 +190,10 @@ quantized_output_data_width = 8
 
 def emit_matmul_data(**kwargs):
 
-    meshRow = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0][
-        "snax_gemmx_mesh_row"
-    ]
-    tileSize = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0][
-        "snax_gemmx_tile_size"
-    ]
-    meshCol = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0][
-        "snax_gemmx_mesh_col"
-    ]
-    snax_gemmx_serial_c32_d32_width = kwargs["snax_streamer_gemmX_core_template"][
-        "snax_acc_cfg"
-    ][0]["snax_gemmx_serial_c32_d32_width"]
-    snax_gemmx_serial_d8_width = kwargs["snax_streamer_gemmX_core_template"][
-        "snax_acc_cfg"
-    ][0]["snax_gemmx_serial_d8_width"]
+    meshRow, tileSize, meshCol = _mesh(kwargs)
+    # C and D are Mu*Nu INT32 = 8192 b in the array and reach TCDM over a 2048 b port, so
+    # every output block is four serialised chunks. One number drives both descriptors.
+    serial_c_d_width = _acc(kwargs)["snax_versacore_serial_c_d_width"]
 
     # matmul settings
     data_str = []
@@ -191,6 +202,10 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "M", kwargs["M"])]
     data_str += [format_scalar_definition("int32_t", "K", kwargs["K"])]
     data_str += [format_scalar_definition("int32_t", "N", kwargs["N"])]
+
+    # One spatial unrolling and one data type in this cfg -- see _mesh().
+    data_str += [format_scalar_definition("int32_t", "array_shape", 0)]
+    data_str += [format_scalar_definition("uint32_t", "data_type", 0)]
 
     data_str += [format_scalar_definition("int32_t", "Aslstride0", bankWidth / 8)]
     data_str += [format_scalar_definition("int32_t", "Atlbound0", kwargs["K"])]
@@ -237,47 +252,43 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
     # streamer c32 settings
     # -----------------------------------------------------------
-    # spatial settings
-    # The C/D32 ports declare spatial_bounds [[8, 4]] -- TWO spatial dimensions, 32
-    # channels -- so the streamer wants TWO spatial strides (S_STRIDE_NUM_READER_WRITER_*
-    # is 2). Emitting only stride0 made the app pass a 1-element array to a 2-element CSR
-    # write, so the second stride came from off the end of a stack array. Per
-    # AddressGenUnit, channel i addresses stride0*(i%8) + stride1*(i/8), so 24 of the 32
-    # channels took their address from that garbage -- harmless-looking at 8x8, and the
-    # out-of-bounds write that corrupted a neighbouring hart's stack at 16x16.
+    # The C/D port's 32 channels are grouped [4, 8] (see the cluster cfg): channel i sits
+    # at sl0*(i % 4) + sl1*((i / 4) % 8). Four channels carry 32 B -- one key's meshCol
+    # FP16 scores -- and the eight groups step by a WHOLE key row of Br = N*meshCol FP16,
+    # so the two N blocks INTERLEAVE and a 64 B beat is 32 queries of ONE key. That is the
+    # layout snax-flashattn.c reduces over; under a contiguous [8, 4] map a beat would be
+    # 16 queries x 2 keys and the LANEWISE rowmax would be meaningless.
     #
-    # The three strides are one consistent progression over a serialised chunk:
-    #   spatial 0 : 8 channels x bankWidth/8            =  64 B
-    #   spatial 1 : 4 groups   x 64 B                   = 256 B  (one whole chunk)
-    #   temporal 0: steps to the NEXT chunk             = 256 B
-    # stride1 belongs to the SPATIAL axis, not the temporal loop: assigning it to
-    # Ctlstride0 leaves the temporal step 4x short.
+    #   spatial 0 : 4 channels x bankWidth/8   = 32 B   one key, meshCol FP16 scores
+    #   spatial 1 : 8 groups   x Br*2          = 64 B   pitch: one whole key row
+    #   temporal 0: serial chunk               = 512 B  the rows one transaction covers
+    #   temporal 1: the OTHER N block          = 32 B   the interleave offset
+    #   temporal 2: the next M block           = 2048 B
+    #
+    # BOTH strides must be emitted: the port declares two, so a 1-element array feeds the
+    # second from off the end of the caller's stack and 24 of the 32 channels address
+    # garbage.
     data_str += [format_scalar_definition("int32_t", "Cslstride0", bankWidth / 8)]
-    c32_spatial_bound_0 = 8
     data_str += [
         format_scalar_definition(
-            "int32_t", "Cslstride1", c32_spatial_bound_0 * (bankWidth / 8)
+            "int32_t", "Cslstride1", kwargs["N"] * meshCol * 16 / 8
         )
     ]
-    # temporal settings
-    # serial input for C
     data_str += [
         format_scalar_definition(
             "int32_t",
             "Ctlbound0",
-            output_data_width * meshRow * meshCol / snax_gemmx_serial_c32_d32_width,
+            output_data_width * meshRow * meshCol / serial_c_d_width,
         )
     ]
     data_str += [
         format_scalar_definition(
-            "int32_t", "Ctlstride0", snax_gemmx_serial_c32_d32_width / 8
+            "int32_t", "Ctlstride0", serial_c_d_width * kwargs["N"] / 8
         )
     ]
     data_str += [format_scalar_definition("int32_t", "Ctlbound1", kwargs["N"])]
     data_str += [
-        format_scalar_definition(
-            "int32_t", "Ctlstride1", output_data_width * meshRow * meshCol / 8
-        )
+        format_scalar_definition("int32_t", "Ctlstride1", meshCol * 16 / 8)
     ]
     data_str += [format_scalar_definition("int32_t", "Ctlbound2", kwargs["M"])]
     data_str += [
@@ -293,46 +304,43 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
     # streamer d32 settings
     # -----------------------------------------------------------
-    # spatial settings
-    # The C/D32 ports declare spatial_bounds [[8, 4]] -- TWO spatial dimensions, 32
-    # channels -- so the streamer wants TWO spatial strides (S_STRIDE_NUM_READER_WRITER_*
-    # is 2). Emitting only stride0 made the app pass a 1-element array to a 2-element CSR
-    # write, so the second stride came from off the end of a stack array. Per
-    # AddressGenUnit, channel i addresses stride0*(i%8) + stride1*(i/8), so 24 of the 32
-    # channels took their address from that garbage -- harmless-looking at 8x8, and the
-    # out-of-bounds write that corrupted a neighbouring hart's stack at 16x16.
+    # The C/D port's 32 channels are grouped [4, 8] (see the cluster cfg): channel i sits
+    # at sl0*(i % 4) + sl1*((i / 4) % 8). Four channels carry 32 B -- one key's meshCol
+    # FP16 scores -- and the eight groups step by a WHOLE key row of Br = N*meshCol FP16,
+    # so the two N blocks INTERLEAVE and a 64 B beat is 32 queries of ONE key. That is the
+    # layout snax-flashattn.c reduces over; under a contiguous [8, 4] map a beat would be
+    # 16 queries x 2 keys and the LANEWISE rowmax would be meaningless.
     #
-    # The three strides are one consistent progression over a serialised chunk:
-    #   spatial 0 : 8 channels x bankWidth/8            =  64 B
-    #   spatial 1 : 4 groups   x 64 B                   = 256 B  (one whole chunk)
-    #   temporal 0: steps to the NEXT chunk             = 256 B
-    # stride1 belongs to the SPATIAL axis, not the temporal loop: assigning it to
-    # Ctlstride0 leaves the temporal step 4x short.
+    #   spatial 0 : 4 channels x bankWidth/8   = 32 B   one key, meshCol FP16 scores
+    #   spatial 1 : 8 groups   x Br*2          = 64 B   pitch: one whole key row
+    #   temporal 0: serial chunk               = 512 B  the rows one transaction covers
+    #   temporal 1: the OTHER N block          = 32 B   the interleave offset
+    #   temporal 2: the next M block           = 2048 B
+    #
+    # BOTH strides must be emitted: the port declares two, so a 1-element array feeds the
+    # second from off the end of the caller's stack and 24 of the 32 channels address
+    # garbage.
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
-    d32_spatial_bound_0 = 8
     data_str += [
         format_scalar_definition(
-            "int32_t", "D32slstride1", d32_spatial_bound_0 * (bankWidth / 8)
+            "int32_t", "D32slstride1", kwargs["N"] * meshCol * 16 / 8
         )
     ]
-    # temporal settings
     data_str += [
         format_scalar_definition(
             "int32_t",
             "D32tlbound0",
-            output_data_width * meshRow * meshCol / snax_gemmx_serial_c32_d32_width,
+            output_data_width * meshRow * meshCol / serial_c_d_width,
         )
     ]
     data_str += [
         format_scalar_definition(
-            "int32_t", "D32tlstride0", snax_gemmx_serial_c32_d32_width / 8
+            "int32_t", "D32tlstride0", serial_c_d_width * kwargs["N"] / 8
         )
     ]
     data_str += [format_scalar_definition("int32_t", "D32tlbound1", kwargs["N"])]
     data_str += [
-        format_scalar_definition(
-            "int32_t", "D32tlstride1", output_data_width * meshRow * meshCol / 8
-        )
+        format_scalar_definition("int32_t", "D32tlstride1", meshCol * 16 / 8)
     ]
     data_str += [format_scalar_definition("int32_t", "D32tlbound2", kwargs["M"])]
     data_str += [
@@ -345,47 +353,8 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "D32tlbound3", 1)]
     data_str += [format_scalar_definition("int32_t", "D32tlstride3", 0)]
 
-    # -----------------------------------------------------------
-    # streamer d8 settings
-    # -----------------------------------------------------------
-
-    # spatial settings
-    data_str += [format_scalar_definition("int32_t", "D8slstride0", bankWidth / 8)]
-    # temporal settings
-    d8_spatial_bound_0 = 8
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "D8tlbound0",
-            quantized_output_data_width
-            * meshRow
-            * meshCol
-            / snax_gemmx_serial_d8_width,
-        )
-    ]
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "D8tlstride0", d8_spatial_bound_0 * (bankWidth / 8)
-        )
-    ]
-    data_str += [format_scalar_definition("int32_t", "D8tlbound1", kwargs["N"])]
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "D8tlstride1",
-            quantized_output_data_width * meshRow * meshCol / 8,
-        )
-    ]
-    data_str += [format_scalar_definition("int32_t", "D8tlbound2", kwargs["M"])]
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "D8tlstride2",
-            kwargs["N"] * quantized_output_data_width * meshRow * meshCol / 8,
-        )
-    ]
-    data_str += [format_scalar_definition("int32_t", "D8tlbound3", 1)]
-    data_str += [format_scalar_definition("int32_t", "D8tlstride3", 0)]
+    # No D8 descriptors: VersaCore has ONE output port, and the quantised path is a write
+    # extension on it rather than a writer of its own.
 
     # -----------------------------------------------------------
     delta_local_a = 0
@@ -401,7 +370,6 @@ def emit_matmul_data(**kwargs):
         meshRow * meshCol * output_data_width / 8
     )
     delta_local_d32 = align_wide_addr(delta_local_d32)
-    delta_local_d8 = delta_local_d32
     data_str += [format_scalar_definition("int32_t", "delta_local_a", delta_local_a)]
     data_str += [format_scalar_definition("int32_t", "delta_local_b", delta_local_b)]
     data_str += [
@@ -418,25 +386,12 @@ def emit_matmul_data(**kwargs):
             delta_local_d32,
         )
     ]
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "delta_local_d8",
-            delta_local_d8,
-        )
-    ]
-
     # -----------------------------------------------------------
     # Test Data generation
     # -----------------------------------------------------------
 
-    # Generating random 8 integer a and b for subtraction
-    subtraction_a = np.random.randint(MIN, MAX)
-    subtraction_b = np.random.randint(MIN, MAX)
-
-    # Writing the subtraction value to data.h
-    data_str += [format_scalar_definition("int8_t", "subtraction_a", subtraction_a)]
-    data_str += [format_scalar_definition("int8_t", "subtraction_b", subtraction_b)]
+    # No zero-point subtraction: attention has none, and the kernel programs
+    # gen_subtraction_config(0, 0) on every dispatch.
 
     A = np.random.randint(
         MIN, MAX, size=(kwargs["M"], kwargs["K"], meshRow, tileSize)
@@ -509,118 +464,32 @@ def emit_matmul_data(**kwargs):
     ]
     data_str += [format_vector_definition("int32_t", "C", C)]
 
-    if kwargs["transposed_A"] == 1:
-        A = A.reshape(kwargs["M"], kwargs["K"], meshRow, tileSize)
-        A = A.transpose(0, 1, 3, 2).reshape(-1)
-    if kwargs["transposed_B"] == 1:
-        B = B.reshape(kwargs["K"], kwargs["N"], tileSize, meshCol)
-        B = B.transpose(0, 1, 3, 2).reshape(-1)
+    # No operand transposer on this cluster, so no permutation of A or B here either.
+    # FlashAttention transposes ALGEBRAICALLY -- S^T = K.Q^T is the same GEMM with its
+    # operands swapped -- and never enabled the hardware one. See the streamer template.
 
-    data_str += [
-        format_scalar_definition("int32_t", "transposed_A", kwargs["transposed_A"])
-    ]
-    data_str += [
-        format_scalar_definition("int32_t", "transposed_B", kwargs["transposed_B"])
-    ]
-
-    D32 = block_gemm_golden_model(
-        kwargs["M"],
-        kwargs["K"],
-        kwargs["N"],
-        meshRow,
-        tileSize,
-        meshCol,
-        A,
-        B,
-        subtraction_a,
-        subtraction_b,
-        C,
-    )
-
-    return data_str, D32, A, B
+    return data_str, A, B
 
 
-def emit_gemmx_data(**kwargs):
-    data_str, D32, A, B = emit_matmul_data(**kwargs)
+def emit_versacore_data(**kwargs):
+    data_str, A, B = emit_matmul_data(**kwargs)
 
-    data_str += [format_vector_definition("int32_t", "D32", D32)]
-
-    # -----------------------------------------------------------
-    # Postprocessing
-    # -----------------------------------------------------------
-
-    bypassSIMD = kwargs["bypassSIMD"]
-    data_str += [format_scalar_definition("int32_t", "bypassSIMD", bypassSIMD)]
-
-    # Generating random constant values
-    group_num = kwargs["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0][
-        "snax_gemmx_mesh_col"
-    ]
-    input_zp_i = np.random.randint(MIN, MAX)
-    output_zp_i = np.random.randint(MIN, MAX)
-    max_int_i = MAX
-    min_int_i = MIN
-    double_round_i = np.random.randint(0, 1)
-
-    shift_i = np.random.randint(0, 63, size=group_num)  # values between 0-63
-    multiplier_i = np.random.randint(-(2**31), 2**31 - 1, size=group_num)
-
-    # Writing the constant values to data.h
-    data_str += [
-        format_scalar_definition("int8_t", "input_zp_i", input_zp_i),
-        format_scalar_definition("int8_t", "output_zp_i", output_zp_i),
-        format_scalar_definition("int8_t", "max_int_i", max_int_i),
-        format_scalar_definition("int8_t", "min_int_i", min_int_i),
-        format_scalar_definition("int8_t", "double_round_i", double_round_i),
-    ]
-
-    shared_bitpacked_shift_i = [
-        (shift_i[i + 3] << 24)
-        | (shift_i[i + 2] << 16)
-        | (shift_i[i + 1] << 8)
-        | shift_i[i]
-        for i in range(0, group_num, 4)
-    ]
-
-    data_str += [
-        (
-            "int32_t shared_bitpacked_shift[] = { "
-            + ", ".join(map(str, shared_bitpacked_shift_i))
-            + " };"
-        )
-    ]
-    data_str += [
-        "int32_t shared_multiplier[] = { " + ", ".join(map(str, multiplier_i)) + " };"
-    ]
-
-    D8 = np.zeros_like(D32, dtype=np.uint8)
-    # output channel (innermost dim) has a different scale factor
-    for i in range(group_num):
-        D8[i::group_num] = postprocessing_simd_golden_model(
-            D32[i::group_num],
-            input_zp_i,
-            output_zp_i,
-            shift_i[i],
-            max_int_i,
-            min_int_i,
-            double_round_i,
-            multiplier_i[i],
-        )
-
-    data_str += [format_vector_definition("int8_t", "D8", D8)]
+    # No rescale epilogue and no raw-matmul golden. VersaCore has no rescale unit and this
+    # cluster gives its write path no rescale extension, so there are no zero-point,
+    # shift/multiplier or rounding CSRs to feed. The kernel checks the SOFTMAX, against
+    # emit_attention_golden(), rather than the matmul, so a D32 vector would be dead
+    # weight in data.h.
 
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_A", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_B", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_C", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_D32", 0)]
-    data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_D8", 0)]
 
     data_str += [emit_attention_golden(A, B, **kwargs)]
 
     data_str = "\n\n".join(data_str)
 
     return data_str
-
 
 
 def emit_shape2_section(param, merged_config):
@@ -643,9 +512,7 @@ def emit_shape2_section(param, merged_config):
     live. Only the scalar descriptors are kept: shape 2 reuses shape 1's buffers, it just
     walks them differently.
     """
-    acc = merged_config["snax_streamer_gemmX_core_template"]["snax_acc_cfg"][0]
-    mesh_row = acc["snax_gemmx_mesh_row"]
-    tile_size = acc["snax_gemmx_tile_size"]
+    mesh_row, tile_size, _ = _mesh(merged_config)
 
     m1, n1, k1 = int(param["M"]), int(param["N"]), int(param["K"])
     d, bc = k1 * tile_size, m1 * mesh_row

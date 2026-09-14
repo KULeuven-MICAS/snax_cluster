@@ -4,7 +4,7 @@
 
 // Core roles for the four-engine split cluster.
 //
-//   hart 0  GEMM   snax_streamer_gemmX
+//   hart 0  GEMM   snax_versacore, the spatial matmul array
 //   hart 1  SIMD   <cluster>_simd, the reader-side operator bank
 //   hart 2  xDMA   transfer engine: writer extensions + junctions + AXI
 //   hart 3  DM     the classic iDMA, and the cluster's singleton-init core

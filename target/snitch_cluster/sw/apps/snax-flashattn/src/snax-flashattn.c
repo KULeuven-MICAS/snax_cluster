@@ -199,8 +199,18 @@
 //
 // ONE KV TILE. Br = 32 query rows, Bc = 512 keys, d = 128, NKV = 4 tiles. Bc and d are
 // INDEPENDENT, so the two matmuls have different shapes; gemm_set_shape() switches between
-// them per dispatch, rewriting only the twelve CSRs that depend on M and K. A beat is
+// them per dispatch, rewriting only the ten CSRs that depend on M and K. A beat is
 // 512 bits = 64 B = 32 FP16 lanes = one value per query row.
+//
+// That last equality is not free, and it is worth knowing where it comes from. The array
+// is 16 columns wide, so it emits the tile as [M][N][meshRow][meshCol] blocks -- 16
+// queries at a time, with the two N halves of a query row in blocks 256 B apart. Written
+// contiguously, a 64 B beat would be 16 queries x 2 KEYS, and a LANEWISE reduce down it
+// would mix two keys and (since n alternates every 8 beats) two different queries per
+// lane. The D port's spatial map is what fixes this: its 32 channels are grouped [4, 8],
+// so four channels lay down one key's 16 scores and the groups step by a whole 32-query
+// key row, interleaving the two N halves in memory at no cost. A beat is then exactly one
+// key, all Br queries -- which is the premise everything below rests on.
 //
 //   Every name carries its PRECISION: 8 = INT8, 16 = FP16, 32 = INT32. Beat counts are
 //   in -> out, and a beat is one task's worth of 32 lanes.
@@ -336,14 +346,19 @@
 #include <stdint.h>
 #include "data.h"
 #include "snax-core-roles.h"
-#include "snax-gemmx-lib.h"
-#include "snax-gemmx-params.h"
 #include "snax-simd-lib.h"
+#include "snax-versacore-to-lib.h"
 #include "snrt.h"
 
-// BR, BC, DHEAD, NKV and QSHIFT arrive from data.h. They are derived there from the same
-// M/N/K and mesh that produced the streamer descriptors, so the kernel's idea of the tile
-// and the descriptors' idea of it cannot drift apart. Change them in data/params.hjson.
+// The matmul engine on hart 0 is VersaCore: a 1024-MAC INT8 array whose single spatial
+// unrolling (Mu, Ku, Nu) is what this kernel calls meshRow/tileSize/meshCol = 16/4/16. It
+// has ONE output port, carrying INT32 with an optional convert to FP16 on the way out, and
+// no rescale unit -- this kernel needs neither a quantised output nor a rescale.
+//
+// meshRow, tileSize, meshCol, BR, BC, DHEAD, NKV and QSHIFT all arrive from data.h. They
+// are derived there from the same M/N/K and array shape that produced the streamer
+// descriptors, so the kernel's idea of the tile and the descriptors' idea of it cannot
+// drift apart. Change them in data/params.hjson.
 
 // BC and DHEAD are independent. Bc is the tiling knob, free to grow until TCDM is
 // full; d is a property of the model. The two matmuls therefore have different
@@ -406,51 +421,135 @@ static inline uint32_t fp16_ulp(uint16_t a, uint16_t b) {
     return (uint32_t)(d < 0 ? -d : d);
 }
 
+// Re-point an already-configured streamer at new buffers without touching its shape:
+// four csrw against the ~60 of gemm_configure_once(). Pass -1 to leave a pointer alone.
+//
+// always_inline so the compile-time-constant CSR address propagates into the csrw_ss
+// switch and folds to a single direct `csrw <imm>`. Out of line the address is opaque and
+// every access pays a jump-table load from L2 plus an indirect jump -- measured, on this
+// core, to be the dominant cost of accelerator configuration.
+__attribute__((always_inline)) static inline void gemm_set_bases(
+    int32_t a, int32_t b, int32_t c, int32_t d32) {
+    uint32_t l1 = (uint32_t)snrt_l1_next();
+    if (a >= 0) csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)a + l1);
+    if (b >= 0) csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)b + l1);
+    if (c >= 0) csrw_ss(BASE_PTR_READER_WRITER_0_LOW, (uint32_t)c + l1);
+    if (d32 >= 0) csrw_ss(BASE_PTR_READER_WRITER_1_LOW, (uint32_t)d32 + l1);
+}
+
+__attribute__((always_inline)) static inline void gemm_launch(void) {
+    csrw_ss(STREAMER_START_CSR, 1);
+    csrw_ss(GEMMX_START, 1);
+}
+
+// Wait for the ACCELERATOR TO START before waiting for it to finish.
+//
+// snax-versacore-to-lib's wait_versacore_and_streamer() polls busy straight after two
+// STREAMER_START writes. That is only safe while those writes are SLOW: out of line each
+// goes through the csrw_ss jump table and costs ~20-30 cycles, which is just enough for
+// busy to rise before the first poll. Inlined they collapse to 2 cycles, the first poll
+// reads busy = 0 on a task that has not started, and the wait returns at once -- so the
+// caller reads a partial performance counter and reconfigures the engine out from under a
+// running matmul. It is invisible on short tasks and shows up only as a large tile
+// reporting FEWER cycles than its own arithmetic floor.
+//
+// The rise-wait is bounded so a task that completes before we look cannot hang us: if
+// busy never rises, either it already finished (the fall-waits exit at once, which is
+// correct) or the engine was never started, which the caller's own timeout catches.
+__attribute__((always_inline)) static inline void gemm_wait(void) {
+    csrw_ss(STREAMER_START_CSR, 0);
+    csrw_ss(STREAMER_START_CSR, 0);
+    for (uint32_t g = 0; g < 64u; g++) {
+        if (csrr_ss(GEMMX_BUSY) || csrr_ss(STREAMER_BUSY_CSR)) break;
+    }
+    while (csrr_ss(GEMMX_BUSY)) {
+    }
+    while (csrr_ss(STREAMER_BUSY_CSR)) {
+    }
+    csrw_ss(GEMMX_START, 0);
+}
+
 // The FULL streamer programming: bounds, strides, remap indices and the accelerator CSRs.
 // Called ONCE, for shape 1. Everything that differs between the two matmul shapes is then
-// patched per dispatch by gemm_set_shape() -- twelve registers instead of these ~84.
+// patched per dispatch by gemm_set_shape() -- ten registers instead of these ~60.
 //
-// Not for per-dispatch use: it costs ~2,150 cycles a call, because the library function
-// is out of line and every CSR address inside it is opaque to the csrw_ss switch, so each
-// access pays a jump-table load plus an indirect jump.
+// Written out here rather than handed to snax-versacore-to-lib's
+// set_versacore_streamer_csr(). That function writes SEVEN registers at
+// READER_WRITER_EXTENSION_1_CSR_BASE, which is right only where a dynamic rescale unit and
+// the FP16 converter are stacked on the D write path. Here the converter is alone, so that
+// host owns exactly TWO -- the enable bitmask and the extra-loop policy -- and the other
+// five writes land on ADDR_REMAP_INDEX, STREAMER_START, STREAMER_BUSY and the performance
+// counter, launching the streamer mid-configuration. streamer_csr_addr_map.h is the
+// authority on what exists, and the loops below follow it.
 //
-// The fifteen streamer arrays live in THIS frame rather than main's: SNRT_LOG2_STACK_SIZE
-// is 10, so a hart has 1 KiB, and carrying these alongside main's shape structs and a
-// printf frame overflows into the neighbouring hart's stack.
+// Not for per-dispatch use: every CSR address here is a run-time value to the csrw_ss
+// switch, so each access pays a jump-table load plus an indirect jump.
+//
+// The descriptor arrays live in THIS frame rather than main's: SNRT_LOG2_STACK_SIZE is 10,
+// so a hart has 1 KiB, and carrying these alongside main's shape structs and a printf
+// frame overflows into the neighbouring hart's stack.
 static void gemm_configure_once(void) {
-    int32_t Aslstride[] = {Aslstride0};
     int32_t Atlbound[] = {Atlbound0, Atlbound1, Atlbound2, Atlbound3, Atlbound4, Atlbound5};
     int32_t Atlstride[] = {Atlstride0, Atlstride1, Atlstride2, Atlstride3, Atlstride4, Atlstride5};
-    int32_t Bslstride[] = {Bslstride0};
     int32_t Btlbound[] = {Btlbound0, Btlbound1, Btlbound2};
     int32_t Btlstride[] = {Btlstride0, Btlstride1, Btlstride2};
-    int32_t D8slstride[] = {D8slstride0};
-    int32_t D8tlbound[] = {D8tlbound0, D8tlbound1, D8tlbound2, D8tlbound3};
-    int32_t D8tlstride[] = {D8tlstride0, D8tlstride1, D8tlstride2, D8tlstride3};
-    // TWO spatial strides: the C port declares spatial_bounds [[8, 4]] and the streamer
-    // reads S_STRIDE_NUM_READER_WRITER_0 = 2 of them. A 1-element array would feed the
-    // second from off the end of the stack.
+    // TWO spatial strides: the C and D32 ports declare spatial_bounds [[8, 4]] and the
+    // streamer reads S_STRIDE_NUM_READER_WRITER_* = 2 of them. A 1-element array would
+    // feed the second from off the end of the stack.
     int32_t Cslstride[] = {Cslstride0, Cslstride1};
-    int32_t Ctlbound[] = {Ctlbound0, Ctlbound1, Ctlbound2, Ctlbound3};
-    int32_t Ctlstride[] = {Ctlstride0, Ctlstride1, Ctlstride2, Ctlstride3};
+    int32_t Ctlbound[] = {Ctlbound0, Ctlbound1, Ctlbound2};
+    int32_t Ctlstride[] = {Ctlstride0, Ctlstride1, Ctlstride2};
     int32_t D32slstride[] = {D32slstride0, D32slstride1};
-    int32_t D32tlbound[] = {D32tlbound0, D32tlbound1, D32tlbound2, D32tlbound3};
-    int32_t D32tlstride[] = {D32tlstride0, D32tlstride1, D32tlstride2, D32tlstride3};
+    int32_t D32tlbound[] = {D32tlbound0, D32tlbound1, D32tlbound2};
+    int32_t D32tlstride[] = {D32tlstride0, D32tlstride1, D32tlstride2};
 
-    set_gemmx_streamer_csr(
-        Aslstride, Atlbound, Atlstride, set_addr_remap_index_A,
-        Bslstride, Btlbound, Btlstride, set_addr_remap_index_B,
-        D8slstride, D8tlbound, D8tlstride, set_addr_remap_index_D8,
-        Cslstride, Ctlbound, Ctlstride, set_addr_remap_index_C,
-        D32slstride, D32tlbound, D32tlstride, set_addr_remap_index_D32,
-        delta_local_a, delta_local_b, delta_local_d8, delta_local_c,
-        delta_local_d32, bypassSIMD, transposed_A, transposed_B,
-        channel_en_C, broadcast_C);
-    uint32_t sub = gen_subtraction_config(0, 0);  // no zero-point in attention
-    uint32_t csr0 = gen_csr0_config(input_zp_i, output_zp_i, max_int_i, min_int_i);
-    uint32_t csr1 = gen_csr1_config(double_round_i);
-    set_gemmx_csr(K, N, M, sub, csr0, csr1, shared_bitpacked_shift,
-                  shared_multiplier, M * N, bypassSIMD);
+    gemm_set_bases(delta_local_a, delta_local_b, delta_local_c, delta_local_d32);
+
+    // A -- reader 0. Six temporal dimensions; the descriptor uses three and pads the rest
+    // with bound 1, stride 0.
+    csrw_ss(S_STRIDE_READER_0_0, Aslstride0);
+    for (int i = 0; i < T_BOUND_NUM_READER_0; i++) {
+        csrw_ss(T_BOUND_BASE_READER_0 + i, Atlbound[i]);
+        csrw_ss(T_STRIDE_BASE_READER_0 + i, Atlstride[i]);
+    }
+    csrw_ss(ADDR_REMAP_INDEX_READER_0, set_addr_remap_index_A);
+
+    // B -- reader 1.
+    csrw_ss(S_STRIDE_READER_1_0, Bslstride0);
+    for (int i = 0; i < T_BOUND_NUM_READER_1; i++) {
+        csrw_ss(T_BOUND_BASE_READER_1 + i, Btlbound[i]);
+        csrw_ss(T_STRIDE_BASE_READER_1 + i, Btlstride[i]);
+    }
+    csrw_ss(ADDR_REMAP_INDEX_READER_1, set_addr_remap_index_B);
+
+    // C -- the READ half of the one bidirectional port.
+    for (int i = 0; i < S_STRIDE_NUM_READER_WRITER_0; i++)
+        csrw_ss(S_STRIDE_BASE_READER_WRITER_0 + i, Cslstride[i]);
+    for (int i = 0; i < T_BOUND_NUM_READER_WRITER_0; i++) {
+        csrw_ss(T_BOUND_BASE_READER_WRITER_0 + i, Ctlbound[i]);
+        csrw_ss(T_STRIDE_BASE_READER_WRITER_0 + i, Ctlstride[i]);
+    }
+    csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_0, set_addr_remap_index_C);
+    // C is the only port with a channel mask (configurable_channel = 1). All 32 channels
+    // on: attention reads a full C, never a broadcast one.
+    for (int i = 0; i < ENABLED_CHANNEL_READER_WRITER_0_CSR_NUM; i++)
+        csrw_ss(ENABLED_CHANNEL_READER_WRITER_0 + i, channel_en_C[i]);
+
+    // D32 -- the WRITE half of that same port.
+    for (int i = 0; i < S_STRIDE_NUM_READER_WRITER_1; i++)
+        csrw_ss(S_STRIDE_BASE_READER_WRITER_1 + i, D32slstride[i]);
+    for (int i = 0; i < T_BOUND_NUM_READER_WRITER_1; i++) {
+        csrw_ss(T_BOUND_BASE_READER_WRITER_1 + i, D32tlbound[i]);
+        csrw_ss(T_STRIDE_BASE_READER_WRITER_1 + i, D32tlstride[i]);
+    }
+    csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_1, set_addr_remap_index_D32);
+
+    // The accelerator itself. take_in_new_c = 1: every output block starts from C, which
+    // is what makes the second matmul's O += P.V accumulation free (see the loop).
+    // The array-shape and data-type CSRs select among VersaCore's runtime-selectable
+    // unrollings and operand formats; this cluster declares one of each.
+    set_versacore_csr(1, K, M * N, gen_subtraction_config(0, 0), array_shape,
+                      data_type);
 }
 
 // Switch the GEMM between the two matmul shapes.
@@ -458,10 +557,16 @@ static void gemm_configure_once(void) {
 //   S^T = K.Q^T    M1 = Bc/meshRow, K1 = d/tileSize
 //   O^T = V^T.P^T  M2 = d/meshRow,  K2 = Bc/tileSize
 //
-// Only M and K move, so only the CSRs that depend on them are rewritten: nine stream
-// registers plus three GEMM bounds, against the ~84 a full set_gemmx_streamer_csr()
-// writes. Every address here is a compile-time constant, so each store folds through the
+// Only M and K move, so only the CSRs that depend on them are rewritten: eight stream
+// registers plus the two VersaCore bounds, against the ~60 gemm_configure_once() writes.
+// Every address here is a compile-time constant, so each store folds through the
 // always_inline csrw_ss to a single `csrw <imm>`.
+//
+// VersaCore states the matmul as two counts rather than as M/N/K. Output-stationary, one
+// dispatch is: hold an Mu x Nu block in the accumulator, stream ACCUM_BOUND pairs of A
+// and B tiles through it, retire, repeat OUTPUT_BOUND times. So ACCUM_BOUND is the
+// contraction depth K and OUTPUT_BOUND is the M*N output blocks. N never moves between
+// the two shapes, so neither does anything derived from it alone.
 #define GEMM_SHAPE_S1 0
 #define GEMM_SHAPE_S2 1
 static inline void gemm_set_shape(int shape) {
@@ -470,9 +575,8 @@ static inline void gemm_set_shape(int shape) {
     const int32_t as2 = shape ? S2_Atlstride2 : Atlstride2;   // A: outer stride = K * row bytes
     const int32_t bs1 = shape ? S2_Btlstride1 : Btlstride1;   // B: mid   stride = K * col bytes
 
-    csrw_ss(T_BOUND_K, k);                 // GEMM contraction depth
-    csrw_ss(T_BOUND_M, m);                 // GEMM output rows      (N is identical in both)
-    csrw_ss(TEMPORAL_LOOP_BOUND, m * N);   // retire count = M*N output blocks
+    csrw_ss(ACCUM_BOUND, k);               // A,B tile pairs folded into one output block
+    csrw_ss(OUTPUT_BOUND, m * N);          // output blocks this dispatch retires
 
     csrw_ss(T_BOUND_READER_0_0, k);        // A stream
     csrw_ss(T_BOUND_READER_0_2, m);
@@ -482,24 +586,32 @@ static inline void gemm_set_shape(int shape) {
     csrw_ss(T_STRIDE_READER_1_1, bs1);
     csrw_ss(T_BOUND_READER_WRITER_0_2, m); // C stream
     csrw_ss(T_BOUND_READER_WRITER_1_2, m); // D32 stream
-    csrw_ss(T_BOUND_WRITER_0_2, m);        // D8 (unused at bypassSIMD, kept consistent)
 }
 
-// The GEMM's D32 output port carries an Int32ToFp16Converter. Arm it for a matmul whose
+// The D32 output port carries an Int32ToFp16Converter. Arm it for a matmul whose
 // result is CONSUMED as floating point; disarm it for one that ACCUMULATES in place, since
 // such a matmul reads its own previous output back through C as INT32.
 //
 // Arming also halves the beats the writer emits -- two INT32 beats merge into one FP16 beat
 // -- so the D32 descriptor must halve with it, or the writer waits for beats that never
-// arrive. Both layouts are contiguous, so halving the innermost bound and the two outer
-// strides is the whole change.
+// arrive. Which parts halve is NOT uniform, because the two N blocks interleave (see the
+// port's [4, 8] spatial map in the cluster cfg):
+//
+//   bound0   halves   a transaction still spans 512 B, but covers twice the key rows
+//   stride2  halves   an M block is 16 key rows, and a key row is half as many bytes
+//   stride1  does NOT halve
+//
+// stride1 is the offset of the OTHER N block inside a key row, which is meshCol elements
+// of the type being written -- and the interleave is laid out on the FP16 row, so it is
+// the same 32 B in both modes. Halving it would drop the second N block on top of the
+// first.
 //
 // The descriptor values come in as ARGUMENTS rather than read from the D32tl* globals.
 // Those globals live in .bss, which this target maps to DRAM, so reading them here would
 // cost an L3 round trip per field per dispatch. The caller hoists them into locals once,
 // where they stay in registers.
-static inline void gemmx_d32_emit_fp16(int on, uint32_t bound0, uint32_t stride1,
-                                       uint32_t stride2) {
+static inline void gemm_d32_emit_fp16(int on, uint32_t bound0, uint32_t stride1,
+                                      uint32_t stride2) {
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 0, on ? 1u : 0u);  // enable bitmask
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, 0u);            // extra_loops index 0 => 2:1
     csrw_ss(T_BOUND_READER_WRITER_1_0, bound0);
@@ -567,6 +679,7 @@ int main() {
     // lock -- it just waits for the count to pass a threshold.
 
     uint32_t gemm_cycles = 0, simd_cycles = 0, gemm_stream_cycles = 0;
+    uint32_t gemm_cyc_s1 = 0, gemm_cyc_s2 = 0;  // GEMM cycles, split by matmul shape
     uint32_t gemm_wall = 0, simd_wall = 0;
     uint32_t c_conv = 0, c_max = 0, c_exp = 0, c_quant = 0;
     uint32_t gemm_stall = 0, simd_stall = 0;  // time each core spent waiting
@@ -621,7 +734,7 @@ int main() {
 
     // Each descriptor set must match the dimension it walks, on BOTH shapes. data.h carries
     // the geometry and the descriptors together, so what this catches is a stale data.h
-    // against a rebuilt cluster cfg: the mesh comes from snax-gemmx-params.h and moves
+    // against a rebuilt cluster cfg: the array shape comes from the cfg and moves
     // independently. A mismatch does not fault -- the second matmul quietly uses the
     // first one's bounds.
     if (snax_is_gemm_core()) {
@@ -716,10 +829,10 @@ int main() {
     // ======================= the pipelined loop ==============================
     if (snax_is_gemm_core()) {
         // Both D32 descriptors, read out of DRAM ONCE. FP16 halves the beats the writer
-        // emits, so the innermost bound and the two outer strides halve with it; both
-        // layouts stay contiguous, which is why that is the whole difference.
+        // emits, so the innermost bound and the OUTER stride halve with it. The N-block
+        // interleave offset does not -- see gemm_d32_emit_fp16().
         const uint32_t d32_b0_f = (uint32_t)D32tlbound0 / 2,  d32_b0_i = (uint32_t)D32tlbound0;
-        const uint32_t d32_s1_f = (uint32_t)D32tlstride1 / 2, d32_s1_i = (uint32_t)D32tlstride1;
+        const uint32_t d32_s1_f = (uint32_t)D32tlstride1,     d32_s1_i = (uint32_t)D32tlstride1;
         const uint32_t d32_s2_f = (uint32_t)D32tlstride2 / 2, d32_s2_i = (uint32_t)D32tlstride2;
         uint32_t g0 = snrt_mcycle();
         for (uint32_t j = 0; j <= NKV; j++) {
@@ -735,14 +848,14 @@ int main() {
                 // points C at oacc32 for its in-place accumulation, so without this S would
                 // be K.Q^T + O_accumulated from the second tile onward.
                 gemm_set_shape(GEMM_SHAPE_S1);  // S^T = K.Q^T
-                set_gemmx_bases(delta_local_a, delta_local_b, -1, delta_local_c,
-                                d32_delta[j & 1]);
-                gemmx_d32_emit_fp16(1, d32_b0_f, d32_s1_f, d32_s2_f);  // S consumed as FP16
-                set_gemmx_streamer_start();
-                set_gemmx_start();
-                wait_gemmx_and_streamer();
-                gemm_cycles += read_gemmx_perf_counter();
-                gemm_stream_cycles += read_gemmx_streamer_perf_counter();
+                gemm_set_bases(delta_local_a, delta_local_b, delta_local_c,
+                               d32_delta[j & 1]);
+                gemm_d32_emit_fp16(1, d32_b0_f, d32_s1_f, d32_s2_f);  // S consumed as FP16
+                gemm_launch();
+                gemm_wait();
+                { uint32_t c = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
+                  gemm_cycles += c; gemm_cyc_s1 += c; }
+                gemm_stream_cycles += csrr_ss(STREAMER_PERFORMANCE_COUNTER_CSR);
                 sync[0] = j + 1;  // publish AFTER the streamer has drained
             }
             if (j > 0) {
@@ -759,14 +872,14 @@ int main() {
                 // GEMM's own C input, costing nothing extra. The first tile
                 // needs oacc32 zeroed, which the DM core does before the loop.
                 gemm_set_shape(GEMM_SHAPE_S2);  // O^T = V^T.P^T
-                set_gemmx_bases(delta_local_a, p8_delta[(j - 1) & 1], -1,
-                                (int32_t)oacc32, (int32_t)oacc32);
-                gemmx_d32_emit_fp16(0, d32_b0_i, d32_s1_i, d32_s2_i);  // O accumulates in place as INT32
-                set_gemmx_streamer_start();
-                set_gemmx_start();
-                wait_gemmx_and_streamer();
-                gemm_cycles += read_gemmx_perf_counter();
-                gemm_stream_cycles += read_gemmx_streamer_perf_counter();
+                gemm_set_bases(delta_local_a, p8_delta[(j - 1) & 1],
+                               (int32_t)oacc32, (int32_t)oacc32);
+                gemm_d32_emit_fp16(0, d32_b0_i, d32_s1_i, d32_s2_i);  // O accumulates in place as INT32
+                gemm_launch();
+                gemm_wait();
+                { uint32_t c = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
+                  gemm_cycles += c; gemm_cyc_s2 += c; }
+                gemm_stream_cycles += csrr_ss(STREAMER_PERFORMANCE_COUNTER_CSR);
             }
         }
         gemm_wall = snrt_mcycle() - g0;
@@ -1026,6 +1139,29 @@ int main() {
                BR, BC, DHEAD, NKV, meshRow, tileSize, meshCol);
         printf("  GEMM streamer    %5u cycles (operand feed + D32 drain)\n",
                gemm_stream_cycles);
+        // Cycles per ARRAY PASS, against the arithmetic floor of 1. One pass is
+        // Mu*Ku*Nu = 1024 MAC, and a dispatch is M*N*K of them, so this is the engine's
+        // own efficiency with the streamer and the tile shape factored out.
+        //
+        // The two shapes differ 4x in blocks per pass (256 x 32 against 64 x 128), so
+        // printing both separates a per-OUTPUT-BLOCK cost -- C deserialise, D serialise,
+        // block turnaround -- from a per-PASS one. Both read 2.00: the cost is per pass,
+        // and it is snax_acc.versacore.Array's `muls_out_data -|> tree.io.in`. `-|>` is
+        // Queue(entries = 1, pipe = false), which the operator itself names
+        // FullCutHalfBandwidth: with no pipe bypass a 1-entry queue accepts on alternate
+        // cycles however ready the consumer is, so the array idles every other cycle.
+        printf("  S^T=K.Q^T        %5u cycles for %5u array passes (%u.%02u cyc/pass,"
+               " %d blocks x %d accum)\n",
+               gemm_cyc_s1, (unsigned)(NKV * M * N * K),
+               gemm_cyc_s1 / (unsigned)(NKV * M * N * K),
+               (gemm_cyc_s1 * 100u / (unsigned)(NKV * M * N * K)) % 100u,
+               (int)(NKV * M * N), (int)K);
+        printf("  O^T=V^T.P^T      %5u cycles for %5u array passes (%u.%02u cyc/pass,"
+               " %d blocks x %d accum)\n",
+               gemm_cyc_s2, (unsigned)(NKV * S2_M * S2_N * S2_K),
+               gemm_cyc_s2 / (unsigned)(NKV * S2_M * S2_N * S2_K),
+               (gemm_cyc_s2 * 100u / (unsigned)(NKV * S2_M * S2_N * S2_K)) % 100u,
+               (int)(NKV * S2_M * S2_N), (int)S2_K);
         printf("  pipeline         %5u cycles, %u per KV tile\n", pipeline,
                pipeline / NKV);
         // Per core: what it spent running its engine, blocked on the other

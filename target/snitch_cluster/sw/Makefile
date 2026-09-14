@@ -24,10 +24,10 @@ ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster.hjson)
 SUBDIRS += snax/xdma
 endif
 
-# The four-engine split cluster: gemmX on hart 0, the SIMD block on hart 1, the
+# The four-engine split cluster: VersaCore on hart 0, the SIMD block on hart 1, the
 # xDMA on hart 2, the classic iDMA on hart 3.
 ifeq ($(CFG_OVERRIDE), cfg/snax_split_cluster.hjson)
-SUBDIRS += snax/xdma snax/simd snax/gemmx
+SUBDIRS += snax/xdma snax/simd snax/versacore-to
 endif
 
 ifeq ($(CFG_OVERRIDE), cfg/snax_compiler_test_cluster.hjson)

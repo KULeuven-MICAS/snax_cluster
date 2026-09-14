@@ -76,239 +76,8 @@
                 cores:
                 [
                     {
-                        isa: rv32ima
-                        xssr: false
-                        xfrep: false
-                        xdma: false
-                        xf16: false
-                        xf16alt: false
-                        xf8: false
-                        xf8alt: false
-                        xfdotp: false
-                        xfvec: false
-                        snax_acc_cfg:
-                        [
-                            {
-                                snax_acc_name: snax_streamer_gemmX
-                                bender_target:
-                                [
-                                    snax_gemmX
-                                ]
-                                snax_tcdm_ports: 56
-                                snax_num_rw_csr: 29  // = 4 + (2 + meshCol/4 + meshCol + 1) + 2, by hand; 19 at meshCol=8
-                                snax_num_ro_csr: 2
-                                // 16x4x16 = 1024 INT8 MAC/cycle, double 8x8x8, at IDENTICAL operand
-                                // bandwidth: operand bytes/MAC = 1/meshRow + 1/meshCol, independent of
-                                // tileSize, so A stays meshRow*tileSize = 64 B and B stays
-                                // tileSize*meshCol = 64 B and the streamer ports are unchanged.
-                                snax_gemmx_mesh_row: 16
-                                snax_gemmx_tile_size: 4
-                                snax_gemmx_mesh_col: 16
-                                snax_gemmx_serial_c32_d32_width: 2048
-                                snax_gemmx_serial_d8_width: 512
-                                with_pipeline: true
-                                snax_streamer_cfg:
-                                {
-                                    data_reader_params:
-                                    {
-                                        spatial_bounds:
-                                        [
-                                            [
-                                                8
-                                            ]
-                                            [
-                                                8
-                                            ]
-                                        ]
-                                        temporal_dim:
-                                        [
-                                            6
-                                            3
-                                        ]
-                                        num_channel:
-                                        [
-                                            8
-                                            8
-                                        ]
-                                        fifo_depth:
-                                        [
-                                            8
-                                            8
-                                        ]
-                                        configurable_channel:
-                                        [
-                                            0
-                                            0
-                                        ]
-                                        tcdm_logic_word_size:
-                                        [
-                                            [
-                                                256
-                                                128
-                                                64
-                                            ]
-                                            [
-                                                256
-                                                128
-                                                64
-                                            ]
-                                        ]
-                                        datapath_extensions:
-                                        [
-                                            {
-                                                HasTransposer:
-                                                {
-                                                    row:
-                                                    [
-                                                        8
-                                                    ]
-                                                    col:
-                                                    [
-                                                        8
-                                                    ]
-                                                    elementWidth:
-                                                    [
-                                                        8
-                                                    ]
-                                                }
-                                            }
-                                            {
-                                                HasTransposer:
-                                                {
-                                                    row:
-                                                    [
-                                                        8
-                                                    ]
-                                                    col:
-                                                    [
-                                                        8
-                                                    ]
-                                                    elementWidth:
-                                                    [
-                                                        8
-                                                    ]
-                                                }
-                                            }
-                                        ]
-                                    }
-                                    data_writer_params:
-                                    {
-                                        spatial_bounds:
-                                        [
-                                            [
-                                                8
-                                            ]
-                                        ]
-                                        temporal_dim:
-                                        [
-                                            3
-                                        ]
-                                        num_channel:
-                                        [
-                                            8
-                                        ]
-                                        fifo_depth:
-                                        [
-                                            1
-                                        ]
-                                        configurable_channel:
-                                        [
-                                            0
-                                        ]
-                                        tcdm_logic_word_size:
-                                        [
-                                            [
-                                                256
-                                                128
-                                                64
-                                            ]
-                                        ]
-                                    }
-                                    data_reader_writer_params:
-                                    {
-                                        spatial_bounds:
-                                        [
-                                            [
-                                                8
-                                                4
-                                            ]
-                                            [
-                                                8
-                                                4
-                                            ]
-                                        ]
-                                        temporal_dim:
-                                        [
-                                            3
-                                            3
-                                        ]
-                                        num_channel:
-                                        [
-                                            32
-                                            32
-                                        ]
-                                        fifo_depth:
-                                        [
-                                            1
-                                            1
-                                        ]
-                                        configurable_channel:
-                                        [
-                                            1
-                                            0
-                                        ]
-                                        tcdm_logic_word_size:
-                                        [
-                                            [
-                                                256
-                                                128
-                                                64
-                                            ]
-                                            [
-                                                256
-                                                128
-                                                64
-                                            ]
-                                        ]
-                                        datapath_extensions:
-                                        [
-                                            {
-                                                HasBroadcaster:
-                                                {
-                                                    inputLength: 256
-                                                    outputLength: 2048
-                                                }
-                                            }
-                                            // Slots are [read, write]: slot 0 is C's read path
-                                            // (the broadcaster), slot 1 is the D32 write path.
-                                            {
-                                                HasInt32ToFp16Converter:
-                                                {
-                                                    // 2048 = 32 TCDM channels x 64 b
-                                                    dataWidth: 2048
-                                                }
-                                            }
-                                        ]
-                                    }
-                                    has_transpose: true
-                                    has_C_broadcast: true
-                                    // Must match the Chisel streamer_csr_addr_map.h: the converter
-                                    // adds its user CSR (the flag) plus the enable of the D32
-                                    // extension host, which was empty before (the explicit +1).
-                                    has_int32_to_fp16_converter: true
-                                    extra_streamer_csr: 1
-                                    snax_library_name: gemmx
-                                }
-                            }
-                        ]
-                        snax_use_custom_ports: false
-                        num_int_outstanding_loads: 1
-                        num_int_outstanding_mem: 4
-                        num_fp_outstanding_loads: 4
-                        num_fp_outstanding_mem: 4
-                        num_sequencer_instructions: 16
-                        num_dtlb_entries: 1
-                        num_itlb_entries: 1
+                        // hart 0: the matmul engine -- see snax_versacore_core_template.
+                        $ref: "#/snax_versacore_core_template"
                     }
                     {
                         isa: rv32ima
@@ -336,11 +105,10 @@
                                 // The INT32 -> FP16 convert belongs to the PRODUCER, not here: an INT32
                                 // beat carries half as many values as an FP16 one, so converting at the
                                 // consumer doubles both the beats it reads and the TCDM the tile occupies.
-                                // It now sits on the GEMM's own D32 output port.
+                                // It sits on the GEMM's own D32 output port.
                                 //
-                                // ElementwiseAdd (INT32) used to lead this chain; it is gone, because with
-                                // no INT32 entering the SIMD it had nothing upstream and only its own test
-                                // downstream. Every stage below is FP16 transport / FP32 internal.
+                                // Every stage below is FP16 transport, FP32 internal. No INT32 reaches the
+                                // SIMD, so an INT32 elementwise stage would have nothing upstream of it.
                                 // ARRAY form (not the keyed object): a JSON object cannot repeat a key, and
                                 // StreamElementwise has to appear TWICE -- see below.
                                 // PRE-MAP elementwise. The chain is a fixed linear order, so it can express
@@ -499,17 +267,16 @@
                             }
                             // Reader-side extension socket on the xDMA.
                             //
-                            // The four-engine split moved the compute extensions to the SIMD
-                            // block and emptied this list. But the Transposer is not compute --
-                            // it is a pure wire permutation, matrixOutput(j)(i) := matrixInput(i)(j)
-                            // -- so it belongs with data movement, and with the list empty there
-                            // was nowhere on this cluster for snax-xdma-transpose to run at all.
+                            // The compute extensions live on the SIMD block; the Transposer is not
+                            // compute -- it is a pure wire permutation,
+                            // matrixOutput(j)(i) := matrixInput(i)(j) -- so it belongs with data
+                            // movement, and snax-xdma-transpose runs against it here.
                             //
-                            // Same declaration as the unsplit cluster, so it generates the id
+                            // The declaration matches the unsplit cluster, so it generates the id
                             // TRANSPOSERROW8_8COL8_8BIT8_16 that the kernel selects first.
                             //
-                            // NOTE: this is the ONLY reader_extensions key in this block. Adding a
-                            // second one earlier silently did nothing -- a later duplicate key wins.
+                            // This must stay the ONLY reader_extensions key in this block: a second
+                            // one silently does nothing, because a later duplicate key wins.
                             reader_extensions:
                             {
                                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
@@ -568,7 +335,23 @@
             length: 4096
         }
     }
-    snax_streamer_gemmX_streamer_template:
+    // The streamer that feeds VersaCore:
+    //
+    //   reader 0        A   8 channels x 64 b =  512 b   Mu*Ku INT8
+    //   reader 1        B   8 channels x 64 b =  512 b   Ku*Nu INT8
+    //   reader_writer   C  32 channels x 64 b = 2048 b   read  (accumulator in)
+    //                   D  32 channels x 64 b = 2048 b   write (result out)
+    //
+    // The reader_writer is ONE bidirectional 32-port set, so the cluster spends
+    // 8 + 8 + 32 = 48 TCDM ports. VersaCore has a single D port -- its rescale lives on
+    // the streamer's write path, not in the accelerator -- so a quantised output needs no
+    // writer of its own.
+    //
+    // The apps' descriptor arithmetic follows from this layout: Atlstride is
+    // a_len*tileSize*meshRow/8, and C/D32 serialise 4:1 over a chunk addressed by TWO
+    // spatial strides. The block order reaching TCDM is (m, n, meshRow, meshCol), which
+    // is what block_gemm_golden_model() assumes.
+    snax_versacore_streamer_template:
     {
         data_reader_params:
         {
@@ -614,88 +397,52 @@
                     64
                 ]
             ]
+            // NO transposer on A and B.
+            //
+            // FlashAttention, the GEMM workload here, transposes ALGEBRAICALLY --
+            // S^T = K.Q^T is the same GEMM with its operands swapped -- so it has no use
+            // for one.
+            //
+            // Declaring one is also not free. VersaCore's transposer is the flexible one,
+            // indexed by the array-shape CSR, and HasTransposer emits that index register
+            // only when given MORE THAN ONE shape (userCsrNum = 0 at row.length == 1).
+            // With the single 16x4x16 shape here, snax-versacore-to-lib's "write
+            // array_shape at base + 1" lands on the NEXT extension's register instead.
+            // The xDMA carries its own transposer for data movement.
             datapath_extensions:
             [
-                {
-                    HasTransposer:
-                    {
-                        row:
-                        [
-                            8
-                        ]
-                        col:
-                        [
-                            8
-                        ]
-                        elementWidth:
-                        [
-                            8
-                        ]
-                    }
-                }
-                {
-                    HasTransposer:
-                    {
-                        row:
-                        [
-                            8
-                        ]
-                        col:
-                        [
-                            8
-                        ]
-                        elementWidth:
-                        [
-                            8
-                        ]
-                    }
-                }
-            ]
-        }
-        data_writer_params:
-        {
-            spatial_bounds:
-            [
-                [
-                    8
-                ]
-            ]
-            temporal_dim:
-            [
-                3
-            ]
-            num_channel:
-            [
-                8
-            ]
-            fifo_depth:
-            [
-                1
-            ]
-            configurable_channel:
-            [
-                0
-            ]
-            tcdm_logic_word_size:
-            [
-                [
-                    256
-                    128
-                    64
-                ]
+                {}
+                {}
             ]
         }
         data_reader_writer_params:
         {
+            // [4, 8], NOT [8, 4]. The AGU gives channel i the address
+            // sl0*(i % 4) + sl1*((i / 4) % 8), so four channels (4 x 8 B = 32 B) carry ONE
+            // key's meshCol FP16 scores and the eight groups step by a WHOLE key row of
+            // Br = N*meshCol FP16. That is what interleaves the two N blocks in memory.
+            //
+            // It is the difference between a correct and an incorrect FlashAttention. The
+            // score tile leaves the array as [M][N][meshRow][meshCol] blocks; under [8, 4]
+            // a transaction lands 256 B contiguous, so a 64 B beat is 16 queries x 2 KEYS
+            // and -- because n alternates every 8 beats -- lane j mixes query j with query
+            // j+16. The LANEWISE reduce then has nothing recoverable to work with. Under
+            // [4, 8] a beat is exactly Br = 32 queries of one key, which is the layout the
+            // kernel's whole design rests on. Over a full tile [8, 4] misplaces 15360 of
+            // 16384 scores; [4, 8] reproduces [key][query] row-major exactly.
+            //
+            // The INT32 side (the O accumulation, converter off) gets a permutation rather
+            // than a row-major layout -- one element width can be clean, not both -- but C
+            // and D share these strides, so O += P.V still accumulates against itself.
             spatial_bounds:
             [
                 [
-                    8
                     4
+                    8
                 ]
                 [
-                    8
                     4
+                    8
                 ]
             ]
             temporal_dim:
@@ -731,38 +478,55 @@
                     64
                 ]
             ]
+            // Slots are [read, write] for the one reader_writer: slot 0 is the C read
+            // path, slot 1 is the D write path.
+            //
+            // Slot 0 is empty: no app here broadcasts C. FlashAttention sets
+            // broadcast_C = 0 and reads a full C, because a serialised C input cannot
+            // take a broadcast operand.
+            //
+            // Slot 1 converts the INT32 result to FP16 on the way out. That is the one
+            // extension FlashAttention depends on: the score tile is consumed as FP16 by
+            // the SIMD block, and converting HERE rather than in a SIMD pass halves both
+            // the beats the writer emits and the TCDM the tile occupies.
             datapath_extensions:
             [
-                {
-                    HasBroadcaster:
-                    {
-                        inputLength: 256
-                        outputLength: 2048
-                    }
-                }
-                // Slots are [read, write] for the one reader_writer: slot 0 is the C read
-                // path (the broadcaster above), slot 1 is the D32 write path.
+                {}
                 {
                     HasInt32ToFp16Converter:
                     {
-                        // 2048 = the D32 port's beat: 32 TCDM channels x 64 b.
+                        // 2048 = the D port's beat: 32 TCDM channels x 64 b.
                         dataWidth: 2048
                     }
                 }
             ]
         }
-        has_transpose: true
-        has_C_broadcast: true
-        // snaxgen sizes the accelerator's CSR window from these flags, and it MUST agree with
-        // the Chisel-generated streamer_csr_addr_map.h. The converter adds 2 registers here --
-        // its own user CSR, plus the enable of the reader_writer WRITE host, which was empty
-        // before. The flag only covers the first (in the cfg it was written for, the converter
-        // shares a host whose enable another flag already paid for), so the second is explicit.
+        // snaxgen sizes the accelerator's CSR window from these flags, and it MUST agree
+        // with the Chisel-generated streamer_csr_addr_map.h: the last read-only CSR there
+        // must be (base + streamer_csr_num - 1). An undercount leaves the streamer's start
+        // register outside the decoded window -- writes are dropped, busy reads back 0,
+        // and the accelerator produces zeros with no error anywhere.
+        //
+        // The converter contributes its own user CSR (the extra-loop policy) via the flag,
+        // plus the ENABLE register of the reader_writer WRITE host, which is empty
+        // otherwise and which no flag covers -- hence the explicit +1.
         has_int32_to_fp16_converter: true
         extra_streamer_csr: 1
-        snax_library_name: gemmx
+        snax_library_name: versacore-to
     }
-    snax_streamer_gemmX_core_template:
+    // The matmul array:
+    //
+    //   spatial unrolling (Mu, Ku, Nu) = (16, 4, 16) = 1024 INT8 MAC/cycle
+    //
+    // The apps know these three as meshRow / tileSize / meshCol. The operand widths follow
+    // from the shape: A is Mu*Ku*8 = 512 b, B is Ku*Nu*8 = 512 b, C and D are
+    // Mu*Nu*32 = 8192 b serialised 4:1 onto the 2048 b port.
+    //
+    // ONE shape and ONE data type, so the array-shape and data-type CSRs are always 0.
+    // VersaCore's point is that both are runtime-selectable; a second shape costs area and
+    // changes the CSR map (see the transposer note in the streamer template), so it belongs
+    // to a deliberate DSE rather than to the default.
+    snax_versacore_core_template:
     {
         isa: rv32ima
         xssr: false
@@ -777,201 +541,89 @@
         snax_acc_cfg:
         [
             {
-                snax_acc_name: snax_streamer_gemmX
+                snax_acc_name: snax_versacore
                 bender_target:
                 [
-                    snax_gemmX
+                    snax_versacore
                 ]
-                snax_tcdm_ports: 56
-                snax_num_rw_csr: 29  // = 4 + (2 + meshCol/4 + meshCol + 1) + 2, by hand; 19 at meshCol=8
+                snax_tcdm_ports: 48
+                // Fixed by VersaCore: take_in_new_c, accumulation bound, output bound,
+                // subtractions, array shape, data type, start. VersaCoreGen REQUIRES 7.
+                snax_num_rw_csr: 7
                 snax_num_ro_csr: 2
-                // MUST track the live core above: the data generator reads the mesh from THIS
-                // template, the RTL from the core, and nothing checks that they agree.
-                snax_gemmx_mesh_row: 16
-                snax_gemmx_tile_size: 4
-                snax_gemmx_mesh_col: 16
-                snax_gemmx_serial_c32_d32_width: 2048
-                snax_gemmx_serial_d8_width: 512
-                with_pipeline: true
+                snax_versacore_mac_num:
+                [
+                    1024
+                ]
+                snax_versacore_input_a_element_width:
+                [
+                    8
+                ]
+                snax_versacore_input_a_data_type:
+                [
+                    SInt
+                ]
+                snax_versacore_input_b_element_width:
+                [
+                    8
+                ]
+                snax_versacore_input_b_data_type:
+                [
+                    SInt
+                ]
+                snax_versacore_input_c_element_width:
+                [
+                    32
+                ]
+                snax_versacore_input_c_data_type:
+                [
+                    SInt
+                ]
+                snax_versacore_output_d_element_width:
+                [
+                    32
+                ]
+                snax_versacore_output_d_data_type:
+                [
+                    SInt
+                ]
+                snax_versacore_array_input_a_width: 512
+                snax_versacore_array_input_b_width: 512
+                snax_versacore_array_input_c_width: 8192
+                snax_versacore_array_output_d_width: 8192
+                snax_versacore_serial_a_width: 512
+                snax_versacore_serial_b_width: 512
+                snax_versacore_serial_c_d_width: 2048
+                snax_versacore_adder_tree_delay: 0
+                // [data type][array shape][Mu, Ku, Nu]
+                snax_versacore_spatial_unrolling:
+                [
+                    [
+                        [
+                            16
+                            4
+                            16
+                        ]
+                    ]
+                ]
+                // Output-stationary only: every dispatch holds one Mu x Nu output block in
+                // the accumulator and streams K tiles of A and B through it, which is the
+                // dataflow both FlashAttention matmuls want and the only one the
+                // output_stationary-only software library builds for.
+                snax_versacore_temporal_unrolling:
+                [
+                    output_stationary
+                ]
                 snax_streamer_cfg:
                 {
-                    data_reader_params:
-                    {
-                        spatial_bounds:
-                        [
-                            [
-                                8
-                            ]
-                            [
-                                8
-                            ]
-                        ]
-                        temporal_dim:
-                        [
-                            6
-                            3
-                        ]
-                        num_channel:
-                        [
-                            8
-                            8
-                        ]
-                        fifo_depth:
-                        [
-                            8
-                            8
-                        ]
-                        configurable_channel:
-                        [
-                            0
-                            0
-                        ]
-                        tcdm_logic_word_size:
-                        [
-                            [
-                                256
-                                128
-                                64
-                            ]
-                            [
-                                256
-                                128
-                                64
-                            ]
-                        ]
-                        datapath_extensions:
-                        [
-                            {
-                                HasTransposer:
-                                {
-                                    row:
-                                    [
-                                        8
-                                    ]
-                                    col:
-                                    [
-                                        8
-                                    ]
-                                    elementWidth:
-                                    [
-                                        8
-                                    ]
-                                }
-                            }
-                            {
-                                HasTransposer:
-                                {
-                                    row:
-                                    [
-                                        8
-                                    ]
-                                    col:
-                                    [
-                                        8
-                                    ]
-                                    elementWidth:
-                                    [
-                                        8
-                                    ]
-                                }
-                            }
-                        ]
-                    }
-                    data_writer_params:
-                    {
-                        spatial_bounds:
-                        [
-                            [
-                                8
-                            ]
-                        ]
-                        temporal_dim:
-                        [
-                            3
-                        ]
-                        num_channel:
-                        [
-                            8
-                        ]
-                        fifo_depth:
-                        [
-                            1
-                        ]
-                        configurable_channel:
-                        [
-                            0
-                        ]
-                        tcdm_logic_word_size:
-                        [
-                            [
-                                256
-                                128
-                                64
-                            ]
-                        ]
-                    }
-                    data_reader_writer_params:
-                    {
-                        spatial_bounds:
-                        [
-                            [
-                                8
-                                4
-                            ]
-                            [
-                                8
-                                4
-                            ]
-                        ]
-                        temporal_dim:
-                        [
-                            3
-                            3
-                        ]
-                        num_channel:
-                        [
-                            32
-                            32
-                        ]
-                        fifo_depth:
-                        [
-                            1
-                            1
-                        ]
-                        configurable_channel:
-                        [
-                            1
-                            0
-                        ]
-                        tcdm_logic_word_size:
-                        [
-                            [
-                                256
-                                128
-                                64
-                            ]
-                            [
-                                256
-                                128
-                                64
-                            ]
-                        ]
-                        datapath_extensions:
-                        [
-                            {
-                                HasBroadcaster:
-                                {
-                                    inputLength: 256
-                                    outputLength: 2048
-                                }
-                            }
-                            {}
-                        ]
-                    }
-                    has_transpose: true
-                    has_C_broadcast: true
-                    snax_library_name: gemmx
+                    $ref: "#/snax_versacore_streamer_template"
                 }
+                // Stride alignment the data generators assert against. The interconnect
+                // here is dense (tcdm.sparse_interconnect = false), so no port group is
+                // shared and a stride need only be bank-aligned.
+                granularity_a: 1
+                granularity_b: 1
+                granularity_c_d: 1
             }
         ]
         snax_use_custom_ports: false

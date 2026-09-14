@@ -64,10 +64,8 @@ SUBDIRS += snax-simd-softmax-fold
 # Kernels that stay on the xDMA core (hart 2): writer extension / plain moves.
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-reshape-comparison
-# GEMM on hart 0. Its data.h is generated from the cluster cfg, so it follows the
-# mesh shape automatically.
-SUBDIRS += snax-gemmx-matmul
-# FlashAttention: the workload that exercises GEMM and SIMD together.
+# GEMM on hart 0. FlashAttention is the workload that exercises GEMM and SIMD together;
+# its data.h is generated from the cluster cfg, so it follows the array shape.
 SUBDIRS += snax-flashattn
 endif
 # The FP16 SIMD apps below need the StreamMap / StreamReduce / StreamElementwise /

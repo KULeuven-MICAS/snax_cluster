@@ -11,7 +11,9 @@
 //   Br = N*meshCol    query rows
 //   d  = K*tileSize   head dimension -- a property of the MODEL, not a knob
 //
-// At M=32, N=2, K=32 on a 16x4x16 mesh that is Bc=512, Br=32, d=128.
+// At M=32, N=2, K=32 on a 16x4x16 array that is Bc=512, Br=32, d=128. The array is
+// VersaCore's single spatial unrolling (Mu, Ku, Nu); datagen.py reads it from the cluster
+// cfg, so retuning the array retunes the geometry here with no edit in this file.
 //
 // Bc and d are independent, so the two matmuls have different shapes. datagen.py derives
 // shape 2 (O^T = V^T.P^T, M*meshRow = d, K*tileSize = Bc) from the same values and appends
@@ -30,13 +32,13 @@
   // l-recurrence invariant can check l == NKV * rowsum by its exponent alone.
   NKV: 4,
 
-  transposed_A: 0,
-  transposed_B: 0,
   K: 32,
   N: 2,
   M: 32,
-  bypassSIMD: 1,
-  // broadcast_C won't work in the serial C input
+
+  // C is read in FULL, not broadcast. The C port is serialised 4:1 onto 32 channels, and
+  // a broadcast operand cannot be spread across a serialised input; the kernel needs the
+  // full read anyway, because the second matmul accumulates O += P.V through C in place.
   broadcast_C: 0,
   channel_en_C: 1,
 }
