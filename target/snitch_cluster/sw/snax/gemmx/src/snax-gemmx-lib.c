@@ -80,18 +80,6 @@ int32_t gen_csr1_config(bool double_round_i) {
 //
 // The strides, bounds, remap indices and accelerator CSRs are untouched, so the
 // caller is asserting the shape is unchanged. If it is not, reconfigure.
-void set_gemmx_bases(int32_t delta_local_a, int32_t delta_local_b,
-                     int32_t delta_local_d8, int32_t delta_local_c,
-                     int32_t delta_local_d32) {
-    uint32_t l1 = (uint32_t)snrt_l1_next();
-    if (delta_local_a >= 0) csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)delta_local_a + l1);
-    if (delta_local_b >= 0) csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)delta_local_b + l1);
-    if (delta_local_d8 >= 0) csrw_ss(BASE_PTR_WRITER_0_LOW, (uint32_t)delta_local_d8 + l1);
-    if (delta_local_c >= 0)
-        csrw_ss(BASE_PTR_READER_WRITER_0_LOW, (uint32_t)delta_local_c + l1);
-    if (delta_local_d32 >= 0)
-        csrw_ss(BASE_PTR_READER_WRITER_1_LOW, (uint32_t)delta_local_d32 + l1);
-}
 
 void set_gemmx_streamer_csr(int32_t* Aslstride, int32_t* Atlbound,
                             int32_t* Atlstride, int32_t set_addr_remap_index_A,
@@ -283,27 +271,10 @@ void set_gemmx_csr(int32_t tempLoop0, int32_t tempLoop1, int32_t tempLoop2,
 }
 
 // Stall until Streamer and GEMM accelerator finish
-void wait_gemmx_and_streamer() {
-    csrw_ss(STREAMER_START_CSR, 0);
-    csrw_ss(STREAMER_START_CSR, 0);
-    while (csrr_ss(GEMMX_BUSY)) {
-    }
-    while (csrr_ss(STREAMER_BUSY_CSR)) {
-    }
-    csrw_ss(GEMMX_START, 0);
-}
 
 // Read performance counter of the Streamer, a read-only CSR
-uint32_t read_gemmx_streamer_perf_counter() {
-    uint32_t perf_counter = csrr_ss(STREAMER_PERFORMANCE_COUNTER_CSR);
-    return perf_counter;
-}
 
 // Read performance counter of GEMM, a read-only CSR
-uint32_t read_gemmx_perf_counter() {
-    uint32_t perf_counter = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
-    return perf_counter;
-}
 
 uint32_t check_gemmx_result_D8(int8_t* output, int8_t* output_golden,
                                int32_t Batch, int32_t M, int32_t N,
