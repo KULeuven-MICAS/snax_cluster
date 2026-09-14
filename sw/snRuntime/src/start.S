@@ -166,8 +166,8 @@ snrt.crt0.init_stack:
     sub       sp, a2, t0
 
     # Calculate the end of the stack, could be used by later routines
-    # to calculate remaining TCDM space
-    sll       t1, a1, t2    
+    # to calculate remaining TCDM space.
+    sll       t1, a1, SNRT_LOG2_STACK_SIZE
     sub       a2, a2, t1
 
     # Misalign stacks in the TCDM to reduce banking conflicts
