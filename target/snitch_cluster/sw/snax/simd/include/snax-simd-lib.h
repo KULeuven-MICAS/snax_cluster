@@ -290,6 +290,22 @@ __attribute__((always_inline)) static inline uint32_t snax_simd_busy_cycles(void
 // to shave inside SNAX, so the lever is issuing fewer of them. Note in
 // particular that launch_async() below reads the submitted-task counter back,
 // which is 5 cycles a call if the caller discards it.
+// The 1-D fast path: write ONLY the six CSRs that a 1-D task actually varies
+// -- source base / bound / stride and destination base / bound / stride.
+//
+// Everything else in the AGU pair is invariant across such tasks: address
+// high word (TCDM is 32-bit), spatial stride (always SIMD_LANE_BYTES),
+// channel and byte masks (always all-ones), and temporal dimensions 1 and 2
+// (always bound 1, stride 0, the neutral loop). Those are established by ONE
+// snax_simd_program_fast() before the loop and then left alone.
+//
+// 6 CSR writes instead of 21. The caller is responsible for the invariant:
+// every shape must come from snax_simd_shape_flat / _broadcast / _2d with a
+// bound[1] of 1, and a full program must have run since the last task that
+// violated it.
+void snax_simd_program_1d(const snax_simd_shape_t* in,
+                          const snax_simd_shape_t* out);
+
 
 // Program a task from two shapes with nothing but CSR writes -- no validation,
 // no branches, no calls. See the note in the .c: the checked entry point costs

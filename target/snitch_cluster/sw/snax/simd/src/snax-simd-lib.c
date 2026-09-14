@@ -289,6 +289,21 @@ void snax_simd_program_fast(const snax_simd_shape_t* in,
     snax_write_simd_cfg_reg(SIMD_DST_ENABLED_BYTE_PTR, out->byte_mask);
 }
 
+// The 1-D steady state: only the six CSRs a 1-D task actually varies. Address
+// high word, spatial stride, channel/byte masks and temporal dims 1+ are left
+// exactly as an earlier snax_simd_program_fast() set them, so the caller must
+// have run one, and every shape since must have kept bound[1] == 1.
+void snax_simd_program_1d(const snax_simd_shape_t* in,
+                          const snax_simd_shape_t* out) {
+    snax_write_simd_cfg_reg(SIMD_SRC_ADDR_PTR_LSB, (uint32_t)(uintptr_t)in->base);
+    snax_write_simd_cfg_reg(SIMD_SRC_TEMP_BOUND_PTR + 0, in->bound[0]);
+    snax_write_simd_cfg_reg(SIMD_SRC_TEMP_STRIDE_PTR + 0, in->stride[0]);
+    snax_write_simd_cfg_reg(SIMD_DST_ADDR_PTR_LSB, (uint32_t)(uintptr_t)out->base);
+    snax_write_simd_cfg_reg(SIMD_DST_TEMP_BOUND_PTR + 0, out->bound[0]);
+    snax_write_simd_cfg_reg(SIMD_DST_TEMP_STRIDE_PTR + 0, out->stride[0]);
+}
+
+
 int32_t snax_simd_program(void* in, void* out, uint32_t in_lane_stride,
                           uint32_t out_lane_stride, uint32_t in_dim,
                           uint32_t* in_stride, uint32_t* in_bound,
@@ -453,8 +468,17 @@ uint32_t snax_simd_out_beats(const snax_simd_op_t* ops, uint32_t n_ops,
             continue;
         }
 #endif
-#ifdef SIMD_EXT_STREAMELEMENTWISE
-        if (ops[i].id == SIMD_EXT_STREAMELEMENTWISE) {
+// The same operator may sit at two points in the fixed chain, in which case the generated
+// header suffixes each instance with its position and the bare name does not exist. Either
+// instance divides the beat count the same way, so match both.
+#if defined(SIMD_EXT_STREAMELEMENTWISE_1)
+#define SIMD_IS_STREAMELEMENTWISE(id) \
+    ((id) == SIMD_EXT_STREAMELEMENTWISE_0 || (id) == SIMD_EXT_STREAMELEMENTWISE_1)
+#elif defined(SIMD_EXT_STREAMELEMENTWISE)
+#define SIMD_IS_STREAMELEMENTWISE(id) ((id) == SIMD_EXT_STREAMELEMENTWISE)
+#endif
+#ifdef SIMD_IS_STREAMELEMENTWISE
+        if (SIMD_IS_STREAMELEMENTWISE(ops[i].id)) {
             uint32_t operands = ops[i].csr[0] ? ops[i].csr[0] : 1;
             beats = beats / operands;
             continue;
