@@ -299,6 +299,13 @@ class StreamReduce(
   val credit      = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
   val tapDraining = RegInit(false.B) // tap: a row's beats are all in, its scalar not yet emitted
   val treeBusy    = RegInit(false.B) // the horizontal fold is running (input held off so treeBuf is safe)
+  // A row's fold is OWED but not yet finished. treeBusy alone is not enough to protect treeBuf: it rises
+  // from rowLastRetire, which trails the row's last ISSUE by accLat, and in that window ext_data_i.ready is
+  // still high. Whether the window is wide enough to let a whole next row in is a function of the cfg --
+  // it takes ceil(accLat / subCycles) beats, so operandCount <= 2 with subCycles = 2 (the shipped
+  // computeLanes=16) slips an entire row past and clobbers treeBuf mid-fold, while computeLanes=8
+  // (subCycles=4) does not. foldArmed closes the window at issue time instead, for every cfg.
+  val foldArmed   = RegInit(false.B)
 
   // accept a new input beat: overlap the current beat's last-sub issue when the successor needs no gap,
   // else from idle once the gap drained. Reserve a scalar slot at a row start + a passthrough slot in tap.
@@ -309,7 +316,8 @@ class StreamReduce(
   val acceptWhenIdle    = !haveBeat && (stall === 0.U)
   val creditOK          = credit    >= reserveOnAccept
   val tapBlock          = tap       && nextIsRowStart && tapDraining // hold the next row until the scalar is out
-  ext_data_i.ready := (acceptDuringIssue || acceptWhenIdle) && creditOK && !tapBlock && !treeBusy && !ext_start_i
+  ext_data_i.ready :=
+    (acceptDuringIssue || acceptWhenIdle) && creditOK && !tapBlock && !treeBusy && !foldArmed && !ext_start_i
   val accept = ext_data_i.fire
 
   // ---- issue ----
@@ -360,16 +368,29 @@ class StreamReduce(
   def partAdd(a: UInt, b: UInt): UInt = {
     val m = Module(new FpAdd(FP32, FP32, FP32, 0)); m.io.in_a := a; m.io.in_b := b; m.io.out
   }
+  // How many banks THIS row actually touched. Beat k of a row seeds/accumulates bank k % P, so a row of
+  // fewer than P beats never writes the top banks -- they still hold the PREVIOUS task's partials, and
+  // folding them in adds stale data to the result. Rows are short in practice (FlashAttention's state
+  // updates reduce over 2 beats), so this is the common case, not a corner: it is invisible at P=1, and at
+  // P=2 only because those rows happen to be exactly 2 beats. It surfaced the moment P went to 4.
+  // Banks at or above banksUsed contribute the op's identity instead: +0.0 for the sum, -inf for the max.
+  val FP32_NEG_INF = "hFF800000".U(accWidth.W)
+  val banksUsed    =
+    if (accPartials == 1) 1.U
+    else Mux(operandCount < accPartials.U, operandCount, accPartials.U)
+
   val outNow = Wire(Vec(lanes, UInt(accWidth.W)))
   for (i <- 0 until lanes) {
     outNow(i) :=
       (if (accPartials == 1) outPart(0)(i)
        else
          (1 until accPartials).foldLeft(outPart(0)(i)) { (acc, pp) =>
-           val b = outPart(pp)(i)
-           if (multiOp) Mux(opcode === OP_MAX, fp32max(acc, b), partAdd(acc, b))
-           else if (hasMax) fp32max(acc, b)
-           else partAdd(acc, b)
+           val live = pp.U < banksUsed
+           val b    = outPart(pp)(i)
+           if (multiOp) Mux(opcode === OP_MAX, fp32max(acc, Mux(live, b, FP32_NEG_INF)),
+                            partAdd(acc, Mux(live, b, FP32_ZERO)))
+           else if (hasMax) fp32max(acc, Mux(live, b, FP32_NEG_INF))
+           else partAdd(acc, Mux(live, b, FP32_ZERO))
          })
   }
 
@@ -444,6 +465,15 @@ class StreamReduce(
     }
   }
 
+  // rowLastIssue arms the interlock; the fold's own completion pulse releases it. LANEWISE runs no fold,
+  // so it never arms and keeps its bubble-free back-to-back rows. rowLastIssue wins a same-cycle race with
+  // treeDone: that can only be a new row's last beat, which owes a new fold.
+  when(ext_start_i) {
+    foldArmed := false.B
+  }.otherwise {
+    when(rowLastIssue && !lanewise) { foldArmed := true.B }.elsewhen(treeDone) { foldArmed := false.B }
+  }
+
   val scalarFP32    = treeBuf(0) // final scalar, valid the cycle treeDone is high
   val scalarValid   = treeDone || laneDone
   // treeBusy holds ext_data_i.ready low, so for operandCount>=1 the next row cannot complete and clobber
@@ -453,7 +483,12 @@ class StreamReduce(
   // the transport is narrower than FP32 — splat the raw FP32 scalar across the 512-bit beat (dataWidth/32
   // copies). The beat stays 512-bit either way, so the writer AGU is unchanged. (FP32 transport => nothing
   // to narrow, the mux folds away at elaboration.)
-  val narrowedBeat  = Cat(Seq.fill(lanes)(narrow(scalarFP32)))
+  // ONE narrow unit, splatted. `narrow` instantiates an FpAdd module, and `Seq.fill(lanes)(narrow(x))`
+  // built `lanes` of them -- all converting the SAME scalar to the same result. Synthesis does not merge
+  // separate module instances, so that was 32 real FP adders where one does. Bit-identical by
+  // construction; measured in the netlist as 64 narrow units in this block, now 33.
+  val scalarNarrow  = narrow(scalarFP32)
+  val narrowedBeat  = Cat(Seq.fill(lanes)(scalarNarrow))
   val scalarBeat    =
     if (transport.width >= accWidth) narrowedBeat
     else Mux(fp32out, Cat(Seq.fill(extensionParam.dataWidth / accWidth)(scalarFP32)), narrowedBeat)
@@ -489,5 +524,5 @@ class StreamReduce(
     credit := credit - Mux(accept, reserveOnAccept, 0.U) + Mux(deq, 1.U, 0.U)
   }
 
-  ext_busy_o := (credit =/= Qdepth.U) || haveBeat || (stall =/= 0.U) || tapDraining || treeBusy
+  ext_busy_o := (credit =/= Qdepth.U) || haveBeat || (stall =/= 0.U) || tapDraining || treeBusy || foldArmed
 }

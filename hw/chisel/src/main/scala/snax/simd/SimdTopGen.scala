@@ -154,9 +154,22 @@ object SimdTopGen extends App {
 // write operator CSRs at compile-time-constant addresses instead of walking
 // SIMD_EXT_CUSTOM_CSR_NUM at run time.
 """
+  // An operator may legitimately appear at more than one point in the chain -- the order is fixed and
+  // linear, so a combine that some kernels need BEFORE the pointwise map and others need AFTER it has to
+  // be instantiated twice. The module name alone would then emit the same macro twice and the second
+  // definition would silently win, so a REPEATED name is suffixed with its occurrence index:
+  //     StreamElementwise x2  ->  SIMD_EXT_STREAMELEMENTWISE_0, SIMD_EXT_STREAMELEMENTWISE_1
+  // A name that occurs once keeps its bare spelling, so no existing cfg or kernel changes.
+  private val extNameCount =
+    extensionParam.groupBy(_.extensionParam.moduleName.toUpperCase).map { case (k, v) => k -> v.length }
+  private val extNameSeen  = scala.collection.mutable.Map[String, Int]().withDefaultValue(0)
+
   var csrCursor = 0
   for ((ext, i) <- extensionParam.zipWithIndex) {
-    val name = ext.extensionParam.moduleName.toUpperCase
+    val base = ext.extensionParam.moduleName.toUpperCase
+    val name =
+      if (extNameCount(base) > 1) { val n = extNameSeen(base); extNameSeen(base) = n + 1; s"${base}_${n}" }
+      else base
     macroTemplate = macroTemplate +
       s"""#define SIMD_EXT_${name} ${i}
 #define SIMD_EXT_${name}_CSR (SIMD_EXT_CSR_PTR + ${csrCursor})

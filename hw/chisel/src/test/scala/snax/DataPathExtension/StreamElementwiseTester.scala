@@ -85,8 +85,9 @@ class StreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   /** Drive STICKY-B (op CSR bit[8]) with operandCount=1: the first beat is latched as operand B and every
-    * later beat is combined against it. N+1 beats in, N+1 beats out -- output 0 is the latched value
-    * passing through, which the caller discards. */
+    * later beat is combined against it. N+1 beats in, N beats out: the seed beat emits NOTHING, so the
+    * output is exactly the data. (It used to pass the seed through as a junk beat; suppressing it is what
+    * lets a sticky elementwise sit mid-chain, where a downstream stage would otherwise fold the junk in.) */
   def runSticky(op: Int, bcast: Seq[Int], data: Seq[Seq[Int]], computeLanes: Int): Seq[Seq[Float]] = {
     var outs = Seq[Seq[Float]]()
     test(new DataPathExtensionHarness(
@@ -110,7 +111,7 @@ class StreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
             dut.io.data_i.valid.poke(false)
           }
           threads = threads.fork {
-            for (_ <- inBeats.indices) {
+            for (_ <- data.indices) { // one fewer than the input: the seed emits nothing
               while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
               val out = dut.io.data_o.bits.peekInt()
               outs = outs :+ (0 until lanes).map(i => f16bitsToF32(((out >> (16 * i)) & 0xffff).toInt))
@@ -129,10 +130,10 @@ class StreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
     val bcast = Seq.fill(lanes)(f32ToF16bits(rng.between(-4, 4) + rng.nextInt(4) * 0.25f))
     val data  = Seq.fill(6)(Seq.fill(lanes)(f32ToF16bits(rng.between(-4, 4) + rng.nextInt(4) * 0.25f)))
     val hw    = runSticky(1 /*ADD*/, bcast, data, computeLanes = 32)
-    assert(hw.length == data.length + 1, s"expected ${data.length + 1} beats, got ${hw.length}")
+    assert(hw.length == data.length, s"expected ${data.length} beats (seed suppressed), got ${hw.length}")
     for (k <- data.indices; i <- 0 until lanes) {
       val want = f16bitsToF32(f32ToF16bits(f16bitsToF32(bcast(i)) + f16bitsToF32(data(k)(i))))
-      assert(hw(k + 1)(i) == want, f"beat $k lane $i: hw=${hw(k + 1)(i)}%.4f want=$want%.4f")
+      assert(hw(k)(i) == want, f"beat $k lane $i: hw=${hw(k)(i)}%.4f want=$want%.4f")
     }
   }
 
@@ -143,9 +144,10 @@ class StreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
     val hw    = runSticky(0 /*MUL*/, bcast, data, computeLanes = 8)
     // The LAST beat is the real test: if the latch were overwritten by an intermediate result the
     // early beats would still look right and the tail would drift.
+    assert(hw.length == data.length, s"expected ${data.length} beats (seed suppressed), got ${hw.length}")
     for (k <- data.indices; i <- 0 until lanes) {
       val want = f16bitsToF32(f32ToF16bits(f16bitsToF32(bcast(i)) * f16bitsToF32(data(k)(i))))
-      assert(hw(k + 1)(i) == want, f"beat $k lane $i: hw=${hw(k + 1)(i)}%.4f want=$want%.4f")
+      assert(hw(k)(i) == want, f"beat $k lane $i: hw=${hw(k)(i)}%.4f want=$want%.4f")
     }
   }
 

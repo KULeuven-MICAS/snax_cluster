@@ -57,13 +57,31 @@ return new $extensionName($extensionArgs)
       """))()
       .asInstanceOf[HasDataPathExtension]
 
+  private def extensionsOf(obj: JsObject): Seq[HasDataPathExtension] =
+    obj.fields.filter { case (k, _) => k.startsWith("Has") }.toSeq.map { case (k, v) =>
+      instantiateExtension(k, renderExtensionArgs(k, v))
+    }
+
+  /** `reader_extensions` accepts two shapes, and declaration order is chain order in both.
+    *
+    *   - OBJECT  `{ HasA: {...}, HasB: {...} }` — every existing cfg, kept working unchanged.
+    *   - ARRAY   `[ {HasA: {...}}, {HasB: {...}}, {HasA: {...}} ]`
+    *
+    * The array exists because a JSON object cannot repeat a key, so the object form can never place the
+    * SAME operator at two points in the chain. That is not a hypothetical: the chain is a fixed linear
+    * order, so an operator that some kernels need BEFORE the pointwise map and others need AFTER it has to
+    * be instantiated twice. Dequantise-then-activate wants an elementwise combine ahead of the map;
+    * SwiGLU wants one behind it.
+    */
   def extensions(parsedSimdCfg: JsValue): Seq[HasDataPathExtension] =
-    (parsedSimdCfg \ "reader_extensions").asOpt[JsObject] match {
-      case Some(obj) =>
-        obj.fields.filter { case (k, _) => k.startsWith("Has") }.toSeq.map { case (k, v) =>
-          instantiateExtension(k, renderExtensionArgs(k, v))
+    (parsedSimdCfg \ "reader_extensions").toOption match {
+      case Some(arr: JsArray)  =>
+        arr.value.toSeq.flatMap {
+          case o: JsObject => extensionsOf(o)
+          case _           => Seq.empty
         }
-      case _         => Seq.empty
+      case Some(obj: JsObject) => extensionsOf(obj)
+      case _                   => Seq.empty
     }
 
   /** The number of 64-bit TCDM channels on each side. Defaults to the DMA beat width so a cfg that omits the

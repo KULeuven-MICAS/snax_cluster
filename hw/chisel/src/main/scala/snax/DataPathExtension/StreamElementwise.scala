@@ -108,9 +108,11 @@ class StreamElementwise(
   // is a single latched beat against a 64-beat stream. In the untransposed form m varied per row and this
   // mode would not have applied at all.
   //
-  // Use it with operandCount=1, so each beat is its own row: beat 0 seeds the latch and passes through
-  // (its output is the broadcast value itself -- point the writer one beat early and discard it), and beats
-  // 1..N emit op(B, beat). Input and output stay 1:1, so the credit accounting below is untouched.
+  // Use it with operandCount=1, so each beat is its own row: beat 0 seeds the latch and emits NOTHING,
+  // and beats 1..N emit op(B, beat). So a task of N+1 input beats produces N output beats, and the writer
+  // descriptor covers exactly the data. (It used to pass the seed through as a junk beat that software had
+  // to aim past; that cost a scratch beat, an extra descriptor beat, and made the mode unusable anywhere
+  // but last in the chain, since a downstream stage would consume the junk as data.)
   val stickyB: Bool = if (extensionParam.userCsrNum >= 2) ext_csr_i(1)(8).asBool else false.B
 
   // ---- pipeline depth (timing) ----------------------------------------------------------------
@@ -187,7 +189,17 @@ class StreamElementwise(
   val gap      = scala.math.max(0, accLat + 1 - subCycles) // inter-beat recurrence stall (compile-time)
   val beatSpan = subCycles + gap                           // issue cycles allotted per operand beat
 
-  val inFlightMax = (accLat + beatSpan - 1) / beatSpan + 1 // rows still draining after issue stops
+  // A row of ONE beat is the worst case for this queue -- and it is the COMMON case, not a corner:
+  // sticky-B runs operandCount=1, where every beat is its own row. There the row-start
+  // exemption bypasses `gap` entirely (overlapOK is always true), so beats issue every `subCycles`
+  // cycles, not every `beatSpan`. Sizing by beatSpan under-counts the rows in flight by exactly that
+  // ratio, the credit then caps outstanding rows below the pipeline depth, and the unit runs at
+  // roughly accLat cycles per beat instead of streaming. Measured on FlashAttention: 3.2 cc/beat at
+  // computeLanes=16 and still 2.6 at computeLanes=32 -- i.e. adding lanes did almost nothing, because
+  // lanes were never the limiter.
+  val inFlightRows  = (accLat + beatSpan - 1) / beatSpan + 1   // long rows: the gap really does apply
+  val inFlightBeats = (accLat + subCycles - 1) / subCycles + 2 // 1-beat rows: the gap is bypassed
+  val inFlightMax   = scala.math.max(inFlightRows, inFlightBeats)
   // minimum credit-safe depth (see StreamMap): the credit caps outstanding, so the queue never overflows
   // below inFlightMax; slack only helps under sustained backpressure the fast writer never causes.
   val Qdepth      = scala.math.max(2, inFlightMax)
@@ -292,7 +304,13 @@ class StreamElementwise(
   }
   // narrow each FP32 partial to transport (lane 0 low), captured combinationally so the whole beat is
   // grabbed before the next row's beat-0 seed (one cycle later) overwrites lane 0.
-  outQ.io.enq.valid := rowLastRetire && !ext_start_i // no stale push on the restart cycle
+  // The seed beat produces no output. In sticky mode beat 0 only LOADS operand B; its "result" is
+  // operand B itself, which no consumer has ever wanted -- every caller pointed its writer one beat
+  // early and discarded it. Suppressing it here makes the mode N beats in -> N-1 out, removes that
+  // rule from software, and (the reason it matters) lets a sticky elementwise sit in the MIDDLE of the
+  // chain: a downstream Reduce now sees exactly the data beats instead of a junk beat it would fold in.
+  val seedLastRetire = clrPipe(stickySeed && issuing && lastSub, accLat)
+  outQ.io.enq.valid := rowLastRetire && !seedLastRetire && !ext_start_i // no stale push on the restart cycle
   outQ.io.enq.bits  := Cat((0 until lanes).map(i => narrow(outNow(i))).reverse)
   assert(!outQ.io.enq.valid || outQ.io.enq.ready, "StreamElementwise: output queue overflow (credit bug)")
   outQ.io.deq.ready := ext_data_o.ready
@@ -301,7 +319,15 @@ class StreamElementwise(
 
   // ---- issue-pointer + credit update ----
   val deq       = outQ.io.deq.fire
+  // The seed still RESERVES a credit and then releases it when it retires, rather than not reserving at
+  // all. That looks redundant -- the beat never leaves -- but `ext_busy_o` is derived from `credit`, and
+  // between the seed's last issue cycle and its retire there is no other signal holding busy high:
+  // `haveBeat` has already dropped and acceptance is blocked until `seedDone`. Skipping the reservation
+  // therefore made the block report IDLE for accLat cycles while the seed was still in flight, which the
+  // controller is entitled to read as task completion. Reserve-and-release keeps the busy window exactly
+  // as it was before the seed was suppressed.
   val doReserve = accept && nextIsRowStart
+  val effDeq    = deq || seedLastRetire
   when(ext_start_i) {
     haveBeat := false.B; sub := 0.U; beatIdx := 0.U; nextIdx := 0.U; stall := 0.U; credit := Qdepth.U
   }.otherwise {
@@ -316,7 +342,7 @@ class StreamElementwise(
           .otherwise { haveBeat := false.B; stall := gap.U } // mid-row, gap>0: stall before next beat
       }.otherwise { sub := sub + 1.U }
     }
-    when(doReserve =/= deq) { credit := Mux(doReserve, credit - 1.U, credit + 1.U) }
+    when(doReserve =/= effDeq) { credit := Mux(doReserve, credit - 1.U, credit + 1.U) }
   }
 
   ext_busy_o := (credit =/= Qdepth.U) || haveBeat || (stall =/= 0.U)

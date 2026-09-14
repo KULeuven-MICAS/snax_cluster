@@ -126,9 +126,19 @@ class SimdTop(param: SimdParam, clusterName: String = "unnamed_cluster") extends
   cfgIn.valid                        := csrManager.io.readWriteRegIO.valid
   csrManager.io.readWriteRegIO.ready := cfgIn.ready
 
-  // Two entries so the core can stage the next task while one runs -- the multi-pass chains (softmax T1/T2/T3,
-  // and the FlashAttention inner loop) otherwise stall on CSR writes between passes.
-  val taskQueue = Module(new Queue(new SimdTaskCfg(param), entries = 2) {
+  // FOUR entries. Two was enough to stage "the next task while one runs", which covers a chain of a few
+  // passes. It is not enough for a tile of a dozen tasks whose sizes differ by an order of magnitude.
+  //
+  // Measured on FlashAttention: a tile fires 12 tasks, four of them ~256 cycles (a full 128-beat pass) and
+  // eight of them ~36 (one or two beats of state update). The engine drains the short ones far faster than
+  // the core can refill a 2-deep queue, so it goes idle between them -- 2,195 cycles of the 7,889-cycle run
+  // were configuration, against only ~384 cycles of actual CSR writes. The rest was the core blocked on a
+  // full queue or the engine starved by an empty one.
+  //
+  // Depth 4 lets the core run three tasks ahead during one bulk pass, which is exactly enough to cover the
+  // run of short tasks that follows it. The cost is two more copies of SimdTaskCfg (~925 flops each),
+  // comparable to a dozen FP units out of the chain's ~300 -- cheap against 28% of the runtime.
+  val taskQueue = Module(new Queue(new SimdTaskCfg(param), entries = 4) {
     override val desiredName = s"${namePrefix}_taskQueue"
   })
   taskQueue.io.enq <> cfgIn

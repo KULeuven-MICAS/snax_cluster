@@ -345,11 +345,13 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     * scalar per row -- no Chisel change. Distinct per-row data lets the check catch a broken
     * row-boundary re-init: row r's scalar must equal row r's own reduction, not a running total. */
   def runReduceMultiRow(op: Int, rows: Seq[Seq[Seq[Int]]], computeLanes: Int = 32,
-                        ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Seq[Float] = {
+                        ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16"),
+                        accPartials: Int = 1): Seq[Float] = {
     val beatsPerRow = rows.head.length
     val allBeats    = rows.flatten // rows*beatsPerRow input beats
     val results     = scala.collection.mutable.ArrayBuffer[Float]()
-    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
+    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16,
+                                                          accPartials = accPartials)))
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
         dut.io.csr_i(0).poke(beatsPerRow.U)
         dut.io.csr_i(1).poke(op.U)
@@ -414,7 +416,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   /** Multi-row: nRows independent per-row reductions in one dispatch. Each row gets its OWN random data
     * so a stale carry across the row boundary (broken re-init) shows up as a wrong per-row scalar. */
   def checkMultiRow(op: Int, opName: String, nRows: Int, beatsPerRow: Int, mag: Int, computeLanes: Int = 32,
-                    ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Unit = {
+                    ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16"), accPartials: Int = 1): Unit = {
     val rng  = new Random(0x3A1 + op)
     val rows = Seq.tabulate(nRows) { _ =>
       Seq.fill(beatsPerRow)(Seq.fill(lanes) {
@@ -422,7 +424,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
         f32ToF16bits(f)
       })
     }
-    val hw = runReduceMultiRow(op, rows, computeLanes, ops)
+    val hw = runReduceMultiRow(op, rows, computeLanes, ops, accPartials)
     assert(hw.length == nRows, s"$opName multirow: expected $nRows scalars, got ${hw.length}")
     for (r <- 0 until nRows) {
       val vals      = rows(r).flatten.map(f16bitsToF32)
@@ -485,6 +487,108 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   "StreamReduce_ADD_multirow"   should "reduce each row independently" in { checkMultiRow(1, "ADD",   4, 2, 8) }
   // multi-row in the time-mux FSM (computeLanes=8 -> beatCnt-reset re-init path).
   "StreamReduce_ADD_multirow_cl8" should "reduce each row in the time-mux" in { checkMultiRow(1, "ADD", 4, 2, 8, computeLanes = 8) }
+
+  // Multi-row at the SHIPPED split-cluster parameters (cfg/snax_split_cluster.hjson:
+  // computeLanes=16, accPartials=2 -> subCycles=2, P=2). The cl=8/P=1 row above does not
+  // reach this corner: with a 2-beat row and P=2 every beat SEEDS its own bank, so the
+  // row-boundary path that merges the banks is exercised for the first time here. This is
+  // the shape snax-simd-{reduce,rmsnorm,softmax}-multirow drive (4 rows x 2 beats).
+  "StreamReduce_ADD_multirow_cl16_P2" should "reduce each row at the shipped cfg" in {
+    checkMultiRow(1, "ADD", 4, 2, 8, computeLanes = 16, accPartials = 2)
+  }
+  "StreamReduce_SUMSQ_multirow_cl16_P2" should "reduce each row at the shipped cfg" in {
+    checkMultiRow(2, "SUMSQ", 4, 2, 4, computeLanes = 16, accPartials = 2)
+  }
+  "StreamReduce_MAX_multirow_cl16_P2" should "reduce each row at the shipped cfg" in {
+    checkMultiRow(0, "MAX", 4, 2, 8, computeLanes = 16, accPartials = 2)
+  }
+
+  /** TWO DISPATCHES on one instance: a LONG-row task, then short-row tasks.
+    *
+    * This is the only shape that can expose a stale accumulator bank. Beat k of a row accumulates into
+    * bank k % P, and `regs` is deliberately NOT cleared by start_i, so a 2-beat row at P=4 never touches
+    * banks 2 and 3 -- it inherits whatever the PREVIOUS task left there, and the row-boundary fold adds
+    * it in. One dispatch on its own cannot show this: the banks are still at their reset zero, which is
+    * the ADD identity, so every single-task test passes with or without the fix.
+    *
+    * FlashAttention hits exactly this pair -- a 128-beat rowmax/rowsum, then 2-beat state updates -- and
+    * it is what made computeLanes=32 (which needs P=4) produce a wrong l-recurrence.
+    */
+  def runTwoTasks(op: Int, taskA: Seq[Seq[Int]], taskB: Seq[Seq[Seq[Int]]],
+                  computeLanes: Int, accPartials: Int,
+                  ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Seq[Float] = {
+    val res = scala.collection.mutable.ArrayBuffer[Float]()
+    test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops,
+                                                          elementWidth = 16, accPartials = accPartials)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.io.enable_i.poke(true)
+        def runTask(beats: Seq[Seq[Int]], operandCount: Int, nOut: Int, collect: Boolean): Unit = {
+          dut.io.csr_i(0).poke(operandCount.U)
+          dut.io.csr_i(1).poke(op.U)
+          dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+          var threads = new chiseltest.internal.TesterThreadList(Seq())
+          threads = threads.fork {
+            dut.io.data_i.valid.poke(true)
+            for (b <- beats) {
+              while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+              dut.io.data_i.bits.poke(packBeat(b)); dut.clock.step(1)
+            }
+            dut.io.data_i.valid.poke(false)
+          }
+          threads = threads.fork {
+            for (_ <- 0 until nOut) {
+              while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+              val lane0 = (dut.io.data_o.bits.peekInt() & ((BigInt(1) << 16) - 1)).toInt
+              if (collect) res += f16bitsToF32(lane0)
+              dut.io.data_o.ready.poke(true); dut.clock.step(1); dut.io.data_o.ready.poke(false)
+            }
+          }
+          threads.joinAndStep()
+        }
+        runTask(taskA, taskA.length, 1, collect = false)                 // long row, fills every bank
+        runTask(taskB.flatten, taskB.head.length, taskB.length, collect = true)
+      }
+    res.toSeq
+  }
+
+  /** `shortBeats` must be < accPartials for this to bite; longBeats >= accPartials to load the banks. */
+  def checkAfterLongTask(op: Int, opName: String, longBeats: Int, shortRows: Int, shortBeats: Int,
+                         computeLanes: Int, accPartials: Int, mag: Int = 8): Unit = {
+    val rng = new Random(0x5A1D + op)
+    def beat() = Seq.fill(lanes)(f32ToF16bits(rng.between(-mag, mag) + rng.nextInt(4) * 0.25f))
+    val taskA = Seq.fill(longBeats)(beat())
+    val taskB = Seq.fill(shortRows)(Seq.fill(shortBeats)(beat()))
+    val hw    = runTwoTasks(op, taskA, taskB, computeLanes, accPartials)
+    assert(hw.length == shortRows, s"$opName: expected $shortRows scalars, got ${hw.length}")
+    for (r <- 0 until shortRows) {
+      val vals      = taskB(r).flatten.map(f16bitsToF32)
+      val goldenF16 = f16bitsToF32(f32ToF16bits(goldenScalar(op, vals)))
+      val tol       = math.max(math.abs(goldenF16) * 0.004f, 0.05f)
+      val err       = math.abs(hw(r) - goldenF16)
+      println(s"[StreamReduce:$opName:after-long r=$r cl=$computeLanes P=$accPartials] " +
+              s"golden=$goldenF16 hw=${hw(r)} err=$err tol=$tol")
+      assert(err <= tol, s"$opName row $r: hw=${hw(r)} golden=$goldenF16 -- a bank the row never wrote leaked in")
+    }
+  }
+
+  // The shipped upgrade path: computeLanes=32 needs accPartials=4 (cl <= P*lanes/(accLat+1)).
+  "StreamReduce_ADD_shortrow_after_long_cl32_P4" should "ignore banks the short row never wrote" in {
+    checkAfterLongTask(1, "ADD", 8, 4, 2, computeLanes = 32, accPartials = 4)
+  }
+  "StreamReduce_MAX_shortrow_after_long_cl32_P4" should "ignore banks the short row never wrote" in {
+    checkAfterLongTask(0, "MAX", 8, 4, 2, computeLanes = 32, accPartials = 4)
+  }
+  "StreamReduce_SUMSQ_shortrow_after_long_cl32_P4" should "ignore banks the short row never wrote" in {
+    checkAfterLongTask(2, "SUMSQ", 8, 4, 2, computeLanes = 32, accPartials = 4, mag = 4)
+  }
+  // A 3-beat row at P=4 leaves exactly ONE bank stale -- the off-by-one either side of the fix.
+  "StreamReduce_ADD_row3_after_long_cl32_P4" should "ignore the one bank a 3-beat row misses" in {
+    checkAfterLongTask(1, "ADD", 8, 3, 3, computeLanes = 32, accPartials = 4)
+  }
+  // And a row LONGER than P must still fold all four banks: the fix must not clamp the normal case.
+  "StreamReduce_ADD_row8_after_long_cl32_P4" should "still fold all four banks for a long row" in {
+    checkAfterLongTask(1, "ADD", 8, 3, 8, computeLanes = 32, accPartials = 4)
+  }
 
   /** Tap mode (op | 0x100): the N input beats pass through unchanged, then one trailing scalar beat is
     * emitted (output = N+1 beats). The harness inserts -||> register cuts on both data ports, so use the
