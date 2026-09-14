@@ -2128,6 +2128,12 @@ module xdma_chaingather_body #(
   localparam int unsigned NumBenchV = 4;
   localparam int unsigned BenchV[NumBenchV] = '{1, 4, 16, 64};
 
+  // Tree SHAPES swept in phase 1. A point is run for every G here that divides P and leaves at
+  // least two groups, so P=8 and P=16 are measured at BOTH splits and the two curves can be
+  // compared directly instead of through the balanced-G heuristic.
+  localparam int unsigned NumBenchG = 2;
+  localparam int unsigned BenchG[NumBenchG] = '{2, 4};
+
   // Balanced tree split: the largest divisor of p not exceeding sqrt(p). Minimises
   // chain(G) + chain(p/G), which is what the tree costs.
   function automatic int unsigned bench_tree_g(input int unsigned p);
@@ -2207,8 +2213,17 @@ module xdma_chaingather_body #(
         bench_row("chain", p, wc, tc, 1, (e == 0));
 
         // ---- 3. tree reduce: P/G group gathers, then a chain over the collectors ----
-        g = bench_tree_g(p);
-        if (g > 1) begin
+        // Every SHAPE that divides p, not just the balanced one. G is a free parameter of the
+        // schedule, so a single "tree" curve hides the thing that actually matters: which split
+        // wins is a function of P. Running both here means the comparison is measured rather
+        // than interpolated at the P where only one of them happens to be balanced.
+        // A split needs p % G == 0 AND at least two groups -- p/G == 1 is not a tree, it is the
+        // flat chain again, and would silently duplicate the `chain` row.
+        for (int unsigned gi = 0; gi < NumBenchG; gi++) begin
+          g = BenchG[gi];
+          if ((p % g) != 0) continue;
+          if ((p / g) < 2) continue;
+
           ctr_clear();
           run_tree(p, g, ModeLin, 1'b1, 0, 1'b0, 1'b0, s1, s2, tw, e);
           repeat (50) @(posedge clk);
