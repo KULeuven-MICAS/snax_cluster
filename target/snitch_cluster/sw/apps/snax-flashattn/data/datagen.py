@@ -56,6 +56,70 @@ def attention_qshift(d):
     raise ValueError("no INT8 shift keeps d=%d scores inside FP16" % d)
 
 
+def emit_attention_golden(A, B, **kwargs):
+    """A float model of the softmax over the same tile, for the kernel to compare against.
+
+    The exact invariants in the kernel pin one element per query row -- the row maximum,
+    which subtracts to zero and exponentiates to 1.0. They say nothing about the other
+    Bc-1 elements. This does: it is the same scores, the same maximum and the same
+    exponential computed in float, so a scale error in exp, a truncated accumulator or a
+    lane that reduces the wrong operand all move a value that is checked here.
+
+    The model follows the hardware's own sequence, at the precision the hardware uses:
+
+        S      exact INT32 out of the mesh, converted to FP16 on the D32 port
+        m      max over KEYS, per query row
+        P      exp(S16 - m), FP32 internally, stored FP16
+        rowsum sum over KEYS in the FP32 accumulator, narrowed to FP16
+
+    S^T arrives as [Bc][Br]: one beat per key, one query row per lane. That is what lets
+    the reduce run along beats, and it is the order the values are emitted in here.
+
+    P is sampled rather than emitted whole -- one beat in PGOLD_STRIDE -- because the
+    kernel reads the golden out of DRAM. rowsum is checked in full and integrates every
+    key, so a wrong P between two samples still moves a checked number.
+    """
+    meshRow, tileSize, meshCol = _mesh(kwargs)
+    M, N, K = kwargs["M"], kwargs["N"], kwargs["K"]
+    Bc, Br = M * meshRow, N * meshCol
+
+    # No zero-point and no bias: the kernel programs gen_subtraction_config(0, 0) and
+    # zeroes C, so the mesh computes a plain product.
+    D = block_gemm_golden_model(
+        M, K, N, meshRow, tileSize, meshCol, A, B, 0, 0,
+        np.zeros(M * N * meshRow * meshCol, dtype=np.int64),
+    )
+
+    # Block layout [M][N][meshRow][meshCol] -> [key][query], which is how the writer
+    # lays the tile down and how the SIMD core reads it back.
+    S = np.asarray(D).reshape(M, N, meshRow, meshCol)
+    S = S.transpose(0, 2, 1, 3).reshape(Bc, Br)
+
+    S16 = S.astype(np.float16)
+    m = S16.max(axis=0)
+    P = np.exp(S16.astype(np.float32) - m.astype(np.float32)).astype(np.float16)
+    rowsum = P.astype(np.float32).sum(axis=0).astype(np.float16)
+
+    stride = max(1, Bc // 16)
+    beats = list(range(0, Bc, stride))
+
+    def bits(x):
+        return np.ascontiguousarray(x, dtype=np.float16).view(np.uint16).reshape(-1)
+
+    return "\n".join([
+        "// ---- ATTENTION GOLDEN ------------------------------------------------------",
+        "// FP16 bit patterns, compared by ULP distance: the check core has no FPU.",
+        "#define PGOLD_STRIDE %d  // every Nth beat of P is checked" % stride,
+        "#define PGOLD_NBEATS %d" % len(beats),
+        "",
+        format_vector_definition("uint16_t", "m_golden", bits(m)),
+        "",
+        format_vector_definition("uint16_t", "rowsum_golden", bits(rowsum)),
+        "",
+        format_vector_definition("uint16_t", "p16_golden", bits(P[beats].reshape(-1))),
+    ])
+
+
 def emit_geometry_section(**kwargs):
     """The tile geometry as compile-time constants, derived from the shape and the mesh.
 
@@ -473,11 +537,11 @@ def emit_matmul_data(**kwargs):
         C,
     )
 
-    return data_str, D32
+    return data_str, D32, A, B
 
 
 def emit_gemmx_data(**kwargs):
-    data_str, D32 = emit_matmul_data(**kwargs)
+    data_str, D32, A, B = emit_matmul_data(**kwargs)
 
     data_str += [format_vector_definition("int32_t", "D32", D32)]
 
@@ -550,6 +614,8 @@ def emit_gemmx_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_C", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_D32", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_D8", 0)]
+
+    data_str += [emit_attention_golden(A, B, **kwargs)]
 
     data_str = "\n\n".join(data_str)
 

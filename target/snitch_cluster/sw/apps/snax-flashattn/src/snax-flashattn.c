@@ -5,19 +5,212 @@
 // FlashAttention inner loop on the four-engine cluster, instrumented for
 // hardware utilisation.
 //
-// One (query tile, KV tile) pair. Br = 32 (query rows), Bc = the KV tile, d = the head
-// dimension. Bc and d are INDEPENDENT: the two matmuls therefore have different shapes and
-// the GEMM is switched between them per dispatch by gemm_set_shape(), which rewrites only
-// the twelve CSRs that depend on M and K.
+// WHAT FLASHATTENTION IS. Attention is softmax(Q.K^T / sqrt(d)) . V. Computed literally,
+// the whole N x N score matrix has to exist before the softmax can normalise it, and at a
+// real sequence length it is far larger than any scratchpad. FlashAttention never
+// materialises it. It walks the keys in TILES of Bc, and carries three running quantities
+// per query row:
 //
-//   GEMM (hart 0)   S^T   = K.Q^T                INT8 x INT8 -> INT32
-//   SIMD (hart 1)   S16   = fp16(S^T)            on the GEMM's own output port
-//                   m     = lanewise max(S16)    StreamReduce, tap appends m
-//                   -m    = replicate, negate    StreamMap LINEAR, a = -1
-//                   P     = exp(S16 - m)         ) FUSED: EW0 (sticky ADD) -> Map (EXP)
-//                   rowsum= lanewise sum(P)      )        -> Reduce (ADD|LANEWISE|TAP)
-//                   P8^T  = int8(P)              Fp16ToInt8
-//   GEMM (hart 0)   O^T   = V^T.P^T
+//   m   the largest score seen so far       [Br]
+//   l   the sum of exp(score - m) so far    [Br]
+//   O   the weighted sum of values so far   [Br, d]
+//
+// One step of the loop, for a fixed query tile and the j-th key/value tile:
+//
+//     S    = Q . K_j^T              [Br, Bc]   GEMM
+//     m_j  = rowmax(S)              [Br]       SIMD
+//     m'   = max(m, m_j)            [Br]       the new running maximum
+//     corr = exp(m - m')            [Br]       how much the PAST has to shrink
+//     P    = exp(S - m')            [Br, Bc]   SIMD
+//     l    = corr * l + rowsum(P)   [Br]       rescale, then fold this tile in
+//     O    = corr * O + P . V_j     [Br, d]    SIMD rescale + GEMM
+//
+//   and once, after the last tile:  O = O / l
+//
+// corr is the whole trick. Every term already in l and O was divided by exp(m_old); if a
+// tile raises the maximum, multiplying by exp(m_old - m_new) re-bases all of them onto the
+// new one in a single pass. Nothing is approximated, so the tiled answer IS the
+// full-matrix answer -- and the N x N score matrix never exists, only [Br, Bc] of it at a
+// time.
+//
+// HOW Q, K AND V ARE TILED. All three are [N, d] for a sequence of length N. Q is cut by
+// rows into query tiles of Br; K and V are cut by rows into tiles of Bc. This kernel runs
+// ONE query tile against NKV key/value tiles -- the inner loop of the full algorithm, and
+// at Bc = 512, NKV = 4 that is 2048 keys attended by 32 queries.
+//
+//         Q [N, d]              K [N, d]              V [N, d]
+//       <-- d = 128 ->        <-- d = 128 ->        <-- d = 128 ->
+//       +-------------+       +-------------+       +-------------+  -+-
+//  Q_0  |  this tile  | Br=32 |     K_0     |       |     V_0     |  Bc = 512
+//       +-------------+       +-------------+       +-------------+  -+-
+//  Q_1  |             |       |     K_1     |       |     V_1     |
+//       +-------------+       +-------------+       +-------------+
+//  ...  |             |  N    |     K_2     |  N    |     V_2     |  N
+//       +-------------+       +-------------+       +-------------+
+//       |             |       |     K_3     |       |     V_3     |
+//       +-------------+       +-------------+       +-------------+
+//                               NKV = 4 tiles, streamed one at a time
+//
+// and the two matmuls that make up one step, with the shape of every intermediate:
+//
+//         Q_i               K_j^T                  S = Q_i . K_j^T
+//       +--------+      +----------------+        +----------------+
+//    Br |        |  x   |                | d  =   |                | Br
+//       +--------+      +----------------+        +----------------+
+//           d                  Bc                        Bc
+//
+//       P = softmax(S)         V_j                 O_i += P . V_j
+//       +----------------+   +--------+           +--------+
+//    Br |                | x |        | Bc    +=  |        | Br
+//       +----------------+   +--------+           +--------+
+//              Bc                d                     d
+//
+// Everything to this point is the algorithm as it is normally written, and as the figures
+// above draw it: query-major, one query row per matrix row. This kernel does not store it
+// that way.
+//
+// THE TRANSPOSED FORM. Transposing both sides of each product rewrites the same two
+// matmuls with their axes exchanged. Using (A.B)^T = B^T.A^T:
+//
+//     S^T = (Q_i . K_j^T)^T = K_j . Q_i^T      [Bc, Br]   was [Br, Bc]
+//     P^T = exp(S^T - m)                       [Bc, Br]   m is still per query row
+//     O^T = (P . V_j)^T     = V_j^T . P^T      [d,  Br]   was [Br, d]
+//
+// Same arithmetic on the same operands, every matrix laid down the other way round:
+//
+//         K_j                Q_i^T               S^T = K_j . Q_i^T
+//       +--------+          +-----+               +-----+
+//    Bc |        |    x   d |     |    =       Bc |     |
+//       +--------+          +-----+               +-----+
+//           d                 Br                    Br
+//
+//        V_j^T                P^T               O^T += V_j^T . P^T
+//      +------------+        +-----+              +-----+
+//    d |            |   x Bc |     |    +=      d |     |
+//      +------------+        +-----+              +-----+
+//            Bc                Br                   Br
+//
+// The rewrite costs NOTHING to obtain: B^T.A^T is the same GEMM with its two operands
+// swapped, which is M and N exchanged in params.hjson. No transposer, no extra pass,
+// nothing at run time.
+//
+// WHY IT IS WORTH DOING. The SIMD engine sees memory as a stream of BEATS -- 512 bits =
+// 32 FP16 lanes -- and its reductions are LANEWISE: lane k accumulates across successive
+// beats, in the accumulator register it already carries. With 4 lanes instead of 32, a
+// MAX reduction over three beats looks like this:
+//
+//         lane     0   1   2   3         lane     0   1   2   3
+//     beat 0   [   3   9   1   4 ]   ->   acc [   3   9   1   4 ]
+//     beat 1   [   7   2   1   8 ]   ->   acc [   7   9   1   8 ]
+//     beat 2   [   5   6   0   2 ]   ->   acc [   7   9   1   8 ]
+//                                                 |   |   |   |
+//                                            one result per lane, and no lane
+//                                            ever looks at its neighbour
+//
+// One accumulator per lane, all of them updated every cycle, so the reduction takes
+// exactly as long as the stream does: three beats in, one beat out, nothing at the end.
+//
+// Reducing ACROSS the 32 lanes of one beat -- max(3, 9, 1, 4) in the picture above -- is a
+// different and far more expensive thing: a log-depth fold through treeBuf, serialised,
+// then a scalar drain. Softmax reduces per QUERY ROW, so the layout alone decides which of
+// the two the rowmax and the rowsum get:
+//
+// Take a tiny tile -- Br = 4 query rows, Bc = 8 keys, 4 lanes to a beat. S(q,k) is the
+// score of query q against key k, so the tile is 4 x 8 = 32 scores. What the softmax
+// needs from it is ONE MAXIMUM PER QUERY ROW:
+//
+//     rowmax(q0) = max( S(q0,k0), S(q0,k1), ... , S(q0,k7) )     one number
+//     rowmax(q1) = max( S(q1,k0), S(q1,k1), ... , S(q1,k7) )     one number
+//     rowmax(q2), rowmax(q3)                                     Br = 4 in all
+//
+// Those Br numbers are the m of the recurrence above -- what gets subtracted before the
+// exponential. rowsum works identically, summing instead of maximising. The 32 scores
+// are the same in both layouts below; only the order they lie in memory changes, and
+// with it how much that reduction costs.
+//
+//   S stored [Br, Bc] -- each QUERY ROW contiguous
+//
+//     beat 0 [ S(q0,k0) S(q0,k1) S(q0,k2) S(q0,k3) ]   ] q0's row is spread over two
+//     beat 1 [ S(q0,k4) S(q0,k5) S(q0,k6) S(q0,k7) ]   ]   beats AND across the lanes
+//     beat 2 [ S(q1,k0) S(q1,k1) S(q1,k2) S(q1,k3) ]
+//     ...                                            8 beats for the tile
+//
+//     rowmax(q0) = max( beat 0 lanes 0-3 , beat 1 lanes 0-3 )
+//
+//                  Two beats, and the four values inside each of them must be combined
+//                  with one another. Combining lanes WITHIN a beat is the horizontal
+//                  FOLD: a log-depth tree, then a scalar drain -- and it has to run once
+//                  per query row, so Br times over the tile.
+//
+//   S^T stored [Bc, Br] -- each KEY contiguous                        <- this kernel
+//
+//     beat 0 [ S(q0,k0) S(q1,k0) S(q2,k0) S(q3,k0) ]   key 0
+//     beat 1 [ S(q0,k1) S(q1,k1) S(q2,k1) S(q3,k1) ]   key 1
+//     ...                                            one beat per key, Bc of them
+//     beat 7 [ S(q0,k7) S(q1,k7) S(q2,k7) S(q3,k7) ]   key 7
+//              lane 0    lane 1    lane 2    lane 3
+//              = q0      = q1      = q2      = q3
+//
+//     rowmax(q0) = max( lane 0 of beat 0, lane 0 of beat 1, ... , lane 0 of beat 7 )
+//
+//                  which is just lane 0's accumulator once the last beat has gone by --
+//                  exactly the MAX example above. No lane is ever combined with another,
+//                  so there is no fold, and rowmax(q1), rowmax(q2), rowmax(q3) come out
+//                  of lanes 1, 2, 3 in the very same pass.
+//
+// The second layout reduces in the accumulator the engine carries anyway, so the
+// rowmax costs nothing beyond reading the tile. The first costs Br folds, each
+// serialised behind its own drain. A free rewrite buys the whole difference.
+//
+// Everything downstream inherits the orientation. m is ONE beat (32 lanes = 32 query
+// rows), not Br scalars, so S - m is a single broadcast beat rather than Br separately
+// armed scalar broadcasts; corr, l and the O rescale are all the same shape.
+//
+// This kernel also stops before the final O / l.
+//
+// That is also why it is the workload for this cluster. The per-tile epilogue is nothing
+// but reductions and pointwise transcendentals, which is exactly what the SIMD datapath
+// extensions do, and it runs while the GEMM is already busy with the next tile.
+//
+// (The 1/sqrt(d) score scaling is not applied here. The operands are bounded instead, so
+// the scores stay inside FP16 without a scaling pass; see QSHIFT in data.h.)
+//
+// ONE KV TILE. Br = 32 query rows, Bc = 512 keys, d = 128, NKV = 4 tiles. Bc and d are
+// INDEPENDENT, so the two matmuls have different shapes; gemm_set_shape() switches between
+// them per dispatch, rewriting only the twelve CSRs that depend on M and K. A beat is
+// 512 bits = 64 B = 32 FP16 lanes = one value per query row.
+//
+//   GEMM (hart 0)  S^T = K.Q^T          K [512,128] i8   64 KiB  ]  2.10 M MAC
+//                                     Q^T [128, 32] i8    4 KiB  ]  2048 cycles
+//                                  -> S^T [512, 32] f16  32 KiB     at 1024 MAC/cycle
+//                     the mesh computes INT32, and Int32ToFp16 on the D32 writer port
+//                     converts it FREE as the tile drains -- which also HALVES the
+//                     beats written, so S^T reaches TCDM as 512 FP16 beats, not 1024
+//   SIMD (hart 1)  m   = rowmax(S^T)  512 beats -> 513  StreamReduce MAX|LANEWISE|TAP
+//                  -m  = negate m       2 beats -> 2    StreamMap LINEAR, a = -1
+//                  corr= exp(m_old-m)   2 beats -> 2    StreamMap EXP
+//                  P   = exp(S^T - m) 513 beats -> 513  ) FUSED: EW0 (sticky ADD)
+//                  rowsum = sum over keys of P          ) -> Map (EXP) -> Reduce TAP
+//                  P8^T= int8(P)      512 beats -> 256  Fp16ToInt8
+//                  O  *= corr         129 beats -> 128  StreamElementwise sticky MUL
+//                  l, m commit          8 beats -> 6    the online-softmax recurrence
+//
+//                  rowmax/sum over keys = the per-query-row reduction defined above:
+//                  32 lanes in, 32 results out, one per query row, in ONE beat.
+//
+//                  TAP means the reduce does not swallow its input. The tile streams
+//                  straight through to the output and the result beat is APPENDED, so
+//                  512 beats in become 513 out. That is why one pass both delivers m
+//                  and leaves the tile sitting where the next task needs it -- directly
+//                  after the broadcast operand that the sticky-B chain reads first.
+//   GEMM (hart 0)  O^T = V^T.P^T      V^T [128,512] i8  64 KiB  ]  2.10 M MAC
+//                                     P^T [512, 32] i8  16 KiB  ]  2048 cycles
+//                                  -> O^T [128, 32] i32 16 KiB     accumulated in place
+//
+// Per KV tile that is 4.19 M MAC and 4096 GEMM cycles against ~1680 beats read and ~1420
+// written on the SIMD side, so the arithmetic floor is GEMM-bound and the softmax has to
+// fit inside its shadow. The whole run is NKV of these. Every buffer above lives in TCDM
+// at once; the footprint guard in main() reports the total against the 512 kB budget.
 //
 // TWO IDEAS CARRY THIS KERNEL.
 //
@@ -35,22 +228,31 @@
 //    cores and drag harts 2 and 3 in. Within a tile the SIMD tasks are fired
 //    back to back with no wait between them; see the note in the loop.
 //
-// 2. THE TRANSPOSE. Everything is computed in [Bc, Br] rather than [Br, Bc], so
-//    one beat holds one value per QUERY ROW and the softmax reduction runs along
-//    BEATS instead of across lanes. That is what lets StreamReduce skip its
-//    horizontal fold entirely; see the block below the includes.
+// 2. THE TRANSPOSE. Computing in [Bc, Br] puts one query row in every lane, which
+//    turns the softmax reductions into the lanewise accumulation StreamReduce does
+//    for free, and costs nothing to obtain. Argued in full above.
 //
-// WHAT IS AND IS NOT VALIDATED. The softmax is checked against an exact
-// invariant in two halves -- P must contain exactly 1.0 and P8^T exactly 1, for
-// every query row -- which together cover the reduce, the subtract, the
-// exponential and the quantiser. Every KV tile is fed the same K, so the final
-// tile stands for all of them. See the check itself for why it is split.
+// WHAT IS AND IS NOT VALIDATED. The softmax is checked twice over, by two kinds of
+// test that fail in different ways.
 //
-// The second GEMM is shape- and dataflow-accurate but its operands are not a
-// numerically validated attention output, and O is overwritten per tile rather
-// than rescaled and accumulated the way real FlashAttention does. Treat O as a
-// cycle measurement -- one P.V matmul per KV tile, which is the right load --
-// not as a result.
+// Exact invariants, which hold whatever the data is: P contains a bit-exact 1.0 and
+// P8^T a bit-exact 1 in every query row (the row's own maximum subtracts to zero, and
+// exp(0) = 1), and l carries NKV identical row sums. Between them they pin the reduce,
+// the subtract, the exponential, the quantiser, the tap and the l recurrence.
+//
+// A numerical golden, which pins the VALUES those invariants cannot see: m, the whole
+// row sum, and P away from its fixed point, against a float model of the same tile in
+// datagen.py, compared as a ULP distance on the FP16 bit patterns. The invariants say
+// the pipeline is wired correctly; the golden says the arithmetic is accurate.
+//
+// Every KV tile is fed the same K, so the final tile stands for all of them.
+//
+// O is the exception. The GEMM accumulates P.V into oacc32 in INT32 in place, and the
+// SIMD rescales an FP16 copy by corr each tile -- both halves of the online update are
+// present and correctly sized, but they are never joined, because closing the loop
+// needs an FP16 -> INT32 conversion the datapath does not have. So O is shape- and
+// dataflow-accurate and nothing checks its value: treat it as a cycle measurement, one
+// P.V matmul per KV tile, which is the right load -- not as a result.
 
 #include <stdint.h>
 #include "data.h"
@@ -64,22 +266,6 @@
 // M/N/K and mesh that produced the streamer descriptors, so the kernel's idea of the tile
 // and the descriptors' idea of it cannot drift apart. Change them in data/params.hjson.
 
-// EVERYTHING IS TRANSPOSED. The score tile is stored [Bc, Br], not [Br, Bc]:
-//
-//   S^T = (Q.K^T)^T = K.Q^T
-//
-// which is the same GEMM with its two operands swapped -- M and N exchanged in
-// params.hjson, no extra pass, no transposer. One beat of S^T is 32 FP16 = one
-// value per QUERY ROW at a fixed key, so:
-//
-//   rowmax   = LANEWISE MAX over the Bc beats. The reduction runs ALONG BEATS,
-//              which is the accumulator StreamReduce already keeps, so the
-//              horizontal fold, its treeBuf serialisation and the scalar drain
-//              are all skipped: one task, one output beat, no per-row bubble.
-//   m        = ONE beat (32 lanes = 32 query rows), not BR scalars.
-//   exp(S-m) = a broadcast/add/exp chain whose broadcast operand is a single beat
-//              replicated, not a per-row scalar re-armed BR times.
-//
 // BC and DHEAD are independent. Bc is the tiling knob, free to grow until TCDM is
 // full; d is a property of the model. The two matmuls therefore have different
 // shapes, which gemm_set_shape() switches between per dispatch.
@@ -121,6 +307,24 @@ static inline void snax_simd_shapes_clear(snax_simd_shape_t *sh, uint32_t n) {
 
 static inline uint16_t fp16_at(volatile uint8_t *p, uint32_t i) {
     return ((volatile uint16_t *)p)[i];
+}
+
+// How far apart two FP16 values are, in representable steps. The bit pattern of a
+// non-negative float is already monotone as an integer; reflecting the negatives about
+// zero extends that across the whole range, and the difference is then a ULP distance.
+// Integer-only, which matters because the core running the check has no FPU, and it
+// degrades gracefully: a value one step off scores 1 rather than just "not equal".
+#define GOLD_ULP_M 1    // m is a max of converted integers: expected exact
+#define GOLD_ULP_P 2    // P is a LUT exponential, ~1 ULP
+#define GOLD_ULP_SUM 2  // rowsum accumulates in FP32 and narrows once
+
+static inline int32_t fp16_order(uint16_t h) {
+    return (h & 0x8000u) ? -(int32_t)(h & 0x7FFFu) : (int32_t)h;
+}
+
+static inline uint32_t fp16_ulp(uint16_t a, uint16_t b) {
+    int32_t d = fp16_order(a) - fp16_order(b);
+    return (uint32_t)(d < 0 ? -d : d);
 }
 
 // The FULL streamer programming: bounds, strides, remap indices and the accelerator CSRs.
@@ -505,7 +709,8 @@ int main() {
             // 14. That ratio is the point: the STATE UPDATE is dominated by
             // per-task start/drain, not by compute.
 
-            // 1  convert + rowmax in one pass (tap appends the per-lane maxima)
+            // 1  rowmax over the tile the GEMM has already written as FP16 (the tap
+            //    appends the per-lane maxima after the tile passes through)
             snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR,
                                     (1u << SIMD_EXT_STREAMREDUCE));
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMREDUCE_CSR, SBEATS);
@@ -682,6 +887,34 @@ int main() {
                     err++;
                 }
             }
+        }
+
+        // ---- against the numerical golden -----------------------------------
+        // The invariants above pin one element per query row -- the row's own maximum,
+        // which subtracts to zero. The golden pins what they cannot see: m against the
+        // true maximum over all Bc keys, the row sum over every key, and P itself on one
+        // beat in PGOLD_STRIDE. datagen.py computes all three in float from the same
+        // operands, at the precision each stage of the hardware works in.
+        uint32_t worst_m = 0, worst_sum = 0, worst_p = 0;
+        for (uint32_t i = 0; i < BR; i++) {
+            uint32_t u = fp16_ulp(fp16_at(mrun, i), m_golden[i]);
+            if (u > worst_m) worst_m = u;
+            u = fp16_ulp(fp16_at(rsum, i), rowsum_golden[i]);
+            if (u > worst_sum) worst_sum = u;
+        }
+        for (uint32_t b = 0; b < PGOLD_NBEATS; b++) {
+            volatile uint8_t *beat = p16 + (uint32_t)b * PGOLD_STRIDE * SIMD_BEAT_BYTES;
+            for (uint32_t i = 0; i < BR; i++) {
+                uint32_t u = fp16_ulp(fp16_at(beat, i), p16_golden[b * BR + i]);
+                if (u > worst_p) worst_p = u;
+            }
+        }
+        printf("  golden           m %u ULP  P %u ULP  rowsum %u ULP  (limits %u/%u/%u)\n",
+               worst_m, worst_p, worst_sum, GOLD_ULP_M, GOLD_ULP_P, GOLD_ULP_SUM);
+        if (worst_m > GOLD_ULP_M || worst_p > GOLD_ULP_P || worst_sum > GOLD_ULP_SUM) {
+            printf("  golden MISMATCH: the chain is wired correctly but the arithmetic "
+                   "disagrees with the float model\n");
+            err++;
         }
     }
 
