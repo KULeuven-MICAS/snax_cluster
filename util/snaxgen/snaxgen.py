@@ -300,6 +300,25 @@ def streamer_csr_num(acc_cfgs):
         if acc_cfgs["snax_streamer_cfg"]["has_C_broadcast"]:
             streamer_csr_num += 1
 
+    # Escape hatch for what the has_* flags above cannot express.
+    #
+    # Those flags are hand-maintained and each names ONE extension, carrying that
+    # extension's user-CSR count plus -- by convention -- the enable register of the host
+    # it happens to live in. That breaks down when an extension is added to a host that
+    # was previously EMPTY: the host's enable register is new too, and no flag covers it.
+    # has_int32_to_fp16_converter is exactly this case, because in the cfg it was written
+    # for, the converter SHARES a host with the rescale unit whose flag already paid for
+    # the enable.
+    #
+    # Getting this wrong is silent and expensive: this number sizes the CSR window the
+    # cluster wrapper decodes for the accelerator, so an undercount leaves the streamer's
+    # launch register outside the window. Writes to it are dropped, busy reads back 0, and
+    # the accelerator produces zeros with no error anywhere -- which is how it presented.
+    #
+    # Cross-check against the Chisel-generated streamer_csr_addr_map.h, which is
+    # authoritative: the last read-only CSR there must be (base + this number - 1).
+    streamer_csr_num += acc_cfgs["snax_streamer_cfg"].get("extra_streamer_csr", 0)
+
     return streamer_csr_num
 
 
