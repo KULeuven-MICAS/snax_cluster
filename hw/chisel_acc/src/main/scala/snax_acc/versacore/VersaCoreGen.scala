@@ -14,6 +14,7 @@ import java.nio.file.Paths
 import chisel3._
 
 import fp_unit._
+import snax_acc.utils.ParallelAndSerialConverterParams
 
 // hjson configuration parser, from hjson to SpatialArrayParam
 object SpatialArrayParamParser {
@@ -29,6 +30,15 @@ object SpatialArrayParamParser {
       cfg.obj.get("snax_num_rw_csr").map(_.num.toInt) == Some(7),
       "snax_num_rw_csr should be 7 for VersaCore"
     )
+
+    val p2sChunksPerGroup = cfg.obj
+      .get("snax_versacore_p2s_chunks_per_group")
+      .map { value =>
+        val chunks = value.num
+        require(chunks.isValidInt, "snax_versacore_p2s_chunks_per_group must be an integer.")
+        chunks.toInt
+      }
+      .getOrElse(ParallelAndSerialConverterParams.DefaultP2sChunksPerGroup)
 
     /** Convert input widths to corresponding FP types
       */
@@ -82,7 +92,8 @@ object SpatialArrayParamParser {
       serialInputCDataWidth  = cfg("snax_versacore_serial_c_d_width").num.toInt,
       serialOutputDDataWidth = cfg("snax_versacore_serial_c_d_width").num.toInt,
       adderTreeDelay         = cfg("snax_versacore_adder_tree_delay").num.toInt,
-      dataflow               = cfg("snax_versacore_temporal_unrolling").arr.map(_.str).toSeq
+      dataflow               = cfg("snax_versacore_temporal_unrolling").arr.map(_.str).toSeq,
+      p2sChunksPerGroup      = p2sChunksPerGroup
     )
   }
 }

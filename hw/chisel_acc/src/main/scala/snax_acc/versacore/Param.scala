@@ -6,7 +6,10 @@
 
 package snax_acc.versacore
 
+import chisel3.util.isPow2
+
 import fp_unit._
+import snax_acc.utils.ParallelAndSerialConverterParams
 
 class SpatialArrayParam(
   val multiplierNum:          Seq[Int],
@@ -26,8 +29,14 @@ class SpatialArrayParam(
   val adderTreeDelay:         Int         = 0,
   val dataflow:               Seq[String] = Seq("output_stationary", "input_stationary", "weight_stationary"),
   val configWidth:            Int         = 32,
-  val csrNum:                 Int         = 7
-)
+  val csrNum:                 Int         = 7,
+  val p2sChunksPerGroup:      Int         = ParallelAndSerialConverterParams.DefaultP2sChunksPerGroup
+) {
+  require(
+    p2sChunksPerGroup >= 2 && isPow2(p2sChunksPerGroup),
+    "p2sChunksPerGroup must be a power of two and at least 2."
+  )
+}
 
 object SpatialArrayParam {
   // test config
@@ -69,7 +78,8 @@ object SpatialArrayParam {
     serialInputCDataWidth:  Int,
     serialOutputDDataWidth: Int,
     adderTreeDelay:         Int         = 0,
-    dataflow:               Seq[String] = Seq("output_stationary", "input_stationary", "weight_stationary")
+    dataflow:               Seq[String] = Seq("output_stationary", "input_stationary", "weight_stationary"),
+    p2sChunksPerGroup:      Int         = ParallelAndSerialConverterParams.DefaultP2sChunksPerGroup
   ): SpatialArrayParam =
     new SpatialArrayParam(
       multiplierNum          = multiplierNum,
@@ -87,6 +97,7 @@ object SpatialArrayParam {
       serialInputCDataWidth  = serialInputCDataWidth,
       serialOutputDDataWidth = serialOutputDDataWidth,
       adderTreeDelay         = adderTreeDelay,
-      dataflow               = dataflow
+      dataflow               = dataflow,
+      p2sChunksPerGroup      = p2sChunksPerGroup
     )
 }
