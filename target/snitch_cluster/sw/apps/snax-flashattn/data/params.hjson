@@ -7,12 +7,16 @@
 // M=8, N=2, K=32  ->  Bc = M*meshRow = 128, Br = N*meshCol = 32, d = K*tileSize = 128,
 // at mesh 16x4x16. The TILE is unchanged; only how it maps onto the larger mesh is.
 //
-// Bc and d grow TOGETHER on purpose. The GEMM does 2*Bc*Br*d MACs per KV tile while the SIMD
-// does ~5*Bc*Br element-ops, so the work ratio is proportional to d: growing Bc alone leaves it
-// flat, and growing d alone breaks the kernel, because d == Bc is exactly what makes
-// S^T = K.Q^T and O^T = V^T.P^T the same shape and lets ONE streamer config drive both matmuls.
-// Tied, doubling them doubles the GEMM:SIMD ratio (25.6 -> 51) and amortises the fixed ~382
-// cycles/tile of configuration over twice the work.
+// These are SHAPE 1 only: S^T = K.Q^T, so M*meshRow = Bc and K*tileSize = d.
+//
+// Bc and d used to be forced equal, because that made both matmuls the same shape and let one
+// streamer config drive both. They are independent now -- shape 2 (O^T = V^T.P^T, M*meshRow = d,
+// K*tileSize = Bc) is generated into data_shape2.h by gen_shape2.sh and switched in per
+// dispatch. So d is set by the MODEL and Bc is the tiling knob, free to fill TCDM.
+//
+// MEASURED at d = 128, computeLanes = 16: Bc 128 -> 512 takes the mesh from 47.7% to 64.2% of
+// peak (14.68 -> 10.91 cycles per key) because the fixed per-tile costs amortise over 4x the
+// beats. Keep NKV >= 4 so the software pipeline still hides the per-tile fill and drain.
 //
 // M and N are swapped relative to the untransposed form because FlashAttention here is
 // computed TRANSPOSED:
@@ -26,7 +30,7 @@
   transposed_B: 0,
   K: 32,
   N: 2,
-  M: 8,
+  M: 32,
   bypassSIMD: 1,
   // broadcast_C won't work in the serial C input
   broadcast_C: 0,
