@@ -77,16 +77,52 @@ class ReaderWriter(
   }
 
   // Channel Selection Logic
-  val sel = Mux(writer.io.tcdmReq.map(_.valid).reduce(_ || _), 0.U, 1.U)
-  readerwriterMux.foreach(_.io.sel := sel)
+  // The writer wins whenever it wants the port; the reader only gets it in the gaps.
+  val selComb = Mux(writer.io.tcdmReq.map(_.valid).reduce(_ || _), 0.U, 1.U)
+
+  // ...but not *mid-request*. `sel` steers both the payload and the ready of every mux, so
+  // letting it follow `selComb` combinationally swaps the request under a held valid: a reader
+  // request that is asserted and still waiting for grant becomes a writer request the moment the
+  // writer raises valid. The TCDM `stream_xbar` checks
+  // `valid_i && !ready_o |=> $stable(data_i)` (and the same for its own `sel_i`), so that swap
+  // trips `input_data_unstable`. It survives here only because this interconnect arbitrates
+  // combinationally every cycle and simply re-arbitrates the new payload -- nothing latched the
+  // old one -- so the stalled request is retried rather than lost. An interconnect that samples
+  // the request when it first sees valid would mis-route it. `DataRequestor` holds the priority
+  // hint for this same reason; `sel` needs the same treatment.
+  //
+  // Hold across a stall, but switch in the same cycle when nothing is in flight, so the common
+  // case costs no bubble. Both terms are registered, so `sel` is not combinational on `ready`.
+  //
+  // Per CHANNEL, not one shared hold: each mux has its own `ready` from the TCDM arbiter, and the
+  // assertion is per xbar input, so only the channel that actually stalled needs pinning. Holding
+  // all 16 because one of them lost arbitration would keep the writer off the whole port for as
+  // long as any single reader request waits, which measurably costs FlashAttention. The channels
+  // are independent downstream too -- separate address queues, separate response credits, and the
+  // response gate below is already a per-channel register -- so they may disagree on `sel` for a
+  // cycle without anything being reassembled out of order.
+  val selHold    = RegInit(VecInit(Seq.fill(readerParam.tcdmParam.numChannel)(1.U(1.W))))
+  val reqStalled = RegInit(VecInit(Seq.fill(readerParam.tcdmParam.numChannel)(false.B)))
+  val sel        = (0 until readerParam.tcdmParam.numChannel).map { i =>
+    Mux(reqStalled(i), selHold(i), selComb)
+  }
+  readerwriterMux.zip(sel).foreach { case (mux, s) => mux.io.sel := s }
+
+  // In flight exactly when the assertion's antecedent holds on this channel. A channel that fired
+  // is free to present its next address, because its ready was high on the cycle it changed.
+  readerwriterMux.zip(sel).zipWithIndex.foreach { case ((mux, s), i) =>
+    reqStalled(i) := mux.io.out.valid && !mux.io.out.ready
+    selHold(i)    := s
+  }
 
   // Connect the response from TCDM to the reader
-  reader.io.tcdmRsp.zip(io.readerInterface.tcdmRsp).foreach {
-    case (reader, interface) => {
+  reader.io.tcdmRsp.zip(io.readerInterface.tcdmRsp).zip(sel).foreach {
+    case ((reader, interface), s) => {
       // Bits is connected directly
       reader.bits  := interface.bits
-      // Valid is connected with the interface valid, under the condition that the last request is from the reader
-      reader.valid := interface.valid && RegNext(sel === 1.U)
+      // Valid is connected with the interface valid, under the condition that the last request on
+      // THIS channel was the reader's -- each channel chooses for itself, so the gate follows it.
+      reader.valid := interface.valid && RegNext(s === 1.U)
     }
   }
 }

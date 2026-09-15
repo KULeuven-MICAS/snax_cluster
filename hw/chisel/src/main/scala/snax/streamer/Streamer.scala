@@ -184,9 +184,13 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   // data reader_writers instantiation
   val reader_writer = Seq((0 until param.readerWriterNum / 2).map { i =>
     Module(
+      // Params come in [read, write] pairs, one pair per ReaderWriter unit -- the same
+      // pairing `fifoWidthReaderWriter(i * 2)` / `(i * 2 + 1)` uses for the accelerator-side
+      // FIFOs above. `i / 2` happened to agree for the single unit every current cfg builds
+      // (i = 0), but would have handed unit 1 the same two params as unit 0.
       new ReaderWriter(
-        param.readerWriterParams(i / 2),
-        param.readerWriterParams(i / 2 + 1),
+        param.readerWriterParams(i * 2),
+        param.readerWriterParams(i * 2 + 1),
         param.tagName + "_C" + i.toString()
       )
     )
@@ -709,6 +713,21 @@ object Streamer {
     csrBase = csrBase + param.writerParams.map(_.csrNum).sum
 
     // reader_writer csr configuration
+    //
+    // `READER_WRITER_n` names a HALF, not a unit -- which the flat numbering hides. The params
+    // arrive in [read, write] pairs and each pair builds ONE `ReaderWriter` module: n = 2k is
+    // the read half of unit k and n = 2k + 1 the write half of that same unit, and the two
+    // share a single group of TCDM ports rather than owning one each. Inside the unit the
+    // write half wins every arbitration; the read half is served only in the cycles the writer
+    // leaves the port idle. Budgeting READER_WRITER_0 and READER_WRITER_1 as two independent
+    // ports -- which the names invite -- overstates the bandwidth by a factor of two.
+    if (param.readerWriterNum > 0) {
+      csrMap = csrMap +
+        "// READER_WRITER_n is one HALF of a unit, not a unit of its own: n = 2k is the read\n" +
+        "// half and n = 2k+1 the write half of ReaderWriter k. A pair shares ONE group of TCDM\n" +
+        "// ports, and within it the write half wins every arbitration -- the read half is served\n" +
+        "// only in the cycles the writer leaves the port idle.\n"
+    }
     for (i <- 0 until param.readerWriterNum) {
       csrBase_i = csrBase + param.readerWriterParams
         .take(i)
