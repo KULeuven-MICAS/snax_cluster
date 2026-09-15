@@ -47,6 +47,7 @@ REGGEN          ?= $(shell $(BENDER) path register_interface)/vendor/lowrisc_ope
 CLUSTER_GEN     ?= $(ROOT)/util/clustergen.py
 CLUSTER_GEN_SRC ?= $(wildcard $(ROOT)/util/clustergen/*.py)
 WRAPPER_GEN     ?= $(ROOT)/util/snaxgen/snaxgen.py
+CORE_ROLES_GEN  ?= $(ROOT)/util/snaxgen/core_roles.py
 
 #########################
 # Files and directories #
@@ -298,7 +299,14 @@ CLUSTER_GEN_HEADERS = snitch_cluster_cfg.h \
 
 REGGEN_HEADERS = snitch_cluster_peripheral.h
 
-TARGET_C_HDRS = $(addprefix $(TARGET_C_HDRS_DIR)/,$(CLUSTER_GEN_HEADERS) $(REGGEN_HEADERS))
+# Which hart carries which engine, derived from the cfg. Listed here rather than
+# left to rtl-gen so a bare `make sw` cannot compile apps against a role map
+# from a different cluster -- placing a kernel on the wrong hart programs THAT
+# hart's accelerator at the same CSR offsets and reports success.
+CORE_ROLES_HEADER = snax-core-roles-defs.h
+
+TARGET_C_HDRS = $(addprefix $(TARGET_C_HDRS_DIR)/,$(CLUSTER_GEN_HEADERS) $(REGGEN_HEADERS) \
+                                                  $(CORE_ROLES_HEADER))
 
 .PHONY: sw clean-headers clean-sw
 
@@ -315,6 +323,12 @@ clean-sw: clean-headers
 $(addprefix $(TARGET_C_HDRS_DIR)/,$(CLUSTER_GEN_HEADERS)): %.h: $(CFG) $(CLUSTER_GEN_PREREQ) %.h.tpl
 	@echo "[CLUSTERGEN] Generate $@"
 	$(CLUSTER_GEN) -c $< --outdir $(TARGET_C_HDRS_DIR) --template $@.tpl
+
+# Core-role header. snaxgen emits the same file from the same module during
+# rtl-gen / sw-snax-gen; this rule is what makes `make sw` alone sufficient.
+$(TARGET_C_HDRS_DIR)/$(CORE_ROLES_HEADER): $(CFG) $(CORE_ROLES_GEN)
+	@echo "[CORE_ROLES] Generate $@"
+	$(CORE_ROLES_GEN) --cfg_path="$<" --out="$@"
 
 # REGGEN headers
 $(TARGET_C_HDRS_DIR)/snitch_cluster_peripheral.h: $(ROOT)/hw/snitch_cluster/src/snitch_cluster_peripheral/snitch_cluster_peripheral_reg.hjson $(REGGEN)

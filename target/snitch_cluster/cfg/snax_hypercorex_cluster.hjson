@@ -131,6 +131,9 @@
         // Xdiv_sqrt: true,
     },
     dma_core_template: {
+        // The Snitch iDMA, and snRuntime's singleton-init core. `idma` must be the LAST
+        // core -- snrt_is_dm_core() picks it structurally -- which core_roles.py enforces.
+        roles: ["idma"],
         isa: "rv32ima",
         // Xdiv_sqrt: true,
         # isa: "rv32ema",

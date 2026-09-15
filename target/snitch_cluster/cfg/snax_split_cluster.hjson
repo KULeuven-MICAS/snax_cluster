@@ -80,6 +80,8 @@
                         $ref: "#/snax_versacore_core_template"
                     }
                     {
+                        // hart 1: the SIMD operator bank on its own core.
+                        roles: ["simd"]
                         isa: rv32ima
                         snax_simd_cfg:
                         {
@@ -222,6 +224,11 @@
                         num_itlb_entries: 1
                     }
                     {
+                        // hart 2: the SNAX transfer engine. `xdma: false` below is the
+                        // Snitch DMA ISA, a DIFFERENT thing that lives on hart 3 -- the
+                        // two keys are confusingly named and this cfg is where they come
+                        // apart.
+                        roles: ["xdma"]
                         isa: rv32ima
                         snax_xdma_cfg:
                         {
@@ -300,6 +307,10 @@
                         num_itlb_entries: 1
                     }
                     {
+                        // hart 3: the classic Snitch iDMA, and snRuntime's singleton-init
+                        // core. Must stay LAST -- snrt_is_dm_core() picks the last hart
+                        // structurally, never from this cfg.
+                        roles: ["idma"]
                         isa: rv32ima
                         xdma: true
                         xssr: false
@@ -533,6 +544,8 @@
     // to a deliberate DSE rather than to the default.
     snax_versacore_core_template:
     {
+        // The matmul array. Cross-checked against the cfg by util/snaxgen/core_roles.py.
+        roles: ["gemm"]
         isa: rv32ima
         xssr: false
         xfrep: false

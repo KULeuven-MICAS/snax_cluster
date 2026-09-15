@@ -106,6 +106,8 @@
     },
     // Templates.
     snax_streamer_gemmX_core_template: {
+        // The matmul array. Cross-checked against the cfg by util/snaxgen/core_roles.py.
+        roles: ["gemm"],
         isa: "rv32ima",
         xssr: false,
         xfrep: false,
@@ -144,6 +146,11 @@
     },
     // Templates.
     dma_core_template: {
+        // One core, three engines: the Snitch iDMA (`xdma: true`), the SNAX transfer
+        // engine (snax_xdma_cfg) and the operator bank on its reader socket. A split
+        // cluster gives each of these its own hart; here they share one, which is why
+        // the label is a LIST. Cross-checked by util/snaxgen/core_roles.py.
+        roles: ["simd", "xdma", "idma"],
         isa: "rv32ima",
         snax_xdma_cfg: {
             bender_target: ["snax_KUL_cluster_xdma"],

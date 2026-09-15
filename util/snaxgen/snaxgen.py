@@ -19,6 +19,9 @@ import argparse
 import os
 import math
 
+# Same directory as this script, so a plain import works however it is invoked.
+import core_roles
+
 
 # Extract json file
 def get_config(cfg_path: str):
@@ -612,6 +615,17 @@ def main():
             print(" -t " + i, end="")
         print()
         return
+
+    # Which hart carries which engine. Emitted on EVERY path that reaches here
+    # (full rtl-gen and --sw_only alike, but not the side-effect-free
+    # --get_bender_targets query above) so the header cannot go stale against
+    # the active cfg. target/snitch_cluster/Makefile emits the same file from
+    # the same module for a bare `make sw`; one module, so they cannot disagree.
+    core_roles.generate(
+        cfg,
+        args.cfg_path,
+        args.gen_path + "../sw/runtime/common/snax-core-roles-defs.h",
+    )
 
     print("------------------------------------------------")
     print("    Generating accelerator specific wrappers    ")

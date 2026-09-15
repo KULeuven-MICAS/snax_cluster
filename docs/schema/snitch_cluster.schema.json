@@ -420,6 +420,21 @@
                             "title": "Core Description",
                             "description": "Description of a single core.",
                             "properties": {
+                                "roles": {
+                                    "type": "array",
+                                    "title": "Engine roles this core carries.",
+                                    "description": "Optional LABEL for which engine(s) sit on this hart, cross-checked by util/snaxgen/core_roles.py against what the core's accelerator blocks structurally describe; a label that disagrees fails generation. A list, because one core commonly holds several roles at once -- an unsplit cluster's data mover is `idma`, `xdma` and `simd` simultaneously. `gemm` is a matmul array (snax_acc_cfg), `simd` the operator bank (snax_simd_cfg, or reader_extensions on the xDMA where no core has snax_simd_cfg), `xdma` the SNAX transfer engine (snax_xdma_cfg), and `idma` the Snitch DMA ISA (the `xdma` boolean -- a DIFFERENT key, confusingly), which must sit on the LAST core because snRuntime picks its data mover structurally. There is deliberately no `host` role: on a multi-chiplet integration the host sits one past the last cluster core, so it is an integrator-level concept a cluster cannot describe. A core written as a bare $ref has nowhere to put this key -- a sibling of a $ref does not survive jsonref resolution -- so label the core TEMPLATE instead.",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "gemm",
+                                            "simd",
+                                            "xdma",
+                                            "idma"
+                                        ]
+                                    },
+                                    "uniqueItems": true
+                                },
                                 "isa": {
                                     "type": "string",
                                     "title": "ISA String containing RISC-V standard extensions.",
