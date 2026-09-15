@@ -495,6 +495,10 @@ for core_id in range(len(cfg['cores'])):
   }
 
 total_snax_tcdm_ports = total_snax_narrow_ports
+
+# CLUSTER-LEVEL "is there an xDMA core at all".
+#
+snax_xdma_flag = any(v['snax_xdma_flag'] for v in snax_core_acc.values())
 %>\
   // Internal local parameters to be hooked into the Snitch / SNAX cluster
   localparam int unsigned NumIntOutstandingLoads  [${cfg['nr_cores']}] = '{${core_cfg('num_int_outstanding_loads')}};
