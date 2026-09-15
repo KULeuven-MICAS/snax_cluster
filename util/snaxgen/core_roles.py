@@ -143,7 +143,19 @@ def derive_roles(cores):
     # harts in a split cluster -- there, hart 3 has `xdma: true` and no snax
     # block, while hart 2 has snax_xdma_cfg with `xdma: false`.
     for i, core in enumerate(cores):
-        if core.get("xdma", False):
+        has_idma = core.get("xdma", False)
+        # Insist on a real boolean. hjson would hand back the STRING "false" for
+        # a quoted value, which is truthy -- and would hand the iDMA role to a
+        # core that does not have it, silently. No cfg quotes it today; the
+        # check is here so none ever can.
+        if not isinstance(has_idma, bool):
+            raise RoleError(
+                "hart {}: `xdma` must be a boolean, got {!r}. A quoted "
+                "\"false\" is truthy and would claim the idma role.".format(
+                    i, has_idma
+                )
+            )
+        if has_idma:
             if i != last:
                 raise RoleError(
                     "hart {} sets `xdma: true` (the Snitch DMA ISA) but is not "
@@ -210,9 +222,28 @@ def roles_of(cores, derived, idx):
     return [r for r in ROLES if derived.get(r) == idx]
 
 
+# <repo>/util/snaxgen/core_roles.py -> <repo>
+_REPO_ROOT = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
+
+
+def _source_label(cfg_path):
+    """A repo-relative name for the cfg, independent of the caller's cwd.
+
+    The emitted header must be a pure function of the cfg: HeMAiA drives this
+    through `make -C <snitch>/target/snitch_cluster` from its own root, so a
+    cwd-relative path would put `../../..` chains into the file and make the
+    SAME cfg generate different bytes depending on where make was run.
+    """
+    path = os.path.abspath(cfg_path)
+    rel = os.path.relpath(path, _REPO_ROOT)
+    return os.path.basename(path) if rel.startswith(os.pardir) else rel
+
+
 def emit_header(cfg_path, cores, derived):
     """Render the generated C header as a string."""
-    rel = os.path.relpath(os.path.abspath(cfg_path), os.getcwd())
+    rel = _source_label(cfg_path)
     lines = [
         "// Copyright 2026 KU Leuven.",
         "// Licensed under the Apache License, Version 2.0, see LICENSE for details.",

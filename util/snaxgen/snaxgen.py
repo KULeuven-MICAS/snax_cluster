@@ -16,11 +16,20 @@ from jsonref import JsonRef
 import hjson
 import json
 import argparse
+import importlib.util
 import os
 import math
 
-# Same directory as this script, so a plain import works however it is invoked.
-import core_roles
+# core_roles.py sits next to this file, but resolve it by PATH rather than by name:
+# HeMAiA's occamygen imports THIS file with importlib.spec_from_file_location, which --
+# unlike running snaxgen.py as a script -- does not put its directory on sys.path, so a
+# plain `import core_roles` raises ModuleNotFoundError there while working fine here.
+_core_roles_spec = importlib.util.spec_from_file_location(
+    "snax_core_roles",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "core_roles.py"),
+)
+core_roles = importlib.util.module_from_spec(_core_roles_spec)
+_core_roles_spec.loader.exec_module(core_roles)
 
 
 # Extract json file
@@ -882,7 +891,7 @@ def main():
                 sparse_config.append((16, 1))
             if "snax_simd_cfg" in cfg_cores[i]:
                 # num_channel read ports + num_channel write ports. Sized to the
-                # lane count, not to the DMA beat -- see the plan's Track B 6.3.
+                # lane count, not to the DMA beat.
                 simd_ports = (
                     cfg_cores[i]["snax_simd_cfg"].get(
                         "num_channel",
