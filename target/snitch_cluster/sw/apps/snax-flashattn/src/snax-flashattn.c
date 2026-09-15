@@ -23,7 +23,8 @@
 //     corr = exp(m - m')            [Br]       how much the PAST has to shrink
 //     P    = exp(S - m')            [Br, Bc]   SIMD
 //     l    = corr * l + rowsum(P)   [Br]       rescale, then fold this tile in
-//     O    = corr * O + P . V_j     [Br, d]    SIMD rescale + GEMM
+//     O    = corr * O               [Br, d]    SIMD
+//     O   += P . V_j                [Br, d]    GEMM
 //
 //   and once, after the last tile:  O = O / l
 //
