@@ -201,11 +201,8 @@ class HasRescaleDownEfficient(in_elementWidth: Int = 32, out_elementWidth: Int =
 class RescaleDownEfficientDynamic(
   in_elementWidth:    Int      = 32,
   out_elementWidth:   Int      = 8,
-  extra_loops_choice: Seq[Int] = Seq(
-    1,
-    4,
-    1
-  ) // NOTE: This extra_loops_choice is used to aggregate a batch of input to output and is related to the use case! Be careful when using it
+  // Each CSR-selected entry is the ratio of input lanes to active lanes for that array shape.
+  extra_loops_choice: Seq[Int] = Seq(1, 4, 1)
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
   // Efficient Version of RescaleDown with optimizations for area efficiency
@@ -219,8 +216,16 @@ class RescaleDownEfficientDynamic(
     s"RescaleDown: in_elementWidth ($in_elementWidth) must be a multiple of out_elementWidth ($out_elementWidth)"
   )
 
-  //
-  val counter = Module(new snax.utils.BasicCounter(log2Ceil(in_elementWidth / out_elementWidth * 32)) {
+  val numPEs = extensionParam.dataWidth / in_elementWidth
+  require(extra_loops_choice.nonEmpty, "RescaleDown: extra_loops_choice must not be empty")
+  require(
+    extra_loops_choice.forall(factor => factor > 0 && numPEs % factor == 0),
+    s"RescaleDown: extra_loops_choice must contain positive divisors of the input lane count ($numPEs)"
+  )
+
+  // BasicCounter must represent the ceiling as well as each counter value.
+  val maxConversions = BigInt(in_elementWidth / out_elementWidth) * extra_loops_choice.max
+  val counter        = Module(new snax.utils.BasicCounter(log2Ceil(maxConversions + 1)) {
     override val desiredName = "RescaleDownCounter"
   })
 
@@ -294,7 +299,6 @@ class RescaleDownEfficientDynamic(
 
   val update_previous_regs = ext_data_i.fire  && (counter.io.value =/= (numConversions * extra_loop - 1.U))
   val update_final_regs    = ext_data_i.valid && (counter.io.value === (numConversions * extra_loop - 1.U))
-  val numPEs               = extensionParam.dataWidth / 32
   val effectivePEs         = (numPEs.U) / extra_loop
 
   val PEs = for (i <- 0 until extensionParam.dataWidth / in_elementWidth) yield {
@@ -343,8 +347,12 @@ class RescaleDownEfficientDynamic(
 
 }
 
-class HasRescaleDownEfficientDynamic(in_elementWidth: Int = 32, out_elementWidth: Int = 8, dataWidth: Int = 512)
-    extends HasDataPathExtension {
+class HasRescaleDownEfficientDynamic(
+  in_elementWidth:    Int      = 32,
+  out_elementWidth:   Int      = 8,
+  dataWidth:          Int      = 512,
+  extra_loops_choice: Seq[Int] = Seq(1, 4, 1)
+) extends HasDataPathExtension {
   implicit val extensionParam:          DataPathExtensionParam      =
     new DataPathExtensionParam(
       moduleName = "RescaleDownEfficient",
@@ -353,7 +361,7 @@ class HasRescaleDownEfficientDynamic(in_elementWidth: Int = 32, out_elementWidth
     )
   def instantiate(clusterName: String): RescaleDownEfficientDynamic =
     Module(
-      new RescaleDownEfficientDynamic(in_elementWidth, out_elementWidth) {
+      new RescaleDownEfficientDynamic(in_elementWidth, out_elementWidth, extra_loops_choice) {
         override def desiredName = clusterName + namePostfix
       }
     )

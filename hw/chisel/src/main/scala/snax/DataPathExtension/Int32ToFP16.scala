@@ -100,11 +100,8 @@ class Int32ToFp16Converter(
   dataWidth:          Int      = 512,
   in_elementWidth:    Int      = 32,
   out_elementWidth:   Int      = 16,
-  extra_loops_choice: Seq[Int] = Seq(
-    1,
-    2,
-    1
-  ) // NOTE: This extra_loops_choice is related to the use case (aggregate a batch of input to output) and not used in the current implementation.
+  // Each CSR-selected entry is the ratio of input lanes to active lanes for that array shape.
+  extra_loops_choice: Seq[Int] = Seq(1, 2, 1)
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
 
@@ -119,13 +116,19 @@ class Int32ToFp16Converter(
     s"Int32ToFp16Converter: out_elementWidth must be 16, got $out_elementWidth"
   )
   val numPEs = dataWidth / 32
+  require(extra_loops_choice.nonEmpty, "Int32ToFp16Converter: extra_loops_choice must not be empty")
+  require(
+    extra_loops_choice.forall(factor => factor > 0 && numPEs % factor == 0),
+    s"Int32ToFp16Converter: extra_loops_choice must contain positive divisors of the input lane count ($numPEs)"
+  )
 
   // -------------------------
   // Counter for controlling conversion
   // -------------------------
   // the counter counts up to (in_elementWidth / out_elementWidth) * extra_loop
-  // assume 32 is enough for extra_loop
-  val counter = Module(new snax.utils.BasicCounter(log2Ceil(in_elementWidth / out_elementWidth * 32)) {
+  // BasicCounter must represent the ceiling as well as each counter value.
+  val maxConversions = BigInt(in_elementWidth / out_elementWidth) * extra_loops_choice.max
+  val counter        = Module(new snax.utils.BasicCounter(log2Ceil(maxConversions + 1)) {
     override val desiredName = "Int32ToFp16Converter" + "_counter"
   })
 
@@ -221,8 +224,10 @@ class Int32ToFp16Converter(
   ext_data_i.ready := !(ext_data_o.valid && !ext_data_o.ready) && !keep_data_valid
 }
 
-class HasInt32ToFp16Converter(dataWidth: Int = 512) extends HasDataPathExtension {
-  // The length of row, col, and elementWidth should be the same
+class HasInt32ToFp16Converter(
+  dataWidth:          Int      = 512,
+  extra_loops_choice: Seq[Int] = Seq(1, 2, 1)
+) extends HasDataPathExtension {
   require(dataWidth % 32 == 0, "dataWidth must be multiple of 32")
 
   implicit val extensionParam: DataPathExtensionParam =
@@ -234,7 +239,7 @@ class HasInt32ToFp16Converter(dataWidth: Int = 512) extends HasDataPathExtension
 
   def instantiate(clusterName: String): Int32ToFp16Converter =
     Module(
-      new Int32ToFp16Converter(dataWidth) {
+      new Int32ToFp16Converter(dataWidth, extra_loops_choice = extra_loops_choice) {
         override def desiredName = clusterName + namePostfix
       }
     )

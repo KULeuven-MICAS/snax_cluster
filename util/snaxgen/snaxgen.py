@@ -16,6 +16,7 @@ from jsonref import JsonRef
 import hjson
 import json
 import argparse
+import copy
 import os
 import math
 
@@ -326,6 +327,85 @@ def find_keys_with_keyword(data, keyword, parent_key=""):
     return results
 
 
+def infer_versacore_extension_params(acc_cfg):
+    """Map array_shape to the output converters' input-beat packing factors.
+
+    A shape produces Mu * Nu 32-bit results, serialized into stream beats.
+    When these fill only part of the extension input, the converter collects
+    extra batches of the useful lanes. The 32-to-8 / 32-to-16 conversion ratio
+    is handled by the extension itself. Explicit tables remain supported.
+    """
+    if acc_cfg["snax_acc_name"] != "snax_versacore":
+        return
+
+    streamer_cfg = acc_cfg["snax_streamer_cfg"]
+    output_extensions = []
+    for mover in ("data_writer_params", "data_reader_writer_params"):
+        extensions = streamer_cfg.get(mover, {}).get("datapath_extensions", [])
+        for index, extension_list in enumerate(extensions):
+            # Shared reader/writer pairs put the writer at the odd index.
+            if mover == "data_reader_writer_params" and index % 2 == 0:
+                continue
+            for name in (
+                "HasRescaleDownEfficientDynamic",
+                "HasInt32ToFp16Converter",
+            ):
+                if name in extension_list:
+                    output_extensions.append(extension_list[name])
+
+    if not output_extensions:
+        return
+
+    serial_width = acc_cfg["snax_versacore_serial_c_d_width"]
+    if serial_width <= 0 or serial_width % 32:
+        raise ValueError("VersaCore output stream width must be a multiple of 32")
+    shapes_by_type = acc_cfg["snax_versacore_spatial_unrolling"]
+    widths = acc_cfg["snax_versacore_output_d_element_width"]
+    if not shapes_by_type or len(shapes_by_type) != len(widths):
+        raise ValueError(
+            "VersaCore output widths must match the spatial-unrolling modes"
+        )
+
+    useful_widths_by_type = []
+    for shapes, element_width in zip(shapes_by_type, widths):
+        if element_width != 32:
+            raise ValueError(
+                "Inferring output extension loops requires 32-bit D elements"
+            )
+        table = []
+        for shape in shapes:
+            if len(shape) != 3 or any(dim <= 0 for dim in shape):
+                raise ValueError(
+                    "VersaCore array shapes must contain positive Mu, Ku, Nu"
+                )
+            output_width = shape[0] * shape[2] * element_width
+            if max(serial_width, output_width) % min(serial_width, output_width):
+                raise ValueError(
+                    "VersaCore shape output must tile the serializer width exactly"
+                )
+            table.append(min(serial_width, output_width))
+        if not table:
+            raise ValueError(
+                "VersaCore output extension needs at least one array shape"
+            )
+        if useful_widths_by_type and table != useful_widths_by_type[0]:
+            raise ValueError(
+                "VersaCore array_shape must select the same output loop factors "
+                "for every data type"
+            )
+        useful_widths_by_type.append(table)
+
+    for extension in output_extensions:
+        data_width = extension.setdefault("dataWidth", serial_width)
+        if data_width < serial_width or data_width % serial_width:
+            raise ValueError(
+                "VersaCore output extension dataWidth must be a multiple "
+                "of the serializer width"
+            )
+        choices = [data_width // width for width in useful_widths_by_type[0]]
+        extension.setdefault("extra_loops_choice", choices.copy())
+
+
 def generate_xdma(cfg, cfg_cores, num_cores, args):
     """Generate the cluster xDMA.
 
@@ -498,7 +578,10 @@ def main():
         for i in range(num_cores):
             if "snax_acc_cfg" in cfg_cores[i]:
                 num_core_w_acc += 1
-                acc_cfgs.append(cfg_cores[i]["snax_acc_cfg"][0].copy())
+                acc_cfgs.append(copy.deepcopy(cfg_cores[i]["snax_acc_cfg"][0]))
+
+        for acc_cfg in acc_cfgs:
+            infer_versacore_extension_params(acc_cfg)
 
         # Placing the TCDM components again into accelerator configurations
         # Because they are part of the cluster-level configurations
@@ -607,9 +690,11 @@ def main():
                         gen_path=rtl_target_path,
                     )
 
-            streamer_cfg = find_keys_with_keyword(
-                cfg, f"{acc_cfgs[i]['tag_name']}_streamer"
-            )
+            # Pass the prepared per-accelerator config, including inferred
+            # extension parameters, to both RTL and SW-header generation.
+            streamer_cfg = {
+                f"{acc_cfgs[i]['tag_name']}_streamer": acc_cfgs[i]["snax_streamer_cfg"]
+            }
             # In sw_only mode use the lightweight entry point that skips
             # CIRCT and emits only streamer_csr_addr_map.h.
             chisel_streamer_target = (
