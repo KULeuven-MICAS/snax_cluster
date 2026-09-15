@@ -245,6 +245,12 @@ Each streamer configuration has the following:
 
 Note that the configurations are in a list. Each column in the list is a set of configuration for a single streamer. For example, in the `data_reader_params`, the first column of configurations is for the data streamer (input) A, and the second column is for the data streamer (input) B.
 
+### `data_reader_writer_params` comes in pairs
+
+`data_reader_params` and `data_writer_params` take one column per streamer, but `data_reader_writer_params` takes **two columns per streamer**: a `ReaderWriter` is a single bidirectional data mover, and the two columns configure its read side and its write side. Column `2k` is the read half of unit `k` and column `2k+1` is the write half of the same unit, so a block with four columns builds two units, not four.
+
+The generated CSRs keep that flat numbering, which is the part worth remembering: `READER_WRITER_0` and `READER_WRITER_1` are **not two independent data movers**. They are the read and write halves of one unit, and they share one group of TCDM ports — `num_channel` is the size of the group the pair shares, not a per-half allocation. Inside the unit the write half wins every arbitration for that group; the read half only gets the port in the cycles the writer leaves it idle. Budgeting the two entries as separate ports therefore overstates the available bandwidth by a factor of two, and a read stream sized to run concurrently with its own unit's write stream will not achieve it.
+
 ## SNAX ALU Streamer CSRs
 
 Based on the configuration file a header file containing all the data streamer registers will be generated. That is, each data streamer will have a set of registers. A `streamer_csr_addr_map.h` file will be generated to the directory for where the software library for your accelerator resides. More on this later (in Section). You will see the following registers:
