@@ -89,43 +89,54 @@ static inline uint32_t fp16_mono(uint16_t h) {
 
 int main() {
     int err = 0;
+    // TCDM layout, derived on EVERY hart and not on the engine core
+    // alone: the staging core below has to land the data where the
+    // engine core will read it, and snrt_cluster_base_addrl() is the
+    // same on every hart, so both derive it rather than communicate.
+    uint32_t base = snrt_cluster_base_addrl();
+    uint32_t beats = rope_beats;
+    uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
+
+    // Layout: each pass's two operands are adjacent (row_bytes apart) so
+    // the interleave stride = row_bytes. P1 {x,cos}->tmp1, P2
+    // {xswap,sin}->tmp2, P3 {tmp1,tmp2}->out.
+    uint8_t* x_in = (uint8_t*)base;
+    uint8_t* cos_in = x_in + row_bytes;  // cos_full (P1 operand 1)
+    uint8_t* xswap =
+        cos_in + row_bytes;  // adjacent swap of x (P2 operand 0)
+    uint8_t* sin_in = xswap + row_bytes;  // sin_signed (P2 operand 1)
+    uint8_t* tmp1 = sin_in + row_bytes;   // x (.) cos       (P3 operand 0)
+    uint8_t* tmp2 = tmp1 + row_bytes;     // xswap (.) sin   (P3 operand 1)
+    uint8_t* out_buf = tmp2 + row_bytes;  // RoPE output (FP16)
+
+    // Stage L3 -> TCDM on the core that OWNS the iDMA. On a split cluster
+    // that is a different hart from the engine block, which carries no DMA
+    // ISA at all -- a dm* instruction there traps. Where the two roles share
+    // one hart this reads exactly the same.
+    if (snax_is_idma_core()) {
+        snrt_dma_start_1d(x_in, rope_x, row_bytes);
+        snrt_dma_start_1d(cos_in, rope_cos, row_bytes);
+        snrt_dma_start_1d(sin_in, rope_sin, row_bytes);
+        snrt_dma_wait_all();
+
+        // The adjacent-halfword swap xswap[2k]=x[2k+1], xswap[2k+1]=x[2k], as
+        // two strided 2-byte copies (odd->even, even->odd). This is iDMA work,
+        // not SIMD work, so it belongs on this hart with the rest of the input
+        // prep -- and it is timed and reported HERE, because a cycle count read
+        // on the engine core would not be measuring the core that did it.
+        uint32_t ts0 = snrt_mcycle();
+        uint32_t pairs = beats * 16;  // N/2
+        snrt_dma_start_2d(xswap, x_in + 2, 2, 4, 4, pairs);
+        snrt_dma_start_2d(xswap + 2, x_in, 2, 4, 4, pairs);
+        snrt_dma_wait_all();
+        printf("[RoPE] cycles: swap=%u\n", snrt_mcycle() - ts0);
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster,
+    // so a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
+
     if (snax_is_simd_core()) {
-        uint32_t base = snrt_cluster_base_addrl();
-        uint32_t beats = rope_beats;
-        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
-
-        // Layout: each pass's two operands are adjacent (row_bytes apart) so
-        // the interleave stride = row_bytes. P1 {x,cos}->tmp1, P2
-        // {xswap,sin}->tmp2, P3 {tmp1,tmp2}->out.
-        uint8_t* x_in = (uint8_t*)base;
-        uint8_t* cos_in = x_in + row_bytes;  // cos_full (P1 operand 1)
-        uint8_t* xswap =
-            cos_in + row_bytes;  // adjacent swap of x (P2 operand 0)
-        uint8_t* sin_in = xswap + row_bytes;  // sin_signed (P2 operand 1)
-        uint8_t* tmp1 = sin_in + row_bytes;   // x (.) cos       (P3 operand 0)
-        uint8_t* tmp2 = tmp1 + row_bytes;     // xswap (.) sin   (P3 operand 1)
-        uint8_t* out_buf = tmp2 + row_bytes;  // RoPE output (FP16)
-
         printf("[RoPE] N=%u beats=%u\n", rope_n, beats);
-
-        snax_stage_1d(x_in, rope_x, row_bytes);
-        snax_stage_1d(cos_in, rope_cos, row_bytes);
-        snax_stage_1d(sin_in, rope_sin, row_bytes);
-
-        // One-time input staging (like swiglu's gate/up load): adjacent
-        // halfword swap xswap[2k]=x[2k+1], xswap[2k+1]=x[2k], offloaded to the
-        // iDMA as two strided 2-byte copies (odd->even, even->odd halfwords).
-        // The DM core stays free; measured once, reported separately.
-        uint32_t sw = 0;
-        {
-            uint32_t ts0 = snrt_mcycle();
-            uint32_t pairs = beats * 16;  // N/2
-            snax_stage_2d(xswap, x_in + 2, 2, 4, 4,
-                              pairs);  // xswap[2k]   = x[2k+1]
-            snax_stage_2d(xswap + 2, x_in, 2, 4, 4,
-                              pairs);  // xswap[2k+1] = x[2k]
-            sw = snrt_mcycle() - ts0;
-        }
 
         // All passes share this interleaved [2,beats] src shape and 1D dst
         // shape; only the bases change.
@@ -198,7 +209,7 @@ int main() {
             printf("[RoPE] xDMA task setup failed\n");
             return 1;
         }
-        printf("[RoPE] cycles: swap=%u p1=%u p2=%u p3=%u xdma_total=%u\n", sw,
+        printf("[RoPE] cycles: p1=%u p2=%u p3=%u xdma_total=%u\n",
                c1, c2, c3, c1 + c2 + c3);
         printf("[RoPE] full latency: cold=%u warm=%u cycles\n", lat_cold,
                lat_warm);

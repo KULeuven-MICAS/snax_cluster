@@ -125,51 +125,65 @@ static inline void splat_beat(uint8_t* beat, uint16_t h) {
 
 int main() {
     int err = 0;
+    // TCDM layout, derived on EVERY hart and not on the engine core
+    // alone: the staging core below has to land the data where the
+    // engine core will read it, and snrt_cluster_base_addrl() is the
+    // same on every hart, so both derive it rather than communicate.
+    uint32_t base = snrt_cluster_base_addrl();
+    uint32_t rows = smf_rows;
+    uint32_t d = smf_d;
+    uint32_t beats = smf_beats;
+    uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
+    uint32_t rows_bytes = rows * row_bytes;
+    uint32_t scal_bytes = rows * SIMD_BEAT_BYTES;
+    uint32_t all_beats = rows * beats;
+    uint32_t pad_row_bytes =
+        (beats + 1) * SIMD_BEAT_BYTES;  // + the trailing sum beat
+    uint32_t pad_bytes = rows * pad_row_bytes;
+
+    uint8_t* x_in = (uint8_t*)base;
+    uint8_t* max_buf = x_in + rows_bytes;     // T1 out: splatted max beats
+    uint8_t* sum_buf = max_buf + scal_bytes;  // A4 out: splatted sum beats
+    uint8_t* inv_l1 = sum_buf + scal_bytes;   // [rows] 1/Sexp, L1 copy
+    uint8_t* neg_beat =
+        inv_l1 + SIMD_BEAT_BYTES;  // B0: -max[r], one beat per row
+    uint8_t* rcp_beat =
+        neg_beat + scal_bytes;  // B4: 1/Sexp[r], one beat per row
+    // ORDER MATTERS. The elementwise interleave addresses operand 1 as
+    // operand0_base + delta, and the AGU adds `delta` as an UNSIGNED stride
+    // -- a broadcast buffer placed BELOW its data operand makes the delta
+    // wrap and the reader walks off outside the TCDM (it returns X, the
+    // task still "completes", and X lands in the result). So every
+    // broadcast buffer must sit ABOVE every data operand it is interleaved
+    // with: bc_a above x_in AND above expb_a; bc_b above x_in AND above
+    // expb_pad.
+    uint8_t* xs_buf = rcp_beat + scal_bytes;  // x - max (A2 / B2 out)
+    uint8_t* expb_a = xs_buf + rows_bytes;    // A3 out
+    uint8_t* bc_a = expb_a + rows_bytes;  // A: -max bcast, then 1/sum bcast
+    uint8_t* out_a = bc_a + rows_bytes;   // A6 out
+    uint8_t* q_sep = out_a + rows_bytes;  // A7 out (int8)
+    uint8_t* expb_pad =
+        q_sep + rows_bytes / 2;            // B3 out: [rows, beats+1] beats
+    uint8_t* bc_b = expb_pad + pad_bytes;  // B: -max bcast (flat), then
+                                           //    1/sum bcast (padded stride)
+    uint8_t* out_b = bc_b + pad_bytes;     // B6 out (fp16)
+    uint8_t* q_fused = out_b + rows_bytes;  // B6 out (int8, chained quant)
+
+    // Stage L3 -> TCDM on the core that OWNS the iDMA. On a split cluster
+    // that is a different hart from the engine block, which carries no DMA
+    // ISA at all -- a dm* instruction there traps. Where the two roles share
+    // one hart this reads exactly the same.
+    if (snax_is_idma_core()) {
+        snrt_dma_start_1d(x_in, smf_input, rows_bytes);
+        snrt_dma_start_1d(inv_l1, smf_inv_sum, rows * sizeof(uint16_t));
+        snrt_dma_wait_all();
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster,
+    // so a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
+
     if (snax_is_simd_core()) {
-        uint32_t base = snrt_cluster_base_addrl();
-        uint32_t rows = smf_rows;
-        uint32_t d = smf_d;
-        uint32_t beats = smf_beats;
-        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
-        uint32_t rows_bytes = rows * row_bytes;
-        uint32_t scal_bytes = rows * SIMD_BEAT_BYTES;
-        uint32_t all_beats = rows * beats;
-        uint32_t pad_row_bytes =
-            (beats + 1) * SIMD_BEAT_BYTES;  // + the trailing sum beat
-        uint32_t pad_bytes = rows * pad_row_bytes;
-
-        uint8_t* x_in = (uint8_t*)base;
-        uint8_t* max_buf = x_in + rows_bytes;     // T1 out: splatted max beats
-        uint8_t* sum_buf = max_buf + scal_bytes;  // A4 out: splatted sum beats
-        uint8_t* inv_l1 = sum_buf + scal_bytes;   // [rows] 1/Sexp, L1 copy
-        uint8_t* neg_beat =
-            inv_l1 + SIMD_BEAT_BYTES;  // B0: -max[r], one beat per row
-        uint8_t* rcp_beat =
-            neg_beat + scal_bytes;  // B4: 1/Sexp[r], one beat per row
-        // ORDER MATTERS. The elementwise interleave addresses operand 1 as
-        // operand0_base + delta, and the AGU adds `delta` as an UNSIGNED stride
-        // -- a broadcast buffer placed BELOW its data operand makes the delta
-        // wrap and the reader walks off outside the TCDM (it returns X, the
-        // task still "completes", and X lands in the result). So every
-        // broadcast buffer must sit ABOVE every data operand it is interleaved
-        // with: bc_a above x_in AND above expb_a; bc_b above x_in AND above
-        // expb_pad.
-        uint8_t* xs_buf = rcp_beat + scal_bytes;  // x - max (A2 / B2 out)
-        uint8_t* expb_a = xs_buf + rows_bytes;    // A3 out
-        uint8_t* bc_a = expb_a + rows_bytes;  // A: -max bcast, then 1/sum bcast
-        uint8_t* out_a = bc_a + rows_bytes;   // A6 out
-        uint8_t* q_sep = out_a + rows_bytes;  // A7 out (int8)
-        uint8_t* expb_pad =
-            q_sep + rows_bytes / 2;            // B3 out: [rows, beats+1] beats
-        uint8_t* bc_b = expb_pad + pad_bytes;  // B: -max bcast (flat), then
-                                               //    1/sum bcast (padded stride)
-        uint8_t* out_b = bc_b + pad_bytes;     // B6 out (fp16)
-        uint8_t* q_fused = out_b + rows_bytes;  // B6 out (int8, chained quant)
-
         printf("[SmFold] rows=%u D=%u beats=%u\n", rows, d, beats);
-
-        snax_stage_1d(x_in, smf_input, rows_bytes);
-        snax_stage_1d(inv_l1, smf_inv_sum, rows * sizeof(uint16_t));
 
         // ---- AGU shapes ----
         uint32_t red_str[2] = {SIMD_BEAT_BYTES,

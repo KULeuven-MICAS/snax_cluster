@@ -27,6 +27,19 @@ int main() {
     uint8_t* tcdm_in2 = tcdm_in1 + tcdm_input_stride;
     uint8_t* tcdm_out = tcdm_in2 + tcdm_input_stride;
 
+    // Stage L3 -> TCDM on the core that OWNS the iDMA. On a split cluster
+    // that is a different hart from the engine block, which carries no DMA
+    // ISA at all -- a dm* instruction there traps. Where the two roles share
+    // one hart this reads exactly the same.
+    if (snax_is_idma_core()) {
+        snrt_dma_start_1d(tcdm_in1, input_matrix1, input_bytes);
+        snrt_dma_start_1d(tcdm_in2, input_matrix2, input_bytes);
+        snrt_dma_wait_all();
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster,
+    // so a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
+
     if (snax_is_simd_core()) {
         printf(
             "[ElementwiseAdd] M=%u, N=%u, padded_N=%u, elements=%u, "
@@ -40,10 +53,6 @@ int main() {
                 input_bytes_aligned, tcdm_input_stride);
             err++;
         }
-
-        snax_stage_1d(tcdm_in1, input_matrix1, input_bytes);
-
-        snax_stage_1d(tcdm_in2, input_matrix2, input_bytes);
 
         uint32_t ext_param[1] = {2};
         if (snax_xdma_enable_src_ext(READER_EXT_ELEMENTWISEADDBIT32,

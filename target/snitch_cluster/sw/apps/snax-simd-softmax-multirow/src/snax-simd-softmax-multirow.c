@@ -90,28 +90,42 @@ static uint32_t run_task(void) {
 
 int main() {
     int err = 0;
+    // TCDM layout, derived on EVERY hart and not on the engine core
+    // alone: the staging core below has to land the data where the
+    // engine core will read it, and snrt_cluster_base_addrl() is the
+    // same on every hart, so both derive it rather than communicate.
+    uint32_t base = snrt_cluster_base_addrl();
+    uint32_t rows = smr_rows;
+    uint32_t d = smr_d;
+    uint32_t beats = smr_beats;
+    uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
+    uint32_t rows_bytes = rows * row_bytes;  // whole [rows,D] FP16 buffer
+    uint32_t scal_bytes =
+        rows * SIMD_BEAT_BYTES;  // rows splatted scalar beats
+
+    uint8_t* x_in = (uint8_t*)base;
+    uint8_t* max_buf = x_in + rows_bytes;       // reduce(MAX) out
+    uint8_t* negmax_bc = max_buf + scal_bytes;  // [rows,D] -max broadcast
+    uint8_t* xs_buf = negmax_bc + rows_bytes;   // sew(ADD) out = x - max
+    uint8_t* expb_buf = xs_buf + rows_bytes;    // smap(EXP) out
+    uint8_t* sum_buf = expb_buf + rows_bytes;   // reduce(ADD) out
+    uint8_t* recip_bc = sum_buf + scal_bytes;   // [rows,D] 1/sum broadcast
+    uint8_t* out_buf = recip_bc + rows_bytes;   // sew(MUL) out = softmax
+
+    // Stage L3 -> TCDM on the core that OWNS the iDMA. On a split cluster
+    // that is a different hart from the engine block, which carries no DMA
+    // ISA at all -- a dm* instruction there traps. Where the two roles share
+    // one hart this reads exactly the same.
+    if (snax_is_idma_core()) {
+        snrt_dma_start_1d(x_in, smr_input, rows_bytes);
+        snrt_dma_wait_all();
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster,
+    // so a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
+
     if (snax_is_simd_core()) {
-        uint32_t base = snrt_cluster_base_addrl();
-        uint32_t rows = smr_rows;
-        uint32_t d = smr_d;
-        uint32_t beats = smr_beats;
-        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
-        uint32_t rows_bytes = rows * row_bytes;  // whole [rows,D] FP16 buffer
-        uint32_t scal_bytes =
-            rows * SIMD_BEAT_BYTES;  // rows splatted scalar beats
-
-        uint8_t* x_in = (uint8_t*)base;
-        uint8_t* max_buf = x_in + rows_bytes;       // reduce(MAX) out
-        uint8_t* negmax_bc = max_buf + scal_bytes;  // [rows,D] -max broadcast
-        uint8_t* xs_buf = negmax_bc + rows_bytes;   // sew(ADD) out = x - max
-        uint8_t* expb_buf = xs_buf + rows_bytes;    // smap(EXP) out
-        uint8_t* sum_buf = expb_buf + rows_bytes;   // reduce(ADD) out
-        uint8_t* recip_bc = sum_buf + scal_bytes;   // [rows,D] 1/sum broadcast
-        uint8_t* out_buf = recip_bc + rows_bytes;   // sew(MUL) out = softmax
-
         printf("[SmMR] rows=%u D=%u beats=%u\n", rows, d, beats);
-
-        snax_stage_1d(x_in, smr_input, rows_bytes);
 
         // Common AGU shapes.
         uint32_t red_str[2] = {

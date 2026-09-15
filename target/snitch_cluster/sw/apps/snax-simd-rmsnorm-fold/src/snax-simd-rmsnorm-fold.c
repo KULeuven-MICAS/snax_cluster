@@ -100,39 +100,53 @@ static uint32_t run_task(void) {
 
 int main() {
     int err = 0;
+    // TCDM layout, derived on EVERY hart and not on the engine core
+    // alone: the staging core below has to land the data where the
+    // engine core will read it, and snrt_cluster_base_addrl() is the
+    // same on every hart, so both derive it rather than communicate.
+    uint32_t base = snrt_cluster_base_addrl();
+    uint32_t rows = rmsf_rows;
+    uint32_t d = rmsf_d;
+    uint32_t beats = rmsf_beats;
+    uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
+    uint32_t rows_bytes = rows * row_bytes;  // whole [rows,D] FP16 buffer
+    uint32_t scal_bytes = rows * SIMD_BEAT_BYTES;
+    uint32_t all_beats = rows * beats;  // beats in a whole [rows,D] tensor
+
+    uint8_t* x_in = (uint8_t*)base;
+    uint8_t* ssq_buf = x_in + rows_bytes;
+    uint8_t* inv_l1 = ssq_buf + scal_bytes;  // [rows] inv_rms, L1 copy
+    uint8_t* inv_lane0 =
+        inv_l1 + SIMD_BEAT_BYTES;  // [rows] beats, scalar in lane 0
+    uint8_t* inv_bc_a =
+        inv_lane0 + scal_bytes;  // [rows,D] bcast, DM-core loop
+    uint8_t* inv_bc_b =
+        inv_bc_a + rows_bytes;  // [rows,D] bcast, xDMA stride-0
+    uint8_t* out_a = inv_bc_b + rows_bytes;  // FP16 result, path A
+    uint8_t* out_b = out_a + rows_bytes;     // FP16 result, path B
+    uint8_t* q_sep = out_b + rows_bytes;     // int8, separate quant pass
+    uint8_t* q_fused =
+        q_sep + rows_bytes / 2;  // int8, quant chained onto the EW
+
+    // Stage L3 -> TCDM on the core that OWNS the iDMA. On a split cluster
+    // that is a different hart from the engine block, which carries no DMA
+    // ISA at all -- a dm* instruction there traps. Where the two roles share
+    // one hart this reads exactly the same.
+    if (snax_is_idma_core()) {
+        snrt_dma_start_1d(x_in, rmsf_input, rows_bytes);
+        snrt_dma_start_1d(inv_l1, rmsf_inv_rms, rows * sizeof(uint16_t));
+        snrt_dma_wait_all();
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster,
+    // so a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
+
     if (snax_is_simd_core()) {
-        uint32_t base = snrt_cluster_base_addrl();
-        uint32_t rows = rmsf_rows;
-        uint32_t d = rmsf_d;
-        uint32_t beats = rmsf_beats;
-        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
-        uint32_t rows_bytes = rows * row_bytes;  // whole [rows,D] FP16 buffer
-        uint32_t scal_bytes = rows * SIMD_BEAT_BYTES;
-        uint32_t all_beats = rows * beats;  // beats in a whole [rows,D] tensor
-
-        uint8_t* x_in = (uint8_t*)base;
-        uint8_t* ssq_buf = x_in + rows_bytes;
-        uint8_t* inv_l1 = ssq_buf + scal_bytes;  // [rows] inv_rms, L1 copy
-        uint8_t* inv_lane0 =
-            inv_l1 + SIMD_BEAT_BYTES;  // [rows] beats, scalar in lane 0
-        uint8_t* inv_bc_a =
-            inv_lane0 + scal_bytes;  // [rows,D] bcast, DM-core loop
-        uint8_t* inv_bc_b =
-            inv_bc_a + rows_bytes;  // [rows,D] bcast, xDMA stride-0
-        uint8_t* out_a = inv_bc_b + rows_bytes;  // FP16 result, path A
-        uint8_t* out_b = out_a + rows_bytes;     // FP16 result, path B
-        uint8_t* q_sep = out_b + rows_bytes;     // int8, separate quant pass
-        uint8_t* q_fused =
-            q_sep + rows_bytes / 2;  // int8, quant chained onto the EW
-
         printf("[RmsFold] rows=%u D=%u beats=%u\n", rows, d, beats);
 
         // Input + the per-row inv_rms scalars into L1 (both core loops read
         // inv_rms from L1, so neither pays a per-row DRAM load for a data.h
         // array).
-        snax_stage_1d(x_in, rmsf_input, rows_bytes);
-        snax_stage_1d(inv_l1, rmsf_inv_rms, rows * sizeof(uint16_t));
-
         // One-time scratch init: lanes 1..31 of each lane-0 beat stay zero
         // across calls, so B0 only ever rewrites lane 0. Not part of the
         // per-call cost.

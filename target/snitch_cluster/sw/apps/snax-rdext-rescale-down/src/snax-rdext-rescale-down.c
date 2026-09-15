@@ -26,11 +26,26 @@ int main() {
 
     printf("tcdm_out: %p\n", tcdm_out);
 
-    if (snax_is_simd_core()) {
-        // First we need to transfer the input data from L3->TCDM
-        snax_stage_1d(tcdm_in, input_matrix,
-                          matrix_size * sizeof(input_matrix[0]));
+    // TCDM layout, derived on EVERY hart and not on the engine core
+    // alone: the staging core below has to land the data where the
+    // engine core will read it, and snrt_cluster_base_addrl() is the
+    // same on every hart, so both derive it rather than communicate.
+    // First we need to transfer the input data from L3->TCDM
 
+    // Stage L3 -> TCDM on the core that OWNS the iDMA. On a split cluster
+    // that is a different hart from the engine block, which carries no DMA
+    // ISA at all -- a dm* instruction there traps. Where the two roles share
+    // one hart this reads exactly the same.
+    if (snax_is_idma_core()) {
+        snrt_dma_start_1d(tcdm_in, input_matrix,
+                          matrix_size * sizeof(input_matrix[0]));
+        snrt_dma_wait_all();
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster,
+    // so a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
+
+    if (snax_is_simd_core()) {
         // --------------------- Configure the Ext --------------------- //
 
         uint32_t ext_param[4] = {input_zp_i, multiplier_i, output_zp_i,

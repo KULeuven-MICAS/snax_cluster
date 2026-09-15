@@ -21,39 +21,56 @@ int main() {
     // Put the output at the middle of tcdm
     uint8_t *tcdm_out = (uint8_t *)(tcdm_baseaddress + delta_local_out);
 
-    if (snax_is_simd_core()) {
-        // The xdma core is the last compute core in the cluster
-        uint32_t tstride_src[5] = {0};
-        uint32_t tbound_src[5] = {0};
-        uint32_t tstride_dst[3] = {0};
-        uint32_t tbound_dst[3] = {0};
+    // TCDM layout, derived on EVERY hart and not on the engine core
+    // alone: the staging core below has to land the data where the
+    // engine core will read it, and snrt_cluster_base_addrl() is the
+    // same on every hart, so both derive it rather than communicate.
+    // The xdma core is the last compute core in the cluster
+    uint32_t tstride_src[5] = {0};
+    uint32_t tbound_src[5] = {0};
+    uint32_t tstride_dst[3] = {0};
+    uint32_t tbound_dst[3] = {0};
 
-        // Load the CFG from data.h
-        tstride_src[0] = tempStride0_in;
-        tstride_src[1] = tempStride1_in;
-        tstride_src[2] = tempStride2_in;
-        tstride_src[3] = tempStride3_in;
-        tstride_src[4] = tempStride4_in;
-        tbound_src[0] = tempLoop0_in;
-        tbound_src[1] = tempLoop1_in;
-        tbound_src[2] = tempLoop2_in;
-        tbound_src[3] = tempLoop3_in;
-        tbound_src[4] = tempLoop4_in;
-        tstride_dst[0] = tempStride0_out;
-        tstride_dst[1] = tempStride1_out;
-        tstride_dst[2] = tempStride2_out;
-        tbound_dst[0] = tempLoop0_out;
-        tbound_dst[1] = tempLoop1_out;
-        tbound_dst[2] = tempLoop2_out;
+    // Load the CFG from data.h
+    tstride_src[0] = tempStride0_in;
+    tstride_src[1] = tempStride1_in;
+    tstride_src[2] = tempStride2_in;
+    tstride_src[3] = tempStride3_in;
+    tstride_src[4] = tempStride4_in;
+    tbound_src[0] = tempLoop0_in;
+    tbound_src[1] = tempLoop1_in;
+    tbound_src[2] = tempLoop2_in;
+    tbound_src[3] = tempLoop3_in;
+    tbound_src[4] = tempLoop4_in;
+    tstride_dst[0] = tempStride0_out;
+    tstride_dst[1] = tempStride1_out;
+    tstride_dst[2] = tempStride2_out;
+    tbound_dst[0] = tempLoop0_out;
+    tbound_dst[1] = tempLoop1_out;
+    tbound_dst[2] = tempLoop2_out;
 
-        // First we need to transfer the input data from L3->TCDM
+    // Stage L3 -> TCDM on the core that OWNS the iDMA. On a split cluster
+    // that is a different hart from the engine block, which carries no DMA
+    // ISA at all -- a dm* instruction there traps. Where the two roles share
+    // one hart this reads exactly the same.
+    //
+    // The DMA-busy counter measures THIS transfer, so it starts, stops and is
+    // read on the core that issues it. Read from the engine core it would
+    // report that core's counter, which never moves.
+    if (snax_is_idma_core()) {
         snrt_start_perf_counter(SNRT_PERF_CNT0, SNRT_PERF_CNT_DMA_BUSY,
                                 snrt_hartid());
-        snax_stage_1d(tcdm_in, DataIn, input_data_len * sizeof(int8_t));
+        snrt_dma_start_1d(tcdm_in, DataIn, input_data_len * sizeof(int8_t));
+        snrt_dma_wait_all();
         printf("IDMA load input is done in %d cycles\n",
                snrt_get_perf_counter(SNRT_PERF_CNT0));
         snrt_reset_perf_counter(SNRT_PERF_CNT0);
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster,
+    // so a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
 
+    if (snax_is_simd_core()) {
         // --------------------- Configure the Ext --------------------- //
 #ifdef READER_EXT_MAXPOOL
         uint32_t ext_param_maxpool_size[1] = {reduceLen};

@@ -69,19 +69,33 @@ static uint32_t retask_and_run(void* src, void* dst, uint32_t dst_bound0) {
 
 int main() {
     int err = 0;
+    // TCDM layout, derived on EVERY hart and not on the engine core
+    // alone: the staging core below has to land the data where the
+    // engine core will read it, and snrt_cluster_base_addrl() is the
+    // same on every hart, so both derive it rather than communicate.
+    uint32_t base = snrt_cluster_base_addrl();
+    uint32_t beats = silu_beats;
+    uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
+
+    uint8_t* x_in = (uint8_t*)base;
+    uint8_t* out_buf = x_in + row_bytes;  // beats   (FP16 silu result)
+    uint8_t* out_i8_buf =
+        out_buf + row_bytes;  // beats/2 (INT8 packed, fused quantize)
+
+    // Stage L3 -> TCDM on the core that OWNS the iDMA. On a split cluster
+    // that is a different hart from the engine block, which carries no DMA
+    // ISA at all -- a dm* instruction there traps. Where the two roles share
+    // one hart this reads exactly the same.
+    if (snax_is_idma_core()) {
+        snrt_dma_start_1d(x_in, silu_input, row_bytes);
+        snrt_dma_wait_all();
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster,
+    // so a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
+
     if (snax_is_simd_core()) {
-        uint32_t base = snrt_cluster_base_addrl();
-        uint32_t beats = silu_beats;
-        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
-
-        uint8_t* x_in = (uint8_t*)base;
-        uint8_t* out_buf = x_in + row_bytes;  // beats   (FP16 silu result)
-        uint8_t* out_i8_buf =
-            out_buf + row_bytes;  // beats/2 (INT8 packed, fused quantize)
-
         printf("[Silu] N=%u beats=%u\n", silu_n, beats);
-
-        snax_stage_1d(x_in, silu_input, row_bytes);
 
         // The AGU shape (2D [beats,1] src reading x_in, 1D dst of `beats`) is
         // identical across rows, so it is programmed ONCE (full _fast); the

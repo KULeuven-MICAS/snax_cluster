@@ -23,10 +23,16 @@ int main() {
         (uint8_t *)(tcdm_baseaddress +
                     (matrix_size * sizeof(uint8_t) * 8 + 7) / 8);
 
-    if (snax_is_xdma_core() && snrt_cluster_idx() == 0) {
-        // First we need to transfer the input data from L3->TCDM
-        snax_stage_1d(tcdm_in, input_matrix, matrix_size * sizeof(uint8_t));
+    // Stage L3 -> TCDM on the core that OWNS the iDMA.
+    if (snax_is_idma_core() && snrt_cluster_idx() == 0) {
+        snrt_dma_start_1d(tcdm_in, input_matrix, matrix_size * sizeof(uint8_t));
+        snrt_dma_wait_all();
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster, so
+    // a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
 
+    if (snax_is_xdma_core() && snrt_cluster_idx() == 0) {
         // --------------------- Configure the AGU --------------------- //
         snax_xdma_memcpy_nd(
             tcdm_in, tcdm_out, spatial_stride_src_xdma, spatial_stride_dst_xdma,
@@ -48,8 +54,16 @@ int main() {
         //     }
         // }
         // printf("Checking is done. All values copied by XDMA are right\r\n");
+    }
+    // The xDMA reshape has to have landed in tcdm_out before the iDMA half
+    // overwrites it with its own copy of the same reshape.
+    snrt_cluster_hw_barrier();
 
-        // Do the same in IDMA
+    // The iDMA half of the comparison, on the core that actually HAS the iDMA.
+    // It used to run on the xDMA core through a staging helper that quietly
+    // degraded to a byte copy wherever that core had no DMA ISA -- so on a
+    // split cluster the "IDMA copy" line below was timing a software memcpy.
+    if (snax_is_idma_core() && snrt_cluster_idx() == 0) {
         char *src_addr[TOTAL_ITERATIONS_IDMA];
         char *dst_addr[TOTAL_ITERATIONS_IDMA];
         for (uint32_t i = 0; i < TOTAL_ITERATIONS_IDMA; i++) {
@@ -81,8 +95,12 @@ int main() {
         snrt_start_perf_counter(SNRT_PERF_CNT0, SNRT_PERF_CNT_DMA_BUSY,
                                 snrt_hartid());
         for (int i = 0; i < TOTAL_ITERATIONS_IDMA; i++) {
-            snax_stage_2d(dst_addr[i], src_addr[i], size_idma,
+            // One wait per transfer, as the staging helper this replaced did.
+            // Queueing all eight and waiting once would be faster, but it
+            // would also change what this benchmark measures.
+            snrt_dma_start_2d(dst_addr[i], src_addr[i], size_idma,
                               dst_stride_idma, src_stride_idma, repeat_idma);
+            snrt_dma_wait_all();
         }
         printf("The IDMA copy is finished in %d cycles\r\n",
                snrt_get_perf_counter(SNRT_PERF_CNT0));

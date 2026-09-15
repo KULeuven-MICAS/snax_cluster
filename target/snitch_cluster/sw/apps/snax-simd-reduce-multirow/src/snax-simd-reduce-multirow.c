@@ -193,35 +193,49 @@ static uint32_t count_fp16_broken(const char* name, const uint16_t* out,
 
 int main() {
     int err = 0;
+    // TCDM layout, derived on EVERY hart and not on the engine core
+    // alone: the staging core below has to land the data where the
+    // engine core will read it, and snrt_cluster_base_addrl() is the
+    // same on every hart, so both derive it rather than communicate.
+    uint32_t base = snrt_cluster_base_addrl();
+    uint32_t rows = reduce_rows;
+    uint32_t beats = reduce_beats;
+    uint32_t row_bytes = beats * SIMD_BEAT_BYTES;  // bytes per input row
+    uint32_t in_bytes = rows * row_bytes;          // all rows
+
+    uint8_t* x_in = (uint8_t*)base;
+    uint8_t* ssq_buf =
+        x_in + in_bytes;  // rows beats (one splatted scalar each)
+    uint8_t* max_buf = ssq_buf + rows * SIMD_BEAT_BYTES;
+    uint8_t* sum_buf = max_buf + rows * SIMD_BEAT_BYTES;
+    uint8_t* xbig_in =
+        sum_buf +
+        rows * SIMD_BEAT_BYTES;  // large-magnitude input (overflows FP16)
+    uint8_t* ssq16_big_buf =
+        xbig_in + in_bytes;  // FP16-out SUMSQ of xbig (-> inf)
+    uint8_t* ssq32_big_buf =
+        ssq16_big_buf +
+        rows * SIMD_BEAT_BYTES;  // FP32-out SUMSQ of xbig (true)
+
+    // Stage L3 -> TCDM on the core that OWNS the iDMA. On a split cluster
+    // that is a different hart from the engine block, which carries no DMA
+    // ISA at all -- a dm* instruction there traps. Where the two roles share
+    // one hart this reads exactly the same.
+    if (snax_is_idma_core()) {
+        snrt_dma_start_1d(x_in, reduce_input, in_bytes);
+        snrt_dma_start_1d(xbig_in, reduce_input_big, in_bytes);
+        snrt_dma_wait_all();
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster,
+    // so a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
+
     if (snax_is_simd_core()) {
-        uint32_t base = snrt_cluster_base_addrl();
-        uint32_t rows = reduce_rows;
-        uint32_t beats = reduce_beats;
-        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;  // bytes per input row
-        uint32_t in_bytes = rows * row_bytes;          // all rows
-
-        uint8_t* x_in = (uint8_t*)base;
-        uint8_t* ssq_buf =
-            x_in + in_bytes;  // rows beats (one splatted scalar each)
-        uint8_t* max_buf = ssq_buf + rows * SIMD_BEAT_BYTES;
-        uint8_t* sum_buf = max_buf + rows * SIMD_BEAT_BYTES;
-        uint8_t* xbig_in =
-            sum_buf +
-            rows * SIMD_BEAT_BYTES;  // large-magnitude input (overflows FP16)
-        uint8_t* ssq16_big_buf =
-            xbig_in + in_bytes;  // FP16-out SUMSQ of xbig (-> inf)
-        uint8_t* ssq32_big_buf =
-            ssq16_big_buf +
-            rows * SIMD_BEAT_BYTES;  // FP32-out SUMSQ of xbig (true)
-
         printf("[ReduceMR] rows=%u D=%u beats=%u\n", rows, reduce_d, beats);
 
         // Fully initialize ALL rows of both inputs. This is the crux: a
         // partially-written input would feed X into the reduce, which would
         // then write X (the failure symptom) and trip DMAWriteDataCorrect.
-        snax_stage_1d(x_in, reduce_input, in_bytes);
-        snax_stage_1d(xbig_in, reduce_input_big, in_bytes);
-
         // Program the 2D reader {beats inner, rows outer} -> 1D writer {rows}
         // ONCE; each op is a retask.
         uint32_t str_beat[1] = {SIMD_BEAT_BYTES};

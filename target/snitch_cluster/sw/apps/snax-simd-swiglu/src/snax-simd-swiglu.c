@@ -74,27 +74,41 @@ static inline uint32_t fp16_mono(uint16_t h) {
 
 int main() {
     int err = 0;
+    // TCDM layout, derived on EVERY hart and not on the engine core
+    // alone: the staging core below has to land the data where the
+    // engine core will read it, and snrt_cluster_base_addrl() is the
+    // same on every hart, so both derive it rather than communicate.
+    uint32_t base = snrt_cluster_base_addrl();
+    uint32_t beats = swiglu_beats;
+    uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
+
+    // Layout: sg_buf and up_in are adjacent (row_bytes apart) so T2's
+    // interleave stride = row_bytes.
+    uint8_t* gate_in = (uint8_t*)base;
+    uint8_t* sg_buf =
+        gate_in + row_bytes;  // silu(gate) (T1 output, T2 operand 0)
+    uint8_t* up_in =
+        sg_buf +
+        row_bytes;  // up (T2 operand 1); up_in - sg_buf = row_bytes
+    uint8_t* out_buf = up_in + row_bytes;  // swiglu output (FP16)
+    uint8_t* out_i8_buf =
+        out_buf + row_bytes;  // beats/2 (INT8 packed, fused quantize)
+
+    // Stage L3 -> TCDM on the core that OWNS the iDMA. On a split cluster
+    // that is a different hart from the engine block, which carries no DMA
+    // ISA at all -- a dm* instruction there traps. Where the two roles share
+    // one hart this reads exactly the same.
+    if (snax_is_idma_core()) {
+        snrt_dma_start_1d(gate_in, swiglu_gate, row_bytes);
+        snrt_dma_start_1d(up_in, swiglu_up, row_bytes);
+        snrt_dma_wait_all();
+    }
+    // Unconditional: the hardware barrier counts every core in the cluster,
+    // so a hart that skipped it would hang the ones that did not.
+    snrt_cluster_hw_barrier();
+
     if (snax_is_simd_core()) {
-        uint32_t base = snrt_cluster_base_addrl();
-        uint32_t beats = swiglu_beats;
-        uint32_t row_bytes = beats * SIMD_BEAT_BYTES;
-
-        // Layout: sg_buf and up_in are adjacent (row_bytes apart) so T2's
-        // interleave stride = row_bytes.
-        uint8_t* gate_in = (uint8_t*)base;
-        uint8_t* sg_buf =
-            gate_in + row_bytes;  // silu(gate) (T1 output, T2 operand 0)
-        uint8_t* up_in =
-            sg_buf +
-            row_bytes;  // up (T2 operand 1); up_in - sg_buf = row_bytes
-        uint8_t* out_buf = up_in + row_bytes;  // swiglu output (FP16)
-        uint8_t* out_i8_buf =
-            out_buf + row_bytes;  // beats/2 (INT8 packed, fused quantize)
-
         printf("[SwiGLU] N=%u beats=%u\n", swiglu_n, beats);
-
-        snax_stage_1d(gate_in, swiglu_gate, row_bytes);
-        snax_stage_1d(up_in, swiglu_up, row_bytes);
 
         uint32_t dst_str[1] = {SIMD_BEAT_BYTES};
         uint32_t dst_bnd[1] = {beats};
