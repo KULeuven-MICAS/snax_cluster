@@ -474,13 +474,14 @@ __attribute__((always_inline)) static inline void gemm_wait(void) {
 // patched per dispatch by gemm_set_shape() -- ten registers instead of these ~60.
 //
 // Written out here rather than handed to snax-versacore-to-lib's
-// set_versacore_streamer_csr(). That function writes SEVEN registers at
-// READER_WRITER_EXTENSION_1_CSR_BASE, which is right only where a dynamic rescale unit and
-// the FP16 converter are stacked on the D write path. Here the converter is alone, so that
-// host owns exactly TWO -- the enable bitmask and the extra-loop policy -- and the other
-// five writes land on ADDR_REMAP_INDEX, STREAMER_START, STREAMER_BUSY and the performance
-// counter, launching the streamer mid-configuration. streamer_csr_addr_map.h is the
-// authority on what exists, and the loops below follow it.
+// set_versacore_streamer_csr(), because this app patches a subset of the descriptor per
+// dispatch (see gemm_set_shape() and gemm_d32_emit_fp16()) and needs the halved D32 shape
+// the converter implies. Note the extension window: the D write path here carries the
+// INT32->FP16 converter ALONE, so READER_WRITER_EXTENSION_1_CSR_NUM is 2 -- the enable
+// bitmask and the extra-loop policy -- not the 7 of a cluster that also stacks a dynamic
+// rescale unit, and the converter is enable bit 0 rather than bit 1. The
+// generated streamer_csr_addr_map.h is the authority on what exists, and the writes
+// below follow it.
 //
 // Not for per-dispatch use: every CSR address here is a run-time value to the csrw_ss
 // switch, so each access pays a jump-table load plus an indirect jump.

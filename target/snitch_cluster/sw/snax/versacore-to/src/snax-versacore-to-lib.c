@@ -171,13 +171,25 @@ void set_versacore_streamer_csr(
     // ------------------------- datapath extension ----------------------------
     // ------------------------- datapath extension ----------------------------
 
+    // A port's extension CSR window is 1 enable word + sum(userCsrNum) of the
+    // extensions THIS CLUSTER stacks on it, which the generator emits next to
+    // the base as ..._CSR_NUM. It is a property of the cluster, not of this
+    // driver: a cluster that stacks fewer extensions has a shorter window, and
+    // writing past its end walks into STREAMER_START_CSR (launching the
+    // streamer mid-configuration) and then into the read-only
+    // STREAMER_BUSY_CSR, which trips a ReqRspManager assertion on the
+    // simulator's stdout -- never on the UART. So every write past the window
+    // every port is guaranteed to have is guarded by the generated count. The
+    // guards are compile-time constants, so each dead write folds away.
+
     // set the transpose
 #ifdef READER_EXTENSION_0_CSR_BASE
     uint32_t cfgA = ((transpose_A & 0x1) << 1) |  // bit 1
                     (int4_a_enable & 0x1);        // bit 0
 
     csrw_ss(READER_EXTENSION_0_CSR_BASE, cfgA);
-    csrw_ss(READER_EXTENSION_0_CSR_BASE + 1, array_shape);
+    if (READER_EXTENSION_0_CSR_NUM > 1)
+        csrw_ss(READER_EXTENSION_0_CSR_BASE + 1, array_shape);
 #endif
 
 #ifdef READER_EXTENSION_1_CSR_BASE
@@ -185,20 +197,41 @@ void set_versacore_streamer_csr(
                     (int4_b_enable & 0x1);        // bit 0
 
     csrw_ss(READER_EXTENSION_1_CSR_BASE, cfgB);
-    csrw_ss(READER_EXTENSION_1_CSR_BASE + 1, array_shape);
+    if (READER_EXTENSION_1_CSR_NUM > 1)
+        csrw_ss(READER_EXTENSION_1_CSR_BASE + 1, array_shape);
 #endif
 
 #ifdef READER_WRITER_EXTENSION_1_CSR_BASE
+    // The enable word carries one bit per extension in DECLARATION order, so
+    // the bit positions move with the list too. A window of 7 is the dynamic
+    // rescale unit (5 user CSRs) stacked under the INT32->FP16 converter (1):
+    // rescale is bit 0, converter bit 1. A narrower window is the converter
+    // alone, where the converter IS bit 0 -- and there is no zero point,
+    // multiplier or shift register to put a rescale request in, so
+    // quantization_enable is dropped rather than silently mis-programmed.
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE,
-            (int32tofp16_enable << 1) | quantization_enable);
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, input_zp_i);
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, multiplier_i);
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 4, shift_i);
+            (READER_WRITER_EXTENSION_1_CSR_NUM >= 7)
+                ? ((int32tofp16_enable << 1) | quantization_enable)
+                : (int32tofp16_enable & 0x1));
+    // base + 1 is the rescale input zero point where rescale is present; with
+    // the converter alone it is the converter's only user CSR, an index into
+    // its extra_loops_choice, whose entry 0 is the 2:1 INT32->FP16 narrowing.
+    if (READER_WRITER_EXTENSION_1_CSR_NUM > 1)
+        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1,
+                (READER_WRITER_EXTENSION_1_CSR_NUM >= 7) ? (uint32_t)input_zp_i
+                                                         : 0u);
+    if (READER_WRITER_EXTENSION_1_CSR_NUM > 2)
+        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, multiplier_i);
+    if (READER_WRITER_EXTENSION_1_CSR_NUM > 3)
+        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
+    if (READER_WRITER_EXTENSION_1_CSR_NUM > 4)
+        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 4, shift_i);
     // Select the extra loop policy according to the array shape.
     // The actual loop factors are defined in the scala extension params.
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 5, 0);
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 6, 0);
+    if (READER_WRITER_EXTENSION_1_CSR_NUM > 5)
+        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 5, 0);
+    if (READER_WRITER_EXTENSION_1_CSR_NUM > 6)
+        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 6, 0);
 #endif
 }
 
