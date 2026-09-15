@@ -51,6 +51,10 @@ class VersaCoreIO(params: SpatialArrayParam) extends Bundle {
   // profiling and status signals
   val busy_o              = Output(Bool())
   val performance_counter = Output(UInt(params.configWidth.W))
+  // Stall census, see the counters in VersaCore for what each one means.
+  val stall_a_counter     = Output(UInt(params.configWidth.W))
+  val stall_b_counter     = Output(UInt(params.configWidth.W))
+  val stall_d_counter     = Output(UInt(params.configWidth.W))
 }
 
 /** VersaCore is the top-level module for VersaCore. */
@@ -524,6 +528,40 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   // output control signals for read-only csrs
   io.performance_counter := performance_counter
+
+  // Stall census. Every busy cycle is either a pass entering the array or exactly one of these
+  // three stalls, so stall_a + stall_b + stall_d + (cycles with a pass accepted) equals
+  // performance_counter. That is what separates an operand feed that cannot keep up (the
+  // streamer or TCDM did not deliver A or B) from backpressure inside the accelerator (the
+  // array refused the pass because the accumulator or the D drain was busy), which otherwise
+  // look identical from software -- both just show as cycles per array pass above 1.0.
+  // The counters are per task: they reset with performance_counter on a config write, so
+  // software accumulates them the same way it accumulates the cycle count.
+  val arr_a  = array.io.array_data.in_a
+  val arr_b  = array.io.array_data.in_b
+  val is_bsy = cstate === sBUSY
+
+  val stall_a = is_bsy && !arr_a.valid
+  val stall_b = is_bsy && arr_a.valid && !arr_b.valid
+  val stall_d = is_bsy && arr_a.valid && arr_b.valid && !arr_a.ready
+
+  val stall_a_counter = RegInit(0.U(params.configWidth.W))
+  val stall_b_counter = RegInit(0.U(params.configWidth.W))
+  val stall_d_counter = RegInit(0.U(params.configWidth.W))
+
+  when(is_bsy) {
+    when(stall_a) { stall_a_counter := stall_a_counter + 1.U }
+    when(stall_b) { stall_b_counter := stall_b_counter + 1.U }
+    when(stall_d) { stall_d_counter := stall_d_counter + 1.U }
+  }.elsewhen(config_fire) {
+    stall_a_counter := 0.U
+    stall_b_counter := 0.U
+    stall_d_counter := 0.U
+  }
+
+  io.stall_a_counter := stall_a_counter
+  io.stall_b_counter := stall_b_counter
+  io.stall_d_counter := stall_d_counter
 
   def realCDBandWidth(
     dataTypeIdx:  UInt,

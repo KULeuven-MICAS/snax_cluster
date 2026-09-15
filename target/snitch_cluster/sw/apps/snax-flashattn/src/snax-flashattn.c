@@ -680,6 +680,9 @@ int main() {
 
     uint32_t gemm_cycles = 0, simd_cycles = 0, gemm_stream_cycles = 0;
     uint32_t gemm_cyc_s1 = 0, gemm_cyc_s2 = 0;  // GEMM cycles, split by matmul shape
+    // Stall census per shape: A and B are operand feed, D is drain backpressure.
+    uint32_t gemm_sa_s1 = 0, gemm_sb_s1 = 0, gemm_sd_s1 = 0;
+    uint32_t gemm_sa_s2 = 0, gemm_sb_s2 = 0, gemm_sd_s2 = 0;
     uint32_t gemm_wall = 0, simd_wall = 0;
     uint32_t c_conv = 0, c_max = 0, c_exp = 0, c_quant = 0;
     uint32_t gemm_stall = 0, simd_stall = 0;  // time each core spent waiting
@@ -854,7 +857,10 @@ int main() {
                 gemm_launch();
                 gemm_wait();
                 { uint32_t c = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
-                  gemm_cycles += c; gemm_cyc_s1 += c; }
+                  gemm_cycles += c; gemm_cyc_s1 += c;
+                  gemm_sa_s1 += csrr_ss(GEMMX_STALL_A);
+                  gemm_sb_s1 += csrr_ss(GEMMX_STALL_B);
+                  gemm_sd_s1 += csrr_ss(GEMMX_STALL_D); }
                 gemm_stream_cycles += csrr_ss(STREAMER_PERFORMANCE_COUNTER_CSR);
                 sync[0] = j + 1;  // publish AFTER the streamer has drained
             }
@@ -878,7 +884,10 @@ int main() {
                 gemm_launch();
                 gemm_wait();
                 { uint32_t c = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
-                  gemm_cycles += c; gemm_cyc_s2 += c; }
+                  gemm_cycles += c; gemm_cyc_s2 += c;
+                  gemm_sa_s2 += csrr_ss(GEMMX_STALL_A);
+                  gemm_sb_s2 += csrr_ss(GEMMX_STALL_B);
+                  gemm_sd_s2 += csrr_ss(GEMMX_STALL_D); }
                 gemm_stream_cycles += csrr_ss(STREAMER_PERFORMANCE_COUNTER_CSR);
             }
         }
@@ -1141,27 +1150,35 @@ int main() {
                gemm_stream_cycles);
         // Cycles per ARRAY PASS, against the arithmetic floor of 1. One pass is
         // Mu*Ku*Nu = 1024 MAC, and a dispatch is M*N*K of them, so this is the engine's
-        // own efficiency with the streamer and the tile shape factored out.
+        // own efficiency with the tile shape factored out.
         //
         // The two shapes differ 4x in blocks per pass (256 x 32 against 64 x 128), so
         // printing both separates a per-OUTPUT-BLOCK cost -- C deserialise, D serialise,
-        // block turnaround -- from a per-PASS one. Both read 2.00: the cost is per pass,
-        // and it is snax_acc.versacore.Array's `muls_out_data -|> tree.io.in`. `-|>` is
-        // Queue(entries = 1, pipe = false), which the operator itself names
-        // FullCutHalfBandwidth: with no pipe bypass a 1-entry queue accepts on alternate
-        // cycles however ready the consumer is, so the array idles every other cycle.
+        // block turnaround -- from a per-PASS one. The stall census below attributes
+        // whatever is above 1.00: A and B are cycles the streamer did not have an operand
+        // ready, D is cycles the array refused the pass because the drain was busy. The
+        // array itself sustains 1.02 cyc/pass in these shapes when fed ideally
+        // (VersaCoreThroughputTest), so A or B dominating means the feed is the limit.
         printf("  S^T=K.Q^T        %5u cycles for %5u array passes (%u.%02u cyc/pass,"
                " %d blocks x %d accum)\n",
                gemm_cyc_s1, (unsigned)(NKV * M * N * K),
                gemm_cyc_s1 / (unsigned)(NKV * M * N * K),
                (gemm_cyc_s1 * 100u / (unsigned)(NKV * M * N * K)) % 100u,
                (int)(NKV * M * N), (int)K);
+        printf("    stalls         A %5u  B %5u  D %5u  (feed %u%%, drain %u%%)\n",
+               gemm_sa_s1, gemm_sb_s1, gemm_sd_s1,
+               100u * (gemm_sa_s1 + gemm_sb_s1) / (gemm_cyc_s1 ? gemm_cyc_s1 : 1u),
+               100u * gemm_sd_s1 / (gemm_cyc_s1 ? gemm_cyc_s1 : 1u));
         printf("  O^T=V^T.P^T      %5u cycles for %5u array passes (%u.%02u cyc/pass,"
                " %d blocks x %d accum)\n",
                gemm_cyc_s2, (unsigned)(NKV * S2_M * S2_N * S2_K),
                gemm_cyc_s2 / (unsigned)(NKV * S2_M * S2_N * S2_K),
                (gemm_cyc_s2 * 100u / (unsigned)(NKV * S2_M * S2_N * S2_K)) % 100u,
                (int)(NKV * S2_M * S2_N), (int)S2_K);
+        printf("    stalls         A %5u  B %5u  D %5u  (feed %u%%, drain %u%%)\n",
+               gemm_sa_s2, gemm_sb_s2, gemm_sd_s2,
+               100u * (gemm_sa_s2 + gemm_sb_s2) / (gemm_cyc_s2 ? gemm_cyc_s2 : 1u),
+               100u * gemm_sd_s2 / (gemm_cyc_s2 ? gemm_cyc_s2 : 1u));
         printf("  pipeline         %5u cycles, %u per KV tile\n", pipeline,
                pipeline / NKV);
         // Per core: what it spent running its engine, blocked on the other

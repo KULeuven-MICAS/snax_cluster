@@ -252,8 +252,8 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
     # streamer c32 settings
     # -----------------------------------------------------------
-    # The C/D port's 32 channels are grouped [4, 8] (see the cluster cfg): channel i sits
-    # at sl0*(i % 4) + sl1*((i / 4) % 8). Four channels carry 32 B -- one key's meshCol
+    # The C/D port's 16 channels are grouped [4, 4] (see the cluster cfg): channel i sits
+    # at sl0*(i % 4) + sl1*((i / 4) % 4). Four channels carry 32 B -- one key's meshCol
     # FP16 scores -- and the eight groups step by a WHOLE key row of Br = N*meshCol FP16,
     # so the two N blocks INTERLEAVE and a 64 B beat is 32 queries of ONE key. That is the
     # layout snax-flashattn.c reduces over; under a contiguous [8, 4] map a beat would be
@@ -266,7 +266,7 @@ def emit_matmul_data(**kwargs):
     #   temporal 2: the next M block           = 2048 B
     #
     # BOTH strides must be emitted: the port declares two, so a 1-element array feeds the
-    # second from off the end of the caller's stack and 24 of the 32 channels address
+    # second from off the end of the caller's stack and 8 of the 16 channels address
     # garbage.
     data_str += [format_scalar_definition("int32_t", "Cslstride0", bankWidth / 8)]
     data_str += [
@@ -304,8 +304,8 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
     # streamer d32 settings
     # -----------------------------------------------------------
-    # The C/D port's 32 channels are grouped [4, 8] (see the cluster cfg): channel i sits
-    # at sl0*(i % 4) + sl1*((i / 4) % 8). Four channels carry 32 B -- one key's meshCol
+    # The C/D port's 16 channels are grouped [4, 4] (see the cluster cfg): channel i sits
+    # at sl0*(i % 4) + sl1*((i / 4) % 4). Four channels carry 32 B -- one key's meshCol
     # FP16 scores -- and the eight groups step by a WHOLE key row of Br = N*meshCol FP16,
     # so the two N blocks INTERLEAVE and a 64 B beat is 32 queries of ONE key. That is the
     # layout snax-flashattn.c reduces over; under a contiguous [8, 4] map a beat would be
@@ -318,7 +318,7 @@ def emit_matmul_data(**kwargs):
     #   temporal 2: the next M block           = 2048 B
     #
     # BOTH strides must be emitted: the port declares two, so a 1-element array feeds the
-    # second from off the end of the caller's stack and 24 of the 32 channels address
+    # second from off the end of the caller's stack and 8 of the 16 channels address
     # garbage.
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
     data_str += [

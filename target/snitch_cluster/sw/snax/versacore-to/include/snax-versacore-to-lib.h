@@ -29,6 +29,13 @@
 // GeMMX read-only CSR
 #define GEMMX_BUSY (GEMMX_START + 1)
 #define GEMMX_PERFORMANCE_COUNTER (GEMMX_BUSY + 1)
+// Stall census for the task just run. Every busy cycle is either a pass entering the array or
+// one of these three stalls, so the three plus the accepted passes equal the cycle count.
+// A and B say the operand feed could not keep up; D says the accelerator refused the pass
+// because the accumulator or the D drain was busy.
+#define GEMMX_STALL_A (GEMMX_PERFORMANCE_COUNTER + 1)
+#define GEMMX_STALL_B (GEMMX_STALL_A + 1)
+#define GEMMX_STALL_D (GEMMX_STALL_B + 1)
 
 // Pack two subtraction values to one CSR
 int32_t gen_subtraction_config(int8_t subtraction_a, int8_t subtraction_b);
