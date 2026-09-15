@@ -25,7 +25,15 @@ class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
 class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
   val arrayShapeCfg  = Input(UInt(params.configWidth.W))
   val dataTypeCfg    = Input(UInt(params.configWidth.W))
-  val accAddExtIn    = Input(Bool())
+  // Two stages need to know about the external C, and they need to know at different times.
+  // accAddExtInInput gates the input side: it says the pass now being ACCEPTED is the first
+  // of an output block, so one C word is taken from the port and buffered. accAddExtIn gates
+  // the accumulator: it says the pass now RETIRING is that same first pass, so C is added
+  // instead of the running accumulator. They are generated from separate counters because a
+  // pass is accepted cycles before it retires; driving both from the retire-side counter
+  // holds the input gate open across several accepted passes and swallows extra C words.
+  val accAddExtInInput = Input(Bool())
+  val accAddExtIn      = Input(Bool())
   val cstate_is_busy = Input(Bool())
   val computeFire    = Output(Bool())
 }
@@ -119,9 +127,14 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   in_c_before_pipe.bits := io.array_data.in_c.bits
   // The actual valid/ready logic for in_c_before_pipe is handled in the handshake section later
 
-  // Synchronize and pipeline in_c to match the multiplier + register stage latency
+  // Buffer between the input stage and the accumulator holding the C of the output block in
+  // flight: pushed once when the block's first pass is accepted, popped once when that pass
+  // retires. Exactly one word is in flight, so the depth and the re-arm behaviour of the cut
+  // do not affect which C reaches the accumulator. Pushing a copy of the port on every pass
+  // instead would make this a fixed-depth delay line of the C port, and then only a cut that
+  // holds exactly one item at all times delivers the right word.
   val in_c_after_pipe = Wire(Decoupled(chiselTypeOf(io.array_data.in_c.bits)))
-  in_c_before_pipe -|> in_c_after_pipe
+  in_c_before_pipe -||> in_c_after_pipe
 
   val inputC = params.arrayDim.zipWithIndex.map { case (dims, dataTypeIdx) =>
     dims.map(dim => {
@@ -292,7 +305,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
     }
   }
 
-  // The multipliers' ready signal comes from its pipeline register (-|>)
+  // The multipliers' ready signal comes from its pipeline register (-\>)
   val muls_ready = MuxLookup(
     io.ctrl.dataTypeCfg,
     multipliers(0)(0).io.in.ready
@@ -318,7 +331,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   // Top-level input synchronization
   // ---------------------------------------------------
   // A, B and C (if enabled) must fire together to ensure the input wave enters the pipeline correctly.
-  val in_c_active  = io.ctrl.accAddExtIn
+  val in_c_active  = io.ctrl.accAddExtInInput
   val common_valid =
     io.array_data.in_a.valid && io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && io.ctrl.cstate_is_busy
   val common_accept_data_ready = muls_ready && (in_c_before_pipe.ready || !in_c_active) && io.ctrl.cstate_is_busy
@@ -331,8 +344,8 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   // Drive the valid signals for the first stage
   multipliers.foreach(_.foreach(_.io.in.valid := common_valid))
-  in_c_before_pipe.valid := common_valid
-  in_c_after_pipe.ready  := selectedIn2Ready
+  in_c_before_pipe.valid := common_valid && in_c_active
+  in_c_after_pipe.ready  := selectedIn2Ready && io.ctrl.accAddExtIn
 
   // output data and valid signals
   io.array_data.out_d.bits := MuxLookup(

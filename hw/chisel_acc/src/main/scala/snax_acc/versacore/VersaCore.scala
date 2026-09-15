@@ -462,10 +462,23 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   accAddExtIn := computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U && cstate === sBUSY
 
+  // The input side needs the same "first pass of an output block" mark, but one pass is
+  // accepted several cycles before it retires, so it cannot share computeFireCounter: that
+  // counter ticks at retire, and the mark would stay asserted over every pass accepted in
+  // between, taking one C word from the port for each of them. Count accepted passes instead.
+  val accAddExtInInput  = WireInit(0.B)
+  val inputFireCounter  = Module(new BasicCounter(params.configWidth, hasCeil = true, nameTag = "inputFireCounter"))
+  inputFireCounter.io.ceilOpt.get := csrReg.fsmCfg.temporal_accumulation_times
+  inputFireCounter.io.tick  := array.io.array_data.in_a.fire && cstate === sBUSY
+  inputFireCounter.io.reset := versacore_finish
+
+  accAddExtInInput := inputFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U && cstate === sBUSY
+
   // array ctrl signals
   array.io.ctrl.arrayShapeCfg  := csrReg.arrayCfg.arrayShapeCfg
   array.io.ctrl.dataTypeCfg    := csrReg.arrayCfg.dataTypeCfg
-  array.io.ctrl.accAddExtIn    := accAddExtIn
+  array.io.ctrl.accAddExtIn      := accAddExtIn
+  array.io.ctrl.accAddExtInInput := accAddExtInInput
   array.io.ctrl.cstate_is_busy := cstate === sBUSY
 
   // array data signals
