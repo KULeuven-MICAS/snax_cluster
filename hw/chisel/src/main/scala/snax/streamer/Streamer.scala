@@ -997,12 +997,13 @@ object StreamerGen {
         readerDatapathExtentionPerStreamer = readerDatapathExtentionPerStreamer :+ toolbox
           .compile(toolbox.parse(s"""
               import snax.DataPathExtension._
-              return new ${i._1}(${i._2.map { list =>
-              list._2 match {
+              return new ${i._1}(${i._2.map { case (name, value) =>
+              val argument = value match {
                 case Left(int: Int)       => int.toString // Matching Left for Int
                 case Right(seq: Seq[Int]) =>
                   s"Seq(${seq.mkString(",")})" // Matching Right for Seq[Int]
               }
+              s"$name = $argument"
             }
               .mkString(", ")})
                     """))()

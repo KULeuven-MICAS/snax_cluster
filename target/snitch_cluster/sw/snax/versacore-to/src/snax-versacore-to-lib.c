@@ -196,9 +196,9 @@ void set_versacore_streamer_csr(
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 4, shift_i);
     // Select the extra loop policy according to the array shape.
-    // The actual loop factors are defined in the scala extension params.
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 5, 0);
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 6, 0);
+    // Loop factors are inferred from the array dimensions and stream width.
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 5, array_shape);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 6, array_shape);
 #endif
 }
 
