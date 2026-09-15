@@ -159,6 +159,20 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 // one query row, so a LANEWISE MAX over the key beats IS rowmax.
 #define SIMD_RED_LANEWISE 0x400u
 
+// Fp16ToInt8: pass every (tailPeriod+1)'th input beat through UNQUANTISED, where
+// tailPeriod is the number of data beats in a row. csr(1); 0 disables it.
+//
+// This is what lets a StreamReduce TAP pass also narrow its output. TAP emits the
+// row and then the row's reduction as a trailing beat, and the quantiser sits
+// downstream of the reduce, so without this the scalar would be narrowed along
+// with the data -- and a pass that produces both a tile and its statistic could
+// not quantise the tile. The tile then has to be written in FP16 and read back a
+// second time by a quantise-only task, which is a whole extra pass over it.
+//
+// tailPeriod must be a multiple of 2 (the FP16->INT8 pack ratio), so the pack the
+// tail interrupts is always complete.
+#define SIMD_QUANT_TAIL(beats) ((uint32_t)(beats))
+
 // StreamElementwise: combine `operand_beats` interleaved operands into one.
 #define SIMD_EW_MUL 0u
 #define SIMD_EW_ADD 1u

@@ -92,6 +92,13 @@ def emit_attention_golden(A, B, **kwargs):
     P is sampled rather than emitted whole -- one beat in PGOLD_STRIDE -- because the
     kernel reads the golden out of DRAM. rowsum is checked in full and integrates every
     key, so a wrong P between two samples still moves a checked number.
+
+    P is checked as INT8, not FP16, because the epilogue pass quantises the tile in the
+    same sweep that produces it -- there is no FP16 P in memory to compare against. The
+    kernel's quantiser runs at inv_scale = 1.0, so q = round_rne(P) over P in (0,1]: the
+    check pins the subtract, the exponential and the quantiser's rounding threshold. A
+    lane whose P sits within 0.01 of the .5 boundary is emitted as -1 (don't care), since
+    one ULP of LUT error there legitimately flips the result.
     """
     meshRow, tileSize, meshCol = _mesh(kwargs)
     M, N, K = kwargs["M"], kwargs["N"], kwargs["K"]
@@ -117,6 +124,22 @@ def emit_attention_golden(A, B, **kwargs):
     stride = max(1, Bc // 16)
     beats = list(range(0, Bc, stride))
 
+    # The kernel quantises P with inv_scale = 1.0 (SIMD_F32_ONE), clamp-then-round, then a
+    # symmetric saturate -- the same order as Fp16ToInt8PE.
+    def quantise(x):
+        q = np.clip(np.rint(np.clip(x, -128.0, 128.0)), -127, 127).astype(np.int16)
+        return np.where(np.abs(x - np.rint(x)) > 0.49, -1, q).astype(np.int16)
+
+    Pfull = P.astype(np.float32)
+    p8 = quantise(Pfull[beats].reshape(-1))
+    # Per-query count of ones over the WHOLE tile. The sampled compare above pins values at
+    # known places; this pins the tile globally -- a dropped beat, a tail in the wrong slot
+    # or a shifted write moves a count even where every sampled beat still reads 0. Rows with
+    # any boundary lane are excluded (-1), since their count is not well defined.
+    p8all = quantise(Pfull.reshape(-1)).reshape(Pfull.shape)
+    ones = (p8all == 1).sum(axis=0).astype(np.int16)
+    ones = np.where((p8all < 0).any(axis=0), -1, ones).astype(np.int16)
+
     def bits(x):
         return np.ascontiguousarray(x, dtype=np.float16).view(np.uint16).reshape(-1)
 
@@ -131,6 +154,12 @@ def emit_attention_golden(A, B, **kwargs):
         format_vector_definition("uint16_t", "rowsum_golden", bits(rowsum)),
         "",
         format_vector_definition("uint16_t", "p16_golden", bits(P[beats].reshape(-1))),
+        "",
+        "// P as the quantiser emits it: round_rne(P) at inv_scale 1.0, -1 = don't care",
+        format_vector_definition("int16_t", "p8_golden", p8),
+        "",
+        "// P^T == 1 count per query row over the whole tile, -1 = don't care",
+        format_vector_definition("int16_t", "p8ones_golden", ones),
     ])
 
 

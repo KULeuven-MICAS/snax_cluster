@@ -84,12 +84,18 @@ object Fp16ToInt8PE {
   *
   * NOTE: the pack ratio requires an integer multiple of `pack` input beats (a lone trailing beat is latched but never
   * emitted). All current SIMD apps use row lengths that are a multiple of 64 FP16.
+  *
+  * ROW-TAIL PASSTHROUGH (`tailPassthrough`, csr(1) = tailPeriod, 0 = off): pass every (tailPeriod+1)'th input beat
+  * through unquantised instead of narrowing it. This is what lets a StreamReduce TAP pass also quantise: the row is
+  * narrowed and the reduction it produced stays FP16, so [tile][scalar] comes out of ONE pass instead of the tile
+  * being written in FP16 and read back a second time. See the comment at `hasTail` for the ordering argument.
   */
 class Fp16ToInt8(
   in_elementWidth:   Int     = 16,
   out_elementWidth:  Int     = 8,
   computeLanesParam: Int     = 0,
   fpPipeParam:       Int     = 1,
+  tailPassthrough:   Int     = 0,
   pipelined:         Boolean = true
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
@@ -113,6 +119,29 @@ class Fp16ToInt8(
   val Ppe       = Fp16ToInt8PE.pipeLatency(pipelined, fpPipe)
 
   val inv_scale = WireInit(ext_csr_i(0).asUInt)
+
+  // ---- row-tail passthrough (csr(1), 0 = off) ---------------------------------------------------------
+  // StreamReduce in TAP mode emits `operandCount` transformed beats and then ONE scalar beat. With the
+  // quantiser chained behind it that scalar gets quantised along with the data, which is why a pass that
+  // produces both a tile and its reduction cannot also narrow the tile -- the tile has to be written in
+  // FP16 and read back a second time purely to quantise it.
+  //
+  // `tailPeriod` makes this stage count input beats and pass beat `tailPeriod` through UNQUANTISED, so
+  // one pass emits [INT8 data][FP16 scalar]. The tail beat is issued through the same pipeline as a data
+  // beat, so it enters the output queue strictly after the pack it follows; it does not advance the pack
+  // index and does not write outRegs. Acceptance is held off while it is in flight, which keeps its value
+  // in `inBeat` and costs the row Ppe cycles instead of a second 512-bit register.
+  //
+  // `tailPeriod` must be a multiple of `pack`, so the pack it interrupts is always complete (asserted
+  // below). Rows are limited to 2^tailW - 1 beats.
+  val hasTail      = tailPassthrough != 0
+  val tailW        = 16
+  val tailPeriod   = if (hasTail) ext_csr_i(1)(tailW - 1, 0) else 0.U(tailW.W)
+  val tailEn       = tailPeriod =/= 0.U
+  val beatCnt      = RegInit(0.U(tailW.W))
+  val acceptIsTail = tailEn && (beatCnt === tailPeriod)
+  val curIsTail    = RegInit(false.B) // the beat currently being issued is a tail beat
+  val tailInFlight = RegInit(false.B) // its last sub-cycle has issued, its retire has not landed
 
   // ---- streaming time-mux + pipeline FSM (continuous-issue; see StreamMap for the rationale) -----------
   // Was: accept 1 beat -> issue subCycles -> DRAIN Ppe idle -> pack -> emit -> re-accept (per-beat bubble).
@@ -156,7 +185,10 @@ class Fp16ToInt8(
   // accept a new beat when finishing the current one this cycle (overlap; no recurrence => no gap) or idle;
   // reserve one output-beat credit only when starting a new pack.
   val creditOK = !nextIsPackStart || (credit =/= 0.U)
-  ext_data_i.ready := ((haveBeat && lastSub) || !haveBeat) && creditOK && !ext_start_i
+  // `curIsTail` blocks the overlap accept that would otherwise clobber `inBeat` on the tail's last
+  // sub-cycle; `tailInFlight` holds it off until the tail has been pushed.
+  val tailBlock = curIsTail || tailInFlight
+  ext_data_i.ready := ((haveBeat && lastSub) || !haveBeat) && creditOK && !ext_start_i && !tailBlock
   val accept = ext_data_i.fire
 
   // int8 output index for (pack beat p, sub s, lane j) and input-lane index, width-exact to silence W004
@@ -176,40 +208,61 @@ class Fp16ToInt8(
 
   val subRetire      = ShiftRegister(sub, Ppe)
   val packRetire     = ShiftRegister(packIdx, Ppe)
-  val retireValid    = ShiftRegister(issuing, Ppe, false.B, true.B)
-  val packLastIssue  = issuing && lastSub && lastInPack
+  val packLastIssue  = issuing && lastSub && lastInPack && !curIsTail
   val packLastRetire = clrPipe(packLastIssue, Ppe)
+  val tailLastIssue  = issuing && lastSub && curIsTail
+  val tailRetire     = clrPipe(tailLastIssue, Ppe)
+  // A tail beat produces no lane results, so it must not write the pack registers.
+  val dataRetire     = ShiftRegister(issuing && !curIsTail, Ppe, false.B, true.B)
   val outNow         = WireInit(outRegs)
-  when(retireValid) {
+  when(dataRetire) {
     for (j <- 0 until computeLanes) {
       outRegs(oi(packRetire, subRetire, j)) := res(j)
       outNow(oi(packRetire, subRetire, j))  := res(j)
     }
   }
 
-  outQ.io.enq.valid := packLastRetire && !ext_start_i // no stale push on the restart cycle
-  outQ.io.enq.bits  := outNow.asTypeOf(UInt(extensionParam.dataWidth.W))
+  outQ.io.enq.valid := (packLastRetire || tailRetire) && !ext_start_i // no stale push on the restart cycle
+  // `inBeat` still holds the tail beat: acceptance was blocked for exactly this reason.
+  outQ.io.enq.bits  := Mux(tailRetire, inBeat, outNow.asTypeOf(UInt(extensionParam.dataWidth.W)))
   assert(!outQ.io.enq.valid || outQ.io.enq.ready, "Fp16ToInt8: output queue overflow (credit bug)")
   outQ.io.deq.ready := ext_data_o.ready
   ext_data_o.valid  := outQ.io.deq.valid
   ext_data_o.bits   := outQ.io.deq.bits
 
   val deq       = outQ.io.deq.fire
-  val doReserve = accept && nextIsPackStart
+  // A tail beat is one output beat of its own; when tailPeriod is a multiple of `pack` it also lands on a
+  // pack start, so the two terms never reserve twice.
+  val doReserve = accept && (nextIsPackStart || acceptIsTail)
   when(ext_start_i) {
     haveBeat := false.B; sub := 0.U; packIdx := 0.U; nextPack := 0.U; credit := Qdepth.U
+    beatCnt := 0.U; curIsTail := false.B; tailInFlight := false.B
   }.otherwise {
     when(accept) {
-      inBeat   := ext_data_i.bits; haveBeat := true.B; sub := 0.U
-      packIdx  := nextPack
-      nextPack := Mux(nextPack === (pack - 1).U, 0.U, nextPack + 1.U)
+      inBeat    := ext_data_i.bits; haveBeat := true.B; sub := 0.U
+      curIsTail := acceptIsTail
+      beatCnt   := Mux(acceptIsTail, 0.U, beatCnt + 1.U)
+      when(!acceptIsTail) {
+        packIdx  := nextPack
+        nextPack := Mux(nextPack === (pack - 1).U, 0.U, nextPack + 1.U)
+      }
     }.elsewhen(issuing) {
       when(lastSub) { haveBeat := false.B }.otherwise { sub := sub + 1.U }
     }
+    // `curIsTail` hands the block over to `tailInFlight` the cycle the tail finishes issuing:
+    // it must stay set for that cycle (packLastIssue/dataRetire read it) but must not survive it,
+    // or ready never rises again. accept cannot coincide -- curIsTail is what holds ready low.
+    when(tailLastIssue) { curIsTail := false.B; tailInFlight := true.B }
+      .elsewhen(tailRetire) { tailInFlight := false.B }
     when(doReserve =/= deq) { credit := Mux(doReserve, credit - 1.U, credit + 1.U) }
   }
 
-  ext_busy_o := (credit =/= Qdepth.U) || haveBeat
+  assert(
+    !(accept && acceptIsTail) || nextIsPackStart,
+    "Fp16ToInt8: tailPeriod must be a multiple of the pack ratio"
+  )
+
+  ext_busy_o := (credit =/= Qdepth.U) || haveBeat || tailInFlight
 }
 
 class HasFp16ToInt8(
@@ -217,7 +270,8 @@ class HasFp16ToInt8(
   out_elementWidth: Int = 8,
   dataWidth:        Int = 512,
   computeLanes:     Int = 0,
-  fpPipe:           Int = 1 // internal pipeline depth of the quantize-PE FP units (timing cut knob)
+  fpPipe:           Int = 1, // internal pipeline depth of the quantize-PE FP units (timing cut knob)
+  tailPassthrough:  Int = 0  // 1 = build the row-tail passthrough (adds csr(1) = tailPeriod)
 ) extends HasDataPathExtension {
   require(
     in_elementWidth == 16 && out_elementWidth == 8,
@@ -227,13 +281,13 @@ class HasFp16ToInt8(
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
       moduleName = "Fp16ToInt8", // -> READER_EXT_FP16TOINT8 (keep stable: never width-encode the name)
-      userCsrNum = 1,            // inv_scale (FP32 bits)
+      userCsrNum = if (tailPassthrough != 0) 2 else 1, // inv_scale (FP32 bits) [+ tailPeriod]
       dataWidth  = dataWidth
     )
 
   def instantiate(clusterName: String): Fp16ToInt8 =
     Module(
-      new Fp16ToInt8(in_elementWidth, out_elementWidth, computeLanes, fpPipe) {
+      new Fp16ToInt8(in_elementWidth, out_elementWidth, computeLanes, fpPipe, tailPassthrough) {
         override def desiredName = clusterName + namePostfix
       }
     )

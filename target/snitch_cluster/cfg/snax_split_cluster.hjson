@@ -194,6 +194,12 @@
                                         fpPipe: 1
                                     }
                                 }
+                                // tailPassthrough: pass the row's LAST beat through unquantised (csr(1) =
+                                // beats per row, 0 = off). StreamReduce in TAP mode emits the row and then
+                                // its reduction as a trailing beat; without this the quantiser would narrow
+                                // that scalar along with the data, so a pass that produces both a tile and
+                                // its row statistic could not also quantise the tile -- which cost FA a
+                                // THIRD read of the score tile purely to narrow it.
                                 {
                                     HasFp16ToInt8:
                                     {
@@ -202,6 +208,7 @@
                                         dataWidth: 512
                                         computeLanes: 16
                                         fpPipe: 1
+                                        tailPassthrough: 1
                                     }
                                 }
                             ]

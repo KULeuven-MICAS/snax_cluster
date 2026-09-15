@@ -251,20 +251,25 @@
 //                     The same fan-out for the same reason: corr16 pairs with l16_old
 //                     in one task and with the O tile in another.
 //
-//                  P16    = exp(S16^T - m16)     513 -> 513  ) FUSED: EW0 (sticky ADD)
+//                  P8^T   = int8(exp(S16^T-m16)) 513 -> 257  ) FUSED: EW0 (sticky ADD)
 //                  sum16  = sum of P16 over keys             ) -> Map (EXP) -> Reduce TAP
+//                                                            ) -> Fp16ToInt8 (tail passthrough)
 //
-//                     sum16 has no task of its own: it is the TAP beat of the row above,
-//                     the 513th written after the 512 beats of P16. One pass over the
-//                     tile produces both.
+//                     THE WHOLE EPILOGUE IS ONE SWEEP. sum16 has no task of its own: it is
+//                     the TAP beat, written after the tile. And the quantiser runs in the
+//                     same pass because its tail passthrough leaves that trailing beat
+//                     alone -- without it the scalar would be narrowed along with the data,
+//                     which is why P had to be written in FP16 and read back by a separate
+//                     quantise task. That third trip over the tile is gone, and so is the
+//                     FP16 P buffer: 512 beats written + 512 read per tile.
 //
 //                       read   [ -m16 ][ S16^T  x512 ]     negmS, then the tile
-//                       write  [ P16   x512 ][ sum16 ]     p16, then rsum
+//                       write  [ P8^T  x256 ][ sum16 ]     into THIS tile's p8 buffer
 //                                              \___ lsc16 is written beside it later,
 //                                                   so the l16 row reads the adjacent
-//                                                   pair [ sum16 ][ lsc16 ]
+//                                                   pair [ sum16 ][ lsc16 ]. Both follow
+//                                                   the p8 ping-pong now.
 //
-//                  P8^T   = int8(P16)            512 -> 256  Fp16ToInt8
 //                  O16^T *= corr16               129 -> 128  StreamElementwise sticky MUL
 //
 //                     ---- P8^T and the rescaled O16^T are published to the GEMM here.
@@ -297,10 +302,12 @@
 //   O16^T and O32^T are the two representations of O described below: the SIMD rescales
 //   the FP16 copy, the GEMM accumulates the INT32 one, and they are never joined.
 //
-// Per KV tile that is 4.19 M MAC and 4096 GEMM cycles against ~1680 beats read and ~1420
+// Per KV tile that is 4.19 M MAC and 4096 GEMM cycles against ~1170 beats read and ~910
 // written on the SIMD side, so the arithmetic floor is GEMM-bound and the softmax has to
-// fit inside its shadow. The whole run is NKV of these. Every buffer above lives in TCDM
-// at once; the footprint guard in main() reports the total against the 512 kB budget.
+// fit inside its shadow. (It was 1680 / 1420 while the quantiser needed a pass of its
+// own: that pass read 512 beats and the tile it read had to be written in FP16 first.)
+// The whole run is NKV of these. Every buffer above lives in TCDM at once; the footprint
+// guard in main() reports the total against the 512 kB budget.
 //
 // TWO IDEAS CARRY THIS KERNEL.
 //
@@ -645,18 +652,23 @@ int main() {
     uint8_t *corrL = l1 + top;  top += BEAT;          // exp(delta)  ] latch for corr*l_old
     uint8_t *lrun  = l1 + top;  top += BEAT;          // running l   ]
     uint8_t *lnew  = l1 + top;  top += BEAT;
-    uint8_t *p16   = l1 + top;  top += SBEATS * BEAT; // P = exp(S-m)
-    // The tapped rowsum lands immediately after p16 and corr*l_old immediately after IT,
-    // so task 13 reads the pair [rowsum][corr*l_old] directly. The adjacency a LANEWISE
-    // 2-beat reduce needs comes from the ALLOCATION, not from moving a beat at run time.
-    uint8_t *rsum  = l1 + top;  top += BEAT;          // tapped rowsum ] pair for l_new
-    uint8_t *lsc   = l1 + top;  top += BEAT;          // corr*l_old    ]
+    // No FP16 P buffer: the epilogue quantises the tile in the sweep that produces it,
+    // so P exists only as INT8, inside the P8 buffers below. The tapped rowsum and
+    // corr*l_old live there too -- see the P8 allocation.
     uint8_t *corrO = l1 + top;  top += BEAT;          // exp(delta)  ] latch for O *= corr
     uint8_t *oacc  = l1 + top;  top += DBEATS * BEAT; // O^T = [d, Br] ]
     uint32_t oacc32 = top;      top += BR * DHEAD * 4; // O^T as the GEMM sees it: INT32
     uint32_t d32_b = top;       top += BR * BC * 2;   // second S^T buffer (FP16)
-    uint32_t p8_0  = top;       top += PBEATS * BEAT;
-    uint32_t p8_1  = top;       top += PBEATS * BEAT;
+    // P8 CARRIES ITS OWN TAIL: [ P8 x PBEATS ][ rowsum ][ corr*l_old ].
+    //
+    // The epilogue pass narrows the tile and emits the tapped rowsum in ONE sweep
+    // (Fp16ToInt8 tailPassthrough lets the reduce's trailing FP16 beat past the
+    // quantiser), so the rowsum lands wherever the writer's flat stream puts it --
+    // immediately after the 256 INT8 beats. corr*l_old is allocated right behind it so
+    // task 13 still reads the adjacent pair a LANEWISE 2-beat reduce needs. Both are
+    // per-tile now, because the P8 buffer they sit in ping-pongs.
+    uint32_t p8_0  = top;       top += (PBEATS + 2) * BEAT;
+    uint32_t p8_1  = top;       top += (PBEATS + 2) * BEAT;
     // O^T lives in TWO representations, and they are deliberately not joined.
     //
     // The GEMM accumulates P.V in INT32 in `oacc32`, in place (C and D32 both point
@@ -674,6 +686,9 @@ int main() {
 
     const int32_t d32_delta[2] = {delta_local_d32, (int32_t)d32_b};
     const int32_t p8_delta[2] = {(int32_t)p8_0, (int32_t)p8_1};
+    // The two tail slots of the P8 buffer tile j writes.
+#define RSUM_OF(j) (l1 + p8_delta[(j) & 1] + PBEATS * BEAT)
+#define LSC_OF(j)  (l1 + p8_delta[(j) & 1] + (PBEATS + 1) * BEAT)
 
     // The handoff. sync[0] counts S tiles the GEMM has finished producing;
     // sync[1] counts softmax tiles the SIMD core has finished consuming and
@@ -796,21 +811,21 @@ int main() {
         // that must happen BEFORE the pointwise transform uses EW0. Sticky-B suppresses its
         // seed beat, so EW0 emits exactly the SBEATS data beats and the epilogue is one pass:
         //
-        //     read [negmS][S^T x Bc]  ->  EW0: sticky ADD -> Map: EXP -> Reduce: ADD|LANEWISE|TAP
-        //     write [P x Bc][rowsum]
+        //     read [negmS][S^T x Bc]
+        //       -> EW0: sticky ADD -> Map: EXP -> Reduce: ADD|LANEWISE|TAP -> Fp16ToInt8
+        //     write [P8 x Bc/2][rowsum]
         //
-        // Fusing them keeps S^T - m_new inside the chain, so it is never written out: a whole
-        // read+write of the tile that does not happen.
+        // Fusing EW0 and Map keeps S^T - m_new inside the chain, so it is never written out.
+        // Fp16ToInt8 joins the SAME pass because its tail passthrough leaves the reduce's
+        // trailing FP16 beat alone: the quantise-only task that used to read the whole tile
+        // back out of TCDM is gone, and with it the FP16 P buffer.
         snax_simd_shape_flat(&sh[14], negmS, 1 + SBEATS);
-        snax_simd_shape_flat(&sh[17], p16, SBEATS + 1);
-        // 10 quantise P for the second matmul.
-        snax_simd_shape_flat(&sh[18], p16, SBEATS);
-        snax_simd_shape_flat(&sh[19], l1 + p8_delta[0], PBEATS);
+        snax_simd_shape_flat(&sh[17], l1 + p8_delta[0], PBEATS + 1);
         // 11 corr * l_old: sticky MUL over [corrL][lrun].
         snax_simd_shape_flat(&sh[20], corrL, 2);
-        snax_simd_shape_flat(&sh[21], lsc, 1);   // seed emits nothing, so just the result
+        snax_simd_shape_flat(&sh[21], LSC_OF(0), 1);  // seed emits nothing, so just the result
         // 13 l_new = corr*l_old + rowsum: LANEWISE ADD over the adjacent pair [rsum][lsc].
-        snax_simd_shape_flat(&sh[24], rsum, 2);
+        snax_simd_shape_flat(&sh[24], RSUM_OF(0), 2);
         snax_simd_shape_flat(&sh[25], lnew, 1);
         // 14 O *= corr: sticky MUL, latch corrO then the O tile, into the GEMM's C buffer.
         snax_simd_shape_flat(&sh[26], corrO, 1 + DBEATS);
@@ -905,12 +920,16 @@ int main() {
             simd_stall += snrt_mcycle() - w0;
 
             sh[0].base = l1 + d32_delta[j & 1];
-            sh[19].base = l1 + p8_delta[j & 1];
+            // The epilogue writes [P8][rowsum] into this tile's P8 buffer, and corr*l_old is
+            // the slot behind the rowsum, so all three follow the ping-pong.
+            sh[17].base = l1 + p8_delta[j & 1];
+            sh[21].base = LSC_OF(j);
+            sh[24].base = RSUM_OF(j);
 
             // ---- the online softmax, in full -------------------------------
-            // Every task below is one beat of arithmetic except 1, 8, 9, 10 and
-            // 14. That ratio is the point: the STATE UPDATE is dominated by
-            // per-task start/drain, not by compute.
+            // Every task below is one beat of arithmetic except 1, 8, 9 and 14.
+            // That ratio is the point: the STATE UPDATE is dominated by per-task
+            // start/drain, not by compute.
 
             // 1  rowmax over the tile the GEMM has already written as FP16 (the tap
             //    appends the per-lane maxima after the tile passes through)
@@ -952,7 +971,8 @@ int main() {
             snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR,
                                     (1u << SIMD_EXT_STREAMELEMENTWISE_0) |
                                         (1u << SIMD_EXT_STREAMMAP) |
-                                        (1u << SIMD_EXT_STREAMREDUCE));
+                                        (1u << SIMD_EXT_STREAMREDUCE) |
+                                        (1u << SIMD_EXT_FP16TOINT8));
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMELEMENTWISE_0_CSR + 0, 1);
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMELEMENTWISE_0_CSR + 1,
                                     SIMD_EW_ADD | SIMD_EW_STICKY_B);
@@ -962,15 +982,14 @@ int main() {
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMREDUCE_CSR, SBEATS);
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMREDUCE_CSR + 1,
                                     SIMD_RED_ADD | SIMD_RED_LANEWISE | SIMD_RED_TAP);
+            // The quantiser narrows the SBEATS data beats and passes the reduce's trailing
+            // rowsum beat through untouched, so this one task writes [P8 x PBEATS][rowsum].
+            snax_write_simd_cfg_reg(SIMD_EXT_FP16TOINT8_CSR + 0, SIMD_F32_ONE);
+            snax_write_simd_cfg_reg(SIMD_EXT_FP16TOINT8_CSR + 1, SIMD_QUANT_TAIL(SBEATS));
             snax_simd_program_1d(&sh[14], &sh[17]);
             snax_simd_fire();
 
-            // 10 quantise P
-            snax_simd_use1(SIMD_EXT_FP16TOINT8, SIMD_EXT_FP16TOINT8_CSR, SIMD_F32_ONE);
-            snax_simd_program_1d(&sh[18], &sh[19]);
-            snax_simd_fire();
-
-            // 14 O *= corr. HOISTED to here, directly after the quantise, because these two
+            // 14 O *= corr. HOISTED to here, directly after the epilogue, because these two
             // are the ONLY tasks the GEMM waits on: p8 is its B operand and the rescaled O is
             // its accumulator. It depends on corr (task 6+7) and nothing later, so nothing
             // stops it running now.
@@ -1045,8 +1064,10 @@ int main() {
     //
     // Three independent checks, each pinning a different part of the online softmax:
     //
-    //   P    contains exactly 1.0   per query row   the running max, the subtract AND the exp
-    //   P^T  contains exactly 1     per query row   the quantiser
+    //   P^T  contains exactly 1     per query row   the max, the subtract, the exp AND the
+    //                                                quantiser -- the maximal key gives
+    //                                                exp(0) = 1.0, which at inv_scale 1.0
+    //                                                is the only value that rounds to 1
     //   l    == NKV * rowsum(one tile)              the TAPPED rowsum and the l recurrence
     //
     // The third is the sharpest. Every KV tile is fed the same K, so after the first tile
@@ -1054,17 +1075,21 @@ int main() {
     // identical row sums; a wrong tap, correction or l update makes it drift.
     if (snax_is_simd_core()) {
         volatile int8_t *p8t = (volatile int8_t *)(l1 + p8_delta[(NKV - 1) & 1]);
+        volatile uint8_t *rsum = RSUM_OF(NKV - 1);
         for (uint32_t i = 0; i < BR; i++) {   // i = query row = lane
             // exp(S - m) == 1.0 for the maximal key pins the running max, the per-lane
-            // subtract in EW0 and the exponential in Map with a single test.
-            int found_zero = 0, found_one = 0;
-            for (uint32_t j = 0; j < SBEATS; j++) {
-                if (fp16_at(p16 + j * SIMD_BEAT_BYTES, i) == 0x3C00u) found_zero = 1; // exp(0) = 1.0
-                if (p8t[j * BR + i] == 1) found_one = 1;
-            }
-            if (!found_zero || !found_one) {
-                printf("query %2u: p16_one=%d p8_one=%d m=%04x rowsum=%04x l=%04x\n", i,
-                       found_zero, found_one, fp16_at(mrun, i), fp16_at(rsum, i),
+            // subtract in EW0 and the exponential in Map -- and now the quantiser too,
+            // since P is only ever INT8 in memory.
+            // The count, not just the presence: a dropped beat, a tail written into the
+            // wrong slot or a shifted write all move it, including where every sampled
+            // beat below still reads the 0 it expects.
+            int ones = 0;
+            for (uint32_t j = 0; j < SBEATS; j++)
+                if (p8t[j * BR + i] == 1) ones++;
+            int16_t want_ones = p8ones_golden[i];
+            if (ones == 0 || (want_ones >= 0 && ones != want_ones)) {
+                printf("query %2u: P^T has %d ones, expected %d  m=%04x rowsum=%04x l=%04x\n",
+                       i, ones, (int)want_ones, fp16_at(mrun, i), fp16_at(rsum, i),
                        fp16_at(lrun, i));
                 err++;
             }
@@ -1098,23 +1123,30 @@ int main() {
         // true maximum over all Bc keys, the row sum over every key, and P itself on one
         // beat in PGOLD_STRIDE. datagen.py computes all three in float from the same
         // operands, at the precision each stage of the hardware works in.
-        uint32_t worst_m = 0, worst_sum = 0, worst_p = 0;
+        //
+        // P is compared as INT8 because that is the only form it exists in: the epilogue
+        // quantises the tile in the sweep that produces it. The exponential is still
+        // covered in FULL FP16 precision by rowsum, which integrates every key -- the
+        // INT8 compare adds the quantiser's rounding threshold on top of it.
+        uint32_t worst_m = 0, worst_sum = 0;
         for (uint32_t i = 0; i < BR; i++) {
             uint32_t u = fp16_ulp(fp16_at(mrun, i), m_golden[i]);
             if (u > worst_m) worst_m = u;
             u = fp16_ulp(fp16_at(rsum, i), rowsum_golden[i]);
             if (u > worst_sum) worst_sum = u;
         }
+        uint32_t p8_bad = 0;
         for (uint32_t b = 0; b < PGOLD_NBEATS; b++) {
-            volatile uint8_t *beat = p16 + (uint32_t)b * PGOLD_STRIDE * SIMD_BEAT_BYTES;
+            uint32_t key = (uint32_t)b * PGOLD_STRIDE;
             for (uint32_t i = 0; i < BR; i++) {
-                uint32_t u = fp16_ulp(fp16_at(beat, i), p16_golden[b * BR + i]);
-                if (u > worst_p) worst_p = u;
+                int16_t want = p8_golden[b * BR + i];
+                if (want < 0) continue;  // within a rounding step of the .5 threshold
+                if ((int16_t)p8t[key * BR + i] != want) p8_bad++;
             }
         }
-        printf("  golden           m %u ULP  P %u ULP  rowsum %u ULP  (limits %u/%u/%u)\n",
-               worst_m, worst_p, worst_sum, GOLD_ULP_M, GOLD_ULP_P, GOLD_ULP_SUM);
-        if (worst_m > GOLD_ULP_M || worst_p > GOLD_ULP_P || worst_sum > GOLD_ULP_SUM) {
+        printf("  golden           m %u ULP  P8 %u wrong  rowsum %u ULP  (limits %u/0/%u)\n",
+               worst_m, p8_bad, worst_sum, GOLD_ULP_M, GOLD_ULP_SUM);
+        if (worst_m > GOLD_ULP_M || p8_bad != 0 || worst_sum > GOLD_ULP_SUM) {
             printf("  golden MISMATCH: the chain is wired correctly but the arithmetic "
                    "disagrees with the float model\n");
             err++;

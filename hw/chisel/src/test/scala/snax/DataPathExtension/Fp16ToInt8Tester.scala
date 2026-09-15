@@ -195,4 +195,106 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
   }
   it should "return busy_o low after each back-to-back task (cl=8)" in { runTasksCheckBusy(8, Seq(6, 4, 8)) }
   it should "return busy_o low after each back-to-back task (cl=32 parallel)" in { runTasksCheckBusy(32, Seq(6, 4, 8)) }
+
+  // ROW-TAIL PASSTHROUGH. `rows` rows of `period` data beats, each followed by one beat that must come out
+  // UNQUANTISED and in order -- the shape a StreamReduce TAP pass hands down the chain. Checks the values,
+  // the interleaving (a tail must not overtake the pack it follows) and that busy_o still falls.
+  def runTailHarness(
+    invScaleBits: BigInt,
+    period:       Int,
+    rows:         Int,
+    computeLanes: Int,
+    rng:          Random
+  ): (Seq[BigInt], Seq[BigInt]) = {
+    val inRows     = Seq.fill(rows)(Seq.fill(period + 1)(packFp16(Seq.fill(32)(sampleFp16(rng)))))
+    val inputBeats = inRows.flatten
+    val nOut       = rows * (period / 2 + 1)
+    var outs       = Seq[BigInt]()
+    test(new DataPathExtensionHarness(new HasFp16ToInt8(16, 8, 512, computeLanes, 1, 1)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+        dut.io.csr_i(0).poke(invScaleBits.U)
+        dut.io.csr_i(1).poke(period.U)
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+        var threads = new chiseltest.internal.TesterThreadList(Seq())
+        threads = threads.fork {
+          dut.io.data_i.valid.poke(true)
+          for (bt <- inputBeats) {
+            while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+            dut.io.data_i.bits.poke(bt); dut.clock.step(1)
+          }
+          dut.io.data_i.valid.poke(false)
+        }
+        threads = threads.fork {
+          for (_ <- 0 until nOut) {
+            while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+            outs = outs :+ dut.io.data_o.bits.peekInt()
+            dut.io.data_o.ready.poke(true); dut.clock.step(1); dut.io.data_o.ready.poke(false)
+          }
+        }
+        threads.joinAndStep()
+        dut.io.data_o.ready.poke(true)
+        var w = 0; while (dut.io.busy_o.peekBoolean() && w < 400) { dut.clock.step(1); w += 1 }
+        dut.io.data_o.ready.poke(false)
+        assert(!dut.io.busy_o.peekBoolean(), "Fp16ToInt8 tail: busy_o stuck high after the drain")
+      }
+    // golden: per row, period/2 packed INT8 beats then the tail beat verbatim
+    val gd = inRows.flatMap { row =>
+      val packed = row.take(period).grouped(2).map { pair =>
+        packInt8(
+          lanesOf(pair(0)).map(h => quantRef(h, invScaleBits.toLong)) ++
+            lanesOf(pair(1)).map(h => quantRef(h, invScaleBits.toLong))
+        )
+      }.toSeq
+      packed :+ row.last
+    }
+    (outs, gd)
+  }
+
+  for (cl <- Seq(8, 16, 32))
+    it should s"pass the row tail through unquantised, in order (cl=$cl)" in {
+      val (hw, gd) = runTailHarness(f32bits(127.0f), period = 4, rows = 3, computeLanes = cl,
+                                    rng = new Random(0x7A11))
+      assert(hw.length == gd.length, s"got ${hw.length} output beats, expected ${gd.length}")
+      for (i <- hw.indices)
+        assert(hw(i) == gd(i), f"tail beat $i (cl=$cl) mismatch:\n  HW=0x${hw(i).toString(16)}\n  SW=0x${gd(i).toString(16)}")
+    }
+
+  // tailPeriod = 0 must behave exactly like a build without the feature.
+  it should "be inert when tailPeriod is 0" in {
+    val rng        = new Random(0xBEE)
+    val scaleBits  = f32bits(16.0f)
+    val inputBeats = Seq.fill(6)(packFp16(Seq.fill(32)(sampleFp16(rng))))
+    var outs       = Seq[BigInt]()
+    test(new DataPathExtensionHarness(new HasFp16ToInt8(16, 8, 512, 16, 1, 1)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+        dut.io.csr_i(0).poke(scaleBits.U); dut.io.csr_i(1).poke(0.U)
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+        var threads = new chiseltest.internal.TesterThreadList(Seq())
+        threads = threads.fork {
+          dut.io.data_i.valid.poke(true)
+          for (bt <- inputBeats) {
+            while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+            dut.io.data_i.bits.poke(bt); dut.clock.step(1)
+          }
+          dut.io.data_i.valid.poke(false)
+        }
+        threads = threads.fork {
+          for (_ <- 0 until 3) {
+            while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+            outs = outs :+ dut.io.data_o.bits.peekInt()
+            dut.io.data_o.ready.poke(true); dut.clock.step(1); dut.io.data_o.ready.poke(false)
+          }
+        }
+        threads.joinAndStep()
+      }
+    val gd = inputBeats.grouped(2).map { pair =>
+      packInt8(
+        lanesOf(pair(0)).map(h => quantRef(h, scaleBits.toLong)) ++
+          lanesOf(pair(1)).map(h => quantRef(h, scaleBits.toLong))
+      )
+    }.toSeq
+    for (i <- gd.indices) assert(outs(i) == gd(i), s"tailPeriod=0 beat $i differs from the plain pack")
+  }
 }
