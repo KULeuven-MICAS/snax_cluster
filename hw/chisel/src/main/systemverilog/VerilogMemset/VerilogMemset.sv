@@ -22,13 +22,19 @@ module VerilogMemset #(
 
     assign ext_data_o_valid = ext_data_i_valid;
     assign ext_data_i_ready = ext_data_o_ready;
-    logic [7:0] memset_data;
-    assign memset_data = ext_csr_i_0[7:0];
+
+    // The CSR is a 32-bit PATTERN tiled across the beat, not a byte. One
+    // mechanism covers every constant the datapath can carry -- INT8, FP16,
+    // BF16, FP32, INT32 -- without the extension knowing any of those formats.
+    // A byte fill is the pattern with all four lanes equal, so callers that
+    // write 0xFFFFFFFF or 0x00000000 are unaffected.
+    logic [31:0] memset_data;
+    assign memset_data = ext_csr_i_0;
 
     genvar i;
     generate
-        for(i = 0; i < DataWidth/8; i = i + 1) begin: g_memset
-            assign ext_data_o_bits[i*8 +: 8] = memset_data;
+        for(i = 0; i < DataWidth/32; i = i + 1) begin: g_memset
+            assign ext_data_o_bits[i*32 +: 32] = memset_data;
         end
     endgenerate
     assign ext_busy_o = 0;
