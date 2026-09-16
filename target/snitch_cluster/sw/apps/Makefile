@@ -66,7 +66,18 @@ SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-reshape-comparison
 # GEMM on hart 0. FlashAttention is the workload that exercises GEMM and SIMD together;
 # its data.h is generated from the cluster cfg, so it follows the array shape.
-SUBDIRS += snax-flashattn
+#
+# TWO APPS, ONE KERNEL SHAPE. The difference between the phases of inference is how many
+# QUERY tiles amortise one pass over K and V:
+#
+#   decode   NQ = 1   one query tile of g*k rows against the whole cache, per token
+#   prefill  NQ > 1   many query tiles against the same resident K/V
+#
+# Arithmetic intensity is exactly Br*NQ -- Bc and d cancel -- so NQ is the only knob that
+# moves bytes per MAC, and it is what separates a memory-bound decode from a compute-bound
+# prefill on this machine.
+SUBDIRS += snax-flashattn-decode
+SUBDIRS += snax-flashattn-prefill
 endif
 # The FP16 SIMD apps below need the StreamMap / StreamReduce / StreamElementwise /
 # Fp16ToInt8 reader extensions, which only cfg/snax_xdma_cluster.hjson builds --

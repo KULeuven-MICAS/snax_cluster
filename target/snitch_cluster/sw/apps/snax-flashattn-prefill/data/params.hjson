@@ -1,0 +1,54 @@
+// Copyright 2024 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// FlashAttention tile shape, for datagen.py.
+//
+// SHAPE 1 only: S^T = K.Q^T. The geometry the kernel sees follows from these and the mesh
+// in the cluster cfg, and datagen.py emits it into data.h:
+//
+//   Bc = M*meshRow    key columns  -- the tiling knob, grow it until TCDM is full
+//   Br = N*meshCol    query rows
+//   d  = K*tileSize   head dimension -- a property of the MODEL, not a knob
+//
+// At M=32, N=2, K=32 on a 16x4x16 array that is Bc=512, Br=32, d=128. The array is
+// VersaCore's single spatial unrolling (Mu, Ku, Nu); datagen.py reads it from the cluster
+// cfg, so retuning the array retunes the geometry here with no edit in this file.
+//
+// Bc and d are independent, so the two matmuls have different shapes. datagen.py derives
+// shape 2 (O^T = V^T.P^T, M*meshRow = d, K*tileSize = Bc) from the same values and appends
+// its S2_* descriptors to data.h; gemm_set_shape() switches between them per dispatch.
+//
+// M and N are swapped relative to the untransposed form because attention is computed
+// TRANSPOSED here: S^T = (Q.K^T)^T = K.Q^T is the same GEMM with its operands swapped, so
+// D = [M*meshRow, N*meshCol] = [Bc, Br]. That orientation is what lets StreamReduce's
+// LANEWISE mode take the rowmax with no horizontal fold -- one lane is one query row, so
+// the reduction runs along beats. See snax-flashattn.c.
+
+{
+  // gemm configurations
+  // KV tiles the software pipeline streams. Keep it >= 4, so the pipeline has enough
+  // tiles to hide the per-tile fill and drain, and a power of two, so the kernel's
+  // l-recurrence invariant can check l == NKV * rowsum by its exponent alone.
+  NKV: 4,
+
+  // QUERY TILES PER K/V PASS. This is the only knob that moves arithmetic intensity:
+  // bytes = 2*Bc*d and MACs = NQ*2*Br*Bc*d, so intensity = NQ*Br exactly -- Bc and d
+  // cancel. NQ = 1 is decode (one query position per token, the whole cache read for it);
+  // NQ > 1 is prefill, where many query tiles attend the same resident K and V.
+  //
+  // Each query tile carries its own independent (m, l, O), so nothing about the recurrence
+  // changes -- only how many of them are in flight. The cost is L1: 16,896 B of accumulator
+  // and state per tile plus 4 KiB of Q.
+  NQ: 4,
+
+  K: 32,
+  N: 2,
+  M: 32,
+
+  // C is read in FULL, not broadcast. The C port is serialised 4:1 onto 32 channels, and
+  // a broadcast operand cannot be spread across a serialised input; the kernel needs the
+  // full read anyway, because the second matmul accumulates O += P.V through C in place.
+  broadcast_C: 0,
+  channel_en_C: 1,
+}
