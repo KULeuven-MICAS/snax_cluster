@@ -34,6 +34,7 @@ class AccumulatorTest extends AnyFunSuite with ChiselScalatestTester {
 
         // Set control signals
         dut.io.accAddExtIn.poke(accAddExtIn.B)
+        dut.io.accClear.poke(false.B)
         for (i <- 0 until numElements) {
           dut.io.enable(i).poke(true.B)
         }

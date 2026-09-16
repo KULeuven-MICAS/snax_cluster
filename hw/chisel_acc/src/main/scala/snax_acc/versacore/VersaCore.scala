@@ -478,11 +478,19 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   accAddExtInInput := inputFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U && cstate === sBUSY
 
+  // take_in_new_c = 0 means this matmul reads no C. C is also what overwrites the
+  // accumulator on the first pass of an output block, so without it the block would start
+  // from the previous one's result. Clear on that same retire-side mark instead, which
+  // lets a fresh-product matmul drop its C descriptor and stop competing for the port.
+  val accClear = WireInit(0.B)
+  accClear := computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 0.U && cstate === sBUSY
+
   // array ctrl signals
   array.io.ctrl.arrayShapeCfg  := csrReg.arrayCfg.arrayShapeCfg
   array.io.ctrl.dataTypeCfg    := csrReg.arrayCfg.dataTypeCfg
   array.io.ctrl.accAddExtIn      := accAddExtIn
   array.io.ctrl.accAddExtInInput := accAddExtInInput
+  array.io.ctrl.accClear         := accClear
   array.io.ctrl.cstate_is_busy := cstate === sBUSY
 
   // array data signals

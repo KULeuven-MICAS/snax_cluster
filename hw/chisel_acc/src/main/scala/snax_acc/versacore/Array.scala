@@ -34,6 +34,9 @@ class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
   // holds the input gate open across several accepted passes and swallows extra C words.
   val accAddExtInInput = Input(Bool())
   val accAddExtIn      = Input(Bool())
+  // The third case: no C at all. Then nothing resets the accumulator between output
+  // blocks, so the first pass of a block has to be told to start from zero.
+  val accClear         = Input(Bool())
   val cstate_is_busy = Input(Bool())
   val computeFire    = Output(Bool())
 }
@@ -294,6 +297,7 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
 
   // handle the control signals for accumulators
   accumulators.foreach(_.io.accAddExtIn := io.ctrl.accAddExtIn)
+  accumulators.foreach(_.io.accClear := io.ctrl.accClear)
   accumulators.foreach(_.io.out.ready := io.array_data.out_d.ready)
 
   // enable the accumulators based on the runtime multiplier count

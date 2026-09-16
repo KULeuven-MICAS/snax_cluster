@@ -25,6 +25,9 @@ class AccumulatorBlock(
     val in2         = Input(UInt(inputType.width.W))
     // whether to add the external input to the accumulator or accumulate the internal reg value
     val accAddExtIn = Input(Bool())
+    // start this output block from zero rather than from the running accumulator. C is
+    // what normally resets the accumulator, so a matmul that takes no C needs this instead
+    val accClear    = Input(Bool())
     // enable signal
     val enable      = Input(Bool())
     // output of the accumulator
@@ -40,7 +43,7 @@ class AccumulatorBlock(
 
   // connection description
   adder.in.bits.in_a := io.in1
-  adder.in.bits.in_b := Mux(io.accAddExtIn, io.in2, accumulatorReg)
+  adder.in.bits.in_b := Mux(io.accAddExtIn, io.in2, Mux(io.accClear, 0.U, accumulatorReg))
   adder.in.valid     := io.enable
   // the register will always accept the adder's output, so the ready signal is always true
   adder.out.ready    := true.B
@@ -68,6 +71,7 @@ class Accumulator(
     val in1         = Flipped(DecoupledIO(Vec(numElements, UInt(inputType.width.W))))
     val in2         = Flipped(DecoupledIO(Vec(numElements, UInt(inputType.width.W))))
     val accAddExtIn = Input(Bool())
+    val accClear    = Input(Bool())
     val enable      = Input(Vec(numElements, Bool()))
     val out         = DecoupledIO(Vec(numElements, UInt(outputType.width.W)))
     val inputReady  = Output(Bool())
@@ -92,6 +96,7 @@ class Accumulator(
     accumulator_blocks(i).io.in1         := io.in1.bits(i)
     accumulator_blocks(i).io.in2         := io.in2.bits(i)
     accumulator_blocks(i).io.accAddExtIn := io.accAddExtIn
+    accumulator_blocks(i).io.accClear    := io.accClear
     accumulator_blocks(i).io.enable      := accUpdate(i)
   }
 
