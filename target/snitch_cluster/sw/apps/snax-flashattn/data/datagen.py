@@ -140,6 +140,104 @@ def emit_attention_golden(A, B, **kwargs):
     ones = (p8all == 1).sum(axis=0).astype(np.int16)
     ones = np.where((p8all < 0).any(axis=0), -1, ones).astype(np.int16)
 
+    # ---- O, the second matmul's accumulator -----------------------------------
+    #
+    # oacc32 is NKV passes of V^T.P8^T added into themselves through C. Every KV tile is
+    # fed the same K, so the running max stops moving after tile 0 and corr = exp(0) = 1
+    # from then on: the online update degenerates to a plain sum of NKV identical P.V
+    # products, which makes this the TRUE O for this data and not merely its shape.
+    #
+    # Built by the same generator as the matmul itself, with M and K swapped the way
+    # emit_shape2_section() swaps them, so the layout this assumes and the layout the
+    # descriptors walk come from one place. A is handed over as the raw buffer: shape 2
+    # reinterprets shape 1's bytes as V^T, and the golden must reinterpret them the same
+    # way rather than from some separately-derived idea of what V is.
+    #
+    # P8 goes in WITHOUT the don't-care substitution -- an O element sums 512 of them, so
+    # a -1 would poison the sum. Instead the whole golden is marked invalid if any lane
+    # sits near the rounding boundary, and the kernel skips the check and says so.
+    p8_exact = np.clip(np.rint(np.clip(Pfull, -128.0, 128.0)), -127, 127)
+    o_valid = 0 if (p8all < 0).any() else 1
+    s2_m = (kwargs["K"] * tileSize) // meshRow      # d / meshRow
+    s2_k = (M * meshRow) // tileSize                # Bc / tileSize
+    o32 = block_gemm_golden_model(
+        s2_m, s2_k, N, meshRow, tileSize, meshCol,
+        A, p8_exact.reshape(-1).astype(np.int16), 0, 0,
+        np.zeros(s2_m * N * meshRow * meshCol, dtype=np.int64),
+    )
+    o32 = np.asarray(o32, dtype=np.int64) * int(kwargs["NKV"])
+
+    # ---- and now put it where the port actually writes it ----------------------
+    #
+    # The C/D spatial map is chosen so the FP16 score tile lands row-major -- one key per
+    # 64 B beat, which is what the LANEWISE reduce needs. C and D share those strides and
+    # the INT32 side is twice as wide, so O comes out PERMUTED. That is deliberate (C and
+    # D permute identically, so O += P.V still accumulates against itself) but it means a
+    # golden in canonical block order is not comparable.
+    #
+    # The map is derived from the emitted descriptors, not assumed: the array serialises a
+    # meshRow x meshCol block into chunks of serial_c_d_width, each chunk into 16 channels
+    # of bankWidth, and the AGU places channel i at sl0*(i%4) + sl1*((i/4)%4). The same
+    # formula run at FP16 has to come out exactly row-major -- that is the assert below,
+    # and it is what says the model of the serialisation is right rather than plausible.
+    serial_c_d = _acc(kwargs)["snax_versacore_serial_c_d_width"]
+    slstride = [bankWidth // 8, N * meshCol * 16 // 8]
+    ts0, ts1 = serial_c_d * N // 8, meshCol * 16 // 8
+
+    # How the AGU places channel i. The port declares its own spatial grouping, so read it
+    # rather than assume one: [4, 4] interleaves N blocks (needed when Nu < Br), [16] is a
+    # plain contiguous transaction (available once Nu == Br). Getting this wrong is what the
+    # FP16 assert below catches.
+    sbounds = [
+        int(b)
+        for b in kwargs["snax_versacore_streamer_template"]["data_reader_writer_params"][
+            "spatial_bounds"
+        ][0]
+    ]
+
+    def chan_off(ch):
+        off, rem = 0, ch
+        for d, b in enumerate(sbounds):
+            off += slstride[d] * (rem % b)
+            rem //= b
+        return off
+
+    def scatter(width, blocks, ts2, elem_bytes):
+        """byte offset of every (block, row, col) element, in the port's order."""
+        per_chunk = serial_c_d // width          # elements in one serialised chunk
+        per_chan  = bankWidth // width           # elements in one channel
+        out = {}
+        for mm in range(blocks):
+            for nn in range(N):
+                for r in range(meshRow):
+                    for c in range(meshCol):
+                        e = r * meshCol + c
+                        ch = (e % per_chunk) // per_chan
+                        out[(mm, nn, r, c)] = (
+                            mm * ts2 + nn * ts1 + (e // per_chunk) * ts0
+                            + chan_off(ch)
+                            + (e % per_chan) * elem_bytes
+                        )
+        return out
+
+    # self-test: at FP16 the same model must give plain [key][query] row-major
+    fp16_map = scatter(16, 1, N * 16 * meshRow * meshCol // 8, 2)
+    for (mm, nn, r, c), b in fp16_map.items():
+        want = ((mm * meshRow + r) * (N * meshCol) + nn * meshCol + c) * 2
+        assert b == want, "D32 address model disagrees with the FP16 row-major layout"
+
+    ts2 = N * output_data_width * meshRow * meshCol // 8
+    o_mem = np.zeros(o32.size, dtype=np.int64)
+    o_can = o32.reshape(s2_m, N, meshRow, meshCol)
+    seen = np.zeros(o32.size, dtype=bool)
+    for (mm, nn, r, c), b in scatter(output_data_width, s2_m, ts2, 4).items():
+        w = b // 4
+        assert b % 4 == 0 and not seen[w], "D32 INT32 address map is not a bijection"
+        seen[w] = True
+        o_mem[w] = o_can[mm, nn, r, c]
+    assert seen.all(), "D32 INT32 address map does not cover the output"
+    o32 = o_mem.astype(np.int32)
+
     def bits(x):
         return np.ascontiguousarray(x, dtype=np.float16).view(np.uint16).reshape(-1)
 
@@ -160,6 +258,12 @@ def emit_attention_golden(A, B, **kwargs):
         "",
         "// P^T == 1 count per query row over the whole tile, -1 = don't care",
         format_vector_definition("int16_t", "p8ones_golden", ones),
+        "",
+        "// O = NKV * (V^T . P8^T), in the [M][N][meshRow][meshCol] order the D32 port",
+        "// writes. 0 here means a P lane sat on the rounding boundary and the sum is not",
+        "// reproducible; the kernel then skips the compare rather than reporting noise.",
+        "#define O_GOLDEN_VALID %d" % o_valid,
+        format_vector_definition("int32_t", "o32_golden", o32),
     ])
 
 
