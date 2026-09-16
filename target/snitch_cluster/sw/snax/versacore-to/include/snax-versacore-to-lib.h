@@ -36,6 +36,10 @@
 #define GEMMX_STALL_A (GEMMX_PERFORMANCE_COUNTER + 1)
 #define GEMMX_STALL_B (GEMMX_STALL_A + 1)
 #define GEMMX_STALL_D (GEMMX_STALL_B + 1)
+// Matmuls this array has retired, free-running. The completion signal to wait on when more
+// than one configuration can be queued: busy_o cannot separate two back-to-back dispatches,
+// and the streamer's counter marks its data movers done, which lands before the array is.
+#define GEMMX_FINISHED_TASK (GEMMX_STALL_D + 1)
 
 // Pack two subtraction values to one CSR
 int32_t gen_subtraction_config(int8_t subtraction_a, int8_t subtraction_b);

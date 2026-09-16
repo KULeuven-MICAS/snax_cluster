@@ -55,6 +55,11 @@ class VersaCoreIO(params: SpatialArrayParam) extends Bundle {
   val stall_a_counter     = Output(UInt(params.configWidth.W))
   val stall_b_counter     = Output(UInt(params.configWidth.W))
   val stall_d_counter     = Output(UInt(params.configWidth.W))
+  // Free-running count of matmuls this array has RETIRED. Unlike busy_o it distinguishes
+  // one dispatch from the next, and unlike the streamer's counter it does not fire until
+  // the array itself is done -- which is what makes it the only usable completion signal
+  // once more than one configuration can be queued.
+  val finished_tasks      = Output(UInt(params.configWidth.W))
 }
 
 /** VersaCore is the top-level module for VersaCore. */
@@ -536,6 +541,14 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
 
   // output control signals for read-only csrs
   io.performance_counter := performance_counter
+
+  // Retired-task counter. NOT reset on config_fire the way performance_counter is: software
+  // compares it against a task id, so it has to be monotone across dispatches.
+  val finished_tasks = RegInit(0.U(params.configWidth.W))
+  when(cstate === sBUSY && versacore_finish) {
+    finished_tasks := finished_tasks + 1.U
+  }
+  io.finished_tasks := finished_tasks
 
   // Stall census. Every busy cycle is either a pass entering the array or exactly one of these
   // three stalls, so stall_a + stall_b + stall_d + (cycles with a pass accepted) equals

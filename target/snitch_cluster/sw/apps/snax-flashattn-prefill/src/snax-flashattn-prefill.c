@@ -520,10 +520,13 @@ __attribute__((always_inline)) static inline void gemm_set_bases(
     csrw_ss(BASE_PTR_READER_WRITER_1_LOW, d32);
 }
 
-__attribute__((always_inline)) static inline uint32_t gemm_launch(void) {
+// Submit the configured dispatch. The id is kept in SOFTWARE rather than read back from a
+// counter: every launch writes exactly one start to each engine and so retires exactly one
+// array task, which makes a plain increment identical to the hardware's count and saves a
+// five-cycle read on the critical path.
+__attribute__((always_inline)) static inline void gemm_launch(void) {
     csrw_ss(STREAMER_START_CSR, 1);
     csrw_ss(GEMMX_START, 1);
-    return csrr_ss(STREAMER_SUBMITTED_TASK_CSR);
 }
 
 // Deassert the start pulse. Separate from the wait below so the caller can stage the NEXT
@@ -557,13 +560,28 @@ __attribute__((always_inline)) static inline void gemm_ack(void) {
 // non-zero on timeout, which the caller folds into its own timeout count.
 __attribute__((always_inline)) static inline uint32_t gemm_wait(uint32_t task_id) {
     uint32_t spins = 0;
-    while ((int32_t)(csrr_ss(STREAMER_FINISHED_TASK_CSR) - task_id) < 0) {
-        if (++spins > 200000u) return 1;
-    }
-    while (csrr_ss(GEMMX_BUSY)) {
+    while ((int32_t)(csrr_ss(GEMMX_FINISHED_TASK) - task_id) < 0) {
         if (++spins > 200000u) return 1;
     }
     csrw_ss(GEMMX_START, 0);
+    return 0;
+}
+
+// Drain the array itself. Separate from the per-dispatch wait ABOVE, and that separation is
+// the whole point once two configurations can be queued: the busy flag does not fall between
+// back-to-back dispatches, so polling it per dispatch waits for the NEXT one too. Measured,
+// that put 2,260 cycles on the softmax of the last tile, because the publish that releases
+// the SIMD sat behind a dependency it does not have.
+//
+// Per dispatch the streamer's counter is the right signal and it is sufficient: what the
+// publish claims is that the score tile is IN THE SCRATCHPAD, which is exactly the writer
+// having drained. The array's own tail matters only before the result is read back, so it is
+// waited for once, here, at the end of the loop.
+__attribute__((always_inline)) static inline uint32_t gemm_drain(void) {
+    uint32_t spins = 0;
+    while (csrr_ss(GEMMX_BUSY)) {
+        if (++spins > 200000u) return 1;
+    }
     return 0;
 }
 
@@ -868,7 +886,7 @@ int main() {
     uint32_t gemm_sa_s1 = 0, gemm_sb_s1 = 0, gemm_sd_s1 = 0;
     uint32_t gemm_sa_s2 = 0, gemm_sb_s2 = 0, gemm_sd_s2 = 0;
     uint32_t gemm_wall = 0, simd_wall = 0;
-    uint32_t gemm_tid  = 0;  // id of the dispatch currently in flight
+    uint32_t gemm_seq  = 0;  // dispatches issued so far; the id to wait on
     uint32_t dma_busy = 0, dma_wall = 0, dma_block = 0, dma_store = 0;
     uint32_t c_conv = 0, c_max = 0, c_exp = 0, c_quant = 0;
     uint32_t gemm_stall = 0, simd_stall = 0;  // time each core spent waiting
@@ -1158,24 +1176,24 @@ int main() {
         STAGE_QK(0u);
 
         for (uint32_t j = 0; j <= STEPS; j++) {
-            const uint32_t kv = j / (uint32_t)NQ;
-            if (j < STEPS) {
+            uint32_t tid = 0;
+            if (j < NKV) {
                 // S(j) into the buffer the SIMD core is not reading. It last
                 // held tile j-2, which is free once tile j-1 has been consumed.
                 {
                     uint32_t w0 = snrt_mcycle();
                     if (j >= 2) SNAX_SPIN_UNTIL(sync[1] >= j - 1, timeouts);
-                    SNAX_SPIN_UNTIL(sync[2] >= kv + 1, timeouts);  // K(kv) has landed
+                    SNAX_SPIN_UNTIL(sync[2] >= j / (uint32_t)NQ + 1, timeouts);  // K(kv) landed
                     gemm_stall += snrt_mcycle() - w0;
                 }
                 pub[10 + 4 * j] = snrt_mcycle() - g0;
-                gemm_tid = gemm_launch();   // S^T = K.Q^T, staged one dispatch ago
+                tid = ++gemm_seq; gemm_launch();   // S^T = K.Q^T, staged one dispatch ago
                 gemm_ack();
                 // The successor is PV(j-1) in this same iteration, except at j == 0
                 // where nothing precedes it and the next dispatch is QK(1).
                 if (j == 0u) STAGE_QK(1u); else STAGE_PV(j - 1u);
                 pub[80 + 2 * j] = snrt_mcycle() - g0;  // successor staged, array running
-                timeouts += gemm_wait(gemm_tid);
+                timeouts += gemm_wait(tid);
                 { uint32_t c = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
                   gemm_cycles += c; gemm_cyc_s1 += c;
                   gemm_sa_s1 += csrr_ss(GEMMX_STALL_A);
@@ -1194,28 +1212,14 @@ int main() {
                 SNAX_SPIN_UNTIL(sync[5] >= (j - 1) / (uint32_t)NQ + 1, timeouts);  // V landed
                 gemm_stall += snrt_mcycle() - w0;
                 pub[12 + 4 * (j - 1)] = snrt_mcycle() - g0;
-                // Transposed: O^T = V^T.P^T, so P^T is the B operand (it has
-                // exactly B's shape) and V^T stays in A.
-                //
-                // C AND D32 BOTH POINT AT oacc32, so the matmul computes
-                // O += P.V in place -- the accumulation across KV tiles is the
-                // GEMM's own C input, costing nothing extra.
-                //
-                // Every query tile keeps its OWN accumulator, so each one's first
-                // KV tile has nothing to accumulate onto and masks the C reader off
-                // instead. A disabled channel presents ZERO and issues no TCDM
-                // request, which is exactly the seed the accumulator needs, so the
-                // NQ x 16 KiB clear disappears from the DMA head. The test is on
-                // vkv, not on j: the last query tile's first KV tile is step NQ,
-                // and that is the tile the O golden checks.
-                gemm_tid = gemm_launch();   // O^T = V^T.P^T, staged one dispatch ago
+                tid = ++gemm_seq; gemm_launch();   // O^T = V^T.P^T, staged one dispatch ago
                 gemm_ack();
-                // The successor is QK(j+1) while steps remain, otherwise the next
-                // iteration's PV, and nothing at all after the last.
+                // The successor is QK(j+1) while KV tiles remain, otherwise the
+                // next iteration's PV, and nothing at all after the last.
                 if (j + 1u < (uint32_t)STEPS)      STAGE_QK(j + 1u);
                 else if (j < (uint32_t)STEPS)      STAGE_PV(j);
                 pub[81 + 2 * (j - 1)] = snrt_mcycle() - g0;
-                timeouts += gemm_wait(gemm_tid);
+                timeouts += gemm_wait(tid);
                 { uint32_t c = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
                   gemm_cycles += c; gemm_cyc_s2 += c;
                   gemm_sa_s2 += csrr_ss(GEMMX_STALL_A);

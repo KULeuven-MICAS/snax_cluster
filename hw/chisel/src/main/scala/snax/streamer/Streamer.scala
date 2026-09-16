@@ -156,7 +156,7 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
       // Two configurations may be outstanding: one running, one staged behind it. That is
       // what lets the array start the next dispatch the cycle it retires the previous one,
       // instead of waiting for the core to notice and reprogram it.
-      cfgQueueDepth   = 2,
+      cfgQueueDepth   = 1,
       moduleTagName   = param.tagName
     )
   )
