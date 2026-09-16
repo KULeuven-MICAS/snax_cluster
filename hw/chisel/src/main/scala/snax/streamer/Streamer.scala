@@ -146,8 +146,10 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   val csrManager = Module(
     new ReqRspManager(
       numReadWriteReg = csrNumReadWrite,
-      // 2 ready only csr for every streamer
-      numReadOnlyReg  = 2,
+      // 4 read only csr for every streamer: busy, the performance counter, and the
+      // submitted/finished task pair that makes completion unambiguous once more than one
+      // configuration can be in flight. Busy alone cannot say WHICH task it refers to.
+      numReadOnlyReg  = 4,
       addrWidth       = param.csrAddrWidth,
       ioDataWidth     = 32,
       regDataWidth    = 32,
@@ -369,8 +371,20 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   }
 
   // connect the performance counter to the first ready only csr
+  // TASK ACCOUNTING. busy is a level and says nothing about how many tasks are outstanding,
+  // so with a staging queue software cannot use it to wait for a specific dispatch. These
+  // two counters make it exact: submit returns an id, and the task is done once the finished
+  // counter reaches it. Same contract the SIMD and the xDMA already expose.
+  val submittedTasks = RegInit(0.U(32.W))
+  val finishedTasks  = RegInit(0.U(32.W))
+  when(csrManager.io.cfgSubmitted) { submittedTasks := submittedTasks + 1.U }
+  // A task retires when the datapath leaves sBUSY.
+  when(!streamer_busy && RegNext(streamer_busy)) { finishedTasks := finishedTasks + 1.U }
+
   csrManager.io.readOnlyReg(0) := streamer_busy
   csrManager.io.readOnlyReg(1) := performance_counter
+  csrManager.io.readOnlyReg(2) := submittedTasks
+  csrManager.io.readOnlyReg(3) := finishedTasks
 
   // store the configuration csr for each data mover when config fire
   val csrCfgReg = RegInit(VecInit(Seq.fill(csrNumReadWrite)(0.U(32.W))))
@@ -815,7 +829,13 @@ object Streamer {
     csrBase = csrBase + 1
 
     // streamer performance counter csr
-    csrMap = csrMap + "#define STREAMER_PERFORMANCE_COUNTER_CSR " + csrBase + "\n"
+    csrMap  = csrMap + "#define STREAMER_PERFORMANCE_COUNTER_CSR " + csrBase + "\n"
+    csrBase = csrBase + 1
+
+    // task accounting: submit returns an id, done when finished reaches it
+    csrMap  = csrMap + "#define STREAMER_SUBMITTED_TASK_CSR " + csrBase + "\n"
+    csrBase = csrBase + 1
+    csrMap  = csrMap + "#define STREAMER_FINISHED_TASK_CSR " + csrBase + "\n"
 
     val macro_dir      = param.headerFilepath + "/streamer_csr_addr_map.h"
     val macro_template =

@@ -74,6 +74,45 @@ inline void set_versacore_start() { csrw_ss(GEMMX_START, 1); }
 // Poll until Streamer and GEMM accelerator finish
 void wait_versacore_and_streamer();
 
+// ---- task accounting -------------------------------------------------------
+//
+// The busy flag is a level: it says work is happening, not WHICH work. That is
+// enough only while at most one configuration can be in flight. Once the CSR
+// manager can stage a second one behind the first (cfgQueueDepth > 1), a poll on
+// busy can return between two queued tasks and report the wrong one finished.
+//
+// These two counters make it exact. Submitting returns an id, and the task is
+// complete once the finished counter reaches it. Both are free-running and wrap
+// together, so the comparison below stays correct across a wrap.
+__attribute__((always_inline)) static inline uint32_t
+snax_versacore_submitted_tasks() {
+    return csrr_ss(STREAMER_SUBMITTED_TASK_CSR);
+}
+
+__attribute__((always_inline)) static inline uint32_t
+snax_versacore_finished_tasks() {
+    return csrr_ss(STREAMER_FINISHED_TASK_CSR);
+}
+
+// Start the configured task and return its id. The trailing zero write leaves the
+// start register clear so the next non-zero write is a fresh submission rather
+// than a repeat of this one.
+__attribute__((always_inline)) static inline uint32_t
+snax_versacore_submit() {
+    csrw_ss(STREAMER_START_CSR, 1);
+    csrw_ss(STREAMER_START_CSR, 0);
+    return csrr_ss(STREAMER_SUBMITTED_TASK_CSR);
+}
+
+// Wait for one specific task. Subtracting before comparing is what makes this
+// wrap-safe: it asks "has the finished counter reached or passed id", not
+// "is finished numerically at least id".
+__attribute__((always_inline)) static inline void
+snax_versacore_wait_task(uint32_t task_id) {
+    while ((int32_t)(csrr_ss(STREAMER_FINISHED_TASK_CSR) - task_id) < 0) {
+    }
+}
+
 void wait_versacore();
 
 // Read performance counter of the Streamer, a read-only CSR

@@ -517,52 +517,51 @@ __attribute__((always_inline)) static inline void gemm_set_bases(
     csrw_ss(BASE_PTR_READER_WRITER_1_LOW, d32);
 }
 
-__attribute__((always_inline)) static inline void gemm_launch(void) {
+__attribute__((always_inline)) static inline uint32_t gemm_launch(void) {
     csrw_ss(STREAMER_START_CSR, 1);
     csrw_ss(GEMMX_START, 1);
+    return csrr_ss(STREAMER_SUBMITTED_TASK_CSR);
 }
 
-// Wait for the ACCELERATOR TO START before waiting for it to finish.
-//
-// snax-versacore-to-lib's wait_versacore_and_streamer() polls busy straight after two
-// STREAMER_START writes. That is only safe while those writes are SLOW: out of line each
-// goes through the csrw_ss jump table and costs ~20-30 cycles, which is just enough for
-// busy to rise before the first poll. Inlined they collapse to 2 cycles, the first poll
-// reads busy = 0 on a task that has not started, and the wait returns at once -- so the
-// caller reads a partial performance counter and reconfigures the engine out from under a
-// running matmul. It is invisible on short tasks and shows up only as a large tile
-// reporting FEWER cycles than its own arithmetic floor.
-//
-// The rise-wait is bounded so a task that completes before we look cannot hang us: if
-// busy never rises, either it already finished (the fall-waits exit at once, which is
-// correct) or the engine was never started, which the caller's own timeout catches.
-//
-// Returns how many rise-polls it burned. A csrr is 5.1 cycles, so two per iteration is
-// ~10 cycles of pure latency per iteration, charged to "config" in the report -- this is
-// the number that says how much of that line a combinational busy would reclaim.
-// Deassert the start pulse. Separate from the wait below so the caller can stage
-// the NEXT dispatch's config in between: once STREAMER_START has fired, the streamer
-// has snapshotted the whole CSR bank into csrCfgReg (Streamer.scala:377-386) and
-// VersaCore into csrReg (VersaCore.scala:168-183), so the running task no longer
-// reads the bank and the bank is free to be overwritten. ReqRspManager only throttles
-// writes to the START address itself (:193-205); every other CSR write is accepted at
-// one per cycle regardless of busy.
+// Deassert the start pulse. Separate from the wait below so the caller can stage the NEXT
+// dispatch's config in between: once STREAMER_START has fired, the streamer has snapshotted
+// the whole CSR bank into csrCfgReg (Streamer.scala:377-386) and VersaCore into csrReg
+// (VersaCore.scala:168-183), so the running task no longer reads the bank and the bank is
+// free to be overwritten. ReqRspManager only throttles writes to the START address itself;
+// every other CSR write is accepted at one per cycle regardless of busy.
 __attribute__((always_inline)) static inline void gemm_ack(void) {
     csrw_ss(STREAMER_START_CSR, 0);
     csrw_ss(STREAMER_START_CSR, 0);
 }
 
-__attribute__((always_inline)) static inline uint32_t gemm_wait(void) {
-    uint32_t g = 0;
-    for (; g < 64u; g++) {
-        if (csrr_ss(GEMMX_BUSY) || csrr_ss(STREAMER_BUSY_CSR)) break;
+// Wait for ONE named dispatch, by id. TWO conditions, and BOTH are required.
+//
+// The streamer's finished counter says its data movers retired. That is NOT the same as the
+// matmul being over: a writer's address generator finishes issuing before the array has
+// finished producing into it, so the counter alone returns early. Measured, that reports
+// 0.14 cycles per array pass against a floor of 1.0 -- a tile taking less time than its own
+// arithmetic -- because the performance counter is read mid-flight.
+//
+// The busy flag says the array is done, but alone it cannot tell "not started yet" from
+// "already finished", which is why this used to need a bounded rise-poll: polling straight
+// after an inlined start write reads zero on a task that has not begun.
+//
+// Composing them removes both problems and the rise-poll with them. Once the counter has
+// reached this id the task provably started, so the busy poll below can only be observing
+// its end. Subtracting before the compare keeps the counter test correct across a wrap.
+//
+// Bounded, so a stuck engine reports itself instead of hanging the simulation. Returns
+// non-zero on timeout, which the caller folds into its own timeout count.
+__attribute__((always_inline)) static inline uint32_t gemm_wait(uint32_t task_id) {
+    uint32_t spins = 0;
+    while ((int32_t)(csrr_ss(STREAMER_FINISHED_TASK_CSR) - task_id) < 0) {
+        if (++spins > 200000u) return 1;
     }
     while (csrr_ss(GEMMX_BUSY)) {
-    }
-    while (csrr_ss(STREAMER_BUSY_CSR)) {
+        if (++spins > 200000u) return 1;
     }
     csrw_ss(GEMMX_START, 0);
-    return g;
+    return 0;
 }
 
 // The FULL streamer programming: bounds, strides, remap indices and the accelerator CSRs.
@@ -846,7 +845,7 @@ int main() {
     uint32_t gemm_sa_s1 = 0, gemm_sb_s1 = 0, gemm_sd_s1 = 0;
     uint32_t gemm_sa_s2 = 0, gemm_sb_s2 = 0, gemm_sd_s2 = 0;
     uint32_t gemm_wall = 0, simd_wall = 0;
-    uint32_t gemm_rise = 0;  // rise-poll iterations, summed over all dispatches
+    uint32_t gemm_tid  = 0;  // id of the dispatch currently in flight
     uint32_t dma_busy = 0, dma_wall = 0, dma_block = 0, dma_store = 0;
     uint32_t c_conv = 0, c_max = 0, c_exp = 0, c_quant = 0;
     uint32_t gemm_stall = 0, simd_stall = 0;  // time each core spent waiting
@@ -1137,13 +1136,13 @@ int main() {
                     gemm_stall += snrt_mcycle() - w0;
                 }
                 pub[10 + 4 * j] = snrt_mcycle() - g0;
-                gemm_launch();   // S^T = K.Q^T, staged one dispatch ago
+                gemm_tid = gemm_launch();   // S^T = K.Q^T, staged one dispatch ago
                 gemm_ack();
                 // The successor is PV(j-1) in this same iteration, except at j == 0
                 // where nothing precedes it and the next dispatch is QK(1).
                 if (j == 0u) STAGE_QK(1u); else STAGE_PV(j - 1u);
                 pub[64 + 2 * j] = snrt_mcycle() - g0;  // successor staged, array running
-                gemm_rise += gemm_wait();
+                timeouts += gemm_wait(gemm_tid);
                 { uint32_t c = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
                   gemm_cycles += c; gemm_cyc_s1 += c;
                   gemm_sa_s1 += csrr_ss(GEMMX_STALL_A);
@@ -1174,14 +1173,14 @@ int main() {
                 // ZERO and issues no TCDM request, which is exactly the seed the
                 // accumulator needs, so the 16 KiB clear disappears from the DMA
                 // head that gates this loop's first dispatch.
-                gemm_launch();   // O^T = V^T.P^T, staged one dispatch ago
+                gemm_tid = gemm_launch();   // O^T = V^T.P^T, staged one dispatch ago
                 gemm_ack();
                 // The successor is QK(j+1) while KV tiles remain, otherwise the
                 // next iteration's PV, and nothing at all after the last.
                 if (j + 1u < (uint32_t)NKV)      STAGE_QK(j + 1u);
                 else if (j < (uint32_t)NKV)      STAGE_PV(j);
                 pub[65 + 2 * (j - 1)] = snrt_mcycle() - g0;
-                gemm_rise += gemm_wait();
+                timeouts += gemm_wait(gemm_tid);
                 { uint32_t c = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
                   gemm_cycles += c; gemm_cyc_s2 += c;
                   gemm_sa_s2 += csrr_ss(GEMMX_STALL_A);

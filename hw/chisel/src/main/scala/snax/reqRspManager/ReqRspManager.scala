@@ -39,6 +39,13 @@ class ReqRspManagerIO(
   // Add extra input ports from accelerator side for the read only registers
   val readOnlyReg = Input(Vec(numReadOnlyReg, UInt(regDataWidth.W)))
 
+  // One pulse per configuration ACCEPTED from the manager core. With a staging queue this
+  // is the enqueue, not the accelerator picking the task up, which is what software needs
+  // to count: it is the point at which the start write retired and the task became the
+  // accelerator's problem. Accelerators that expose a submitted-task counter should count
+  // this rather than their own config-fire, or the count runs behind the queue.
+  val cfgSubmitted = Output(Bool())
+
 }
 
 /** This class represents the ReqRspManager module. It contains the csr registers and the read and write control logic.
@@ -53,6 +60,12 @@ class ReqRspManagerIO(
   *   the data width of the ReqRsp interface
   * @param regDataWidth
   *   the data width of the registers connected to accelerators, must be smaller or equal to ioDataWidth
+  * @param cfgQueueDepth
+  *   how many configurations may be staged ahead of the accelerator. At 1 (the default) a start write stalls the
+  *   manager core until the accelerator accepts it, which is the historical behaviour. Above 1 the start write
+  *   snapshots the register file into a queue and retires immediately, so the core can program task n+1 while the
+  *   accelerator still runs task n. Costs cfgQueueDepth * numReadWriteReg * regDataWidth flops, so it is opt-in per
+  *   accelerator rather than always on.
   * @param moduleTagName
   *   the module tag name, used in the generated verilog file name
   */
@@ -62,6 +75,7 @@ class ReqRspManager(
   addrWidth:       Int,
   ioDataWidth:     Int    = 32,
   regDataWidth:    Int    = 32,
+  cfgQueueDepth:   Int    = 1,
   moduleTagName:   String = ""
 ) extends Module
     with RequireAsyncReset {
@@ -180,8 +194,8 @@ class ReqRspManager(
   // handle start requests: if the last csr is written to 1, the
   // configuration can be sent to the streamer if it is not busy
 
-  // streamer configuration valid signal
-  io.readWriteRegIO.valid                                                    := writeReg &&
+  // A start write: the last register, LSB strobed, LSB non-zero.
+  val cfgFire = writeReg                                                     &&
     // The last address in the ReqRspManager
     (io.reqRspIO.req.bits.addr === ((numReadWriteReg - 1) / wordsPerBeat).U) &&
     // The strobe of LSB is 1 (will write the valid bit)
@@ -190,6 +204,34 @@ class ReqRspManager(
     // The data is of LSB is non zero
     io.reqRspIO.req.bits.data((numReadWriteReg - 1) % wordsPerBeat * regDataWidth)
 
+  // CONFIGURATION STAGING. What the manager core must wait for on a start write is
+  // cfgReady, which is the accelerator itself at depth 1 and the queue's tail above it.
+  //
+  // At depth 1 this elaborates to the original direct connection, gate for gate: the
+  // register file is presented to the accelerator and the core stalls until it is taken.
+  // Above 1 the start write snapshots the register file instead and retires at once, so
+  // the next task can be programmed while the current one runs and the accelerator can
+  // start it the cycle it retires the previous one, with no round trip through the core.
+  // The SIMD block has always done this with a taskQueue of its own; this is the same
+  // structure moved into the manager, where every accelerator can reach it.
+  val cfgReady = Wire(Bool())
+  io.cfgSubmitted := cfgFire && cfgReady
+  if (cfgQueueDepth > 1) {
+    val cfgQueue = Module(
+      new Queue(Vec(numReadWriteReg, UInt(regDataWidth.W)), entries = cfgQueueDepth) {
+        override val desiredName = moduleTagName + "ReqRspManagerCfgQueue"
+      }
+    )
+    cfgQueue.io.enq.valid := cfgFire
+    cfgQueue.io.enq.bits  := regs
+    cfgReady              := cfgQueue.io.enq.ready
+    io.readWriteRegIO <> cfgQueue.io.deq
+  } else {
+    io.readWriteRegIO.valid := cfgFire
+    io.readWriteRegIO.bits  := regs
+    cfgReady                := io.readWriteRegIO.ready
+  }
+
   // CSR Manager ready signal logic
   // The CSR Manager is always ready except if:
   //   - a read transaction is still happening
@@ -197,12 +239,10 @@ class ReqRspManager(
   when(readRegBusy) {
     io.reqRspIO.req.ready := 0.B
   }.elsewhen(startReg) {
-    io.reqRspIO.req.ready := io.readWriteRegIO.ready
+    io.reqRspIO.req.ready := cfgReady
   }.elsewhen(check_acc_status) {
-    io.reqRspIO.req.ready := io.readWriteRegIO.ready
+    io.reqRspIO.req.ready := cfgReady
   }.otherwise {
     io.reqRspIO.req.ready := 1.B
   }
-  // signals connected to the output ports
-  io.readWriteRegIO.bits <> regs
 }
