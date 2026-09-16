@@ -194,9 +194,15 @@
 //                                       [   7   9   1   8 ]  <- the reduction, appended
 //
 // At Bc = 512 that is the difference between reading the score tile once and reading
-// it twice. The pass-through also decides WHERE the copy lands, and the chain depends
-// on that: the next task is a sticky-B pass that needs its broadcast operand sitting
-// immediately before the tile, and the tap writes the tile exactly there.
+// it twice. The epilogue below uses it: that pass must emit the quantised tile AND the
+// row sum of it, and the tap is what lets one sweep produce both.
+//
+// The rowmax pass does NOT tap. It only needs the statistic, and the tile it read is
+// still sitting in the GEMM's own output buffer where the epilogue can read it again --
+// so it reduces 512 beats down to one and writes nothing else. Each S^T buffer carries
+// a spare beat in front for exactly that reason: the epilogue is a sticky-B pass, its
+// broadcast operand has to sit immediately before the tile, and that beat is where
+// -m16 goes. A tap would have had to COPY the whole tile to put it behind a latch.
 //
 // ONE KV TILE. Br = 32 query rows, Bc = 512 keys, d = 128, NKV = 4 tiles. Bc and d are
 // INDEPENDENT, so the two matmuls have different shapes; gemm_set_shape() switches between
@@ -224,12 +230,12 @@
 //                     written, so S16^T reaches TCDM as 512 FP16 beats, not 1024
 //   SIMD (hart 1), in the order the loop fires them:
 //
-//                  rmax16 = rowmax(S16^T)        512 -> 513  StreamReduce MAX|LANEWISE|TAP
+//                  rmax16 = rowmax(S16^T)        512 ->   1  StreamReduce MAX|LANEWISE
 //                  m16    = max(m16_old, rmax16)     2 -> 1  StreamReduce MAX|LANEWISE
 //                  -m16   = negate m16               2 -> 2  StreamMap LINEAR, a = -1
 //
 //                       [ -m16 ][ S16^T  x512 ]        [ -m16 ][ m16_old ]
-//                         negmS  s16                     rmax    mrun
+//                         latch   the GEMM's buffer       rmax    mrun
 //                         \___ the fused pass latches     \___ reduced as a pair to
 //                              -m16, then adds it to            delta below
 //                              all 512 beats of the tile
@@ -263,7 +269,7 @@
 //                     quantise task. That third trip over the tile is gone, and so is the
 //                     FP16 P buffer: 512 beats written + 512 read per tile.
 //
-//                       read   [ -m16 ][ S16^T  x512 ]     negmS, then the tile
+//                       read   [ -m16 ][ S16^T  x512 ]     the latch, then the tile
 //                       write  [ P8^T  x256 ][ sum16 ]     into THIS tile's p8 buffer
 //                                              \___ lsc16 is written beside it later,
 //                                                   so the l16 row reads the adjacent
@@ -302,10 +308,10 @@
 //   O16^T and O32^T are the two representations of O described below: the SIMD rescales
 //   the FP16 copy, the GEMM accumulates the INT32 one, and they are never joined.
 //
-// Per KV tile that is 4.19 M MAC and 4096 GEMM cycles against ~1170 beats read and ~910
+// Per KV tile that is 4.19 M MAC and 4096 GEMM cycles against ~1170 beats read and ~400
 // written on the SIMD side, so the arithmetic floor is GEMM-bound and the softmax has to
-// fit inside its shadow. (It was 1680 / 1420 while the quantiser needed a pass of its
-// own: that pass read 512 beats and the tile it read had to be written in FP16 first.)
+// fit inside its shadow. Neither engine is short of time; TCDM BANDWIDTH is what the two
+// of them contend for, which is why the beats written matter as much as the cycles.
 // The whole run is NKV of these. Every buffer above lives in TCDM at once; the footprint
 // guard in main() reports the total against the 512 kB budget.
 //
@@ -437,12 +443,11 @@ static inline uint32_t fp16_ulp(uint16_t a, uint16_t b) {
 // every access pays a jump-table load from L2 plus an indirect jump -- measured, on this
 // core, to be the dominant cost of accelerator configuration.
 __attribute__((always_inline)) static inline void gemm_set_bases(
-    int32_t a, int32_t b, int32_t c, int32_t d32) {
-    uint32_t l1 = (uint32_t)snrt_l1_next();
-    if (a >= 0) csrw_ss(BASE_PTR_READER_0_LOW, (uint32_t)a + l1);
-    if (b >= 0) csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)b + l1);
-    if (c >= 0) csrw_ss(BASE_PTR_READER_WRITER_0_LOW, (uint32_t)c + l1);
-    if (d32 >= 0) csrw_ss(BASE_PTR_READER_WRITER_1_LOW, (uint32_t)d32 + l1);
+    uint32_t a, uint32_t b, uint32_t c, uint32_t d32) {
+    csrw_ss(BASE_PTR_READER_0_LOW, a);
+    csrw_ss(BASE_PTR_READER_1_LOW, b);
+    csrw_ss(BASE_PTR_READER_WRITER_0_LOW, c);
+    csrw_ss(BASE_PTR_READER_WRITER_1_LOW, d32);
 }
 
 __attribute__((always_inline)) static inline void gemm_launch(void) {
@@ -464,10 +469,15 @@ __attribute__((always_inline)) static inline void gemm_launch(void) {
 // The rise-wait is bounded so a task that completes before we look cannot hang us: if
 // busy never rises, either it already finished (the fall-waits exit at once, which is
 // correct) or the engine was never started, which the caller's own timeout catches.
-__attribute__((always_inline)) static inline void gemm_wait(void) {
+//
+// Returns how many rise-polls it burned. A csrr is 5.1 cycles, so two per iteration is
+// ~10 cycles of pure latency per iteration, charged to "config" in the report -- this is
+// the number that says how much of that line a combinational busy would reclaim.
+__attribute__((always_inline)) static inline uint32_t gemm_wait(void) {
     csrw_ss(STREAMER_START_CSR, 0);
     csrw_ss(STREAMER_START_CSR, 0);
-    for (uint32_t g = 0; g < 64u; g++) {
+    uint32_t g = 0;
+    for (; g < 64u; g++) {
         if (csrr_ss(GEMMX_BUSY) || csrr_ss(STREAMER_BUSY_CSR)) break;
     }
     while (csrr_ss(GEMMX_BUSY)) {
@@ -475,6 +485,7 @@ __attribute__((always_inline)) static inline void gemm_wait(void) {
     while (csrr_ss(STREAMER_BUSY_CSR)) {
     }
     csrw_ss(GEMMX_START, 0);
+    return g;
 }
 
 // The FULL streamer programming: bounds, strides, remap indices and the accelerator CSRs.
@@ -512,7 +523,11 @@ static void gemm_configure_once(void) {
     int32_t D32tlbound[] = {D32tlbound0, D32tlbound1, D32tlbound2};
     int32_t D32tlstride[] = {D32tlstride0, D32tlstride1, D32tlstride2};
 
-    gemm_set_bases(delta_local_a, delta_local_b, delta_local_c, delta_local_d32);
+    {
+        uint32_t l1b = (uint32_t)snrt_l1_next();
+        gemm_set_bases(l1b + (uint32_t)delta_local_a, l1b + (uint32_t)delta_local_b,
+                       l1b + (uint32_t)delta_local_c, l1b + (uint32_t)delta_local_d32);
+    }
 
     // A -- reader 0. Six temporal dimensions; the descriptor uses three and pads the rest
     // with bound 1, stride 0.
@@ -576,16 +591,38 @@ static void gemm_configure_once(void) {
 // and B tiles through it, retire, repeat OUTPUT_BOUND times. So ACCUM_BOUND is the
 // contraction depth K and OUTPUT_BOUND is the M*N output blocks. N never moves between
 // the two shapes, so neither does anything derived from it alone.
-#define GEMM_SHAPE_S1 0
-#define GEMM_SHAPE_S2 1
-static inline void gemm_set_shape(int shape) {
-    const int32_t m  = shape ? S2_M : M;
-    const int32_t k  = shape ? S2_K : K;
-    const int32_t as2 = shape ? S2_Atlstride2 : Atlstride2;   // A: outer stride = K * row bytes
-    const int32_t bs1 = shape ? S2_Btlstride1 : Btlstride1;   // B: mid   stride = K * col bytes
+#if ENABLED_CHANNEL_READER_WRITER_0_CSR_NUM != 1
+#error "C channel mask spans more than one CSR -- unroll the write in gemm_set_shape()"
+#endif
+
+//
+// EVERY VALUE ARRIVES AS AN ARGUMENT, none is read from data.h. M, N, K, Atlstride2,
+// Btlstride1 and delta_local_* are plain `int32_t` globals -- not const, so the compiler
+// cannot fold them -- and .bss maps to DRAM on this target. Reading them here cost an L3
+// round trip per field per dispatch: 134 cycles for 20 csrw, against the 1.0 cycle a
+// folded `csrw imm` takes. The caller hoists them into locals once, outside the loop.
+// gemm_d32_emit_fp16() below already worked this way; this is the same rule applied to
+// the rest of the descriptor.
+__attribute__((always_inline)) static inline void gemm_set_shape(
+    int32_t k, int32_t m, int32_t blocks, int32_t as2, int32_t bs1, uint32_t c_chan) {
+    // QK READS NO C. S^T = K.Q^T is a fresh product: the DM core zeroed C and nothing
+    // accumulates into it, so the 64 KiB of INT32 zeros it fetches per tile are pure
+    // traffic on the one port A and B are also being fed from.
+    //
+    // Switching the C reader's channels off is what removes it. A disabled channel still
+    // pops its address and still presents a beat -- it just presents ZERO and issues no
+    // TCDM request (see DataResponser). That is exactly the C this matmul wants, so the
+    // array keeps taking C normally and the accumulator is still reset by it; only the
+    // memory traffic disappears. take_in_new_c must therefore stay 1: at 0 the array
+    // would stop draining the reader, whose beats keep coming, and the depth-1 C FIFO
+    // would fill and never report empty.
+    //
+    // O^T = V^T.P^T is the opposite. C and D32 both point at oacc32, and reading C back
+    // is exactly how O accumulates across KV tiles, so it needs every channel.
+    csrw_ss(ENABLED_CHANNEL_READER_WRITER_0, c_chan);
 
     csrw_ss(ACCUM_BOUND, k);               // A,B tile pairs folded into one output block
-    csrw_ss(OUTPUT_BOUND, m * N);          // output blocks this dispatch retires
+    csrw_ss(OUTPUT_BOUND, blocks);         // output blocks this dispatch retires
 
     csrw_ss(T_BOUND_READER_0_0, k);        // A stream
     csrw_ss(T_BOUND_READER_0_2, m);
@@ -643,9 +680,17 @@ int main() {
     uint32_t top = ((uint32_t)delta_local_d32 + BR * BC * 2 + 63u) & ~63u;
     const uint32_t BEAT = SIMD_BEAT_BYTES;
 
-    uint8_t *negmS = l1 + top;  top += BEAT;          // -m_new   ] latch for P = exp(S-m)
-    uint8_t *s16   = l1 + top;  top += SBEATS * BEAT; // S^T      ]
-    uint8_t *rmax  = l1 + top;  top += BEAT;          // tapped rowmax, and later -m_new
+    // THE SCORE TILE IS READ WHERE THE GEMM WROTE IT. Each S^T buffer carries a spare
+    // beat in FRONT of the tile, and that beat is the sticky-B latch the epilogue needs
+    // immediately before its data -- so the tile never has to be copied to sit behind
+    // one, and the rowmax is a plain lanewise reduce: SBEATS in, ONE out.
+    //
+    // rmax is allocated ABOVE both buffers on purpose. The -m_new fan-out below writes
+    // the latch and the rmax slot as one 2-beat strided task, and the AGU's stride is
+    // unsigned -- a destination below its partner wraps the address space.
+    uint32_t s_a   = top;       top += (1 + SBEATS) * BEAT;  // [ -m_new ][ S^T x Bc ]
+    uint32_t s_b   = top;       top += (1 + SBEATS) * BEAT;  // the other half of the ping-pong
+    uint8_t *rmax  = l1 + top;  top += BEAT;          // rowmax, and later -m_new
     uint8_t *mrun  = l1 + top;  top += BEAT;          // running m   ] pair for max(m_old,rowmax)
     uint8_t *mnew  = l1 + top;  top += BEAT;
     uint8_t *delta = l1 + top;  top += BEAT;          // m_old - m_new
@@ -658,7 +703,6 @@ int main() {
     uint8_t *corrO = l1 + top;  top += BEAT;          // exp(delta)  ] latch for O *= corr
     uint8_t *oacc  = l1 + top;  top += DBEATS * BEAT; // O^T = [d, Br] ]
     uint32_t oacc32 = top;      top += BR * DHEAD * 4; // O^T as the GEMM sees it: INT32
-    uint32_t d32_b = top;       top += BR * BC * 2;   // second S^T buffer (FP16)
     // P8 CARRIES ITS OWN TAIL: [ P8 x PBEATS ][ rowsum ][ corr*l_old ].
     //
     // The epilogue pass narrows the tile and emits the tapped rowsum in ONE sweep
@@ -684,7 +728,10 @@ int main() {
     volatile uint32_t *pub  = (volatile uint32_t *)(l1 + top); top += 256;
     volatile uint32_t *sync = (volatile uint32_t *)(l1 + top); top += 64;
 
-    const int32_t d32_delta[2] = {delta_local_d32, (int32_t)d32_b};
+    // s_hdr is the latch beat the SIMD reads from; d32_delta is the tile itself, one
+    // beat past it, which is where the GEMM's D32 port writes.
+    const int32_t s_hdr[2]     = {(int32_t)s_a, (int32_t)s_b};
+    const int32_t d32_delta[2] = {(int32_t)(s_a + BEAT), (int32_t)(s_b + BEAT)};
     const int32_t p8_delta[2] = {(int32_t)p8_0, (int32_t)p8_1};
     // The two tail slots of the P8 buffer tile j writes.
 #define RSUM_OF(j) (l1 + p8_delta[(j) & 1] + PBEATS * BEAT)
@@ -701,9 +748,11 @@ int main() {
     uint32_t gemm_sa_s1 = 0, gemm_sb_s1 = 0, gemm_sd_s1 = 0;
     uint32_t gemm_sa_s2 = 0, gemm_sb_s2 = 0, gemm_sd_s2 = 0;
     uint32_t gemm_wall = 0, simd_wall = 0;
+    uint32_t gemm_rise = 0;  // rise-poll iterations, summed over all dispatches
     uint32_t c_conv = 0, c_max = 0, c_exp = 0, c_quant = 0;
     uint32_t gemm_stall = 0, simd_stall = 0;  // time each core spent waiting
     int err = 0;      // invariant failures
+    uint32_t o_bad = 0;  // O elements differing from the golden
     int cfg_err = 0;  // tasks the library refused to configure
     int timeouts = 0;
 
@@ -785,19 +834,21 @@ int main() {
         // The GEMM emits FP16 (its D32 port carries the Int32ToFp16Converter), so the score
         // tile arrives in SBEATS beats rather than the 2x an INT32 tile needed.
 
-        // 1  rowmax in one pass: the tile passes through (tap) and the statistic follows.
+        // 1  rowmax: a lanewise reduce over the tile in the GEMM's own buffer, one beat out.
         snax_simd_shape_flat(&sh[0], l1 + d32_delta[0], SBEATS);
-        snax_simd_shape_flat(&sh[1], s16, SBEATS + 1);
+        snax_simd_shape_flat(&sh[1], rmax, 1);
         // 2  m_new = max(m_old, rowmax): LANEWISE over the adjacent pair [rmax][mrun].
         snax_simd_shape_flat(&sh[2], rmax, 2);
         snax_simd_shape_flat(&sh[3], mnew, 1);
         // 3+4  -m_new into both latches in one task: read m_new twice (stride 0) and fan
-        //      the negated value out, once before s16 (the latch for P) and once into the
-        //      rmax slot, which task 2 has consumed so it now pairs with mrun. One 2-beat
-        //      task pays one reader/extension/writer fill+drain where two 1-beat tasks
-        //      pay two.
+        //      the negated value out, once into the latch beat in front of THIS tile's
+        //      S^T buffer and once into the rmax slot, which task 2 has consumed so it
+        //      now pairs with mrun. One 2-beat task pays one reader/extension/writer
+        //      fill+drain where two 1-beat tasks pay two. Base AND stride follow the
+        //      ping-pong, and program_1d writes both.
         snax_simd_shape_broadcast(&sh[4], mnew, 2);
-        snax_simd_shape_2d(&sh[5], negmS, 2, (uint32_t)(rmax - negmS), 1, 0);
+        snax_simd_shape_2d(&sh[5], l1 + s_hdr[0], 2,
+                           (uint32_t)(rmax - (l1 + s_hdr[0])), 1, 0);
         // 5  delta = m_old - m_new: LANEWISE ADD over [-m_new][m_old].
         snax_simd_shape_flat(&sh[8], rmax, 2);
         snax_simd_shape_flat(&sh[9], delta, 1);
@@ -811,7 +862,7 @@ int main() {
         // that must happen BEFORE the pointwise transform uses EW0. Sticky-B suppresses its
         // seed beat, so EW0 emits exactly the SBEATS data beats and the epilogue is one pass:
         //
-        //     read [negmS][S^T x Bc]
+        //     read [ -m_new ][ S^T x Bc ]   -- the latch beat and the tile, in place
         //       -> EW0: sticky ADD -> Map: EXP -> Reduce: ADD|LANEWISE|TAP -> Fp16ToInt8
         //     write [P8 x Bc/2][rowsum]
         //
@@ -819,7 +870,7 @@ int main() {
         // Fp16ToInt8 joins the SAME pass because its tail passthrough leaves the reduce's
         // trailing FP16 beat alone: the quantise-only task that used to read the whole tile
         // back out of TCDM is gone, and with it the FP16 P buffer.
-        snax_simd_shape_flat(&sh[14], negmS, 1 + SBEATS);
+        snax_simd_shape_flat(&sh[14], l1 + s_hdr[0], 1 + SBEATS);
         snax_simd_shape_flat(&sh[17], l1 + p8_delta[0], PBEATS + 1);
         // 11 corr * l_old: sticky MUL over [corrL][lrun].
         snax_simd_shape_flat(&sh[20], corrL, 2);
@@ -851,6 +902,17 @@ int main() {
         // Both D32 descriptors, read out of DRAM ONCE. FP16 halves the beats the writer
         // emits, so the innermost bound and the OUTER stride halve with it. The N-block
         // interleave offset does not -- see gemm_d32_emit_fp16().
+        // The descriptor, hoisted out of DRAM once. Everything below is a local from
+        // here on, so a dispatch is pure `csrw imm` and never touches .bss again.
+        const uint32_t l1u = (uint32_t)l1;
+        const int32_t s1_k = K, s1_m = M, s1_blk = M * N;
+        const int32_t s1_as2 = Atlstride2, s1_bs1 = Btlstride1;
+        const int32_t s2_k = S2_K, s2_m = S2_M, s2_blk = S2_M * N;
+        const int32_t s2_as2 = S2_Atlstride2, s2_bs1 = S2_Btlstride1;
+        const uint32_t base_a = l1u + (uint32_t)delta_local_a;
+        const uint32_t base_b = l1u + (uint32_t)delta_local_b;
+        const uint32_t base_c = l1u + (uint32_t)delta_local_c;
+        const uint32_t base_o = l1u + oacc32;
         const uint32_t d32_b0_f = (uint32_t)D32tlbound0 / 2,  d32_b0_i = (uint32_t)D32tlbound0;
         const uint32_t d32_s1_f = (uint32_t)D32tlstride1,     d32_s1_i = (uint32_t)D32tlstride1;
         const uint32_t d32_s2_f = (uint32_t)D32tlstride2 / 2, d32_s2_i = (uint32_t)D32tlstride2;
@@ -867,12 +929,12 @@ int main() {
                 // C MUST be restated, not left at -1 ("keep current"): the O matmul below
                 // points C at oacc32 for its in-place accumulation, so without this S would
                 // be K.Q^T + O_accumulated from the second tile onward.
-                gemm_set_shape(GEMM_SHAPE_S1);  // S^T = K.Q^T
-                gemm_set_bases(delta_local_a, delta_local_b, delta_local_c,
-                               d32_delta[j & 1]);
+                gemm_set_shape(s1_k, s1_m, s1_blk, s1_as2, s1_bs1, 0u);  // S^T = K.Q^T
+                gemm_set_bases(base_a, base_b, base_c,
+                               l1u + (uint32_t)d32_delta[j & 1]);
                 gemm_d32_emit_fp16(1, d32_b0_f, d32_s1_f, d32_s2_f);  // S consumed as FP16
                 gemm_launch();
-                gemm_wait();
+                gemm_rise += gemm_wait();
                 { uint32_t c = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
                   gemm_cycles += c; gemm_cyc_s1 += c;
                   gemm_sa_s1 += csrr_ss(GEMMX_STALL_A);
@@ -894,12 +956,12 @@ int main() {
                 // O += P.V in place -- the accumulation across KV tiles is the
                 // GEMM's own C input, costing nothing extra. The first tile
                 // needs oacc32 zeroed, which the DM core does before the loop.
-                gemm_set_shape(GEMM_SHAPE_S2);  // O^T = V^T.P^T
-                gemm_set_bases(delta_local_a, p8_delta[(j - 1) & 1],
-                               (int32_t)oacc32, (int32_t)oacc32);
+                gemm_set_shape(s2_k, s2_m, s2_blk, s2_as2, s2_bs1, 0xFFFFFFFFu);
+                gemm_set_bases(base_a, l1u + (uint32_t)p8_delta[(j - 1) & 1],
+                               base_o, base_o);
                 gemm_d32_emit_fp16(0, d32_b0_i, d32_s1_i, d32_s2_i);  // O accumulates in place as INT32
                 gemm_launch();
-                gemm_wait();
+                gemm_rise += gemm_wait();
                 { uint32_t c = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
                   gemm_cycles += c; gemm_cyc_s2 += c;
                   gemm_sa_s2 += csrr_ss(GEMMX_STALL_A);
@@ -920,6 +982,11 @@ int main() {
             simd_stall += snrt_mcycle() - w0;
 
             sh[0].base = l1 + d32_delta[j & 1];
+            // The latch beat and the tile behind it both live in the buffer the GEMM
+            // just wrote, so the epilogue's read and the -m_new fan-out follow it too.
+            sh[5].base      = l1 + s_hdr[j & 1];
+            sh[5].stride[0] = (uint32_t)(rmax - (l1 + s_hdr[j & 1]));
+            sh[14].base     = l1 + s_hdr[j & 1];
             // The epilogue writes [P8][rowsum] into this tile's P8 buffer, and corr*l_old is
             // the slot behind the rowsum, so all three follow the ping-pong.
             sh[17].base = l1 + p8_delta[j & 1];
@@ -931,13 +998,13 @@ int main() {
             // That ratio is the point: the STATE UPDATE is dominated by per-task
             // start/drain, not by compute.
 
-            // 1  rowmax over the tile the GEMM has already written as FP16 (the tap
-            //    appends the per-lane maxima after the tile passes through)
+            // 1  rowmax over the tile the GEMM has already written as FP16. The tile is
+            //    read where it lies and swallowed: one beat of per-lane maxima comes out.
             snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR,
                                     (1u << SIMD_EXT_STREAMREDUCE));
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMREDUCE_CSR, SBEATS);
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMREDUCE_CSR + 1,
-                                    SIMD_RED_MAX | SIMD_RED_LANEWISE | SIMD_RED_TAP);
+                                    SIMD_RED_MAX | SIMD_RED_LANEWISE);
             snax_simd_program_1d(&sh[0], &sh[1]);
             snax_simd_fire();
 
@@ -1144,9 +1211,37 @@ int main() {
                 if ((int16_t)p8t[key * BR + i] != want) p8_bad++;
             }
         }
-        printf("  golden           m %u ULP  P8 %u wrong  rowsum %u ULP  (limits %u/0/%u)\n",
-               worst_m, p8_bad, worst_sum, GOLD_ULP_M, GOLD_ULP_SUM);
-        if (worst_m > GOLD_ULP_M || p8_bad != 0 || worst_sum > GOLD_ULP_SUM) {
+        // ---- O, the only check that reaches the SECOND matmul --------------
+        // m, P8 and rowsum all stop at the score tile: they say nothing about
+        // O^T = V^T.P^T. This compares the INT32 accumulator element by element, so a
+        // wrong shape-2 bound or stride, a broken accumulate-in-place through C, or a D32
+        // map that lands blocks in the wrong order shows up here and nowhere else.
+        //
+        // The coverage is exact but narrow in ONE direction: at inv_scale = 1.0 the
+        // quantiser leaves a single 1 per query row and zeros elsewhere, so each output
+        // element selects one V column rather than mixing 512. Every one of the BR*DHEAD
+        // outputs is still checked exactly, and picking the wrong column -- which is what
+        // a bad descriptor does -- changes the value.
+        if (O_GOLDEN_VALID) {
+            volatile int32_t *o32 = (volatile int32_t *)(l1 + oacc32);
+            for (uint32_t i = 0; i < (uint32_t)(BR * DHEAD); i++) {
+                if (o32[i] != o32_golden[i]) {
+                    if (o_bad < 4)
+                        printf("O[%4u] = %ld, expected %ld\n", i, (long)o32[i],
+                               (long)o32_golden[i]);
+                    o_bad++;
+                }
+            }
+            err += (int)o_bad;
+        } else {
+            printf("  golden           O compare SKIPPED (a P lane sits on the rounding"
+                   " boundary)\n");
+        }
+
+        printf("  golden           m %u ULP  P8 %u wrong  rowsum %u ULP  O %u wrong"
+               "  (limits %u/0/%u/0)\n",
+               worst_m, p8_bad, worst_sum, o_bad, GOLD_ULP_M, GOLD_ULP_SUM);
+        if (worst_m > GOLD_ULP_M || p8_bad != 0 || worst_sum > GOLD_ULP_SUM || o_bad) {
             printf("  golden MISMATCH: the chain is wired correctly but the arithmetic "
                    "disagrees with the float model\n");
             err++;
@@ -1221,6 +1316,8 @@ int main() {
                gemm_cycles, 100u * gemm_cycles / pipeline, gemm_stall,
                gemm_wall > gemm_cycles + gemm_stall
                    ? gemm_wall - gemm_cycles - gemm_stall : 0);
+        // config = wall - busy - peer-wait: CSR writes, the 5 RO counter reads per
+        // dispatch (5.1 cycles each, instrumentation only), and the busy-rise poll.
         printf("  SIMD core        busy %5u (%2u%%)  peer-wait %5u  config %5u\n",
                simd_total, 100u * simd_total / pipeline, pub[8],
                simd_wall_r > simd_total + pub[8]
