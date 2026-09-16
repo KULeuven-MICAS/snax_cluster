@@ -153,6 +153,10 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
       addrWidth       = param.csrAddrWidth,
       ioDataWidth     = 32,
       regDataWidth    = 32,
+      // Two configurations may be outstanding: one running, one staged behind it. That is
+      // what lets the array start the next dispatch the cycle it retires the previous one,
+      // instead of waiting for the core to notice and reprogram it.
+      cfgQueueDepth   = 2,
       moduleTagName   = param.tagName
     )
   )

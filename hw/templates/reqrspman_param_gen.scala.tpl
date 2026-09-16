@@ -18,6 +18,12 @@ object ReqRspManagerGen {
         numReadWriteReg = ${cfg["snax_num_rw_csr"]},
         numReadOnlyReg = ${cfg["snax_num_ro_csr"]},
         addrWidth = 32,
+        // How many configurations may be staged ahead of the accelerator. 1 is the
+        // historical behaviour exactly -- a start write stalls the manager core until the
+        // accelerator accepts it. Above 1 the write snapshots the register file and
+        // retires, so the core can program the next task while this one runs. Costs
+        // depth * numReadWriteReg * 32 flops, hence opt-in per accelerator.
+        cfgQueueDepth = ${cfg.get("snax_cfg_queue_depth", 1)},
         moduleTagName = "${cfg["tag_name"]}_reqrspman_"
       ),
       Array("--target-dir", outPath)

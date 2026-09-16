@@ -70,7 +70,16 @@ module ${cfg["tag_name"]}_csrman_wrapper #(
     .io_readOnlyReg_${i}              ( csr_reg_ro_set_i[${i}] ),
 % endfor
     .io_readWriteRegIO_valid          ( csr_reg_set_valid_o ),
-    .io_readWriteRegIO_ready          ( csr_reg_set_ready_i )
+    .io_readWriteRegIO_ready          ( csr_reg_set_ready_i ),
+    // One pulse per configuration ACCEPTED by the manager. With a cfg queue this is the
+    // ENQUEUE, not the accelerator picking the task up, which is what an accelerator's
+    // submitted-task counter must count or it runs behind the queue.
+    //
+    // Left unconnected here: this wrapper exposes no such counter to software, and the
+    // accelerators that do have one drive it themselves. It must still be NAMED -- VCS
+    // elaborates a wrapper with fewer connections than the module has ports as
+    // Error-[TFIPC-L], which is how this surfaced.
+    .io_cfgSubmitted                  ( /* unused */ )
 
   );
 
