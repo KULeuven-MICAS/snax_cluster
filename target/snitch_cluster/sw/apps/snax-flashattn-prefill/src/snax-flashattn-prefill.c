@@ -1177,7 +1177,7 @@ int main() {
 
         for (uint32_t j = 0; j <= STEPS; j++) {
             uint32_t tid = 0;
-            if (j < NKV) {
+            if (j < STEPS) {
                 // S(j) into the buffer the SIMD core is not reading. It last
                 // held tile j-2, which is free once tile j-1 has been consumed.
                 {
