@@ -215,6 +215,22 @@ endif
 
 VLT_FLAGS  += --trace
 
+# Host-side threading for the verilated model.
+#
+# Verilator partitions the design into macro-tasks at BUILD time and schedules them
+# statically, so a threaded model produces bit-identical results -- this only spreads one
+# simulated cycle across VLT_NUM_THREADS host cores. The count is baked into the generated
+# code, so changing it forces a full re-verilate.
+#
+#   make ... bin/snitch_cluster.vlt VLT_NUM_THREADS=4
+#
+# 1 keeps the single-threaded eval, which is what a design with little exploitable
+# parallelism wants: past that point the per-cycle barrier costs more than it saves.
+VLT_NUM_THREADS ?= 1
+ifneq ($(VLT_NUM_THREADS), 1)
+	VLT_FLAGS += --threads $(VLT_NUM_THREADS)
+endif
+
 ###############
 # C testbench #
 ###############
