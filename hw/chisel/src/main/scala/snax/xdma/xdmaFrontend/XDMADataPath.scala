@@ -200,21 +200,7 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
   dataSwitch.io.writerLocalLoopback  := io.writerCfg.localLoopback
   dataSwitch.io.writerRemoteLoopback := io.writerCfg.remoteLoopback
   dataSwitch.io.writerStart          := io.writerStart
-  // The RECEIVE WINDOW is this level: XDMADataSwitch gates `io.fromRemote.ready` with `io.writerBusy`, so the
-  // instant it falls the port stops accepting. It must therefore cover every stage the ARRIVING stream still
-  // occupies -- exactly as `io.readerBusy` does on line 149 for the outgoing one, and for the same reason.
-  //
-  // `writer.io.busy` alone is the ADDRESS GENERATOR (`addressgen.io.busy | ~addressgen.io.bufferEmpty`, see
-  // Writer.scala), which says nothing about data still sitting in the writer's data buffer or in the writer
-  // extension pipeline. The AGU runs dry once the last ADDRESS has been issued, which is several beats before the
-  // last DATA has landed in TCDM. In that gap `fromRemote.ready` drops while the sender still has beats to push:
-  // they are offered forever into a closed port (`valid=1, ready=0`), which pins `w_open` in every AXI crossbar
-  // between the two nodes and deadlocks the whole SoC
-  //
-  // Widening the term can only LENGTHEN the window, never shorten it, so no arriving beat can lose its
-  // destination. A ChainGather middle hop is unaffected: its writer engine is suppressed via
-  // `localWriteSuppressed`, so its AGU never starts and both added terms stay low there.
-  dataSwitch.io.writerBusyRaw        := writer.io.busy | (~writer.io.bufferEmpty) | writerExtensions.io.busy
+  dataSwitch.io.writerBusyRaw        := writer.io.busy
   dataSwitch.io.readerBusy           := io.readerBusy
   if (writerParam.junctionParam.nonEmpty) {
     dataSwitch.io.junctionCfg.enable  := writerJunctionCfg.head
