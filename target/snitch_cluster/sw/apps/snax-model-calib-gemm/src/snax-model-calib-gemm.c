@@ -48,12 +48,8 @@ typedef struct {
 
 static const phase_cfg_t PHASES[] = {
     {"C_on_idle",     1, 0, 0, 0, 0, 0},   // the C-read's own cost
-    {"C_off_idle",    0, 0, 0, 0, 0, 0},   // the array's floor, int32 drain
-    {"C_off_fp16",    0, 1, 0, 0, 0, 0},   // ... and with the drain halved: FA's QK exactly
-    {"C_off_fp16_sd", 0, 1, 1, 0, 1, 0},   // the halved drain under saturated neighbours
-    {"C_off_simd",    0, 0, 1, 0, 0, 0},   // one neighbour at a time, to attribute
-    {"C_off_idma",    0, 0, 0, 0, 1, 0},
-    {"C_off_both",    0, 0, 1, 0, 1, 0},   // both saturated
+    {"C_off_idle",    0, 0, 0, 0, 0, 0},   // int32 drain: mr*mc*4/K bytes per pass
+    {"C_off_fp16",    0, 1, 0, 0, 0, 0},   // fp16 drain: half that, at the same K
 };
 #define N_PHASES (sizeof(PHASES) / sizeof(PHASES[0]))
 
@@ -101,7 +97,13 @@ int main() {
     // data.h. Deriving it needs d_data_length's units to be right, and getting that wrong puts
     // the traffic buffers on top of the operands -- which does not fault, it just corrupts C
     // before the first dispatch and shows up as a golden that is close but not equal.
-    uint32_t top = 384u * 1024u;
+    uint32_t top = (uint32_t)delta_local_a + (uint32_t)a_data_length;
+    uint32_t ends[3] = {(uint32_t)delta_local_b + (uint32_t)b_data_length,
+                        (uint32_t)delta_local_c + (uint32_t)c_data_length,
+                        (uint32_t)delta_local_d + (uint32_t)d_data_length};
+    for (uint32_t i = 0; i < 3; i++)
+        if (ends[i] > top) top = ends[i];
+    top = (top + 63u) & ~63u;
     uint8_t *simd_src = l1 + top;  top += TRAFFIC_BEATS * SIMD_BEAT_BYTES;
     uint8_t *simd_dst = l1 + top;  top += TRAFFIC_BEATS * SIMD_BEAT_BYTES;
     uint8_t *dma_dst  = l1 + top;  top += TRAFFIC_BYTES;
@@ -114,7 +116,10 @@ int main() {
         snrt_dma_wait_all();
         *traffic_go = 0;
     }
-    if (snax_is_simd_core())
+    uint32_t any_traffic = 0;
+    for (uint32_t i = 0; i < N_PHASES; i++)
+        any_traffic |= PHASES[i].simd_on | PHASES[i].idma_on;
+    if (any_traffic && snax_is_simd_core())
         for (uint32_t i = 0; i < TRAFFIC_BEATS * SIMD_BEAT_BYTES / 4; i++)
             ((volatile uint32_t *)simd_src)[i] = 0x3C003C00u;
     snrt_cluster_hw_barrier();
@@ -215,10 +220,12 @@ int main() {
 
         printf("=== GEMM dispatch cost, M=%d N=%d K=%d, mesh %dx%dx%d ===\n", M, N, K, meshRow,
                tileSize, meshCol);
-        printf("  data.h a %ld b %ld c %ld d %ld (len a %ld b %ld c %ld d %ld), traffic at %u\n",
+        printf("CALIBK K %ld drain_bytes_per_pass_int32 %ld\n", (long)K,
+               (long)(meshRow * meshCol * 4 / K));
+        printf("  data.h a %ld b %ld c %ld d %ld (len a %ld b %ld c %ld d %ld), scratch at %u\n",
                (long)delta_local_a, (long)delta_local_b, (long)delta_local_c,
                (long)delta_local_d, (long)a_data_length, (long)b_data_length,
-               (long)c_data_length, (long)d_data_length, 384u * 1024u);
+               (long)c_data_length, (long)d_data_length, top);
         // VALIDITY WITHOUT A GOLDEN. The array's performance counter is exactly
         // passes + stall_A + stall_B + stall_D, so if the residual equals the geometry's own
         // pass count then the dispatch really executed the shape it was given -- which is what
