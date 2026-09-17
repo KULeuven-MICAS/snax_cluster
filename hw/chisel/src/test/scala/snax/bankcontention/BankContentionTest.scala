@@ -4,16 +4,15 @@ import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 
-import java.io.PrintWriter
-
 /** Measure what bank contention costs, on the real streamer RTL.
   *
   * Every case here is a controlled pair: the same streams, the same byte volume, the same
   * number of steps, with ONE thing changed -- where a buffer starts, or how deep its FIFO is.
   * Anything that prices memory by counting bytes predicts no difference in any of them.
   *
-  * The numbers are written to `bank_contention_rtl.json` so the Python cost model can be scored
-  * against them rather than against numbers copied by hand into a docstring.
+  * The measurements are PRINTED, not written to a file. They are a handful of integers whose
+  * only job is to reach the cost model's own test, and a generated file sitting in the RTL tree
+  * is a thing to accidentally commit rather than a result. Read them off the run.
   */
 class BankContentionTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "bank contention"
@@ -69,7 +68,7 @@ class BankContentionTest extends AnyFlatSpec with ChiselScalatestTester {
     out
   }
 
-  it should "match the cost model on every case, and write the measurements out" in {
+  it should "measure what bank contention costs, across controlled pairs" in {
     // ONE test for all of it: each `it should` gets its own suite instance, so results
     // accumulated across tests are lost by the time the last one writes them.
     val single = run("single", Seq(seq(0)), depth = 8)
@@ -93,13 +92,12 @@ class BankContentionTest extends AnyFlatSpec with ChiselScalatestTester {
              s"16 banks served 32 words/cycle in ${r.cycles} cycles -- impossible")
     }
 
-    val json = results.map { case (k, v) =>
-      f""""$k": {"cycles": ${v.cycles}, "steps": ${v.steps}, "blocked": ${v.blocked}, """ +
-      f""""stall": [${v.stall.mkString(", ")}], "retries": [${v.retries.mkString(", ")}]}"""
-    }.mkString("{\n  ", ",\n  ", "\n}\n")
-    val w = new PrintWriter("bank_contention_rtl.json")
-    w.write(json); w.close()
-    println("[bank-contention] wrote bank_contention_rtl.json")
-    println(json)
+    // A summary block in the shape the cost model's test keeps its copy in, so transcribing a
+    // re-measurement is a paste rather than a transcription.
+    println("[bank-contention] ===== MEASURED (paste into test_arbiter_vs_rtl.py) =====")
+    results.foreach { case (k, v) =>
+      println(s"""[bank-contention]     "$k": ${v.cycles},""")
+    }
+    println("[bank-contention] ===== end =====")
   }
 }
