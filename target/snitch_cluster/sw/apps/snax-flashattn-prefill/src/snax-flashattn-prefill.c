@@ -386,6 +386,10 @@
 #define DBEATS DHEAD     // O^T beats:     one per HEAD element, 32 query lanes each
 #define PBEATS (BC / 2)  // after Fp16ToInt8 halves them
 
+// The cluster's TCDM, which is both the footprint guard's limit and the ceiling on the
+// arena zero-fill below.
+#define TCDM_BYTES (512u * 1024u)
+
 // ---- the running-state fill, armed with CONSTANT CSR addresses ----------------
 //
 // snax_xdma_memcpy_nd() cannot be used here. csrw_ss() is a switch over every CSR
@@ -399,7 +403,7 @@
 //
 // Unrolled with constant addresses the same descriptor is ~31 writes of 1 cycle.
 // The 15 unused multicast destination slots are left at their reset value of zero:
-// this hart issues nothing but these two unicast fills, so nothing ever sets them.
+// this hart issues nothing but unicast fills, so nothing ever sets them.
 __attribute__((always_inline)) static inline void xdma_fill_arm(
     uint32_t dst, uint32_t stride, uint32_t bound, uint32_t pattern) {
     snax_write_xdma_cfg_reg(XDMA_SRC_ADDR_PTR_LSB, dst);
@@ -438,14 +442,6 @@ __attribute__((always_inline)) static inline void xdma_fill_arm(
     snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR, pattern);
 }
 
-// Same shape, different destination and constant: three writes.
-__attribute__((always_inline)) static inline void xdma_fill_rebase(uint32_t dst,
-                                                                   uint32_t pattern) {
-    snax_write_xdma_cfg_reg(XDMA_SRC_ADDR_PTR_LSB, dst);
-    snax_write_xdma_cfg_reg(XDMA_DST_ADDR_PTR_LSB, dst);
-    snax_write_xdma_cfg_reg(XDMA_DST_EXT_CSR_PTR, pattern);
-}
-
 // WHERE THE RESULT LANDS. Its own array, not a data.h buffer. NQ query tiles of O fill C
 // exactly, so the state block that follows them ran off the end and landed on o32_golden --
 // the check was comparing against a golden the kernel had just overwritten. The O check
@@ -466,22 +462,6 @@ static int32_t fa_out[NQ * (BR * DHEAD) + NQ * 128];
             }                                        \
         }                                            \
     } while (0)
-
-// The task geometries. In TCDM, not on the stack and not in .bss: program_fast() reads
-// every field of two of these per task, and .bss maps to DRAM on this target, so each
-// field would cost an L3 round trip. Only the SIMD core touches them.
-SNRT_L1_DATA static snax_simd_shape_t shapes[32];
-
-// SNRT_L1_DATA lives in .l1, which is NOLOAD -- it is NOT zero-initialised. A shape that
-// is declared but never filled programs the AGU from whatever was in TCDM, and the task
-// still completes: it reads and writes the wrong addresses, silently wrong rather than
-// faulted. Clear them once, so an unfilled shape is an empty task the library REFUSES.
-static inline void snax_simd_shapes_clear(snax_simd_shape_t *sh, uint32_t n) {
-    for (uint32_t i = 0; i < n; i++) {
-        uint8_t *b = (uint8_t *)&sh[i];
-        for (uint32_t k = 0; k < sizeof(snax_simd_shape_t); k++) b[k] = 0;
-    }
-}
 
 static inline uint16_t fp16_at(volatile uint8_t *p, uint32_t i) {
     return ((volatile uint16_t *)p)[i];
@@ -866,6 +846,15 @@ int main() {
     volatile uint32_t *pub  = (volatile uint32_t *)(l1 + top); top += 2048;
     volatile uint32_t *sync = (volatile uint32_t *)(l1 + top); top += 64;
 
+    // THE TASK GEOMETRIES LIVE IN THE ARENA, not in a .l1 static. TCDM is SRAM with no
+    // reset: an address that has never been written reads X in RTL, and .l1 is NOLOAD, so
+    // a linker-placed array there starts UNDEFINED rather than zero. Allocating them here
+    // puts them inside the block the xDMA zeroes below, which is what makes them defined.
+    // Still TCDM and not .bss: program_fast() reads every field of two of these per task,
+    // and .bss maps to DRAM on this target, so each field would cost an L3 round trip.
+    snax_simd_shape_t *shapes = (snax_simd_shape_t *)(l1 + top);
+    top += (32u * sizeof(snax_simd_shape_t) + 63u) & ~63u;
+
     // s_hdr is the latch beat the SIMD reads from; d32_delta is the tile itself, one
     // beat past it, which is where the GEMM's D32 port writes.
     const int32_t s_hdr[2]     = {(int32_t)s_a, (int32_t)s_b};
@@ -895,33 +884,48 @@ int main() {
     int cfg_err = 0;  // tasks the library refused to configure
     int timeouts = 0;
 
-    // ---- stage Q, K, V and the zero bias ------------------------------------
-    if (snrt_is_dm_core()) {
-        // No operand staging here. Q, K and V all arrive inside the measured window, so the
-        // load side and the store side are symmetric: Q once per QUERY tile, K and V once per
-        // KV tile, (O, m, l) out once per query tile.
-
-        // NOTHING IS ZEROED HERE ANY MORE. local_c was cleared twice, 32,768 scalar stores,
-        // and it is never read: QK's C channels are masked off and PV points C at oacc32. The
-        // accumulators that ARE read are cleared by the iDMA inside the window, below.
-        //
-        // A and B arrive ALREADY bounded by >>QSHIFT, so the scores stay inside FP16.
-        // datagen.py applies the shift when it writes the data.
-        sync[0] = 0;  // S tiles produced by the GEMM
-        sync[1] = 0;  // softmax tiles consumed by the SIMD
-        sync[2] = 0;  // K tiles landed
-        sync[3] = 0;  // PV dispatches retired -- frees a V buffer
-        sync[4] = 0;  // QK dispatches retired -- frees a K buffer
-        sync[5] = 0;  // V tiles landed
-        sync[6] = 0;  // the SIMD has drained its last task
-        sync[7] = 0;  // the accumulators have been cleared
+    // ---- hart 2 defines the whole arena, before anyone reads it -------------
+    // TCDM is SRAM with no reset. A location that has never been written reads X on RTL,
+    // and X propagates: one undefined beat entering the SIMD chain poisons a whole tile,
+    // and the failure surfaces far from its cause. Nothing may be left to a
+    // write-before-read argument -- every byte the kernel touches is written once here.
+    //
+    // The xDMA does it with its writer-side memset: the reader channels are off, so the
+    // pattern is generated inside the cluster and NOTHING is fetched from main memory for
+    // it. One task, one 64-byte beat per cycle, before the barrier that releases the
+    // other harts -- so it costs wall clock but no traffic and no measured pipeline time.
+    //
+    // This is also what zeroes `sync` (the counters below) and `shapes`; neither is
+    // cleared anywhere else.
+    //
+    //   sync[0] S tiles produced by the GEMM      sync[4] QK retired -- frees a K buffer
+    //   sync[1] softmax tiles the SIMD consumed   sync[5] V tiles landed
+    //   sync[2] K tiles landed                    sync[6] the SIMD drained its last task
+    //   sync[3] PV retired -- frees a V buffer    sync[7] m is live
+    if (snax_is_xdma_core()) {
+        uint32_t zbytes = top > TCDM_BYTES ? TCDM_BYTES : top;
+        uint32_t z0 = snrt_mcycle();
+        xdma_fill_arm((uint32_t)l1, BEAT, (zbytes + BEAT - 1u) / BEAT, 0u);
+        snax_xdma_local_wait(snax_xdma_start());
+        printf("  arena preinit   %lu bytes in %lu cc  (xDMA writer memset, outside the "
+               "measured window)\n",
+               (unsigned long)zbytes, (unsigned long)(snrt_mcycle() - z0));
     }
+    snrt_cluster_hw_barrier();
+
+    // ---- stage Q, K, V and the zero bias ------------------------------------
+    // No operand staging here. Q, K and V all arrive inside the measured window, so the
+    // load side and the store side are symmetric: Q once per QUERY tile, K and V once per
+    // KV tile, (O, m, l) out once per query tile.
+    //
+    // A and B arrive ALREADY bounded by >>QSHIFT, so the scores stay inside FP16.
+    // datagen.py applies the shift when it writes the data.
     if (snax_is_gemm_core()) {
         // TCDM footprint guard. An overrun corrupts whatever follows rather than
         // faulting, so check the layout rather than trust the arithmetic.
         printf("  TCDM footprint  %lu bytes of %u  (Bc=%d, d=%d, QSHIFT=%d)\n",
-               (unsigned long)top, 512u * 1024u, BC, DHEAD, QSHIFT);
-        if (top > 512u * 1024u) {
+               (unsigned long)top, TCDM_BYTES, BC, DHEAD, QSHIFT);
+        if (top > TCDM_BYTES) {
             printf("  TCDM OVERFLOW: tile does not fit -- reduce M\n");
             cfg_err++;
         }
@@ -959,7 +963,6 @@ int main() {
     // arm + program_fast + launch and nothing else.
     snax_simd_shape_t *sh = shapes;
     if (snax_is_simd_core()) {
-        snax_simd_shapes_clear(shapes, 32);
         // The GEMM emits FP16 (its D32 port carries the Int32ToFp16Converter), so the score
         // tile arrives in SBEATS beats rather than the 2x an INT32 tile needed.
 
@@ -1036,11 +1039,15 @@ int main() {
     // Spans are recorded against each core's own mcycle at the barrier below, so the three
     // lanes share an origin to within the barrier's release skew.
     // ---- hart 2: the running state, generated locally ---------------------
-    // m starts at -inf and l at 0, one beat each per query tile. Both are constants,
-    // and the xDMA's writer generates a 32-bit pattern itself, so NOTHING is fetched
-    // from main memory for them and the iDMA is free from cycle zero for K(0) -- which
-    // is what the GEMM's first dispatch waits on. The state blocks are a regular stride
-    // apart, so one task covers every query tile whatever NQ is.
+    // m starts at -inf, one beat per query tile. It is a constant, and the xDMA's writer
+    // generates a 32-bit pattern itself, so NOTHING is fetched from main memory for it and
+    // the iDMA is free from cycle zero for K(0) -- which is what the GEMM's first dispatch
+    // waits on. The state blocks are a regular stride apart, so one task covers every
+    // query tile whatever NQ is.
+    //
+    // l is NOT filled here. It starts at zero, and the arena fill before the barrier
+    // already wrote zero over every byte of the state blocks, so a second task would
+    // rewrite what is already there.
     //
     // 0xFBFF is the FP16 nearest -infinity, and no single byte repeats into it. That is
     // why the writer's memset takes a 32-bit PATTERN rather than a byte.
@@ -1048,10 +1055,8 @@ int main() {
         uint32_t x0 = snrt_mcycle() - t_org;
         xdma_fill_arm((uint32_t)mrun, 8u * BEAT, (uint32_t)NQ, 0xFBFFFBFFu);
         snax_xdma_local_wait(snax_xdma_start());
-        xdma_fill_rebase((uint32_t)lrun, 0u);
-        snax_xdma_local_wait(snax_xdma_start());
         pub[226] = x0; pub[227] = snrt_mcycle() - t_org;
-        sync[7] = 1;   // m and l are live -- the SIMD may start tile 0
+        sync[7] = 1;   // m is live -- the SIMD may start tile 0
     }
 
     if (snrt_is_dm_core()) {
