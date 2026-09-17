@@ -45,6 +45,9 @@ ifeq ($(CFG_OVERRIDE), cfg/snax_split_cluster.hjson)
 # Bring-up and the concurrency proof
 SUBDIRS += snax-simd-test
 SUBDIRS += snax-simd-xdma-concurrent
+# Per-engine machine constants for the bingo performance model: one ELF, four sweeps.
+SUBDIRS += snax-model-calib
+SUBDIRS += snax-model-calib-gemm
 # Reader-extension kernels, now running on the SIMD block (hart 1). This list is
 # exactly the snax_xdma_cluster set: the split cluster inherits that cfg's reader
 # extension list, so kernels written against a different one (maxpool, avgpool,
