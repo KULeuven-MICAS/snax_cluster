@@ -51,7 +51,15 @@ module ${cfg["name"]}_xdma_wrapper
   parameter logic [PhysicalAddrWidth-1:0]  ClusterAddressSpace = 48'h0010_0000,
   parameter logic [PhysicalAddrWidth-1:0]  MainMemBaseAddr = 48'h8000_0000,
   parameter logic [PhysicalAddrWidth-1:0]  MainMemEndAddr = 48'h1_0000_0000,
-  parameter int                            MMIOSize = 16
+  parameter int                            MMIOSize = 16,
+  // Consecutive stalled cycles tolerated in the adapter's control FSMs before
+  // `xdma_stall_error_o` latches. 0 disables the watchdog entirely.
+  //
+  // Every wait in the adapter's control path is unbounded, so a transfer that never
+  // completes stops the chain in silence and presents as a slow simulation rather than
+  // a failure. A 64 KiB transfer is ~1k beats, so this clears any legitimate wait while
+  // still reporting long before a run would be abandoned.
+  parameter int unsigned                   StallTimeout = 16384
 )(
   //-----------------------------
   // Clocks and reset
@@ -256,8 +264,8 @@ module ${cfg["name"]}_xdma_wrapper
   /// STALL WATCHDOG
   ///---------------------
   // Sticky bring-up diagnostic from the AXI adapter: a control FSM there waited longer than its
-  // `StallTimeout` parameter without advancing. That parameter defaults to 0, which removes the watchdog
-  // and ties this low, and this wrapper has no status port to surface it on -- so it terminates in a
+  // `StallTimeout` parameter without advancing. The watchdog also reports the stall itself, and this
+  // wrapper has no status port to surface the bit on -- so it terminates in a
   // signal whose name marks it unused. Leaving the pin EMPTY instead leaves a dangling by-name connection
   // that lint flags, which is the whole reason this signal exists.
   logic                              unused_xdma_stall_error;
@@ -441,7 +449,8 @@ module ${cfg["name"]}_xdma_wrapper
         .ClusterAddressSpace      (ClusterAddressSpace),
         .MainMemBaseAddr          (MainMemBaseAddr),
         .MainMemEndAddr           (MainMemEndAddr),
-        .MMIOSize                 (MMIOSize)
+        .MMIOSize                 (MMIOSize),
+        .StallTimeout             (StallTimeout)
     ) i_xdma_axi_adapter (
         .clk_i                           (clk_i),
         .rst_ni                          (rst_ni),
@@ -479,7 +488,7 @@ module ${cfg["name"]}_xdma_wrapper
         .axi_xdma_narrow_out_resp_i      (xdma_narrow_out_resp_i             ),
         .axi_xdma_narrow_in_req_i        (xdma_narrow_in_req_i               ),
         .axi_xdma_narrow_in_resp_o       (xdma_narrow_in_resp_o              ),
-        // Stall-watchdog status (tied low at the default StallTimeout==0); see the declaration.
+        // Stall-watchdog status; see the declaration.
         .xdma_stall_error_o              (unused_xdma_stall_error            )
     );
 
