@@ -117,6 +117,57 @@ snax_versacore_wait_task(uint32_t task_id) {
     }
 }
 
+// ---- waiting on the ARRAY, and proving the counter exists first --------------
+//
+// GEMMX_FINISHED_TASK is the array's own retired-task count, and it is the only
+// completion signal that is correct for a pipeline: GEMMX_BUSY is a level that spans
+// queued dispatches, and the STREAMER counter fires when the writer's address
+// generator has finished ISSUING, which is before the array has finished producing.
+//
+// It is also a READ-ONLY CSR the array only gained when the array-side counter was
+// added. Run against a cluster built before that -- a stale `work-vsim`, a Verilator
+// binary from an older checkout -- the address falls outside the accelerator's
+// read-only window and reads back a STUCK value instead of faulting. That is the
+// worst failure mode on offer: the first dispatch's wait passes by luck, because a
+// stuck 1 satisfies "reached 1", and the second spins for ever against a counter
+// that will never move. What it looks like from outside is a hang on dispatch 2
+// with FINISHED_TASK reading 1 -- and nothing pointing at the build.
+//
+// So: the wait is BOUNDED, and it hands back what it actually saw.
+
+#ifndef SNAX_VERSACORE_SPIN_LIMIT
+#define SNAX_VERSACORE_SPIN_LIMIT 2000000u
+#endif
+
+// Wait for ONE array dispatch by id. Returns 0 once the array has retired it, or 1 on
+// timeout. `seen` (may be NULL) receives the counter's last value, so a caller can
+// report the number rather than print a guess.
+__attribute__((always_inline)) static inline int
+snax_versacore_wait_array_task(uint32_t task_id, uint32_t *seen) {
+    uint32_t spins = 0;
+    uint32_t v = csrr_ss(GEMMX_FINISHED_TASK);
+    while ((int32_t)(v - task_id) < 0) {
+        if (++spins > SNAX_VERSACORE_SPIN_LIMIT) {
+            if (seen) *seen = v;
+            return 1;
+        }
+        v = csrr_ss(GEMMX_FINISHED_TASK);
+    }
+    if (seen) *seen = v;
+    return 0;
+}
+
+// Does this build implement the array's retired-task counter at all?
+//
+// Sample it BEFORE the first dispatch and again after that dispatch has been waited
+// on: a real counter reads zero out of reset and exactly one afterwards. A stuck
+// alias reads the same value both times, which no working counter ever does. One
+// subtraction, once per run, and it turns a forty-minute mystery into a sentence.
+__attribute__((always_inline)) static inline int
+snax_versacore_array_counter_live(uint32_t before_first, uint32_t after_first) {
+    return after_first == before_first + 1u;
+}
+
 void wait_versacore();
 
 // Read performance counter of the Streamer, a read-only CSR

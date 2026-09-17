@@ -67,23 +67,50 @@ static volatile uint32_t phase_wall[N_PHASES];
 static volatile uint32_t *traffic_go;   // harts 1 and 3 stream while this is non-zero
 
 static uint32_t gseq;
+// Set when a dispatch's wait ran out, so the report can say which one and what the array's
+// counter actually read instead of leaving the run to time out somewhere else.
+static uint32_t stall_tid, stall_seen;
+// The worst number of BUSY reads any dispatch needed after its counter rose.
+static uint32_t busy_after_counter_max;
+static uint32_t counter_before_first, counter_after_first;
 
 // One dispatch, waiting on the ARRAY's retired-task counter. The streamer's counter fires when
 // the writer's address generator has finished issuing, which is BEFORE the array has finished
 // producing -- polling it here would report a dispatch shorter than its own arithmetic.
-__attribute__((always_inline)) static inline void dispatch_once(phase_t *p, uint32_t i) {
+__attribute__((always_inline)) static inline int dispatch_once(phase_t *p, uint32_t i) {
     csrw_ss(STREAMER_START_CSR, 1);
     csrw_ss(GEMMX_START, 1);
     csrw_ss(STREAMER_START_CSR, 0);
     csrw_ss(STREAMER_START_CSR, 0);
     uint32_t tid = ++gseq;
-    while ((int32_t)(csrr_ss(GEMMX_FINISHED_TASK) - tid) < 0) {
+    // BOUNDED. An unbounded spin here turns a build whose array has no retired-task counter
+    // into a silent hang on the second dispatch, with nothing on stdout to say why.
+    uint32_t seen = 0;
+    if (snax_versacore_wait_array_task(tid, &seen)) {
+        stall_tid = tid;
+        stall_seen = seen;
+        return 1;
+    }
+    // IS THE ARRAY ACTUALLY IDLE WHEN ITS COUNTER RISES? The retired-task counter is
+    // accounted at the array's finish, but the drain can still be running -- and
+    // ReqRspManager throttles writes to the START address while the accelerator is busy, so
+    // a start pulse issued too early is silently DROPPED and the pipeline stalls for ever
+    // with no error. Count the reads it takes for BUSY to fall, once per dispatch, so the
+    // answer is a measurement rather than a belief. Zero means the counter already implies
+    // idle and a tight relaunch is safe; anything else means every caller needs this drain.
+    {
+        uint32_t polls = 0;
+        while (csrr_ss(GEMMX_BUSY)) {
+            if (++polls > 10000u) break;
+        }
+        if (polls > busy_after_counter_max) busy_after_counter_max = polls;
     }
     csrw_ss(GEMMX_START, 0);
     p->cyc[i] = csrr_ss(GEMMX_PERFORMANCE_COUNTER);
     p->sa[i] = csrr_ss(GEMMX_STALL_A);
     p->sb[i] = csrr_ss(GEMMX_STALL_B);
     p->sd[i] = csrr_ss(GEMMX_STALL_D);
+    return 0;
 }
 
 int main() {
@@ -209,7 +236,11 @@ int main() {
             idma_bytes_in_phase[phase] = moved;
         } else if (snax_is_gemm_core()) {
             uint32_t w0 = snrt_mcycle();
-            for (uint32_t i = 0; i < REPS; i++) dispatch_once(&ph[phase], i);
+            if (phase == 0) counter_before_first = csrr_ss(GEMMX_FINISHED_TASK);
+            for (uint32_t i = 0; i < REPS; i++) {
+                if (dispatch_once(&ph[phase], i)) break;
+                if (phase == 0 && i == 0) counter_after_first = csrr_ss(GEMMX_FINISHED_TASK);
+            }
             phase_wall[phase] = snrt_mcycle() - w0;
             *traffic_go = 0;
         }
@@ -220,6 +251,26 @@ int main() {
 
         printf("=== GEMM dispatch cost, M=%d N=%d K=%d, mesh %dx%dx%d ===\n", M, N, K, meshRow,
                tileSize, meshCol);
+        // Say whether the machine under us can do what the rest of this app assumes, BEFORE
+        // reporting any number measured on it.
+        if (!snax_versacore_array_counter_live(counter_before_first, counter_after_first)) {
+            printf("  FATAL: this build has no array retired-task counter. "
+                   "GEMMX_FINISHED_TASK read %lu before the first dispatch and %lu after; a real "
+                   "counter reads 0 then 1. The CSR is outside the accelerator's read-only "
+                   "window here, so it returns a stuck value: the first wait passes by luck and "
+                   "the second would spin for ever. REBUILD the simulator against this "
+                   "checkout's RTL.\n",
+                   (unsigned long)counter_before_first, (unsigned long)counter_after_first);
+            return 1;
+        }
+        printf("  drain after counter: worst %lu BUSY reads over %lu dispatches "
+               "(0 = the counter already implies idle, so a tight relaunch is safe)\n",
+               (unsigned long)busy_after_counter_max, (unsigned long)gseq);
+        if (stall_tid) {
+            printf("  FATAL: dispatch %lu never retired; GEMMX_FINISHED_TASK stuck at %lu.\n",
+                   (unsigned long)stall_tid, (unsigned long)stall_seen);
+            return 1;
+        }
         printf("CALIBK K %ld drain_bytes_per_pass_int32 %ld\n", (long)K,
                (long)(meshRow * meshCol * 4 / K));
         printf("  data.h a %ld b %ld c %ld d %ld (len a %ld b %ld c %ld d %ld), scratch at %u\n",
