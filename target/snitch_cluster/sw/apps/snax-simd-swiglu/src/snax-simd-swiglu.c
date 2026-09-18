@@ -166,7 +166,11 @@ int main() {
             // to int8 in-stream (no re-read of out_buf). The writer emits
             // beats/2 packed beats; cq - c2 is the marginal quantize cost.
             uint32_t csr_mul_q[2] = {2u /*operandCount*/, EW_MUL};
-            uint32_t csr_q[1] = {swiglu_inv_scale};
+            // TWO words: enable_ext writes SIMD_EXT_FP16TOINT8_CSR_NUM (2) from this array.
+            // csr[1] is tailPeriod -- pass every (tailPeriod+1)'th beat through UNQUANTISED --
+            // and 0 disables it, which is right here: no trailing scalar beat reaches this
+            // quantiser. A shorter array reads a stack word into that CSR and the task hangs.
+            uint32_t csr_q[2] = {swiglu_inv_scale, 0u};
             ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                             csr_mul_q) == 0);
             ok &= (snax_simd_enable_ext(SIMD_EXT_FP16TOINT8, csr_q) == 0);

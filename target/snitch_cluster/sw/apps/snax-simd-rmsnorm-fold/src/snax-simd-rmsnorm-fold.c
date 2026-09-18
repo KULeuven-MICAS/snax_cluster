@@ -177,7 +177,11 @@ int main() {
 
         uint32_t csr_ssq[2] = {beats, OP_SUMSQ};
         uint32_t csr_mul[2] = {2u /*operandCount*/, EW_MUL};
-        uint32_t csr_q[1] = {rmsf_inv_scale};
+        // TWO words: enable_ext writes SIMD_EXT_FP16TOINT8_CSR_NUM (2) from this array.
+        // csr[1] is tailPeriod -- pass every (tailPeriod+1)'th beat through UNQUANTISED --
+        // and 0 disables it, which is right here: no trailing scalar beat reaches this
+        // quantiser. A shorter array reads a stack word into that CSR and the task hangs.
+        uint32_t csr_q[2] = {rmsf_inv_scale, 0u};
 
         uint16_t* bc_a = (uint16_t*)inv_bc_a;
         uint16_t* inv = (uint16_t*)inv_l1;

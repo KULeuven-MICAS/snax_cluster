@@ -231,7 +231,11 @@ int main() {
         uint32_t csr_sum[2] = {beats, OP_ADD};
         uint32_t csr_sum_tap[2] = {beats, OP_ADD | RED_TAP};
         uint32_t csr_mul[2] = {2u, EW_MUL};
-        uint32_t csr_q[1] = {smf_inv_scale};
+        // TWO words: enable_ext writes SIMD_EXT_FP16TOINT8_CSR_NUM (2) from this array.
+        // csr[1] is tailPeriod -- pass every (tailPeriod+1)'th beat through UNQUANTISED --
+        // and 0 disables it, which is right here: no trailing scalar beat reaches this
+        // quantiser. A shorter array reads a stack word into that CSR and the task hangs.
+        uint32_t csr_q[2] = {smf_inv_scale, 0u};
 
         uint16_t* mx = (uint16_t*)max_buf;
         uint16_t* inv = (uint16_t*)inv_l1;
