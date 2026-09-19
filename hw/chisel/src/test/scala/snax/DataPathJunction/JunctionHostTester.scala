@@ -63,8 +63,11 @@ class JunctionHostTester extends AnyFlatSpec with ChiselScalatestTester {
 
   private def csrLinear(op: Int, fmt: Int): BigInt = (BigInt(fmt) << 4) | BigInt(op)
 
-  /** the monoid geometry word: [7:0] nValid | [11:8] n | [21:18] nExp | [25:22] nAdd | [27:26] sigma */
+  /** the monoid geometry word: [7:0] nValid | [11:8] n | [14:12] fmt | [21:18] nExp | [25:22] nAdd | [27:26] sigma.
+    * `fmt = 3` (FP32) is the only transport an `elemWidth = 32` instance builds; anything else raises O5.
+    */
   private def csrMonoid(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int): BigInt =
+    (BigInt(ElementwiseJunction.FMT_FP32) << 12) |
     (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) | (BigInt(nExp) << 18) | (BigInt(n) << 8) | BigInt(nValid)
 
   private def encBf16(d: Double): BigInt = {

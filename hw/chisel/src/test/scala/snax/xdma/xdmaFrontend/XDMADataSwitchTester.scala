@@ -48,10 +48,10 @@ class XDMADataSwitchTester extends AnyFlatSpec with ChiselScalatestTester {
     for ((v, k) <- p.zipWithIndex) { b |= f32(v._1) << (32 * k); b |= f32(v._2) << (32 * (pairSlots + k)) }
     b
   }
-  // the monoid geometry word: [7:0] nValid | [11:8] n | [21:18] nExp | [27:26] sigma. (m, l), one twisted
-  // value coordinate, 8 partials per beat.
+  // the monoid geometry word: [7:0] nValid | [11:8] n | [14:12] fmt | [21:18] nExp | [27:26] sigma. (m, l), one
+  // twisted value coordinate, 8 partials per beat. `fmt = 3` is FP32, the only transport this instance builds.
   private def csrMoment(nValid: Int): BigInt =
-    (BigInt(3) << 26) | (BigInt(1) << 18) | (BigInt(1) << 8) | BigInt(nValid)
+    (BigInt(3) << 26) | (BigInt(1) << 18) | (BigInt(3) << 12) | (BigInt(1) << 8) | BigInt(nValid)
 
   /** Park every input at a quiescent, non-gather, non-chained state. */
   private def idle(dut: XDMADataSwitch): Unit = {

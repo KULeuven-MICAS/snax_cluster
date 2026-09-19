@@ -266,6 +266,12 @@
                                 HasMonoidJunction:
                                 {
                                     dataWidth: 512
+                                    // The TRANSPORT element width. 16 slices the beat into 32 FP32 lanes and
+                                    // lets CSR(0)[14:12] carry FP16/BF16 at full beat rate (FP32 on lanes
+                                    // 0..15); the fold itself is FP32 whatever it says. It is what lets a
+                                    // cross-cluster partial cross in the format the SIMD block already
+                                    // produces, instead of being widened and repacked by a core with no FPU.
+                                    elemWidth: 16
                                     fpPipe: 1
                                     expLutN: 128
                                 }
@@ -289,11 +295,31 @@
                             // The declaration matches the unsplit cluster, so it generates the id
                             // TRANSPOSERROW8_8COL8_8BIT8_16 that the kernel selects first.
                             //
+                            // Int32ToFp32 is the second resident, and it is here rather than on the
+                            // SIMD block for one reason: it is the join between an INT32 GEMM and a
+                            // FLOATING-POINT collective, so it belongs on the engine that performs
+                            // the collective. A cross-cluster FlashAttention gather folds partials
+                            // with MonoidJunction, whose twist is exp(m_lose - m*) and which therefore
+                            // touches nothing but floats -- while `oacc32` is INT32. Converting on
+                            // THIS path lets the shard's own reader do it on the way into the data
+                            // switch, so the gather costs no extra local pass.
+                            //
+                            // It converts to FP32, not FP16, and that is a measured choice rather
+                            // than a conservative one -- see FaGatherTester. Carried as FP32 the
+                            // partial needs NO re-embedding: key = m, values = the raw (l, O). In
+                            // FP16 the raw numerator (sum P8.V8, ~127.l.127) overflows and the
+                            // partial has to be re-expressed, which costs 1600x accuracy for 2x
+                            // payload. FP32 also makes this block the simplest converter in the
+                            // tree: INT32 cannot overflow FP32, so there is no saturation path, and
+                            // below 2^24 -- which covers the whole flash numerator range -- the
+                            // conversion is EXACT.
+                            //
                             // This must stay the ONLY reader_extensions key in this block: a second
                             // one silently does nothing, because a later duplicate key wins.
                             reader_extensions:
                             {
                                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
+                                HasInt32ToFp32: {dataWidth: 512, numPipe: 1}
                             }
                         }
                         xdma: false

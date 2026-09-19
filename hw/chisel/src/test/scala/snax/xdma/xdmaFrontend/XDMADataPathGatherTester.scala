@@ -73,10 +73,11 @@ class XDMADataPathGatherTester extends AnyFlatSpec with ChiselScalatestTester {
     for ((v, k) <- p.zipWithIndex) { b |= f32(v._1) << (32 * k); b |= f32(v._2) << (32 * (pairSlots + k)) }
     b
   }
-  // MonoidJunction geometry word: [7:0] nValid | [11:8] n | [21:18] nExp | [27:26] sigma.
-  // (m, l) with one twisted value coordinate, 8 partials per beat.
+  // MonoidJunction geometry word: [7:0] nValid | [11:8] n | [14:12] fmt | [21:18] nExp | [27:26] sigma.
+  // (m, l) with one twisted value coordinate, 8 partials per beat. `fmt = 3` is FP32, the only transport
+  // an `elemWidth = 32` instance builds.
   private def csrMoment(nValid: Int): BigInt =
-    (BigInt(3) << 26) | (BigInt(1) << 18) | (BigInt(1) << 8) | BigInt(nValid)
+    (BigInt(3) << 26) | (BigInt(1) << 18) | (BigInt(3) << 12) | (BigInt(1) << 8) | BigInt(nValid)
 
   // The three cluster tags a middle hop sees: the hop before it in the chain, itself, and its next hop. Only
   // their being distinct and non-zero matters here -- they make `writerPtr(1) =/= 0` true at a middle hop, so a

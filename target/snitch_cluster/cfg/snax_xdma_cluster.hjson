@@ -29,7 +29,11 @@ The collector issues ONE task; every other participant is passive, exactly like 
   readerPtr     the collector's own partial.
   XDMA_DST_JCT_ENABLE_PTR  bit i = 1 arms junction i. ARMING A JUNCTION IS WHAT MAKES THE TRANSFER A GATHER
                 (`collectiveMode := junctionEnabled`) — there is no separate "which collective" CSR.
-  XDMA_DST_JCT_CSR_PTR     the junction's own CSR (MonoidJunction: [7:0] nValid, [11:8] n, [21:18] nExp, [25:22] nAdd, [27:26] sigma).
+  XDMA_DST_JCT_CSR_PTR     the junction's own CSR (MonoidJunction: [7:0] nValid, [11:8] n, [14:12] fmt,
+                [21:18] nExp, [25:22] nAdd, [27:26] sigma). `fmt` names the TRANSPORT format of the beat
+                (0 = FP16, 1 = BF16, 2 = FP8, 3 = FP32) and MUST be written: zero now means FP16, so a word
+                computed before the field existed names a format the instance may not build, and raises
+                XDMA_JCT_STATUS bit 0.
 
 The unroll then emits, per remote hop, a READER-side frame (read your own partial) and a WRITER-side frame
 (arm your junction and forward) — two frames, because a frame carries `isWriterSide` and the receiver
@@ -241,7 +245,9 @@ this cfg's junction bank exists to do on HeMAiA.
             //     plus a native-width integer grid (INT8/16/32).
             //   MonoidJunction     -- the NONLINEAR family the per-element form cannot express at all: the online-
             //     softmax (m, l) merge, the flash-attention (m, l, O) triple, exp-weighted moments, argmax. One
-            //     netlist, selected by the geometry fields of its CSR word.
+            //     netlist, selected by the geometry fields of its CSR word. Same transport split as the linear
+            //     operator: `elemWidth` sets the lane count, `fmt` picks FP16/BF16/FP32 at runtime, and the
+            //     arithmetic stays FP32 either way.
             // Both are stateless in the operand pair, so the fold is fully pipelined (no accBusy read-modify-write)
             // and the join is cut-through: first-output latency does not grow with payload (measured 9 CC / 7 CC,
             // util 1.000), which is what keeps a reduce-along-the-route chain latency-competitive with a star.
@@ -252,7 +258,7 @@ this cfg's junction bank exists to do on HeMAiA.
             writer_junctions:
             {
                 HasElementwiseJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1}
-                HasMonoidJunction: {dataWidth: 512, fpPipe: 1, expLutN: 128}
+                HasMonoidJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1, expLutN: 128}
                 // TopKJunction: an operator from OUTSIDE the classified monoid family -- its own beat layout,
                 // no key front end, no exponential and no FMA -- on the same socket, satisfying the same four
                 // obligations. It is the evidence that the CONTRACT composes, not the monoid cell.

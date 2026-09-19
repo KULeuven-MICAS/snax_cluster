@@ -276,11 +276,8 @@
 //                                                   pair [ sum16 ][ lsc16 ]. Both follow
 //                                                   the p8 ping-pong now.
 //
-//                  O16^T *= corr16               129 -> 128  StreamElementwise sticky MUL
-//
-//                     ---- P8^T and the rescaled O16^T are published to the GEMM here.
-//                          Everything below only prepares the NEXT tile, so the GEMM
-//                          never waits on it. ----
+//                     ---- P8^T is published to the GEMM here. Everything below only
+//                          prepares the NEXT tile, so the GEMM never waits on it. ----
 //
 //                  lsc16  = corr16 * l16_old         2 -> 1  StreamElementwise sticky MUL
 //                  l16    = sum16 + lsc16            2 -> 1  StreamReduce ADD|LANEWISE
@@ -305,8 +302,9 @@
 //                                          P8^T [512, 32]  16 KiB  ]  2048 cycles
 //                                     -> O32^T [128, 32]  16 KiB     accumulated in place
 //
-//   O16^T and O32^T are the two representations of O described below: the SIMD rescales
-//   the FP16 copy, the GEMM accumulates the INT32 one, and they are never joined.
+//   O32^T is the ONLY representation of O. An FP16 copy that the SIMD rescaled by corr
+//   each tile used to sit beside it; nothing ever read it, so it is gone -- see "O^T PER
+//   QUERY TILE, in ONE representation" in the allocation block.
 //
 // Per KV tile that is 4.19 M MAC and 4096 GEMM cycles against ~1170 beats read and ~400
 // written on the SIMD side, so the arithmetic floor is GEMM-bound and the softmax has to
@@ -350,12 +348,299 @@
 //
 // Every KV tile is fed the same K, so the final tile stands for all of them.
 //
-// O is the exception. The GEMM accumulates P.V into oacc32 in INT32 in place, and the
-// SIMD rescales an FP16 copy by corr each tile -- both halves of the online update are
-// present and correctly sized, but they are never joined, because closing the loop
-// needs an FP16 -> INT32 conversion the datapath does not have. So O is shape- and
-// dataflow-accurate and nothing checks its value: treat it as a cycle measurement, one
-// P.V matmul per KV tile, which is the right load -- not as a result.
+// O is checked too, but it pins a WEAKER property than the rest, and the difference
+// matters. The GEMM accumulates P.V into oacc32 in INT32 and that is the only copy of O;
+// the online rescale is NOT applied to it, because corr is FP16 and scaling an INT32
+// accumulator by it needs an FP16 -> INT32 conversion the datapath does not have. For
+// THIS data that costs nothing: every KV tile is fed the same K, so the running max stops
+// moving after tile 0 and corr is 1 from then on, which is why o32 matches o32_golden on
+// all 4,096 elements. With genuinely varying K it would not. So the O check pins the two
+// matmuls and the D32 layout; it does NOT exercise the online update.
+//
+// ============================ SHARDING THE KEYS ACROSS CLUSTERS ============================
+//
+// Everything above is ONE cluster walking NKV key/value tiles in sequence. The multi-cluster
+// form cuts the SAME sequence into P slices and gives one to each cluster, which runs this
+// whole file on it unchanged. Q is replicated -- every cluster attends the same query tile.
+//
+//      K, V [N, d]  INT8                  what cluster c holds when its loop ends
+//       +---------------+  -+-           m_c [Br] FP16   l_c [Br] FP16   O_c [d, Br] INT32
+//   c=0 |   keys 0..511 |   |    ->        mrun            lrun            oacc32
+//       +---------------+   |            (1 beat)        (1 beat)        (16 KiB)
+//   c=1 | keys 512..1023|   |    ->      m_1             l_1             O_1
+//       +---------------+   N
+//   c=2 |keys 1024..1535|   |    ->      m_2             l_2             O_2
+//       +---------------+   |
+//   c=3 |keys 1536..2047|   |    ->      m_3             l_3             O_3
+//       +---------------+  -+-
+//                                      four PARTIAL answers to the same question
+//
+// PRECISIONS, because they are not uniform and the mismatch is most of the work below:
+//
+//   quantity   lives in                  precision   role in the fold
+//   ---------------------------------------------------------------------------------
+//   Q, K, V    DRAM -> TCDM              INT8        operands, never folded
+//   S^T        s_a / s_b                 FP16        GEMM output via Int32ToFp16
+//   P8^T       p8_0 / p8_1               INT8        quantised by Fp16ToInt8
+//   m_c        mrun    [32 lanes]        FP16        the KEY field of a partial
+//   l_c        lrun    [32 lanes]        FP16        a twisted VALUE field
+//   O_c        oacc32  [d, Br]           INT32  <--  Int32ToFp32, on the xDMA reader
+//   ---------------------------------------------------------------------------------
+//   alpha_c    inside the junction       FP32        derived from the keys, never stored
+//   the fold   inside the junction       FP32        the ARITHMETIC is FP32, always
+//   transport  on the wire               MIXED       FP16 for (m, l), FP32 for O
+//
+// The last two lines are what to hold on to. `fmt` selects how a beat is SLICED and
+// nothing else -- every compare, exponential and FMA inside the operator is FP32 whatever
+// it says. And the two folds need not agree: (m, l) rides FP16 because mrun and lrun
+// already ARE FP16, so that fold converts nothing, while O rides FP32 because its raw
+// numerator fits nothing narrower. That split is measured, not assumed -- the table is
+// under THE O FOLD below.
+//
+// THESE DO NOT ADD. Each shard's l and O are expressed relative to ITS OWN maximum: if
+// shard 0 saw a top score of 10 and shard 1 saw 2, then shard 1's numbers are all scaled by
+// e^2 where shard 0's are scaled by e^10. Adding them adds quantities in different units.
+// Shard 1 must first be re-based onto the common maximum, by exp(2 - 10) -- which is the
+// same `corr` the loop above applies when a TILE raises the running max, with the tile index
+// replaced by the shard index:
+//
+//     m* = max_c m_c            alpha_c = exp(m_c - m*)      <- one FP32 scalar per shard,
+//     l* = sum_c alpha_c . l_c                                    per query row
+//     O* = sum_c alpha_c . O_c                  and, once, at the very end:  O*/l*
+//
+//   operands in  FP16 ---> widen ---> FP32 compare / exp / FMA ---> narrow ---> FP16 out
+//
+// A max on the key, coupled to a rescaled sum on the values, with ONE alpha shared by every
+// value coordinate of a partial. That is precisely the xDMA MonoidJunction's operator, and in
+// ONE PASS nothing else computes it: an ADD collective returns the wrong answer and a MAX
+// collective loses the sum.
+//
+// THE ALTERNATIVE, AND WHY IT IS NOT TAKEN. In TWO passes the twist disappears entirely. Fold
+// (m, l) first -- 4 beats -- broadcast m* and l* back, let every shard pre-scale its own
+// numerator by alpha_c / l*, and the numerators are then already on a common basis, so the
+// collective is a plain ElementwiseJunction ADD: no key, no chunking, no key replication, and
+// the beats carry nothing but payload. Measured on the same bench
+// (FaGatherElementwiseTester), against the same golden:
+//
+//     E16  FP16 pre-scaled ADD    worst/term 1.6e-03    132 beats/shard
+//     E32  FP32 pre-scaled ADD    worst/term 2.4e-07    260 beats/shard
+//
+// E32 is the most accurate row in this file AND the cheapest FP32 one, and it is still not
+// the choice -- for two reasons the bench cannot show:
+//
+//   - its alpha is computed in float64 BY THE BENCH. Real software would get alpha from the
+//     same exp LUT, and that LUT is exactly where method A's 3.1e-06 comes from (the junction
+//     tester independently measures 2.2e-06 on the same lookup). So E32 in practice lands
+//     beside A, not above it: the bench is flattering it.
+//   - the l* broadcast SERIALISES. No shard can pre-scale until the first fold has completed
+//     and come back to it, which is a full round trip added to the critical path.
+//
+// Paying a round trip, and a second dispatch, to save 10% of the beats is the wrong trade.
+// One pass, no broadcast, no sequencing between the two folds.
+//
+// ---- THE ROUTE: the fold happens IN the data movement, not after it ----
+//
+// Arming a junction is what turns a transfer into a GATHER (`collectiveMode :=
+// junctionEnabled`). Each hop's WRITER folds the beats arriving from the previous cluster
+// against the beats it reads from its own TCDM, and forwards the result. No cluster ever
+// holds more than two partials, and the wire carries one partial's worth of traffic per hop:
+//
+//     cluster 0          cluster 1          cluster 2          cluster 3 (root)
+//    +-----------+      +-----------+      +-----------+      +-----------+
+//    | m0 l0 O0  |      | m1 l1 O1  |      | m2 l2 O2  |      | m3 l3 O3  |   <- local (B)
+//    +-----+-----+      +-----+-----+      +-----+-----+      +-----+-----+
+//          |                  | B                | B                | B
+//          |  A         +-----v-----+  A   +-----v-----+  A   +-----v-----+
+//          +----------->|  A (+) B  |----->|  A (+) B  |----->|  A (+) B  |
+//                       +-----------+      +-----------+      +-----------+
+//                                                                   |
+//                                                          (m*, l*, O*) in TCDM
+//
+//   A = the stream arriving from the previous hop      B = this cluster's own partial
+//
+// The HEAD is special: nothing arrives at it, so it gets a reader frame only and simply
+// SENDS. Every other node gets both frames -- read your own partial, arm your junction,
+// forward. The chain is the writerPtr list in data order; bit 1 of XDMA_DST_JCT_ENABLE_PTR
+// selects the monoid (WRITER_JCT_MONOIDJUNCTION) and its geometry word is
+// XDMA_DST_JCT_CSR_PTR + 1.
+//
+// Contrast with the obvious alternative -- every shard ships to a root that folds P streams.
+// That costs the root P-1 receives and P-1 buffers; this costs every node one of each, and
+// the fold is hidden inside a transfer that had to happen anyway.
+//
+// ---- THE BEAT: what "field-major" actually means ----
+//
+// This is the part that bites, because it is not how the kernel stores anything today. The
+// junction reads a 512-bit beat as a flat grid of FP16 lanes and addresses them
+//
+//     lane = field * S + slot          S = 1 << sigma = partials per beat
+//
+// so a partial's coordinates are STRIDED BY S, and consecutive lanes are DIFFERENT QUERY
+// ROWS. For the (m, l) fold -- 2 fields, sigma = 3, so S = 8 partials per beat:
+//
+//   lane    0    1    2    3    4    5    6    7    8    9   10   11  ..  15   16..31
+//   field   0    0    0    0    0    0    0    0    1    1    1    1      1    >= F,
+//   slot    0    1    2    3    4    5    6    7    0    1    2    3      7    dead
+//   holds  m_0  m_1  m_2  m_3  m_4  m_5  m_6  m_7  l_0  l_1  l_2  l_3    l_7
+//   FP16    ^ every lane is one FP16 element; 32 of them in a 512-bit beat
+//          '------- the key of 8 query rows -------''---- their l ----'
+//
+// Eight query rows per beat, so Br = 32 is FOUR beats -- and only 16 of the 32 lanes are
+// live in each, because sigma is a 2-bit field capped at 3 and S cannot reach 16. The upper
+// half carries the identity. That is a known, accepted cost: filling it would need a third
+// sigma bit to buy 128 bytes on a transfer whose cost is dominated by arming it.
+//
+// So the repack is:
+//
+//     mrun  [32 FP16, 1 beat,  64 B]  --+
+//                                        +-->  4 junction beats, 16/32 lanes live, 256 B
+//     lrun  [32 FP16, 1 beat,  64 B]  --+      (128 B of payload, 128 B of identity pad)
+//
+// mrun and lrun are already one FP16 value per query row, which IS the slot axis -- but they
+// are two separate 32-row beats today, and the junction wants 8 rows of (m, l) per beat.
+// That is a strided 2-beat xDMA task, the same shape as the -m_new fan-out this kernel
+// already issues.
+//
+// ---- THE O FOLD: an INT32 accumulator onto a floating-point collective ----
+//
+// `oacc32` is INT32 and the monoid is not: its twist is `exp(m_lose - m*)`, so every operand
+// it touches is a float. Something has to convert, and WHERE it converts and INTO WHAT are
+// both decided rather than open.
+//
+// WHERE: ON THE xDMA READER, in the shard's own read-for-the-gather. The conversion is a
+// property of the TRANSFER, not of the matmul, so it rides the chain that performs the
+// transfer and costs no extra local pass and no extra buffer:
+//
+//        oacc32 in TCDM (INT32)
+//             |
+//             v
+//     +-------------------------------------------------------+
+//     | xDMA reader chain                                      |
+//     |   HasTransposer      (bypassed for this transfer)      |
+//     |   HasInt32ToFp32     INT32 -> FP32, one PE per lane    |  <-- the new block
+//     +-------------------------------------------------------+
+//             |  FP32
+//             v
+//        data switch --> MonoidJunction --> link --> next hop
+//
+// The obvious question is why this is not the converter the cluster ALREADY has. There is an
+// Int32ToFp16Converter on the GEMM's own streamer (reader_writer slot 1, the D write path),
+// and two things rule it out. It sits in the GEMM's WRITE path, so arming it changes what the
+// matmul writes -- which is why PV runs with it disarmed, since PV reads its own previous
+// output back through C as INT32; reusing it would entangle the collective with the matmul's
+// descriptor. And it converts to FP16, which is the wrong target for O -- see below.
+//
+// INTO WHAT: FP32, and this is MEASURED. `FaGatherTester` folds four shards hop-by-hop
+// through the real junction against a float64 online-softmax golden, scoring each candidate
+// relative to max|term| -- the standard bound for a floating-point summation, and the right
+// one here because `O*` is a signed sum that cancels (largest term typically 1.0x the sum,
+// but 140x in the worst lanes):
+//
+//     encoding                                 worst/term   p99 rel   beats/shard
+//     A   FP32 raw   key=m, vals=(l,O)          3.1e-06     1.1e-05      288
+//     B   FP16 pow2  key=m+p.ln2, (l,O)/2^p     5.1e-03     4.9e-02      144
+//     B32 FP32 pow2  (isolates the embedding)   3.3e-06     1.2e-05      288
+//     C   FP16 O/l   key=m        (control)     3.0e+00     2.6e+01      144
+//
+// Three readings, and the third is why this file carries the table and not a conclusion:
+//
+//   - A vs B32: the clever FP16 re-embedding costs NOTHING in accuracy. Not the problem.
+//   - B32 vs B: FP16 costs 1600x, and the tail is worse than the median -- p99 4.9e-02, so
+//     one output element in a hundred is off by 5%, in the lanes where the shards cancel.
+//   - C is the encoding a reasonable person writes first (convert, divide by l, key stays m)
+//     and it is wrong by 3x max|term|. Finite, format-legal, plausible in a spot check. That
+//     is the failure this whole note exists to prevent.
+//
+// So in FP32 the partial is the one the algebra already writes down, with NO re-embedding:
+//
+//     key      m_c         the running max, as it stands
+//     field 1  l_c         the running normalizer, as it stands
+//     fields.. O_c[j]      the RAW numerator, straight out of oacc32
+//
+// and `Int32ToFp32` is the simplest converter in the tree because of where INT32 sits on the
+// number line. It CANNOT overflow -- the largest INT32 has FP32 exponent 158 against a 255
+// ceiling -- so there is no saturation path to get wrong; and below 2^24 it is EXACT, which
+// covers the whole flash numerator range (`sum P8.V8` ~ 127.l.127 ~ 1e7). The same value
+// converted to FP16 saturates to +-Inf, and an Inf in a value field propagates to Inf or NaN
+// through the fold -- MonoidCombine's key front end turns two equal infinite keys into a NaN
+// by itself. The row is destroyed.
+//
+// The price is the payload column: 288 beats per shard against 144, about +576 cycles for a
+// four-cluster chain, ~3% of this pipeline. That is the trade -- 3% of wall clock for 1600x
+// accuracy and the deletion of an entire software apparatus.
+//
+// ---- THE GEOMETRY: `n` IS 4 BITS, SO THE PARTIAL IS SLICED ----
+//
+// Independently of the format, a partial is at most F = 16 fields while a d = 128 row needs
+// 1 + 128 = 129 value coordinates. It is CHUNKED, with THE KEY REPLICATED INTO EVERY CHUNK:
+//
+//   one query row's partial              sliced into 9 chunks of 15 values
+//   [ m ][ l ][ O_0 ] .. [ O_127 ]  ->   chunk 0: [ m ][ l ][ O_0   .. O_13  ]
+//        '---- 129 values ----'          chunk 1: [ m ][ O_14  .. O_28  ]
+//                                        ...
+//                                        chunk 8: [ m ][ O_119 .. O_127 ]   n = 9
+//
+// Replicating the key is EXACT, not an approximation, and the whole layout rests on it: the
+// twist is a function of the keys ALONE, and every chunk of a row carries the same key, so
+// every chunk receives the identical alpha. Chunks are therefore independent beats needing
+// no ordering and no shared state -- the junction's O4 obligation ("no state between beat
+// pairs") spent on purpose.
+//
+// AND THE ONE TRAP. An FP32 beat carries 16 elements, not the 32 an elemWidth = 16 instance
+// was elaborated for, so the geometry must satisfy F * S <= 16: at F = 16 that forces
+// sigma = 0, S = 1, one partial per beat. The saturation and the O5 check are both computed
+// from the ELABORATION lane count, so a word with F * S = 32 -- which is the correct FP16
+// word -- is ACCEPTED at FP32 and silently reads slot 0's fields as slot 1, with
+// `jct_cfgerr_o` low. Measured, and pinned by MonoidFp32GeomTester.
+//
+//   lane    0    1    2    3   ..  15      one partial, 16 FP32 fields, S = 1
+//   field   0    1    2    3       15
+//   holds   m    l   O_0  O_1     O_13     (chunk 0; later chunks carry O_14.. instead)
+//
+// Br = 32 rows x 9 chunks x 1 partial/beat = 288 beats = 18432 B per shard.
+//
+// ---- WHAT THIS KERNEL WOULD HAVE TO CHANGE ----
+//
+// Nothing in the pipelined loop. The shards are independent until the store, and the store
+// is where all of it lands.
+//
+//   1. THE STORE BECOMES THE COLLECTIVE. Today it is a plain snrt_dma_start_1d of oacc32 and
+//      the running state into fa_out. Sharded, it is an xDMA task with READER_EXT_INT32TOFP32
+//      armed on the reader side and the monoid on the writer side, plus a hop chain. The
+//      existing split survives unchanged -- O is final when the last PV retires, m and l wait
+//      on the SIMD's trailing commit -- because (m, l) and O are two separate folds with two
+//      different geometry words anyway.
+//
+//   2. TWO GEOMETRY WORDS, and they do NOT share a transport:
+//        (m, l)   F=2,  n=1,  nExp=1,  sigma=3, fmt=FP16 -> 0x0C040108    4 beats,   256 B
+//        O chunk  F=16, n=15, nExp=15, sigma=0, fmt=FP32 -> 0x003C3F01  288 beats, 18432 B
+//      (m, l) stays FP16 because mrun and lrun ARE FP16 already -- that fold needs no
+//      conversion at all, which is what makes the FP16 transport work worth having. O goes
+//      FP32 for the reasons above. Mixing is free: separate transfers, separate CSR words.
+//      NOTE THE TRAP: `fmt` is CSR(0)[14:12] and ZERO NOW MEANS FP16, so a word written
+//      before that field existed is a legal FP16 word and is accepted silently. Name FP32.
+//
+//   3. `m` HAS TO BE WIDENED FP16 -> FP32 for the O fold's key -- 32 scalars per shard per
+//      query tile, integer bit-work on the exponent (`fp16_bits_to_fp32_bits` already exists
+//      as a static inline duplicated in two SIMD apps; lift it rather than copy it a third
+//      time). That is the ONLY scalar conversion left: FP32 transport deletes the exponent
+//      extraction, the key arithmetic and the scaling pass the FP16 route needed.
+//
+//   4. BEAT COUNTS MUST MATCH ON BOTH OPERAND STREAMS. The join is two independently
+//      dispatched cfgs with no hardware backstop; a mismatch stalls for ever. The junction
+//      raises XDMA_JCT_STATUS bit 1 (starved) rather than hanging silently, and bit 0 if the
+//      armed operator cannot honour its word. Check both AFTER the transfer -- arming
+//      successfully is not evidence that the fold ran.
+//
+// If the inter-cluster link ever turns out to be the contended resource rather than the
+// engines, row B is the fallback and is already validated: the power-of-two embedding is
+// correct, it just costs accuracy. That measurement cannot be made in this tree, which has
+// one cluster.
+//
+// NONE OF THIS IS EXERCISABLE HERE. On a single cluster the junction sits on the crossing and
+// localLoopback bypasses it, so no path reaches the operator: this app behaves identically
+// whether the junction is built or not. The operator is covered by the Tier-1 junction suite;
+// the above is what the SOFTWARE side still owes.
 
 #include <stdint.h>
 #include "data.h"
@@ -511,8 +796,8 @@ __attribute__((always_inline)) static inline void gemm_launch(void) {
 
 // Deassert the start pulse. Separate from the wait below so the caller can stage the NEXT
 // dispatch's config in between: once STREAMER_START has fired, the streamer has snapshotted
-// the whole CSR bank into csrCfgReg (Streamer.scala:377-386) and VersaCore into csrReg
-// (VersaCore.scala:168-183), so the running task no longer reads the bank and the bank is
+// the whole CSR bank into `csrCfgReg` (Streamer.scala) and VersaCore into `csrReg`
+// (VersaCore.scala), so the running task no longer reads the bank and the bank is
 // free to be overwritten. ReqRspManager only throttles writes to the START address itself;
 // every other CSR write is accepted at one per cycle regardless of busy.
 __attribute__((always_inline)) static inline void gemm_ack(void) {
@@ -795,6 +1080,9 @@ int main() {
     // it cost NQ x 8 KiB of scratchpad, NQ clears on the critical head, and a pass per
     // step, for a value with no consumer. It is gone. Applying corr to the INT32
     // accumulator instead needs an INT32 x FP16 multiply the SIMD chain does not have.
+    // Two converters exist and NEITHER is this one: Int32ToFp16 on the GEMM's output port
+    // and Int32ToFp32 on the xDMA reader (for the cross-cluster fold). Both go
+    // INT32 -> float; this needs Fp16 -> Int32, the other direction.
     uint32_t oacc32 = top;      top += (uint32_t)NQ * BR * DHEAD * 4; // INT32 O^T, per tile
 #define OACC32_OF(q) (oacc32 + (uint32_t)(q) * (uint32_t)(BR * DHEAD) * 4u)
     // P8 CARRIES ITS OWN TAIL: [ P8 x PBEATS ][ rowsum ][ corr*l_old ].
@@ -1096,6 +1384,10 @@ int main() {
         // accumulator plus the eight beats of running state. On one cluster it is a drain
         // tail; KV-sharded across clusters it is the partial each shard contributes to the
         // cross-cluster fold, so it belongs in the model now rather than after the split.
+        // That fold is the xDMA MonoidJunction, armed on this very transfer -- the DMA
+        // below becomes the collective, and nothing above it moves. See "SHARDING THE KEYS
+        // ACROSS CLUSTERS" at the top of this file for the geometry words, the `fmt`
+        // trap, and why the numerator crosses in FP32 via Int32ToFp32 rather than FP16.
         // SPLIT. O is final the instant the last PV retires; only m and l wait on the SIMD's
         // trailing commit. Shipping them together charged O's 16 KiB with the SIMD's drain.
         SNAX_SPIN_UNTIL(sync[3] >= STEPS, timeouts);  // every PV retired -- every O is final

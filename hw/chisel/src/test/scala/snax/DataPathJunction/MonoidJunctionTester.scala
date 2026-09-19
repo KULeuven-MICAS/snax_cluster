@@ -7,6 +7,7 @@ import chiseltest._
 import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
 
+import snax.DataPathExtension.FpHelpers
 import snax.DataPathJunction.JunctionTestUtils._
 
 /** Tier-1 for `MonoidJunction` -- the nonlinear 2->1 collective fold, and the socket's twisted-family operator.
@@ -31,10 +32,20 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
   private val dHead     = 8
   private val pairSlots = 8
 
-  // csr(0): [7:0] nValid | [11:8] n | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol
-  private def csrWord(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int, keyMul: Int = 0): BigInt =
+  // csr(0): [7:0] nValid | [11:8] n | [14:12] fmt | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol
+  // `fmt` defaults to FP32 because `hasMonoid` below is the default elemWidth = 32 instance, which builds no
+  // other transport. It is spelled out rather than left at zero: zero now names FP16.
+  private def csrWord(
+    n:      Int,
+    nExp:   Int,
+    nAdd:   Int,
+    sigma:  Int,
+    nValid: Int,
+    keyMul: Int = 0,
+    fmt:    Int = ElementwiseJunction.FMT_FP32
+  ): BigInt =
     (BigInt(keyMul) << 29) | (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) | (BigInt(nExp) << 18) |
-      (BigInt(n) << 8) | BigInt(nValid)
+      (BigInt(fmt) << 12) | (BigInt(n) << 8) | BigInt(nValid)
 
   private val MOMENT  = (1, 1, 0, 3)                 // (m, l)               one twisted coordinate
   private val ATTN    = (1 + dHead, 1 + dHead, 0, 0) // (m, l, O[dHead])  one alpha across every value lane
@@ -406,5 +417,178 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
         assert(!dut.io.starved_o.peekBoolean(), "watchdog must clear once the join makes progress")
         println(s"[Junction/watchdog] starved join flagged after $cyc CC and cleared on progress")
       }
+  }
+
+  // ================================================================================================
+  // FP16 TRANSPORT -- `elemWidth = 16`. The beat is sliced into 32 lanes and `fmt` names the transport
+  // format; the ARITHMETIC is untouched FP32. Everything below therefore tests the EDGE (widen in,
+  // narrow out, and the identity beat that has to be published in the transport format) rather than
+  // the algebra, which the FP32 tests above already pin against double-precision goldens.
+  // ================================================================================================
+
+  private def hasMonoid16 = new HasMonoidJunction(elemWidth = 16)
+  private def encFp16(d: Double): BigInt = BigInt(java.lang.Float.floatToFloat16(d.toFloat) & 0xffff)
+  private def decFp16(b: BigInt): Double = java.lang.Float.float16ToFloat(b.toShort).toDouble
+  private val FP16_ID_M   = BigInt(0xfbff) // the max-monoid key identity, in FP16
+  private val FP16_ID_MAX = BigInt(0x7bff) // the min-monoid's
+  private val FP16_ONE    = BigInt(0x3c00) // the ordered scan's
+
+  /** pack `pairSlots` (field0, field1) partials as FP16: field0_k = element k, field1_k = element pairSlots+k */
+  private def packPairs16(p: Seq[(Double, Double)]): BigInt = {
+    var b = BigInt(0)
+    for ((v, k) <- p.zipWithIndex) {
+      b |= encFp16(v._1) << (16 * k); b |= encFp16(v._2) << (16 * (pairSlots + k))
+    }
+    b
+  }
+  /** what the hardware actually received, after the FP16 round trip -- goldens are computed on THESE */
+  private def seen16(beat: BigInt): Seq[(Double, Double)] =
+    (0 until pairSlots).map(k => (decFp16(lane(beat, k, 16)), decFp16(lane(beat, pairSlots + k, 16))))
+
+  "MonoidJunction_fp16_moment" should "fold (m, l) carried as FP16 at every nValid, math still FP32" in {
+    test(new DataPathJunctionHarness(hasMonoid16)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val rng   = new Random(0xf16a)
+      var worst = 0.0
+      for (live <- 1 to pairSlots) {
+        val pa   = Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0)))
+        val pb   = Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0)))
+        val (ba, bb) = (packPairs16(pa), packPairs16(pb))
+        val w    = csrWord(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = live, fmt = FpHelpers.FMT_FP16)
+        val out  = runPair(dut, w, ba, bb, bDelay = live % 4)
+        val (sa, sb) = (seen16(ba), seen16(bb))
+        for (k <- 0 until live) {
+          val (gm, gl) = momentGolden(sa(k), sb(k))
+          // The key is a winner SELECT, so it makes the round trip untouched: widen an FP16 to FP32, copy it,
+          // narrow it back, and the bits must be the ones that went in. Anything less is a rounding bug at
+          // the edge, and comparing to a tolerance would hide it.
+          assert(lane(out, k, 16) == encFp16(gm), f"nValid=$live slot $k key: ${decFp16(lane(out, k, 16))} vs $gm")
+          val rel = math.abs(decFp16(lane(out, pairSlots + k, 16)) - gl) / gl
+          if (rel > worst) worst = rel
+          assert(rel <= 3e-2, s"nValid=$live slot $k l rel=$rel")
+        }
+        // O3 at the output, in the TRANSPORT format: a dead slot retires the FP16 identity partial, so the
+        // beat stays a legal input beat at any downstream nValid.
+        for (k <- live until pairSlots) {
+          assert(lane(out, k, 16) == FP16_ID_M, f"dead slot $k key should be 0xFBFF, got 0x${lane(out, k, 16)}%x")
+          assert(lane(out, pairSlots + k, 16) == BigInt(0), s"dead slot $k value should be zero")
+        }
+        // fields 2..3 do not exist at F = 2, so the upper half of the 32-lane beat is zero
+        for (i <- 2 * pairSlots until 32) assert(lane(out, i, 16) == BigInt(0), s"out-of-range lane $i is not zero")
+      }
+      println(f"[Junction/FP16] (m, l) folded over an FP16 beat, nValid 1..$pairSlots, worst rel err=$worst%.3g")
+    }
+  }
+
+  "MonoidJunction_fp16_identity" should "publish the identity beat in the TRANSPORT format" in {
+    // O3 STRENGTHENED, and the one thing a format change is most likely to get wrong. `lPad` masks the
+    // INTERNAL operands, which are FP32 whatever the transport is; the PUBLISHED identity is what a chassis
+    // puts on a missing operand, so it has to be packed FP16 or the next hop reads a dead shard as garbage.
+    test(new DataPathJunctionHarness(hasMonoid16)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      def idFor(csr: BigInt): BigInt = {
+        dut.io.csr_i(0).poke(csr.U); dut.io.enable_i.poke(true); dut.clock.step(2)
+        dut.io.identity_o.peek().litValue
+      }
+      val fp16 = FpHelpers.FMT_FP16
+      // nValid BELOW the slot count -- the identity is a function of the operator's configuration, and the
+      // short beat is where a padded partial in the wrong format would actually be read by the next hop.
+      val wMax = csrWord(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = 3, fmt = fp16)
+      val idMx = idFor(wMax)
+      for (k <- 0 until pairSlots)
+        assert(lane(idMx, k, 16) == FP16_ID_M, f"key element $k should be 0xFBFF, got 0x${lane(idMx, k, 16)}%x")
+      for (i <- pairSlots until 32)
+        assert(lane(idMx, i, 16) == BigInt(0), s"value element $i of the identity should be zero")
+      // the identity is a function of the CONFIGURATION, not a constant: flip the monoid and it moves
+      val idMn = idFor(wMax | (BigInt(1) << 28))                                        // keyPol = 1, min-monoid
+      assert(lane(idMn, 0, 16) == FP16_ID_MAX, "the min-monoid pad must be the most POSITIVE finite FP16")
+      val idSc = idFor(csrWord(1, 1, 0, 3, 3, keyMul = 1, fmt = fp16))                   // the ordered scan
+      assert(lane(idSc, 0, 16) == FP16_ONE, "the scan's key identity is 1.0, not the losing extreme")
+
+      // ... and it is actually NEUTRAL, from either side, over the transport it was published in. Every slot
+      // must be live for this, or the masking -- not the identity operand -- is what is under test.
+      val rng   = new Random(0x1d16)
+      val wFull = csrWord(n = 1, nExp = 1, nAdd = 0, sigma = 3, nValid = pairSlots, fmt = fp16)
+      assert(idFor(wFull) == idMx, "the published identity must not depend on how many slots are live")
+      val live  = packPairs16(Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0))))
+      assert(runPair(dut, wFull, live, idMx) == live, "folding an FP16 beat against the identity changed it")
+      assert(runPair(dut, wFull, idMx, live) == live, "the FP16 identity is not two-sided")
+      println("[Junction/FP16] the published identity is packed FP16, follows the configuration, and is neutral")
+    }
+  }
+
+  "MonoidJunction_fp16_chain" should "close the format over a 4-hop chain at F = 16, S = 2" in {
+    // O2, FORMAT CLOSURE, which is the obligation a 1->1 extension never has: each hop's OUTPUT beat is fed
+    // straight back in as the next hop's operand, so the chain is narrow(fold(widen(.))) three times. The
+    // chunked flash-attention layout depends on this holding at exactly this geometry -- F = 16 fields is the
+    // widest `n` can name, and S = 2 fills the 32-lane beat.
+    test(new DataPathJunctionHarness(hasMonoid16)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      val F     = 16 // (m, v_1..v_15)
+      val S     = 2
+      val sigma = 1
+      val rng   = new Random(0xc16c)
+      // lane = field * S + slot, so partial `s` puts its key on lane s and value j on lane j*S + s
+      def packChunk(p: Seq[(Double, Seq[Double])]): BigInt = {
+        var b = BigInt(0)
+        for ((c, s) <- p.zipWithIndex) {
+          b |= encFp16(c._1) << (16 * s)
+          for ((v, j) <- c._2.zipWithIndex) b |= encFp16(v) << (16 * ((j + 1) * S + s))
+        }
+        b
+      }
+      val chunks = Seq.fill(4)(Seq.fill(S)((rng.between(-2.0, 5.0), Seq.fill(F - 1)(rng.between(-2.0, 2.0)))))
+      // goldens on what the hardware received, not on the doubles
+      val seen   = chunks.map(_.map { case (m, v) => (decFp16(encFp16(m)), v.map(x => decFp16(encFp16(x)))) })
+      val w      = csrWord(n = F - 1, nExp = F - 1, nAdd = 0, sigma = sigma, nValid = S, fmt = FpHelpers.FMT_FP16)
+      var acc    = packChunk(chunks.head)
+      for (hop <- 1 until 4) acc = runPair(dut, w, acc, packChunk(chunks(hop)), bDelay = hop)
+      var worst  = 0.0
+      for (s <- 0 until S) {
+        val col = seen.map(_(s))
+        val gm  = col.map(_._1).max
+        assert(lane(acc, s, 16) == encFp16(gm), s"slot $s: the chained key is not the global max")
+        for (j <- 0 until F - 1) {
+          val gv  = col.map { case (m, v) => v(j) * math.exp(m - gm) }.sum
+          val got = decFp16(lane(acc, (j + 1) * S + s, 16))
+          // three narrowings deep, so judge against the size of the terms, not the (possibly cancelling) sum
+          val sc  = col.map { case (m, v) => math.abs(v(j) * math.exp(m - gm)) }.max
+          val rel = math.abs(got - gv) / (sc + 1e-6)
+          if (rel > worst) worst = rel
+          assert(rel <= 5e-2, f"slot $s coord $j: got $got%.5f vs $gv%.5f (rel=$rel%.3g)")
+        }
+      }
+      println(f"[Junction/FP16] 4 hops of narrow(fold(widen(.))) == one flat reduction, worst rel err=$worst%.3g")
+    }
+  }
+
+  // The FP32 arm of a multi-format build, checked BIT-FOR-BIT against the FP32-only build rather than against
+  // a tolerance. The reference is captured by the first test and consumed by the second; AnyFlatSpec runs a
+  // suite's tests in declaration order.
+  private val refSeeds = Seq(0x11, 0x22, 0x33, 0x44)
+  private var fp32Ref  = Seq.empty[BigInt]
+  private def refBeats(seed: Int): (BigInt, BigInt) = {
+    val rng = new Random(seed)
+    val pa  = Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0)))
+    val pb  = Seq.fill(pairSlots)((rng.between(-3.0, 6.0), rng.between(1.0, 5.0)))
+    (packPairs(pa), packPairs(pb))
+  }
+
+  "MonoidJunction_fmt_reference" should "record the FP32-only build's beats for the cross-check below" in {
+    test(new DataPathJunctionHarness(hasMonoid)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      fp32Ref = refSeeds.map { sd => val (a, b) = refBeats(sd); runPair(dut, csr(MOMENT, pairSlots), a, b) }
+      println(s"[Junction/fmt] captured ${fp32Ref.length} beats from the elemWidth = 32 build")
+    }
+  }
+
+  "MonoidJunction_fmt_fp32_on_fp16_build" should "use lanes 0..15 and reproduce the FP32-only build exactly" in {
+    assert(fp32Ref.nonEmpty, "the elemWidth = 32 reference test must run first")
+    test(new DataPathJunctionHarness(hasMonoid16)).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      // Same CSR word, same beats, a netlist with twice the lanes: a format WIDER than `elemWidth` simply
+      // lights up fewer lanes, and the extra ones are out of range for every legal geometry.
+      for ((sd, ref) <- refSeeds.zip(fp32Ref)) {
+        val (a, b) = refBeats(sd)
+        val got    = runPair(dut, csr(MOMENT, pairSlots), a, b)
+        assert(got == ref, f"seed 0x$sd%x: FP32 on the elemWidth = 16 build gave 0x$got%x, not 0x$ref%x")
+      }
+      println("[Junction/fmt] fmt = FP32 on a 32-lane build is bit-identical to the 16-lane FP32-only build")
+    }
   }
 }

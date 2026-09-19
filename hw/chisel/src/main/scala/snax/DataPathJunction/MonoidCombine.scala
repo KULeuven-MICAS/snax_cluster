@@ -89,13 +89,17 @@ object MonoidCombine {
     */
   case class Geom(F: UInt, sigma: UInt, nExp: UInt, nAdd: UInt, keyPol: Bool, keyMul: Bool)
 
-  /** The largest legal sigma for `F` fields: `F * S <= nLanes`, i.e. sigma <= 4 - ceil(log2 F), capped at SIGMA_MAX.
-    * Applying it as a SATURATION rather than a check is what makes every one of the 2^k possible CSR words legal: an
-    * over-large sigma degrades to fewer partials per beat, which is benign, instead of interleaving two partials into
-    * each other's lanes, which is silent corruption.
+  /** The largest legal sigma for `F` fields: `F * S <= nLanes`, i.e. sigma <= log2(nLanes) - ceil(log2 F), capped at
+    * SIGMA_MAX. Applying it as a SATURATION rather than a check is what makes every one of the 2^k possible CSR words
+    * legal: an over-large sigma degrades to fewer partials per beat, which is benign, instead of interleaving two
+    * partials into each other's lanes, which is silent corruption.
+    *
+    * `nLanes` is a PARAMETER and not the 16 this block shipped with, because the bound is a property of the BEAT, not
+    * of the algebra: on a 32-lane beat `F = 16, S = 2` fits exactly, and hard-coding 16 would saturate it to `S = 1`
+    * and silently halve the partials per beat -- which is the geometry the chunked flash-attention layout runs at.
     */
-  def sigmaMaxOf(F: UInt): UInt =
-    MuxCase(0.U(2.W), Seq((F <= 2.U) -> 3.U(2.W), (F <= 4.U) -> 2.U(2.W), (F <= 8.U) -> 1.U(2.W)))
+  def sigmaMaxOf(F: UInt, nLanes: Int = 16): UInt =
+    MuxCase(0.U(2.W), (SIGMA_MAX to 1 by -1).map(s => (F <= (nLanes >> s).U) -> s.U(2.W)))
 
   // ---- CSR(0): the geometry IS the configuration -------------------------------------------------------------
   // {{{
@@ -116,7 +120,7 @@ object MonoidCombine {
   // name anywhere in this file.
 
   /** The geometry of the armed operator, read straight out of the configuration word. */
-  def geomOf(csr: UInt): Geom = {
+  def geomOf(csr: UInt, nLanes: Int = 16): Geom = {
     // `F = n + 1`, so F >= 1 for every one of the 2^k possible words: the smallest partial is a bare key, which
     // is a max-reduction. There is no configuration that makes the field count zero, and therefore none that
     // puts `field(l) < F` false on every lane and retires an all-zero beat.
@@ -129,7 +133,8 @@ object MonoidCombine {
       keyPol = csr(28),
       keyMul = csr(29)
     )
-    g.copy(sigma = Mux(g.sigma < sigmaMaxOf(g.F), g.sigma, sigmaMaxOf(g.F))) // saturate: no illegal geometry
+    val sMax = sigmaMaxOf(g.F, nLanes)
+    g.copy(sigma = Mux(g.sigma < sMax, g.sigma, sMax)) // saturate: no illegal geometry
   }
 
   /** `slot(l)` and `field(l)` are ELABORATION constants once sigma is fixed, so each is a small mux of literals -- and
@@ -137,7 +142,12 @@ object MonoidCombine {
     */
   def slotOf(l: Int, sigma: UInt): UInt =
     MuxLookup(sigma, 0.U(4.W))((0 to SIGMA_MAX).map(s => s.U -> (l & ((1 << s) - 1)).U(4.W)))
-  def fieldOf(l: Int, sigma: UInt): UInt = MuxLookup(sigma, l.U(5.W))((0 to SIGMA_MAX).map(s => s.U -> (l >> s).U(5.W)))
+  // The literal width follows the lane index rather than being pinned at 5, so a beat sliced into more than 32
+  // lanes (`elemWidth = 8`) still elaborates. At 16 or 32 lanes it is 5 bits, exactly as before.
+  def fieldOf(l: Int, sigma: UInt): UInt = {
+    val w = scala.math.max(5, log2Ceil(l + 1))
+    MuxLookup(sigma, l.U(w.W))((0 to SIGMA_MAX).map(s => s.U -> (l >> s).U(w.W)))
+  }
 
   /** ONE key front end, living on lane `s` and reading that lane's OWN masked operands. Returns the twist and the
     * winner-swap bit, both broadcast to the value lanes of slot `s`.

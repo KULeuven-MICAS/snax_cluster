@@ -33,10 +33,16 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
   private val fpPipe    = 1
 
   // ---- CSR encoders: the predecessors' encodings, plus one class bit ----------------------------------------
-  /** the monoid geometry word: [7:0] nValid | [11:8] n | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol */
+  /** the monoid geometry word:
+    * [7:0] nValid | [11:8] n | [14:12] fmt | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol
+    *
+    * `fmt = 3` (FP32) is the only transport format an `elemWidth = 32` instance builds. It does not reach the
+    * datapath there -- a single-format build has no repack mux to select -- so the frozen beats below are
+    * unchanged by naming it; what it avoids is an O5 report on a word that predates the field.
+    */
   private def csrMonoid(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int, keyPol: Int = 0): BigInt =
     (BigInt(keyPol) << 28) | (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) | (BigInt(nExp) << 18) |
-      (BigInt(n) << 8) | BigInt(nValid)
+      (BigInt(ElementwiseJunction.FMT_FP32) << 12) | (BigInt(n) << 8) | BigInt(nValid)
   // No opClass bit any more. Choosing between operators is the SOCKET's job -- the host's enable bitmask --
   // not a field inside an operator's own CSR. The frozen linear beats are unaffected: the bit was ignored by
   // `ElementwiseJunction` even when the merged netlist set it.

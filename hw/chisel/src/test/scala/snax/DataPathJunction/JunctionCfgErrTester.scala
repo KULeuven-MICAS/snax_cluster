@@ -30,8 +30,10 @@ class JunctionCfgErrTester extends AnyFlatSpec with ChiselScalatestTester {
   "CfgErr_monoid" should "flag a saturated sigma, an overflowing role count, and no live slot" in {
     test(new DataPathJunctionHarness(new HasMonoidJunction())).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) {
       dut =>
-        def csr(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int): BigInt =
-          (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) | (BigInt(nExp) << 18) | (BigInt(n) << 8) | BigInt(nValid)
+        import ElementwiseJunction.FMT_FP32
+        def csr(n: Int, nExp: Int, nAdd: Int, sigma: Int, nValid: Int, fmt: Int = FMT_FP32): BigInt =
+          (BigInt(sigma) << 26) | (BigInt(nAdd) << 22) | (BigInt(nExp) << 18) | (BigInt(fmt) << 12) |
+            (BigInt(n) << 8) | BigInt(nValid)
         assert(!verdict(dut, csr(1, 1, 0, 3, 8)), "a legal MOMENT word must not be flagged")
         assert(!verdict(dut, csr(9, 9, 0, 0, 1)), "a legal wide-head word must not be flagged")
         // F = 10 admits sigma = 0 only. Asking for 3 saturates -- the beat is still well-formed, but it carries
@@ -41,8 +43,30 @@ class JunctionCfgErrTester extends AnyFlatSpec with ChiselScalatestTester {
         assert(verdict(dut, csr(1, 3, 0, 3, 8)), "nExp + nAdd > n must be reported")
         // every slot masked to the identity: a legal identity partial, indistinguishable from a stale CSR
         assert(verdict(dut, csr(1, 1, 0, 3, 0)), "nValid = 0 must be reported")
+        // THE STALE-WORD CATCH. `fmt` was carved out of bits that used to read as zero, and zero now names FP16.
+        // This instance transports FP32 only, so a word computed before the field existed names a format it does
+        // not build -- which is the whole reason the check is worth having on a single-format build, where the
+        // datapath ignores `fmt` and would otherwise return a perfectly good beat under a lie.
+        assert(verdict(dut, csr(1, 1, 0, 3, 8, fmt = FpHelpers.FMT_FP16)), "FP16 is not built at elemWidth 32")
+        assert(verdict(dut, csr(1, 1, 0, 3, 8, fmt = FpHelpers.FMT_BF16)), "BF16 is not built at elemWidth 32")
         println("[O5/monoid] saturated sigma, role overflow and an empty beat are all reported, not swallowed")
     }
+  }
+
+  "CfgErr_monoid_fp16" should "accept the float formats an elemWidth-16 instance actually builds" in {
+    // The mirror image: at elemWidth = 16 the beat is 32 lanes and FP16/BF16/FP32 are all legal transports,
+    // while FP8 is narrower than a lane slot and the integer codes have no meaning for a twisted fold at all.
+    test(new DataPathJunctionHarness(new HasMonoidJunction(elemWidth = 16)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+        def csr(fmt: Int): BigInt = (BigInt(3) << 26) | (BigInt(1) << 18) | (BigInt(fmt) << 12) |
+          (BigInt(1) << 8) | BigInt(8)
+        assert(!verdict(dut, csr(FpHelpers.FMT_FP16)), "FP16 is built at elemWidth 16")
+        assert(!verdict(dut, csr(FpHelpers.FMT_BF16)), "BF16 is built at elemWidth 16")
+        assert(!verdict(dut, csr(ElementwiseJunction.FMT_FP32)), "FP32 is always built")
+        assert(verdict(dut, csr(FpHelpers.FMT_FP8)), "FP8 is narrower than elemWidth and must be reported")
+        assert(verdict(dut, csr(ElementwiseJunction.FMT_INT32)), "the integer grid does not exist on this operator")
+        println("[O5/monoid] the float transports an elemWidth-16 instance builds, and nothing else")
+      }
   }
 
   "CfgErr_elementwise" should "flag a format this instance was never elaborated for" in {
