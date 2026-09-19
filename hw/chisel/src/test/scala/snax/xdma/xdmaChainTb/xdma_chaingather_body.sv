@@ -2433,8 +2433,7 @@ module xdma_chaingather_body #(
       $display("[Bench] mesh = %0dx%0d, chip ids row-major; hop.beats = beats x Manhattan hops",
                MeshW, MeshW);
       $display("");
-      $display({"[Bench]    P  sch      lat_cc     hw_cc  bursts    beats  hop.beats      sram",
-                "       hot ctl.b ctl.h   cfg  res"});
+      $display("[Bench]    P  sch      lat_cc     hw_cc  bursts    beats  hop.beats      sram       hot ctl.b ctl.h   cfg  res");
 
       for (int unsigned pi = 0; pi < NumBenchP; pi++) begin
         p = BenchP[pi];
@@ -2488,8 +2487,7 @@ module xdma_chaingather_body #(
       p = (NumEndpoints >= 16) ? 16 : NumEndpoints;
       $display("");
       $display("[Bench] volume sweep at P=%0d", p);
-      $display({"[Bench]  bytes  sch      lat_cc     hw_cc  bursts    beats  hop.beats      sram",
-                "       hot ctl.b ctl.h   cfg  res"});
+      $display("[Bench]  bytes  sch      lat_cc     hw_cc  bursts    beats  hop.beats      sram       hot ctl.b ctl.h   cfg  res");
       for (int unsigned vi = 0; vi < NumBenchV; vi++) begin
         if (BenchV[vi] > NumBeats) continue;
         set_volume(BenchV[vi]);
