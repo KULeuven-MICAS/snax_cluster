@@ -71,6 +71,28 @@ module xdma_chaingather_body #(
     parameter int unsigned TreeUnsyncG  = 4,
     /// 1 = run the minimal ROLE-CHANGE reproducer instead of anything else (see run_role_change).
     parameter bit          RoleChange   = 1'b0,
+    /// CONCURRENT MULTI-ISSUER experiment. 0 = off.
+    ///   1 = STAR-IN   endpoints 1..MultiWidth-1 all remote-write into ep0 at once
+    ///   2 = EXCHANGE  disjoint pairs write to each other at once, so every participating
+    ///                 endpoint is simultaneously a sender and a receiver
+    /// See `run_multisource_experiment`.
+    parameter int unsigned MultiSource  = 0,
+    /// How many endpoints take part in the MultiSource experiment.
+    parameter int unsigned MultiWidth   = 3,
+    /// Log every rising edge of a HEAD CLAIM on any endpoint's to-remote port, with the
+    /// from-remote port alongside it. This is the exact predicate `SpuriousFinishGuard` arms
+    /// FSM2 on, and the probe exists to compare a GENUINE claim (a node really is sending)
+    /// against a SPURIOUS one (a gather root whose local reader has raised `readerBusy` before
+    /// the switch's `isGather` suppressed the window). See `p_head_claim_probe`.
+    parameter bit          ProbeHeadClaim = 1'b0,
+    /// HANG WATCHDOG. Consecutive cycles any endpoint's wide-send path may sit claimed with no
+    /// beat moving and no completion before the run is STOPPED and its full state dumped. 0 = off.
+    ///
+    /// The point is turnaround, not coverage: the adapter's own `StallTimeout` is 16384 cycles
+    /// and only latches a sticky bit, so a wedged run still grinds to `SimTimeout` and reports a
+    /// pile of downstream errors with the mechanism long gone. This stops AT the stall and
+    /// prints the state that explains it. Set it well below `StallTimeout`.
+    parameter int unsigned HangWatch     = 0,
     /// 0 = try every shape in TreeG; otherwise run ONLY this group size. A wedged run leaves the
     /// whole design stuck, so measuring more than one shape per simulation is only meaningful
     /// once every shape is known to work -- until then, one shape per run.
@@ -234,11 +256,18 @@ module xdma_chaingather_body #(
   // ElementwiseJunction CSR(0): [3:0] op (0=ADD), [6:4] fmt (3=FP32).
   localparam logic [31:0] JCT_CSR_LINEAR = 32'h0000_0030;
   // MonoidJunction CSR(0) is a GEOMETRY word, not a flag word:
-  //   [7:0] nValid | [11:8] n | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol
-  // For the online-softmax (m,l) merge the value is 0x0C040101. The plausible-looking
-  // (1<<13)|1 decodes to n=0, sigma=0 -- key-only, S=1 -- so `l` at lane 8 is never read and
-  // the fold silently returns garbage.
-  localparam logic [31:0] JCT_CSR_MONOID = 32'h0C04_0101;
+  //   [7:0] nValid | [11:8] n | [14:12] fmt | [21:18] nExp | [25:22] nAdd | [27:26] sigma | [28] keyPol
+  //
+  // `fmt` is the TRANSPORT format (FpHelpers.FMT_*): 0=FP16, 1=BF16, 2=FP8, 3=FP32. It was
+  // MISSING from the layout above and therefore zero in the constant, so the junction was told
+  // the beat carried FP16 while the TCDM model seeds FP32 -- and the fold returned garbage
+  // (`m* got 0xfbff0000 want 0x3f900000`). That is the whole of the `mom` half of `sim-sweep`
+  // failing; the `lin` half uses a different junction and never saw it.
+  //
+  // For the online-softmax (m,l) merge: nValid=1, n=1, fmt=3 (FP32), nExp=1, nAdd=0, sigma=3.
+  // The plausible-looking (1<<13)|1 decodes to n=0, sigma=0 -- key-only, S=1 -- so `l` at lane 8
+  // is never read and the fold silently returns garbage that way too.
+  localparam logic [31:0] JCT_CSR_MONOID = 32'h0C04_3101;
 
   localparam int unsigned ActiveJunction = (JunctionId == 0) ? JCT_ELEMENTWISE : JCT_MONOID;
   localparam logic [31:0] ActiveJctCsr   = (JunctionId == 0) ? JCT_CSR_LINEAR : JCT_CSR_MONOID;
@@ -1541,6 +1570,210 @@ module xdma_chaingather_body #(
   // Every endpoint must be back at rest before the next round. A parked FSM IS the failure
   // signature, and it is invisible until the round after -- so check it explicitly rather than
   // inferring it from a passing round.
+  // ==========================================================================================
+  // HEAD-CLAIM PROBE
+  //
+  // `xdma_finish_manager` arms FSM2 -- "I am the head of a chained write, so the finish that
+  // comes back is mine to report" -- on exactly:
+  //
+  //     dma_type & ready_to_transfer & is_first_cw & ~is_last_cw     (on the TO-REMOTE port)
+  //
+  // and `SpuriousFinishGuard` retracts it when the node is taking delivery of a chained write.
+  //
+  // Chain position alone cannot separate a spurious claim from a genuine outgoing write on a
+  // node that also receives -- they present the same position bits, and only `is_initiator`
+  // differs. This dumps both accompany-cfg ports on every rising edge of the claim, which is the
+  // view needed to reason about that.
+  // ==========================================================================================
+  // HANG WATCHDOG -- stop AT the stall, with the mechanism on screen
+  //
+  // Lives inside the per-endpoint generate block below: a task cannot index `gen_ep` with a
+  // variable, and the dump needs hierarchical references, so the index has to be a genvar.
+  //
+  // The point is turnaround. The adapter's own `StallTimeout` is 16384 cycles and only latches a
+  // sticky bit, so a wedged run still grinds on to `SimTimeout` and reports a pile of downstream
+  // errors with the mechanism long gone.
+  // ==========================================================================================
+  logic [NumEndpoints-1:0] hc_q;
+  int unsigned hc_hi_cyc[NumEndpoints];
+  int unsigned hc_x_cyc [NumEndpoints];
+  int unsigned fr_hi_cyc[NumEndpoints];
+  // Does the collector's reader leak beats OUT to the next hop? `localReadDemux.io.sel :=
+  // isGather` steers reader data into the junction, and `isGather` is late at a collector -- so
+  // early beats can go to `toRemote` with no descriptor behind them, which is what would strand
+  // the adapter's wide send path.
+  int unsigned tr_beats[NumEndpoints];
+  int unsigned tr_nodesc[NumEndpoints];
+  logic [NumEndpoints-1:0] hc_seen, hc_type, hc_first, hc_last, hc_init, hc_frrdy, hc_frlast;
+  tb_addr_t    hc_dst [NumEndpoints];
+  // The RETRACT EVENT: the cycle on which a head-shaped to-remote window and an incoming
+  // chained write are BOTH present. This is the exact moment `SpuriousFinishGuard` acts, and
+  // the only place a discriminator can be evaluated. Latched once per endpoint.
+  logic [NumEndpoints-1:0] rt_seen, rt_toinit, rt_tofirst, rt_tolast, rt_frfirst, rt_frlast,
+                           rt_frinit, rt_idmatch;
+  logic [3:0]  rt_toid[NumEndpoints];
+  logic [3:0]  rt_frid[NumEndpoints];
+  tb_addr_t    rt_todst[NumEndpoints];
+  tb_addr_t    rt_frsrc[NumEndpoints];
+  time         rt_time[NumEndpoints];
+  logic [1:0]  f2_prev[NumEndpoints];
+  logic [3:0]  hc_id  [NumEndpoints];
+  time         hc_time[NumEndpoints];
+  initial begin
+    hc_seen = '0;
+    rt_seen = '0;
+    for (int unsigned k = 0; k < NumEndpoints; k++) begin
+      hc_hi_cyc[k] = 0; hc_x_cyc[k] = 0; fr_hi_cyc[k] = 0;
+      tr_beats[k] = 0; tr_nodesc[k] = 0;
+    end
+  end
+  for (genvar e = 0; e < NumEndpoints; e++) begin : gen_head_claim_probe
+    // Fire on ANY to-remote window opening, not just a head-shaped one: the first question is
+    // what shape the frontend actually presents, and a probe that only triggers on the shape we
+    // expected cannot answer that.
+    wire hc = gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.ready_to_transfer;
+    int unsigned hang_cnt;
+    always_ff @(posedge clk or negedge rst_n) begin
+      if (!rst_n) hang_cnt <= 0;
+      else if (HangWatch != 0) begin
+        if (gen_ep[e].i_ep.i_xdma_axi_adapter.wide_send_stalled === 1'b1) begin
+          hang_cnt <= hang_cnt + 1;
+          if (hang_cnt == HangWatch) begin
+            $display("");
+            $display("========= HANG at endpoint %0d, t=%0t =========", e, $time);
+            $display("  wide send : stalled=%0b busy=%0b happening=%0b done=%0b",
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.wide_send_stalled,
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.wide_write_req_busy,
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.wide_write_happening,
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.wide_write_req_done);
+            $display("  to_remote : dvalid=%0b dready=%0b cfg{type=%0b rdy=%0b first=%0b last=%0b init=%0b id=%0d dst=%h len=%0d}",
+                     gen_ep[e].i_ep.xdma_to_remote_data_valid,
+                     gen_ep[e].i_ep.xdma_to_remote_data_ready,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.dma_type,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.ready_to_transfer,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.is_first_cw,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.is_last_cw,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.is_initiator,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.dma_id,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.dst_addr,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.dma_length);
+            $display("  from_rem  : cfg{type=%0b rdy=%0b first=%0b last=%0b init=%0b id=%0d src=%h}",
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.dma_type,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.ready_to_transfer,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.is_first_cw,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.is_last_cw,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.is_initiator,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.dma_id,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.src_addr);
+            $display("  adapter   : grant=%0b fifo_empty=%0b grantFSM=%s | finish read=%s first=%s last=%s",
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.grant,
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.grant_fifo_empty,
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_grant_manager.cur_state.name(),
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_finish_manager.read_current_state.name(),
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_finish_manager.first_write_current_state.name(),
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_finish_manager.last_write_current_state.name());
+            $display("  switch    : isGather=%0b isChainedWrite=%0b gatherPending=%0b gState=%0d gatherCfg=%0b readerBusy=%0b writerBusyRaw=%0b writerBusy=%0b jctEn=%0h",
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.isGather,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.isChainedWrite,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.gatherPending,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.gCurrentState,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch._junctionHost_io_active,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_readerBusy,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_writerBusyRaw,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_writerBusy_0,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_junctionCfg_enable);
+            $display("  beats out : %0d total, %0d with NO open to_remote window", tr_beats[e],
+                     tr_nodesc[e]);
+            $display("=================================================");
+            $error("[TB] HANG WATCHDOG: ep%0d wide-send no progress for %0d cycles", e, HangWatch);
+            $display(" RESULT: FAIL  (hang)");
+            $finish;
+          end
+        end else hang_cnt <= 0;
+      end
+    end
+
+    always_ff @(posedge clk or negedge rst_n) begin
+      if (!rst_n) hc_q[e] <= 1'b0;
+      else begin
+        hc_q[e] <= hc;
+        if (hc === 1'b1) hc_hi_cyc[e] <= hc_hi_cyc[e] + 1;
+        else if (hc !== 1'b0) hc_x_cyc[e] <= hc_x_cyc[e] + 1;
+        if (gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.ready_to_transfer === 1'b1)
+          fr_hi_cyc[e] <= fr_hi_cyc[e] + 1;
+        if (gen_ep[e].i_ep.xdma_to_remote_data_valid === 1'b1
+            && gen_ep[e].i_ep.xdma_to_remote_data_ready === 1'b1) begin
+          tr_beats[e] <= tr_beats[e] + 1;
+          if (gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.ready_to_transfer !== 1'b1)
+            tr_nodesc[e] <= tr_nodesc[e] + 1;
+        end
+        // FSM2 OBSERVER. The retract branch fires from WriteFirstBusy with no head_claim
+        // term, so it cannot be seen from the sideband alone -- watch the FSM itself.
+        //   arm     : WriteFirstIdle -> WriteFirstBusy
+        //   retract : WriteFirstBusy -> WriteFirstIdle with no finish handshake
+        if (ProbeHeadClaim) begin
+          f2_prev[e] <= gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_finish_manager.first_write_current_state;
+          if (gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_finish_manager.first_write_current_state == 2'd1
+              && f2_prev[e] == 2'd0) begin
+            $display("   [f2] t=%0t ep%0d ARM     to_remote{id=%0d init=%0b dst=%h} from_remote{rdy=%0b first=%0b last=%0b id=%0d}",
+                     $time, e,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.dma_id,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.is_initiator,
+                     gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.dst_addr,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.ready_to_transfer,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.is_first_cw,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.is_last_cw,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.dma_id);
+            // Why is the spurious window open at all? `toRemoteAccompaniedCfg.readyToTransfer`
+            // is suppressed by `localLoopback || isGather`, so a claim can only appear while
+            // `isGather` is still low. `gIdle -> gActive` needs `gatherCfg && gatherTrigger`,
+            // and `gatherCfg` is `junctionHost.io.active`, combinational from the WRITER-side
+            // junction enable. Dump all of it at the arming cycle.
+            $display("   [gs]            gatherCfg=%0b gatherPending=%0b gState=%0d isGather=%0b readerBusy=%0b writerBusyRaw=%0b writerStart=%0b jctEn=%0h",
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch._junctionHost_io_active,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.gatherPending,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.gCurrentState,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.isGather,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_readerBusy,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_writerBusyRaw,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_writerStart,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_junctionCfg_enable);
+          end
+          if (gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_finish_manager.first_write_current_state == 2'd0
+              && f2_prev[e] == 2'd1) begin
+            $display("   [f2] t=%0t ep%0d LEAVE   latched{id=%0d init=%0b} from_remote{rdy=%0b type=%0b first=%0b last=%0b id=%0d src=%h}",
+                     $time, e,
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_finish_manager.to_remote_dma_id_q,
+                     gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_finish_manager.to_remote_is_initiator_q,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.ready_to_transfer,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.dma_type,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.is_first_cw,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.is_last_cw,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.dma_id,
+                     gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.src_addr);
+          end
+        end
+        if (hc && !hc_q[e]) begin
+          // Latch the SHAPE of the first to-remote window this endpoint opens. Separate
+          // $display calls in the summary rather than one with a brace-concatenated format
+          // string -- Questa silently drops those.
+          if (!hc_seen[e]) begin
+            hc_seen[e]  <= 1'b1;
+            hc_type[e]  <= gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.dma_type;
+            hc_first[e] <= gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.is_first_cw;
+            hc_last[e]  <= gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.is_last_cw;
+            hc_init[e]  <= gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.is_initiator;
+            hc_dst[e]   <= gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.dst_addr;
+            hc_id[e]    <= gen_ep[e].i_ep.xdma_to_remote_data_accompany_cfg.dma_id;
+            hc_frrdy[e] <= gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.ready_to_transfer;
+            hc_frlast[e]<= gen_ep[e].i_ep.xdma_from_remote_data_accompany_cfg.is_last_cw;
+            hc_time[e]  <= $time;
+          end
+        end
+      end
+    end
+  end
+
   task automatic check_idle(input int unsigned round, input int unsigned width, output bit ok);
     logic [31:0] jct;
     begin
@@ -1891,7 +2124,14 @@ module xdma_chaingather_body #(
   // on the wire. Everything else -- cfg fields, FSM states -- is an inference from that.
   // `to_ep` decodes an address back to the endpoint that owns it.
   // ==========================================================================================
-  `define DP(e) gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath
+  // NOTE the `% NumEndpoints`. These debug dumps unroll endpoints 0..2 in a `case`, because a
+  // task cannot index a generate block with a variable -- but vopt elaborates every arm's
+  // hierarchical name whether or not it is reachable. At `NumEndpoints = 2` that made
+  // `gen_ep[2]` an elaboration error, so `sim-p2` -- the CONTROL testbench, the one whose own
+  // comment says a failure means the testbench is wrong rather than the DUT -- never ran at all.
+  // Clamping the index keeps every arm elaboratable; the out-of-range arm is unreachable, since
+  // no caller passes an endpoint that does not exist.
+  `define DP(e) gen_ep[(e) % NumEndpoints].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath
 
 
   // The OUTGOING accompanied cfg, logged on every to-remote data beat that actually fires. `dst`
@@ -1899,7 +2139,7 @@ module xdma_chaingather_body #(
   // cfgs supplies it -- the shifted WRITER cfg (a chain forward) or the READER cfg (a plain
   // remote transfer). Printing both candidates next to the choice shows immediately when the
   // wrong one is live.
-  `define DP(e) gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath
+  `define DP(e) gen_ep[(e) % NumEndpoints].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath
 
   for (genvar e = 0; e < NumEndpoints; e++) begin : gen_acfgtrace
     always_ff @(posedge clk) begin
@@ -2001,8 +2241,8 @@ module xdma_chaingather_body #(
   // in, and what id is it matching against", and every one of those lives inside the adapter.
   // A generate loop cannot be indexed at run time, so select explicitly.
   // ==========================================================================================
-  `define FM(e) gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_finish_manager
-  `define GM(e) gen_ep[e].i_ep.i_xdma_axi_adapter.i_xdma_grant_manager
+  `define FM(e) gen_ep[(e) % NumEndpoints].i_ep.i_xdma_axi_adapter.i_xdma_finish_manager
+  `define GM(e) gen_ep[(e) % NumEndpoints].i_ep.i_xdma_axi_adapter.i_xdma_grant_manager
 
   task automatic dump_ep(input int unsigned e);
     begin
@@ -2033,7 +2273,7 @@ module xdma_chaingather_body #(
     end
   endtask
 
-  `define SW(e) gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch
+  `define SW(e) gen_ep[(e) % NumEndpoints].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch
 
   // The switch state at the moment of a deadlock. `io_writerBusy_0` is the level the whole
   // completion protocol keys on, so when a node will not retire, its three contributors --
@@ -2282,6 +2522,153 @@ module xdma_chaingather_body #(
     end
   endtask
 
+  // ==========================================================================================
+  // CONCURRENT MULTI-ISSUER.
+  //
+  // Everything else in this file is a CHAIN: one transaction walking a line of endpoints, each
+  // of which is a hop in exactly one transfer at a time. That is the assumption the whole
+  // grant/finish protocol was written under, and it is the assumption every adapter-side bug so
+  // far has turned out to rest on.
+  //
+  // Here several transfers are in flight AT ONCE against a shared endpoint:
+  //
+  //   STAR-IN    ep1..ep(W-1)  --write-->  ep0        (W-1 senders, one destination)
+  //   EXCHANGE   ep0 <-> ep1,  ep2 <-> ep3, ...       (every endpoint sends AND receives)
+  //
+  // EXCHANGE is the sharper of the two. A chain keeps "sources the payload" and "takes delivery
+  // of a payload" on different nodes; here they land on the same node at the same time, which is
+  // the case a head-claim guard keyed on chain position alone cannot judge.
+  //
+  // Why it belongs at THIS level: the accompany-cfg sideband is generated by the real frontend
+  // from a real CSR programming sequence, rather than driven directly, so the stimulus is
+  // whatever the hardware actually produces.
+  //
+  // Concurrency comes from `issue_start` / `wait_finish` being split: every endpoint is started
+  // before any is waited on. Issuing is not completing -- the task sits in the xDMA's own queue.
+  //
+  // Each sender copies its own distinctly-seeded 64 B block (`LinSrcOffset`, seeded by
+  // `seed_partials`) into a destination slot that is unique to the (sender, receiver) pair, so a
+  // transfer landing in the wrong place, or twice, or not at all, is visible in the data.
+  localparam int unsigned MsDstBase = 8 * XferBytes;
+
+  function automatic int unsigned ms_dst_offset(input int unsigned sender);
+    return MsDstBase + sender * XferBytes;
+  endfunction
+
+  // One concurrent round. `pairs[i]` = the endpoint `i` sends to, or 99 for "does not send".
+  task automatic run_multisource_round(input int unsigned round, input int unsigned width,
+                                       input int unsigned dst_of[16], output bit ok);
+    logic [31:0] want [16];
+    bit          is_local [16];
+    bit          started  [16];
+    bit          sub_ok;
+    logic [63:0] got, exp;
+    int unsigned n_send;
+    begin
+      ok     = 1'b1;
+      n_send = 0;
+
+      // ---- sentinel every destination slot, so "nothing arrived" cannot read as success ----
+      for (int unsigned s = 0; s < width; s++) begin
+        if (dst_of[s] != 99) begin
+          for (int unsigned wi = 0; wi < cur_bytes / 8; wi++)
+            mem[dst_of[s]][(ms_dst_offset(s) + wi * 8)>>3] = {32'hDEAD_BEEF, 32'hDEAD_BEEF};
+        end
+      end
+
+      // ---- program every sender ----
+      for (int unsigned s = 0; s < width; s++) begin
+        started[s] = 1'b0;
+        if (dst_of[s] != 99) begin
+          program_copy(s, cluster_base(s) + LinSrcOffset,
+                       cluster_base(dst_of[s]) + ms_dst_offset(s));
+          n_send++;
+        end
+      end
+
+      // ---- LAUNCH THEM ALL, then wait. This ordering is the experiment. ----
+      for (int unsigned s = 0; s < width; s++) begin
+        if (dst_of[s] != 99) begin
+          issue_start(s, want[s], is_local[s], sub_ok);
+          started[s] = sub_ok;
+          if (!sub_ok) ok = 1'b0;
+          if (is_local[s]) begin
+            fail($sformatf("round %0d: ep%0d committed a LOCAL task -- expected a remote write",
+                           round, s));
+            ok = 1'b0;
+          end
+        end
+      end
+      if (Verbose >= 1) $display("   [ms] round %0d: %0d concurrent transfers launched", round,
+                                 n_send);
+
+      for (int unsigned s = 0; s < width; s++) begin
+        if (dst_of[s] != 99 && started[s]) begin
+          wait_finish(s, want[s], is_local[s],
+                      $sformatf("multisource round %0d (ep%0d -> ep%0d)", round, s, dst_of[s]),
+                      sub_ok);
+          if (!sub_ok) ok = 1'b0;
+        end
+      end
+
+      // ---- every block must have landed, byte-exact, in its own slot ----
+      for (int unsigned s = 0; s < width; s++) begin
+        if (dst_of[s] != 99) begin
+          for (int unsigned wi = 0; wi < cur_bytes / 8; wi++) begin
+            got = mem[dst_of[s]][(ms_dst_offset(s) + wi * 8)>>3];
+            exp = mem[s][(LinSrcOffset + wi * 8)>>3];
+            if (got !== exp) begin
+              fail($sformatf(
+                   "round %0d: ep%0d -> ep%0d word %0d mismatch: got %h, expected %h%s", round, s,
+                   dst_of[s], wi, got, exp,
+                   (got === {32'hDEAD_BEEF, 32'hDEAD_BEEF}) ? "  (sentinel -- nothing arrived)"
+                                                            : ""));
+              ok = 1'b0;
+              break;
+            end
+          end
+        end
+      end
+
+      check_idle(round, width, sub_ok);
+      if (!sub_ok) ok = 1'b0;
+    end
+  endtask
+
+  task automatic run_multisource_experiment();
+    int unsigned dst_of[16];
+    int unsigned width;
+    bit          ok;
+    begin
+      width = (MultiWidth > NumEndpoints) ? NumEndpoints : MultiWidth;
+
+      for (int unsigned r = 1; r <= NumRounds; r++) begin
+        for (int unsigned i = 0; i < 16; i++) dst_of[i] = 99;
+
+        if (MultiSource == 1) begin
+          // STAR-IN: every endpoint but ep0 writes into ep0, all at once.
+          for (int unsigned s = 1; s < width; s++) dst_of[s] = 0;
+        end else begin
+          // EXCHANGE: disjoint pairs, both directions live together. An odd endpoint out is
+          // left idle rather than paired with itself -- a self-write is a local copy and would
+          // not exercise the remote path at all.
+          for (int unsigned s = 0; s + 1 < width; s += 2) begin
+            dst_of[s]     = s + 1;
+            dst_of[s + 1] = s;
+          end
+        end
+
+        run_multisource_round(r, width, dst_of, ok);
+        $display("  round %0d: %s", r, ok ? "PASS" : "FAIL");
+        // A wedged round leaves endpoints busy; later rounds would report noise, not evidence.
+        if (!ok) begin
+          $display("  stopping after the first failing round");
+          return;
+        end
+      end
+    end
+  endtask
+
   task automatic run_role_change();
     tb_addr_t    ch[16];
     logic [31:0] w;
@@ -2423,7 +2810,12 @@ module xdma_chaingather_body #(
 
     $display("");
     $display("================================================================");
-    if (RoleChange) begin
+    if (MultiSource != 0) begin
+      $display(" CONCURRENT MULTI-ISSUER: %s, %0d endpoints, %0d rounds",
+               (MultiSource == 1) ? "STAR-IN (all -> ep0)" : "EXCHANGE (pairs, both directions)",
+               (MultiWidth > NumEndpoints) ? NumEndpoints : MultiWidth, NumRounds);
+      $display("   every transfer is LAUNCHED before any is waited on");
+    end else if (RoleChange) begin
       $display(" MINIMAL ROLE-CHANGE REPRODUCER: 3 endpoints");
     end else if (Bench) begin
       $display(" COLLECTIVE COMPARISON: software baseline vs chain reduce vs tree reduce");
@@ -2445,7 +2837,9 @@ module xdma_chaingather_body #(
     end
     $display("================================================================");
 
-    if (RoleChange) begin
+    if (MultiSource != 0) begin
+      run_multisource_experiment();
+    end else if (RoleChange) begin
       run_role_change();
     end else if (Bench) begin
       run_bench_experiment();
@@ -2490,6 +2884,23 @@ module xdma_chaingather_body #(
     end
 
     $display("================================================================");
+    if (ProbeHeadClaim) begin
+      for (int unsigned k = 0; k < NumEndpoints; k++) begin
+        $display("   [hc] ep%0d: to_remote high %0d cyc, from_remote high %0d cyc, to_remote beats=%0d (of which %0d with NO open window)",
+                 k, hc_hi_cyc[k], fr_hi_cyc[k], tr_beats[k], tr_nodesc[k]);
+        if (hc_seen[k])
+          $display("   [hc]   first to_remote window @%0t: type=%0b first=%0b last=%0b init=%0b id=%0d dst=%h dst_local=%0b | from_remote rdy=%0b last=%0b",
+                   hc_time[k], hc_type[k], hc_first[k], hc_last[k], hc_init[k], hc_id[k],
+                   hc_dst[k],
+                   (hc_dst[k] >= cluster_base(k)) && (hc_dst[k] < cluster_base(k) + ClusterAddressSpace),
+                   hc_frrdy[k], hc_frlast[k]);
+        if (rt_seen[k])
+          $display("   [rt]   RETRACT EVENT @%0t: to{id=%0d first=%0b last=%0b init=%0b dst=%h} from{id=%0d first=%0b last=%0b init=%0b src=%h} id_match=%0b",
+                   rt_time[k], rt_toid[k], rt_tofirst[k], rt_tolast[k], rt_toinit[k],
+                   rt_todst[k], rt_frid[k], rt_frfirst[k], rt_frlast[k], rt_frinit[k],
+                   rt_frsrc[k], rt_idmatch[k]);
+      end
+    end
     if (errors == 0) $display(" RESULT: PASS");
     else $display(" RESULT: FAIL  (%0d error(s))", errors);
     $display("================================================================");

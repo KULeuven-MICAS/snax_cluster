@@ -98,6 +98,12 @@ class DualXDMATester extends AnyFreeSpec with ChiselScalatestTester {
   // memset pattern, so that a bypassed extension is distinguishable from an active one.
   val memsetByte = 0xa5
   val memsetWord = (0 until 8).foldLeft(BigInt(0))((acc, i) => acc | (BigInt(memsetByte) << (8 * i)))
+  // `VerilogMemset` replicates its WHOLE 32-bit CSR into every 32-bit lane
+  // (`ext_data_o_bits[i*32 +: 32] = ext_csr_i_0`) -- deliberately, so the same extension can
+  // memset an FP32 or BF16 pattern without knowing the format. Writing the bare byte 0xa5 gives
+  // lanes of 0x000000a5, i.e. `0x000000a5000000a5` per 64-bit word, not the all-0xa5 pattern
+  // this test checks for. The CSR wants the full lane pattern.
+  val memsetLane = (0 until 4).foldLeft(0L)((acc, i) => acc | (memsetByte.toLong << (8 * i)))
 
   for (i <- 0 until 8) tcdmMem_1(8L * i) = BigInt("0123456789ABCDEF", 16) + i
   require(tcdmMem_1(0L) != memsetWord, "seed must differ from the memset pattern")
@@ -301,7 +307,7 @@ class DualXDMATester extends AnyFreeSpec with ChiselScalatestTester {
         // Extension region: HasVerilogMemset is writer-ext index 0 (the only writer extension here) ->
         // 1 bypass/enable-bitmask CSR (bit0=1 activates it) + its 1 CSR.
         writeCsr(addr, 1); addr += 1          // enable bitmask: bit0 = VerilogMemset ON
-        writeCsr(addr, memsetByte); addr += 1 // csr(0)[7:0] = the byte written into every lane
+        writeCsr(addr, memsetLane); addr += 1 // csr(0)[31:0] = the 32-bit pattern every lane gets
 
         // Start.
         writeCsr(addr, 1); addr += 1

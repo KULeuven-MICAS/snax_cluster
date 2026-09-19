@@ -13,6 +13,9 @@
 #   make sim-p16         # 16 endpoints, one width
 #   make sim-sweep       # THE SWEEP: P in {2,4,8,16} x {lin,mom}, with a latency table
 #   make sim-tree        # tree vs chain, and whether stage 2 needs a barrier
+#   make sim-star        # 4 endpoints, 3 concurrent writes into ep0
+#   make sim-exchange    # 4 endpoints, 2 concurrent pairs -- every node sends AND receives
+#   make sim-multi       # star, then exchange
 #   make sim-all         # p2, p3, p4 in order
 #   make gui-p3          # same, with the GUI
 #
@@ -50,6 +53,31 @@ TB_SRCS := $(wildcard $(MKFILE_DIR)*.sv)
 DUT_SRCS := \
   $(ROOT)/target/snitch_cluster/generated/snax_xdma_cluster_xdma/snax_xdma_cluster_xdma.sv \
   $(ROOT)/target/snitch_cluster/generated/snax_xdma_cluster_xdma/snax_xdma_cluster_xdma_wrapper.sv
+
+# ---- THE GENERATED RTL IS A BUILD PRODUCT OF THE CHISEL, AND MUST BE TREATED AS ONE ---------
+# `compile.tcl` already depends on DUT_SRCS, which stops a stale *vsim* compile. It does NOT stop
+# a stale *generation*: DUT_SRCS are checked-in outputs with no rule tying them to the Scala they
+# come from, so editing `hw/chisel/src/main/**` and re-running `make sim-tree4` happily
+# re-simulates RTL built from source that no longer exists.
+#
+# Without it, editing the Chisel and re-running a sim target re-simulates RTL built from source
+# that no longer exists, and every conclusion drawn from the result is about the wrong design.
+CHISEL_SRCS := $(shell find $(ROOT)/hw/chisel/src/main/scala -name '*.scala' 2>/dev/null)
+XDMA_CFG    ?= cfg/snax_xdma_cluster.hjson
+# The generator needs sbt (Chisel elaboration) AND the Python stack (mako, hjson) that templates
+# the wrappers -- both come from the repo's pixi environment, not from a login shell.
+PIXI_BIN    := $(ROOT)/.pixi/envs/default/bin
+GEN_ENV     := PATH="$(PIXI_BIN):$$PATH"
+
+.PHONY: rtl-gen
+rtl-gen:
+	$(GEN_ENV) $(MAKE) -C $(ROOT)/target/snitch_cluster rtl-snax-gen CFG_OVERRIDE=$(XDMA_CFG)
+
+# Order matters: this makes a Chisel edit invalidate the generated RTL, which invalidates
+# compile.tcl, which invalidates every sim target.
+$(DUT_SRCS): $(CHISEL_SRCS)
+	@echo "--- generated RTL is older than the Chisel source; regenerating ---"
+	$(GEN_ENV) $(MAKE) -C $(ROOT)/target/snitch_cluster rtl-snax-gen CFG_OVERRIDE=$(XDMA_CFG)
 
 .PHONY: all clean sim-all
 all: compile
@@ -92,9 +120,39 @@ gui-$(1): compile
 	cd $(ROOT) && $(QUESTA_ENV) $(VSIM) -64 -work $(LIB) tb_xdma_chaingather_$(1)_opt
 endef
 
-$(foreach tb,p2 p3 p4 p16 sweep tree tree4 role bench,$(eval $(call RUN_TB,$(tb))))
+# ---- WAVEFORM CAPTURE -------------------------------------------------------------------
+# Scoped on purpose: `log -r /*` on this design produces a WLF nobody can open. WAVE_EP picks
+# the endpoint, WAVE_SCOPE can be overridden outright.
+#     make wave-tree4 WAVE_EP=0
+#     make vcd-tree4  WAVE_EP=0      # ... and convert to VCD for offline parsing
+WAVE_EP    ?= 0
+WAVE_SCOPE ?= /tb_xdma_chaingather_$(1)/i_body/gen_ep[$(WAVE_EP)]/i_ep
+
+define WAVE_TB
+.PHONY: wave-$(1)
+wave-$(1): compile
+	cd $(ROOT) && $(QUESTA_ENV) $(VOPT) $(VOPT_FLAGS) -work $(LIB) tb_xdma_chaingather_$(1) \
+	  -o tb_xdma_chaingather_$(1)_opt | tee $(BUILDDIR)/vopt_$(1).log
+	@! grep -qE "^(# )?\*\* Error" $(BUILDDIR)/vopt_$(1).log
+	cd $(ROOT) && $(QUESTA_ENV) $(VSIM) $(VSIM_FLAGS) -work $(LIB) tb_xdma_chaingather_$(1)_opt \
+	  -wlf $(BUILDDIR)/$(1).wlf \
+	  -do "log -r $(WAVE_SCOPE)/*; run -all; quit" | tee $(BUILDDIR)/wave_$(1).log
+
+.PHONY: vcd-$(1)
+vcd-$(1): wave-$(1)
+	cd $(ROOT) && $(QUESTA_ENV) $(QUESTA_HOME)/bin/wlf2vcd -o $(BUILDDIR)/$(1).vcd \
+	  $(BUILDDIR)/$(1).wlf
+	@echo "VCD: $(BUILDDIR)/$(1).vcd"
+endef
+
+$(foreach tb,p2 p3 p4 p16 sweep tree tree4 role bench star exchange probe_exchange probe_tree4 probe_star hang_tree4 p2mom,$(eval $(call WAVE_TB,$(tb))))
+
+$(foreach tb,p2 p3 p4 p16 sweep tree tree4 role bench star exchange probe_exchange probe_tree4 probe_star hang_tree4 p2mom,$(eval $(call RUN_TB,$(tb))))
 
 sim-all: sim-p2 sim-p3 sim-p4
+
+.PHONY: sim-multi
+sim-multi: sim-star sim-exchange
 
 clean:
 	rm -rf $(BUILDDIR)

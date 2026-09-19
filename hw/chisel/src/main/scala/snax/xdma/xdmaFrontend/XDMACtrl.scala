@@ -561,6 +561,26 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   nextStateSrc                := currentStateSrc
   nextStateDst                := currentStateDst
 
+  // ---- A GATHER'S COLLECTOR MUST NOT START ITS READER BEFORE ITS OWN WRITER FRAME ----------
+  //
+  // `junctionEnabled` lives on the WRITER frame, and it is what raises `junctionHost.io.active`
+  // -> `gatherCfg` -> `isGather`. Until `isGather` is up, `localReadDemux.io.sel := isGather`
+  // routes the reader's beats out to the next hop instead of into the junction, and the
+  // to-remote accompany cfg reads as a fresh chain head.
+  //
+  // A collector's reader cfg has BOTH loopbacks false, so it satisfies the "remote read
+  // condition" below on its own. Without this term it starts the instant it arrives, which can
+  // be many cycles before the writer frame exists -- and a beat sent out in that window has no
+  // descriptor behind it, so the receiving path claims its wide channel on data alone and never
+  // completes.
+  //
+  // Only the COLLECTOR waits. A chain HEAD's reader cfg is collective too, but arrives FROM the
+  // collector (`isInitiator` 0) and has no junction of its own, so making it wait would deadlock
+  // it. No circular wait: a gather root's writer frame has both loopbacks false and its Dst FSM
+  // starts without consulting the Src state.
+  val gatherReaderReady =
+    (~(currentCfgSrc.bits.collectiveMode && currentCfgSrc.bits.isInitiator)) || currentCfgDst.valid
+
   // Control signals in Src Path
   switch(currentStateSrc) {
     is(sIdle) {
@@ -570,7 +590,7 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
         // A chained GATHER does not, because the reader is what supplies the junction's local operand and must run
         // concurrently with the chained transfer. The matching half is in the Dst path below; both must agree.
         currentCfgSrc.valid                       && (~(currentCfgDst.valid && currentCfgDst.bits.remoteLoopback &&
-          (~currentCfgDst.bits.junctionEnabled))) && (
+          (~currentCfgDst.bits.junctionEnabled))) && gatherReaderReady && (
           // The local loopback condition: The next cfg at the writer side is its counterpart
           (currentCfgSrc.bits.localLoopback && currentCfgSrc.bits.readerPtr === currentCfgDst.bits.readerPtr && currentCfgSrc.bits
             .writerPtr(0) === currentCfgDst.bits.writerPtr(0)) ||

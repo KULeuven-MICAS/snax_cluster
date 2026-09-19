@@ -53,8 +53,17 @@ import snax.xdma.DesignParams.XDMAParam
   * with no diagnostic. `isGather` below is therefore raised by a FSM keyed on the LOCAL READER and the JUNCTION, never
   * on `writer.io.busy`, and `io.writerBusy` ORs it in.
   */
-class XDMADataSwitch(param: XDMAParam, dataWidth: Int, clusterName: String = "unnamed_cluster")
-    extends Module
+class XDMADataSwitch(
+  param:           XDMAParam,
+  dataWidth:       Int,
+  clusterName:     String = "unnamed_cluster",
+  /** Cycles the drain window below may sit with a beat offered at `fromRemote` and NOTHING accepted before the
+    * mode is released anyway. Any accepted beat rearms it, so it cannot cut a transfer that is making progress;
+    * it only bounds the case where the port is offering into a consumer that has closed for good. 0 disables the
+    * bound and restores the pre-fix behaviour.
+    */
+  drainStallLimit: Int    = 512
+) extends Module
     with RequireAsyncReset {
 
   override val desiredName = s"${clusterName}_xdma_datapath_switch"
@@ -103,6 +112,40 @@ class XDMADataSwitch(param: XDMAParam, dataWidth: Int, clusterName: String = "un
 
   val gatherCfg = junctionHost.io.active // a junction is selected by this transfer's cfg
 
+  // ---- THE DRAIN WINDOW IS BOUNDED BY PROGRESS, NOT BY THE PORT'S VALID LEVEL ------------------------------
+  // Both wait states below exist to stop the mode dropping while beats are still arriving: `writerBusyRaw` can dip
+  // between the writer's address-generation phases, and dropping the mode there would strand the rest of the
+  // stream. `~io.fromRemote.valid` is the quiescence test for that.
+  //
+  // But `valid` means "someone is offering a beat", not "a beat of mine is still arriving" -- the wide path carries
+  // no per-transfer tag, so the switch cannot tell whose beat is at the port. And the port's own flow control is
+  // gated on the very level these states assert:
+  //
+  //     io.fromRemote.ready := remoteSplitter.io.in.ready && io.writerBusy
+  //
+  // which closes the loop. A beat this transfer cannot place -- once `writerBusyRaw` has fallen, a CHAINWRITE
+  // splitter can no longer put the required copy in BOTH sinks -- would otherwise pin the state that is holding the
+  // port shut against it. `io.writerBusy` would never drop, so `fromRemoteAccompaniedCfg.readyToTransfer` would
+  // never fall and the next destination cfg would never be popped: the node wedges with every FSM looking busy.
+  //
+  // What the switch can observe is whether anything is moving. Any accepted beat rearms the count below, so this
+  // cannot truncate a transfer making progress; it bounds the case where nothing can move at all.
+  //
+  // A liveness backstop, not a disambiguation: it does not make the switch able to tell transfers apart. That needs
+  // a transfer tag on the wide data, which the payload-agnostic wide path does not carry.
+  // `XDMADataSwitchWaitExitTester` covers it.
+  private val drainBounded   = drainStallLimit > 0
+  private val drainStallCtr  = RegInit(0.U(log2Ceil(scala.math.max(drainStallLimit, 1) + 1).W))
+  when(io.fromRemote.fire || !io.fromRemote.valid) {
+    drainStallCtr := 0.U
+  }.elsewhen(drainStallCtr =/= drainStallLimit.U) {
+    drainStallCtr := drainStallCtr + 1.U
+  }
+  val drainStalled = if (drainBounded) drainStallCtr === drainStallLimit.U else false.B
+
+  // "The remote port has gone quiet, or it is offering into a consumer that has stopped taking."
+  val drainComplete = (~io.fromRemote.valid) || drainStalled
+
   // ============================ mode state machines ============================
   // CHAINWRITE. Suppressed when the transfer is a gather, because a gather middle node's writer never goes busy
   // and this FSM keys on exactly that.
@@ -128,7 +171,7 @@ class XDMADataSwitch(param: XDMAParam, dataWidth: Int, clusterName: String = "un
     is(stateChainedWriteWait) {
       // Moore FSM to pull down isChainedWrite
       isChainedWrite := true.B
-      when(~io.fromRemote.valid) { nextState := stateIdle }
+      when(drainComplete) { nextState := stateIdle }
     }
   }
 
@@ -179,7 +222,7 @@ class XDMADataSwitch(param: XDMAParam, dataWidth: Int, clusterName: String = "un
     }
     is(gWait) {
       isGather := true.B
-      when(~io.fromRemote.valid) { gNextState := gIdle }
+      when(drainComplete) { gNextState := gIdle }
     }
   }
 
