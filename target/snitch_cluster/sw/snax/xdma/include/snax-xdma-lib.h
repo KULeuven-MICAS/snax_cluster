@@ -113,6 +113,35 @@ int32_t snax_xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value);
 int32_t snax_xdma_disable_dst_ext(uint8_t ext);
 
 // Start
+// Handle for one issued xDMA transfer. `task_id` is the value the committed finish
+// counter must reach; `remote` records WHICH counter the hardware bumped
+// (0 = LOCAL, 1 = REMOTE).
+//
+// THE ENGINE DECIDES, NOT THE ADDRESS. A transfer whose source is another
+// endpoint's memory is run by that peer, and the hardware bumps the REMOTE commit
+// counter for it; a purely local move bumps LOCAL. Software cannot tell the two
+// apart reliably from the src/dst bits, so guessing means waiting on a counter that
+// never advances -- which is an unbounded spin, and therefore presents as a
+// simulation that runs for ever rather than as an error. Carrying the bit in the
+// handle keeps the provenance per transfer, so it stays correct with several
+// transfers in flight.
+typedef struct {
+    uint32_t task_id;
+    uint8_t remote;
+} snax_xdma_task_t;
+
+static inline snax_xdma_task_t snax_xdma_start_task() {
+    uint32_t local_task_id = snax_read_xdma_cfg_reg(XDMA_COMMIT_LOCAL_TASK_PTR);
+    uint32_t remote_task_id = snax_read_xdma_cfg_reg(XDMA_COMMIT_REMOTE_TASK_PTR);
+    snax_write_xdma_cfg_reg(XDMA_START_PTR, 1);
+    while (1) {
+        uint32_t l = snax_read_xdma_cfg_reg(XDMA_COMMIT_LOCAL_TASK_PTR);
+        if (l != local_task_id) return (snax_xdma_task_t){l, 0};
+        uint32_t r = snax_read_xdma_cfg_reg(XDMA_COMMIT_REMOTE_TASK_PTR);
+        if (r != remote_task_id) return (snax_xdma_task_t){r, 1};
+    }
+}
+
 static inline uint32_t snax_xdma_start() {
     uint32_t local_task_id = snax_read_xdma_cfg_reg(XDMA_COMMIT_LOCAL_TASK_PTR);
     uint32_t remote_task_id =
@@ -141,6 +170,17 @@ static inline void snax_xdma_local_wait(uint32_t task_id) {
 static inline void snax_xdma_remote_wait(uint32_t task_id) {
     while (snax_read_xdma_cfg_reg(XDMA_FINISH_REMOTE_TASK_PTR) < task_id) {
         // Wait for xdma to finish
+    }
+}
+
+// Wait on the counter the hardware actually used for THIS transfer. Pair with
+// snax_xdma_start_task(); `snax_xdma_local_wait(snax_xdma_start())` is only correct
+// when the transfer is known to be local.
+static inline void snax_xdma_wait_task(snax_xdma_task_t task) {
+    if (task.remote) {
+        snax_xdma_remote_wait(task.task_id);
+    } else {
+        snax_xdma_local_wait(task.task_id);
     }
 }
 
