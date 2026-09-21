@@ -420,6 +420,7 @@ sources:
     files:
       - target/common/test/tb_memory_regbus.sv
       - target/common/test/tb_memory_axi.sv
+      - target/common/test/tb_memory_tcdm.sv
   - target: test
     files:
       - target/common/test/tb_bin.sv
