@@ -153,10 +153,16 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
       addrWidth       = param.csrAddrWidth,
       ioDataWidth     = 32,
       regDataWidth    = 32,
-      // Two configurations may be outstanding: one running, one staged behind it. That is
-      // what lets the array start the next dispatch the cycle it retires the previous one,
-      // instead of waiting for the core to notice and reprogram it.
-      cfgQueueDepth   = 1,
+      // Two configurations may be outstanding: one running, one staged behind it. The
+      // start write snapshots the register bank and retires instead of stalling the core
+      // until the accelerator is idle, so the next dispatch is already queued when the
+      // current one finishes and the array needs no round trip through the core at a
+      // dispatch boundary. Costs one extra copy of the streamer CSR bank in flops.
+      //
+      // The accelerator's OWN CSR manager needs the same depth to get the full effect --
+      // a dispatch writes both starts. That one is set per accelerator from the cluster
+      // cfg's `snax_cfg_queue_depth`, not here.
+      cfgQueueDepth   = 2,
       moduleTagName   = param.tagName
     )
   )
