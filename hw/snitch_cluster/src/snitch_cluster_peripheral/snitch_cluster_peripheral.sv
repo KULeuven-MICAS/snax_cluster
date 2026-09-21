@@ -18,6 +18,12 @@ module snitch_cluster_peripheral
   parameter type         dma_events_t = logic,
   // Nr of course in the cluster
   parameter logic [31:0] NrCores       = 0,
+  // Nr of hives in the cluster, one shared L1 instruction cache each
+  parameter int unsigned NrHives       = 1,
+  // Nr of inputs of the narrow TCDM interconnect, the index space `PORT_INDEX` uses
+  parameter int unsigned NrTcdmPorts   = 1,
+  // Nr of port groups `PORT_GROUP` can select, see `tcdm_port_group_mask`
+  parameter int unsigned NrTcdmPortGroups = 1,
   /// Derived parameter *Do not override*
   parameter type addr_t = logic [AddrWidth-1:0]
 ) (
@@ -35,16 +41,39 @@ module snitch_cluster_peripheral
   input  core_events_t [NrCores-1:0] core_events_i,
   input  tcdm_events_t               tcdm_events_i,
   input  dma_events_t                dma_events_i,
-  input  snitch_icache_pkg::icache_l0_events_t [NrCores-1:0] icache_events_i
+  input  snitch_icache_pkg::icache_l0_events_t [NrCores-1:0] icache_events_i,
+  input  snitch_icache_pkg::icache_l1_events_t [NrHives-1:0] icache_l1_events_i
 );
 
   // Pipeline register to ease timing.
   tcdm_events_t tcdm_events_q;
   dma_events_t dma_events_q;
   snitch_icache_pkg::icache_l0_events_t [NrCores-1:0] icache_events_q;
+  snitch_icache_pkg::icache_l1_events_t [NrHives-1:0] icache_l1_events_q;
   `FF(tcdm_events_q, tcdm_events_i, '0)
   `FF(dma_events_q, dma_events_i, '0)
   `FF(icache_events_q, icache_events_i, '0)
+  `FF(icache_l1_events_q, icache_l1_events_i, '0)
+
+  // The L1 instruction cache is per hive, not per hart. Every configuration in this
+  // tree has a single hive, so summing is exact there; with several hives these read
+  // as a cluster total rather than a per-hive figure.
+  localparam int unsigned HiveCntWidth = $clog2(NrHives) + 1;
+  logic [HiveCntWidth-1:0] icache_l1_miss, icache_l1_hit;
+  logic [HiveCntWidth-1:0] icache_l1_stall, icache_l1_handler_stall;
+
+  always_comb begin
+    icache_l1_miss          = '0;
+    icache_l1_hit           = '0;
+    icache_l1_stall         = '0;
+    icache_l1_handler_stall = '0;
+    for (int unsigned h = 0; h < NrHives; h++) begin
+      icache_l1_miss          += icache_l1_events_q[h].l1_miss;
+      icache_l1_hit           += icache_l1_events_q[h].l1_hit;
+      icache_l1_stall         += icache_l1_events_q[h].l1_stall;
+      icache_l1_handler_stall += icache_l1_events_q[h].l1_handler_stall;
+    end
+  end
 
   snitch_cluster_peripheral_reg2hw_t reg2hw;
   snitch_cluster_peripheral_hw2reg_t hw2reg;
@@ -93,7 +122,22 @@ module snitch_cluster_peripheral
     perf_counter_d = perf_counter_q;
     for (int i = 0; i < NumPerfCounters; i++) begin
       automatic core_events_t sel_core_events;
-      sel_core_events = core_events_i[reg2hw.hart_select[i].q[$clog2(NrCores):0]];
+      automatic logic [$clog2(NrCores):0] sel_hart;
+      automatic logic [$clog2(NrTcdmPorts+1)-1:0] sel_port;
+      automatic logic [$clog2(NrTcdmPortGroups+1)-1:0] sel_group;
+      automatic logic sel_port_ok, sel_group_ok;
+      sel_hart = reg2hw.hart_select[i].hart_select.q[$clog2(NrCores):0];
+      sel_core_events = core_events_i[sel_hart];
+      // `PORT_INDEX` and `PORT_GROUP` are wider than any one cluster needs. An index
+      // past the end of the interconnect must read as silence, not as port zero's
+      // traffic, so the index is clamped and the event is gated separately.
+      sel_port_ok = reg2hw.hart_select[i].port_index.q < NrTcdmPorts;
+      sel_group_ok = reg2hw.hart_select[i].port_group.q < NrTcdmPortGroups;
+      sel_port = sel_port_ok ?
+                 reg2hw.hart_select[i].port_index.q[$clog2(NrTcdmPorts+1)-1:0] : '0;
+      sel_group = sel_group_ok ?
+                  reg2hw.hart_select[i].port_group.q[$clog2(NrTcdmPortGroups+1)-1:0] :
+                  '0;
       // Cycle
       if (reg2hw.perf_counter_enable[i].cycle.q) begin
         perf_counter_d[i]++;
@@ -208,27 +252,78 @@ module snitch_cluster_peripheral
       // icache miss
       else if (reg2hw.perf_counter_enable[i].icache_miss.q) begin
         perf_counter_d[i] = perf_counter_d[i] +
-              icache_events_q[reg2hw.hart_select[i].q].l0_miss;
+              icache_events_q[sel_hart].l0_miss;
       end
       // icache hit
       else if (reg2hw.perf_counter_enable[i].icache_hit.q) begin
         perf_counter_d[i] = perf_counter_d[i] +
-              icache_events_q[reg2hw.hart_select[i].q].l0_hit;
+              icache_events_q[sel_hart].l0_hit;
       end
       // icache prefetch
       else if (reg2hw.perf_counter_enable[i].icache_prefetch.q) begin
         perf_counter_d[i] = perf_counter_d[i] +
-              icache_events_q[reg2hw.hart_select[i].q].l0_prefetch;
+              icache_events_q[sel_hart].l0_prefetch;
       end
       // icache double hit
         else if (reg2hw.perf_counter_enable[i].icache_double_hit.q) begin
         perf_counter_d[i] = perf_counter_d[i] +
-              icache_events_q[reg2hw.hart_select[i].q].l0_double_hit;
+              icache_events_q[sel_hart].l0_double_hit;
       end
       // icache stall
       else if (reg2hw.perf_counter_enable[i].icache_stall.q) begin
         perf_counter_d[i] = perf_counter_d[i] +
-              icache_events_q[reg2hw.hart_select[i].q].l0_stall;
+              icache_events_q[sel_hart].l0_stall;
+      end
+      // ------------------------------------------------------------------------
+      // Extended events. `PERF_COUNTER_ENABLE` is scanned first, so these only take
+      // effect when it is clear for this counter.
+      // ------------------------------------------------------------------------
+      // TCDM requests offered by the selected port group
+      else if (reg2hw.perf_counter_enable_ext[i].tcdm_grp_req.q && sel_group_ok) begin
+        perf_counter_d[i] = perf_counter_d[i] + tcdm_events_q.grp_req[sel_group];
+      end
+      // TCDM requests offered by the selected port group that were not granted
+      else if (reg2hw.perf_counter_enable_ext[i].tcdm_grp_stall.q && sel_group_ok)
+      begin
+        perf_counter_d[i] = perf_counter_d[i] + tcdm_events_q.grp_stall[sel_group];
+      end
+      // TCDM requests offered by the single selected port
+      else if (reg2hw.perf_counter_enable_ext[i].tcdm_port_req.q && sel_port_ok) begin
+        perf_counter_d[i] = perf_counter_d[i] + tcdm_events_q.port_req[sel_port];
+      end
+      // TCDM requests offered by the single selected port that were not granted
+      else if (reg2hw.perf_counter_enable_ext[i].tcdm_port_stall.q && sel_port_ok)
+      begin
+        perf_counter_d[i] = perf_counter_d[i] + tcdm_events_q.port_stall[sel_port];
+      end
+      // TCDM banks that accepted a narrow request
+      else if (reg2hw.perf_counter_enable_ext[i].tcdm_bank_served.q) begin
+        perf_counter_d[i] = perf_counter_d[i] + tcdm_events_q.bank_served;
+      end
+      // TCDM banks whose narrow request lost to the wide DMA port
+      else if (reg2hw.perf_counter_enable_ext[i].tcdm_wide_preempt.q) begin
+        perf_counter_d[i] = perf_counter_d[i] + tcdm_events_q.bank_wide_preempt;
+      end
+      // Wide DMA port TCDM accesses
+      else if (reg2hw.perf_counter_enable_ext[i].tcdm_wide_req.q) begin
+        perf_counter_d[i] = perf_counter_d[i] + tcdm_events_q.wide_req;
+      end
+      // Wide DMA port TCDM accesses that were not granted
+      else if (reg2hw.perf_counter_enable_ext[i].tcdm_wide_stall.q) begin
+        perf_counter_d[i] = perf_counter_d[i] + tcdm_events_q.wide_stall;
+      end
+      // Shared L1 instruction cache
+      else if (reg2hw.perf_counter_enable_ext[i].icache_l1_miss.q) begin
+        perf_counter_d[i] = perf_counter_d[i] + icache_l1_miss;
+      end
+      else if (reg2hw.perf_counter_enable_ext[i].icache_l1_hit.q) begin
+        perf_counter_d[i] = perf_counter_d[i] + icache_l1_hit;
+      end
+      else if (reg2hw.perf_counter_enable_ext[i].icache_l1_stall.q) begin
+        perf_counter_d[i] = perf_counter_d[i] + icache_l1_stall;
+      end
+      else if (reg2hw.perf_counter_enable_ext[i].icache_l1_handler_stall.q) begin
+        perf_counter_d[i] = perf_counter_d[i] + icache_l1_handler_stall;
       end
       // Reset performance counter.
       if (reg2hw.perf_counter[i].qe) begin

@@ -333,6 +333,27 @@
                 bits: "9:0",
                 name: "HART_SELECT",
                 desc: "Select source of per-hart performance counter"
+            },
+            {
+                bits: "19:10",
+                name: "PORT_INDEX",
+                desc: '''Select which TCDM interconnect input port the `TCDM_PORT_*`
+                         events observe. The index space is the interconnect request
+                         vector `{soc, cores, snax}`: `0 .. TotalSnaxNarrowTcdmPorts-1`
+                         are the SNAX accelerator ports in core order, the next
+                         `NrTCDMPortsCores` are the Snitch core data ports, and the
+                         last index is the narrow SoC port. Out-of-range values read
+                         as no activity.'''
+            },
+            {
+                bits: "23:20",
+                name: "PORT_GROUP",
+                desc: '''Select which group of TCDM interconnect input ports the
+                         `TCDM_GRP_*` events aggregate over. `0` is every port in the
+                         cluster, `1 .. NrCores` are the SNAX ports belonging to core
+                         `PORT_GROUP-1`, `NrCores+1` is all Snitch core data ports and
+                         `NrCores+2` is the narrow SoC port. Out-of-range values read
+                         as no activity.'''
             }]
         }
     }
@@ -411,6 +432,168 @@
             name: "ICACHE_PREFETCH_ENABLE",
             desc: "Enable instruction prefetching."
         }]
+    },
+    {
+        multireg: {
+            name: "PERF_COUNTER_ENABLE_EXT",
+            desc: '''Extended performance counter event select. This is the
+                     continuation of `PERF_COUNTER_ENABLE` for events that did not fit
+                     in its lower 32 bits, which is the widest single store an RV32
+                     hart can issue. A counter observes the first enabled event found
+                     scanning `PERF_COUNTER_ENABLE` and then `PERF_COUNTER_ENABLE_EXT`,
+                     so software must leave `PERF_COUNTER_ENABLE` clear when selecting
+                     an event from this register.''',
+            swaccess: "rw",
+            hwaccess: "hro",
+            count: "NumPerfCounters",
+            cname: "performance_counter_enable_ext",
+            fields: [{
+                bits: "0:0",
+                resval: "0",
+                name: "TCDM_GRP_REQ"
+                desc: '''
+                        Incremented every cycle by the number of TCDM interconnect input
+                        ports in the group selected by `PORT_GROUP` that presented a
+                        request, granted or not. This is the offered load of one engine.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "1:1",
+                resval: "0",
+                name: "TCDM_GRP_STALL"
+                desc: '''
+                        Incremented every cycle by the number of TCDM interconnect input
+                        ports in the group selected by `PORT_GROUP` that presented a
+                        request which was not granted. Granted requests are
+                        `TCDM_GRP_REQ - TCDM_GRP_STALL`; at 8 byte per narrow port that
+                        is the group's achieved TCDM bandwidth.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "2:2",
+                resval: "0",
+                name: "TCDM_PORT_REQ"
+                desc: '''
+                        Incremented whenever the single TCDM interconnect input port
+                        selected by `PORT_INDEX` presents a request. Use this to break a
+                        group down channel by channel.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "3:3",
+                resval: "0",
+                name: "TCDM_PORT_STALL"
+                desc: '''
+                        Incremented whenever the single TCDM interconnect input port
+                        selected by `PORT_INDEX` presents a request that is not granted.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "4:4",
+                resval: "0",
+                name: "TCDM_BANK_SERVED"
+                desc: '''
+                        Incremented every cycle by the number of TCDM banks that accepted
+                        a narrow request. Divided by `CYCLE * NrBanks` this is the narrow
+                        bank utilisation, the ceiling every engine is competing for.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "5:5",
+                resval: "0",
+                name: "TCDM_WIDE_PREEMPT"
+                desc: '''
+                        Incremented every cycle by the number of TCDM banks that had a
+                        narrow request pending while their super bank was handed to the
+                        wide DMA port, which wins unconditionally. This is the bank-cycle
+                        cost the DMA imposes on everything else, and it is invisible in
+                        the DMA's own counters.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "6:6",
+                resval: "0",
+                name: "TCDM_WIDE_REQ"
+                desc: '''
+                        Incremented whenever the wide DMA port completes a TCDM access.
+                        Multiply by `WideDataWidth/8` for bytes moved into or out of the
+                        TCDM by the DMA.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "7:7",
+                resval: "0",
+                name: "TCDM_WIDE_STALL"
+                desc: '''
+                        Incremented whenever the wide DMA port presents a TCDM access that
+                        is not granted. The wide port has priority over the narrow
+                        interconnect, so this only counts atomic-unit conflicts.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "8:8",
+                resval: "0",
+                name: "ICACHE_L1_MISS"
+                desc: '''
+                        Incremented for shared L1 instruction cache misses, summed over
+                        hives. Unlike `ICACHE_MISS`, which is the hart-private L0 buffer,
+                        this is the refill traffic that actually reaches the AXI port.
+
+                        THIS IS THE EVENT THAT COSTS CYCLES, and the cost is not any of
+                        the counters here: multiply it by the refill latency, which on a
+                        target whose `.text` lives in main memory is a full AXI round
+                        trip. `ICACHE_L1_STALL` does NOT measure it -- see there.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "9:9",
+                resval: "0",
+                name: "ICACHE_L1_HIT"
+                desc: '''
+                        Incremented for shared L1 instruction cache hits, summed over
+                        hives. _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "10:10",
+                resval: "0",
+                name: "ICACHE_L1_STALL"
+                desc: '''
+                        Incremented whenever the shared L1 instruction cache stalls a
+                        lookup, summed over hives. With several harts fetching from one
+                        cache this is where they contend with each other.
+
+                        NOT THE CORE'S FETCH STALL. The RTL defines this as the lookup
+                        stage's own backpressure (`in_valid_i & ~in_ready_o`), so it stays
+                        small even when cores are waiting hundreds of cycles for refills.
+                        No field of `icache_l1_events_t` measures that wait; use
+                        `ICACHE_L1_MISS` times the refill latency, or read it off an
+                        instruction trace.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            {
+                bits: "11:11",
+                resval: "0",
+                name: "ICACHE_L1_HANDLER_STALL"
+                desc: '''
+                        Incremented whenever the shared L1 instruction cache refill
+                        handler stalls, summed over hives. A large value next to a small
+                        `ICACHE_L1_MISS` means the misses are serialising on one handler.
+                        _This is a cluster-global signal._
+                        '''
+            },
+            ]
+        }
     }
     ]
 }

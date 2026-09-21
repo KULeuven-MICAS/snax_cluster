@@ -316,6 +316,15 @@ module snitch_cluster
     return n;
   endfunction
 
+  /// First narrow TCDM interconnect input owned by core `core_idx`'s accelerators.
+  /// The SNAX ports occupy the low end of the interconnect input vector, packed in
+  /// core order, exactly as the cluster wrapper assigns them.
+  function automatic int unsigned get_snax_tcdm_port_offs(int unsigned core_idx);
+    automatic int n = 0;
+    for (int i = 0; i < core_idx; i++) n += SnaxNarrowTcdmPorts[i];
+    return n;
+  endfunction
+
   //------------------
   // Constants
   // -----------------
@@ -330,6 +339,37 @@ module snitch_cluster
 
   localparam int unsigned NrTCDMPortsCores = get_tcdm_port_offs(NrCores);
   localparam int unsigned NumTCDMIn = NrTCDMPortsCores + 1;
+  /// Every input of the narrow TCDM interconnect, in the order they are
+  /// concatenated into its `req_i`: `{soc, cores, snax}`. This is the index space
+  /// the `PORT_INDEX` performance counter select uses.
+  localparam int unsigned NrTcdmInterconnectInp = NumTCDMIn + TotalSnaxNarrowTcdmPorts;
+  /// Port groups the performance counters can aggregate over: `0` is the whole
+  /// cluster, `1 + c` the SNAX ports of core `c`, then all Snitch core data ports,
+  /// then the narrow SoC port.
+  localparam int unsigned NumTcdmPortGroups = NrCores + 3;
+  localparam int unsigned TcdmPortCntWidth = $clog2(NrTcdmInterconnectInp) + 1;
+
+  /// Which narrow interconnect inputs belong to performance counter port group `g`.
+  /// Groups `1 .. NrCores` partition the SNAX ports by owning core, so a group index
+  /// names an engine without the peripheral having to know anything about the
+  /// accelerators bolted onto this cluster.
+  function automatic logic [NrTcdmInterconnectInp-1:0] tcdm_port_group_mask(
+      int unsigned g);
+    automatic logic [NrTcdmInterconnectInp-1:0] mask = '0;
+    if (g == 0) begin
+      mask = '1;
+    end else if (g <= NrCores) begin
+      automatic int unsigned lo = get_snax_tcdm_port_offs(g - 1);
+      for (int unsigned i = 0; i < SnaxNarrowTcdmPorts[g-1]; i++) mask[lo+i] = 1'b1;
+    end else if (g == NrCores + 1) begin
+      for (int unsigned i = 0; i < NrTCDMPortsCores; i++) begin
+        mask[TotalSnaxNarrowTcdmPorts+i] = 1'b1;
+      end
+    end else if (g == NrCores + 2) begin
+      mask[NrTcdmInterconnectInp-1] = 1'b1;
+    end
+    return mask;
+  endfunction
   localparam logic [PhysicalAddrWidth-1:0] TCDMMask = ~(TCDMSize - 1);
 
   // Core Requests, SoC Request, PTW, XDMA
@@ -448,6 +488,22 @@ module snitch_cluster
     logic [$clog2(NrTCDMPortsCores):0] inc_accessed;
     /// Number of requests stalled due to congestion
     logic [$clog2(NrTCDMPortsCores):0] inc_congested;
+    /// Requests offered this cycle by each port group, granted or not.
+    logic [NumTcdmPortGroups-1:0][TcdmPortCntWidth-1:0] grp_req;
+    /// Requests offered this cycle by each port group that were not granted.
+    logic [NumTcdmPortGroups-1:0][TcdmPortCntWidth-1:0] grp_stall;
+    /// Raw per-port activity, indexed in interconnect input order.
+    logic [NrTcdmInterconnectInp-1:0] port_req;
+    logic [NrTcdmInterconnectInp-1:0] port_stall;
+    /// Narrow banks that accepted a request this cycle.
+    logic [$clog2(NumTotalBanks):0] bank_served;
+    /// Narrow banks that had a request pending while the wide DMA port took their
+    /// super bank. The wide port wins unconditionally, so these requests are lost
+    /// to the DMA rather than to bank contention between the narrow masters.
+    logic [$clog2(NumTotalBanks):0] bank_wide_preempt;
+    /// Wide DMA port accesses into the TCDM, and accesses it offered but lost.
+    logic wide_req;
+    logic wide_stall;
   } tcdm_events_t;
 
   // Event counter increments for DMA.
@@ -577,6 +633,7 @@ module snitch_cluster
   tcdm_events_t tcdm_events;
   dma_events_t dma_events;
   snitch_icache_pkg::icache_l0_events_t [NrCores-1:0] icache_events;
+  snitch_icache_pkg::icache_l1_events_t [NrHives-1:0] icache_l1_events;
 
   // 4. Memory Subsystem (Core side).
   reqrsp_req_t [NrCores-1:0] core_req;
@@ -1246,6 +1303,7 @@ DmaXbarCfg.NoMstPorts
         .axi_rsp_i(wide_axi_mst_rsp[ICache+i]),
         .icache_prefetch_enable_i(icache_prefetch_enable),
         .icache_events_o(icache_events_reshape),
+        .icache_l1_events_o(icache_l1_events[i]),
         .sram_cfgs_i
     );
   end
@@ -1479,7 +1537,10 @@ ClusterXbarCfg.NoMstPorts
       .reg_rsp_t(reg_rsp_t),
       .tcdm_events_t(tcdm_events_t),
       .dma_events_t(dma_events_t),
-      .NrCores(NrCores)
+      .NrCores(NrCores),
+      .NrHives(NrHives),
+      .NrTcdmPorts(NrTcdmInterconnectInp),
+      .NrTcdmPortGroups(NumTcdmPortGroups)
   ) i_snitch_cluster_peripheral (
       .clk_i,
       .rst_ni,
@@ -1494,7 +1555,8 @@ ClusterXbarCfg.NoMstPorts
       .core_events_i(core_events),
       .tcdm_events_i(tcdm_events),
       .dma_events_i(dma_events),
-      .icache_events_i(icache_events)
+      .icache_events_i(icache_events),
+      .icache_l1_events_i(icache_l1_events)
   );
 
   // Optionally decouple the external narrow AXI master ports.
@@ -1519,6 +1581,9 @@ ClusterXbarCfg.NoMstPorts
   // --------------------
   // TCDM event counters
   // --------------------
+  // `TCDM_ACCESSED` / `TCDM_CONGESTED` predate the SNAX ports and only ever saw the
+  // Snitch core data ports. They are kept bit-for-bit as they were; everything below
+  // is the view that covers the whole interconnect.
   logic [NrTCDMPortsCores-1:0] flat_acc, flat_con;
   for (genvar i = 0; i < NrTCDMPortsCores; i++) begin : gen_event_counter
     `FFARN(flat_acc[i], tcdm_req[i].q_valid, '0, clk_i, rst_ni)
@@ -1539,6 +1604,88 @@ ClusterXbarCfg.NoMstPorts
       .data_i    (flat_con),
       .popcount_o(tcdm_events.inc_congested)
   );
+
+  // ---------------------------------------------------------------------------
+  // Whole-interconnect contention observation
+  // ---------------------------------------------------------------------------
+  // A flat view of every narrow interconnect input, laid out in the same order as
+  // the `req_i` concatenation of `i_tcdm_interconnect`, so that a port index here
+  // and a port index there mean the same thing.
+  logic [NrTcdmInterconnectInp-1:0] ic_in_valid, ic_in_ready;
+
+  if (TotalSnaxNarrowTcdmPorts > 0) begin : gen_snax_port_obs
+    for (genvar i = 0; i < TotalSnaxNarrowTcdmPorts; i++) begin : gen_snax_port_obs_bit
+      assign ic_in_valid[i] = snax_tcdm_req_i[i].q_valid;
+      assign ic_in_ready[i] = snax_tcdm_rsp_o[i].q_ready;
+    end
+  end
+
+  for (genvar i = 0; i < NrTCDMPortsCores; i++) begin : gen_core_port_obs
+    assign ic_in_valid[TotalSnaxNarrowTcdmPorts+i] = tcdm_req[i].q_valid;
+    assign ic_in_ready[TotalSnaxNarrowTcdmPorts+i] = tcdm_rsp[i].q_ready;
+  end
+
+  assign ic_in_valid[NrTcdmInterconnectInp-1] = axi_soc_req.q_valid;
+  assign ic_in_ready[NrTcdmInterconnectInp-1] = axi_soc_rsp.q_ready;
+
+  logic [NrTcdmInterconnectInp-1:0] ic_port_req_q, ic_port_stall_q;
+  `FFARN(ic_port_req_q, ic_in_valid, '0, clk_i, rst_ni)
+  `FFARN(ic_port_stall_q, ic_in_valid & ~ic_in_ready, '0, clk_i, rst_ni)
+
+  assign tcdm_events.port_req   = ic_port_req_q;
+  assign tcdm_events.port_stall = ic_port_stall_q;
+
+  // One offered/denied pair per port group. The masks are elaboration constants, so
+  // each of these collapses to a popcount over that group's ports only.
+  for (genvar g = 0; g < NumTcdmPortGroups; g++) begin : gen_tcdm_port_group
+    localparam logic [NrTcdmInterconnectInp-1:0] GroupMask = tcdm_port_group_mask(g);
+
+    popcount #(
+        .INPUT_WIDTH(NrTcdmInterconnectInp)
+    ) i_popcount_grp_req (
+        .data_i    (ic_port_req_q & GroupMask),
+        .popcount_o(tcdm_events.grp_req[g])
+    );
+
+    popcount #(
+        .INPUT_WIDTH(NrTcdmInterconnectInp)
+    ) i_popcount_grp_stall (
+        .data_i    (ic_port_stall_q & GroupMask),
+        .popcount_o(tcdm_events.grp_stall[g])
+    );
+  end
+
+  // Bank side. `ic_rsp[i][j].q_ready` is low for the whole super bank `i` whenever
+  // the wide DMA port is selected, so a narrow request present at that moment is a
+  // bank-cycle the DMA took away from the compute engines.
+  logic [NumTotalBanks-1:0] bank_served, bank_wide_preempt;
+  for (genvar i = 0; i < NrSuperBanks; i++) begin : gen_bank_obs_super
+    for (genvar j = 0; j < BanksPerSuperBank; j++) begin : gen_bank_obs
+      `FFARN(bank_served[i*BanksPerSuperBank+j],
+             ic_req[i][j].q_valid & ic_rsp[i][j].q_ready, '0, clk_i, rst_ni)
+      `FFARN(bank_wide_preempt[i*BanksPerSuperBank+j],
+             ic_req[i][j].q_valid & sb_dma_req[i].q_valid, '0, clk_i, rst_ni)
+    end
+  end
+
+  popcount #(
+      .INPUT_WIDTH(NumTotalBanks)
+  ) i_popcount_bank_served (
+      .data_i    (bank_served),
+      .popcount_o(tcdm_events.bank_served)
+  );
+
+  popcount #(
+      .INPUT_WIDTH(NumTotalBanks)
+  ) i_popcount_bank_preempt (
+      .data_i    (bank_wide_preempt),
+      .popcount_o(tcdm_events.bank_wide_preempt)
+  );
+
+  `FFARN(tcdm_events.wide_req, ext_dma_req.q_valid & ext_dma_rsp.q_ready, '0, clk_i,
+         rst_ni)
+  `FFARN(tcdm_events.wide_stall, ext_dma_req.q_valid & ~ext_dma_rsp.q_ready, '0,
+         clk_i, rst_ni)
 
   // -------------
   // Sanity Checks
