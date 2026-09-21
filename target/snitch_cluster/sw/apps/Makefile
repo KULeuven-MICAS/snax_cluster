@@ -49,7 +49,7 @@ SUBDIRS += snax-simd-xdma-concurrent
 SUBDIRS += snax-model-calib
 SUBDIRS += snax-model-calib-gemm
 SUBDIRS += snax-gemm-pipeline
-# Reader-extension kernels, now running on the SIMD block (hart 1). This list is
+# Reader-extension kernels, which on this cfg run on the SIMD block (hart 1). This list is
 # exactly the snax_xdma_cluster set: the split cluster inherits that cfg's reader
 # extension list, so kernels written against a different one (maxpool, avgpool,
 # rescale-*, which belong to snax_compiler_test_cluster and index their
@@ -68,6 +68,9 @@ SUBDIRS += snax-simd-softmax-fold
 # Kernels that stay on the xDMA core (hart 2): writer extension / plain moves.
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-reshape-comparison
+# Proves the testbench's main-memory xDMA endpoint: the engine can only move bytes
+# it did not write itself once there is a second endpoint to talk to.
+SUBDIRS += snax-xdma-mem-read
 # GEMM on hart 0. FlashAttention is the workload that exercises GEMM and SIMD together;
 # its data.h is generated from the cluster cfg, so it follows the array shape.
 #

@@ -48,6 +48,7 @@ CLUSTER_GEN     ?= $(ROOT)/util/clustergen.py
 CLUSTER_GEN_SRC ?= $(wildcard $(ROOT)/util/clustergen/*.py)
 WRAPPER_GEN     ?= $(ROOT)/util/snaxgen/snaxgen.py
 CORE_ROLES_GEN  ?= $(ROOT)/util/snaxgen/core_roles.py
+TCDM_PORTS_GEN  ?= $(ROOT)/util/snaxgen/tcdm_ports.py
 
 #########################
 # Files and directories #
@@ -321,8 +322,13 @@ REGGEN_HEADERS = snitch_cluster_peripheral.h
 # hart's accelerator at the same CSR offsets and reports success.
 CORE_ROLES_HEADER = snax-core-roles-defs.h
 
+# The narrow TCDM interconnect's input map. Same reasoning: the performance
+# counters address ports by an index whose meaning is a property of the cfg, so
+# a kernel that hardcodes it reads a different engine's channels without failing.
+TCDM_PORTS_HEADER = snax-tcdm-ports-defs.h
+
 TARGET_C_HDRS = $(addprefix $(TARGET_C_HDRS_DIR)/,$(CLUSTER_GEN_HEADERS) $(REGGEN_HEADERS) \
-                                                  $(CORE_ROLES_HEADER))
+                                                  $(CORE_ROLES_HEADER) $(TCDM_PORTS_HEADER))
 
 .PHONY: sw clean-headers clean-sw
 
@@ -345,6 +351,11 @@ $(addprefix $(TARGET_C_HDRS_DIR)/,$(CLUSTER_GEN_HEADERS)): %.h: $(CFG) $(CLUSTER
 $(TARGET_C_HDRS_DIR)/$(CORE_ROLES_HEADER): $(CFG) $(CORE_ROLES_GEN)
 	@echo "[CORE_ROLES] Generate $@"
 	$(CORE_ROLES_GEN) --cfg_path="$<" --out="$@"
+
+# TCDM port map header.
+$(TARGET_C_HDRS_DIR)/$(TCDM_PORTS_HEADER): $(CFG) $(TCDM_PORTS_GEN) $(CORE_ROLES_GEN)
+	@echo "[TCDM_PORTS] Generate $@"
+	$(TCDM_PORTS_GEN) --cfg_path="$<" --out="$@"
 
 # REGGEN headers
 $(TARGET_C_HDRS_DIR)/snitch_cluster_peripheral.h: $(ROOT)/hw/snitch_cluster/src/snitch_cluster_peripheral/snitch_cluster_peripheral_reg.hjson $(REGGEN)
