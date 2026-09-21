@@ -542,8 +542,14 @@ def emit_matmul_data(**kwargs):
     A = A.astype(np.int8) >> qshift
     B = B.astype(np.int8) >> qshift
 
-    data_str += [format_vector_definition("int8_t", "A", A)]
-    data_str += [format_vector_definition("int8_t", "B", B)]
+    # 64-BYTE ALIGNED, because these are xDMA sources. The iDMA copies bytes at any
+    # alignment, but the xDMA reader issues eight 8-byte channels per beat and needs
+    # its base aligned to the beat. Unaligned, it still moves the right number of
+    # bytes at the right rate and only the DATA is wrong -- which showed up here as
+    # m, P8 and rowsum all bit-exact (they come from K, loaded by the iDMA) while
+    # 2866 of 4096 O elements were wrong (O comes from V, loaded by the xDMA).
+    data_str += [format_vector_definition("int8_t", "A", A, alignment=64)]
+    data_str += [format_vector_definition("int8_t", "B", B, alignment=64)]
 
     enabled_channel_CSR_num = int(math.ceil(
         (meshRow * meshCol) * output_data_width / bankWidth / 32
