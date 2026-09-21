@@ -1233,7 +1233,7 @@ int main() {
     v_buf[0] = top; top += KVBYTES;
     v_buf[1] = top; top += KVBYTES;
 
-    volatile uint32_t *pub  = (volatile uint32_t *)(l1 + top); top += 512;
+    volatile uint32_t *pub  = (volatile uint32_t *)(l1 + top); top += 1024;
     volatile uint32_t *sync = (volatile uint32_t *)(l1 + top); top += 64;
 
     // THE TASK GEOMETRIES LIVE IN THE ARENA, not in a .l1 static. TCDM is SRAM with no
@@ -1502,6 +1502,33 @@ int main() {
     // why the writer's memset takes a 32-bit PATTERN rather than a byte.
     if (snax_is_xdma_core()) {
         uint32_t t0 = t_org;
+
+        // ---- THE HALF OF K(0) THIS ENGINE CARRIES --------------------------
+        // The head of the pipeline is one transfer long: nothing computes until the
+        // first key tile lands, and one DMA port moves it at ~55 B/cc. Both engines
+        // are idle at cycle zero -- the iDMA has only Q to fetch and the xDMA's first
+        // V is not wanted for thousands of cycles -- so K(0) is split down the middle
+        // and carried by both at once. The two halves are contiguous in the same
+        // buffer, so the GEMM's A stream never learns that two engines wrote it.
+        //
+        // Before the -inf fill, not after: `sync[7]` is not read until the softmax's
+        // first tile, which is thousands of cycles away, while `sync[2]` gates the
+        // very first dispatch.
+        xdma_tile_arm((uint32_t)(l1 + k_buf[0] + KVBYTES / 2u),
+                      (uint32_t)(uintptr_t)A + KVBYTES / 2u, BEAT,
+                      (KVBYTES / 2u) / BEAT);
+        {
+            snax_xdma_task_t tk = snax_xdma_start_task();
+            uint32_t fp = tk.remote ? XDMA_FINISH_REMOTE_TASK_PTR
+                                    : XDMA_FINISH_LOCAL_TASK_PTR;
+            uint32_t spins = 0;
+            while (snax_read_xdma_cfg_reg(fp) < tk.task_id) {
+                if (++spins > SPIN_LIMIT) { timeouts++; break; }
+            }
+        }
+        sync[13] = 1;   // the xDMA's half of K(0) has landed
+        pub[94] = snrt_mcycle() - t0;
+
         uint32_t x0 = snrt_mcycle() - t0;
         xdma_fill_arm((uint32_t)mrun, BEAT, 1u, 0xFBFFFBFFu);
         snax_xdma_local_wait(snax_xdma_start());
@@ -1575,9 +1602,17 @@ int main() {
             if (j >= 2) SNAX_SPIN_UNTIL(sync[4] >= j - 1, timeouts);  // K buffer free
             sync[12] = j * 10u + 2u;  // transferring K(j)
             uint32_t k0 = snrt_mcycle() - t0;
-            snrt_dma_start_1d(l1 + k_buf[j & 1], A, KVBYTES);
+            // K(0) is split with the xDMA -- see its lane. Every later tile is
+            // already hidden behind the previous tile's compute, so only the first
+            // one is worth two engines.
+            snrt_dma_start_1d(l1 + k_buf[j & 1], A,
+                              (j == 0u) ? (uint32_t)(KVBYTES / 2u) : (uint32_t)KVBYTES);
             snrt_dma_wait_all();
+            if (j == 0u) SNAX_SPIN_UNTIL(sync[13] >= 1, timeouts);
             uint32_t k1 = snrt_mcycle() - t0;
+            // K(0) is two engines and every other tile is one, so they are counted
+            // apart -- an average over both describes neither.
+            if (j == 0u) pub[97] = k1 - k0; else pub[96] += k1 - k0;
             sync[2] = j + 1;
             if (j == 0) pub[93] = snrt_mcycle() - t0;   // K(0) published to the GEMM lane
             pub[34 + 4 * j] = k0; pub[35 + 4 * j] = k1;
@@ -2256,10 +2291,12 @@ int main() {
         printf("    store O        %u B in %u cc  [%u -> %u]   then m,l in %u cc  [%u -> %u]\n",
                (uint32_t)(BR * DHEAD) * 4u, pub[54] - pub[53], pub[53], pub[54],
                pub[61] - pub[60], pub[60], pub[61]);
-        printf("    K per tile     %u B in %u cc = %u.%u B/cc of a 64 B/cc port  (iDMA)\n",
-               KVBYTES, pub[50] / NKV,
-               (KVBYTES * NKV) / pub[50],
-               ((KVBYTES * NKV * 10u) / pub[50]) % 10u);
+        printf("    K(0) split     %u B in %u cc = %u.%u B/cc across TWO engines\n",
+               KVBYTES, pub[97], KVBYTES / pub[97], ((KVBYTES * 10u) / pub[97]) % 10u);
+        printf("    K per tile     %u B in %u cc = %u.%u B/cc of a 64 B/cc port  (iDMA, tiles 1+)\n",
+               KVBYTES, pub[96] / (NKV - 1),
+               (KVBYTES * (NKV - 1)) / pub[96],
+               ((KVBYTES * (NKV - 1) * 10u) / pub[96]) % 10u);
         printf("    V per tile     %u B in %u cc = %u.%u B/cc of a 64 B/cc port  (xDMA)\n",
                KVBYTES, pub[62] / NKV,
                (KVBYTES * NKV) / (pub[62] ? pub[62] : 1u),

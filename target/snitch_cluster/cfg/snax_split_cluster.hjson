@@ -520,10 +520,22 @@
                 16
                 16
             ]
+            // THE WIDEST REQUESTER, AND THE ONE WITH THE LEAST ELASTICITY.
+            //
+            // C and D share these 16 ports, so this pair alone asks for half the
+            // scratchpad's 32 banks in one gang. The per-port census measures it
+            // offering only ~13% of cycles but being denied 30% of the time -- the
+            // signature of a burst that collides with the always-on A and B streams
+            // rather than of a channel that is simply busy.
+            //
+            // At depth 1 the pair cannot hold a beat, so it must win its banks the
+            // cycle it wants them. Depth 4 lets the drain absorb and spread instead,
+            // which costs the array nothing: D's own stall counter is 22-65 cycles a
+            // run against A and B's ~2,150. Read A and B's depth of 8 next to this.
             fifo_depth:
             [
-                1
-                1
+                4
+                4
             ]
             configurable_channel:
             [
