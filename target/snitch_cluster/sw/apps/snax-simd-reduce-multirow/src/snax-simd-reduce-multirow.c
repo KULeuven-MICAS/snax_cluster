@@ -50,24 +50,30 @@
 #include "snax-simd-lib.h"
 #include "snrt.h"
 
-#if !defined(SIMD_EXT_STREAMREDUCE)
+// The extensions this kernel needs, and WHAT IT NEEDS THEM TO DO. An op/func CSR is a
+// runtime select over the set the cfg elaborated, and selecting outside that set does not
+// fault -- it returns another op's answer. So the gate names capabilities, not extensions;
+// each _HAS_ macro implies its extension exists. See the note in snax-simd-lib.h.
+// This app sweeps EVERY reduction the block offers, so it needs all three -- which is also
+// what makes it the place a missing one shows up first.
+#if !defined(SIMD_EXT_STREAMREDUCE_HAS_MAX) || \
+    !defined(SIMD_EXT_STREAMREDUCE_HAS_ADD) || \
+    !defined(SIMD_EXT_STREAMREDUCE_HAS_SUMSQ)
 #error \
-    "Regenerate the XDMA CSR map with StreamReduce (CFG_OVERRIDE=cfg/snax_xdma_cluster.hjson)."
+    "This cluster's StreamReduce does not build all of MAX/ADD/SUMSQ, which this sweep exercises."
 #endif
 
-#define SIMD_BEAT_BYTES 64
+// SIMD_BEAT_BYTES comes from the library (= SIMD_WIDTH, the cfg's actual transport width);
+// a local 64 shadowed it and happened to agree.
 #define FP16_PER_BEAT 32
 #define FP32_PER_BEAT 16
 // StreamReduce op CSR (ext CSR 1, bits[7:0]). The datapath now has one fused
 // "FMA" op plus the "MAX" compare: MAX=0 (compare), ADD=1 (FMA acc+x,
 // multiplicand 1.0), SUMSQ=2 (FMA acc+x*x). Values are unchanged from the old
 // MAX/ADD/SUMSQ op-set, so this interface is source-compatible.
-#define OP_MAX 0u
-#define OP_ADD 1u
-#define OP_SUMSQ 2u
-#define REDUCE_OUT_FP32 \
-    (1u << 9)  // StreamReduce op CSR bit[9]: emit the scalar in FP32 (no FP16
-               // narrow)
+// Op selectors come from snax-simd-lib.h, NOT from a local #define. A local copy of the
+// encoding compiles against any cluster, including one whose SIMD block never built the op
+// -- which is exactly the silent-wrong-answer the capability macros exist to stop.
 
 // FP16 bits -> monotonic ordering key (signed): adjacent FP16 values map to
 // adjacent keys, so |key(a)-key(b)| is the FP16-ULP distance.
@@ -108,8 +114,11 @@ static inline uint32_t fp16_to_fp32_bits(uint16_t h) {
 // rewrite addresses + writer bound.
 static uint32_t retask_and_run(void* src, void* dst, uint32_t dst_bound0) {
     if (snax_simd_retask_1d(src, dst, dst_bound0) != 0) return 0xFFFFFFFFu;
-    int task_id = snax_simd_start();
-    snax_simd_wait(task_id);
+    (void)snax_simd_start();
+    // Bounded: an unretired task would otherwise spin the simulator for as long as
+    // anyone is willing to wait, with no output at all. The 0xFFFFFFFF the caller
+    // already reads as "setup failed" carries the hang too.
+    if (snax_simd_wait_all_checked("reduce pass", SIMD_WAIT_BUDGET)) return 0xFFFFFFFFu;
     return snax_simd_last_task_cycle();
 }
 
@@ -250,17 +259,17 @@ int main() {
 
         // SUMSQ (RMSNorm), MAX + ADD (Softmax) -- one reduce op per dispatch,
         // all multi-row.
-        uint32_t csr_ssq[2] = {beats, OP_SUMSQ};
+        uint32_t csr_ssq[2] = {beats, SIMD_RED_SUMSQ};
         ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_ssq) == 0);
         uint32_t c_ssq = retask_and_run(x_in, ssq_buf, rows);
         snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
 
-        uint32_t csr_max[2] = {beats, OP_MAX};
+        uint32_t csr_max[2] = {beats, SIMD_RED_MAX};
         ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_max) == 0);
         uint32_t c_max = retask_and_run(x_in, max_buf, rows);
         snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
 
-        uint32_t csr_add[2] = {beats, OP_ADD};
+        uint32_t csr_add[2] = {beats, SIMD_RED_ADD};
         ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_add) == 0);
         uint32_t c_add = retask_and_run(x_in, sum_buf, rows);
         snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
@@ -270,13 +279,13 @@ int main() {
         //   fp16-out (default): the scalar narrows to the FP16 grid -> +inf
         //   (the GAP-2 bug). fp32-out (bit[9]) : the scalar is splatted in FP32
         //   -> the host gets the true SUMSQ.
-        uint32_t csr_ssq16_big[2] = {beats, OP_SUMSQ};
+        uint32_t csr_ssq16_big[2] = {beats, SIMD_RED_SUMSQ};
         ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE,
                                         csr_ssq16_big) == 0);
         uint32_t c_big16 = retask_and_run(xbig_in, ssq16_big_buf, rows);
         snax_simd_disable_ext(SIMD_EXT_STREAMREDUCE);
 
-        uint32_t csr_ssq32_big[2] = {beats, OP_SUMSQ | REDUCE_OUT_FP32};
+        uint32_t csr_ssq32_big[2] = {beats, SIMD_RED_SUMSQ | SIMD_RED_FP32OUT};
         ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE,
                                         csr_ssq32_big) == 0);
         uint32_t c_big32 = retask_and_run(xbig_in, ssq32_big_buf, rows);

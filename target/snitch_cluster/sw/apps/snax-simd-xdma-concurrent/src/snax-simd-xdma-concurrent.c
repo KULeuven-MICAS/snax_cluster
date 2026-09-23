@@ -45,6 +45,10 @@ typedef struct {
     uint32_t xdma_busy;
 } results_t;
 
+// Latched by either bounded wait below. It cannot short-circuit the run -- see the note
+// at the first wait -- so it is carried to the verdict instead.
+static int err_hang = 0;
+
 int main() {
     uint8_t *base = (uint8_t *)snrt_l1_next();
     base = (uint8_t *)(((uintptr_t)base + SIMD_WIDTH - 1) &
@@ -82,7 +86,12 @@ int main() {
                          SIMD_F32_ONE, SIMD_F32_ZERO);
         snax_simd_configure(&in, &out, &op, 1);
         t0 = snrt_mcycle();
-        snax_simd_wait(snax_simd_launch());
+        (void)snax_simd_launch();
+        // Bounded, but NOT an early return: a cluster barrier follows this block, and
+        // every hart is counted in it, so bailing out here would strand the other three
+        // -- the same hang, moved. Report and carry on; the numbers below will be wrong
+        // and the HUNG line above says why.
+        if (snax_simd_wait_all_checked("A: simd alone", SIMD_WAIT_BUDGET)) err_hang = 1;
         t1 = snrt_mcycle();
         res->simd_alone = t1 - t0;
         res->simd_busy = snax_simd_last_task_cycle();
@@ -119,7 +128,9 @@ int main() {
 
     if (snax_is_simd_core()) {
         t0 = snrt_mcycle();
-        snax_simd_wait(snax_simd_launch());
+        (void)snax_simd_launch();
+        if (snax_simd_wait_all_checked("C: simd alongside xdma", SIMD_WAIT_BUDGET))
+            err_hang = 1;
         t1 = snrt_mcycle();
         res->simd_together = t1 - t0;
     }
@@ -131,7 +142,7 @@ int main() {
     }
     snrt_cluster_hw_barrier();
 
-    int err = 0;
+    int err = err_hang;
     if (snax_is_gemm_core()) {
         uint32_t a = res->simd_alone, b = res->xdma_alone;
         uint32_t ct = res->simd_together > res->xdma_together

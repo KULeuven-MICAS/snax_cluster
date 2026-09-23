@@ -644,6 +644,24 @@
 #include "data.h"
 #include "snax-core-roles.h"
 #include "snax-simd-lib.h"
+
+// The extensions this kernel needs, and WHAT IT NEEDS THEM TO DO. An op/func CSR is a
+// runtime select over the set the cfg elaborated, and selecting outside that set does not
+// fault -- it returns another op's answer. So the gate names capabilities, not extensions;
+// each _HAS_ macro implies its extension exists. See the note in snax-simd-lib.h.
+// The softmax chain: a LANEWISE rowmax (MAX), the shifted exponential (EXP) fed by the
+// PRE-map elementwise (ADD, sticky), the row sum (ADD), and the tail passthrough that lets
+// the same pass quantise the tile while the reduce appends its scalar. tailPassthrough is a
+// BUILD-time feature, not a runtime select: without it csr(1) is not there at all and the
+// SIMD_QUANT_TAIL write below lands on the next extension's CSR block.
+#if !defined(SIMD_EXT_STREAMREDUCE_HAS_MAX) ||          \
+    !defined(SIMD_EXT_STREAMREDUCE_HAS_ADD) ||          \
+    !defined(SIMD_EXT_STREAMMAP_HAS_EXP) ||             \
+    !defined(SIMD_EXT_STREAMELEMENTWISE_0_HAS_ADD) ||   \
+    !defined(SIMD_EXT_FP16TOINT8_HAS_TAILPASSTHROUGH)
+#error \
+    "This cluster's SIMD block cannot run the FlashAttention softmax: it needs StreamReduce MAX+ADD, StreamMap EXP, a PRE-map StreamElementwise ADD, and Fp16ToInt8 tailPassthrough."
+#endif
 #include "snax-versacore-to-lib.h"
 #include "snax-xdma-lib.h"
 #include "snrt.h"

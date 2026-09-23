@@ -53,16 +53,22 @@
 #include "snax-simd-lib.h"
 #include "snrt.h"
 
-#if !defined(SIMD_EXT_STREAMMAP) || \
-    !defined(SIMD_EXT_STREAMELEMENTWISE_1) || !defined(SIMD_EXT_FP16TOINT8)
+// The extensions this kernel needs, and WHAT IT NEEDS THEM TO DO. An op/func CSR is a
+// runtime select over the set the cfg elaborated, and selecting outside that set does not
+// fault -- it returns another op's answer. So the gate names capabilities, not extensions;
+// each _HAS_ macro implies its extension exists. See the note in snax-simd-lib.h.
+#if !defined(SIMD_EXT_STREAMMAP_HAS_SILU) ||         \
+    !defined(SIMD_EXT_STREAMELEMENTWISE_1_HAS_MUL) || \
+    !defined(SIMD_EXT_FP16TOINT8)
 #error \
-    "Regenerate the XDMA CSR map with StreamMap (func=SILU), StreamElementwise (op=MUL) and Fp16ToInt8."
+    "This cluster's SIMD block cannot run SwiGLU: it needs StreamMap SILU, a post-map StreamElementwise MUL, and Fp16ToInt8."
 #endif
 
-#define SIMD_BEAT_BYTES 64
-#define ACT_SILU 2u  // StreamMap func CSR bits[1:0]: 0=LINEAR, 1=EXP, 2=SILU
-#define EW_MUL \
-    0u  // StreamElementwise fused-FMA op CSR: 0=MUL (acc*x), 1=ADD (acc+x)
+// SIMD_BEAT_BYTES comes from the library (= SIMD_WIDTH, the cfg's actual transport width);
+// a local 64 shadowed it and happened to agree.
+// Op selectors come from snax-simd-lib.h, NOT from a local #define. A local copy of the
+// encoding compiles against any cluster, including one whose SIMD block never built the op
+// -- which is exactly the silent-wrong-answer the capability macros exist to stop.
 
 // FP16 bits -> monotonic ordering key (handles signed outputs): adjacent FP16
 // values map to adjacent keys, so |key(a)-key(b)| is the FP16-ULP distance even
@@ -131,7 +137,7 @@ int main() {
             uint32_t t0 = snrt_mcycle();
 
             // T1: sg = silu(gate).
-            uint32_t csr_silu[3] = {0x3F800000u /*1.0f*/, 0u, ACT_SILU};
+            uint32_t csr_silu[3] = {0x3F800000u /*1.0f*/, 0u, SIMD_FUNC_SILU};
             ok &=
                 (snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr_silu) == 0);
             ok &= (snax_simd_memcpy_nd_fast(gate_in, sg_buf, 8, 8, 2,
@@ -139,15 +145,16 @@ int main() {
                                             dst_bnd, 0xFFFFFFFF, 0xFFFFFFFF,
                                             0xFFFFFFFF) == 0);
             {
-                int task_id = snax_simd_start();
-                snax_simd_wait(task_id);
+                (void)snax_simd_start();
+                // Bounded, so a wedged chain ends the run instead of the simulator.
+                if (snax_simd_wait_all_checked("T1 map(SILU)", SIMD_WAIT_BUDGET)) return 1;
                 c1 = snax_simd_last_task_cycle();
             }
             snax_simd_disable_ext(SIMD_EXT_STREAMMAP);
 
             // T2: out = sg (.) up. StreamElementwise(MUL), operandCount=2 over
             // the interleaved {sg,up} stream.
-            uint32_t csr_mul[2] = {2u /*operandCount*/, EW_MUL};
+            uint32_t csr_mul[2] = {2u /*operandCount*/, SIMD_EW_MUL};
             ok &= (snax_simd_enable_ext(SIMD_EXT_STREAMELEMENTWISE_1,
                                             csr_mul) == 0);
             ok &= (snax_simd_memcpy_nd_fast(sg_buf, out_buf, 8, 8, 2,
@@ -155,8 +162,9 @@ int main() {
                                             dst_bnd, 0xFFFFFFFF, 0xFFFFFFFF,
                                             0xFFFFFFFF) == 0);
             {
-                int task_id = snax_simd_start();
-                snax_simd_wait(task_id);
+                (void)snax_simd_start();
+                // Bounded, so a wedged chain ends the run instead of the simulator.
+                if (snax_simd_wait_all_checked("T2 ew(MUL)", SIMD_WAIT_BUDGET)) return 1;
                 c2 = snax_simd_last_task_cycle();
             }
             snax_simd_disable_ext(SIMD_EXT_STREAMELEMENTWISE_1);
@@ -165,7 +173,7 @@ int main() {
             // Fp16ToInt8 chained after StreamElementwise quantizes the product
             // to int8 in-stream (no re-read of out_buf). The writer emits
             // beats/2 packed beats; cq - c2 is the marginal quantize cost.
-            uint32_t csr_mul_q[2] = {2u /*operandCount*/, EW_MUL};
+            uint32_t csr_mul_q[2] = {2u /*operandCount*/, SIMD_EW_MUL};
             // TWO words: enable_ext writes SIMD_EXT_FP16TOINT8_CSR_NUM (2) from this array.
             // csr[1] is tailPeriod -- pass every (tailPeriod+1)'th beat through UNQUANTISED --
             // and 0 disables it, which is right here: no trailing scalar beat reaches this
@@ -179,8 +187,9 @@ int main() {
                                             q_dst_bnd, 0xFFFFFFFF, 0xFFFFFFFF,
                                             0xFFFFFFFF) == 0);
             {
-                int task_id = snax_simd_start();
-                snax_simd_wait(task_id);
+                (void)snax_simd_start();
+                // Bounded, so a wedged chain ends the run instead of the simulator.
+                if (snax_simd_wait_all_checked("Tq ew(MUL)+quant", SIMD_WAIT_BUDGET)) return 1;
                 cq = snax_simd_last_task_cycle();
             }
             snax_simd_disable_ext(SIMD_EXT_FP16TOINT8);

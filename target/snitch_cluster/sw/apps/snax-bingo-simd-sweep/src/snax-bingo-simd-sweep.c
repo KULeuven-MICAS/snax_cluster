@@ -43,14 +43,9 @@
 #define BEAT_BYTES 64
 #define FP16_PER_BEAT 32
 
-#define OP_MAX 0u    // StreamReduce: MAX (compare)
-#define OP_ADD 1u    // StreamReduce: ADD (fused FMA)
-#define OP_SUMSQ 2u  // StreamReduce: SUMSQ (FMA square)
-#define EW_MUL 0u    // StreamElementwise fused-FMA: MUL (acc*x)
-#define EW_ADD 1u    // StreamElementwise fused-FMA: ADD (acc+x)
-#define ACT_LINEAR 0u
-#define ACT_EXP 1u
-#define ACT_SILU 2u
+// Op selectors come from snax-simd-lib.h, NOT from a local #define. A local copy of the
+// encoding compiles against any cluster, including one whose SIMD block never built the op
+// -- which is exactly the silent-wrong-answer the capability macros exist to stop.
 
 #define F32_ONE 0x3F800000u
 // 0.5 in FP16. A benign input: exp() of it neither overflows nor flushes, and silu's sigmoid
@@ -58,10 +53,18 @@
 // a cycle count -- this only keeps inf/NaN out of the traces.
 #define FP16_HALF 0x3800u
 
+// Returns 0, or 1 if the task never retired. A sweep that wedges on one point must not
+// take the simulator with it -- the remaining points still carry information. Once wedged
+// the block stays wedged, so the latch makes every later point cost nothing rather than a
+// full budget each; the sweep then runs to the end and prints zeros where it died.
+static int sweep_hung = 0;
+
 static uint32_t run_task(void) {
-    uint32_t id = snax_simd_start();
-    snax_simd_wait(id);
-    return 0;
+    if (sweep_hung) return 1u;
+    (void)snax_simd_start();
+    if (!snax_simd_wait_all_checked("sweep point", SIMD_WAIT_BUDGET)) return 0u;
+    sweep_hung = 1;
+    return 1u;
 }
 
 // The AGU shapes every op below draws from, built once from the sweep point.
@@ -76,7 +79,7 @@ typedef struct {
 // Each returns having left the operator chain disabled. `t` is scratch laid out by main().
 
 static void op_streammap(const geom_t* g, uint8_t* in, uint8_t* out) {
-    uint32_t csr[3] = {F32_ONE, 0u, ACT_LINEAR};
+    uint32_t csr[3] = {F32_ONE, 0u, SIMD_FUNC_LINEAR};
     snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr);
     snax_simd_memcpy_nd_fast(in, out, 8, 8, 1, (uint32_t*)g->flat_str,
                              (uint32_t*)g->flat_bnd, 1, (uint32_t*)g->flat_str,
@@ -86,7 +89,7 @@ static void op_streammap(const geom_t* g, uint8_t* in, uint8_t* out) {
 }
 
 static void op_streamreduce(const geom_t* g, uint8_t* in, uint8_t* out) {
-    uint32_t csr[2] = {g->beats, OP_ADD};
+    uint32_t csr[2] = {g->beats, SIMD_RED_ADD};
     snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr);
     snax_simd_memcpy_nd_fast(in, out, 8, 8, 2, (uint32_t*)g->red_str, (uint32_t*)g->red_bnd, 1,
                              (uint32_t*)g->w_rows_str, (uint32_t*)g->w_rows_bnd, 0xFFFFFFFF,
@@ -111,7 +114,7 @@ static void op_streamelementwise(const geom_t* g, uint8_t* a, uint32_t delta, ui
 }
 
 static void op_silu(const geom_t* g, uint8_t* in, uint8_t* out) {
-    uint32_t csr[3] = {F32_ONE, 0u, ACT_SILU};
+    uint32_t csr[3] = {F32_ONE, 0u, SIMD_FUNC_SILU};
     snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr);
     snax_simd_memcpy_nd_fast(in, out, 8, 8, 1, (uint32_t*)g->flat_str, (uint32_t*)g->flat_bnd, 1,
                              (uint32_t*)g->flat_str, (uint32_t*)g->flat_bnd, 0xFFFFFFFF,
@@ -125,7 +128,7 @@ static void op_silu(const geom_t* g, uint8_t* in, uint8_t* out) {
 // pair has to be adjacent and in that order; main() allocates them that way.
 static void op_swiglu(const geom_t* g, uint8_t* gate, uint8_t* silu_buf, uint8_t* out) {
     op_silu(g, gate, silu_buf);
-    op_streamelementwise(g, silu_buf, g->rows_bytes, out, EW_MUL);
+    op_streamelementwise(g, silu_buf, g->rows_bytes, out, SIMD_EW_MUL);
 }
 
 // The five-pass per-row softmax, transcribed from snax-simd-softmax-multirow: reduce(MAX),
@@ -133,7 +136,7 @@ static void op_swiglu(const geom_t* g, uint8_t* gate, uint8_t* silu_buf, uint8_t
 // The two broadcast loops run on this hart and are part of the op's cost -- that is the point.
 static void op_softmax(const geom_t* g, uint8_t* x, uint8_t* mx, uint8_t* nbc, uint8_t* xs,
                        uint8_t* expb, uint8_t* sum, uint8_t* rbc, uint8_t* out) {
-    uint32_t csr_max[2] = {g->beats, OP_MAX};
+    uint32_t csr_max[2] = {g->beats, SIMD_RED_MAX};
     snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_max);
     snax_simd_memcpy_nd_fast(x, mx, 8, 8, 2, (uint32_t*)g->red_str, (uint32_t*)g->red_bnd, 1,
                              (uint32_t*)g->w_rows_str, (uint32_t*)g->w_rows_bnd, 0xFFFFFFFF,
@@ -147,9 +150,9 @@ static void op_softmax(const geom_t* g, uint8_t* x, uint8_t* mx, uint8_t* nbc, u
         uint16_t neg = (uint16_t)(m[r * FP16_PER_BEAT] ^ 0x8000u);  // low lane of splatted beat
         for (uint32_t c = 0; c < g->d; c++) n[r * g->d + c] = neg;
     }
-    op_streamelementwise(g, x, (uint32_t)(nbc - x), xs, EW_ADD);
+    op_streamelementwise(g, x, (uint32_t)(nbc - x), xs, SIMD_EW_ADD);
 
-    uint32_t csr_exp[3] = {F32_ONE, 0u, ACT_EXP};
+    uint32_t csr_exp[3] = {F32_ONE, 0u, SIMD_FUNC_EXP};
     snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr_exp);
     snax_simd_memcpy_nd_fast(xs, expb, 8, 8, 1, (uint32_t*)g->flat_str, (uint32_t*)g->flat_bnd, 1,
                              (uint32_t*)g->flat_str, (uint32_t*)g->flat_bnd, 0xFFFFFFFF,
@@ -157,7 +160,7 @@ static void op_softmax(const geom_t* g, uint8_t* x, uint8_t* mx, uint8_t* nbc, u
     run_task();
     snax_simd_disable_ext(SIMD_EXT_STREAMMAP);
 
-    uint32_t csr_sum[2] = {g->beats, OP_ADD};
+    uint32_t csr_sum[2] = {g->beats, SIMD_RED_ADD};
     snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr_sum);
     snax_simd_memcpy_nd_fast(expb, sum, 8, 8, 2, (uint32_t*)g->red_str, (uint32_t*)g->red_bnd, 1,
                              (uint32_t*)g->w_rows_str, (uint32_t*)g->w_rows_bnd, 0xFFFFFFFF,
@@ -174,12 +177,12 @@ static void op_softmax(const geom_t* g, uint8_t* x, uint8_t* mx, uint8_t* nbc, u
         uint16_t v = s[r * FP16_PER_BEAT];
         for (uint32_t c = 0; c < g->d; c++) rb[r * g->d + c] = v;
     }
-    op_streamelementwise(g, expb, (uint32_t)(rbc - expb), out, EW_MUL);
+    op_streamelementwise(g, expb, (uint32_t)(rbc - expb), out, SIMD_EW_MUL);
 }
 
 // reduce(SUMSQ) -> per-row scalar -> broadcast -> sew(MUL), the rmsnorm shape.
 static void op_rmsnorm(const geom_t* g, uint8_t* x, uint8_t* ss, uint8_t* sbc, uint8_t* out) {
-    uint32_t csr[2] = {g->beats, OP_SUMSQ};
+    uint32_t csr[2] = {g->beats, SIMD_RED_SUMSQ};
     snax_simd_enable_ext(SIMD_EXT_STREAMREDUCE, csr);
     snax_simd_memcpy_nd_fast(x, ss, 8, 8, 2, (uint32_t*)g->red_str, (uint32_t*)g->red_bnd, 1,
                              (uint32_t*)g->w_rows_str, (uint32_t*)g->w_rows_bnd, 0xFFFFFFFF,
@@ -193,7 +196,7 @@ static void op_rmsnorm(const geom_t* g, uint8_t* x, uint8_t* ss, uint8_t* sbc, u
         uint16_t v = s[r * FP16_PER_BEAT];
         for (uint32_t c = 0; c < g->d; c++) sb[r * g->d + c] = v;
     }
-    op_streamelementwise(g, x, (uint32_t)(sbc - x), out, EW_MUL);
+    op_streamelementwise(g, x, (uint32_t)(sbc - x), out, SIMD_EW_MUL);
 }
 
 // ---------------------------------------------------------------- driver
@@ -268,7 +271,7 @@ int main() {
         MEASURE("xdma_streammap", op_streammap(&g, x_in, t0_buf));
         MEASURE("xdma_streamreduce", op_streamreduce(&g, x_in, s0_buf));
         MEASURE("xdma_streamelementwise",
-                op_streamelementwise(&g, x_in, (uint32_t)(up_in - x_in), t0_buf, EW_MUL));
+                op_streamelementwise(&g, x_in, (uint32_t)(up_in - x_in), t0_buf, SIMD_EW_MUL));
         MEASURE("xdma_silu", op_silu(&g, x_in, t0_buf));
         MEASURE("xdma_swiglu", op_swiglu(&g, x_in, sg_a, out_buf));
         MEASURE("xdma_softmax", op_softmax(&g, x_in, s0_buf, bc0_buf, t1_buf, t2_buf, s1_buf,

@@ -43,12 +43,22 @@
 #include "snax-simd-lib.h"
 #include "snrt.h"
 
-#if !defined(SIMD_EXT_STREAMMAP) || !defined(SIMD_EXT_FP16TOINT8)
-#error "Regenerate the XDMA CSR map with StreamMap (func=SILU) and Fp16ToInt8."
+// The extensions this kernel needs, and WHAT IT NEEDS THEM TO DO. An op/func CSR is a
+// runtime select over the set the cfg elaborated, and selecting outside that set does not
+// fault -- it returns another op's answer. So the gate names capabilities, not extensions;
+// each _HAS_ macro implies its extension exists. See the note in snax-simd-lib.h.
+// (The quantiser is armed through snax_simd_enable_ext, which writes exactly
+// SIMD_EXT_FP16TOINT8_CSR_NUM words, so this kernel does not also need tailPassthrough.)
+#if !defined(SIMD_EXT_STREAMMAP_HAS_SILU) || !defined(SIMD_EXT_FP16TOINT8)
+#error \
+    "This cluster's SIMD block cannot run SiLU: StreamMap was built without the SILU func, or there is no Fp16ToInt8."
 #endif
 
-#define SIMD_BEAT_BYTES 64
-#define ACT_SILU 2u  // StreamMap func CSR bits[1:0]: 0=LINEAR, 1=EXP, 2=SILU
+// SIMD_BEAT_BYTES comes from the library (= SIMD_WIDTH, the cfg's actual transport width);
+// a local 64 shadowed it and happened to agree.
+// Op selectors come from snax-simd-lib.h, NOT from a local #define. A local copy of the
+// encoding compiles against any cluster, including one whose SIMD block never built the op
+// -- which is exactly the silent-wrong-answer the capability macros exist to stop.
 
 // FP16 bits -> monotonic ordering key (handles signed outputs): adjacent FP16
 // values map to adjacent keys, so |key(a)-key(b)| is the FP16-ULP distance even
@@ -62,8 +72,11 @@ static inline uint32_t fp16_mono(uint16_t h) {
 // addresses + dst bound.
 static uint32_t retask_and_run(void* src, void* dst, uint32_t dst_bound0) {
     if (snax_simd_retask_1d(src, dst, dst_bound0) != 0) return 0xFFFFFFFFu;
-    int task_id = snax_simd_start();
-    snax_simd_wait(task_id);
+    (void)snax_simd_start();
+    // Bounded: an unretired task would otherwise spin the simulator for as long as
+    // anyone is willing to wait, with no output at all. The 0xFFFFFFFF the caller
+    // already reads as "setup failed" carries the hang too.
+    if (snax_simd_wait_all_checked("silu pass", SIMD_WAIT_BUDGET)) return 0xFFFFFFFFu;
     return snax_simd_last_task_cycle();
 }
 
@@ -121,7 +134,7 @@ int main() {
 
             // T1: out = silu(x). a=1.0, b=0, func=SILU.  (FP16 result, kept for
             // the ULP regression check)
-            uint32_t csr_silu[3] = {0x3F800000u /*1.0f*/, 0u, ACT_SILU};
+            uint32_t csr_silu[3] = {0x3F800000u /*1.0f*/, 0u, SIMD_FUNC_SILU};
             ok &=
                 (snax_simd_enable_ext(SIMD_EXT_STREAMMAP, csr_silu) == 0);
             c1 = retask_and_run(x_in, out_buf, beats);

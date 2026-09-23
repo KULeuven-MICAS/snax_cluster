@@ -314,10 +314,19 @@
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 
-#if !defined(SIMD_EXT_STREAMREDUCE) || !defined(SIMD_EXT_STREAMMAP) || \
-    !defined(SIMD_EXT_STREAMELEMENTWISE_1)
+// The extensions this kernel needs, and WHAT IT NEEDS THEM TO DO. An op/func CSR is a
+// runtime select over the set the cfg elaborated, and selecting outside that set does not
+// fault -- it returns another op's answer. So the gate names capabilities, not extensions;
+// each _HAS_ macro implies its extension exists. See the note in snax-simd-lib.h.
+// RSQRT is the one that matters here: without it StreamMap returns the LINEAR result, so
+// the kernel would emit x*(SUM/D) instead of x/sqrt(SUM/D) -- a normalisation-shaped tensor
+// that is not a normalisation, and every check in this app would have to catch it at run
+// time instead of the compiler catching it now.
+#if !defined(SIMD_EXT_STREAMREDUCE_HAS_SUMSQ) ||      \
+    !defined(SIMD_EXT_STREAMMAP_HAS_RSQRT) ||         \
+    !defined(SIMD_EXT_STREAMELEMENTWISE_1_HAS_MUL)
 #error \
-    "Regenerate the SIMD CSR map with StreamReduce, StreamMap and StreamElementwise."
+    "This cluster's SIMD block cannot run RMSNorm: it needs StreamReduce SUMSQ, StreamMap RSQRT, and a post-map StreamElementwise MUL."
 #endif
 
 #define BEAT SIMD_BEAT_BYTES
@@ -364,11 +373,22 @@ static inline uint32_t fp16_mono(uint16_t h) {
 
 // ============================================================ pass helpers
 
-static inline uint32_t run_shapes(const snax_simd_shape_t *in,
+// A task that never retires must not cost a whole simulation. run_shapes() bounds every
+// wait and LATCHES the failure: once the block is wedged nothing after it can retire
+// either, so the remaining passes short-circuit instead of paying the budget again each.
+// `simd_hung` is folded into the error count at the end -- it cannot return early from
+// here, because the barriers that follow are counted by every hart in the cluster.
+static int simd_hung = 0;
+
+static inline uint32_t run_shapes(const char *what, const snax_simd_shape_t *in,
                                   const snax_simd_shape_t *out) {
+    if (simd_hung) return 0xFFFFFFFFu;
     snax_simd_program_fast(in, out);
     snax_simd_fire();
-    snax_simd_wait_all();
+    if (snax_simd_wait_all_checked(what, SIMD_WAIT_BUDGET)) {
+        simd_hung = 1;
+        return 0xFFFFFFFFu;
+    }
     return snax_simd_last_task_cycle();
 }
 
@@ -381,7 +401,7 @@ static uint32_t pass_reduce(void *src, void *dst, uint32_t rows, uint32_t beats,
     snax_simd_shape_rows(&in, src, rows, beats, beats * BEAT);
     snax_simd_shape_flat(&out, dst, dst_beats);
     snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, beats, mode);
-    return run_shapes(&in, &out);
+    return run_shapes("reduce", &in, &out);
 }
 
 // out = func(a*x + b) over `beats` contiguous beats.
@@ -391,7 +411,7 @@ static uint32_t pass_map(void *src, void *dst, uint32_t beats, uint32_t a_bits,
     snax_simd_shape_flat(&in, src, beats);
     snax_simd_shape_flat(&out, dst, beats);
     snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, a_bits, b_bits, func);
-    return run_shapes(&in, &out);
+    return run_shapes("map", &in, &out);
 }
 
 // Broadcast one beat per row into `beats` beats per row, with a StreamMap applied on the
@@ -405,7 +425,7 @@ static uint32_t pass_bcast_map(void *src_beats, void *dst, uint32_t rows,
     snax_simd_shape_2d(&in, src_beats, beats, 0u, rows, BEAT);
     snax_simd_shape_rows(&out, dst, rows, beats, dst_row_stride);
     snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, a_bits, 0u, func);
-    return run_shapes(&in, &out);
+    return run_shapes("bcast_map", &in, &out);
 }
 
 // The reader AGU strides FORWARD only, so the base must be the LOWER operand; MUL and ADD
@@ -437,7 +457,7 @@ static uint32_t pass_ew2(void *src_a, void *src_b, void *dst, uint32_t rows,
     in.stride[2] = src_row_stride;
     snax_simd_shape_flat(&out, dst, rows * beats);
     snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 2u, op);
-    return run_shapes(&in, &out);
+    return run_shapes("ew2", &in, &out);
 }
 
 // One-operand elementwise with STICKY-B: beat 0 seeds operand B and emits NOTHING, beats
@@ -450,7 +470,7 @@ static uint32_t pass_ew_sticky(void *seed_then_data, void *dst, uint32_t data_be
     snax_simd_shape_flat(&out, dst, data_beats);
     snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1u,
                    op | SIMD_EW_STICKY_B);
-    return run_shapes(&in, &out);
+    return run_shapes("ew(STICKY)", &in, &out);
 }
 
 // ==================================================== xDMA, with its CSRs written cheaply
@@ -872,6 +892,13 @@ int main() {
            abad ? "FAIL" : "exact", abad, rows * d);
     if (abad) err++;
 
+    // A hung task cannot fail a check by itself -- every buffer downstream of it simply
+    // keeps whatever was there before, which can look like anything -- so it is counted
+    // here explicitly rather than left to be inferred from the numbers.
+    if (simd_hung) {
+        printf("[Rmsnorm] FAIL: a task never retired; every figure above it is meaningless\n");
+        err++;
+    }
     printf(err ? "[Rmsnorm] FAIL\n" : "[Rmsnorm] PASS\n");
     return err != 0;
 }

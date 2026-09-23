@@ -365,11 +365,30 @@
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 
-#if !defined(SIMD_EXT_STREAMREDUCE) || !defined(SIMD_EXT_STREAMMAP) ||        \
-    !defined(SIMD_EXT_STREAMELEMENTWISE_0) ||                                 \
-    !defined(SIMD_EXT_STREAMELEMENTWISE_1) || !defined(SIMD_EXT_FP16TOINT8)
+// The extensions this kernel needs, and WHAT IT NEEDS THEM TO DO. An op/func CSR is a
+// runtime select over the set the cfg elaborated, and selecting outside that set does not
+// fault -- it returns another op's answer. So the gate names capabilities, not extensions;
+// each _HAS_ macro implies its extension exists. See the note in snax-simd-lib.h.
+//
+// Two of these are worth naming. RSQRT is what makes the reciprocal a datapath op rather
+// than a host round trip, and without it StreamMap returns the LINEAR result -- so a build
+// missing it would divide by Sexp*Sexp and still produce a plausible tensor. And the PRE-map
+// elementwise (instance 0) is what lets the subtract, the exponential and the row sum share
+// one task; on a cluster with only the post-map instance this kernel is not slower, it is
+// wrong, because the max would be subtracted after the exponential.
+//
+// tailPassthrough is a BUILD-time feature, not a runtime select: without it the quantiser
+// has one user CSR instead of two, and cfg_qnt() below writes two.
+#if !defined(SIMD_EXT_STREAMREDUCE_HAS_MAX) ||          \
+    !defined(SIMD_EXT_STREAMREDUCE_HAS_ADD) ||          \
+    !defined(SIMD_EXT_STREAMMAP_HAS_EXP) ||             \
+    !defined(SIMD_EXT_STREAMMAP_HAS_RSQRT) ||           \
+    !defined(SIMD_EXT_STREAMELEMENTWISE_0_HAS_ADD) ||   \
+    !defined(SIMD_EXT_STREAMELEMENTWISE_0_HAS_MUL) ||   \
+    !defined(SIMD_EXT_STREAMELEMENTWISE_1_HAS_MUL) ||   \
+    !defined(SIMD_EXT_FP16TOINT8_HAS_TAILPASSTHROUGH)
 #error \
-    "Regenerate the SIMD CSR map with TWO StreamElementwise instances, StreamMap, StreamReduce and Fp16ToInt8."
+    "This cluster's SIMD block cannot run this softmax: it needs StreamReduce MAX+ADD, StreamMap EXP+RSQRT, a PRE-map StreamElementwise with MUL+ADD, a post-map one with MUL, and Fp16ToInt8 tailPassthrough."
 #endif
 
 #define BEAT SIMD_BEAT_BYTES
@@ -445,11 +464,22 @@ __attribute__((always_inline)) static inline void cfg_qnt(uint32_t inv_scale) {
 
 // ============================================================ pass helpers
 
-static inline uint32_t run_shapes(const snax_simd_shape_t *in,
+// A task that never retires must not cost a whole simulation. run_shapes() bounds every
+// wait and LATCHES the failure: once the block is wedged nothing after it can retire
+// either, so the remaining passes short-circuit instead of paying the budget again each.
+// `simd_hung` is folded into the error count at the end -- it cannot return early from
+// here, because the barriers that follow are counted by every hart in the cluster.
+static int simd_hung = 0;
+
+static inline uint32_t run_shapes(const char *what, const snax_simd_shape_t *in,
                                   const snax_simd_shape_t *out) {
+    if (simd_hung) return 0xFFFFFFFFu;
     snax_simd_program_fast(in, out);
     snax_simd_fire();
-    snax_simd_wait_all();
+    if (snax_simd_wait_all_checked(what, SIMD_WAIT_BUDGET)) {
+        simd_hung = 1;
+        return 0xFFFFFFFFu;
+    }
     return snax_simd_last_task_cycle();
 }
 
@@ -463,7 +493,7 @@ static uint32_t pass_reduce(void *src, void *dst, uint32_t rows, uint32_t beats,
     snax_simd_shape_flat(&out, dst, dst_beats);
     ARM(M_RED);
     cfg_red(beats, mode);
-    return run_shapes(&in, &out);
+    return run_shapes("reduce", &in, &out);
 }
 
 // out = func(a*x + b) over `beats` contiguous beats.
@@ -474,7 +504,7 @@ static uint32_t pass_map(void *src, void *dst, uint32_t beats, uint32_t a, uint3
     snax_simd_shape_flat(&out, dst, beats);
     ARM(M_MAP);
     cfg_map(a, b, func);
-    return run_shapes(&in, &out);
+    return run_shapes("map", &in, &out);
 }
 
 // Broadcast one beat per row into `beats` beats per row, with a StreamMap applied on the
@@ -489,7 +519,7 @@ static uint32_t pass_bcast_map(void *src_beats, void *dst, uint32_t rows, uint32
     snax_simd_shape_rows(&out, dst, rows, beats, dst_row_stride);
     ARM(M_MAP);
     cfg_map(a, b, func);
-    return run_shapes(&in, &out);
+    return run_shapes("bcast_map", &in, &out);
 }
 
 // The reader AGU strides FORWARD only, so the base must be the LOWER operand; MUL and ADD
@@ -535,7 +565,7 @@ static uint32_t pass_ew2(void *src_a, void *src_b, void *dst, uint32_t rows,
         ARM(M_EW1);
     }
     cfg_ew1(2u, op);
-    return run_shapes(&in, &out);
+    return run_shapes("ew2", &in, &out);
 }
 
 // ROW-MAJOR, THREE PASSES IN ONE: EW0 subtracts the replicated max, Map exponentiates,
@@ -554,7 +584,7 @@ static uint32_t pass_sub_exp_sum(void *x, void *plane, void *dst, uint32_t rows,
     cfg_ew0(2u, SIMD_EW_ADD);
     cfg_map(SIMD_F32_ONE, 0u, SIMD_FUNC_EXP);
     cfg_red(beats, SIMD_RED_ADD | SIMD_RED_TAP);
-    return run_shapes(&in, &out);
+    return run_shapes("EW0(ADD)|Map(EXP)|Reduce(TAP)", &in, &out);
 }
 
 // ROW-MAJOR RECIPROCAL, half of it. Square each row's Sexp: the reader presents that row's
@@ -573,7 +603,7 @@ static uint32_t pass_sq_beats(void *tap0, void *dst, uint32_t rows,
     snax_simd_shape_flat(&out, dst, rows);
     ARM(M_EW0);
     cfg_ew0(2u, SIMD_EW_MUL);
-    return run_shapes(&in, &out);
+    return run_shapes("EW0(MUL) square", &in, &out);
 }
 
 // TRANSPOSED, THREE PASSES IN ONE. Same fusion as pass_sub_exp_sum, but the max arrives
@@ -588,7 +618,7 @@ static uint32_t pass_t_exp_sum(void *seed_then_xt, void *dst, uint32_t d) {
     cfg_ew0(1u, SIMD_EW_ADD | SIMD_EW_STICKY_B);
     cfg_map(SIMD_F32_ONE, 0u, SIMD_FUNC_EXP);
     cfg_red(d, SIMD_RED_ADD | SIMD_RED_TAP | SIMD_RED_LANEWISE);
-    return run_shapes(&in, &out);
+    return run_shapes("EW0(STICKY)|Map(EXP)|Reduce(LANE,TAP)", &in, &out);
 }
 
 // TRANSPOSED RECIPROCAL: 1/s for every token in the tile, from ONE beat. The sum beat is
@@ -600,7 +630,7 @@ static uint32_t pass_recip_beat(void *sum_beat, void *dst) {
     ARM(M_EW0 | M_MAP);
     cfg_ew0(1u, SIMD_EW_MUL | SIMD_EW_STICKY_B);
     cfg_map(SIMD_F32_ONE, 0u, SIMD_FUNC_RSQRT);
-    return run_shapes(&in, &out);
+    return run_shapes("EW0(MUL,STICKY)|Map(RSQRT)", &in, &out);
 }
 
 // One-operand elementwise with STICKY-B: beat 0 seeds operand B and emits NOTHING, beats
@@ -613,7 +643,7 @@ static uint32_t pass_ew_sticky(void *seed_then_data, void *dst, uint32_t data_be
     snax_simd_shape_flat(&out, dst, data_beats);
     ARM(M_EW0);
     cfg_ew0(1u, op | SIMD_EW_STICKY_B);
-    return run_shapes(&in, &out);
+    return run_shapes("ew(STICKY)", &in, &out);
 }
 
 // FP16 -> INT8 on its own, over a flat tile. Elementwise and order-preserving, which is
@@ -624,7 +654,7 @@ static uint32_t pass_quant(void *src, void *dst, uint32_t beats, uint32_t inv_sc
     snax_simd_shape_flat(&out, dst, beats / 2u);
     ARM(M_QNT);
     cfg_qnt(inv_scale);
-    return run_shapes(&in, &out);
+    return run_shapes("quantise", &in, &out);
 }
 
 // ==================================================== xDMA, with its CSRs written cheaply
@@ -1171,6 +1201,13 @@ int main() {
            abad ? "FAIL" : "exact", abad, rows * d);
     if (abad) err++;
 
+    // A hung task cannot fail a check by itself -- every buffer downstream of it simply
+    // keeps whatever was there before, which can look like anything -- so it is counted
+    // here explicitly rather than left to be inferred from the numbers.
+    if (simd_hung) {
+        printf("[Softmax] FAIL: a task never retired; every figure above it is meaningless\n");
+        err++;
+    }
     printf(err ? "[Softmax] FAIL\n" : "[Softmax] PASS\n");
     return err != 0;
 }
