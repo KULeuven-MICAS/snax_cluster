@@ -67,15 +67,19 @@ class HasStreamReduce(
   treeLanes:    Int = 2, // # of horizontal-fold ALUs (area knob): the once-per-row collapse is time-muxed
   accPartials:  Int = 1  // Track C / C2: rotating FP32 partials per lane, see the note in the module
 ) extends HasDataPathExtension {
-  private val (_, transport) =
+  private val (opNames, transport) =
     OpSpec.parse(op, Set("MAX", "ADD", "SUMSQ", "FMA"), "HasStreamReduce") // validate op names + precision
   OpSpec.checkWidth(elementWidth, transport, "HasStreamReduce") // explicit width must match the precision tag
   require(computeLanes > 0, "HasStreamReduce: computeLanes must be > 0")
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
-      moduleName = "StreamReduce",
-      userCsrNum = 2, // operandCount + (op-select|tap); tap stays runtime so this is fixed
-      dataWidth  = dataWidth
+      moduleName   = "StreamReduce",
+      userCsrNum   = 2, // operandCount + (op-select|tap); tap stays runtime so this is fixed
+      dataWidth    = dataWidth,
+      // The RUNTIME opcodes (0=MAX, 1=ADD, 2=SUMSQ), not the cfg's op list: a single fused "FMA" build op
+      // answers to both ADD and SUMSQ and is not selectable itself, so publishing the raw list would hide
+      // two ops this datapath has. Same expansion the module below builds its hasAdd/hasSumsq from.
+      capabilities = OpSpec.runtimeOps(opNames, Seq("ADD", "SUMSQ"))
     )
 
   def instantiate(clusterName: String): StreamReduce =
@@ -134,10 +138,13 @@ class StreamReduce(
   // the op CSR) plus the non-FMA "MAX" compare. hasAdd/hasSumsq are the runtime CAPABILITIES the built
   // datapath must provide: the FMA op provides both, so every accLane/fold expression below stays as-is.
   // Legacy op-sets ("ADD"/"SUMSQ"/"MAX") still parse and build the same minimal subset.
-  val hasFMA   = ops.contains("FMA")
-  val hasMax   = ops.contains("MAX")
-  val hasAdd   = hasFMA || ops.contains("ADD")   // FMA: acc' = x*1 + acc
-  val hasSumsq = hasFMA || ops.contains("SUMSQ") // FMA: acc' = x*x + acc  (op CSR bit picks add vs square)
+  // The runtime opcode set, expanded once in OpSpec so the header and the hardware cannot disagree about
+  // which ops exist. FMA covers both accumulate forms: ADD is acc' = x*1 + acc, SUMSQ is acc' = x*x + acc,
+  // and the op CSR picks the multiplicand.
+  private val runtimeOps = OpSpec.runtimeOps(ops, Seq("ADD", "SUMSQ"))
+  val hasMax   = runtimeOps.contains("MAX")
+  val hasAdd   = runtimeOps.contains("ADD")
+  val hasSumsq = runtimeOps.contains("SUMSQ")
   val multiOp  = ops.size > 1
 
   // op CSR (ext_csr_i(1)[7:0]) values — UNCHANGED so the SW interface is source-compatible: 0=MAX (compare),

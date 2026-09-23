@@ -280,9 +280,12 @@ class HasFp16ToInt8(
 
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
-      moduleName = "Fp16ToInt8", // -> READER_EXT_FP16TOINT8 (keep stable: never width-encode the name)
-      userCsrNum = if (tailPassthrough != 0) 2 else 1, // inv_scale (FP32 bits) [+ tailPeriod]
-      dataWidth  = dataWidth
+      moduleName   = "Fp16ToInt8", // -> READER_EXT_FP16TOINT8 (keep stable: never width-encode the name)
+      userCsrNum   = if (tailPassthrough != 0) 2 else 1, // inv_scale (FP32 bits) [+ tailPeriod]
+      dataWidth    = dataWidth,
+      // Not an op list: a BUILD-TIME feature that adds csr(1). Writing a tailPeriod to a build without it
+      // lands on a CSR that is not there, so a kernel needs to know before it writes, not after.
+      capabilities = if (tailPassthrough != 0) Seq("TAILPASSTHROUGH") else Nil
     )
 
   def instantiate(clusterName: String): Fp16ToInt8 =

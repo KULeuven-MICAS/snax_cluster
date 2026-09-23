@@ -148,6 +148,23 @@ object OpSpec {
     (ops, precision(precs.head))
   }
 
+  /** The RUNTIME opcode set a build provides, which is NOT the cfg's op list.
+    *
+    * `FMA` is a BUILD op, not a selectable one: one fused multiply-add unit serves two runtime opcodes, so
+    * `op: ["FMA_FP16"]` yields a datapath that answers to ADD and SUMSQ (reduce) or MUL and ADD (elementwise)
+    * while naming neither in the cfg. Software asking "may I select SUMSQ?" has to be told yes.
+    *
+    * It matters that this lives in ONE function. The module classes derive their `hasAdd`/`hasSumsq`/`hasMul`
+    * construction flags from it AND the `Has*` classes publish it as the extension's capabilities, so a
+    * generated header can never claim an op the datapath does not build, nor omit one it does. Two copies of
+    * the rule would drift, and the direction of the drift decides whether software refuses work that runs or
+    * attempts work that silently returns some other opcode's answer.
+    *
+    * `provides` is what this extension's FMA covers; the caller names it because it differs per extension.
+    */
+  def runtimeOps(ops: Seq[String], provides: Seq[String]): Seq[String] =
+    (if (ops.contains("FMA")) ops.filterNot(_ == "FMA") ++ provides else ops).distinct
+
   /** Validates an explicit config `elementWidth` against the width implied by the op-set precision (the precision tag
     * is the source of truth — FP16/BF16⇒16, FP8⇒8, FP32⇒32). The config carries the width only to make it visible; a
     * mismatch (e.g. elementWidth:8 with an FP16 op) is a config error.

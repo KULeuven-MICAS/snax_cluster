@@ -57,14 +57,18 @@ class HasStreamMap(
   fpPipe:       Int = 1 // internal pipeline depth of the affine (a*x+b) FP units (timing cut knob)
 ) extends HasDataPathExtension {
   require(computeLanes > 0, "HasStreamMap: computeLanes must be > 0")
-  private val (_, transport) =
+  private val (funcNames, transport) =
     OpSpec.parse(func, Set("LINEAR", "EXP", "SILU", "RSQRT"), "HasStreamMap") // validate func names + precision
   OpSpec.checkWidth(elementWidth, transport, "HasStreamMap")         // explicit width must match the precision tag
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
-      moduleName = "StreamMap",
-      userCsrNum = 3,
-      dataWidth  = dataWidth
+      moduleName   = "StreamMap",
+      userCsrNum   = 3,
+      dataWidth    = dataWidth,
+      // The func CSR is a runtime select over whatever was elaborated, so the func LIST is the capability
+      // set: LINEAR is always there, the activations are not. A kernel that wants RSQRT has no other way
+      // to find out -- selecting an absent func falls through to LINEAR and returns wrong numbers.
+      capabilities = funcNames
     )
 
   def instantiate(clusterName: String): StreamMap =

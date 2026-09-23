@@ -554,18 +554,37 @@ return new $junctionName($junctionArgs)
   // Append CSR Extension Information in to Macro
   macro_template = macro_template + """
 // Extension Information
+// Marker: this header carries per-extension `..._HAS_<CAP>` defines. Software needs to tell an
+// ABSENT capability from a header generated before capabilities existed -- both look like an
+// undefined macro, and the safe default differs (refuse vs assume-present).
+#define XDMA_EXT_CAPS 1
 """
 
+  // Each extension gets its index AND, beneath it, one `..._HAS_<CAP>` per optional thing it elaborated.
+  // The index answers "is this extension here?"; the capabilities answer "may I ask it for X?", which an
+  // op-select CSR cannot be probed for at run time -- an absent op is silently substituted, not refused.
+  //
+  // NOTE the side is part of the name and part of the meaning. A READER extension transforms the stream on
+  // its way OUT of local TCDM, before the switch, so it serves a local loopback AND a push to a remote
+  // cluster; a WRITER extension transforms on the way IN to local TCDM, after the switch, so it serves a
+  // loopback AND data arriving from a remote cluster. Software that gates on one side only is asking the
+  // wrong question whenever the cfg put the extension on the other.
   for ((ext, i) <- readerExtensionParam.zipWithIndex) {
     macro_template = macro_template +
       s"""#define READER_EXT_${ext.extensionParam.moduleName.toUpperCase} ${i}
 """
+    for (cap <- ext.extensionParam.capabilities)
+      macro_template = macro_template +
+        s"#define READER_EXT_${ext.extensionParam.moduleName.toUpperCase}_HAS_${cap.toUpperCase} 1\n"
   }
 
   for ((ext, i) <- writerExtensionParam.zipWithIndex) {
     macro_template = macro_template +
       s"""#define WRITER_EXT_${ext.extensionParam.moduleName.toUpperCase} ${i}
 """
+    for (cap <- ext.extensionParam.capabilities)
+      macro_template = macro_template +
+        s"#define WRITER_EXT_${ext.extensionParam.moduleName.toUpperCase}_HAS_${cap.toUpperCase} 1\n"
   }
 
   for ((jct, i) <- writerJunctionParam.zipWithIndex) {

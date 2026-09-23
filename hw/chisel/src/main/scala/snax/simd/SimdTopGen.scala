@@ -111,6 +111,10 @@ object SimdTopGen extends App {
 
 // Extension region
 #define SIMD_EXT_NUM ${extensionParam.length}
+// Marker: this header carries per-extension `..._HAS_<CAP>` defines. Software needs to tell an
+// ABSENT capability from a header generated before capabilities existed -- both look like an
+// undefined macro, and the safe default differs (refuse vs assume-present).
+#define SIMD_EXT_CAPS 1
 #define SIMD_EXT_ENABLE_PTR SIMD_SRC_ENABLED_CHAN_PTR + 1
 #define SIMD_EXT_CSR_PTR SIMD_EXT_ENABLE_PTR + ${if (extensionParam.nonEmpty) 1 else 0}
 #define SIMD_EXT_CSR_NUM ${param.extUserCsrNum}
@@ -175,6 +179,13 @@ object SimdTopGen extends App {
 #define SIMD_EXT_${name}_CSR (SIMD_EXT_CSR_PTR + ${csrCursor})
 #define SIMD_EXT_${name}_CSR_NUM ${ext.extensionParam.userCsrNum}
 """
+    // WHAT THE EXTENSION CAN DO, not merely that it exists. An op/func CSR is a runtime select over the set
+    // the cfg elaborated, and selecting outside that set does NOT fault: StreamMap returns the LINEAR result
+    // for an absent activation, which is a well-formed tensor of wrong numbers with nothing reported. So the
+    // ops are named here and a kernel gates on `#ifdef SIMD_EXT_STREAMMAP_HAS_RSQRT`, never on the bare
+    // `SIMD_EXT_STREAMMAP` -- the latter cannot answer the question.
+    for (cap <- ext.extensionParam.capabilities)
+      macroTemplate = macroTemplate + s"#define SIMD_EXT_${name}_HAS_${cap.toUpperCase} 1\n"
     csrCursor += ext.extensionParam.userCsrNum
   }
 

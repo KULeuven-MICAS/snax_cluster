@@ -41,11 +41,15 @@ class HasStreamElementwise(
   require(computeLanes > 0, "HasStreamElementwise: computeLanes must be > 0")
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
-      moduleName = "StreamElementwise",
+      moduleName   = "StreamElementwise",
       // operandCount + (op-select). The op-select CSR is needed when both combines are runtime-selectable:
       // the fused FMA op provides both, and a legacy MUL+ADD set lists both. A single legacy op fixes it.
-      userCsrNum = if (ops.contains("FMA") || ops.size > 1) 2 else 1,
-      dataWidth  = dataWidth
+      userCsrNum   = if (ops.contains("FMA") || ops.size > 1) 2 else 1,
+      dataWidth    = dataWidth,
+      // The RUNTIME opcodes (0=MUL, 1=ADD), not the cfg's op list: one fused "FMA" build op answers to both
+      // and is not selectable itself. NOTE the op-select CSR only exists when there is a choice to make (see
+      // above), so a kernel needs both facts -- which ops exist, and whether it may name one.
+      capabilities = OpSpec.runtimeOps(ops, Seq("MUL", "ADD"))
     )
 
   def instantiate(clusterName: String): StreamElementwise =
@@ -79,9 +83,11 @@ class StreamElementwise(
   // the op CSR. hasMul/hasAdd are the runtime capabilities the built datapath must provide; the FMA op
   // provides both, so `bothOps` is true and the op CSR is honoured. Legacy single-op sets still build the
   // cheaper plain mul/add.
-  val hasFMA  = ops.contains("FMA")
-  val hasMul  = hasFMA || ops.contains("MUL")
-  val hasAdd  = hasFMA || ops.contains("ADD")
+  // Expanded once in OpSpec, so the generated header and the built datapath cannot disagree about which
+  // opcodes exist. The fused FMA op provides both combines.
+  private val runtimeOps = OpSpec.runtimeOps(ops, Seq("MUL", "ADD"))
+  val hasMul  = runtimeOps.contains("MUL")
+  val hasAdd  = runtimeOps.contains("ADD")
   val bothOps = hasMul && hasAdd // both combines available => the FMA path with a runtime op-select
 
   // op CSR (ext_csr_i(1)[7:0]) values — UNCHANGED for source-compatibility: 0=MUL, 1=ADD.
