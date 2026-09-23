@@ -279,6 +279,12 @@
                                     dataWidth: 512
                                     elemWidth: 16
                                     fpPipe: 1
+                                    intWidths:
+                                    [
+                                        8
+                                        16
+                                        32
+                                    ]
                                 }
                                 HasMonoidJunction:
                                 {
