@@ -343,6 +343,31 @@
                             {
                                 HasTransposer: {row:[8,8], col:[8,8], elementWidth:[8,16]}
                                 HasInt32ToFp32: {dataWidth: 512, numPipe: 1}
+                                // LOCAL N-operand INT32 fold: 16 lanes of a 512-bit beat per cycle,
+                                // against a scalar loop on the xDMA hart. This is the GEMM K-split
+                                // partial sum, D = D0 + D1 + ...
+                                //
+                                // NOT THE SAME THING AS HasElementwiseJunction above, and the two are
+                                // deliberately on OPPOSITE SIDES OF THE DATA SWITCH because they cover
+                                // opposite directions:
+                                //
+                                //   reader ext -> switch -+-> writer ext -> writer   (local)
+                                //                         +-> toRemote               (push OUT)
+                                //   fromRemote -> switch -^                          (push IN)
+                                //
+                                // The junction folds beats ARRIVING FROM ANOTHER ENDPOINT -- that is a
+                                // chain gather, and it needs chain_num >= 2 real endpoints. This folds
+                                // several operands of THIS cluster's own memory and cannot cross a
+                                // cluster boundary at all. Neither substitutes for the other.
+                                //
+                                // READER, NOT WRITER, AND ON PURPOSE. A writer-side fold would sit in
+                                // the same direction the junction already covers, and buy nothing this
+                                // cluster does not have. On the reader it (1) composes with the junction
+                                // instead of duplicating it, (2) makes REDUCE-THEN-PUSH possible -- fold
+                                // N local partials and send ONE beat to a remote collector, which is the
+                                // natural pairing with a K-split -- and (3) folds BEFORE the switch, so
+                                // one beat per tile traverses the switch and writer buffers instead of N.
+                                HasElementwiseAdd: {elementWidth: 32, dataWidth: 512}
                             }
                         }
                         xdma: false
