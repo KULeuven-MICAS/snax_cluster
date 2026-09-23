@@ -1,6 +1,12 @@
-// Copyright 2025 KU Leuven.
+// Copyright 2026 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-    N: 256, // row length (FP16 elements), multiple of 32
+    // ROWS must be 32 -- the FP16 lane count of a 512-bit beat. The transposed path puts
+    // one token per lane, so a whole tile's per-token max and sum are exactly one beat.
+    ROWS: 32,
+    // Row length in FP16 elements, a multiple of 32. Also bounded by the on-device
+    // reciprocal: 1/s is rsqrt(s*s) and s <= D, so D*D must fit FP16 (D <= 255 in the
+    // worst case). The datagen checks what this tile actually reaches.
+    D: 128,
 }

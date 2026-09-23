@@ -15,5 +15,3 @@ runs:
   - elf: apps/snax-simd-swiglu/build/snax-simd-swiglu.elf
   - elf: apps/snax-simd-rope/build/snax-simd-rope.elf
   - elf: apps/snax-simd-reduce-multirow/build/snax-simd-reduce-multirow.elf
-  - elf: apps/snax-simd-softmax-multirow/build/snax-simd-softmax-multirow.elf
-  - elf: apps/snax-simd-softmax-fold/build/snax-simd-softmax-fold.elf
