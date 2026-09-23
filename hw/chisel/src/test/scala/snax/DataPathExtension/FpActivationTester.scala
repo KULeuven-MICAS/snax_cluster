@@ -10,7 +10,7 @@ import org.scalatest.flatspec.AnyFlatSpec
   * be compared directly across a dense input sweep. Stronger than a ULP check — proves the FP-unit sharing
   * introduced no numerical drift.
   */
-class FpActivationTester extends AnyFlatSpec with ChiselScalatestTester {
+class FpActivationTester extends AnyFlatSpec with snax.utils.VerilatorTester {
 
   private class ActDiff(hasExp: Boolean, hasSilu: Boolean, funcSilu: Boolean, expLutN: Int, siluN: Int)
       extends Module
@@ -21,7 +21,7 @@ class FpActivationTester extends AnyFlatSpec with ChiselScalatestTester {
       val merged = Output(UInt(32.W)) // merged FpActivation
     })
     val a = Module(new FpActivation(pipelined = false, hasExp = hasExp, hasSilu = hasSilu, expLutN, siluN))
-    a.io.in := io.in; a.io.func := funcSilu.B; io.merged := a.io.out
+    a.io.in := io.in; a.io.func := (if (funcSilu) FpActivation.SILU else FpActivation.EXP).U; io.merged := a.io.out
     if (funcSilu) {
       val m = Module(new FpSilu(pipelined = false, siluN)); m.io.in := io.in; io.golden := m.io.out
     } else {

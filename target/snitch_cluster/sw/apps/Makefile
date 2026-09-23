@@ -61,8 +61,6 @@ SUBDIRS += snax-simd-silu
 SUBDIRS += snax-simd-swiglu
 SUBDIRS += snax-simd-rope
 SUBDIRS += snax-simd-reduce-multirow
-SUBDIRS += snax-simd-rmsnorm-multirow
-SUBDIRS += snax-simd-rmsnorm-fold
 SUBDIRS += snax-simd-softmax-multirow
 SUBDIRS += snax-simd-softmax-fold
 # Kernels that stay on the xDMA core (hart 2): writer extension / plain moves.

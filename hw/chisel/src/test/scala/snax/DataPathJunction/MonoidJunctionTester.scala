@@ -427,8 +427,8 @@ class MonoidJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
   // ================================================================================================
 
   private def hasMonoid16 = new HasMonoidJunction(elemWidth = 16)
-  private def encFp16(d: Double): BigInt = BigInt(java.lang.Float.floatToFloat16(d.toFloat) & 0xffff)
-  private def decFp16(b: BigInt): Double = java.lang.Float.float16ToFloat(b.toShort).toDouble
+  private def encFp16(d: Double): BigInt = BigInt(snax.utils.TestFp16.enc(d) & 0xffff)
+  private def decFp16(b: BigInt): Double = snax.utils.TestFp16.dec(b.toInt).toDouble
   private val FP16_ID_M   = BigInt(0xfbff) // the max-monoid key identity, in FP16
   private val FP16_ID_MAX = BigInt(0x7bff) // the min-monoid's
   private val FP16_ONE    = BigInt(0x3c00) // the ordered scan's

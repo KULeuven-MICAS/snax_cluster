@@ -58,7 +58,7 @@ class HasStreamMap(
 ) extends HasDataPathExtension {
   require(computeLanes > 0, "HasStreamMap: computeLanes must be > 0")
   private val (_, transport) =
-    OpSpec.parse(func, Set("LINEAR", "EXP", "SILU"), "HasStreamMap") // validate func names + precision
+    OpSpec.parse(func, Set("LINEAR", "EXP", "SILU", "RSQRT"), "HasStreamMap") // validate func names + precision
   OpSpec.checkWidth(elementWidth, transport, "HasStreamMap")         // explicit width must match the precision tag
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
@@ -86,7 +86,7 @@ class StreamMap(
   import FpHelpers._
 
   // transport (element) precision comes from the func-set; a/b and the per-lane math stay FP32
-  val (funcs, transport) = OpSpec.parse(func, Set("LINEAR", "EXP", "SILU"), "StreamMap")
+  val (funcs, transport) = OpSpec.parse(func, Set("LINEAR", "EXP", "SILU", "RSQRT"), "StreamMap")
   OpSpec.checkWidth(elementWidth, transport, "StreamMap") // config width must match the func-set precision
   val lanes        = extensionParam.dataWidth / elementWidth
   val computeLanes = if (computeLanesParam > lanes) lanes else computeLanesParam // time-mux width
@@ -95,7 +95,9 @@ class StreamMap(
 
   val hasExp    = funcs.contains("EXP")
   val hasSilu   = funcs.contains("SILU")
+  val hasRsqrt  = funcs.contains("RSQRT")
   val hasLinear = funcs.contains("LINEAR")
+  val hasAct    = hasExp || hasSilu || hasRsqrt
 
   // FpActivation ROM depths (measured via a ULP-vs-depth sweep, 2026-07-08):
   //   exp: 2^(i/N) linear interp stays at 1 FP16 ULP down to lutN=16 (budget <=2) -> 32 keeps margin cheaply.
@@ -104,21 +106,25 @@ class StreamMap(
   //   at 128 but only trades 25% ROM for +1 FMA/lane + a pipeline stage (a wash), so it stays linear/256.
   val expLutN = 32
   val siluN   = 256
+  //   rsqrt: a tangent-line table of the significand over [1,4). 64 nodes is 0.2 FP16 ULP (the error is
+  //   analytic -- see FpActivation), an eighth of silu's ROM, and the exponent half carries no error at all.
+  val rsqN    = 64
 
-  def ACT_EXP  = 1.U
-  def ACT_SILU = 2.U
+  def ACT_EXP   = FpActivation.EXP.U
+  def ACT_SILU  = FpActivation.SILU.U
+  def ACT_RSQRT = FpActivation.RSQRT.U
 
   val a        = ext_csr_i(0)
   val b        = ext_csr_i(1)
   val actField = ext_csr_i(2)
-  val act      = actField(1, 0) // func: 0=LINEAR, 1=EXP, 2=SILU
+  val act      = actField(1, 0) // func: 0=LINEAR, 1=EXP, 2=SILU, 3=RSQRT
 
   // ---- pipeline depth (timing): the per-lane chain affine-ffma -> act -> narrow is cut into P register
   // stages so no single combinational path crosses a clock period; the FSM below drains it. ----
   // fpPipe = internal pipeline depth of the affine FP units (mixed ffma / narrow). The EXP/SILU activation
   // keeps its own fixed FpActivation.PipeLatency (its LUT chain has no numPipe knob).
   val fpPipe  = if (pipelined) fpPipeParam else 0
-  val actLat  = if (pipelined && (hasExp || hasSilu)) FpActivation.PipeLatency else 0
+  val actLat  = if (pipelined && hasAct) FpActivation.PipeLatency else 0
   // affine feeds x RAW (no widen) into a mixed FMA; a fpPipe-deep input ShiftRegister keeps preLat = 2*fpPipe+1
   val preLat  = if (pipelined) 2 * fpPipe + 1 else 0 // sr(x, fpPipe) -> mixed ffma(fpPipe) -> register
   val postLat = if (pipelined) fpPipe + 1 else 0     // narrow(fpPipe) -> register
@@ -133,16 +139,18 @@ class StreamMap(
     // it to FP32 first — bit-identical (x is exact in FP32) but a 24x11 multiplier and no widen. The
     // ShiftRegister keeps x's arrival (and thus preLat = 2*fpPipe+1) unchanged, so the streaming FSM is intact.
     val t      = sr(ffmaT(a, ShiftRegister(laneIn, fpPipe), b, transport, fpPipe))
-    // EXP and SILU share ONE merged activation core (mutually exclusive at runtime; func picks exp vs silu).
-    val actES  = if (hasExp || hasSilu) {
-      val m = Module(new FpActivation(pipelined, hasExp, hasSilu, expLutN, siluN))
-      m.io.in := t; m.io.func := (act === ACT_SILU); m.io.out
+    // EXP, SILU and RSQRT share ONE merged activation core (mutually exclusive at runtime; func picks).
+    val actES  = if (hasAct) {
+      val m = Module(new FpActivation(pipelined, hasExp, hasSilu, expLutN, siluN, hasRsqrt, rsqN))
+      m.io.in := t; m.io.func := act; m.io.out
     } else t
-    val tD     = if (actLat > 0) ShiftRegister(t, actLat) else t // delay LINEAR to match EXP/SILU latency
+    val tD     = if (actLat > 0) ShiftRegister(t, actLat) else t // delay LINEAR to match the activation
     // pick the activation output only when `act` selects a BUILT non-linear func; else LINEAR (=tD).
-    val selAct = (if (hasExp) act === ACT_EXP else false.B) || (if (hasSilu) act === ACT_SILU else false.B)
+    val selAct = (if (hasExp) act === ACT_EXP else false.B) ||
+      (if (hasSilu) act === ACT_SILU else false.B) ||
+      (if (hasRsqrt) act === ACT_RSQRT else false.B)
     val r      =
-      if (!hasExp && !hasSilu) tD
+      if (!hasAct) tD
       else if (!hasLinear) actES
       else Mux(selAct, actES, tD)
     sr(narrow(r, transport, fpPipe)) // postLat stage (narrow cut by fpPipe)

@@ -171,7 +171,7 @@ object MonoidCombine {
     val delta   = Mux(d0IsNaN, F32_ZERO, Mux(keyPol, fneg32(d0), d0))
     val exp     = Module(new FpActivation(true, true, false, expLutN, 256))
     exp.io.in   := delta
-    exp.io.func := false.B
+    exp.io.func := FpActivation.EXP.U // exp-only build: the select constant-folds away
     (exp.io.out, !aw)
   }
 

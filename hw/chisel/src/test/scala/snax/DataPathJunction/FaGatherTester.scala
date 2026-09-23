@@ -63,8 +63,8 @@ class FaGatherTester extends AnyFlatSpec with ChiselScalatestTester {
   private val gold  = Array.tabulate(Br, dHead)((r, j) => gNum(r)(j) / lStar(r))
 
   // ---- codecs ----------------------------------------------------------------------------------------------
-  private def encF16(d: Double): BigInt = BigInt(java.lang.Float.floatToFloat16(d.toFloat) & 0xffff)
-  private def decF16(b: BigInt): Double = java.lang.Float.float16ToFloat(b.toShort).toDouble
+  private def encF16(d: Double): BigInt = BigInt(snax.utils.TestFp16.enc(d) & 0xffff)
+  private def decF16(b: BigInt): Double = snax.utils.TestFp16.dec(b.toInt).toDouble
   private def pOf(x: Double):    Int    = math.floor(math.log(x) / math.log(2.0)).toInt // = l's exponent field
 
   private def word(n: Int, nExp: Int, sigma: Int, nValid: Int, fmt: Int): BigInt =
@@ -198,8 +198,8 @@ class FaGatherElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
   private val gScal = Array.tabulate(Br, dHead)((r, j) => (0 until P).map(c => math.abs(alpha(c)(r) * O(c)(r)(j))).max)
   private val gold  = Array.tabulate(Br, dHead)((r, j) => gNum(r)(j) / lStar(r))
 
-  private def encF16(d: Double): BigInt = BigInt(java.lang.Float.floatToFloat16(d.toFloat) & 0xffff)
-  private def decF16(b: BigInt): Double = java.lang.Float.float16ToFloat(b.toShort).toDouble
+  private def encF16(d: Double): BigInt = BigInt(snax.utils.TestFp16.enc(d) & 0xffff)
+  private def decF16(b: BigInt): Double = snax.utils.TestFp16.dec(b.toInt).toDouble
 
   "FaGather_elementwise" should "score the pre-scaled ADD route at both transports" in {
     test(new DataPathJunctionHarness(new HasElementwiseJunction(elemWidth = 16)))

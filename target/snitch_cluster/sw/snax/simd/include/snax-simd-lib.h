@@ -132,6 +132,13 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 #define SIMD_FUNC_LINEAR 0u
 #define SIMD_FUNC_EXP 1u
 #define SIMD_FUNC_SILU 2u
+// out = 1/sqrt(a*x + b), for the per-row normalisations. `a` is where the division by the
+// row length goes: a reduce emits SUM(x^2) and rmsnorm wants 1/sqrt(SUM/D), so a = 1/D and
+// b = 0 -- and rather than costing a pass, this REPLACES the identity multiply on the
+// broadcast pass that a per-row scalar already needs. Total: a non-positive or non-finite
+// input gives 0, so an all-zero row normalises to zero instead of poisoning itself with
+// +Inf. Accurate to 1 FP16 ULP, which is better than the core's integer sqrt+reciprocal.
+#define SIMD_FUNC_RSQRT 3u
 
 // StreamReduce: fold a row of `operand_beats` down to one scalar beat.
 #define SIMD_RED_MAX 0u
@@ -180,9 +187,14 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 // Latch the FIRST beat of the task as operand B and combine every later beat
 // against it, instead of taking both operands from the stream.
 //
-// Use with operandCount = 1, so each beat is its own row. The task consumes
-// 1 + N beats and produces 1 + N: output beat 0 is the latched operand passing
-// through, so point the writer ONE BEAT EARLY and let it land on a dummy slot.
+// Use with operandCount = 1, so each beat is its own row. Beat 0 seeds the latch
+// and emits NOTHING; beats 1..N emit op(B, beat). So the task consumes 1 + N
+// beats and produces N, the seed beat must sit IMMEDIATELY BELOW the data (the
+// reader is one flat sweep and the seed is simply its first beat), and the
+// writer descriptor covers exactly the data -- do not aim it one beat early.
+// (It used to pass the seed through as a junk beat; the RTL suppresses it now,
+// which is also what lets a sticky elementwise sit mid-chain without a
+// downstream Reduce folding the junk in.)
 //
 // Without this a broadcast operand has to be physically replicated once per data
 // beat -- a whole extra pass to write it and a doubled read stream to consume

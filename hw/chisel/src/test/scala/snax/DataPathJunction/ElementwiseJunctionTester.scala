@@ -29,8 +29,8 @@ class ElementwiseJunctionTester extends AnyFlatSpec with ChiselScalatestTester {
   private def csrWord(op: Int, fmt: Int): BigInt = (BigInt(fmt) << 4) | BigInt(op)
 
   // ---- transport-format codecs (goldens must be computed on the DECODED operands, not the doubles) ----
-  private def encFp16(d: Double): BigInt = BigInt(java.lang.Float.floatToFloat16(d.toFloat) & 0xffff)
-  private def decFp16(b: BigInt): Double = java.lang.Float.float16ToFloat(b.toShort).toDouble
+  private def encFp16(d: Double): BigInt = BigInt(snax.utils.TestFp16.enc(d) & 0xffff)
+  private def decFp16(b: BigInt): Double = snax.utils.TestFp16.dec(b.toInt).toDouble
   private def encBf16(d: Double): BigInt = {
     val b = java.lang.Float.floatToIntBits(d.toFloat)
     BigInt(((b + 0x7fff + ((b >>> 16) & 1)) >>> 16) & 0xffff)

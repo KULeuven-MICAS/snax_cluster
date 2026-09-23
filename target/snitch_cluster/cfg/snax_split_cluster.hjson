@@ -162,6 +162,7 @@
                                             LINEAR_FP16
                                             EXP_FP16
                                             SILU_FP16
+                                            RSQRT_FP16
                                         ]
                                         fpPipe: 1
                                     }

@@ -49,7 +49,7 @@ class JunctionSocketTester extends AnyFlatSpec with ChiselScalatestTester {
   private def csrLinear(op: Int, fmt: Int): BigInt = (BigInt(fmt) << 4) | BigInt(op)
 
   // ---- transport-format codecs -------------------------------------------------------------------------------
-  private def encFp16(d: Double): BigInt = BigInt(java.lang.Float.floatToFloat16(d.toFloat) & 0xffff)
+  private def encFp16(d: Double): BigInt = BigInt(snax.utils.TestFp16.enc(d) & 0xffff)
   private def encBf16(d: Double): BigInt = {
     val b = java.lang.Float.floatToIntBits(d.toFloat)
     BigInt(((b + 0x7fff + ((b >>> 16) & 1)) >>> 16) & 0xffff)

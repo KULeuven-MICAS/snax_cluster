@@ -1,6 +1,13 @@
-// Copyright 2025 KU Leuven.
+// Copyright 2026 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// The shape a transformer layer's norm1/norm2 run at: T = 32 tokens, d_model = 128.
+//
+// ROWS must be 32 -- one FP16 lane per token in the transposed path, so a whole tile's
+// per-token scalars are exactly one 64 B beat. D must be a power of two: both the core's
+// mean and the hardware rsqrt's a = 1/D are exponent-only, exact at 2^k and not otherwise.
 {
-    N: 256, // row length (FP16 elements), a power of two, multiple of 32
+    ROWS: 32, // tokens; one per FP16 lane in the transposed path
+    D: 128,   // d_model (FP16 elements), a power of two, multiple of 32
 }
