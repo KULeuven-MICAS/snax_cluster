@@ -1,0 +1,17 @@
+// Copyright 2026 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// The first half of HeMAiA's llm_layer_4cluster, at the layer's own shape: T = 32 tokens,
+// d_model = 128, one head (d_head == d_model). The datagen draws x and the three weights
+// from the same seed and in the same order as util/sim/llm/llm_layer_data.py, so every
+// tensor here is the tensor that layer computes.
+//
+// TOKENS must be 32: it is FlashAttention's query tile Br (one FP16 lane per query) and,
+// for this decode-shaped layer, also its key tile Bc -- the projected K of these tokens
+// IS the KV tile the check matmul reads. D_MODEL must be a power of two (the RMSNorm's
+// 1/D is an exponent subtract) and a multiple of 32.
+{
+    TOKENS: 32,
+    D_MODEL: 128,
+}

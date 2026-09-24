@@ -81,6 +81,9 @@ SUBDIRS += snax-xdma-mem-read
 # prefill on this machine.
 SUBDIRS += snax-flashattn-decode
 SUBDIRS += snax-flashattn-prefill
+# The layer stretch that FEEDS FlashAttention: RMSNorm -> quantise -> Q/K/V projections
+# -> int8 operands in FA's own layouts, all four engines, checked against FA's two matmuls.
+SUBDIRS += snax-llm-qkv-to-fa
 endif
 # The FP16 SIMD apps below need the StreamMap / StreamReduce / StreamElementwise /
 # Fp16ToInt8 reader extensions, which only cfg/snax_xdma_cluster.hjson builds --
