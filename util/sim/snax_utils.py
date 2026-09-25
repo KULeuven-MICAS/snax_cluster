@@ -719,10 +719,14 @@ def sumpool_golden(
     return output
 
 
-def int32_to_fp16_golden(x: int) -> int:
+def int32_to_fp16_golden(x: int, shift: int = 0) -> int:
     """
     Convert signed int32 to IEEE 754 half-precision (binary16).
     Returns a 16-bit UNSIGNED integer (0..65535).
+
+    `shift` is the converter's power-of-two output scale (Int32ToFp16Converter built with
+    shift = 1, csr(1)[3:0]): the result is RNE(x * 2^-shift), shift clamped to 0..14. It only
+    lowers the exponent, and with shift <= 14 no integer input can become subnormal.
     """
     x = int(x)
     # Handle signed → absolute value
@@ -737,7 +741,7 @@ def int32_to_fp16_golden(x: int) -> int:
 
     exp_unbiased = msb_index
     exp_bias = 15
-    exp_raw = exp_unbiased + exp_bias
+    exp_raw = exp_unbiased + exp_bias - min(max(int(shift), 0), 14)
 
     # Overflow → ±Inf
     if exp_raw >= 31:

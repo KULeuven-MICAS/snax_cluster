@@ -297,4 +297,100 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
     }.toSeq
     for (i <- gd.indices) assert(outs(i) == gd(i), s"tailPeriod=0 beat $i differs from the plain pack")
   }
+
+  // ---- 4-BEAT INTERLEAVE ------------------------------------------------------------------------------------
+  // One group = 4 input beats (b0..b3, each 32 FP16 lanes). Out beat ob holds lanes 16*ob .. 16*ob+15, each as a
+  // 4-byte atom: byte 4*c + s = quant(b_s[16*ob + c]). That is FlashAttention's P^T as a B operand, when b_s is
+  // key 4k+s of the score tile and lane q is query q.
+  def interleaveRef(group: Seq[BigInt], scaleBits: Long): Seq[BigInt] =
+    (0 until 2).map { ob =>
+      packInt8(for (c <- 0 until 16; s <- 0 until 4) yield quantRef(lanesOf(group(s))(16 * ob + c), scaleBits))
+    }
+
+  // `rows` rows of `period` data beats + (if `tail`) one passthrough beat; csr(1) = tailPeriod | ilv << 16.
+  def runIlvHarness(
+    invScaleBits: BigInt,
+    period:       Int,
+    rows:         Int,
+    computeLanes: Int,
+    tail:         Boolean,
+    ilv:          Boolean,
+    rng:          Random
+  ): (Seq[BigInt], Seq[BigInt]) = {
+    val inRows     = Seq.fill(rows)(Seq.fill(period + (if (tail) 1 else 0))(packFp16(Seq.fill(32)(sampleFp16(rng)))))
+    val inputBeats = inRows.flatten
+    val gd         = inRows.flatMap { row =>
+      val data   = row.take(period)
+      val packed =
+        if (ilv) data.grouped(4).flatMap(g => interleaveRef(g, invScaleBits.toLong)).toSeq
+        else
+          data.grouped(2).map { pair =>
+            packInt8(
+              lanesOf(pair(0)).map(h => quantRef(h, invScaleBits.toLong)) ++
+                lanesOf(pair(1)).map(h => quantRef(h, invScaleBits.toLong))
+            )
+          }.toSeq
+      if (tail) packed :+ row.last else packed
+    }
+    var outs = Seq[BigInt]()
+    test(new DataPathExtensionHarness(new HasFp16ToInt8(16, 8, 512, computeLanes, 1, 1, 1)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+        dut.io.csr_i(0).poke(invScaleBits.U)
+        dut.io.csr_i(1).poke(((if (tail) period else 0) | (if (ilv) 1 << 16 else 0)).U)
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+        var threads = new chiseltest.internal.TesterThreadList(Seq())
+        threads = threads.fork {
+          dut.io.data_i.valid.poke(true)
+          for (bt <- inputBeats) {
+            while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+            dut.io.data_i.bits.poke(bt); dut.clock.step(1)
+          }
+          dut.io.data_i.valid.poke(false)
+        }
+        threads = threads.fork {
+          // Take the output with an irregular ready, so the serializer is exercised under backpressure.
+          var k = 0
+          for (_ <- gd.indices) {
+            while (!dut.io.data_o.valid.peekBoolean()) dut.clock.step(1)
+            if (k % 3 == 2) dut.clock.step(2)
+            outs = outs :+ dut.io.data_o.bits.peekInt()
+            dut.io.data_o.ready.poke(true); dut.clock.step(1); dut.io.data_o.ready.poke(false)
+            k += 1
+          }
+        }
+        threads.joinAndStep()
+        dut.io.data_o.ready.poke(true)
+        var w = 0; while (dut.io.busy_o.peekBoolean() && w < 400) { dut.clock.step(1); w += 1 }
+        dut.io.data_o.ready.poke(false)
+        assert(!dut.io.busy_o.peekBoolean(), "Fp16ToInt8 interleave: busy_o stuck high after the drain")
+        assert(!dut.io.data_o.valid.peekBoolean(), "Fp16ToInt8 interleave: an extra output beat is pending")
+      }
+    (outs, gd)
+  }
+
+  for (cl <- Seq(8, 16, 32))
+    it should s"interleave 4 beats into B-operand atoms, with the row tail passed through (cl=$cl)" in {
+      val (hw, gd) = runIlvHarness(f32bits(127.0f), period = 8, rows = 3, computeLanes = cl, tail = true,
+                                   ilv = true, rng = new Random(0x11C0 + cl))
+      assert(hw.length == gd.length, s"got ${hw.length} output beats, expected ${gd.length}")
+      for (i <- hw.indices)
+        assert(hw(i) == gd(i), f"interleave beat $i (cl=$cl) mismatch:\n  HW=0x${hw(i).toString(16)}\n  SW=0x${gd(i).toString(16)}")
+    }
+
+  it should "interleave without a tail" in {
+    val (hw, gd) = runIlvHarness(f32bits(16.0f), period = 12, rows = 1, computeLanes = 16, tail = false,
+                                 ilv = true, rng = new Random(0x11C1))
+    assert(hw.length == gd.length, s"got ${hw.length} output beats, expected ${gd.length}")
+    for (i <- hw.indices) assert(hw(i) == gd(i), s"no-tail interleave beat $i mismatch")
+  }
+
+  // The bit CLEAR on an interleave-capable build must be the plain 2:1 pack, tail and all.
+  for (cl <- Seq(8, 32))
+    it should s"be the plain pack when the interleave bit is clear (cl=$cl)" in {
+      val (hw, gd) = runIlvHarness(f32bits(64.0f), period = 6, rows = 2, computeLanes = cl, tail = true,
+                                   ilv = false, rng = new Random(0x11C2))
+      assert(hw.length == gd.length, s"got ${hw.length} output beats, expected ${gd.length}")
+      for (i <- hw.indices) assert(hw(i) == gd(i), s"plain-mode beat $i (cl=$cl) differs")
+    }
 }

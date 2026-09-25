@@ -41,8 +41,8 @@ class Fp16ToInt8PE(pipelined: Boolean = false, fpPipeParam: Int = 0) extends Mod
   val LO    = f32lit(-128.0f)
 
   // ---- stage 0: multiply the raw fp16 lane by the FP32 inv_scale (mixed FP32*FP16 -> FP32: 24x11 mult, no
-  // widen; the fp16 value is exact in FP32 so this is bit-identical). ShiftRegister keeps the old
-  // widen(fpPipe)+fmul(fpPipe) latency so the streaming pack FSM is unchanged. ----
+  // widen; the fp16 value is exact in FP32 so this is bit-identical). ShiftRegister pads the stage to
+  // widen(fpPipe)+fmul(fpPipe) latency, which is what the streaming pack FSM is timed for. ----
   val inD    = ShiftRegister(io.in, fpPipe)
   val scaled = sr(fmulT(io.inv_scale, inD, FP16, fpPipe)) // reg0
 
@@ -89,6 +89,15 @@ object Fp16ToInt8PE {
   * through unquantised instead of narrowing it. This is what lets a StreamReduce TAP pass also quantise: the row is
   * narrowed and the reduction it produced stays FP16, so [tile][scalar] comes out of ONE pass instead of the tile
   * being written in FP16 and read back a second time. See the comment at `hasTail` for the ordering argument.
+  *
+  * 4-BEAT INTERLEAVE (`interleave`, csr(1) bit 16 at run time): take FOUR input beats as one group and emit TWO output
+  * beats in which every 4-byte atom is one input LANE across the four beats -- out[q/16][4*(q%16) + b] = quant(in_b[q]).
+  * That is the GEMM's B-operand atom (tileSize = 4 consecutive K for one N column) built from beats that each carry
+  * one K for every column. FlashAttention needs exactly this: its softmax sees S^T one KEY per beat, so the per-query
+  * reductions run along beats, but the PV matmul contracts over keys and reads P^T as B -- four keys of one query per
+  * atom. Concatenating the beats (the default) hands PV a scrambled P; interleaving hands it the operand, in the same
+  * pass and at the same output rate (two output beats per four input beats is still 2:1). With the bit clear the stage
+  * is the plain 2:1 pack, and with the build parameter 0 none of the interleave logic is generated at all.
   */
 class Fp16ToInt8(
   in_elementWidth:   Int     = 16,
@@ -96,7 +105,8 @@ class Fp16ToInt8(
   computeLanesParam: Int     = 0,
   fpPipeParam:       Int     = 1,
   tailPassthrough:   Int     = 0,
-  pipelined:         Boolean = true
+  pipelined:         Boolean = true,
+  interleave:        Int     = 0
 )(implicit extensionParam: DataPathExtensionParam)
     extends DataPathExtension {
 
@@ -143,9 +153,28 @@ class Fp16ToInt8(
   val curIsTail    = RegInit(false.B) // the beat currently being issued is a tail beat
   val tailInFlight = RegInit(false.B) // its last sub-cycle has issued, its retire has not landed
 
+  // ---- 4-beat interleave (csr(1) bit 16; built only when `interleave` != 0) -------------------------------
+  // A GROUP is `pack` input beats in the plain mode and `ilvGroup` in the interleaved one. The pack index, the
+  // credit reservation and the tail-must-land-on-a-boundary rule all count groups, and a group is ONE
+  // output-queue entry: the entry carries both output beats of an interleaved group, and the serializer at the
+  // output hands them out one per handshake. The credit accounting, and everything a tail beat relies on, is
+  // therefore the same in both modes.
+  val hasIlv      = interleave != 0
+  val ilvGroup    = 4                      // input beats per interleaved group = the B atom's K extent
+  val lanesPerOut = outElems / ilvGroup    // input lanes (N columns) per output beat: 16
+  val ilvOutBeats = nPE / lanesPerOut      // output beats per interleaved group: 2
+  require(
+    !hasIlv || (outElems % ilvGroup == 0 && nPE % lanesPerOut == 0 && ilvOutBeats * outElems == ilvGroup * nPE),
+    s"Fp16ToInt8: interleave needs $ilvGroup beats of $nPE lanes to fill whole output beats of $outElems"
+  )
+  val maxPack     = if (hasIlv) ilvGroup else pack
+  val outBeatsMax = if (hasIlv) ilvOutBeats else 1
+  val ilv         = if (hasIlv) ext_csr_i(1)(16) else false.B
+  val groupLast   = if (hasIlv) Mux(ilv, (ilvGroup - 1).U, (pack - 1).U) else (pack - 1).U
+
   // ---- streaming time-mux + pipeline FSM (continuous-issue; see StreamMap for the rationale) -----------
-  // Was: accept 1 beat -> issue subCycles -> DRAIN Ppe idle -> pack -> emit -> re-accept (per-beat bubble).
-  // Now: the `computeLanes` PEs quantize one sub-group per cycle across back-to-back beats; each input
+  // The `computeLanes` PEs quantize one sub-group per cycle across back-to-back beats, with no drain
+  // between input beats; each input
   // beat's int8 results retire into a DISTINCT nPE-wide slice of the output beat, and after `pack` input
   // beats fill it the beat is pushed into a small skid Queue. Each element is independent (NO FP
   // accumulator recurrence), so -- unlike StreamReduce/StreamElementwise -- there is no `gap`: it streams
@@ -154,7 +183,7 @@ class Fp16ToInt8(
   // CONTRACT: ext_start_i only asserts when idle (ext_busy_o low, guaranteed by the orchestration).
   val inBeat  = Reg(UInt((nPE * in_elementWidth).W))
   val inLanes = inBeat.asTypeOf(Vec(nPE, UInt(in_elementWidth.W)))
-  val outRegs = Reg(Vec(outElems, SInt(out_elementWidth.W)))
+  val outRegs = Reg(Vec(outElems * outBeatsMax, SInt(out_elementWidth.W)))
 
   // valid-pulse pipeline CLEARED by ext_start_i (a pack-emit still draining from the previous task must
   // not push an unreserved beat after the credit reset).
@@ -171,15 +200,18 @@ class Fp16ToInt8(
   // minimum credit-safe depth (see StreamMap): the credit caps outstanding, so the queue never overflows
   // below inFlightMax; slack only helps under sustained backpressure the fast writer never causes.
   val Qdepth      = scala.math.max(2, inFlightMax)
-  val outQ        = Module(new Queue(UInt(extensionParam.dataWidth.W), entries = Qdepth))
+  // An interleaved group is TWO output beats, so an entry carries both plus a flag saying how many it holds.
+  val dw          = extensionParam.dataWidth
+  val entryW      = if (hasIlv) 2 * dw + 1 else dw
+  val outQ        = Module(new Queue(UInt(entryW.W), entries = Qdepth))
   val credit      = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
 
   val haveBeat        = RegInit(false.B)
   val sub             = RegInit(0.U(log2Ceil(subCycles).max(1).W))
-  val packIdx         = RegInit(0.U(log2Ceil(pack).max(1).W)) // pack-index of the beat being issued
-  val nextPack        = RegInit(0.U(log2Ceil(pack).max(1).W)) // pack-index of the NEXT beat to accept
+  val packIdx         = RegInit(0.U(log2Ceil(maxPack).max(1).W)) // group index of the beat being issued
+  val nextPack        = RegInit(0.U(log2Ceil(maxPack).max(1).W)) // group index of the NEXT beat to accept
   val lastSub         = sub === (subCycles - 1).U
-  val lastInPack      = packIdx === (pack - 1).U
+  val lastInPack      = packIdx === groupLast
   val nextIsPackStart = nextPack === 0.U
 
   // accept a new beat when finishing the current one this cycle (overlap; no recurrence => no gap) or idle;
@@ -191,8 +223,18 @@ class Fp16ToInt8(
   ext_data_i.ready := ((haveBeat && lastSub) || !haveBeat) && creditOK && !ext_start_i && !tailBlock
   val accept = ext_data_i.fire
 
-  // int8 output index for (pack beat p, sub s, lane j) and input-lane index, width-exact to silence W004
-  def oi(p: UInt, s: UInt, j: Int): UInt = (p * nPE.U + s * computeLanes.U + j.U)(log2Ceil(outElems) - 1, 0)
+  // int8 output index for (group beat p, sub s, lane j) and input-lane index, width-exact to silence W004.
+  // Plain: beat after beat, lane after lane. Interleaved: lane q of beat p is byte p of atom q, and atom q sits
+  // in output beat q / lanesPerOut -- out[q / 16][4 * (q % 16) + p].
+  def oi(p: UInt, s: UInt, j: Int): UInt = {
+    val q   = s * computeLanes.U + j.U
+    val cat = p * nPE.U + q
+    if (!hasIlv) cat(log2Ceil(outElems) - 1, 0)
+    else {
+      val il = (q / lanesPerOut.U) * outElems.U + (q % lanesPerOut.U) * ilvGroup.U + p
+      Mux(ilv, il, cat)(log2Ceil(outElems * outBeatsMax) - 1, 0)
+    }
+  }
   def li(s: UInt, j: Int): UInt = (s * computeLanes.U + j.U)(log2Ceil(nPE) - 1, 0)
 
   val issuing = haveBeat
@@ -224,11 +266,27 @@ class Fp16ToInt8(
 
   outQ.io.enq.valid := (packLastRetire || tailRetire) && !ext_start_i // no stale push on the restart cycle
   // `inBeat` still holds the tail beat: acceptance was blocked for exactly this reason.
-  outQ.io.enq.bits  := Mux(tailRetire, inBeat, outNow.asTypeOf(UInt(extensionParam.dataWidth.W)))
+  if (!hasIlv) {
+    outQ.io.enq.bits  := Mux(tailRetire, inBeat, outNow.asTypeOf(UInt(dw.W)))
+    outQ.io.deq.ready := ext_data_o.ready
+    ext_data_o.valid  := outQ.io.deq.valid
+    ext_data_o.bits   := outQ.io.deq.bits
+  } else {
+    // entry = {two, beat 1, beat 0}. A tail and a plain pack are one beat; an interleaved group is two.
+    val flat = outNow.asTypeOf(UInt((2 * dw).W))
+    outQ.io.enq.bits := Cat(!tailRetire && ilv, flat(2 * dw - 1, dw), Mux(tailRetire, inBeat, flat(dw - 1, 0)))
+    // THE SERIALIZER. The entry stays at the head until its last beat is taken, so `deq` -- and with it the
+    // credit -- still moves once per entry.
+    val second = RegInit(false.B)
+    val head   = outQ.io.deq.bits
+    val two    = head(2 * dw)
+    ext_data_o.valid  := outQ.io.deq.valid
+    ext_data_o.bits   := Mux(second, head(2 * dw - 1, dw), head(dw - 1, 0))
+    outQ.io.deq.ready := ext_data_o.ready && (!two || second)
+    when(ext_start_i) { second := false.B }
+      .elsewhen(ext_data_o.fire) { second := two && !second }
+  }
   assert(!outQ.io.enq.valid || outQ.io.enq.ready, "Fp16ToInt8: output queue overflow (credit bug)")
-  outQ.io.deq.ready := ext_data_o.ready
-  ext_data_o.valid  := outQ.io.deq.valid
-  ext_data_o.bits   := outQ.io.deq.bits
 
   val deq       = outQ.io.deq.fire
   // A tail beat is one output beat of its own; when tailPeriod is a multiple of `pack` it also lands on a
@@ -244,7 +302,7 @@ class Fp16ToInt8(
       beatCnt   := Mux(acceptIsTail, 0.U, beatCnt + 1.U)
       when(!acceptIsTail) {
         packIdx  := nextPack
-        nextPack := Mux(nextPack === (pack - 1).U, 0.U, nextPack + 1.U)
+        nextPack := Mux(nextPack === groupLast, 0.U, nextPack + 1.U)
       }
     }.elsewhen(issuing) {
       when(lastSub) { haveBeat := false.B }.otherwise { sub := sub + 1.U }
@@ -259,7 +317,7 @@ class Fp16ToInt8(
 
   assert(
     !(accept && acceptIsTail) || nextIsPackStart,
-    "Fp16ToInt8: tailPeriod must be a multiple of the pack ratio"
+    "Fp16ToInt8: tailPeriod must be a multiple of the group size (the pack ratio, or 4 when interleaving)"
   )
 
   ext_busy_o := (credit =/= Qdepth.U) || haveBeat || tailInFlight
@@ -271,7 +329,8 @@ class HasFp16ToInt8(
   dataWidth:        Int = 512,
   computeLanes:     Int = 0,
   fpPipe:           Int = 1, // internal pipeline depth of the quantize-PE FP units (timing cut knob)
-  tailPassthrough:  Int = 0  // 1 = build the row-tail passthrough (adds csr(1) = tailPeriod)
+  tailPassthrough:  Int = 0, // 1 = build the row-tail passthrough (adds csr(1) = tailPeriod)
+  interleave:       Int = 0  // 1 = build the 4-beat interleave (csr(1) bit 16 selects it at run time)
 ) extends HasDataPathExtension {
   require(
     in_elementWidth == 16 && out_elementWidth == 8,
@@ -281,16 +340,19 @@ class HasFp16ToInt8(
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
       moduleName   = "Fp16ToInt8", // -> READER_EXT_FP16TOINT8 (keep stable: never width-encode the name)
-      userCsrNum   = if (tailPassthrough != 0) 2 else 1, // inv_scale (FP32 bits) [+ tailPeriod]
+      // inv_scale (FP32 bits) [+ csr(1): tailPeriod in [15:0], interleave in bit 16]
+      userCsrNum   = if (tailPassthrough != 0 || interleave != 0) 2 else 1,
       dataWidth    = dataWidth,
-      // Not an op list: a BUILD-TIME feature that adds csr(1). Writing a tailPeriod to a build without it
-      // lands on a CSR that is not there, so a kernel needs to know before it writes, not after.
-      capabilities = if (tailPassthrough != 0) Seq("TAILPASSTHROUGH") else Nil
+      // Not an op list: BUILD-TIME features that add csr(1) or a bit in it. Writing to a build without them
+      // lands on a CSR (or a bit) that is not there, so a kernel needs to know before it writes, not after.
+      capabilities = (if (tailPassthrough != 0) Seq("TAILPASSTHROUGH") else Nil) ++
+        (if (interleave != 0) Seq("INTERLEAVE4") else Nil)
     )
 
   def instantiate(clusterName: String): Fp16ToInt8 =
     Module(
-      new Fp16ToInt8(in_elementWidth, out_elementWidth, computeLanes, fpPipe, tailPassthrough) {
+      new Fp16ToInt8(in_elementWidth, out_elementWidth, computeLanes, fpPipe, tailPassthrough,
+                     interleave = interleave) {
         override def desiredName = clusterName + namePostfix
       }
     )

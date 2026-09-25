@@ -215,8 +215,15 @@
                                 // beats per row, 0 = off). StreamReduce in TAP mode emits the row and then
                                 // its reduction as a trailing beat; without this the quantiser would narrow
                                 // that scalar along with the data, so a pass that produces both a tile and
-                                // its row statistic could not also quantise the tile -- which cost FA a
+                                // its row statistic could not also quantise the tile, and FA would need a
                                 // THIRD read of the score tile purely to narrow it.
+                                //
+                                // interleave: csr(1) bit 16 packs FOUR input beats into two output beats
+                                // as out[q/16][4*(q%16)+b] = quant(beat_b[q]) instead of concatenating
+                                // two. FA's P tile arrives as [key][query] beats, but PV consumes P^T as
+                                // a B operand -- per query, four consecutive KEYS in one 32-bit atom --
+                                // and no DMA can build 4-byte atoms from int8. Interleaving here writes
+                                // P already in the B layout, at the pass that quantises it anyway.
                                 {
                                     HasFp16ToInt8:
                                     {
@@ -226,6 +233,7 @@
                                         computeLanes: 16
                                         fpPipe: 1
                                         tailPassthrough: 1
+                                        interleave: 1
                                     }
                                 }
                             ]
@@ -590,9 +598,14 @@
             // Slots are [read, write] for the one reader_writer: slot 0 is the C read
             // path, slot 1 is the D write path.
             //
-            // Slot 0 is empty: no app here broadcasts C. FlashAttention sets
-            // broadcast_C = 0 and reads a full C, because a serialised C input cannot
-            // take a broadcast operand.
+            // Slot 0 rescales C per output COLUMN as it streams in: y = rne(x * f[col]),
+            // one FP16 factor per column. That is FlashAttention's online-softmax
+            // correction, O <- corr[q] * O + P.V with O^T's columns = queries: scaling
+            // the INT32 accumulator on its way into the array lets the same matmul that
+            // adds P.V apply it, so a moving row maximum costs no extra pass. Opt-in
+            // per dispatch (the host's enable bit); every other GEMM leaves it off.
+            // colsPerBlock = meshCol, beatsPerBlock = Mu*Nu*32 / 1024, maxColBlocks =
+            // Br / meshCol.
             //
             // Slot 1 converts the INT32 result to FP16 on the way out. That is the one
             // extension FlashAttention depends on: the score tile is consumed as FP16 by
@@ -600,12 +613,26 @@
             // the beats the writer emits and the TCDM the tile occupies.
             datapath_extensions:
             [
-                {}
+                {
+                    HasInt32ColumnScale:
+                    {
+                        dataWidth: 1024
+                        colsPerBlock: 16
+                        beatsPerBlock: 8
+                        maxColBlocks: 2
+                    }
+                }
                 {
                     HasInt32ToFp16Converter:
                     {
                         // 1024 = the D port's beat: 16 TCDM channels x 64 b.
                         dataWidth: 1024
+                        // Power-of-two output scale: csr(1)[3:0] = k gives RNE(x * 2^-k),
+                        // k in 0..14. FlashAttention's scores reach 127^2 * 128 = 2,064,512
+                        // with full-range INT8, 31x past FP16's 65,504 -- without it they
+                        // overflow to Inf and the softmax row turns NaN. The softmax takes
+                        // the remaining factor a' = a * 2^k in its exp.
+                        shift: 1
                     }
                 }
             ]
@@ -618,9 +645,12 @@
         //
         // The converter contributes its own user CSR (the extra-loop policy) via the flag,
         // plus the ENABLE register of the reader_writer WRITE host, which is empty
-        // otherwise and which no flag covers -- hence the explicit +1.
+        // otherwise and which no flag covers -- hence +1. The C READ host adds its own
+        // enable plus Int32ColumnScale's 17 (N, then 32 FP16 factors two per CSR): +18.
+        // The converter's shift build adds a second user CSR (k) that the flag's
+        // count of 1 does not include: +1.
         has_int32_to_fp16_converter: true
-        extra_streamer_csr: 1
+        extra_streamer_csr: 20
         snax_library_name: versacore-to
     }
     // The matmul array:

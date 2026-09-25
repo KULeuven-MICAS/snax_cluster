@@ -64,7 +64,7 @@
 // PATH O -- the same arithmetic, with every layout change folded into an address generator
 // that was running anyway, and every elementwise pair fused into one pass. No xDMA.
 //
-//     SIMD   reduce(SUMSQ) -> bcast_map(1/D, RSQRT)                    as before
+//     SIMD   reduce(SUMSQ) -> bcast_map(1/D, RSQRT)                    as in path H
 //     SIMD   ew2(MUL) -> Fp16ToInt8, reading in A-ORDER               norm + reshape + quant
 //     GEMM   Q, K: D port writes A-layout directly
 //            V^T = Wv^T . Xn^T: the SWAPPED projection, D port writes A(V^T) directly
@@ -95,7 +95,7 @@
 //     O             4,890       1,759       3,761           0      -29%
 //     T             3,487       1,751       1,901         447      -49%
 //
-// T is now bounded by the array: 1,751 of its 3,487 cycles are the three projections at
+// T is bounded by the array: 1,751 of its 3,487 cycles are the three projections at
 // ~92% utilisation, behind a ~1,400-cycle norm prologue and one 330-cycle requant.
 //
 // THE THREE FOLDS, and why each is legal.
@@ -111,7 +111,7 @@
 //        packed           8            pitch       4*pitch     32        16*pitch
 //        A-layout         128          8           32          512       N*512
 //
-//    (packed is FlashAttention's own S^T descriptor; A-layout is new.) HeMAiA's note that
+//    (packed is FlashAttention's own S^T descriptor.) HeMAiA's note that
 //    "between two blocks that both live in L1 there is no load for the conversion to fold
 //    into" misses the producer's own writer.
 //
@@ -171,6 +171,12 @@
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 
+// The D-port converter must be the shift build (enable + extra-loop policy + shift = 3 CSRs):
+// FlashAttention's scores at the layer's shared Q/K scale are past FP16's range.
+#if !defined(READER_WRITER_EXTENSION_1_CSR_NUM) || READER_WRITER_EXTENSION_1_CSR_NUM != 3
+#error "The GEMM's D-port Int32ToFp16Converter has no power-of-two shift (build it with shift: 1)."
+#endif
+
 #if !defined(SIMD_EXT_STREAMREDUCE_HAS_SUMSQ) || !defined(SIMD_EXT_STREAMMAP_HAS_RSQRT) || \
     !defined(SIMD_EXT_STREAMELEMENTWISE_1_HAS_MUL) || !defined(SIMD_EXT_FP16TOINT8)
 #error "this kernel needs StreamReduce SUMSQ, StreamMap RSQRT, a post-map MUL and Fp16ToInt8"
@@ -221,9 +227,13 @@ enum { OUT_D = 0, OUT_PACKED = 1, OUT_A = 2 };
 // C is read with ALL channels masked: a disabled channel presents zero and issues no TCDM
 // request, which is the fresh-accumulator seed every matmul here wants. take_in_new_c must
 // stay 1 -- at 0 the array stops draining the C reader and its FIFO never empties.
+//
+// `shift` is the D-port converter's power-of-two output scale: D = RNE(acc * 2^-shift). 0 for
+// the projections and the P.V check, FA_S_SHIFT for FlashAttention's scores, whose INT32 range
+// is past FP16's.
 __attribute__((always_inline)) static inline void gemm_cfg(
     const void *a, const void *b, void *d, uint32_t M, uint32_t N, uint32_t K,
-    uint32_t layout) {
+    uint32_t layout, uint32_t shift) {
     const uint32_t blk = MESH_ROW * TILE_SIZE;  // one A or B block, int8 = 64 B = one beat
     uint32_t dsl0, dsl1, dt0, dt1, dt2;
     if (layout == OUT_A) {
@@ -301,6 +311,7 @@ __attribute__((always_inline)) static inline void gemm_cfg(
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_1, 0);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 0, 1u);  // Int32ToFp16 on
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, 0u);  // 2:1 merge
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, shift);  // RNE(acc * 2^-shift)
     // The array: output-stationary, K pairs per block, M*N blocks.
     csrw_ss(OVERWRITE_ACCUM, 1);
     csrw_ss(ACCUM_BOUND, K);
@@ -766,7 +777,7 @@ static uint32_t xdma_d_to_at(const void *src, void *dst, uint32_t go) {
     return go ? xdma_run() : 0u;
 }
 
-// Full [rows, cols] -> [cols, rows] fp16 transpose (snax-simd-rmsnorm's, unchanged): 8x8
+// Full [rows, cols] -> [cols, rows] fp16 transpose (the same as snax-simd-rmsnorm's): 8x8
 // blocks, two beats each, the block grid walked so each lands at its transposed position.
 static uint32_t xdma_transpose_fp16(const void *src, void *dst, uint32_t rows,
                                     uint32_t cols, uint32_t go) {
@@ -808,15 +819,18 @@ static inline uint32_t ulp16(uint16_t a, uint16_t b) {
     return x > y ? x - y : y - x;
 }
 
-// The D port's INT32 -> FP16 (round to nearest even), in integer arithmetic.
-static uint16_t i32_to_f16(int32_t v) {
+// The D port's INT32 -> FP16 (round to nearest even), in integer arithmetic, with the
+// converter's power-of-two output scale: RNE(v * 2^-shift), shift clamped to 14 like the RTL.
+// The shift only lowers the exponent; with shift <= 14 no integer lands in the subnormals.
+static uint16_t i32_to_f16(int32_t v, uint32_t shift) {
     uint32_t sign = v < 0, mag = sign ? (uint32_t)(-v) : (uint32_t)v;
     if (!mag) return (uint16_t)(sign << 15);
+    if (shift > 14u) shift = 14u;
     uint32_t msb = 31u - (uint32_t)__builtin_clz(mag);
-    if (msb + 15u >= 31u) return (uint16_t)((sign << 15) | 0x7C00u);
+    if (msb + 15u - shift >= 31u) return (uint16_t)((sign << 15) | 0x7C00u);
     uint32_t norm = mag << (31u - msb);
     uint32_t frac = (norm >> 21) & 0x3FFu, g = (norm >> 20) & 1u;
-    uint32_t rs = (norm & 0xFFFFFu) != 0, e = msb + 15u;
+    uint32_t rs = (norm & 0xFFFFFu) != 0, e = msb + 15u - shift;
     if (g && (rs || (frac & 1u))) {
         if (++frac == 1024u) {
             frac = 0;
@@ -910,14 +924,14 @@ static inline void spin_done(volatile uint32_t *tm, uint32_t i, uint32_t epoch) 
 #define GEMM_PROJ_TAIL(dep, pq, n1q, yo)                                              \
     do {                                                                               \
         uint32_t id_ = csrr_ss(GEMMX_FINISHED_TASK), iq_, ik_, iv_;                    \
-        gemm_cfg((n1q), wq, (yo), M_T, N_D, K_T, OUT_A); /* before its operand exists */ \
+        gemm_cfg((n1q), wq, (yo), M_T, N_D, K_T, OUT_A, 0u); /* before its operand exists */ \
         WAIT(dep);                                                                     \
         BEGIN(pq); gemm_fire(); iq_ = ++id_;                                           \
-        gemm_cfg((n1q), wk, (yo) + F16B, M_T, N_D, K_T, OUT_A);                        \
+        gemm_cfg((n1q), wk, (yo) + F16B, M_T, N_D, K_T, OUT_A, 0u);                        \
         BEGIN((pq) + 1); gemm_fire(); ik_ = ++id_;                                     \
         TMO += gemm_wait(iq_); END(pq);                                                \
         /* V^T = Wv^T . Xn^T: A = Wv^T [d, d], B = Xn^T -- the A-layout Xn bytes again */ \
-        gemm_cfg(wvt, (n1q), (yo) + 2 * F16B, M_D, N_TK, K_T, OUT_A);                   \
+        gemm_cfg(wvt, (n1q), (yo) + 2 * F16B, M_D, N_TK, K_T, OUT_A, 0u);                   \
         BEGIN((pq) + 2); gemm_fire(); iv_ = ++id_;                                     \
         TMO += gemm_wait(ik_); END((pq) + 1);                                          \
         TMO += gemm_wait(iv_); END((pq) + 2);                                          \
@@ -1052,13 +1066,13 @@ int main() {
         org = ORG;
         if (isG) {
             uint32_t id = csrr_ss(GEMMX_FINISHED_TASK), iq, ik, iv;
-            gemm_cfg(n1q_h, wq, yh, M_T, N_D, K_T, OUT_D);  // armed before its operand exists
+            gemm_cfg(n1q_h, wq, yh, M_T, N_D, K_T, OUT_D, 0u);  // armed before its operand exists
             WAIT(H_Q1);
             BEGIN(H_PQ); gemm_fire(); iq = ++id;
-            gemm_cfg(n1q_h, wk, yh + F16B, M_T, N_D, K_T, OUT_D);
+            gemm_cfg(n1q_h, wk, yh + F16B, M_T, N_D, K_T, OUT_D, 0u);
             BEGIN(H_PK); gemm_fire(); ik = ++id;
             TMO += gemm_wait(iq); END(H_PQ);
-            gemm_cfg(n1q_h, wv, yh + 2 * F16B, M_T, N_D, K_T, OUT_D);
+            gemm_cfg(n1q_h, wv, yh + 2 * F16B, M_T, N_D, K_T, OUT_D, 0u);
             BEGIN(H_PV); gemm_fire(); iv = ++id;
             TMO += gemm_wait(ik); END(H_PK);
             TMO += gemm_wait(iv); END(H_PV);
@@ -1164,12 +1178,12 @@ int main() {
         if (isG) {
             uint32_t id = csrr_ss(GEMMX_FINISHED_TASK);
             BEGIN(F_QK);
-            gemm_cfg(qkv_o + I8B, qkv_o, s16, M_T, N_TK, K_T, OUT_PACKED);  // A = K, B = Q
+            gemm_cfg(qkv_o + I8B, qkv_o, s16, M_T, N_TK, K_T, OUT_PACKED, FA_S_SHIFT);  // A = K, B = Q
             gemm_fire();
             TMO += gemm_wait(++id);
             END(F_QK);
             BEGIN(F_PV);
-            gemm_cfg(qkv_o + 2 * I8B, ptb, o16, M_D, N_TK, K_TK, OUT_PACKED);  // A = V^T
+            gemm_cfg(qkv_o + 2 * I8B, ptb, o16, M_D, N_TK, K_TK, OUT_PACKED, 0u);  // A = V^T
             gemm_fire();
             TMO += gemm_wait(++id);
             END(F_PV);
@@ -1262,10 +1276,10 @@ int main() {
             for (uint32_t f = 0; f < D_MODEL; f++)
                 acc += (int32_t)k8[a_at(key, f, D_MODEL)] * (int32_t)q8[a_at(q, f, D_MODEL)];
             sn++;
-            if (s16[key * T_TOK + q] != i32_to_f16(acc)) {
+            if (s16[key * T_TOK + q] != i32_to_f16(acc, FA_S_SHIFT)) {
                 if (sbad < 4)
                     printf("[QKV]   S^T[%u][%u] = %04x, recomputed %04x\n", key, q,
-                           s16[key * T_TOK + q], i32_to_f16(acc));
+                           s16[key * T_TOK + q], i32_to_f16(acc, FA_S_SHIFT));
                 sbad++;
             }
         }
@@ -1282,10 +1296,10 @@ int main() {
             for (uint32_t key = 0; key < T_TOK; key++)
                 acc += (int32_t)vt8[a_at(f, key, T_TOK)] * (int32_t)ptb[b_at(key, q, T_TOK)];
             on++;
-            if (o16[f * T_TOK + q] != i32_to_f16(acc)) {
+            if (o16[f * T_TOK + q] != i32_to_f16(acc, 0u)) {
                 if (obad < 4)
                     printf("[QKV]   O^T[%u][%u] = %04x, recomputed %04x\n", f, q,
-                           o16[f * T_TOK + q], i32_to_f16(acc));
+                           o16[f * T_TOK + q], i32_to_f16(acc, 0u));
                 obad++;
             }
         }

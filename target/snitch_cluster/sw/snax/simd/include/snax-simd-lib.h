@@ -5,13 +5,11 @@
 // Driver for the standalone SIMD block (<cluster>_simd) on the four-engine
 // cluster: hart 1's vector engine.
 //
-// THIS IS NOT A DMA. The first version of this header was a direct
-// transliteration of snax-xdma-lib -- `memcpy_nd(src, dst, ...)` with thirteen
-// positional arguments, `spatial_stride`, `enabled_byte_dst` -- which described
-// a transfer that happens to compute something on the way. That is backwards.
-// The block reads a stream, applies a chain of operators to it, and writes a
-// stream; the addresses and strides are the *shape of the iteration space*, not
-// a transfer descriptor. A copy is just the degenerate case with no operator.
+// THIS IS NOT A DMA, and the interface does not describe a transfer that
+// happens to compute something on the way. The block reads a stream, applies a
+// chain of operators to it, and writes a stream; the addresses and strides are
+// the *shape of the iteration space*, not a transfer descriptor. A copy is just
+// the degenerate case with no operator.
 //
 // So the interface is three nouns:
 //
@@ -48,10 +46,10 @@
 
 // ============================================================== capability gate
 //
-// The generated header names every extension the cfg built, and until it carried
-// capabilities it could not say what any of them DOES. That gap is not cosmetic:
-// an operator's func/op CSR is a runtime select over the set that was elaborated,
-// and selecting outside that set does not fault. Ask StreamMap for RSQRT on a
+// The generated header names every extension the cfg built, and its capability
+// macros say what each one DOES. That matters because an operator's func/op CSR
+// is a runtime select over the set that was elaborated, and selecting outside
+// that set does not fault. Ask StreamMap for RSQRT on a
 // build without it and you get the LINEAR result -- a well-formed tensor of wrong
 // numbers, with nothing reported anywhere.
 //
@@ -59,7 +57,7 @@
 // expand to an identifier that does not exist. Using one then fails AT THE USE
 // SITE, with the missing capability spelled out in the compiler's message,
 // instead of at run time with plausible output. A kernel that wants a nicer
-// message still gates explicitly, but it can no longer forget to.
+// message still gates explicitly, but it cannot forget to.
 #if !defined(SIMD_EXT_CAPS)
 #error \
     "snax-simd-addr.h predates the capability macros -- it cannot say which ops the SIMD block built, and an absent op returns another op's answer instead of faulting. Regenerate it: make sw-snax-gen CFG_OVERRIDE=<your cfg>"
@@ -251,6 +249,20 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 #define SIMD_QUANT_TAIL(beats) SIMD_CAP_MISSING_(FP16TOINT8_TAILPASSTHROUGH)
 #endif
 
+// Fp16ToInt8 csr(1) bit 16: the 4-beat INTERLEAVE. Four input beats become two
+// output beats laid out as a GEMM B operand -- out beat q/16, byte 4*(q%16)+b holds
+// lane q of input beat b -- instead of the plain 2:1 concatenation. OR it into the
+// same word as SIMD_QUANT_TAIL. The stream (and tailPeriod) must then be a whole
+// number of 4-beat groups; a trailing partial group is never emitted.
+//
+// Gated like the tail: a build without the interleave ignores bit 16 and emits the
+// plain pack, a P in the wrong layout that nothing downstream can detect.
+#if !defined(SIMD_EXT_FP16TOINT8) || defined(SIMD_EXT_FP16TOINT8_HAS_INTERLEAVE4)
+#define SIMD_QUANT_ILV4 (1u << 16)
+#else
+#define SIMD_QUANT_ILV4 SIMD_CAP_MISSING_(FP16TOINT8_INTERLEAVE4)
+#endif
+
 // StreamElementwise: combine `operand_beats` interleaved operands into one.
 //
 // NOT gated, deliberately, and this is the one place the scheme does not reach.
@@ -277,9 +289,8 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 // beats and produces N, the seed beat must sit IMMEDIATELY BELOW the data (the
 // reader is one flat sweep and the seed is simply its first beat), and the
 // writer descriptor covers exactly the data -- do not aim it one beat early.
-// (It used to pass the seed through as a junk beat; the RTL suppresses it now,
-// which is also what lets a sticky elementwise sit mid-chain without a
-// downstream Reduce folding the junk in.)
+// (Suppressing the seed is also what lets a sticky elementwise sit mid-chain
+// without a downstream Reduce folding a junk beat in.)
 //
 // Without this a broadcast operand has to be physically replicated once per data
 // beat -- a whole extra pass to write it and a doubled read stream to consume
@@ -635,9 +646,9 @@ static inline bool snax_simd_bad_config(void) {
 
 // ============================================================== legacy
 
-// The flat entry point that the shape/operator API above funnels into. It predates that
-// API and is kept because kernels still call it directly; new code should prefer the
-// shape/operator form, which is harder to get wrong.
+// The flat entry point that the shape/operator API above funnels into. Kernels may call
+// it directly; new code should prefer the shape/operator form, which is harder to get
+// wrong.
 int32_t snax_simd_program(void* in, void* out, uint32_t in_lane_stride,
                           uint32_t out_lane_stride, uint32_t in_dim,
                           uint32_t* in_stride, uint32_t* in_bound,

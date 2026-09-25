@@ -55,119 +55,176 @@ def _mesh(kwargs):
     return tuple(unrolling[0][0])
 
 
-def attention_qshift(d):
-    """Smallest right shift on the INT8 operands that keeps every score inside FP16.
+def score_scale_split(a):
+    """Split the softmax temperature a into a power of two for the converter and a remainder for exp.
 
-    A score is a sum of d products of two shifted INT8s, so |S| <= (128>>q)^2 * d.
-    Int32ToFp16 saturates past 65504, exp(inf - inf) is NaN, and the softmax invariant
-    then fails on exactly the overflowing rows. Real attention scales by 1/sqrt(d) for the
-    same reason; bounding the inputs is cheaper here. Deriving q from d lets the head
-    dimension move without reintroducing the overflow.
+    The GEMM's scores are exact INT32 and with full-range INT8 reach 127^2 * d (2,064,512 at
+    d = 128), 31x past FP16's 65,504. The D-port converter therefore applies a power-of-two
+    scale while it rounds, S16 = RNE(S * 2^-k), which moves only the exponent: no precision is
+    lost, and the scores land where the softmax works. The rest of a is applied by StreamMap in
+    the exp, which multiplies anyway:
+
+        a * S  =  a' * (S * 2^-k)     with  a' = a * 2^k
+
+    k is capped at 14 (the converter's range: 2^-14 is FP16's smallest normal number, so no
+    integer can underflow) and at the smallest shift that keeps the worst-case score finite.
     """
-    for q in range(8):
-        if (128 >> q) ** 2 * d <= 65504:
-            return q
-    raise ValueError("no INT8 shift keeps d=%d scores inside FP16" % d)
+    k = int(np.clip(np.floor(-np.log2(a)), 0, 14))
+    return k, float(a * 2.0 ** k)
 
 
-def emit_attention_golden(A, B, **kwargs):
-    """A float model of the softmax over the same tile, for the kernel to compare against.
-
-    The exact invariants in the kernel pin one element per query row -- the row maximum,
-    which subtracts to zero and exponentiates to 1.0. They say nothing about the other
-    Bc-1 elements. This does: it is the same scores, the same maximum and the same
-    exponential computed in float, so a scale error in exp, a truncated accumulator or a
-    lane that reduces the wrong operand all move a value that is checked here.
-
-    The model follows the hardware's own sequence, at the precision the hardware uses:
-
-        S      exact INT32 out of the mesh, converted to FP16 on the D32 port
-        m      max over KEYS, per query row
-        P      exp(S16 - m), FP32 internally, stored FP16
-        rowsum sum over KEYS in the FP32 accumulator, narrowed to FP16
-
-    S^T arrives as [Bc][Br]: one beat per key, one query row per lane. That is what lets
-    the reduce run along beats, and it is the order the values are emitted in here.
-
-    P is sampled rather than emitted whole -- one beat in PGOLD_STRIDE -- because the
-    kernel reads the golden out of DRAM. rowsum is checked in full and integrates every
-    key, so a wrong P between two samples still moves a checked number.
-
-    P is checked as INT8, not FP16, because the epilogue pass quantises the tile in the
-    same sweep that produces it -- there is no FP16 P in memory to compare against. The
-    kernel's quantiser runs at inv_scale = 1.0, so q = round_rne(P) over P in (0,1]: the
-    check pins the subtract, the exponential and the quantiser's rounding threshold. A
-    lane whose P sits within 0.01 of the .5 boundary is emitted as -1 (don't care), since
-    one ULP of LUT error there legitimately flips the result.
-    """
-    meshRow, tileSize, meshCol = _mesh(kwargs)
-    M, N, K = kwargs["M"], kwargs["N"], kwargs["K"]
-    Bc, Br = M * meshRow, N * meshCol
-
-    # No zero-point and no bias: the kernel programs gen_subtraction_config(0, 0) and
-    # zeroes C, so the mesh computes a plain product.
+def _scores(Kj, B, M, N, K, meshRow, tileSize, meshCol):
+    """S^T of one KV tile as [key][query] -- how the D32 port lays the FP16 tile down."""
     D = block_gemm_golden_model(
-        M, K, N, meshRow, tileSize, meshCol, A, B, 0, 0,
+        M, K, N, meshRow, tileSize, meshCol, Kj, B, 0, 0,
         np.zeros(M * N * meshRow * meshCol, dtype=np.int64),
     )
+    S = np.asarray(D, dtype=np.int64).reshape(M, N, meshRow, meshCol)
+    return S.transpose(0, 2, 1, 3).reshape(M * meshRow, N * meshCol)
 
-    # Block layout [M][N][meshRow][meshCol] -> [key][query], which is how the writer
-    # lays the tile down and how the SIMD core reads it back.
-    S = np.asarray(D).reshape(M, N, meshRow, meshCol)
-    S = S.transpose(0, 2, 1, 3).reshape(Bc, Br)
 
-    S16 = S.astype(np.float16)
-    m = S16.max(axis=0)
-    P = np.exp(S16.astype(np.float32) - m.astype(np.float32)).astype(np.float16)
-    rowsum = P.astype(np.float32).sum(axis=0).astype(np.float16)
+def p8_interleave_offset(key, q, N, tileSize, meshCol):
+    """Byte offset of P8(key, query) in the buffer the INTERLEAVE quantiser writes.
 
+    Input beat b of 4-beat group g is key 4g+b; output beat (2g + q/16) holds, at byte
+    4*(q%16)+b, lane q of that input beat. Output beat h of group g is therefore B block
+    (k = g, n = h), k-major: block (k, n) at (k*N + n)*64. The kernel's P8_OFF() places the
+    same blocks P8_SLOT bytes apart instead of 64.
+    """
+    blk = (key // tileSize) * N + q // meshCol
+    return blk * tileSize * meshCol + (q % meshCol) * tileSize + key % tileSize
+
+
+def emit_attention_golden(Ks, Vs, Bs, **kwargs):
+    """A float model of the WHOLE online softmax over NKV distinct KV tiles.
+
+    Every KV tile has its own K and V, so the running maximum moves and corr is not 1.
+    The model follows the hardware's sequence at the precision each stage works in:
+
+        S16    exact INT32 out of the mesh, RNE to FP16 on the D32 port
+        m      max over keys of S16, running across tiles           (exact)
+        corr   exp(a * fp16(m_old - m_new))                        EW0 ADD -> Map EXP
+        P      exp(a * fp16(S16 - m_new)), stored FP16 in-chain     EW0 ADD -> Map EXP
+        rowsum sum over keys of P in FP32, narrowed to FP16         Reduce TAP
+        P8     sat(rne(127 * P))                                    Fp16ToInt8, inv_scale 127
+        l      fp16(rowsum + fp16(corr * l_old))                    EW1 MUL, Reduce ADD
+        O      rne(O * corr[col]) + V^T . P8^T                      Int32ColumnScale on C, PV
+
+    O is built from the ATTENTION MATH -- P8 as a matrix [key][query], handed to the block
+    model as the canonical B operand P^T -- never from the bytes the quantiser writes: a
+    golden that reinterpreted P8's memory as B would reproduce a layout error in the
+    hardware instead of catching it. Whether the interleaved bytes really are that operand
+    is asserted separately below.
+
+    The only thing not reproduced bit for bit is the SIMD exponential (a LUT, ~1 ULP), so
+    P8 can land one step off numpy's, and corr one ULP off. O is therefore checked
+    against a per-element tolerance scaled by sum|terms| (the standard bound for a sum that
+    cancels); m is exact, and rowsum, l and the sampled P8 are checked in ULPs / exactly
+    away from rounding boundaries.
+    """
+    meshRow, tileSize, meshCol = _mesh(kwargs)
+    M, N, K, NKV = kwargs["M"], kwargs["N"], kwargs["K"], int(kwargs["NKV"])
+    Bc, Br = M * meshRow, N * meshCol
+    f16, f32 = np.float16, np.float32
+    shift, a_exp = score_scale_split(float(kwargs["SCORE_SCALE"]))
+    a32 = f32(a_exp)          # the part of a the exp applies; 2^-shift is in the converter
+    q127 = f32(127.0)
+    s2_m = (K * tileSize) // meshRow      # d / meshRow
+    s2_k = Bc // tileSize                 # Bc / tileSize
+    assert Bc % tileSize == 0, "the interleave groups keys by tileSize = 4"
+
+    NQ = len(Bs)
+    moved, corr_min = 0, 1.0
+    per_q = []
+    for qt in range(NQ):
+        m16 = np.full(Br, -65504.0, dtype=f16)   # the xDMA seeds 0xFBFF
+        l16 = np.zeros(Br, dtype=f16)
+        o = np.zeros((s2_m, N, meshRow, meshCol), dtype=np.int64)
+        t = np.zeros((s2_m, N, meshRow, meshCol), dtype=np.float64)
+    
+        for j in range(NKV):
+            # The D port's RNE(S * 2^-shift): exact power-of-two scaling in float64, one rounding.
+            S16 = (_scores(Ks[j], Bs[qt], M, N, K, meshRow, tileSize, meshCol).astype(np.float64)
+                   * 2.0 ** -shift).astype(f16)
+            assert np.isfinite(S16).all(), "a score overflows FP16 even after the converter's shift"
+            mnew = np.maximum(m16, S16.max(axis=0))
+            if j > 0:
+                moved += int((mnew > m16).sum())
+            with np.errstate(over="ignore"):
+                d16 = (m16.astype(f32) - mnew.astype(f32)).astype(f16)
+                corr16 = np.exp(a32 * d16.astype(f32)).astype(f16)
+            x16 = (S16.astype(f32) - mnew.astype(f32)).astype(f16)
+            p16 = np.exp(a32 * x16.astype(f32)).astype(f16)
+            rsum16 = p16.astype(f32).sum(axis=0).astype(f16)
+            lsc16 = (corr16.astype(f32) * l16.astype(f32)).astype(f16)
+            l16 = (rsum16.astype(f32) + lsc16.astype(f32)).astype(f16)
+            pq = q127 * p16.astype(f32)
+            p8 = np.clip(np.rint(np.clip(pq, -128.0, 128.0)), -127, 127).astype(np.int64)
+
+            # P^T as the canonical B operand block_gemm_golden_model reads: [n][k][col][size],
+            # element (n, k, c, s) = P8(key = 4k + s, query = 16n + c).
+            b_can = p8.reshape(s2_k, tileSize, N, meshCol).transpose(2, 0, 3, 1).reshape(-1)
+            zc = np.zeros(s2_m * N * meshRow * meshCol, dtype=np.int64)
+            pv = np.asarray(block_gemm_golden_model(
+                s2_m, s2_k, N, meshRow, tileSize, meshCol, Vs[j], b_can, 0, 0, zc),
+                dtype=np.int64).reshape(o.shape)
+            pv_abs = np.asarray(block_gemm_golden_model(
+                s2_m, s2_k, N, meshRow, tileSize, meshCol, np.abs(Vs[j]), b_can, 0, 0, zc),
+                dtype=np.int64).reshape(o.shape)
+
+            # O^T's column is the query, so corr is a per-column factor. PV(0) masks its C (the
+            # accumulator seed is zero); PV(j>=1) scales C by corr_j on the read path. x * f is
+            # exact in float64 (31 x 11 bits), so np.rint IS the scaler's round-to-nearest-even.
+            fcol = corr16.astype(np.float64).reshape(N, meshCol)[None, :, None, :]
+            if j == 0:
+                o = pv
+                t = pv_abs.astype(np.float64)
+            else:
+                o = np.clip(np.rint(o * fcol), -2**31, 2**31 - 1).astype(np.int64) + pv
+                t = t * fcol + pv_abs
+                corr_min = min(corr_min, float(corr16.astype(np.float64).min()))
+            m16 = mnew
+
+            # ---- the layout claim, checked here rather than trusted ----------------------
+            # Build the bytes the interleave quantiser writes, then walk them the way PV's B
+            # reader does with its k-major strides {N*64, 64}. The result must be b_can.
+            if j == 0 and qt == 0:
+                mem = np.zeros(Bc * Br, dtype=np.int64)
+                for key in range(Bc):
+                    for q in range(Br):
+                        mem[p8_interleave_offset(key, q, N, tileSize, meshCol)] = p8[key, q]
+                blk = tileSize * meshCol
+                walked = np.zeros((N, s2_k, meshCol, tileSize), dtype=np.int64)
+                for kk in range(s2_k):
+                    for nn in range(N):
+                        base = kk * (N * blk) + nn * blk
+                        walked[nn, kk] = mem[base:base + blk].reshape(meshCol, tileSize)
+                assert (walked.reshape(-1) == b_can).all(), \
+                    "interleaved P8 walked k-major is not the B operand P^T"
+                # ...while the plain 2:1 pack, read the same way, is not: that is why the interleave
+                # exists.
+                assert not (p8.reshape(-1) == b_can).all()
+
+        per_q.append((m16, l16, rsum16, o, t, pq, p8))
+    m16, l16, rsum16, o, t, pq, p8 = per_q[-1]    # the LAST step's query tile, for the tile checks
+    # ---- the last tile's softmax, sampled -------------------------------------------
     stride = max(1, Bc // 16)
     beats = list(range(0, Bc, stride))
+    frac = pq - np.floor(pq)
+    p8_dc = np.where(np.abs(frac - 0.5) < 0.1, -1, p8).astype(np.int16)
+    p8s = p8_dc[beats].reshape(-1)
+    # Per-query count of P8 == 127 over the whole last tile: the row maximum always
+    # exponentiates to exactly 1.0, so the count is >= 1 and pins the subtract, the exp,
+    # the 127 scale and -- through P8_OFF -- the interleaved layout. Rows with a lane near
+    # the 126.5 threshold are don't-care (-1).
+    c127 = (p8 == 127).sum(axis=0).astype(np.int16)
+    c127 = np.where((np.abs(pq - 126.5) < 0.1).any(axis=0), -1, c127).astype(np.int16)
 
-    # The kernel quantises P with inv_scale = 1.0 (SIMD_F32_ONE), clamp-then-round, then a
-    # symmetric saturate -- the same order as Fp16ToInt8PE.
-    def quantise(x):
-        q = np.clip(np.rint(np.clip(x, -128.0, 128.0)), -127, 127).astype(np.int16)
-        return np.where(np.abs(x - np.rint(x)) > 0.49, -1, q).astype(np.int16)
+    # O tolerance: 1/64 of sum|terms| plus two P8 steps of |V| <= 16. One LUT-rounding flip
+    # of a P8 moves an element by |V| <= 16; a MISSING rescale moves it by (1 - corr) * O.
+    o_tol = (np.ceil(t / 64.0) + 32).astype(np.int64)
 
-    Pfull = P.astype(np.float32)
-    p8 = quantise(Pfull[beats].reshape(-1))
-    # Per-query count of ones over the WHOLE tile. The sampled compare above pins values at
-    # known places; this pins the tile globally -- a dropped beat, a tail in the wrong slot
-    # or a shifted write moves a count even where every sampled beat still reads 0. Rows with
-    # any boundary lane are excluded (-1), since their count is not well defined.
-    p8all = quantise(Pfull.reshape(-1)).reshape(Pfull.shape)
-    ones = (p8all == 1).sum(axis=0).astype(np.int16)
-    ones = np.where((p8all < 0).any(axis=0), -1, ones).astype(np.int16)
-
-    # ---- O, the second matmul's accumulator -----------------------------------
-    #
-    # oacc32 is NKV passes of V^T.P8^T added into themselves through C. Every KV tile is
-    # fed the same K, so the running max stops moving after tile 0 and corr = exp(0) = 1
-    # from then on: the online update degenerates to a plain sum of NKV identical P.V
-    # products, which makes this the TRUE O for this data and not merely its shape.
-    #
-    # Built by the same generator as the matmul itself, with M and K swapped the way
-    # emit_shape2_section() swaps them, so the layout this assumes and the layout the
-    # descriptors walk come from one place. A is handed over as the raw buffer: shape 2
-    # reinterprets shape 1's bytes as V^T, and the golden must reinterpret them the same
-    # way rather than from some separately-derived idea of what V is.
-    #
-    # P8 goes in WITHOUT the don't-care substitution -- an O element sums 512 of them, so
-    # a -1 would poison the sum. Instead the whole golden is marked invalid if any lane
-    # sits near the rounding boundary, and the kernel skips the check and says so.
-    p8_exact = np.clip(np.rint(np.clip(Pfull, -128.0, 128.0)), -127, 127)
-    o_valid = 0 if (p8all < 0).any() else 1
-    s2_m = (kwargs["K"] * tileSize) // meshRow      # d / meshRow
-    s2_k = (M * meshRow) // tileSize                # Bc / tileSize
-    o32 = block_gemm_golden_model(
-        s2_m, s2_k, N, meshRow, tileSize, meshCol,
-        A, p8_exact.reshape(-1).astype(np.int16), 0, 0,
-        np.zeros(s2_m * N * meshRow * meshCol, dtype=np.int64),
-    )
-    o32 = np.asarray(o32, dtype=np.int64) * int(kwargs["NKV"])
-
-    # ---- and now put it where the port actually writes it ----------------------
+    # ---- then put it where the port actually writes it -------------------------
     #
     # The C/D spatial map is chosen so the FP16 score tile lands row-major -- one key per
     # 64 B beat, which is what the LANEWISE reduce needs. C and D share those strides and
@@ -227,16 +284,22 @@ def emit_attention_golden(A, B, **kwargs):
         assert b == want, "D32 address model disagrees with the FP16 row-major layout"
 
     ts2 = N * output_data_width * meshRow * meshCol // 8
-    o_mem = np.zeros(o32.size, dtype=np.int64)
-    o_can = o32.reshape(s2_m, N, meshRow, meshCol)
-    seen = np.zeros(o32.size, dtype=bool)
-    for (mm, nn, r, c), b in scatter(output_data_width, s2_m, ts2, 4).items():
-        w = b // 4
-        assert b % 4 == 0 and not seen[w], "D32 INT32 address map is not a bijection"
-        seen[w] = True
-        o_mem[w] = o_can[mm, nn, r, c]
-    assert seen.all(), "D32 INT32 address map does not cover the output"
-    o32 = o_mem.astype(np.int32)
+    # One scatter per query tile: each keeps its own O^T accumulator, laid out identically.
+    o_mem = np.zeros(NQ * o.size, dtype=np.int64)
+    tol_mem = np.zeros(NQ * o.size, dtype=np.int64)
+    smap = scatter(output_data_width, s2_m, ts2, 4)
+    for qt, (_, _, _, oq, tq, _, _) in enumerate(per_q):
+        seen = np.zeros(o.size, dtype=bool)
+        tolq = (np.ceil(tq / 64.0) + 32).astype(np.int64)
+        for (mm, nn, r, c), b in smap.items():
+            w = b // 4
+            assert b % 4 == 0 and not seen[w], "D32 INT32 address map is not a bijection"
+            seen[w] = True
+            o_mem[qt * o.size + w] = oq[mm, nn, r, c]
+            tol_mem[qt * o.size + w] = tolq[mm, nn, r, c]
+        assert seen.all(), "D32 INT32 address map does not cover the output"
+    m_all = np.concatenate([pq_[0] for pq_ in per_q])
+    l_all = np.concatenate([pq_[1] for pq_ in per_q])
 
     def bits(x):
         return np.ascontiguousarray(x, dtype=np.float16).view(np.uint16).reshape(-1)
@@ -244,33 +307,46 @@ def emit_attention_golden(A, B, **kwargs):
     return "\n".join([
         "// ---- ATTENTION GOLDEN ------------------------------------------------------",
         "// FP16 bit patterns, compared by ULP distance: the check core has no FPU.",
+        "// a = %r = 2^-%d (converter) x %r (exp). S16 = RNE(S_int * 2^-%d) on the D port,"
+        % (float(kwargs["SCORE_SCALE"]), shift, float(a32), shift),
+        "// then P = exp(a' * (S16 - m)) in StreamMap.",
+        "#define D32_FP16_SHIFT %d  // Int32ToFp16 csr(1): power-of-two output scale" % shift,
+        "#define SCORE_SCALE_BITS 0x%08Xu  // a' = %r, FP32: the part of a the exp applies"
+        % (int(np.array(a32).view(np.uint32)), float(a32)),
         "#define PGOLD_STRIDE %d  // every Nth beat of P is checked" % stride,
         "#define PGOLD_NBEATS %d" % len(beats),
+        "// (query, tile >= 1) pairs whose running max moved, i.e. where corr != 1 and the",
+        "// O rescale is load-bearing; and the smallest corr applied.",
+        "#define GOLD_MAX_MOVES %d  // of %d" % (moved, NQ * Br * (NKV - 1)),
+        "#define GOLD_CORR_MIN_PERMILLE %d" % int(corr_min * 1000),
         "",
-        format_vector_definition("uint16_t", "m_golden", bits(m)),
+        "// m and l after the last KV tile, for every query tile: [NQ][Br]",
+        format_vector_definition("uint16_t", "m_golden", bits(m_all)),
         "",
-        format_vector_definition("uint16_t", "rowsum_golden", bits(rowsum)),
+        format_vector_definition("uint16_t", "l_golden", bits(l_all)),
         "",
-        format_vector_definition("uint16_t", "p16_golden", bits(P[beats].reshape(-1))),
+        "// the LAST step's row sum (query tile NQ-1, KV tile NKV-1)",
+        format_vector_definition("uint16_t", "rowsum_golden", bits(rsum16)),
         "",
-        "// P as the quantiser emits it: round_rne(P) at inv_scale 1.0, -1 = don't care",
-        format_vector_definition("int16_t", "p8_golden", p8),
+        "// the last tile's P8 = sat(rne(127 P)) on every PGOLD_STRIDE-th key, [key][query],",
+        "// -1 = within 0.1 of a rounding boundary (don't care)",
+        format_vector_definition("int16_t", "p8_golden", p8s),
         "",
-        "// P^T == 1 count per query row over the whole tile, -1 = don't care",
-        format_vector_definition("int16_t", "p8ones_golden", ones),
+        "// P8 == 127 count per query row over the whole last tile, -1 = don't care",
+        format_vector_definition("int16_t", "p8max_golden", c127),
         "",
-        "// O = NKV * (V^T . P8^T), in the [M][N][meshRow][meshCol] order the D32 port",
-        "// writes. 0 here means a P lane sat on the rounding boundary and the sum is not",
-        "// reproducible; the kernel then skips the compare rather than reporting noise.",
-        "#define O_GOLDEN_VALID %d" % o_valid,
-        format_vector_definition("int32_t", "o32_golden", o32),
+        "// O after NKV tiles WITH the online rescale, per query tile, in the order the D32",
+        "// port writes it: [NQ][Br*d]. Per-element tolerance |O - O_golden| <= o32_tol.",
+        format_vector_definition("int32_t", "o32_golden", o_mem.astype(np.int32)),
+        "",
+        format_vector_definition("int32_t", "o32_tol", tol_mem.astype(np.int32)),
     ])
 
 
 def emit_geometry_section(**kwargs):
     """The tile geometry as compile-time constants, derived from the shape and the mesh.
 
-    The kernel takes BR/BC/DHEAD/NKV/QSHIFT from here rather than defining its own, so it
+    The kernel takes BR/BC/DHEAD/NKV from here rather than defining its own, so it
     cannot disagree with the descriptors it is handed.
     """
     meshRow, tileSize, meshCol = _mesh(kwargs)
@@ -287,11 +363,6 @@ def emit_geometry_section(**kwargs):
         ("DHEAD", d, "head dimension = K*tileSize (a MODEL property, not a knob)"),
         ("NKV", kwargs["NKV"], "KV tiles streamed through the software pipeline"),
         ("NQ", kwargs["NQ"], "query tiles sharing one K/V pass -- intensity is NQ*Br"),
-        (
-            "QSHIFT",
-            attention_qshift(d),
-            "operand bound, ALREADY APPLIED to A and B below",
-        ),
     ]
     w = max(len(str(v)) for _, v, _ in rows)
     n = max(len(name) for name, _, _ in rows)
@@ -527,27 +598,43 @@ def emit_matmul_data(**kwargs):
     # No zero-point subtraction: attention has none, and the kernel programs
     # gen_subtraction_config(0, 0) on every dispatch.
 
-    A = np.random.randint(
-        MIN, MAX, size=(kwargs["M"], kwargs["K"], meshRow, tileSize)
-    ).reshape(-1)
+    # NKV DISTINCT key tiles and NKV distinct value tiles. With one tile replayed NKV
+    # times the running max stops moving after tile 0, corr is exp(0) = 1 for ever and
+    # the online rescale is never exercised. A holds the K tiles back to back, V the V
+    # tiles; the kernel streams
+    # tile j from offset j * Bc * d of each. V's bytes are read by PV as the shape-2 A
+    # operand V^T, and the golden reinterprets them the same way.
+    nkv = int(kwargs.get("NKV", 1))
+    kv_shape = (kwargs["M"], kwargs["K"], meshRow, tileSize)
+    A = np.random.randint(MIN, MAX, size=(nkv,) + kv_shape).reshape(-1)
+    V = np.random.randint(MIN, MAX, size=(nkv,) + kv_shape).reshape(-1)
+    # NQ DISTINCT query tiles, back to back: tile q is loaded from B + q * Br*d. Each carries
+    # its own (m, l, O), and they share every K/V pass -- that sharing is what prefill is.
+    nq = int(kwargs.get("NQ", 1))
     B = np.random.randint(
-        MIN, MAX, size=(kwargs["K"], kwargs["N"], tileSize, meshCol)
+        MIN, MAX, size=(nq, kwargs["K"], kwargs["N"], tileSize, meshCol)
     ).reshape(-1)
 
-    # Bound the operands so the scores stay inside FP16 -- see attention_qshift(). Doing
-    # it here rather than in the kernel keeps a shift over every element of A and B off
-    # the DM core at run time; numpy's arithmetic shift on int8 is what `>>=` on int8_t
-    # is in C, so the data is what the kernel would have produced itself.
-    qshift = attention_qshift(kwargs["K"] * tileSize)
-    A = A.astype(np.int8) >> qshift
-    B = B.astype(np.int8) >> qshift
+    # FULL-RANGE INT8. The D-port converter applies 2^-D32_FP16_SHIFT while it rounds (see
+    # score_scale_split), so even the worst-case score, 127^2 * d, converts to a finite FP16.
+    A = A.astype(np.int8)
+    V = V.astype(np.int8)
+    B = B.astype(np.int8)
 
     # 64-BYTE ALIGNED, because these are xDMA sources. The iDMA copies bytes at any
     # alignment, but the xDMA reader issues eight 8-byte channels per beat and needs
     # its base aligned to the beat. Unaligned, it still moves the right number of
-    # bytes at the right rate and only the DATA is wrong -- which showed up here as
-    # m, P8 and rowsum all bit-exact (they come from K, loaded by the iDMA) while
-    # 2866 of 4096 O elements were wrong (O comes from V, loaded by the xDMA).
+    # bytes at the right rate and only the DATA is wrong: m, P8 and rowsum stay
+    # bit-exact (they come from K, loaded by the iDMA) while O, which comes from V,
+    # does not.
+    #
+    # V FIRST, because the xDMA reads it and the xDMA's view of main memory is only
+    # 512 KiB wide: the TB endpoint's TCDMAddrWidth is 19, so an address past
+    # 0x8008_0000 silently WRAPS to the bottom of DRAM, onto .text. Emitted after A, V's
+    # last tile would cross that edge, and PV would multiply code bytes into O.
+    # The iDMA (K tiles 1+) has full reach; the xDMA also carries half of K tile 0, which
+    # is why A follows directly. The kernel asserts both ranges at run time.
+    data_str += [format_vector_definition("int8_t", "V", V, alignment=64)]
     data_str += [format_vector_definition("int8_t", "A", A, alignment=64)]
     data_str += [format_vector_definition("int8_t", "B", B, alignment=64)]
 
@@ -608,11 +695,11 @@ def emit_matmul_data(**kwargs):
     # FlashAttention transposes ALGEBRAICALLY -- S^T = K.Q^T is the same GEMM with its
     # operands swapped -- and never enabled the hardware one. See the streamer template.
 
-    return data_str, A, B
+    return data_str, A, V, B
 
 
 def emit_versacore_data(**kwargs):
-    data_str, A, B = emit_matmul_data(**kwargs)
+    data_str, A, V, B = emit_matmul_data(**kwargs)
 
     # No rescale epilogue and no raw-matmul golden. VersaCore has no rescale unit and this
     # cluster gives its write path no rescale extension, so there are no zero-point,
@@ -625,7 +712,14 @@ def emit_versacore_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_C", 0)]
     data_str += [format_scalar_definition("int32_t", "set_addr_remap_index_D32", 0)]
 
-    data_str += [emit_attention_golden(A, B, **kwargs)]
+    # Shape 2 regenerates the header only to harvest its descriptors; it has no golden.
+    if not kwargs.get("_descriptors_only", False):
+        tile = A.size // int(kwargs["NKV"])
+        Ks = [A[j * tile:(j + 1) * tile] for j in range(int(kwargs["NKV"]))]
+        Vs = [V[j * tile:(j + 1) * tile] for j in range(int(kwargs["NKV"]))]
+        nq = int(kwargs["NQ"]); qt = B.size // nq
+        Bs = [B[q * qt:(q + 1) * qt] for q in range(nq)]
+        data_str += [emit_attention_golden(Ks, Vs, Bs, **kwargs)]
 
     data_str = "\n\n".join(data_str)
 
@@ -660,7 +754,7 @@ def emit_shape2_section(param, merged_config):
     assert bc % tile_size == 0, f"Bc={bc} is not a multiple of tileSize={tile_size}"
     m2, n2, k2 = d // mesh_row, n1, bc // tile_size
 
-    shape2 = {**merged_config, "M": m2, "N": n2, "K": k2}
+    shape2 = {**merged_config, "M": m2, "N": n2, "K": k2, "_descriptors_only": True}
     keep = re.compile(
         r"^int32_t (M|N|K|[ABCD][0-9]*[a-z]*(?:sl|tl)(?:bound|stride)[0-9]+) = "
     )

@@ -97,10 +97,10 @@ def quant(x16, scale):
     return np.clip(np.rint(v), -127, 127).astype(np.int8)
 
 
-def d_port_fp16(acc):
-    """The D port's Int32ToFp16Converter, bit for bit."""
+def d_port_fp16(acc, shift=0):
+    """The D port's Int32ToFp16Converter, bit for bit: RNE(acc * 2^-shift)."""
     flat = np.asarray(acc, dtype=np.int64).reshape(-1)
-    bits = np.array([int32_to_fp16_golden(int(v)) for v in flat], dtype=np.uint16)
+    bits = np.array([int32_to_fp16_golden(int(v), shift) for v in flat], dtype=np.uint16)
     return bits.view(np.float16).reshape(np.shape(acc))
 
 
@@ -145,27 +145,22 @@ def emit(**kw):
     y16 = {nm: d_port_fp16(n1q.astype(np.int32) @ w[nm].astype(np.int32)) for nm in w}
     yd = {nm: (y16[nm].astype(np.float32) * np.float32(dq)).astype(np.float16) for nm in w}
 
-    # ---- FlashAttention's operands --------------------------------------------------------
-    # K and V keep the layer's shared scale. Q DOES NOT, and that is a finding, not a
-    # tuning choice: FlashAttention narrows S = K.Q^T from INT32 to FP16 on the D port with
-    # no scale in between, so |S| must stay under 65504. At the layer's s_qk this data
-    # reaches ~2.9e5 -- every overflowing score becomes inf, and exp(inf - inf) is NaN.
-    # Real attention divides S by sqrt(d) anyway; putting a power of two of that into Q's
-    # quantisation step is where it costs nothing. So Q's scale is the largest power of two
-    # at or below s_qk that keeps THIS data's worst score in FP16, derived like every other
-    # scale here rather than fixed.
+    # FlashAttention narrows S = K.Q^T from INT32 to FP16 on the D port. At the layer's shared
+    # scale this data's scores reach ~2.9e5, past FP16's 65,504: unscaled, every such score
+    # would become inf, and exp(inf - inf) is NaN. The converter applies a power-of-two scale
+    # while it rounds, RNE(S * 2^-k), which costs no precision (only the exponent moves), so
+    # Q, K and V share one scale and k is the smallest shift that keeps THIS data's worst
+    # score finite. Real attention divides S by sqrt(d) anyway; the 2^-k is part of that.
     peak = max(float(np.abs(yd[nm].astype(np.float32)).max()) for nm in w)
     s_kv = int8_scale_for(peak)
     k8, v8 = quant(yd["k"], s_kv), quant(yd["v"], s_kv)
     s_q = s_kv
-    while True:
-        q8 = quant(yd["q"], s_q)
-        s = k8.astype(np.int64) @ q8.astype(np.int64).T              # S^T: [key, query]
-        if np.abs(s).max() < FP16_MAX:
-            break
-        s_q /= 2.0
-    s_at_skv = int(np.abs(k8.astype(np.int64) @ quant(yd["q"], s_kv).astype(np.int64).T).max())
-    s16 = d_port_fp16(s)                                             # [key][query]
+    q8 = quant(yd["q"], s_q)
+    s = k8.astype(np.int64) @ q8.astype(np.int64).T                  # S^T: [key, query]
+    s_at_skv = int(np.abs(s).max())
+    s_shift = next(k for k in range(15)
+                   if int32_to_fp16_golden(s_at_skv, k) & 0x7FFF < 0x7C00)   # finite
+    s16 = d_port_fp16(s, s_shift)                                    # [key][query]
 
     # The P.V check. P here is NOT a softmax -- it is a small non-negative INT8 operand
     # chosen so O^T = V^T.P^T stays inside FP16 and can come back through the converter
@@ -214,10 +209,11 @@ def emit(**kw):
         ("DQ_PROJ_BITS", f"0x{f32bits(dq):08X}u", f"dequantise a projection, x{dq:g}"),
         ("SCALE_Q_BITS", f"0x{f32bits(s_q):08X}u", f"quantise Q, x{s_q:g}"),
         ("SCALE_KV_BITS", f"0x{f32bits(s_kv):08X}u", f"quantise K and V, x{s_kv:g}"),
+        ("FA_S_SHIFT", s_shift, "D-port converter shift for S: S16 = RNE(S * 2^-k)"),
     ]
     out += ["\n".join(f"#define {n:<14} {v:<12} // {c}" for n, v, c in defs)]
-    out += [f"// |K.Q^T| at the layer's shared scale x{s_kv:g}: {s_at_skv} (FP16 max 65504);\n"
-            f"// at Q's scale x{s_q:g}: {int(np.abs(s).max())}. |O^T| max {int(np.abs(o).max())}."]
+    out += [f"// |K.Q^T| at the shared scale x{s_kv:g}: {s_at_skv} (FP16 max 65504); converted as\n"
+            f"// S * 2^-{s_shift}, max {s_at_skv / 2 ** s_shift:g}. |O^T| max {int(np.abs(o).max())}."]
 
     def vec(ctype, name, arr):
         hexb = {"uint16_t": 16}.get(ctype)

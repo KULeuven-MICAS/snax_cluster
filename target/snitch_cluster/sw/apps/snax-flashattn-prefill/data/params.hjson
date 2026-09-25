@@ -23,14 +23,20 @@
 // TRANSPOSED here: S^T = (Q.K^T)^T = K.Q^T is the same GEMM with its operands swapped, so
 // D = [M*meshRow, N*meshCol] = [Bc, Br]. That orientation is what lets StreamReduce's
 // LANEWISE mode take the rowmax with no horizontal fold -- one lane is one query row, so
-// the reduction runs along beats. See snax-flashattn.c.
+// the reduction runs along beats. See src/snax-flashattn-prefill.c.
 
 {
   // gemm configurations
   // KV tiles the software pipeline streams. Keep it >= 4, so the pipeline has enough
-  // tiles to hide the per-tile fill and drain, and a power of two, so the kernel's
-  // l-recurrence invariant can check l == NKV * rowsum by its exponent alone.
+  // tiles to hide the per-tile fill and drain. Every tile has its OWN K and V, so the
+  // running max moves and the online rescale of O is actually exercised.
   NKV: 4,
+
+  // The softmax temperature a: P = exp(a * (S - m)), standing in for 1/sqrt(d) times the Q
+  // and K quantisation scales. Full-range INT8 scores have a standard deviation near
+  // 61,000, and a = 2^-15 puts a*S at ~1.9 sigma. datagen.py splits it into 2^-14 on the
+  // D-port converter (which keeps the scores inside FP16) and 0.5 in the exp.
+  SCORE_SCALE: 0.000030517578125,
 
   // QUERY TILES PER K/V PASS. This is the only knob that moves arithmetic intensity:
   // bytes = 2*Bc*d and MACs = NQ*2*Br*Bc*d, so intensity = NQ*Br exactly -- Bc and d

@@ -15,11 +15,21 @@ import chisel3.util._
   *   - Rounds to nearest, ties to even.
   *   - Saturates to +/- Infinity on overflow.
   *   - Zero maps exactly to +0 or -0 (sign bit from input).
+  *
+  * POWER-OF-TWO SCALE (`shift`): the output is RNE(in * 2^-shift), not RNE(in). A power of two only moves the
+  * exponent, so the 11 significant bits are the same ones as without it: the shift costs no precision and no
+  * multiplier -- it is one subtract on the exponent. What it buys is RANGE. An INT8 x INT8 dot product over d = 128
+  * reaches 127^2 * 128 = 2,064,512, 31x past FP16's 65,504, and overflows to Inf without it.
+  *
+  * `shift` is clamped to 0..14. The smallest non-zero input is 1 (exponent 0), so 2^-14 is the smallest result and
+  * it is FP16's smallest NORMAL number: with shift <= 14 no input can land in the subnormal range, and no
+  * subnormal path is needed.
   */
 class Int32ToFp16PE extends Module {
   val io = IO(new Bundle {
-    val in  = Input(SInt(32.W))
-    val out = Output(UInt(16.W)) // IEEE-754 fp16
+    val in    = Input(SInt(32.W))
+    val shift = Input(UInt(4.W)) // output = RNE(in * 2^-shift); clamped to 14
+    val out   = Output(UInt(16.W)) // IEEE-754 fp16
   })
 
   // Constants for fp16
@@ -75,7 +85,9 @@ class Int32ToFp16PE extends Module {
     // -----------------------------
     // 5) Exponent with bias + mantissa overflow adjustment
     // -----------------------------
-    val expPreWide     = expUnbiased +& expBias                    // 6-bit result
+    // Biased exponent of in * 2^-shift. msbIndex >= 0 and shift <= 14, so this is >= 1: always normal.
+    val shiftC         = Mux(io.shift > 14.U, 14.U, io.shift)
+    val expPreWide     = (expUnbiased +& expBias) - shiftC           // 6-bit result
     val expIncWide     = expPreWide + 1.U
     val expRoundedWide = Mux(mantOverflow, expIncWide, expPreWide) // 6 bits
 
@@ -98,6 +110,7 @@ class Int32ToFp16PE extends Module {
 
 class Int32ToFp16Converter(
   dataWidth:          Int      = 512,
+  shift:              Int      = 0, // 1 = build the power-of-two scale, csr(1)[3:0]; 0 = none (CSR absent)
   in_elementWidth:    Int      = 32,
   out_elementWidth:   Int      = 16,
   extra_loops_choice: Seq[Int] = Seq(
@@ -153,6 +166,9 @@ class Int32ToFp16Converter(
       override def desiredName = extensionParam.moduleName + "_int32_to_fp16_pe"
     })
   }
+  // The power-of-two scale, shared by all PEs. Latched with the rest of the streamer's CSRs at START.
+  val shiftCsr = if (shift != 0) ext_csr_i(1)(3, 0) else 0.U(4.W)
+  peArray.foreach(_.io.shift := shiftCsr)
 
   val pe_inputs  = Wire(Vec(numPEs, SInt(32.W)))
   val pe_outputs = Wire(Vec(numPEs, UInt(16.W)))
@@ -232,20 +248,25 @@ class Int32ToFp16Converter(
   ext_data_i.ready := !outValid || ext_data_o.ready
 }
 
-class HasInt32ToFp16Converter(dataWidth: Int = 512) extends HasDataPathExtension {
+/** @param shift
+  *   1 builds a power-of-two output scale: csr(1)[3:0] = k gives RNE(x * 2^-k), k clamped to 0..14. It adds one user
+  *   CSR, which the cluster cfg's streamer CSR count must include (extra_streamer_csr). 0 builds the plain
+  *   converter, with one user CSR.
+  */
+class HasInt32ToFp16Converter(dataWidth: Int = 512, shift: Int = 0) extends HasDataPathExtension {
   // The length of row, col, and elementWidth should be the same
   require(dataWidth % 32 == 0, "dataWidth must be multiple of 32")
 
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
-      moduleName = s"Int32ToFp16Converter_${dataWidth}",
-      userCsrNum = 1,
+      moduleName = s"Int32ToFp16Converter_${dataWidth}" + (if (shift != 0) "_shift" else ""),
+      userCsrNum = if (shift != 0) 2 else 1,
       dataWidth  = dataWidth
     )
 
   def instantiate(clusterName: String): Int32ToFp16Converter =
     Module(
-      new Int32ToFp16Converter(dataWidth) {
+      new Int32ToFp16Converter(dataWidth, shift) {
         override def desiredName = clusterName + namePostfix
       }
     )
