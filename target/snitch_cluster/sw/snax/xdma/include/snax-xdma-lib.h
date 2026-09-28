@@ -160,15 +160,23 @@ static inline uint32_t snax_xdma_start() {
     }
 }
 
+// Whether a task is done, given the finish counter it retires on. The task and finish counters
+// are 8 bits (XDMACtrl) and wrap every 256 tasks, so the test is on the difference: done once
+// the counter is at the task's id or up to 127 past it. A plain `finished >= id` returns at once
+// for the task that wraps -- id 0 against a counter still at 255 -- before it has moved a byte.
+static inline int snax_xdma_task_done(uint32_t finished, uint32_t task_id) {
+    return ((finished - task_id) & 0xFFu) < 0x80u;
+}
+
 // Wait xdma to finished
 static inline void snax_xdma_local_wait(uint32_t task_id) {
-    while (snax_read_xdma_cfg_reg(XDMA_FINISH_LOCAL_TASK_PTR) < task_id) {
+    while (!snax_xdma_task_done(snax_read_xdma_cfg_reg(XDMA_FINISH_LOCAL_TASK_PTR), task_id)) {
         // Wait for xdma to finish
     }
 }
 
 static inline void snax_xdma_remote_wait(uint32_t task_id) {
-    while (snax_read_xdma_cfg_reg(XDMA_FINISH_REMOTE_TASK_PTR) < task_id) {
+    while (!snax_xdma_task_done(snax_read_xdma_cfg_reg(XDMA_FINISH_REMOTE_TASK_PTR), task_id)) {
         // Wait for xdma to finish
     }
 }

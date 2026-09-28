@@ -77,7 +77,7 @@ static int bounded_start(uint32_t *task, int *remote) {
 static int bounded_wait(uint32_t task_id, int remote) {
     uint32_t ptr = remote ? XDMA_FINISH_REMOTE_TASK_PTR : XDMA_FINISH_LOCAL_TASK_PTR;
     for (uint32_t s = 0; s < SPIN_LIMIT; s++)
-        if (snax_read_xdma_cfg_reg(ptr) >= task_id) return 0;
+        if (snax_xdma_task_done(snax_read_xdma_cfg_reg(ptr), task_id)) return 0;
     return 1;
 }
 
