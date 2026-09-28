@@ -59,10 +59,11 @@ module tb_bin;
     end
   end
 
-  // Start `fesvr`
+  // Start `fesvr`. It serves the program's syscalls (every printed line is one) when it ticks,
+  // so the tick period is the syscall's latency; a tick costs the host about a microsecond.
   initial begin
     automatic int exit_code;
-    while ((exit_code = fesvr_tick()) == 0) #200ns;
+    while ((exit_code = fesvr_tick()) == 0) #20ns;
     // Cleanup C++ simulation objects before $finish is called
     fesvr_cleanup();
     exit_code >>= 1;
