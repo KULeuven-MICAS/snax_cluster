@@ -91,7 +91,8 @@ class ProgrammableCounter(width: Int, hasCeil: Boolean = true, moduleName: Strin
     val tick  = Input(Bool())
     val reset = Input(Bool())
     val ceil  = Input(UInt(width.W))
-    val step  = Input(UInt((width - 1).W))
+    // As wide as the value: an address generator's stride can span the whole address space
+    val step  = Input(UInt(width.W))
 
     val value   = Output(UInt(width.W))
     val lastVal = Output(Bool())
