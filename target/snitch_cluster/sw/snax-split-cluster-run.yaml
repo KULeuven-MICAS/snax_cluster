@@ -1,0 +1,30 @@
+# Copyright 2026 KU Leuven.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Every app the four-engine split cluster (cfg/snax_split_cluster.hjson) builds and that
+# checks its own result: the engine smoke tests, the SIMD kernels, the xDMA moves, and the
+# GEMM + SIMD workloads (FlashAttention decode and prefill, and the RMSNorm -> Q/K/V ->
+# FlashAttention-operand chain).
+#
+# A Verilator run reports main()'s return value as its exit code, which run.py checks.
+# Each app also prints PASS or FAIL per check; read the log when an exit code alone is not
+# enough (vsim and vcs report only through the [SUCCESS] / [FAILURE] line).
+#
+#   ./run.py --simulator verilator sw/snax-split-cluster-run.yaml -j
+
+runs:
+  - elf: apps/snax-simd-test/build/snax-simd-test.elf
+  - elf: apps/snax-xdma-memset/build/snax-xdma-memset.elf
+  - elf: apps/snax-simd-softmax/build/snax-simd-softmax.elf
+  - elf: apps/snax-simd-rmsnorm/build/snax-simd-rmsnorm.elf
+  - elf: apps/snax-simd-silu/build/snax-simd-silu.elf
+  - elf: apps/snax-simd-swiglu/build/snax-simd-swiglu.elf
+  - elf: apps/snax-simd-rope/build/snax-simd-rope.elf
+  - elf: apps/snax-simd-reduce-multirow/build/snax-simd-reduce-multirow.elf
+  - elf: apps/snax-xdma-transpose/build/snax-xdma-transpose.elf
+  - elf: apps/snax-xdma-mem-read/build/snax-xdma-mem-read.elf
+  - elf: apps/snax-xdma-idma-read-bw/build/snax-xdma-idma-read-bw.elf
+  - elf: apps/snax-flashattn-decode/build/snax-flashattn-decode.elf
+  - elf: apps/snax-flashattn-prefill/build/snax-flashattn-prefill.elf
+  - elf: apps/snax-llm-qkv-to-fa/build/snax-llm-qkv-to-fa.elf

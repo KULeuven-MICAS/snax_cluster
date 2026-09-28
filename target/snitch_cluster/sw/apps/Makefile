@@ -67,6 +67,9 @@ SUBDIRS += snax-xdma-reshape-comparison
 # Proves the testbench's main-memory xDMA endpoint: the engine can only move bytes
 # it did not write itself once there is a second endpoint to talk to.
 SUBDIRS += snax-xdma-mem-read
+# Main-memory bandwidth into L1 with the iDMA (AXI reads) and the xDMA (the endpoint's AXI
+# writes) reading at once.
+SUBDIRS += snax-xdma-idma-read-bw
 # GEMM on hart 0. FlashAttention is the workload that exercises GEMM and SIMD together;
 # its data.h is generated from the cluster cfg, so it follows the array shape.
 #
@@ -84,6 +87,18 @@ SUBDIRS += snax-flashattn-prefill
 # The layer stretch that FEEDS FlashAttention: RMSNorm -> quantise -> Q/K/V projections
 # -> int8 operands in FA's own layouts, all four engines, checked against FA's two matmuls.
 SUBDIRS += snax-llm-qkv-to-fa
+# DeepSeek-V2-Lite layer 1, kernel by kernel, against the golden in sw/apps/dsv2/dsv2.
+# sw/snax-dsv2-run.yaml runs them.
+SUBDIRS += dsv2/snax-dsv2-gemv
+SUBDIRS += dsv2/snax-dsv2-absorb
+SUBDIRS += dsv2/snax-dsv2-simd
+SUBDIRS += dsv2/snax-dsv2-cache
+SUBDIRS += dsv2/snax-dsv2-mla-fa
+SUBDIRS += dsv2/snax-dsv2-mla
+SUBDIRS += dsv2/snax-dsv2-router
+SUBDIRS += dsv2/snax-dsv2-moe
+SUBDIRS += dsv2/snax-dsv2-layer
+SUBDIRS += dsv2/snax-dsv2-spec
 endif
 # The FP16 SIMD apps below need the StreamMap / StreamReduce / StreamElementwise /
 # Fp16ToInt8 reader extensions, which only cfg/snax_xdma_cluster.hjson builds --

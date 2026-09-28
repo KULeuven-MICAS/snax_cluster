@@ -1,0 +1,13 @@
+// Copyright 2026 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    // The golden pack (sw/apps/dsv2/dsv2): random weights at DeepSeek-V2-Lite's shapes, one
+    // token at position L with L tokens cached.
+    seed: 1,
+    L: 511,
+    // Output columns per streamed weight chunk: a K x 64 B-layout block, finished outputs.
+    chunk: 64,
+    // The GEMV shapes to run, in order. The router doubles as the D-port negative control.
+    shapes: ["wq", "wdkv", "wo", "router", "expert_gu", "expert_down", "shared_gu", "shared_down"],
+}

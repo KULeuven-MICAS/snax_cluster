@@ -1,0 +1,11 @@
+// Copyright 2026 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    // The golden pack (sw/apps/dsv2/dsv2): L tokens cached, the new token at position L.
+    seed: 1,
+    L: 511,
+    // Tokens the two DRAM copies hold (a multiple of 16), and the appends to run.
+    capacity: 576,
+    appends: 3,
+}

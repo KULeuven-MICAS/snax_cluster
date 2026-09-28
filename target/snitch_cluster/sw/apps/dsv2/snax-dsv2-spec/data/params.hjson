@@ -1,0 +1,15 @@
+// Copyright 2026 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    // Two tokens per pass (I7): the token at a pass's start and a draft after it. Pass 0 runs
+    // positions L and L + 1; pass 1 starts again at L + 1 -- pass 0's draft was rejected -- so
+    // it overwrites that row, and reads the row of L that pass 0 kept.
+    seed: 1,
+    L: 511,
+    bc: 64,
+    ntok: 2,
+    starts: [511, 512],
+    // Tokens the two DRAM cache copies hold: every pass's rows, in whole tiles of bc.
+    capacity: 576,
+}

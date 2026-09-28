@@ -1,0 +1,22 @@
+# Copyright 2026 KU Leuven.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# DeepSeek-V2-Lite layer 1 on the split cluster (cfg/snax_split_cluster.hjson), one app per
+# kernel, every one checked against the golden pack in sw/apps/dsv2/dsv2. Each app prints PASS or
+# FAIL per checked tensor and returns the number of failed checks, which Verilator reports as
+# its exit code.
+#
+#   ./run.py --simulator verilator sw/snax-dsv2-run.yaml -j
+
+runs:
+  - elf: apps/dsv2/snax-dsv2-gemv/build/snax-dsv2-gemv.elf
+  - elf: apps/dsv2/snax-dsv2-absorb/build/snax-dsv2-absorb.elf
+  - elf: apps/dsv2/snax-dsv2-simd/build/snax-dsv2-simd.elf
+  - elf: apps/dsv2/snax-dsv2-cache/build/snax-dsv2-cache.elf
+  - elf: apps/dsv2/snax-dsv2-mla-fa/build/snax-dsv2-mla-fa.elf
+  - elf: apps/dsv2/snax-dsv2-mla/build/snax-dsv2-mla.elf
+  - elf: apps/dsv2/snax-dsv2-router/build/snax-dsv2-router.elf
+  - elf: apps/dsv2/snax-dsv2-moe/build/snax-dsv2-moe.elf
+  - elf: apps/dsv2/snax-dsv2-layer/build/snax-dsv2-layer.elf
+  - elf: apps/dsv2/snax-dsv2-spec/build/snax-dsv2-spec.elf

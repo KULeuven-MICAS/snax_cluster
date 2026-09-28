@@ -84,8 +84,12 @@ $(DEP): $(SRCS) | $(BUILDDIR)
 $(ELF): $(SRCS) $(DEP) $(LIBS) | $(BUILDDIR)
 	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(SRCS) -o $@
 
+# -D disassembles every section, data included. An app that links large data blobs sets
+# OBJDUMP_FLAGS = -d (code sections only), or its dump is hundreds of MB of fake opcodes.
+OBJDUMP_FLAGS ?= -D
+
 $(DUMP): $(ELF) | $(BUILDDIR)
-	$(RISCV_OBJDUMP) -D $< > $@
+	$(RISCV_OBJDUMP) $(OBJDUMP_FLAGS) $< > $@
 
 $(DWARF): $(ELF) | $(BUILDDIR)
 	$(RISCV_DWARFDUMP) $< > $@

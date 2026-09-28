@@ -1,0 +1,15 @@
+// Copyright 2026 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    // The golden pack (sw/apps/dsv2/dsv2): random weights at DeepSeek-V2-Lite's shapes, L tokens
+    // cached. Pass p runs ntok tokens from position starts[p]; each appends its rows, which the
+    // passes after it read (golden.spec_passes).
+    seed: 1,
+    L: 511,
+    bc: 64,
+    ntok: 1,
+    starts: [511, 512, 513],
+    // Tokens the two DRAM cache copies hold: every pass's rows, in whole tiles of bc.
+    capacity: 576,
+}
