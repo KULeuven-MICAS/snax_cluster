@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-    // The golden pack (sw/apps/dsv2/dsv2): random weights at DeepSeek-V2-Lite's shapes, one
+    // The golden pack (sw/apps/dsv2/util): random weights at DeepSeek-V2-Lite's shapes, one
     // token at position L with L tokens cached.
     seed: 1,
     L: 511,

@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Data for snax-dsv2-router: DeepSeek-V2-Lite's MoE gate for one token, from the layer's own
-# post-attention state (the golden pack, sw/apps/dsv2/dsv2): the router GEMV (2048 -> 64) and its
+# post-attention state (the golden pack, sw/apps/dsv2/util): the router GEMV (2048 -> 64) and its
 # dequantisation, the softmax over the 64 logits, and the top 6. The golden token is drawn so
 # the device model's sixth and seventh weights are golden.TIE_ULP or more apart: no device
 # softmax within a few ULP of the model can swap them.
@@ -18,11 +18,11 @@ import sys
 import hjson
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
-from dsv2 import golden  # noqa E402
-from dsv2.emit import Emitter  # noqa E402
-from dsv2.fp import bits16, ulp16  # noqa E402
-from dsv2.layout import mesh_from_hwcfg  # noqa E402
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))  # the util package
+from util import golden  # noqa E402
+from util.emit import Emitter  # noqa E402
+from util.fp import bits16, ulp16  # noqa E402
+from util.layout import mesh_from_hwcfg  # noqa E402
 
 
 def main():

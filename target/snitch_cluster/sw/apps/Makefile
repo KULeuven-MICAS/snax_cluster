@@ -87,7 +87,7 @@ SUBDIRS += snax-flashattn-prefill
 # The layer stretch that FEEDS FlashAttention: RMSNorm -> quantise -> Q/K/V projections
 # -> int8 operands in FA's own layouts, all four engines, checked against FA's two matmuls.
 SUBDIRS += snax-llm-qkv-to-fa
-# DeepSeek-V2-Lite layer 1, kernel by kernel, against the golden in sw/apps/dsv2/dsv2.
+# DeepSeek-V2-Lite layer 1, kernel by kernel, against the golden in sw/apps/dsv2/util.
 # sw/snax-dsv2-run.yaml runs them.
 SUBDIRS += dsv2/snax-dsv2-gemv
 SUBDIRS += dsv2/snax-dsv2-absorb

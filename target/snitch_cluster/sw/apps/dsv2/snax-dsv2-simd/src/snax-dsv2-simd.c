@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // The SIMD stages of DeepSeek-V2-Lite layer 1, each on the layer's own tensors (the golden
-// pack in sw/apps/dsv2/dsv2), from its golden input:
+// pack in sw/apps/dsv2/util), from its golden input:
 //
 //   V1+V2  input norm      x (1 x 2048)        -> xn (FP16) -> the W_Q / W_DKV A operand
 //   V1+V2  latent norm     c (1 x 512)         -> cn (FP16) -> c8, the cache row's latent

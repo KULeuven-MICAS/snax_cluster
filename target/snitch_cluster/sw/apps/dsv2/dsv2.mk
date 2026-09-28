@@ -43,7 +43,7 @@
 #
 # The ELF rebuilds when a setting changes: it depends on a stamp named after the values.
 
-# The golden pack every app's datagen imports: the Python package dsv2/ next to the apps.
+# The golden pack every app's datagen imports: the Python package util/ next to the apps.
 DSV2_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 DSV2_STAGE_CHECKS ?= 0

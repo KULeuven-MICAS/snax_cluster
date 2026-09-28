@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Data for snax-dsv2-moe: DeepSeek-V2-Lite layer 1's mixture of experts for one token,
-# h -> h + MoE(h) (stages 14 to 23), from the golden pack (sw/apps/dsv2/dsv2).
+# h -> h + MoE(h) (stages 14 to 23), from the golden pack (sw/apps/dsv2/util).
 #
 # THE EXPERT TABLE (dsv2.appdata.moe_weights). 64 entries, one per routed expert: its fused
 # gate|up weight [2048, 2816], its down weight [1408, 2048] (both B-layout blobs), the
@@ -28,11 +28,11 @@ import sys
 import hjson
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
-from dsv2 import appdata, golden  # noqa E402
-from dsv2.emit import Emitter  # noqa E402
-from dsv2.fp import bits16  # noqa E402
-from dsv2.layout import mesh_from_hwcfg  # noqa E402
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))  # the util package
+from util import appdata, golden  # noqa E402
+from util.emit import Emitter  # noqa E402
+from util.fp import bits16  # noqa E402
+from util.layout import mesh_from_hwcfg  # noqa E402
 
 
 def main():

@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Data for snax-dsv2-absorb: the absorbed per-head GEMVs of DeepSeek-V2-Lite's MLA, with the
-# layer's own tensors from the golden pack (sw/apps/dsv2/dsv2).
+# layer's own tensors from the golden pack (sw/apps/dsv2/util).
 #
 #   W_UK  q~_h = q_nope_h (1 x 128) . W_UK_h (128 x 512), k = 5   the query into the latent
 #   W_UV  o_h  = o~_h     (1 x 512) . W_UV_h (512 x 128), k = 7   the latent output back out
@@ -26,11 +26,11 @@ import sys
 import hjson
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
-from dsv2 import golden  # noqa E402
-from dsv2.emit import Emitter  # noqa E402
-from dsv2.fp import bits16  # noqa E402
-from dsv2.layout import mesh_from_hwcfg  # noqa E402
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))  # the util package
+from util import golden  # noqa E402
+from util.emit import Emitter  # noqa E402
+from util.fp import bits16  # noqa E402
+from util.layout import mesh_from_hwcfg  # noqa E402
 
 
 def main():

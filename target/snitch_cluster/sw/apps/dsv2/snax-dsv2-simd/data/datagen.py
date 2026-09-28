@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Data for snax-dsv2-simd: the SIMD stages of DeepSeek-V2-Lite layer 1 on the layer's own
-# tensors (the golden pack, sw/apps/dsv2/dsv2), each from its golden input:
+# tensors (the golden pack, sw/apps/dsv2/util), each from its golden input:
 #
 #   V1+V2  input norm       x (2048)          -> xn (FP16) -> the W_Q/W_DKV A operand (INT8)
 #   V1+V2  latent norm      c = ckv[:512]     -> cn (FP16) -> the cache row's c (INT8)
@@ -26,11 +26,11 @@ import sys
 import hjson
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
-from dsv2 import golden, hwmodel  # noqa E402
-from dsv2.emit import Emitter  # noqa E402
-from dsv2.fp import F16, bits16, f32bits, quant_i8  # noqa E402
-from dsv2.layout import mesh_from_hwcfg  # noqa E402
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))  # the util package
+from util import golden, hwmodel  # noqa E402
+from util.emit import Emitter  # noqa E402
+from util.fp import F16, bits16, f32bits, quant_i8  # noqa E402
+from util.layout import mesh_from_hwcfg  # noqa E402
 
 
 def unit_row(n, rng):

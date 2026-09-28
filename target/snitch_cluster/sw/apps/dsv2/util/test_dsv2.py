@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Checks of the golden generator itself. Run from target/snitch_cluster/sw/apps/dsv2:
 
-    python3 -m dsv2.test_dsv2          (or: pytest dsv2/test_dsv2.py)
+    python3 -m util.test_dsv2          (or: pytest util/test_dsv2.py)
 
 Each test is small and fast; the whole-layer check (hwmodel against the reference) is
 golden.py's report.

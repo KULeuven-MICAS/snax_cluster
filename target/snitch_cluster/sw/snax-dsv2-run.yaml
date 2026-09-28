@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # DeepSeek-V2-Lite layer 1 on the split cluster (cfg/snax_split_cluster.hjson), one app per
-# kernel, every one checked against the golden pack in sw/apps/dsv2/dsv2. Each app prints PASS or
+# kernel, every one checked against the golden pack in sw/apps/dsv2/util. Each app prints PASS or
 # FAIL per checked tensor and returns the number of failed checks, which Verilator reports as
 # its exit code.
 #

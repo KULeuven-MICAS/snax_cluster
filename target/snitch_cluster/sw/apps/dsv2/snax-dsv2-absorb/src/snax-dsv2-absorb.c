@@ -12,7 +12,7 @@
 //
 // for all 16 heads, then the per-column dequantisation y (.) s as in snax-dsv2-gemv. Each
 // projection is 1 MiB of INT8 weights; the inputs are the layer's own (the golden pack in
-// sw/apps/dsv2/dsv2), with the latent norm's gain folded into the weights.
+// sw/apps/dsv2/util), with the latent norm's gain folded into the weights.
 //
 // ======================================================================================
 // THE DATAFLOW

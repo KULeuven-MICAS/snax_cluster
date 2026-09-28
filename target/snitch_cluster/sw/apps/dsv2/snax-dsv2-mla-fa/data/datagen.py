@@ -23,12 +23,12 @@ import sys
 import hjson
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
-from dsv2 import golden  # noqa E402
-from dsv2.emit import Emitter  # noqa E402
-from dsv2.fp import bits16, f32bits  # noqa E402
-from dsv2.hwmodel import P8_SCALE  # noqa E402
-from dsv2.layout import gemv_a_rep, key_copy, mesh_from_hwcfg, to_a, value_copy  # noqa E402
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))  # the util package
+from util import golden  # noqa E402
+from util.emit import Emitter  # noqa E402
+from util.fp import bits16, f32bits  # noqa E402
+from util.hwmodel import P8_SCALE  # noqa E402
+from util.layout import gemv_a_rep, key_copy, mesh_from_hwcfg, to_a, value_copy  # noqa E402
 
 
 def p8_interleaved(p8, n_blk, ku, nu):

@@ -821,7 +821,7 @@ static inline void dsv2_top_k16(const uint16_t *v, uint32_t n, uint32_t k, uint3
 //          tile of Bc tokens is contiguous, Bc * 576 bytes: the scores' A operand as is.
 //   VALUE  A-layout of V^T = [512, cap] = latents x tokens, blocks of 16 latents x 4 tokens.
 //          A tile is 32 runs of 16 Bc bytes, cap * 16 apart: the weighted sum's A operand.
-// sw/apps/dsv2/dsv2/layout.py key_copy / value_copy build the same bytes.
+// sw/apps/dsv2/util/layout.py key_copy / value_copy build the same bytes.
 #define DSV2_KV_ROW 576u  // [c 512 | k_pe 64]
 #define DSV2_KV_RANK 512u
 

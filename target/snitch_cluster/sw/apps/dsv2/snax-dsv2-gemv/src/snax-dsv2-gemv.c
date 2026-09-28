@@ -10,7 +10,7 @@
 // for the eight shapes of the layer: W_Q 2048 x 3072, W_DKV 2048 x 576, W_O 2048 x 2048,
 // the router 2048 x 64, an expert's gate|up 2048 x 2816 and down 1408 x 2048, and the shared
 // experts' gate|up 2048 x 5632 and down 2816 x 2048 -- 36 MiB of weights, each shape run on
-// the activation that really reaches it in the layer (the golden pack, sw/apps/dsv2/dsv2).
+// the activation that really reaches it in the layer (the golden pack, sw/apps/dsv2/util).
 //
 // ======================================================================================
 // THE DATAFLOW

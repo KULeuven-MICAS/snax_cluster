@@ -6,7 +6,7 @@
 
 # Data for snax-dsv2-gemv: the eight GEMV shapes of DeepSeek-V2-Lite layer 1, with the
 # layer's own tensors. Every input, weight and expected output comes from one golden pack
-# (sw/apps/dsv2/dsv2), so each shape runs on the activation that really reaches it in the
+# (sw/apps/dsv2/util), so each shape runs on the activation that really reaches it in the
 # layer -- the quantised normed input for W_Q, the quantised SwiGLU output for an expert's
 # down projection -- and "passes here" means "passes inside the layer".
 #
@@ -27,11 +27,11 @@ import sys
 import hjson
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
-from dsv2 import golden  # noqa E402
-from dsv2.emit import Emitter  # noqa E402
-from dsv2.fp import bits16, d_port  # noqa E402
-from dsv2.layout import GEMV_CHUNK, mesh_from_hwcfg  # noqa E402
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))  # the util package
+from util import golden  # noqa E402
+from util.emit import Emitter  # noqa E402
+from util.fp import bits16, d_port  # noqa E402
+from util.layout import GEMV_CHUNK, mesh_from_hwcfg  # noqa E402
 
 # (key, printed name) in run order. The router is the negative control's shape: one chunk.
 SHAPES = [

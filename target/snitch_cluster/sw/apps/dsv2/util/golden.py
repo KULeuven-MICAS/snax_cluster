@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """One golden pack per (seed, L): layer 1 for one new token at position L, L tokens cached.
 
-    python3 -m dsv2.golden --seed 1 --L 511          (from target/snitch_cluster/sw/apps/dsv2)
+    python3 -m util.golden --seed 1 --L 511          (from target/snitch_cluster/sw/apps/dsv2)
 
 prints, stage by stage, how far the device model (hwmodel.py) is from the float reference
 (reference.py). Kernel data generators call make() and take the tensors their stage needs.

@@ -12,7 +12,7 @@ BLOB_DIR  = $(abspath build)/data
 DATA_S    = $(BLOB_DIR)/blobs.S
 
 HW_CFG   := $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE)
-DSV2_PY  := $(wildcard $(DSV2_DIR)/dsv2/*.py) $(DSV2_DIR)/dsv2/config.json
+DSV2_PY  := $(wildcard $(DSV2_DIR)/util/*.py) $(DSV2_DIR)/util/config.json
 
 # One generator run writes data.h, blobs.S and the blobs; blobs.S rides on data.h.
 $(DATA_H): $(DATA_DIR)/datagen.py $(DATA_CFG) $(HW_CFG) $(DSV2_PY)

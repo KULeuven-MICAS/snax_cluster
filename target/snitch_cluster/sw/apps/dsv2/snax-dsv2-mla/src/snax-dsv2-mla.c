@@ -6,7 +6,7 @@
 // token's row appended to the latent cache: the block kernel of snax-dsv2-mla.h (stages 1 to
 // 13), run once on the golden pack's token, and every stage checked.
 //
-// CHECKS against the device model's chained values (sw/apps/dsv2/dsv2), bit for bit, once h is
+// CHECKS against the device model's chained values (sw/apps/dsv2/util), bit for bit, once h is
 // computed and the goldens loaded: the block's results, h = x + attn and the appended row read
 // back from both cache copies. With DSV2_STAGE_CHECKS = 1 every stage as well: xn, ckv, cn, the
 // cache row, q, the rotated q_pe | k_pe, Q8 (q~ quantised: q~ itself shares its L1 with the

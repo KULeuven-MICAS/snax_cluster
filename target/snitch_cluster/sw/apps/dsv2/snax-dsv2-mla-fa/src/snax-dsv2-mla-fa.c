@@ -11,7 +11,7 @@
 //
 // All 16 heads share the one cache, so a query tile is the 16 heads' queries (plus 16 zero
 // rows: the SIMD beat is Br = 32 lanes), and the two head sizes differ: d_qk = 576 for the
-// scores, d_v = 512 for the weighted sum. The golden pack (sw/apps/dsv2/dsv2) supplies the
+// scores, d_v = 512 for the weighted sum. The golden pack (sw/apps/dsv2/util) supplies the
 // cache (L cached rows plus the token's own), q~ and the rotated q_pe.
 //
 // ======================================================================================

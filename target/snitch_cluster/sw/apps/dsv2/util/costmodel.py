@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """A cycle model of DeepSeek-V2-Lite layer 1 decode on snax_split_cluster clusters.
 
-    python3 -m dsv2.costmodel             (from target/snitch_cluster/sw/apps/dsv2)
+    python3 -m util.costmodel             (from target/snitch_cluster/sw/apps/dsv2)
 
 prints the model next to the level 1 runs (the calibration check), then the four-cluster
 HeMAiA estimates.

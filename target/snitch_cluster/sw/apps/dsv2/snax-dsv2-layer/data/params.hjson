@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-    // The golden pack (sw/apps/dsv2/dsv2): random weights at DeepSeek-V2-Lite's shapes, L tokens
+    // The golden pack (sw/apps/dsv2/util): random weights at DeepSeek-V2-Lite's shapes, L tokens
     // cached. Pass p runs ntok tokens from position starts[p]; each appends its rows, which the
     // passes after it read (golden.spec_passes).
     seed: 1,
