@@ -223,6 +223,7 @@ sources:
       - hw/snitch_cluster/src/snitch_cluster_peripheral/snitch_cluster_peripheral.sv
       - hw/snitch_cluster/src/snitch_fpu.sv
       - hw/snitch_cluster/src/snitch_sequencer.sv
+      - hw/snitch_cluster/src/snitch_tcdm_arb_level.sv
       - hw/snitch_cluster/src/snitch_tcdm_interconnect.sv
       # Level 1
       - hw/snitch_cluster/src/snitch_barrier.sv
