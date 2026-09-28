@@ -55,12 +55,13 @@ W_SCALE = 16.0
 
 
 def _mesh(hw):
-    """(meshRow, tileSize, meshCol) = VersaCore's (Mu, Ku, Nu). One shape, one dtype."""
+    """(meshRow, tileSize, meshCol) = VersaCore's (Mu, Ku, Nu) for data type 0, array shape 0:
+    the kernel writes both CSRs as 0. The cluster's other shapes are one-row GEMV unrollings."""
     acc = hw["snax_versacore_core_template"]["snax_acc_cfg"][0]
     unrolling = acc["snax_versacore_spatial_unrolling"]
-    assert len(unrolling) == 1 and len(unrolling[0]) == 1, \
-        "this kernel programs array_shape = data_type = 0; the cfg declares more"
-    return tuple(unrolling[0][0])
+    mesh = tuple(unrolling[0][0])
+    assert mesh[0] > 1, "this kernel programs array_shape = 0, and the cfg's shape 0 is %s" % (mesh,)
+    return mesh
 
 
 # ---- the array's layouts, as block_gemm_golden_model and the streamer read them ----------

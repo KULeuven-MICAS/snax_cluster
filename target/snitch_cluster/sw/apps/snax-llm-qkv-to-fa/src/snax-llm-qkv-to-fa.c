@@ -170,6 +170,17 @@
 #include "snax-versacore-to-lib.h"
 #include "snax-xdma-lib.h"
 #include "snrt.h"
+#include "snax-tcdm-priority.h"
+
+// The TCDM arbitration policy for the whole run (snax-tcdm-priority.h, SNAX_TCDM_POLICY_*): 0, the
+// hardware's own. Build with EXTRA_CFLAGS=-DQKV_TCDM_PRIO=n to try another.
+#ifndef QKV_TCDM_PRIO
+#define QKV_TCDM_PRIO 0
+#endif
+// The starvation guard's wait in cycles, 0 for the hardware's reset value (-DQKV_TCDM_GUARD=n).
+#ifndef QKV_TCDM_GUARD
+#define QKV_TCDM_GUARD 0
+#endif
 
 // The D-port converter must be the shift build (enable + extra-loop policy + shift = 3 CSRs):
 // FlashAttention's scores at the layer's shared Q/K scale are past FP16's range.
@@ -275,6 +286,7 @@ __attribute__((always_inline)) static inline void gemm_cfg(
     csrw_ss(T_BOUND_READER_0_5, 1);
     csrw_ss(T_STRIDE_READER_0_5, 0);
     csrw_ss(ADDR_REMAP_INDEX_READER_0, 0);
+    csrw_ss(ENABLED_CHANNEL_READER_0, 0xFFFFFFFFu);  // shape 0: every A channel
     // B -- reader 1: k inner, n, m broadcast.
     csrw_ss(BASE_PTR_READER_1_LOW, (uint32_t)b);
     csrw_ss(S_STRIDE_READER_1_0, 8);
@@ -285,6 +297,8 @@ __attribute__((always_inline)) static inline void gemm_cfg(
     csrw_ss(T_BOUND_READER_1_2, M);
     csrw_ss(T_STRIDE_READER_1_2, 0);
     csrw_ss(ADDR_REMAP_INDEX_READER_1, 0);
+    csrw_ss(S_STRIDE_READER_1_1, 0);
+    csrw_ss(ENABLED_CHANNEL_READER_1, 0xFFu);  // shape 0: one 4 x 16 block, channels 0..7
     // C -- masked, so its addresses are never issued; the bounds still have to match the
     // eight INT32 beats per output block the array consumes.
     csrw_ss(BASE_PTR_READER_WRITER_0_LOW, (uint32_t)d);
@@ -309,6 +323,7 @@ __attribute__((always_inline)) static inline void gemm_cfg(
     csrw_ss(T_BOUND_READER_WRITER_1_2, M);
     csrw_ss(T_STRIDE_READER_WRITER_1_2, dt2);
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_1, 0);
+    csrw_ss(ENABLED_CHANNEL_READER_WRITER_1, 0xFFFFFFFFu);  // shape 0: full output beats
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 0, 1u);  // Int32ToFp16 on
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, 0u);  // 2:1 merge
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, shift);  // RNE(acc * 2^-shift)
@@ -1052,6 +1067,7 @@ int main() {
         snrt_dma_start_1d(gl_o, g_o16, D_MODEL * T_TOK * 2u);
         snrt_dma_wait_all();
     }
+    if (snax_is_simd_core()) snax_tcdm_policy_install(QKV_TCDM_PRIO, QKV_TCDM_GUARD);
     snrt_cluster_hw_barrier();
 
     const int isG = snax_is_gemm_core(), isS = snax_is_simd_core(), isX = snax_is_xdma_core();
@@ -1210,6 +1226,8 @@ int main() {
         "requant K", "requant V^T"};
     static const uint8_t teng[T_END - T_XT] = {2, 1, 2, 1, 0, 0, 0, 1, 1, 1};
 
+    printf("[QKV] TCDM arbitration: %s (control 0x%x)\n", snax_tcdm_policy_name(QKV_TCDM_PRIO),
+           snax_tcdm_arb_ctrl_read());
     printf("[QKV] T=%u d=%u, warm. Timeline in cycles from the path's first op.\n", T_TOK,
            D_MODEL);
     printf("[QKV] ---- PATH H: HeMAiA's graph + the minimum fix to reach FA ----\n");

@@ -8,6 +8,7 @@ SRCS    = src/snax-llm-qkv-to-fa.c
 # All four engines: VersaCore (hart 0), the SIMD block (hart 1), the xDMA (hart 2) and the
 # iDMA (hart 3). Split-cluster only.
 INCDIRS  = data
+INCDIRS += ../include
 INCDIRS += ../../snax/versacore-to/include
 INCDIRS += ../../snax/simd/include
 INCDIRS += ../../snax/xdma/include
@@ -17,6 +18,8 @@ RISCV_LDFLAGS += ../../snax/simd/build/snax-simd-lib.o
 RISCV_LDFLAGS += ../../snax/xdma/build/snax-xdma-lib.o
 
 include ../common.mk
+
+RISCV_CFLAGS += $(EXTRA_CFLAGS)
 include ./data/Makefile
 # After the include that defines DATA_H: without it editing params.hjson rebuilds nothing.
 $(DEP): $(DATA_H)

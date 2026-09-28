@@ -662,6 +662,17 @@
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 #include "snax-perf-census.h"
+#include "snax-tcdm-priority.h"
+
+// The TCDM arbitration policy for the whole run (snax-tcdm-priority.h, SNAX_TCDM_POLICY_*): 0, the
+// hardware's own. Build with EXTRA_CFLAGS=-DFA_TCDM_PRIO=n to try another.
+#ifndef FA_TCDM_PRIO
+#define FA_TCDM_PRIO 0
+#endif
+// The starvation guard's wait in cycles, 0 for the hardware's reset value (-DFA_TCDM_GUARD=n).
+#ifndef FA_TCDM_GUARD
+#define FA_TCDM_GUARD 0
+#endif
 
 // The matmul engine on hart 0 is VersaCore: a 1024-MAC INT8 array whose single spatial
 // unrolling (Mu, Ku, Nu) is what this kernel calls meshRow/tileSize/meshCol = 16/4/16. It
@@ -984,9 +995,15 @@ static void gemm_configure_once(void) {
         csrw_ss(T_STRIDE_BASE_READER_0 + i, Atlstride[i]);
     }
     csrw_ss(ADDR_REMAP_INDEX_READER_0, set_addr_remap_index_A);
+    // Every A channel: shape 0 reads the whole 16 x 4 block. The masks reset to 0, and a
+    // disabled channel presents zero.
+    csrw_ss(ENABLED_CHANNEL_READER_0, 0xFFFFFFFFu);
 
-    // B -- reader 1.
+    // B -- reader 1. The port is 16 channels, for the one-row GEMV shape that takes two
+    // weight blocks a pass; shape 0 takes one, channels 0..7.
     csrw_ss(S_STRIDE_READER_1_0, Bslstride0);
+    csrw_ss(S_STRIDE_READER_1_1, 0);
+    csrw_ss(ENABLED_CHANNEL_READER_1, (1u << (tileSize * meshCol * 8 / 64)) - 1u);
     for (int i = 0; i < T_BOUND_NUM_READER_1; i++) {
         csrw_ss(T_BOUND_BASE_READER_1 + i, Btlbound[i]);
         csrw_ss(T_STRIDE_BASE_READER_1 + i, Btlstride[i]);
@@ -1001,8 +1018,7 @@ static void gemm_configure_once(void) {
         csrw_ss(T_STRIDE_BASE_READER_WRITER_0 + i, Ctlstride[i]);
     }
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_0, set_addr_remap_index_C);
-    // C is the only port with a channel mask (configurable_channel = 1). All 32 channels
-    // on: attention reads a full C, never a broadcast one.
+    // Every C channel on: attention reads a full C, never a broadcast one.
     for (int i = 0; i < ENABLED_CHANNEL_READER_WRITER_0_CSR_NUM; i++)
         csrw_ss(ENABLED_CHANNEL_READER_WRITER_0 + i, channel_en_C[i]);
 
@@ -1014,6 +1030,8 @@ static void gemm_configure_once(void) {
         csrw_ss(T_STRIDE_BASE_READER_WRITER_1 + i, D32tlstride[i]);
     }
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_1, set_addr_remap_index_D32);
+    // Every D channel: shape 0's output beats are full.
+    csrw_ss(ENABLED_CHANNEL_READER_WRITER_1, 0xFFFFFFFFu);
 
     // The accelerator itself. take_in_new_c = 1: every output block starts from C, which
     // is what makes the second matmul's O += P.V accumulation free (see the loop).
@@ -1405,6 +1423,9 @@ int main() {
                (unsigned long)lowest, (long)((long)lowest - (long)arena_end));
         printf("  PV layout       %d  (P8 pitch %u B, buffers %s, see FA_PV_LAYOUT)\n",
                FA_PV_LAYOUT, P8_SLOT, P8_NEST ? "nested" : "apart");
+        snax_tcdm_policy_install(FA_TCDM_PRIO, FA_TCDM_GUARD);
+        printf("  TCDM arbitration %s (control 0x%x)\n", snax_tcdm_policy_name(FA_TCDM_PRIO),
+               snax_tcdm_arb_ctrl_read());
         if (arena_end > lowest) {
             printf("  TCDM OVERFLOW: the arena runs %ld B into the stacks -- the "
                    "preinit below would zero them. Reduce Bc.\n",
@@ -1438,18 +1459,13 @@ int main() {
         // faulting, so check the layout rather than trust the arithmetic.
         printf("  TCDM footprint  %lu bytes of %u  (Bc=%d, d=%d, S16 = S_int * 2^-%d)\n",
                (unsigned long)top, TCDM_BYTES, BC, DHEAD, D32_FP16_SHIFT);
-        // The xDMA sees only the first 512 KiB of main memory in this testbench (its
-        // endpoint's TCDMAddrWidth is 19); past it a read wraps onto .text. Every byte it
-        // fetches -- all V tiles, the upper half of K(0) -- must sit below that edge.
-        {
-            const uint32_t reach = 0x80000000u + 512u * 1024u;
-            if ((uint32_t)(uintptr_t)V + NKV * KVBYTES > reach ||
-                (uint32_t)(uintptr_t)A + KVBYTES > reach) {
-                printf("  xDMA REACH: V ends %08lx, K(0) ends %08lx, endpoint reaches %08lx\n",
-                       (unsigned long)((uint32_t)(uintptr_t)V + NKV * KVBYTES),
-                       (unsigned long)((uint32_t)(uintptr_t)A + KVBYTES), (unsigned long)reach);
-                cfg_err++;
-            }
+        // One xDMA transfer spans less than 512 KiB of main memory: the testbench's endpoint
+        // walks it with the cluster's 19-bit TCDM address, and past that it wraps onto the
+        // transfer's own first bytes. The xDMA moves a V tile, or half of K(0), per transfer.
+        if (KVBYTES >= 512u * 1024u) {
+            printf("  xDMA SPAN: a V tile is %lu bytes, one transfer spans under 512 KiB\n",
+                   (unsigned long)KVBYTES);
+            cfg_err++;
         }
         if (top > TCDM_BYTES) {
             printf("  TCDM OVERFLOW: tile does not fit -- reduce M\n");
@@ -1609,7 +1625,7 @@ int main() {
             uint32_t fp = tk.remote ? XDMA_FINISH_REMOTE_TASK_PTR
                                     : XDMA_FINISH_LOCAL_TASK_PTR;
             uint32_t spins = 0;
-            while (snax_read_xdma_cfg_reg(fp) < tk.task_id) {
+            while (!snax_xdma_task_done(snax_read_xdma_cfg_reg(fp), tk.task_id)) {
                 if (++spins > SPIN_LIMIT) { timeouts++; break; }
             }
         }
@@ -1644,7 +1660,7 @@ int main() {
                 uint32_t ptr = tk.remote ? XDMA_FINISH_REMOTE_TASK_PTR
                                          : XDMA_FINISH_LOCAL_TASK_PTR;
                 uint32_t spins = 0;
-                while (snax_read_xdma_cfg_reg(ptr) < tk.task_id) {
+                while (!snax_xdma_task_done(snax_read_xdma_cfg_reg(ptr), tk.task_id)) {
                     if (++spins > 200000u) {
                         printf("  V(%lu) TIMEOUT  task %lu on the %s counter\n"
                                "    dst=%08lx (align%%64=%lu)  src=%08lx (align%%64=%lu)"

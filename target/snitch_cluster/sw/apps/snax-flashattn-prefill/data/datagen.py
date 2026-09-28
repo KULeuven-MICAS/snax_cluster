@@ -42,17 +42,17 @@ def _mesh(kwargs):
     """meshRow, tileSize, meshCol -- VersaCore's (Mu, Ku, Nu) spatial unrolling.
 
     VersaCore carries one triple per [data type][array shape] and selects between them at
-    run time with two CSRs. This cluster declares exactly one of each, so both CSRs are
-    always 0 and the mesh is fixed. The assert is what makes that safe to assume: adding a
-    shape to the cfg fails the generator rather than silently emitting descriptors for the
-    wrong one.
+    run time with two CSRs. The kernel runs data type 0, array shape 0 -- it writes both
+    CSRs as 0 -- so the mesh is that entry. The cluster's other shapes are one-row GEMV
+    unrollings the kernel never selects; the assert keeps shape 0 a matmul shape, since a
+    one-row shape there would emit descriptors for the wrong mesh.
     """
     unrolling = _acc(kwargs)["snax_versacore_spatial_unrolling"]
-    assert len(unrolling) == 1 and len(unrolling[0]) == 1, (
-        "this kernel emits array_shape = data_type = 0; the cfg declares "
-        "%d data type(s) and %d array shape(s)" % (len(unrolling), len(unrolling[0]))
+    mesh = tuple(unrolling[0][0])
+    assert mesh[0] > 1, (
+        "this kernel emits array_shape = data_type = 0, and the cfg's shape 0 is %s" % (mesh,)
     )
-    return tuple(unrolling[0][0])
+    return mesh
 
 
 def score_scale_split(a):
@@ -627,13 +627,6 @@ def emit_matmul_data(**kwargs):
     # bytes at the right rate and only the DATA is wrong: m, P8 and rowsum stay
     # bit-exact (they come from K, loaded by the iDMA) while O, which comes from V,
     # does not.
-    #
-    # V FIRST, because the xDMA reads it and the xDMA's view of main memory is only
-    # 512 KiB wide: the TB endpoint's TCDMAddrWidth is 19, so an address past
-    # 0x8008_0000 silently WRAPS to the bottom of DRAM, onto .text. Emitted after A, V's
-    # last tile would cross that edge, and PV would multiply code bytes into O.
-    # The iDMA (K tiles 1+) has full reach; the xDMA also carries half of K tile 0, which
-    # is why A follows directly. The kernel asserts both ranges at run time.
     data_str += [format_vector_definition("int8_t", "V", V, alignment=64)]
     data_str += [format_vector_definition("int8_t", "A", A, alignment=64)]
     data_str += [format_vector_definition("int8_t", "B", B, alignment=64)]
