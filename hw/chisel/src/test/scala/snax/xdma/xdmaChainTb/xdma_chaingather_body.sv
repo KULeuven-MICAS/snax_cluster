@@ -290,7 +290,7 @@ module xdma_chaingather_body #(
   typedef struct packed {
     logic [CoreIDWidth-1:0] core_id;
     bit                     is_core;
-    logic                   tcdm_priority;
+    logic [1:0]             tcdm_priority;
   } tb_tcdm_user_t;
 
   `TCDM_TYPEDEF_ALL(tb_tcdm, tb_tcdm_addr_t, tb_tcdm_data_t, tb_tcdm_strb_t, tb_tcdm_user_t)
