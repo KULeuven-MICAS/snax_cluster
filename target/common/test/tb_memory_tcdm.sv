@@ -12,8 +12,14 @@
 /// that `fesvr` loads the ELF into -- so this module is what stands in for it,
 /// presenting that same image on a TCDM port bank.
 ///
-/// `BaseAddr` is added to every port address, because the endpoint's AGU emits
-/// offsets into its own local memory while the DPI image is addressed globally.
+/// WHERE A PORT ADDRESS LANDS. The endpoint's TCDM address is only `WindowWidth` bits
+/// wide -- the cluster's own, since it is the cluster's xDMA instantiated a second
+/// time -- while the memory it stands for is all of main memory. The testbench passes
+/// in the full main-memory pointers of the task the endpoint is running (`rd_base_i`
+/// for its reader, `wr_base_i` for its writer), and a port address `a` lands at
+/// `base + ((a - base) mod 2^WindowWidth)`: the task's own pointer plus how far its
+/// address generator has walked. That is exact for a task spanning less than
+/// 2^WindowWidth bytes.
 ///
 /// WHAT THIS DOES NOT MODEL. Every port is granted every cycle. A real memory
 /// system banks these ports and two ports meeting in one bank cost a cycle, so a
@@ -27,8 +33,8 @@ module tb_memory_tcdm #(
   parameter int unsigned NumPorts = 0,
   /// Data width of one port, in bits.
   parameter int unsigned DataWidth = 0,
-  /// Added to every incoming port address to reach the global memory image.
-  parameter longint unsigned BaseAddr = 0,
+  /// Width of the port address: the span one task can walk.
+  parameter int unsigned WindowWidth = 19,
   /// Cycles between a granted request and its response, matching the local TCDM.
   parameter int unsigned ResponseLatency = 1,
   parameter type tcdm_req_t = logic,
@@ -36,6 +42,9 @@ module tb_memory_tcdm #(
 )(
   input  logic                     clk_i,
   input  logic                     rst_ni,
+  /// Main-memory pointers of the task being run: where its reader and writer started.
+  input  logic [63:0]              rd_base_i,
+  input  logic [63:0]              wr_base_i,
   input  tcdm_req_t [NumPorts-1:0] req_i,
   output tcdm_rsp_t [NumPorts-1:0] rsp_o
 );
@@ -54,6 +63,11 @@ module tb_memory_tcdm #(
 
   localparam int unsigned NumBytes = DataWidth / 8;
   localparam int unsigned BusAlign = $clog2(NumBytes);
+  localparam longint unsigned WindowMask = (64'd1 << WindowWidth) - 64'd1;
+
+  function automatic longint unsigned place(logic [63:0] base, longint unsigned a);
+    return base + ((a - base) & WindowMask);
+  endfunction
 
   for (genvar i = 0; i < NumPorts; i++) begin : gen_port
     // Contention-free by construction, see the note above.
@@ -65,7 +79,7 @@ module tb_memory_tcdm #(
       automatic bit  strb[NumBytes];
       automatic longint unsigned addr;
       if (rst_ni && req_i[i].q_valid && req_i[i].q.write) begin
-        addr = BaseAddr + longint'(req_i[i].q.addr);
+        addr = place(wr_base_i, longint'(req_i[i].q.addr));
         for (int b = 0; b < NumBytes; b++) begin
           // verilog_lint: waive-start always-ff-non-blocking
           data[b] = req_i[i].q.data[b*8+:8];
@@ -98,7 +112,7 @@ module tb_memory_tcdm #(
       end else begin
         rvalid_q <= req_i[i].q_valid & ~req_i[i].q.write;
         if (req_i[i].q_valid && !req_i[i].q.write) begin
-          addr = BaseAddr + longint'(req_i[i].q.addr);
+          addr = place(rd_base_i, longint'(req_i[i].q.addr));
           tb_memory_read((addr >> BusAlign) << BusAlign, NumBytes, data);
           for (int b = 0; b < NumBytes; b++) rdata_q[b*8+:8] <= data[b];
         end

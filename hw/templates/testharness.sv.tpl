@@ -21,6 +21,8 @@
   main_mem_end = main_mem_base + int(dram.get("length", 0x80000000))
   # Must match the cluster's own xDMA wrapper, which the cluster wrapper fixes at 16.
   xdma_mmio_size_kib = 16
+  # The endpoint is the cluster's own xDMA, so its TCDM address is as wide as the cluster's.
+  xdma_tcdm_addr_width = (int(cluster["tcdm"]["size"]) * 1024 - 1).bit_length()
 %>
 module testharness import ${cluster["name"]}_pkg::*; (
   input logic clk_i,
@@ -160,11 +162,61 @@ module testharness import ${cluster["name"]}_pkg::*; (
     .mst_resps_i     ( narrow_demux_rsp )
   );
 
-  // The endpoint's own TCDM ports. It emits offsets into the memory it sits on, so
-  // the bridge below adds the main-memory base to reach the DPI image.
+  // The endpoint's own TCDM ports, served from the DPI image by tb_memory_tcdm below.
   localparam int unsigned XdmaTcdmPorts = ${round(cluster["dma_data_width"] / cluster["data_width"] * 2)};
   tcdm_req_t [XdmaTcdmPorts-1:0] xdma_mem_tcdm_req;
   tcdm_rsp_t [XdmaTcdmPorts-1:0] xdma_mem_tcdm_rsp;
+
+  // The endpoint's master ports, registered below before they re-enter the cluster.
+  wide_in_req_t    ep_wide_out_req;
+  wide_in_resp_t   ep_wide_out_resp;
+  narrow_in_req_t  ep_narrow_out_req;
+  narrow_in_resp_t ep_narrow_out_resp;
+
+  // WHERE THE ENDPOINT READS AND WRITES. It is the cluster's own xDMA: its TCDM address is
+  // ${xdma_tcdm_addr_width} bits, and it takes a task as its own only when the task's pointer lies in the same
+  // ${"%d" % (2 ** xdma_tcdm_addr_width // 1024)} KiB as its base address (SrcConfigRouter and DstConfigRouter, XDMACtrl.scala). It
+  // stands for the xDMA that sits on ALL of main memory, as the one in hemaia_mem_system sits
+  // on all of L3, so the testbench moves it to each task. A task's first cfg frame carries both
+  // of its full 48-bit pointers: from the next cycle, before the task is routed, the endpoint's
+  // base is the ${"%d" % (2 ** xdma_tcdm_addr_width // 1024)} KiB window holding the pointer that is in main memory, and the memory
+  // below places the endpoint's addresses relative to the pointers themselves (tb_memory_tcdm).
+  // The adapter's MMIO band follows any base in main memory, and a finish is matched by its
+  // transfer id alone. Exact while the endpoint runs one task at a time and a task spans less
+  // than ${"%d" % (2 ** xdma_tcdm_addr_width // 1024)} KiB: a hart starts its next main-memory transfer after the last one finished.
+  localparam logic [AddrWidth-1:0] EpWindowMask = ~((48'd1 << ${xdma_tcdm_addr_width}) - 48'd1);
+
+  logic [AddrWidth-1:0] ep_base_q, ep_cfg_rd, ep_cfg_wr;
+  logic [63:0]          ep_rd_base_q, ep_wr_base_q;
+  logic [3:0]           ep_frames_left_q;
+
+  assign ep_cfg_rd = AddrWidth'(i_tb_xdma_endpoint.xdma_from_remote_cfg.reader_addr);
+  assign ep_cfg_wr = AddrWidth'(i_tb_xdma_endpoint.xdma_from_remote_cfg.writer_addr);
+
+  function automatic logic in_main_mem(logic [AddrWidth-1:0] addr);
+    return (addr >= MainMemBase) && (addr < XdmaMMIOBase);
+  endfunction
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ep_base_q        <= MainMemBase;
+      ep_rd_base_q     <= 64'(MainMemBase);
+      ep_wr_base_q     <= 64'(MainMemBase);
+      ep_frames_left_q <= '0;
+    end else if (i_tb_xdma_endpoint.xdma_from_remote_cfg_valid &&
+                 i_tb_xdma_endpoint.xdma_from_remote_cfg_ready) begin
+      if (ep_frames_left_q == '0) begin
+        ep_rd_base_q <= 64'(ep_cfg_rd);
+        ep_wr_base_q <= 64'(ep_cfg_wr);
+        if (in_main_mem(ep_cfg_rd))      ep_base_q <= ep_cfg_rd & EpWindowMask;
+        else if (in_main_mem(ep_cfg_wr)) ep_base_q <= ep_cfg_wr & EpWindowMask;
+        ep_frames_left_q <= (i_tb_xdma_endpoint.xdma_from_remote_cfg.frame_length > 4'd1) ?
+                            i_tb_xdma_endpoint.xdma_from_remote_cfg.frame_length - 4'd1 : '0;
+      end else begin
+        ep_frames_left_q <= ep_frames_left_q - 4'd1;
+      end
+    end
+  end
 
   ${cluster["name"]}_xdma_wrapper #(
     .tcdm_req_t         ( tcdm_req_t        ),
@@ -188,8 +240,9 @@ module testharness import ${cluster["name"]}_pkg::*; (
     .clk_i  ( clk_i  ),
     .rst_ni ( rst_ni ),
     // Being in main memory is what puts this endpoint's MMIO band at the top of
-    // main memory instead of at the top of a cluster slot.
-    .cluster_base_addr_i ( MainMemBase ),
+    // main memory instead of at the top of a cluster slot. Which window of main memory
+    // follows the task it runs (below).
+    .cluster_base_addr_i ( ep_base_q ),
     // No software configures this side. A remote transfer arrives as a cfg frame
     // over the narrow link, which is the whole point of the endpoint.
     .csr_req_bits_data_i  ( '0    ),
@@ -217,11 +270,6 @@ module testharness import ${cluster["name"]}_pkg::*; (
   // what breaks the ring: without it the cluster's outbound ready depends on the
   // endpoint's logic which depends on the cluster's outbound valid, and a real
   // inter-cluster link would carry these registers in any case.
-  wide_in_req_t    ep_wide_out_req;
-  wide_in_resp_t   ep_wide_out_resp;
-  narrow_in_req_t  ep_narrow_out_req;
-  narrow_in_resp_t ep_narrow_out_resp;
-
   axi_cut #(
     .Bypass     ( 1'b0              ),
     .aw_chan_t  ( wide_in_aw_chan_t ),
@@ -259,16 +307,18 @@ module testharness import ${cluster["name"]}_pkg::*; (
   );
 
   tb_memory_tcdm #(
-    .NumPorts   ( XdmaTcdmPorts  ),
-    .DataWidth  ( NarrowDataWidth),
-    .BaseAddr   ( ${"64'h%x" % main_mem_base} ),
-    .tcdm_req_t ( tcdm_req_t     ),
-    .tcdm_rsp_t ( tcdm_rsp_t     )
+    .NumPorts    ( XdmaTcdmPorts  ),
+    .DataWidth   ( NarrowDataWidth),
+    .WindowWidth ( ${xdma_tcdm_addr_width} ),
+    .tcdm_req_t  ( tcdm_req_t     ),
+    .tcdm_rsp_t  ( tcdm_rsp_t     )
   ) i_tb_xdma_endpoint_mem (
-    .clk_i  ( clk_i  ),
-    .rst_ni ( rst_ni ),
-    .req_i  ( xdma_mem_tcdm_req ),
-    .rsp_o  ( xdma_mem_tcdm_rsp )
+    .clk_i     ( clk_i  ),
+    .rst_ni    ( rst_ni ),
+    .rd_base_i ( ep_rd_base_q ),
+    .wr_base_i ( ep_wr_base_q ),
+    .req_i     ( xdma_mem_tcdm_req ),
+    .rsp_o     ( xdma_mem_tcdm_rsp )
   );
 % else:
   // No xDMA in this cluster, so nothing drives the inbound ports.
