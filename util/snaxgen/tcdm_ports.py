@@ -265,6 +265,15 @@ def emit_header(m):
         lines.append("#define SNAX_TCDM_HART{}_PORTS {}".format(i, count))
     lines += [
         "",
+        "// Every channel group by name, `gemm.rd1` as SNAX_TCDM_GEMM_RD1_*: what a",
+        "// TCDM_ARB_OVERRIDE pin is built from.",
+    ]
+    for label, base, count in m["channels"]:
+        ident = label.replace(".", "_").upper()
+        lines.append("#define SNAX_TCDM_{}_BASE {}".format(ident, base))
+        lines.append("#define SNAX_TCDM_{}_PORTS {}".format(ident, count))
+    lines += [
+        "",
         "// Every channel group of every engine, in port order. A kernel can walk this",
         "// and label a per-port census without knowing which cluster it is running on.",
         "typedef struct {",
