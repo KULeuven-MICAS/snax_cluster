@@ -4,7 +4,7 @@
 
 // How much main-memory bandwidth reaches L1 when the iDMA and the xDMA read at the same time.
 //
-// The two engines reach main memory by different routes (snax-xdma-remote.h). The iDMA
+// The two engines reach main memory by different routes (snax-xdma-lib.h). The iDMA
 // issues AXI reads: AR out of the cluster's wide port, the data back on R, into the TCDM
 // through the wide DMA port. The xDMA asks the endpoint that sits on main memory, which
 // pushes the bytes back as AXI writes: AW/W into the cluster's xDMA data window, into the
@@ -32,7 +32,6 @@
 #include "snax-core-roles.h"
 #include "snax-perf-census.h"
 #include "snax-xdma-lib.h"
-#include "snax-xdma-remote.h"
 #include "snrt.h"
 
 #define KIB 1024u
