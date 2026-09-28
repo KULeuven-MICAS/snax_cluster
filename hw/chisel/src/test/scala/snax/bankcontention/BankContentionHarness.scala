@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 
 import snax.readerWriter._
+import snax.utils.TcdmUrgency
 
 /** A stream: where it starts, how its address generator walks, and which direction it moves.
   * Mirrors the streamer CSRs a kernel writes (`ptr`, `Xtlbound*`, `Xtlstride*`).
@@ -118,7 +119,7 @@ class BankContentionHarness(
   def flat(s: Int, c: Int): Int = s * numChannel + c
   val reqValid = Wire(Vec(nReq, Bool()))
   val reqBank  = Wire(Vec(nReq, UInt(bankSelW.W)))
-  val reqPrio  = Wire(Vec(nReq, Bool()))
+  val reqPrio  = Wire(Vec(nReq, UInt(TcdmUrgency.width.W)))
   val granted  = Wire(Vec(nReq, Bool()))
 
   for (s <- 0 until nStreams; c <- 0 until numChannel) {
@@ -143,9 +144,10 @@ class BankContentionHarness(
     // two). At 32 banks and 40 requestors that made the testbench 96% of the circuit and the
     // interpreter crawl. Masking off the bits below the pointer is the same function in O(nReq).
     val asking   = VecInit((0 until nReq).map(i => reqValid(i) && reqBank(i) === b.U)).asUInt
-    val urgent   = VecInit((0 until nReq).map(i => reqValid(i) && reqBank(i) === b.U &&
-                                                   reqPrio(i))).asUInt
-    val eligible = Mux(urgent.orR, urgent, asking)          // priority masks the rest
+    // the highest urgency among the requests for this bank masks the rest
+    val level    = VecInit((0 until nReq).map(i => Mux(asking(i), reqPrio(i), 0.U)))
+      .reduceTree((a, x) => Mux(a > x, a, x))
+    val eligible = VecInit((0 until nReq).map(i => asking(i) && reqPrio(i) === level)).asUInt
     val above    = eligible & ~((1.U(nReq.W) << rr(b)).asUInt - 1.U)   // at or after the pointer
     val winner   = Mux(above.orR, PriorityEncoder(above), PriorityEncoder(eligible))
     when(eligible.orR) {
@@ -199,8 +201,8 @@ class BankContentionHarness(
     for (s <- 0 until nStreams) {
       val missed = (0 until numChannel).map(c => reqValid(flat(s, c)) && !granted(flat(s, c)))
       retries(s) := retries(s) + PopCount(VecInit(missed))
-      // the priority bit as the TCDM sees it, on any channel that is actually asking
-      val urg = (0 until numChannel).map(c => reqValid(flat(s, c)) && reqPrio(flat(s, c)))
+      // a channel a beat or less from stalling its engine, as the TCDM sees it, while it asks
+      val urg = (0 until numChannel).map(c => reqValid(flat(s, c)) && reqPrio(flat(s, c)) >= 2.U)
       when(VecInit(urg).reduce(_ || _)) { urgents(s) := urgents(s) + 1.U }
     }
   }

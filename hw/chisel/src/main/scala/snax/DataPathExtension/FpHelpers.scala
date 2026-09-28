@@ -97,8 +97,63 @@ object FpHelpers {
       ShiftRegister(Cat(sign, exp32, man32), numPipe)
     }
   }
+  // FP32 -> transport, IEEE round-to-nearest-even, subnormals included; overflow to +-Inf, NaN to the
+  // canonical qNaN (sign 0, exponent all ones, quiet bit). A pure bit-level convert like `widen`: rebias the
+  // exponent, then ONE right shift of the 24-bit significand -- by 23 - sigW for a normal result, and by
+  // (1 - te) more when the result is subnormal (te = the target's biased exponent, <= 0) -- with the bits
+  // shifted out folding into guard and sticky, then one increment. The increment carries naturally from the
+  // largest subnormal into the smallest normal and from the largest finite value into Inf.
+  //
+  // `FpAdd(FP32, FP32, t)` with a zero addend is NOT a narrow: it aligns for SAME-format operands, so it drops
+  // the FP32 significand's LSB before rounding (ties can round low), treats a target exponent of 0 as a
+  // same-format subnormal (the implicit bit is lost), and reuses a negative target exponent as an unsigned
+  // shift, which flushes [2^-24, 2^-15) to zero and turns inputs below 2^-24 into garbage. `numPipe` is
+  // preserved as output delay so every host's latency accounting is unchanged.
   def narrow(f: UInt, t: FpType, numPipe: Int = 0): UInt = {
-    val m = Module(new FpAdd(FP32, FP32, t, numPipe)); m.io.in_a := f; m.io.in_b := FP32_ZERO; m.io.out
+    if (t.width >= FP32.width) {
+      ShiftRegister(f, numPipe)
+    } else {
+      val expW    = t.expWidth
+      val sigW    = t.sigWidth
+      val expMaxT = (1 << expW) - 1 // the all-ones (Inf/NaN) exponent field
+      val sign    = f(31)
+      val exp32   = f(30, 23)
+      val man32   = f(22, 0)
+      val isNan   = exp32.andR && man32.orR
+      val isInf   = exp32.andR && !man32.orR
+      // significand with its implicit bit (0 for zero and FP32 subnormals, whose exponent acts as 1)
+      val sig     = Cat(exp32.orR, man32) // 24 bits
+      val expEff  = Mux(exp32 === 0.U, 1.U(8.W), exp32)
+      // the target's biased exponent of a result with this leading-bit position
+      val te      = expEff.zext - (127 - FpCommon.bias(t)).S(10.W)
+      val normal  = te >= 1.S
+      val extra   = Mux(normal, 0.U(10.W), (1.S(11.W) - te).asUInt)
+      val rsh     = (23 - sigW).U(10.W) +& extra
+      val rshC    = Mux(rsh > 25.U, 25.U(5.W), rsh(4, 0)) // past 25 every significand bit is sticky
+      val keep    = sig >> rshC // the implicit bit (normal) at position sigW, fraction below
+      val guard   = (sig >> (rshC - 1.U))(0)
+      val sticky  = (sig & ((1.U(26.W) << (rshC - 1.U)) - 1.U)(23, 0)).orR
+      // |result| before rounding, as exponent field << sigW | fraction: (te - 1) << sigW + keep puts a normal
+      // result's implicit bit into the exponent field; a subnormal result is keep itself, below 1 << sigW
+      val absPre  = Mux(
+        normal,
+        ((te.asUInt - 1.U)(expW - 1, 0) << sigW) +& keep(sigW, 0),
+        keep(sigW - 1, 0)
+      )
+      val roundUp = guard && (sticky || absPre(0))
+      val abs     = absPre +& roundUp // the carry into the Inf encoding IS the rounding overflow
+      val tooBig  = te >= expMaxT.S
+      val infAbs  = (expMaxT.U(expW.W) << sigW)
+      val out     = Wire(UInt(t.width.W))
+      when(isNan) {
+        out := Cat(0.U(1.W), expMaxT.U(expW.W), (1 << (sigW - 1)).U(sigW.W))
+      }.elsewhen(isInf || tooBig || abs >= infAbs) {
+        out := Cat(sign, infAbs(expW + sigW - 1, 0))
+      }.otherwise {
+        out := Cat(sign, abs(expW + sigW - 1, 0))
+      }
+      ShiftRegister(out, numPipe)
+    }
   }
   def square(h: UInt, t: FpType, numPipe: Int = 0): UInt = { // t*t -> FP32
     val m = Module(new FpMul(t, t, FP32, numPipe)); m.io.in_a := h; m.io.in_b := h; m.io.out

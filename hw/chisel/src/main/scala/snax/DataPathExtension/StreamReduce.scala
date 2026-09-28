@@ -490,10 +490,8 @@ class StreamReduce(
   // the transport is narrower than FP32 — splat the raw FP32 scalar across the 512-bit beat (dataWidth/32
   // copies). The beat stays 512-bit either way, so the writer AGU is unchanged. (FP32 transport => nothing
   // to narrow, the mux folds away at elaboration.)
-  // ONE narrow unit, splatted. `narrow` instantiates an FpAdd module, and `Seq.fill(lanes)(narrow(x))`
-  // built `lanes` of them -- all converting the SAME scalar to the same result. Synthesis does not merge
-  // separate module instances, so that was 32 real FP adders where one does. Bit-identical by
-  // construction; measured in the netlist as 64 narrow units in this block, now 33.
+  // ONE narrow, splatted: every lane carries the same scalar, so one conversion serves the whole beat, where
+  // `Seq.fill(lanes)(narrow(x))` would build `lanes` identical converters.
   val scalarNarrow  = narrow(scalarFP32)
   val narrowedBeat  = Cat(Seq.fill(lanes)(scalarNarrow))
   val scalarBeat    =

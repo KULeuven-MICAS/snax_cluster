@@ -42,14 +42,23 @@ class FpActivationRsqrtTester extends AnyFlatSpec with snax.utils.VerilatorTeste
   /** FP16 ULP distance -- the same monotonic-key measure the device-side apps use. */
   private def f16ulp(a: Float, b: Float): Int = snax.utils.TestFp16.ulp(a.toDouble, b.toDouble)
 
-  /** The domain a sum-of-squares mean actually occupies, sampled densely in the significand. */
+  /** The domain a sum-of-squares mean actually occupies, sampled densely in the significand, plus the top of the
+    * significand range: m just below 2 with an odd exponent folds to m' just below 4, whose rounded index is the
+    * table's last node -- a segment a 1/64 grid of m never reaches.
+    */
   private def sweep: Seq[Float] = {
-    val exps = -14 to 15
-    for {
+    val exps  = -14 to 15
+    val dense = for {
       e <- exps
       i <- 0 until 64
       m = 1.0 + i / 64.0
     } yield (m * math.pow(2.0, e)).toFloat
+    val top   = for {
+      e <- exps
+      j <- 1 to 64
+      m = 2.0 - j / 2048.0
+    } yield (m * math.pow(2.0, e)).toFloat
+    dense ++ top
   }
 
   private def accuracy(hasExp: Boolean, hasSilu: Boolean, rsqN: Int, budget: Int, tag: String): Unit =

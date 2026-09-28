@@ -111,17 +111,22 @@ class FpActivation(
   // the node, not silu's central difference: rsqrt is smooth and convex here, so the tangent line is the
   // better of the two and needs no neighbour. Error of the tangent over |frac| <= 1/2 is
   // (1/8)(3/rsqN)^2 * max|f''| = 0.09375 * (3/rsqN)^2; at rsqN=64 that is 2.1e-4, versus an FP16 ULP of
-  // 9.8e-4 at 1.0 -- a fifth of an ULP, with a 64x2x32b ROM instead of silu's 256x2.
-  val LOGN_R  = if (hasRsqrt) log2Ceil(rsqN) else 0
+  // 9.8e-4 at 1.0 -- a fifth of an ULP, with a (rsqN+1)x2x32b ROM instead of silu's 256x2.
+  //
+  // THE TABLE HAS rsqN + 1 NODES, 0 .. rsqN. The index is ROUNDED, so m' in [4 - 1.5/rsqN, 4) -- the top half
+  // node spacing -- rounds to node rsqN (m' = 4), with frac in [-1/2, 0). Without that node the index would
+  // have to clamp to rsqN - 1 while frac still counted from rsqN, evaluating the tangent one node spacing low:
+  // 0.6% (about 6 FP16 ULP) for a significand just below a power of four.
+  val LOGN_R  = if (hasRsqrt) log2Ceil(rsqN + 1) else 0
   val HR      = 3.0 / rsqN.toDouble                       // node spacing in the m' domain
   val SCALE_R = f32lit((1.0 / HR).toFloat)                // m' -> index
   val BIAS_R  = f32lit((-1.0 / HR).toFloat)               // ... minus the m'=1 origin
   def rnode(i: Int): Double = 1.0 + i.toDouble * HR
   val baseR   =
-    if (hasRsqrt) VecInit((0 until rsqN).map(i => f32lit((1.0 / math.sqrt(rnode(i))).toFloat)))
+    if (hasRsqrt) VecInit((0 to rsqN).map(i => f32lit((1.0 / math.sqrt(rnode(i))).toFloat)))
     else VecInit(Seq(ZERO))
   val slopeR  =
-    if (hasRsqrt) VecInit((0 until rsqN).map(i => f32lit((-0.5 * math.pow(rnode(i), -1.5) * HR).toFloat)))
+    if (hasRsqrt) VecInit((0 to rsqN).map(i => f32lit((-0.5 * math.pow(rnode(i), -1.5) * HR).toFloat)))
     else VecInit(Seq(ZERO))
 
   // m' = 2^p * m, built by OVERWRITING x's exponent field with 127+p and forcing the sign positive. The
@@ -173,8 +178,9 @@ class FpActivation(
   // ---- S3: LUT lookup + interpolation FMA, then post: exp -> lut*corr ; silu -> reflect (1-g on x>0) ----
   val idxE      = if (hasExp) iM.asUInt(LOGN_E - 1, 0) else 0.U
   val idxS      = if (hasSilu) Mux(iM > (siluN - 1).S, (siluN - 1).U, iM.asUInt(LOGN_S - 1, 0)) else 0.U
-  // m' in [1,4) maps to s0 in [0, rsqN), so the round can reach rsqN at the very top -- clamp like silu.
-  val idxR      = if (hasRsqrt) Mux(iM > (rsqN - 1).S, (rsqN - 1).U, iM.asUInt(LOGN_R - 1, 0)) else 0.U
+  // m' in [1,4) maps to s0 in [0, rsqN), so the round reaches rsqN at the very top: node rsqN (m' = 4) is in
+  // the table for exactly that. The clamp only guards the index width.
+  val idxR      = if (hasRsqrt) Mux(iM > rsqN.S, rsqN.U, iM.asUInt(LOGN_R - 1, 0)) else 0.U
   val lutV      = lut(idxE)
   // silu and rsqrt are both base+slope tables read at the same point in the pipe, so the ffma below is
   // shared and only the ROM outputs are muxed -- no extra FP unit for the third function.

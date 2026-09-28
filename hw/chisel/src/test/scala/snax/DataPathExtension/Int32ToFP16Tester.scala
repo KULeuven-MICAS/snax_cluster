@@ -126,6 +126,59 @@ class Int32ToFp16Spec extends AnyFlatSpec with ChiselScalatestTester {
       }
   }
 
+  /** SINGLE-BEAT mode, csr(0) = 3: one output beat per input beat, the input's 16 values converted into the
+    * output's first half. It is what a one-row GEMV block needs -- a block is one INT32 beat, so a task of an odd
+    * number of blocks must still drain. The paired mode on the same stream is the control: there, 2 inputs make
+    * 1 output.
+    */
+  def runBeats(mode: Int, nIn: Int): (Seq[Seq[Int]], Seq[BigInt]) = {
+    val lanes = (0 until nIn).map(b => (0 until 16).map(i => (b + 1) * 100 + i))
+    val outs  = scala.collection.mutable.ArrayBuffer[BigInt]()
+    test(new DataPathExtensionHarness(new HasInt32ToFp16Converter(dataWidth = 512)))
+      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+        dut.clock.setTimeout(0)
+        dut.io.csr_i(0).poke(mode.U)
+        dut.io.enable_i.poke(true)
+        dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
+        var threads = new chiseltest.internal.TesterThreadList(Seq())
+        threads = threads.fork {
+          dut.io.data_i.valid.poke(true)
+          for (b <- lanes) {
+            val beat = b.zipWithIndex.foldLeft(BigInt(0)) { case (acc, (v, i)) => acc | (BigInt(v) << (32 * i)) }
+            while (!dut.io.data_i.ready.peekBoolean()) dut.clock.step(1)
+            dut.io.data_i.bits.poke(beat)
+            dut.clock.step(1)
+          }
+          dut.io.data_i.valid.poke(false)
+        }
+        threads = threads.fork {
+          dut.io.data_o.ready.poke(true)
+          var idle = 0
+          while (idle < 30) {
+            if (dut.io.data_o.valid.peekBoolean()) { outs += dut.io.data_o.bits.peek().litValue; idle = 0 }
+            else idle += 1
+            dut.clock.step(1)
+          }
+        }
+        threads.joinAndStep()
+      }
+    (lanes, outs.toSeq)
+  }
+
+  it should "emit one beat per input in single-beat mode, values in the first half" in {
+    val (lanes, outs) = runBeats(mode = 3, nIn = 5)
+    assert(outs.length == 5, s"${outs.length} beats out for 5 in")
+    for ((o, b) <- outs.zip(lanes); (v, i) <- b.zipWithIndex) {
+      val got = ((o >> (16 * i)) & 0xffff).toInt
+      assert(got == intToFp16Ref(v), f"value $v at lane $i: got 0x$got%04x")
+    }
+  }
+
+  it should "pair two inputs per output on the same stream outside single-beat mode" in {
+    val (_, outs) = runBeats(mode = 0, nIn = 6)
+    assert(outs.length == 3, s"${outs.length} beats out for 6 in")
+  }
+
   it should "convert int32 to fp16 correctly for several values" in {
     test(new Int32ToFp16PE) { dut =>
       val testValues = Seq(

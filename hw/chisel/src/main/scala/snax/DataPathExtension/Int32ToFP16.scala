@@ -144,14 +144,23 @@ class Int32ToFp16Converter(
 
   // create ROM for extra_loops_choice
   val extra_loops_rom = VecInit(extra_loops_choice.map(_.U))
+  // SINGLE-BEAT mode, csr(0) = extra_loops_choice.length: every input beat leaves as its own output beat, its
+  // values in the output's first half and the rest stale. For a producer whose beat carries fewer values than an
+  // output beat holds -- a one-row GEMV block, 16 or 32 INT32 -- so a task of any number of blocks drains, and the
+  // writer's channel mask drops the stale half.
+  val singleBeat      = ext_csr_i(0) === extra_loops_choice.length.U
   // get extra_loop from csr
-  val extra_loop      =
-    extra_loops_rom(ext_csr_i(0)).asUInt // number of batches needed to get a full dataWidth conversion output
+  val extra_loop      = Mux(
+    singleBeat,
+    1.U,
+    extra_loops_rom(ext_csr_i(0)).asUInt
+  ) // number of batches needed to get a full dataWidth conversion output
   // conversion numbers to get the effective dataWidth output if all PEs are used
   val numConversions = (in_elementWidth / out_elementWidth).U
 
-  // the total number of conversions needed to get the full dataWidth output
-  counter.io.ceil  := numConversions * extra_loop
+  // the input beats that make one output beat
+  val groupLen = Mux(singleBeat, 1.U, numConversions * extra_loop)
+  counter.io.ceil  := groupLen
   counter.io.reset := ext_start_i
   counter.io.tick  := ext_data_i.fire
   // Declared here because ext_busy_o needs it; driven by the handshake at the bottom.
@@ -209,13 +218,13 @@ class Int32ToFp16Converter(
   val phase   = counter.io.value % numConversions // which phase we are in
   val batchId = counter.io.value / numConversions // which batch of outputs
 
-  val update_previous_regs = ext_data_i.fire && (counter.io.value =/= (numConversions * extra_loop - 1.U))
+  val update_previous_regs = ext_data_i.fire && (counter.io.value =/= (groupLen - 1.U))
   // .fire, NOT .valid. The counter ticks on fire, so while a completed group is waiting for a
   // back-pressured consumer this condition stayed true for EVERY stalled cycle and re-pulsed the output
   // valid below -- emitting duplicate beats and breaking the frame count downstream. Invisible when the
   // consumer is the writer (it rarely stalls); fatal when this feeds a time-muxed operator such as
   // StreamReduce at computeLanes=8, which accepts one beat every 4 cycles.
-  val update_final_regs    = ext_data_i.fire && (counter.io.value === (numConversions * extra_loop - 1.U))
+  val update_final_regs    = ext_data_i.fire && (counter.io.value === (groupLen - 1.U))
 
   for (i <- 0 until numPEs) {
     // dynamic index in regs for this PE
