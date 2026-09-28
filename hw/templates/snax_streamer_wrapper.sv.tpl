@@ -120,7 +120,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
   logic [TCDMNumPorts-1:0][                3:0] tcdm_req_amo;
   logic [TCDMNumPorts-1:0][  TCDMDataWidth-1:0] tcdm_req_data;
   logic [TCDMNumPorts-1:0][TCDMDataWidth/8-1:0] tcdm_req_strb;
-  logic [TCDMNumPorts-1:0]                      tcdm_req_priority;
+  logic [TCDMNumPorts-1:0][1:0]                 tcdm_req_priority;  // urgency, snax.utils.TcdmUrgency
   //Note that tcdm_req_user_core_id_i is 5 bits based on Snitch definition
   logic [TCDMNumPorts-1:0][                4:0] tcdm_req_user_core_id;
   logic [TCDMNumPorts-1:0]                      tcdm_req_user_is_core;

@@ -8,12 +8,12 @@
 `include "common_cells/assertions.svh"
 
 module snitch_cluster_peripheral_reg_top #(
-    parameter type reg_req_t = logic,
-    parameter type reg_rsp_t = logic,
-    parameter int AW = 10
+  parameter type reg_req_t = logic,
+  parameter type reg_rsp_t = logic,
+  parameter int AW = 10
 ) (
-  input clk_i,
-  input rst_ni,
+  input logic clk_i,
+  input logic rst_ni,
   input  reg_req_t reg_req_i,
   output reg_rsp_t reg_rsp_o,
   // To HW
@@ -33,7 +33,7 @@ module snitch_cluster_peripheral_reg_top #(
   // register signals
   logic           reg_we;
   logic           reg_re;
-  logic [AW-1:0]  reg_addr;
+  logic [BlockAw-1:0]  reg_addr;
   logic [DW-1:0]  reg_wdata;
   logic [DBW-1:0] reg_be;
   logic [DW-1:0]  reg_rdata;
@@ -54,7 +54,7 @@ module snitch_cluster_peripheral_reg_top #(
 
   assign reg_we = reg_intf_req.valid & reg_intf_req.write;
   assign reg_re = reg_intf_req.valid & ~reg_intf_req.write;
-  assign reg_addr = reg_intf_req.addr;
+  assign reg_addr = reg_intf_req.addr[BlockAw-1:0];
   assign reg_wdata = reg_intf_req.wdata;
   assign reg_be = reg_intf_req.wstrb;
   assign reg_intf_rsp.rdata = reg_rdata;
@@ -2348,6 +2348,63 @@ module snitch_cluster_peripheral_reg_top #(
   logic perf_counter_enable_ext_15_icache_l1_handler_stall_15_qs;
   logic perf_counter_enable_ext_15_icache_l1_handler_stall_15_wd;
   logic perf_counter_enable_ext_15_icache_l1_handler_stall_15_we;
+  logic tcdm_arb_ctrl_urgency_en_qs;
+  logic tcdm_arb_ctrl_urgency_en_wd;
+  logic tcdm_arb_ctrl_urgency_en_we;
+  logic tcdm_arb_ctrl_guard_en_qs;
+  logic tcdm_arb_ctrl_guard_en_wd;
+  logic tcdm_arb_ctrl_guard_en_we;
+  logic [7:0] tcdm_arb_ctrl_guard_threshold_qs;
+  logic [7:0] tcdm_arb_ctrl_guard_threshold_wd;
+  logic tcdm_arb_ctrl_guard_threshold_we;
+  logic [31:0] tcdm_arb_override_0_qs;
+  logic [31:0] tcdm_arb_override_0_wd;
+  logic tcdm_arb_override_0_we;
+  logic [31:0] tcdm_arb_override_1_qs;
+  logic [31:0] tcdm_arb_override_1_wd;
+  logic tcdm_arb_override_1_we;
+  logic [31:0] tcdm_arb_override_2_qs;
+  logic [31:0] tcdm_arb_override_2_wd;
+  logic tcdm_arb_override_2_we;
+  logic [31:0] tcdm_arb_override_3_qs;
+  logic [31:0] tcdm_arb_override_3_wd;
+  logic tcdm_arb_override_3_we;
+  logic [31:0] tcdm_arb_override_4_qs;
+  logic [31:0] tcdm_arb_override_4_wd;
+  logic tcdm_arb_override_4_we;
+  logic [31:0] tcdm_arb_override_5_qs;
+  logic [31:0] tcdm_arb_override_5_wd;
+  logic tcdm_arb_override_5_we;
+  logic [31:0] tcdm_arb_override_6_qs;
+  logic [31:0] tcdm_arb_override_6_wd;
+  logic tcdm_arb_override_6_we;
+  logic [31:0] tcdm_arb_override_7_qs;
+  logic [31:0] tcdm_arb_override_7_wd;
+  logic tcdm_arb_override_7_we;
+  logic [31:0] tcdm_arb_override_8_qs;
+  logic [31:0] tcdm_arb_override_8_wd;
+  logic tcdm_arb_override_8_we;
+  logic [31:0] tcdm_arb_override_9_qs;
+  logic [31:0] tcdm_arb_override_9_wd;
+  logic tcdm_arb_override_9_we;
+  logic [31:0] tcdm_arb_override_10_qs;
+  logic [31:0] tcdm_arb_override_10_wd;
+  logic tcdm_arb_override_10_we;
+  logic [31:0] tcdm_arb_override_11_qs;
+  logic [31:0] tcdm_arb_override_11_wd;
+  logic tcdm_arb_override_11_we;
+  logic [31:0] tcdm_arb_override_12_qs;
+  logic [31:0] tcdm_arb_override_12_wd;
+  logic tcdm_arb_override_12_we;
+  logic [31:0] tcdm_arb_override_13_qs;
+  logic [31:0] tcdm_arb_override_13_wd;
+  logic tcdm_arb_override_13_we;
+  logic [31:0] tcdm_arb_override_14_qs;
+  logic [31:0] tcdm_arb_override_14_wd;
+  logic tcdm_arb_override_14_we;
+  logic [31:0] tcdm_arb_override_15_qs;
+  logic [31:0] tcdm_arb_override_15_wd;
+  logic tcdm_arb_override_15_we;
 
   // Register instances
 
@@ -21968,9 +22025,523 @@ module snitch_cluster_peripheral_reg_top #(
 
 
 
+  // R[tcdm_arb_ctrl]: V(False)
+
+  //   F[urgency_en]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_tcdm_arb_ctrl_urgency_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_ctrl_urgency_en_we),
+    .wd     (tcdm_arb_ctrl_urgency_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_ctrl.urgency_en.q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_ctrl_urgency_en_qs)
+  );
 
 
-  logic [67:0] addr_hit;
+  //   F[guard_en]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_tcdm_arb_ctrl_guard_en (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_ctrl_guard_en_we),
+    .wd     (tcdm_arb_ctrl_guard_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_ctrl.guard_en.q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_ctrl_guard_en_qs)
+  );
+
+
+  //   F[guard_threshold]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SWACCESS("RW"),
+    .RESVAL  (8'h10)
+  ) u_tcdm_arb_ctrl_guard_threshold (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_ctrl_guard_threshold_we),
+    .wd     (tcdm_arb_ctrl_guard_threshold_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_ctrl.guard_threshold.q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_ctrl_guard_threshold_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_0]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_0_we),
+    .wd     (tcdm_arb_override_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[0].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_0_qs)
+  );
+
+  // Subregister 1 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_1]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_1 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_1_we),
+    .wd     (tcdm_arb_override_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[1].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_1_qs)
+  );
+
+  // Subregister 2 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_2]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_2 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_2_we),
+    .wd     (tcdm_arb_override_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[2].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_2_qs)
+  );
+
+  // Subregister 3 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_3]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_3 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_3_we),
+    .wd     (tcdm_arb_override_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[3].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_3_qs)
+  );
+
+  // Subregister 4 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_4]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_4 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_4_we),
+    .wd     (tcdm_arb_override_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[4].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_4_qs)
+  );
+
+  // Subregister 5 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_5]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_5 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_5_we),
+    .wd     (tcdm_arb_override_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[5].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_5_qs)
+  );
+
+  // Subregister 6 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_6]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_6 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_6_we),
+    .wd     (tcdm_arb_override_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[6].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_6_qs)
+  );
+
+  // Subregister 7 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_7]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_7 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_7_we),
+    .wd     (tcdm_arb_override_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[7].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_7_qs)
+  );
+
+  // Subregister 8 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_8]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_8 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_8_we),
+    .wd     (tcdm_arb_override_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[8].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_8_qs)
+  );
+
+  // Subregister 9 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_9]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_9 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_9_we),
+    .wd     (tcdm_arb_override_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[9].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_9_qs)
+  );
+
+  // Subregister 10 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_10]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_10 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_10_we),
+    .wd     (tcdm_arb_override_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[10].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_10_qs)
+  );
+
+  // Subregister 11 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_11]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_11 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_11_we),
+    .wd     (tcdm_arb_override_11_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[11].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_11_qs)
+  );
+
+  // Subregister 12 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_12]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_12 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_12_we),
+    .wd     (tcdm_arb_override_12_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[12].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_12_qs)
+  );
+
+  // Subregister 13 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_13]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_13 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_13_we),
+    .wd     (tcdm_arb_override_13_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[13].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_13_qs)
+  );
+
+  // Subregister 14 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_14]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_14 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_14_we),
+    .wd     (tcdm_arb_override_14_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[14].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_14_qs)
+  );
+
+  // Subregister 15 of Multireg tcdm_arb_override
+  // R[tcdm_arb_override_15]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_tcdm_arb_override_15 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (tcdm_arb_override_15_we),
+    .wd     (tcdm_arb_override_15_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.tcdm_arb_override[15].q ),
+
+    // to register interface (read)
+    .qs     (tcdm_arb_override_15_qs)
+  );
+
+
+
+
+  logic [84:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_0_OFFSET);
@@ -22041,6 +22612,23 @@ module snitch_cluster_peripheral_reg_top #(
     addr_hit[65] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_13_OFFSET);
     addr_hit[66] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_14_OFFSET);
     addr_hit[67] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_15_OFFSET);
+    addr_hit[68] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_CTRL_OFFSET);
+    addr_hit[69] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_0_OFFSET);
+    addr_hit[70] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_1_OFFSET);
+    addr_hit[71] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_2_OFFSET);
+    addr_hit[72] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_3_OFFSET);
+    addr_hit[73] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_4_OFFSET);
+    addr_hit[74] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_5_OFFSET);
+    addr_hit[75] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_6_OFFSET);
+    addr_hit[76] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_7_OFFSET);
+    addr_hit[77] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_8_OFFSET);
+    addr_hit[78] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_9_OFFSET);
+    addr_hit[79] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_10_OFFSET);
+    addr_hit[80] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_11_OFFSET);
+    addr_hit[81] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_12_OFFSET);
+    addr_hit[82] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_13_OFFSET);
+    addr_hit[83] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_14_OFFSET);
+    addr_hit[84] = (reg_addr == SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_15_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -22115,7 +22703,24 @@ module snitch_cluster_peripheral_reg_top #(
                (addr_hit[64] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[64] & ~reg_be))) |
                (addr_hit[65] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[65] & ~reg_be))) |
                (addr_hit[66] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[66] & ~reg_be))) |
-               (addr_hit[67] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[67] & ~reg_be)))));
+               (addr_hit[67] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[67] & ~reg_be))) |
+               (addr_hit[68] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[68] & ~reg_be))) |
+               (addr_hit[69] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[69] & ~reg_be))) |
+               (addr_hit[70] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[70] & ~reg_be))) |
+               (addr_hit[71] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[71] & ~reg_be))) |
+               (addr_hit[72] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[72] & ~reg_be))) |
+               (addr_hit[73] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[73] & ~reg_be))) |
+               (addr_hit[74] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[74] & ~reg_be))) |
+               (addr_hit[75] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[75] & ~reg_be))) |
+               (addr_hit[76] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[76] & ~reg_be))) |
+               (addr_hit[77] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[77] & ~reg_be))) |
+               (addr_hit[78] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[78] & ~reg_be))) |
+               (addr_hit[79] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[79] & ~reg_be))) |
+               (addr_hit[80] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[80] & ~reg_be))) |
+               (addr_hit[81] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[81] & ~reg_be))) |
+               (addr_hit[82] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[82] & ~reg_be))) |
+               (addr_hit[83] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[83] & ~reg_be))) |
+               (addr_hit[84] & (|(SNITCH_CLUSTER_PERIPHERAL_PERMIT[84] & ~reg_be)))));
   end
 
   assign perf_counter_enable_0_cycle_0_we = addr_hit[0] & reg_we & !reg_error;
@@ -24401,6 +25006,63 @@ module snitch_cluster_peripheral_reg_top #(
   assign perf_counter_enable_ext_15_icache_l1_handler_stall_15_we = addr_hit[67] & reg_we & !reg_error;
   assign perf_counter_enable_ext_15_icache_l1_handler_stall_15_wd = reg_wdata[11];
 
+  assign tcdm_arb_ctrl_urgency_en_we = addr_hit[68] & reg_we & !reg_error;
+  assign tcdm_arb_ctrl_urgency_en_wd = reg_wdata[0];
+
+  assign tcdm_arb_ctrl_guard_en_we = addr_hit[68] & reg_we & !reg_error;
+  assign tcdm_arb_ctrl_guard_en_wd = reg_wdata[1];
+
+  assign tcdm_arb_ctrl_guard_threshold_we = addr_hit[68] & reg_we & !reg_error;
+  assign tcdm_arb_ctrl_guard_threshold_wd = reg_wdata[15:8];
+
+  assign tcdm_arb_override_0_we = addr_hit[69] & reg_we & !reg_error;
+  assign tcdm_arb_override_0_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_1_we = addr_hit[70] & reg_we & !reg_error;
+  assign tcdm_arb_override_1_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_2_we = addr_hit[71] & reg_we & !reg_error;
+  assign tcdm_arb_override_2_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_3_we = addr_hit[72] & reg_we & !reg_error;
+  assign tcdm_arb_override_3_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_4_we = addr_hit[73] & reg_we & !reg_error;
+  assign tcdm_arb_override_4_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_5_we = addr_hit[74] & reg_we & !reg_error;
+  assign tcdm_arb_override_5_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_6_we = addr_hit[75] & reg_we & !reg_error;
+  assign tcdm_arb_override_6_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_7_we = addr_hit[76] & reg_we & !reg_error;
+  assign tcdm_arb_override_7_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_8_we = addr_hit[77] & reg_we & !reg_error;
+  assign tcdm_arb_override_8_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_9_we = addr_hit[78] & reg_we & !reg_error;
+  assign tcdm_arb_override_9_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_10_we = addr_hit[79] & reg_we & !reg_error;
+  assign tcdm_arb_override_10_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_11_we = addr_hit[80] & reg_we & !reg_error;
+  assign tcdm_arb_override_11_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_12_we = addr_hit[81] & reg_we & !reg_error;
+  assign tcdm_arb_override_12_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_13_we = addr_hit[82] & reg_we & !reg_error;
+  assign tcdm_arb_override_13_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_14_we = addr_hit[83] & reg_we & !reg_error;
+  assign tcdm_arb_override_14_wd = reg_wdata[31:0];
+
+  assign tcdm_arb_override_15_we = addr_hit[84] & reg_we & !reg_error;
+  assign tcdm_arb_override_15_wd = reg_wdata[31:0];
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -25365,6 +26027,76 @@ module snitch_cluster_peripheral_reg_top #(
         reg_rdata_next[11] = perf_counter_enable_ext_15_icache_l1_handler_stall_15_qs;
       end
 
+      addr_hit[68]: begin
+        reg_rdata_next[0] = tcdm_arb_ctrl_urgency_en_qs;
+        reg_rdata_next[1] = tcdm_arb_ctrl_guard_en_qs;
+        reg_rdata_next[15:8] = tcdm_arb_ctrl_guard_threshold_qs;
+      end
+
+      addr_hit[69]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_0_qs;
+      end
+
+      addr_hit[70]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_1_qs;
+      end
+
+      addr_hit[71]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_2_qs;
+      end
+
+      addr_hit[72]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_3_qs;
+      end
+
+      addr_hit[73]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_4_qs;
+      end
+
+      addr_hit[74]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_5_qs;
+      end
+
+      addr_hit[75]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_6_qs;
+      end
+
+      addr_hit[76]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_7_qs;
+      end
+
+      addr_hit[77]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_8_qs;
+      end
+
+      addr_hit[78]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_9_qs;
+      end
+
+      addr_hit[79]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_10_qs;
+      end
+
+      addr_hit[80]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_11_qs;
+      end
+
+      addr_hit[81]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_12_qs;
+      end
+
+      addr_hit[82]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_13_qs;
+      end
+
+      addr_hit[83]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_14_qs;
+      end
+
+      addr_hit[84]: begin
+        reg_rdata_next[31:0] = tcdm_arb_override_15_qs;
+      end
+
       default: begin
         reg_rdata_next = '1;
       end
@@ -25384,3 +26116,55 @@ module snitch_cluster_peripheral_reg_top #(
   `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit))
 
 endmodule
+
+module snitch_cluster_peripheral_reg_top_intf
+#(
+  parameter int AW = 10,
+  localparam int DW = 64
+) (
+  input logic clk_i,
+  input logic rst_ni,
+  REG_BUS.in  regbus_slave,
+  // To HW
+  output snitch_cluster_peripheral_reg_pkg::snitch_cluster_peripheral_reg2hw_t reg2hw, // Write
+  input  snitch_cluster_peripheral_reg_pkg::snitch_cluster_peripheral_hw2reg_t hw2reg, // Read
+  // Config
+  input devmode_i // If 1, explicit error return for unmapped register access
+);
+ localparam int unsigned STRB_WIDTH = DW/8;
+
+`include "register_interface/typedef.svh"
+`include "register_interface/assign.svh"
+
+  // Define structs for reg_bus
+  typedef logic [AW-1:0] addr_t;
+  typedef logic [DW-1:0] data_t;
+  typedef logic [STRB_WIDTH-1:0] strb_t;
+  `REG_BUS_TYPEDEF_ALL(reg_bus, addr_t, data_t, strb_t)
+
+  reg_bus_req_t s_reg_req;
+  reg_bus_rsp_t s_reg_rsp;
+  
+  // Assign SV interface to structs
+  `REG_BUS_ASSIGN_TO_REQ(s_reg_req, regbus_slave)
+  `REG_BUS_ASSIGN_FROM_RSP(regbus_slave, s_reg_rsp)
+
+  
+
+  snitch_cluster_peripheral_reg_top #(
+    .reg_req_t(reg_bus_req_t),
+    .reg_rsp_t(reg_bus_rsp_t),
+    .AW(AW)
+  ) i_regs (
+    .clk_i,
+    .rst_ni,
+    .reg_req_i(s_reg_req),
+    .reg_rsp_o(s_reg_rsp),
+    .reg2hw, // Write
+    .hw2reg, // Read
+    .devmode_i
+  );
+  
+endmodule
+
+

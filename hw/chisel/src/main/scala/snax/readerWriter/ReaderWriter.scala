@@ -88,8 +88,7 @@ class ReaderWriter(
   // trips `input_data_unstable`. It survives here only because this interconnect arbitrates
   // combinationally every cycle and simply re-arbitrates the new payload -- nothing latched the
   // old one -- so the stalled request is retried rather than lost. An interconnect that samples
-  // the request when it first sees valid would mis-route it. `DataRequestor` holds the priority
-  // hint for this same reason; `sel` needs the same treatment.
+  // the request when it first sees valid would mis-route it, so `sel` is held.
   //
   // Hold across a stall, but switch in the same cycle when nothing is in flight, so the common
   // case costs no bubble. Both terms are registered, so `sel` is not combinational on `ready`.

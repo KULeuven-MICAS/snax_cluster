@@ -16,8 +16,8 @@ import chisel3.util._
   * @param pipe:
   *   Set to true if the queue should be pipelined
   * @param priority_empty:
-  *   Set to true if this streamer should request priority when it is nearly empty (= reading from tcdm) Set to false if
-  *   this streamer should request priority when it is nearly full (= writing to tcdm)
+  *   Set to true if a channel's urgency grows as its FIFO empties (the FIFO feeds an engine: reading from tcdm), false
+  *   if it grows as its FIFO fills (the FIFO drains into the tcdm: writing to tcdm)
   */
 
 class ComplexQueueConcat(
@@ -61,7 +61,7 @@ class ComplexQueueConcat(
     )
     val allEmpty   = Output(Bool())
     val anyFull    = Output(Bool())
-    val priorities = Output(Vec(numChannel, Bool()))
+    val priorities = Output(Vec(numChannel, UInt(TcdmUrgency.width.W)))
   })
 
   val queues = for (i <- 0 until numChannel) yield {
@@ -71,16 +71,11 @@ class ComplexQueueConcat(
     queue
   }
 
-  if (priority_empty) {
-    // a queue can assert tcdm priority if it is empty or if it could be empty in the next cycle. (read but not write)
-    io.priorities.zip(queues).foreach { case (prio, queue) =>
-      prio := queue.io.count <= 1.U
-    }
-  } else {
-    // a queue can assert tcdm priority if it is full or if it coud be full in the next cycle. (write but not read)
-    io.priorities.zip(queues).foreach { case (prio, queue) =>
-      prio := queue.io.count >= (depth - 1).U
-    }
+  // Each channel's urgency (TcdmUrgency) from the beats its FIFO can still absorb before its engine stalls: the beats
+  // it holds for a reader, the free slots for a writer. None left: 3; one: 2; up to half the FIFO: 1; more: 0.
+  io.priorities.zip(queues).foreach { case (prio, queue) =>
+    val left = if (priority_empty) queue.io.count else depth.U - queue.io.count
+    prio := MuxCase(0.U, Seq((left === 0.U) -> 3.U, (left === 1.U) -> 2.U, (left <= (depth / 2).U) -> 1.U))
   }
 
   if (io.in.length != 1 || (io.in.length == 1 && io.out.length == 1)) {

@@ -15,7 +15,7 @@ class DataRequestorIO(tcdmDataWidth: Int, tcdmAddressWidth: Int, isReader: Boole
     val addr     = Flipped(Decoupled(UInt(tcdmAddressWidth.W)))
     val data     = if (!isReader) Some(Flipped(Decoupled(UInt(tcdmDataWidth.W)))) else None
     val strb     = Input(UInt((tcdmDataWidth / 8).W))
-    val priority = if (withPriority) Some(Input(Bool())) else None
+    val priority = if (withPriority) Some(Input(UInt(TcdmUrgency.width.W))) else None
   }
 
   val out        = new Bundle {
@@ -61,21 +61,12 @@ class DataRequestor(
     io.in.data.get.ready := io.in.addr.ready
   }
 
+  // The request carries its channel's live urgency (TcdmUrgency): it may rise while the request waits for a grant, as
+  // the FIFO behind it drains or fills, and the interconnect arbitrates on the current value every cycle.
   if (dynamicPriority) {
-    // `io.in.priority` is the write-FIFO fill-level hint (queue.count > 2): it is combinational on the
-    // live count and can change while a TCDM request is already asserted and waiting for grant. The
-    // downstream TCDM `stream_xbar` enforces AXI payload stability
-    // (`valid && !ready |=> $stable(payload)`), and `priority` rides in the request `user` field, so a
-    // mid-request change trips `input_data_unstable`. Sample-and-hold the hint so the whole request
-    // payload is stable for the duration of each request.
-    val priorityHold = RegInit(false.B)
-    // Free to (re)load only when no request is in flight, or on the cycle the current one fires.
-    when(!io.out.tcdmReq.valid || io.out.tcdmReq.fire) {
-      priorityHold := io.in.priority.get
-    }
-    io.out.tcdmReq.bits.priority := priorityHold
+    io.out.tcdmReq.bits.priority := io.in.priority.get
   } else {
-    io.out.tcdmReq.bits.priority := higherStaticPriority.B
+    io.out.tcdmReq.bits.priority := (if (higherStaticPriority) TcdmUrgency.staticHigh else 0).U
   }
 
   // If is reader, the mask is always 1 because tcdm ignore it;

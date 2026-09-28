@@ -55,6 +55,7 @@ module snitch_tcdm_interconnect_tb #(
     .clk_i (clk),
     .rst_ni (rst_n),
     .req_i (tcdm_req),
+    .level_i ('0),
     .rsp_o (tcdm_rsp),
     .mem_req_o (mem_req),
     .mem_rsp_i (mem_rsp)

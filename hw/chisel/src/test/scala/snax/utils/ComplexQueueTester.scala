@@ -87,3 +87,39 @@ class ComplexQueueConcatTester extends AnyFlatSpec with ChiselScalatestTester {
       }
   }
 }
+
+// Each channel grades the beats it can still absorb before its engine stalls (TcdmUrgency): with
+// depth 8, none left is 3, one is 2, up to four is 1, more is 0. A reader FIFO counts the beats it
+// holds, a writer FIFO its free slots.
+class ComplexQueueUrgencyTester extends AnyFlatSpec with ChiselScalatestTester {
+  def expected(left: Int): Int = if (left == 0) 3 else if (left == 1) 2 else if (left <= 4) 1 else 0
+
+  "A reader FIFO's urgency" should "rise as it empties" in {
+    test(new ComplexQueueConcat(64, 128, 8, priority_empty = true)) { dut =>
+      dut.io.out(0).ready.poke(false.B)
+      for (held <- 0 to 8) {
+        dut.io.priorities.foreach(_.expect(expected(held).U))
+        if (held < 8) {
+          dut.io.in.foreach { in => in.valid.poke(true.B); in.bits.poke(held.U) }
+          dut.clock.step()
+          dut.io.in.foreach(_.valid.poke(false.B))
+        }
+      }
+    }
+  }
+
+  "A writer FIFO's urgency" should "rise as it fills" in {
+    test(new ComplexQueueConcat(128, 64, 8, priority_empty = false)) { dut =>
+      dut.io.out.foreach(_.ready.poke(false.B))
+      for (held <- 0 to 8) {
+        dut.io.priorities.foreach(_.expect(expected(8 - held).U))
+        if (held < 8) {
+          dut.io.in(0).valid.poke(true.B)
+          dut.io.in(0).bits.poke(held.U)
+          dut.clock.step()
+          dut.io.in(0).valid.poke(false.B)
+        }
+      }
+    }
+  }
+}

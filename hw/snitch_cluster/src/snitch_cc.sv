@@ -414,7 +414,13 @@ module snitch_cc #(
       .NumAxInFlight (DMAAxiReqFifoDepth),
       .DMAReqFifoDepth (DMAReqFifoDepth),
       .NumChannels (1),
+      // A line of every iDMA backend signal per cycle, in dma_trace_<hart>_<channel>.log.
+      // +define+SNITCH_NO_DMA_TRACE drops it (long regressions).
+`ifdef SNITCH_NO_DMA_TRACE
+      .DMATracing (0),
+`else
       .DMATracing (1),
+`endif
       .axi_ar_chan_t (axi_ar_chan_t),
       .axi_aw_chan_t (axi_aw_chan_t),
       .axi_req_t (axi_req_t),
@@ -870,7 +876,10 @@ module snitch_cc #(
   // --------------------------
   // Tracer
   // --------------------------
+  // The instruction trace, logs/trace_chip_*.dasm. +define+SNITCH_NO_TRACE compiles it out
+  // (long regressions); Verilator can also switch it off at run time (--disable-tracing).
   // pragma translate_off
+`ifndef SNITCH_NO_TRACE
   int f;
   string suffix;
   string trace_file;
@@ -1020,6 +1029,7 @@ module snitch_cc #(
     `endif
   end
   // verilog_lint: waive-stop always-ff-non-blocking
+`endif
   // pragma translate_on
 
   BootAddrAligned: assert property (

@@ -9,6 +9,11 @@
         type: "int",
         default: "16"
         },
+        { name: "NumTcdmArbOverrideRegs",
+        desc: "Number of 32-bit TCDM_ARB_OVERRIDE words, four bits per narrow TCDM interconnect input",
+        type: "int",
+        default: "16"
+        },
     ],
     name: "snitch_cluster_peripheral",
     clock_primary: "clk_i",
@@ -593,6 +598,60 @@
                         '''
             },
             ]
+        }
+    },
+    {
+        name: "TCDM_ARB_CTRL",
+        desc: '''
+            How the narrow TCDM interconnect arbitrates. Every bank serves the highest level among
+            the requests that want it, round robin within that level. An input's level is, in
+            order: the level software pins in TCDM_ARB_OVERRIDE; 4 when the starvation guard
+            has promoted its request; otherwise its requester's urgency, 0 to 3 (how close the
+            requester is to stalling the engine it serves, graded from its own FIFO). The wide DMA
+            port is outside this arbitration: it takes its whole super bank whenever it is valid.
+            Only the logarithmic interconnect reads this register.'''
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [{
+            bits: "0",
+            name: "URGENCY_EN",
+            desc: "Level each input at its requester's urgency; 0 levels them all at 0.",
+            resval: "1",
+        },
+        {
+            bits: "1",
+            name: "GUARD_EN",
+            desc: "Promote a request that has waited GUARD_THRESHOLD cycles to level 4.",
+            resval: "1",
+        },
+        {
+            bits: "15:8",
+            name: "GUARD_THRESHOLD",
+            desc: "Cycles a request waits before the starvation guard promotes it.",
+            resval: "16",
+        }]
+    },
+    {
+        multireg: {
+            name: "TCDM_ARB_OVERRIDE",
+            desc: '''
+                Software's arbitration level for each narrow TCDM interconnect input, in the order
+                `PORT_INDEX` uses (`snax-tcdm-ports-defs.h` has the map): input `8 n + j` is bits
+                `4 j + 3 .. 4 j` of word `n`. Bit 3 pins the level in bits 2..0, which then replaces
+                the urgency and the starvation guard for that input: 5 to 7 is above every request
+                the hardware grades, 0 is below them and never promoted. Inputs past the last word
+                keep the hardware's level.'''
+            swaccess: "rw",
+            hwaccess: "hro",
+            count: "NumTcdmArbOverrideRegs",
+            cname: "tcdm_arb_override",
+            compact: "false",
+            fields: [{
+                bits: "31:0",
+                name: "TCDM_ARB_OVERRIDE",
+                desc: "Eight inputs' override, four bits each.",
+                resval: "0",
+            }]
         }
     }
     ]

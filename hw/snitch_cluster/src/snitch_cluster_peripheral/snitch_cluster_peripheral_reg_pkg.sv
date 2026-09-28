@@ -8,6 +8,7 @@ package snitch_cluster_peripheral_reg_pkg;
 
   // Param list
   parameter int NumPerfCounters = 16;
+  parameter int NumTcdmArbOverrideRegs = 16;
 
   // Address widths within the block
   parameter int BlockAw = 10;
@@ -187,6 +188,22 @@ package snitch_cluster_peripheral_reg_pkg;
   } snitch_cluster_peripheral_reg2hw_perf_counter_enable_ext_mreg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+    } urgency_en;
+    struct packed {
+      logic        q;
+    } guard_en;
+    struct packed {
+      logic [7:0]  q;
+    } guard_threshold;
+  } snitch_cluster_peripheral_reg2hw_tcdm_arb_ctrl_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } snitch_cluster_peripheral_reg2hw_tcdm_arb_override_mreg_t;
+
+  typedef struct packed {
     logic [47:0] d;
   } snitch_cluster_peripheral_hw2reg_perf_counter_mreg_t;
 
@@ -196,14 +213,16 @@ package snitch_cluster_peripheral_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    snitch_cluster_peripheral_reg2hw_perf_counter_enable_mreg_t [15:0] perf_counter_enable; // [1954:1459]
-    snitch_cluster_peripheral_reg2hw_hart_select_mreg_t [15:0] hart_select; // [1458:1075]
-    snitch_cluster_peripheral_reg2hw_perf_counter_mreg_t [15:0] perf_counter; // [1074:291]
-    snitch_cluster_peripheral_reg2hw_cl_clint_set_reg_t cl_clint_set; // [290:258]
-    snitch_cluster_peripheral_reg2hw_cl_clint_clear_reg_t cl_clint_clear; // [257:225]
-    snitch_cluster_peripheral_reg2hw_hw_barrier_reg_t hw_barrier; // [224:193]
-    snitch_cluster_peripheral_reg2hw_icache_prefetch_enable_reg_t icache_prefetch_enable; // [192:192]
-    snitch_cluster_peripheral_reg2hw_perf_counter_enable_ext_mreg_t [15:0] perf_counter_enable_ext; // [191:0]
+    snitch_cluster_peripheral_reg2hw_perf_counter_enable_mreg_t [15:0] perf_counter_enable; // [2476:1981]
+    snitch_cluster_peripheral_reg2hw_hart_select_mreg_t [15:0] hart_select; // [1980:1597]
+    snitch_cluster_peripheral_reg2hw_perf_counter_mreg_t [15:0] perf_counter; // [1596:813]
+    snitch_cluster_peripheral_reg2hw_cl_clint_set_reg_t cl_clint_set; // [812:780]
+    snitch_cluster_peripheral_reg2hw_cl_clint_clear_reg_t cl_clint_clear; // [779:747]
+    snitch_cluster_peripheral_reg2hw_hw_barrier_reg_t hw_barrier; // [746:715]
+    snitch_cluster_peripheral_reg2hw_icache_prefetch_enable_reg_t icache_prefetch_enable; // [714:714]
+    snitch_cluster_peripheral_reg2hw_perf_counter_enable_ext_mreg_t [15:0] perf_counter_enable_ext; // [713:522]
+    snitch_cluster_peripheral_reg2hw_tcdm_arb_ctrl_reg_t tcdm_arb_ctrl; // [521:512]
+    snitch_cluster_peripheral_reg2hw_tcdm_arb_override_mreg_t [15:0] tcdm_arb_override; // [511:0]
   } snitch_cluster_peripheral_reg2hw_t;
 
   // HW -> register type
@@ -281,6 +300,23 @@ package snitch_cluster_peripheral_reg_pkg;
   parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_13_OFFSET = 10'h 208;
   parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_14_OFFSET = 10'h 210;
   parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_15_OFFSET = 10'h 218;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_CTRL_OFFSET = 10'h 220;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_0_OFFSET = 10'h 228;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_1_OFFSET = 10'h 230;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_2_OFFSET = 10'h 238;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_3_OFFSET = 10'h 240;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_4_OFFSET = 10'h 248;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_5_OFFSET = 10'h 250;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_6_OFFSET = 10'h 258;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_7_OFFSET = 10'h 260;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_8_OFFSET = 10'h 268;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_9_OFFSET = 10'h 270;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_10_OFFSET = 10'h 278;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_11_OFFSET = 10'h 280;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_12_OFFSET = 10'h 288;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_13_OFFSET = 10'h 290;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_14_OFFSET = 10'h 298;
+  parameter logic [BlockAw-1:0] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_15_OFFSET = 10'h 2a0;
 
   // Reset values for hwext registers and their fields
   parameter logic [47:0] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_0_RESVAL = 48'h 0;
@@ -372,11 +408,28 @@ package snitch_cluster_peripheral_reg_pkg;
     SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_12,
     SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_13,
     SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_14,
-    SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_15
+    SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_15,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_CTRL,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_0,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_1,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_2,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_3,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_4,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_5,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_6,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_7,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_8,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_9,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_10,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_11,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_12,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_13,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_14,
+    SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_15
   } snitch_cluster_peripheral_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] SNITCH_CLUSTER_PERIPHERAL_PERMIT [68] = '{
+  parameter logic [3:0] SNITCH_CLUSTER_PERIPHERAL_PERMIT [85] = '{
     4'b 1111, // index[ 0] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_0
     4'b 1111, // index[ 1] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_1
     4'b 1111, // index[ 2] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_2
@@ -444,7 +497,24 @@ package snitch_cluster_peripheral_reg_pkg;
     4'b 0011, // index[64] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_12
     4'b 0011, // index[65] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_13
     4'b 0011, // index[66] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_14
-    4'b 0011  // index[67] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_15
+    4'b 0011, // index[67] SNITCH_CLUSTER_PERIPHERAL_PERF_COUNTER_ENABLE_EXT_15
+    4'b 0011, // index[68] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_CTRL
+    4'b 1111, // index[69] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_0
+    4'b 1111, // index[70] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_1
+    4'b 1111, // index[71] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_2
+    4'b 1111, // index[72] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_3
+    4'b 1111, // index[73] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_4
+    4'b 1111, // index[74] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_5
+    4'b 1111, // index[75] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_6
+    4'b 1111, // index[76] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_7
+    4'b 1111, // index[77] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_8
+    4'b 1111, // index[78] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_9
+    4'b 1111, // index[79] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_10
+    4'b 1111, // index[80] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_11
+    4'b 1111, // index[81] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_12
+    4'b 1111, // index[82] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_13
+    4'b 1111, // index[83] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_14
+    4'b 1111  // index[84] SNITCH_CLUSTER_PERIPHERAL_TCDM_ARB_OVERRIDE_15
   };
 
 endpackage

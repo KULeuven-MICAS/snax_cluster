@@ -6,6 +6,7 @@
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
 `include "mem_interface/typedef.svh"
+`include "common_cells/registers.svh"
 
 /// Lightweight wrapper for a fixed response latency interconnect, i.e.,
 /// something that can be used to interconnect memories.
@@ -35,6 +36,8 @@ module snitch_tcdm_interconnect #(
   parameter type         user_t                = logic,
   /// Latency of memory response (in cycles)
   parameter int unsigned MemoryResponseLatency = 1,
+  /// Bits of an input's arbitration level (`level_i`).
+  parameter int unsigned LevelWidth            = 3,
   parameter snitch_pkg::topo_e Topology        = snitch_pkg::LogarithmicInterconnect
 ) (
   /// Clock, positive edge triggered.
@@ -43,6 +46,10 @@ module snitch_tcdm_interconnect #(
   input  logic                             rst_ni,
   /// Request port.
   input  tcdm_req_t           [NumInp-1:0] req_i,
+  /// Each input's arbitration level (`snitch_tcdm_arb_level`): a bank serves the
+  /// highest level among the requests that want it, round robin within that
+  /// level. Only the `LogarithmicInterconnect` topology reads it.
+  input  logic [NumInp-1:0][LevelWidth-1:0] level_i,
   /// Resposne port.
   output tcdm_rsp_t           [NumInp-1:0] rsp_o,
   /// Memory Side
@@ -110,28 +117,82 @@ module snitch_tcdm_interconnect #(
   // We need to arbitrate the requests coming from the input side and resolve
   // potential bank conflicts. Therefore a full arbitration tree is needed.
   if (Topology == snitch_pkg::LogarithmicInterconnect) begin : gen_xbar
-    stream_xbar #(
-      .NumInp      ( NumInp    ),
-      .NumOut      ( NumOut    ),
-      .payload_t   ( mem_req_chan_t ),
-      .OutSpillReg ( 1'b0      ),
-      .ExtPrio     ( 1'b0      ),
-      .AxiVldRdy   ( 1'b1      ),
-      .LockIn      ( 1'b1      )
-    ) i_stream_xbar (
-      .clk_i,
-      .rst_ni,
-      .flush_i ( 1'b0 ),
-      .rr_i    ( '0 ),
-      .data_i  ( in_req ),
-      .sel_i   ( bank_select ),
-      .valid_i ( req_q_valid_flat ),
-      .ready_o ( rsp_q_ready_flat ),
-      .data_o  ( out_req ),
-      .idx_o   ( ),
-      .valid_o ( mem_q_valid_flat ),
-      .ready_i ( mem_q_ready_flat )
-    );
+    // One arbiter per bank. It serves the highest level among the requests that want the
+    // bank, round robin within that level. A bank that could not take its choice (the wide
+    // DMA port had its super bank) keeps that choice the next cycle while it is still among
+    // the highest level; a higher request arriving meanwhile takes the bank instead, which is
+    // safe because the bank executed nothing. Only the chosen input is granted.
+    localparam int unsigned NumLevels = 2 ** LevelWidth;
+    localparam int unsigned IdxWidth = cf_math_pkg::idx_width(NumInp);
+    typedef logic [LevelWidth-1:0] level_t;
+    typedef logic [IdxWidth-1:0] idx_t;
+
+    // at_least[l][i]: input i's level is l or higher.
+    logic [NumLevels-1:0][NumInp-1:0] at_least;
+    for (genvar l = 0; l < NumLevels; l++) begin : gen_at_least
+      for (genvar i = 0; i < NumInp; i++) begin : gen_inp
+        assign at_least[l][i] = level_i[i] >= level_t'(l);
+      end
+    end
+
+    logic [NumOut-1:0][NumInp-1:0] bank_gnt;
+
+    for (genvar b = 0; b < NumOut; b++) begin : gen_bank
+      logic [NumInp-1:0] req, elig, arb_req;
+      logic [NumLevels-1:0] present;
+      level_t top;
+      idx_t idx, idx_q;
+      logic lock_q;
+
+      for (genvar i = 0; i < NumInp; i++) begin : gen_req
+        assign req[i] = req_q_valid_flat[i] & (bank_select[i] == select_t'(b));
+      end
+      for (genvar l = 0; l < NumLevels; l++) begin : gen_present
+        assign present[l] = |(req & at_least[l]);
+      end
+      always_comb begin
+        top = '0;
+        for (int unsigned l = 1; l < NumLevels; l++) begin
+          if (present[l]) top = level_t'(l);
+        end
+      end
+      assign elig    = req & at_least[top];
+      assign arb_req = (lock_q && elig[idx_q]) ? (NumInp'(1) << idx_q) : elig;
+
+      // The tree chooses the winner and carries only its index; the winner's payload is then
+      // read by that index. A payload changes every cycle its request moves on; read by index
+      // it passes one multiplexer per bank, where carried through the trees it would pass one
+      // per tree level in every bank, each of which a simulator evaluates on its own.
+      rr_arb_tree #(
+        .NumIn     ( NumInp ),
+        .DataType  ( logic  ),
+        .ExtPrio   ( 1'b0   ),
+        .AxiVldRdy ( 1'b0   ),
+        .LockIn    ( 1'b0   ),
+        .FairArb   ( 1'b1   )
+      ) i_rr_arb (
+        .clk_i,
+        .rst_ni,
+        .flush_i ( 1'b0                ),
+        .rr_i    ( '0                  ),
+        .req_i   ( arb_req             ),
+        .gnt_o   ( bank_gnt[b]         ),
+        .data_i  ( '0                  ),
+        .req_o   ( mem_q_valid_flat[b] ),
+        .gnt_i   ( mem_q_ready_flat[b] ),
+        .data_o  (                     ),
+        .idx_o   ( idx                 )
+      );
+      // With no request the index may point past the inputs; the payload is unused then.
+      assign out_req[b] = in_req[(32'(idx) < NumInp) ? idx : '0];
+
+      `FF(lock_q, mem_q_valid_flat[b] & ~mem_q_ready_flat[b], '0, clk_i, rst_ni)
+      `FF(idx_q, idx, '0, clk_i, rst_ni)
+    end
+
+    for (genvar i = 0; i < NumInp; i++) begin : gen_inp_ready
+      assign rsp_q_ready_flat[i] = bank_gnt[bank_select[i]][i];
+    end
   end else if (Topology == snitch_pkg::OmegaNet) begin : gen_omega_net
     stream_omega_net #(
       .NumInp      ( NumInp        ),

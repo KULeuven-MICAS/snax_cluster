@@ -461,7 +461,7 @@ module snitch_cluster
   typedef struct packed {
     logic [CoreIDWidth-1:0] core_id;
     bit                     is_core;
-    logic                   tcdm_priority;
+    logic [1:0]             tcdm_priority;
   } tcdm_user_t;
 
   // Regbus peripherals.
@@ -803,6 +803,7 @@ DmaXbarCfg.NoMstPorts
         .clk_i,
         .rst_ni,
         .req_i(ext_dma_req),
+        .level_i('0),
         .rsp_o(ext_dma_rsp),
         .mem_req_o(sb_dma_req),
         .mem_rsp_i(sb_dma_rsp)
@@ -911,6 +912,63 @@ DmaXbarCfg.NoMstPorts
     end
   end
 
+  // Arbitration level of every narrow interconnect input, in its input order `{soc, cores,
+  // snax}` (`snitch_tcdm_arb_level`): the requesters' urgency (`tcdm_priority`), the
+  // starvation guard, and software's overrides from the cluster peripheral (`TCDM_ARB_CTRL`,
+  // `TCDM_ARB_OVERRIDE`). The sparse interconnect ignores this and arbitrates on the
+  // requesters' urgency alone.
+  localparam int unsigned TcdmLevelWidth = 3;
+  localparam int unsigned TcdmOverrideInp = snitch_cluster_peripheral_reg_pkg::NumTcdmArbOverrideRegs * 8;
+  logic tcdm_arb_urgency_en, tcdm_arb_guard_en;
+  logic [7:0] tcdm_arb_guard_threshold;
+  logic [snitch_cluster_peripheral_reg_pkg::NumTcdmArbOverrideRegs*32-1:0] tcdm_arb_override;
+  logic [NrTcdmInterconnectInp-1:0] ic_arb_valid, ic_arb_ready, ic_override_en;
+  logic [NrTcdmInterconnectInp-1:0][1:0] ic_urgency;
+  logic [NrTcdmInterconnectInp-1:0][TcdmLevelWidth-1:0] ic_override_level, ic_level;
+
+  for (genvar i = 0; i < TotalSnaxNarrowTcdmPorts; i++) begin : gen_ic_arb_snax
+    assign ic_arb_valid[i] = snax_tcdm_req_i[i].q_valid;
+    assign ic_arb_ready[i] = snax_tcdm_rsp_o[i].q_ready;
+    assign ic_urgency[i]   = snax_tcdm_req_i[i].q.user.tcdm_priority;
+  end
+  for (genvar i = 0; i < NrTCDMPortsCores; i++) begin : gen_ic_arb_core
+    assign ic_arb_valid[TotalSnaxNarrowTcdmPorts+i] = tcdm_req[i].q_valid;
+    assign ic_arb_ready[TotalSnaxNarrowTcdmPorts+i] = tcdm_rsp[i].q_ready;
+    assign ic_urgency[TotalSnaxNarrowTcdmPorts+i]   = tcdm_req[i].q.user.tcdm_priority;
+  end
+  assign ic_arb_valid[NrTcdmInterconnectInp-1] = axi_soc_req.q_valid;
+  assign ic_arb_ready[NrTcdmInterconnectInp-1] = axi_soc_rsp.q_ready;
+  assign ic_urgency[NrTcdmInterconnectInp-1]   = axi_soc_req.q.user.tcdm_priority;
+
+  for (genvar i = 0; i < NrTcdmInterconnectInp; i++) begin : gen_ic_override
+    if (i < TcdmOverrideInp) begin : gen_word
+      assign ic_override_en[i]    = tcdm_arb_override[4*i+3];
+      assign ic_override_level[i] = tcdm_arb_override[4*i+:3];
+    end else begin : gen_past_words
+      assign ic_override_en[i]    = 1'b0;
+      assign ic_override_level[i] = '0;
+    end
+  end
+
+  snitch_tcdm_arb_level #(
+      .NumInp(NrTcdmInterconnectInp),
+      .UrgencyWidth(2),
+      .LevelWidth(TcdmLevelWidth),
+      .AgeWidth(8)
+  ) i_tcdm_arb_level (
+      .clk_i,
+      .rst_ni,
+      .valid_i(ic_arb_valid),
+      .ready_i(ic_arb_ready),
+      .urgency_i(ic_urgency),
+      .urgency_en_i(tcdm_arb_urgency_en),
+      .guard_en_i(tcdm_arb_guard_en),
+      .guard_threshold_i(tcdm_arb_guard_threshold),
+      .override_en_i(ic_override_en),
+      .override_level_i(ic_override_level),
+      .level_o(ic_level)
+  );
+
   // generate TCDM for snax if any of the cores has SNAX enabled
   // Make ConnectSnaxAccWide a switcher for now that all accelerators connect to wide
   // if this happens
@@ -945,6 +1003,7 @@ DmaXbarCfg.NoMstPorts
         .DataWidth(NarrowDataWidth),
         .user_t(tcdm_user_t),
         .MemoryResponseLatency(1 + RegisterTCDMCuts),
+        .LevelWidth(TcdmLevelWidth),
         .Radix(Radix),
         .Topology(Topology)
     ) i_tcdm_interconnect (
@@ -952,6 +1011,7 @@ DmaXbarCfg.NoMstPorts
         .rst_ni,
         .req_i({axi_soc_req, tcdm_req, snax_tcdm_req_i}),
         //snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]}),
+        .level_i(ic_level),
         .rsp_o({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o}),
         .mem_req_o(ic_req),
         .mem_rsp_i(ic_rsp)
@@ -970,12 +1030,14 @@ DmaXbarCfg.NoMstPorts
         .DataWidth(NarrowDataWidth),
         .user_t(tcdm_user_t),
         .MemoryResponseLatency(1 + RegisterTCDMCuts),
+        .LevelWidth(TcdmLevelWidth),
         .Radix(Radix),
         .Topology(Topology)
     ) i_tcdm_interconnect (
         .clk_i,
         .rst_ni,
         .req_i({axi_soc_req, tcdm_req}),
+        .level_i(ic_level),
         .rsp_o({axi_soc_rsp, tcdm_rsp}),
         .mem_req_o(ic_req),
         .mem_rsp_i(ic_rsp)
@@ -1551,6 +1613,10 @@ ClusterXbarCfg.NoMstPorts
       .tcdm_end_address_i(tcdm_end_address),
       .icache_prefetch_enable_o(icache_prefetch_enable),
       .cl_clint_o(cl_interrupt),
+      .tcdm_arb_urgency_en_o(tcdm_arb_urgency_en),
+      .tcdm_arb_guard_en_o(tcdm_arb_guard_en),
+      .tcdm_arb_guard_threshold_o(tcdm_arb_guard_threshold),
+      .tcdm_arb_override_o(tcdm_arb_override),
       .cluster_hart_base_id_i(hart_base_id_i),
       .core_events_i(core_events),
       .tcdm_events_i(tcdm_events),

@@ -964,7 +964,7 @@ def main():
             + " --strbWidth "
             + str(int(cfg["cluster"]["data_width"] / 8))
             + " --priorityWidth "
-            + str(1)
+            + str(2)  # the requesters' urgency, snax.utils.TcdmUrgency.width
             + " --sparseConfig "
             + f"\"{cfg['cluster']['sparse_interconnect_cfg']['sparse_config']}\""
             + " --hw-target-dir "

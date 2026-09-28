@@ -37,6 +37,11 @@ module snitch_cluster_peripheral
   input  addr_t                      tcdm_end_address_i,
   output logic                       icache_prefetch_enable_o,
   output logic [NrCores-1:0]         cl_clint_o,
+  /// Narrow TCDM arbitration, see `TCDM_ARB_CTRL` and `TCDM_ARB_OVERRIDE`.
+  output logic                       tcdm_arb_urgency_en_o,
+  output logic                       tcdm_arb_guard_en_o,
+  output logic [7:0]                 tcdm_arb_guard_threshold_o,
+  output logic [NumTcdmArbOverrideRegs*32-1:0] tcdm_arb_override_o,
   input  logic [9:0]                 cluster_hart_base_id_i,
   input  core_events_t [NrCores-1:0] core_events_i,
   input  tcdm_events_t               tcdm_events_i,
@@ -109,6 +114,13 @@ module snitch_cluster_peripheral
 
   // Enable icache prefetch
   assign icache_prefetch_enable_o = reg2hw.icache_prefetch_enable.q;
+
+  assign tcdm_arb_urgency_en_o      = reg2hw.tcdm_arb_ctrl.urgency_en.q;
+  assign tcdm_arb_guard_en_o        = reg2hw.tcdm_arb_ctrl.guard_en.q;
+  assign tcdm_arb_guard_threshold_o = reg2hw.tcdm_arb_ctrl.guard_threshold.q;
+  for (genvar i = 0; i < NumTcdmArbOverrideRegs; i++) begin : gen_tcdm_arb_override
+    assign tcdm_arb_override_o[32*i+:32] = reg2hw.tcdm_arb_override[i].q;
+  end
 
   // Continuously assign the perf values.
   for (genvar i = 0; i < NumPerfCounters; i++) begin : gen_perf_assign
