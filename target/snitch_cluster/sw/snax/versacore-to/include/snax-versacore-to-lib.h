@@ -75,6 +75,36 @@ void set_versacore_csr(uint32_t take_in_new_c,
 // Set CSR to start GEMM
 inline void set_versacore_start() { csrw_ss(GEMMX_START, 1); }
 
+// ---- the D port's power-of-two output scale ---------------------------------
+//
+// Built with `shift: 1`, the INT32 -> FP16 converter on the D write path emits
+// RNE(acc * 2^-k), k in 0..14 (the RTL clamps larger values to 14). Its window is
+// then [enable][extra-loop index][k]. A power of two moves only the exponent, so k
+// costs no precision; what it buys is range. An INT8 dot product of depth K reaches
+// 127^2 * K, past FP16's 65,504 from K = 5 on, and overflows to +-Inf -- silently --
+// unless k satisfies 127^2 * K <= 65,504 * 2^k.
+//
+// k is a streamer CSR like any other: latched at each start, and held between
+// dispatches. set_versacore_streamer_csr() never writes it, so one call here holds
+// for every later dispatch until the next call. Returns 0 on success, or 1 when this
+// build has no shift register and a non-zero k was asked for.
+#if defined(READER_WRITER_EXTENSION_1_CSR_NUM) && READER_WRITER_EXTENSION_1_CSR_NUM == 3
+#define VERSACORE_HAS_D_SHIFT 1
+#define VERSACORE_D_SHIFT_CSR (READER_WRITER_EXTENSION_1_CSR_BASE + 2)
+#else
+#define VERSACORE_HAS_D_SHIFT 0
+#endif
+
+__attribute__((always_inline)) static inline int set_versacore_d_shift(
+    uint32_t k) {
+#if VERSACORE_HAS_D_SHIFT
+    csrw_ss(VERSACORE_D_SHIFT_CSR, k);
+    return 0;
+#else
+    return k != 0u;
+#endif
+}
+
 // Poll until Streamer and GEMM accelerator finish
 void wait_versacore_and_streamer();
 

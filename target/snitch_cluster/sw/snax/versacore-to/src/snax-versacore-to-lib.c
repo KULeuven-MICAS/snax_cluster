@@ -203,35 +203,38 @@ void set_versacore_streamer_csr(
 
 #ifdef READER_WRITER_EXTENSION_1_CSR_BASE
     // The enable word carries one bit per extension in DECLARATION order, so
-    // the bit positions move with the list too. A window of 7 is the dynamic
-    // rescale unit (5 user CSRs) stacked under the INT32->FP16 converter (1):
-    // rescale is bit 0, converter bit 1. A narrower window is the converter
-    // alone, where the converter IS bit 0 -- and there is no zero point,
-    // multiplier or shift register to put a rescale request in, so
-    // quantization_enable is dropped rather than silently mis-programmed.
+    // the bit positions move with the list too. Two stacks exist:
+    //
+    //   window 7   the dynamic rescale unit (5 user CSRs) under the INT32->FP16
+    //              converter (1): rescale is bit 0, converter bit 1, and base+1..+5
+    //              are the rescale's zero points, multiplier and shift.
+    //   window 2   the converter alone: [enable][extra-loop index].
+    //   window 3   the converter alone, built with its power-of-two output scale:
+    //              [enable][extra-loop index][k]. k belongs to
+    //              set_versacore_d_shift(), and this function never writes it, so
+    //              one call there holds for every later dispatch.
+    //
+    // With the converter alone there is no zero point, multiplier or shift
+    // register to put a rescale request in, so quantization_enable is dropped
+    // rather than silently mis-programmed, and the rescale arguments are unused.
+#if READER_WRITER_EXTENSION_1_CSR_NUM >= 7
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE,
-            (READER_WRITER_EXTENSION_1_CSR_NUM >= 7)
-                ? ((int32tofp16_enable << 1) | quantization_enable)
-                : (int32tofp16_enable & 0x1));
-    // base + 1 is the rescale input zero point where rescale is present; with
-    // the converter alone it is the converter's only user CSR, an index into
-    // its extra_loops_choice, whose entry 0 is the 2:1 INT32->FP16 narrowing.
-    if (READER_WRITER_EXTENSION_1_CSR_NUM > 1)
-        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1,
-                (READER_WRITER_EXTENSION_1_CSR_NUM >= 7) ? (uint32_t)input_zp_i
-                                                         : 0u);
-    if (READER_WRITER_EXTENSION_1_CSR_NUM > 2)
-        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, multiplier_i);
-    if (READER_WRITER_EXTENSION_1_CSR_NUM > 3)
-        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
-    if (READER_WRITER_EXTENSION_1_CSR_NUM > 4)
-        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 4, shift_i);
+            (int32tofp16_enable << 1) | quantization_enable);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, (uint32_t)input_zp_i);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 2, multiplier_i);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 3, output_zp_i);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 4, shift_i);
     // Select the extra loop policy according to the array shape.
     // The actual loop factors are defined in the scala extension params.
-    if (READER_WRITER_EXTENSION_1_CSR_NUM > 5)
-        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 5, 0);
-    if (READER_WRITER_EXTENSION_1_CSR_NUM > 6)
-        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 6, 0);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 5, 0);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 6, 0);
+#else
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE, int32tofp16_enable & 0x1);
+    // The converter's extra-loop index: entry 0 of its extra_loops_choice is the
+    // 2:1 INT32->FP16 narrowing.
+    if (READER_WRITER_EXTENSION_1_CSR_NUM > 1)
+        csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, 0u);
+#endif
 #endif
 }
 
