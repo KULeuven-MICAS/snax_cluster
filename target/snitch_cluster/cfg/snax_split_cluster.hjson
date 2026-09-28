@@ -453,6 +453,18 @@
     // is what block_gemm_golden_model() assumes.
     snax_versacore_streamer_template:
     {
+        // Reader 0 is A, reader 1 is B.
+        //
+        // B is 16 channels, two groups of 8 with their own spatial stride, because the one-row
+        // GEMV shape (1, 4, 32) takes TWO 4 x 16 weight blocks per pass -- 128 B -- and those
+        // blocks sit a whole column block apart in the weight layout (one group reads column
+        // block n, the other column block n + 1, at the same k). The 16 x 4 x 16 shape, and a
+        // one-row task with an odd number of column blocks, take one block: channels 0..7.
+        //
+        // Every reader has a channel mask (ENABLED_CHANNEL_*): a disabled channel presents
+        // zero and issues no TCDM request. The one-row shapes read A's row 0 alone -- 4 bytes
+        // in channel 0 of each 64 B block -- so a GEMV asks the TCDM for 8 B of A a pass
+        // instead of 64. The masks reset to 0: a task that does not write its mask reads zero.
         data_reader_params:
         {
             spatial_bounds:
@@ -462,6 +474,7 @@
                 ]
                 [
                     8
+                    2
                 ]
             ]
             temporal_dim:
@@ -472,7 +485,7 @@
             num_channel:
             [
                 8
-                8
+                16
             ]
             fifo_depth:
             [
@@ -481,8 +494,8 @@
             ]
             configurable_channel:
             [
-                0
-                0
+                1
+                1
             ]
             tcdm_logic_word_size:
             [
@@ -577,10 +590,12 @@
                 4
                 4
             ]
+            // C's mask gives a GEMV its fresh accumulator (every channel off reads zero); D's
+            // drops the unused half of a one-row shape's output beat.
             configurable_channel:
             [
                 1
-                0
+                1
             ]
             tcdm_logic_word_size:
             [
@@ -653,18 +668,20 @@
         extra_streamer_csr: 20
         snax_library_name: versacore-to
     }
-    // The matmul array:
+    // The matmul array, 1024 INT8 multipliers, two spatial unrollings (Mu, Ku, Nu) picked per
+    // task by the array-shape CSR:
     //
-    //   spatial unrolling (Mu, Ku, Nu) = (16, 4, 16) = 1024 INT8 MAC/cycle
+    //   0  (16, 4, 16)  the GEMM: A 64 B, B 64 B a pass, a 16 x 16 output block
+    //   1  (1, 4, 32)   a one-row GEMV, 128 weight bytes a pass: A 4 B, B 128 B, 32 outputs
     //
-    // The apps know these three as meshRow / tileSize / meshCol. The operand widths follow
-    // from the shape: A is Mu*Ku*8 = 512 b, B is Ku*Nu*8 = 512 b, C and D are
-    // Mu*Nu*32 = 8192 b serialised 4:1 onto the 2048 b port.
-    //
-    // ONE shape and ONE data type, so the array-shape and data-type CSRs are always 0.
-    // VersaCore's point is that both are runtime-selectable; a second shape costs area and
-    // changes the CSR map (see the transposer note in the streamer template), so it belongs
-    // to a deliberate DSE rather than to the default.
+    // A GEMV does one multiply-add per weight byte, so its rate is the B port's bytes per
+    // pass: 128 on this 1024 b port. A one-row task with an odd number of 16-column blocks
+    // runs shape 1 at half width: B's channels 8..15 masked (they read zero) and the D mask
+    // writing the lower 16 outputs, 64 weight bytes a pass. Both shapes keep Ku = 4, so they
+    // read the same operand layouts: B in 4 x 16 blocks, and A in 16 x 4 blocks of which the
+    // one-row shape reads row 0. Shape 0 is the one the apps know as meshRow / tileSize /
+    // meshCol. C and D are Mu*Nu*32 bits serialised onto the 1024 b port: 8 beats a block for
+    // shape 0, one for shape 1.
     snax_versacore_core_template:
     {
         // The matmul array. Cross-checked against the cfg by util/snaxgen/core_roles.py.
@@ -687,7 +704,7 @@
                 [
                     snax_versacore
                 ]
-                snax_tcdm_ports: 32
+                snax_tcdm_ports: 40
                 // Fixed by VersaCore: take_in_new_c, accumulation bound, output bound,
                 // subtractions, array shape, data type, start. VersaCoreGen REQUIRES 7.
                 snax_num_rw_csr: 7
@@ -736,11 +753,11 @@
                     SInt
                 ]
                 snax_versacore_array_input_a_width: 512
-                snax_versacore_array_input_b_width: 512
+                snax_versacore_array_input_b_width: 1024
                 snax_versacore_array_input_c_width: 8192
                 snax_versacore_array_output_d_width: 8192
                 snax_versacore_serial_a_width: 512
-                snax_versacore_serial_b_width: 512
+                snax_versacore_serial_b_width: 1024
                 snax_versacore_serial_c_d_width: 1024
                 snax_versacore_adder_tree_delay: 0
                 // [data type][array shape][Mu, Ku, Nu]
@@ -751,6 +768,11 @@
                             16
                             4
                             16
+                        ]
+                        [
+                            1
+                            4
+                            32
                         ]
                     ]
                 ]
