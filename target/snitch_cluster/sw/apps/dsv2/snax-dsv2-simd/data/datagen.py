@@ -49,16 +49,19 @@ def main():
     ap.add_argument("--hwcfg", type=pathlib.Path, required=True)
     ap.add_argument("--header", type=pathlib.Path, required=True)
     ap.add_argument("--blob-dir", type=pathlib.Path, required=True)
+    ap.add_argument("--wbits", type=int, default=8, choices=(8, 4),
+                    help="weight width: INT8, or INT4 through the B converter")
     args = ap.parse_args()
     prm = hjson.loads(args.swcfg.read_text())
     mesh = mesh_from_hwcfg(hjson.loads(args.hwcfg.read_text()))
     if mesh != (16, 4, 16):
         raise ValueError(f"the A operand's row write assumes a (16, 4, 16) mesh, not {mesh}")
 
-    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]))
+    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), wbits=args.wbits)
     H, d, S = g.hw, g.dims, g.scales
     rng = np.random.default_rng([int(prm["seed"]), 7])
     em = Emitter(args.blob_dir)
+    em.define("DSV2_DATA_WBITS", g.wbits, "the weights' width; the kernel's DSV2_WBITS must match")
     em.c(f"// DeepSeek-V2-Lite layer 1, golden seed {g.seed}, token at position {g.pos}.")
 
     # ---- the norms and their quantisers ---------------------------------------------------

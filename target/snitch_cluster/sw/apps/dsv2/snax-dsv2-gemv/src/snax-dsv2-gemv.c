@@ -4,19 +4,21 @@
 //
 // The GEMV with streamed weights, for DeepSeek-V2-Lite layer 1 at its real shapes:
 //
-//     y  (1 x N, FP16) = RNE(x . W * 2^-k)        x: 1 x K INT8, W: K x N INT8 in DRAM
+//     y  (1 x N, FP16) = RNE(x . W * 2^-k)        x: 1 x K INT8, W: K x N INT8 or INT4 in DRAM
 //     yd (1 x N, FP16) = y (.) s                   s[n] = s_x * s_w[n] * 2^k, FP16
 //
 // for the eight shapes of the layer: W_Q 2048 x 3072, W_DKV 2048 x 576, W_O 2048 x 2048,
 // the router 2048 x 64, an expert's gate|up 2048 x 2816 and down 1408 x 2048, and the shared
 // experts' gate|up 2048 x 5632 and down 2816 x 2048 -- 36 MiB of weights, each shape run on
 // the activation that really reaches it in the layer (the golden pack, sw/apps/dsv2/util).
+// With DSV2_WBITS = 4 every weight but the router's is INT4 (18 MiB), read through B's converter
+// (snax-dsv2.h, WEIGHT WIDTH): a chunk is half the bytes, the array passes are the same.
 //
 // ======================================================================================
 // THE DATAFLOW
 // ======================================================================================
 //
-//   iDMA (hart 3)   streams W in CHUNKS of 64 output columns (K x 64 bytes, B-layout) into
+//   iDMA (hart 3)   streams W in CHUNKS of 64 output columns (K x 64 bytes, B-layout; K x 32 at INT4) into
 //                   two L1 buffers, each as soon as the GEMM has retired the task that last
 //                   read it. With DSV2_DUAL_LOAD it loads a chunk's first half and the xDMA
 //                   hart its second, at once (snax-xdma-lib.h).
@@ -122,7 +124,8 @@ static void shape_report(volatile uint32_t *sy, uint32_t s) {
     const uint32_t shape = dsv2_gemv_shape();
     // array passes, one per cycle at best: shape 1 takes two column blocks a pass
     const uint32_t floor = nch * (K / DSV2_KU) * (NB / dsv2_gemv_blocks_per_pass(NB));
-    const uint32_t cb = K * GEMV_CHUNK, xb = DSV2_DUAL_LOAD ? XBYTES(cb) : 0u;
+    const uint32_t cb = DSV2_WB(K * GEMV_CHUNK, sh->wbits == 4u);
+    const uint32_t xb = DSV2_DUAL_LOAD ? XBYTES(cb) : 0u;
     const uint32_t dbusy = D_BUSY(s), xbusy = X_BUSY(s);
     printf(TAG " %-15s %4u x %4u  k=%2u  %2u chunks: %7u cc (%5u/chunk, floor %5u) "
                "GEMM %3u%%  %3u B/cc  iDMA %2u B/cc, waited %u cc",
@@ -130,7 +133,7 @@ static void shape_report(volatile uint32_t *sy, uint32_t s) {
            cyc ? (100u * (floor / 16u)) / (cyc / 16u) : 0u, cyc ? (nch * cb) / cyc : 0u,
            dbusy ? (nch * (cb - xb)) / dbusy : 0u, D_WAIT(s));
     if (xb) printf("  xDMA %2u B/cc", xbusy ? (nch * xb) / xbusy : 0u);
-    printf("  dequant %u cc  [shape %u]\n", T_DQ(s), shape);
+    printf("  dequant %u cc  [shape %u, INT%u]\n", T_DQ(s), shape, sh->wbits);
 }
 
 // A shape's final result: yd bit for bit, and no Inf in it.
@@ -198,7 +201,7 @@ int main() {
         for (uint32_t s = 0; s < GEMV_NSHAPES; s++) {
             const gemv_shape_t *sh = &gemv_shapes[s];
             const uint32_t K = sh->K, N = sh->N, nch = N / GEMV_CHUNK;
-            const uint32_t cbytes = K * GEMV_CHUNK;
+            const uint32_t cbytes = DSV2_WB(K * GEMV_CHUNK, sh->wbits == 4u);
             const int8_t *w = sh->w;
             uint32_t o0 = snrt_mcycle();
             snrt_dma_start_2d(abuf, sh->a, DSV2_KU, DSV2_MR * DSV2_KU, DSV2_KU, K / DSV2_KU);
@@ -260,7 +263,7 @@ int main() {
             const gemv_shape_t *sh = &gemv_shapes[s];
             const uint32_t K = sh->K, N = sh->N, k = sh->k, nch = N / GEMV_CHUNK;
             SPIN(OPS, s + 1u);
-            dsv2_gemv_arm(K / DSV2_KU, NB, 1u, 0u, k);
+            dsv2_gemv_arm(K / DSV2_KU, NB, 1u, 0u, k, sh->wbits == 4u);
             uint32_t id = csrr_ss(GEMMX_FINISHED_TASK), run = 0;
             for (uint32_t j = 0; j < nch; j++) {
                 SPIN(LOADED, cbase + j + 1u);
@@ -304,7 +307,8 @@ int main() {
         uint32_t cbase = 0;
         for (uint32_t s = 0; s < GEMV_NSHAPES; s++) {
             const gemv_shape_t *sh = &gemv_shapes[s];
-            const uint32_t cbytes = sh->K * GEMV_CHUNK, nch = sh->N / GEMV_CHUNK;
+            const uint32_t cbytes = DSV2_WB(sh->K * GEMV_CHUNK, sh->wbits == 4u);
+            const uint32_t nch = sh->N / GEMV_CHUNK;
 #if DSV2_DUAL_LOAD
             const uint32_t xb = XBYTES(cbytes), off = cbytes - xb;
             uint32_t busy = 0;

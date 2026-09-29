@@ -34,6 +34,14 @@
 #   1 (default)  (1, 4, 32): one row, 128 weight bytes a pass
 #   0            (16, 4, 16): the GEMM shape, row 0 kept
 #
+# DSV2_WBITS selects the weights' width, in the data and in the kernels (snax-dsv2.h, WEIGHT WIDTH):
+#   8 (default)  INT8
+#   4            INT4 through the B reader's converter, every weight but the router's: the same
+#                array passes, half the bytes to load and to read
+# The data regenerates when it flips (a stamp in build/), since the datagens pack the weights.
+#
+#   make -C sw/apps/dsv2/snax-dsv2-gemv DSV2_WBITS=4
+#
 # DSV2_TCDM_PRIO selects the TCDM arbitration policy for the whole run (snax-tcdm-priority.h,
 # SNAX_TCDM_POLICY_*): 0 (default) the hardware's own, every requester's urgency and the
 # starvation guard; 1 one round robin; 2 urgency without the guard; 3 GEMM first; 4 xDMA first;
@@ -50,12 +58,14 @@ DSV2_STAGE_CHECKS ?= 0
 DSV2_CHECK_TERMS ?= 0
 DSV2_DUAL_LOAD ?= 1
 DSV2_GEMV ?= 1
+DSV2_WBITS ?= 8
 DSV2_TCDM_PRIO ?= 0
 DSV2_TCDM_GUARD ?= 0
 RISCV_CFLAGS += -DDSV2_STAGE_CHECKS=$(DSV2_STAGE_CHECKS)
 RISCV_CFLAGS += -DDSV2_CHECK_TERMS=$(DSV2_CHECK_TERMS)
 RISCV_CFLAGS += -DDSV2_DUAL_LOAD=$(DSV2_DUAL_LOAD)
 RISCV_CFLAGS += -DDSV2_GEMV=$(DSV2_GEMV)
+RISCV_CFLAGS += -DDSV2_WBITS=$(DSV2_WBITS)
 RISCV_CFLAGS += -DDSV2_TCDM_PRIO=$(DSV2_TCDM_PRIO)
 RISCV_CFLAGS += -DDSV2_TCDM_GUARD=$(DSV2_TCDM_GUARD)
 ifdef DSV2_DUAL_XBYTES
@@ -71,10 +81,17 @@ ifdef DSV2_TCDM_PRIO_ATTN
 RISCV_CFLAGS += -DDSV2_TCDM_PRIO_ATTN=$(DSV2_TCDM_PRIO_ATTN)
 endif
 
-DSV2_CFG_STAMP = $(BUILDDIR)/dsv2-cfg-$(DSV2_STAGE_CHECKS)-$(DSV2_CHECK_TERMS)-$(DSV2_DUAL_LOAD)-$(DSV2_GEMV)-$(DSV2_TCDM_PRIO)-$(DSV2_TCDM_GUARD)-$(DSV2_TCDM_PRIO_STREAM)-$(DSV2_TCDM_PRIO_HEAD)-$(DSV2_TCDM_PRIO_ATTN)-$(DSV2_DUAL_XBYTES)
+DSV2_CFG_STAMP = $(BUILDDIR)/dsv2-cfg-$(DSV2_STAGE_CHECKS)-$(DSV2_CHECK_TERMS)-$(DSV2_DUAL_LOAD)-$(DSV2_GEMV)-$(DSV2_WBITS)-$(DSV2_TCDM_PRIO)-$(DSV2_TCDM_GUARD)-$(DSV2_TCDM_PRIO_STREAM)-$(DSV2_TCDM_PRIO_HEAD)-$(DSV2_TCDM_PRIO_ATTN)-$(DSV2_DUAL_XBYTES)
 
 $(DSV2_CFG_STAMP): | $(BUILDDIR)
 	rm -f $(BUILDDIR)/stage-checks-* $(BUILDDIR)/dsv2-cfg-*
 	touch $@
 
 $(DEP) $(ELF): $(DSV2_CFG_STAMP)
+
+# The data's own stamp: data/Makefile regenerates data.h when the weight width changes.
+DSV2_WBITS_STAMP = $(BUILDDIR)/dsv2-wbits-$(DSV2_WBITS)
+
+$(DSV2_WBITS_STAMP): | $(BUILDDIR)
+	rm -f $(BUILDDIR)/dsv2-wbits-*
+	touch $@

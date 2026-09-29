@@ -47,7 +47,9 @@
 //
 // Chunks are 32 output columns (K x 32 bytes, 64 KiB at K = 2,048), 16 for the shared down
 // (K = 2,816; MOE_CW): the n-major B-layout makes any multiple of 16 columns a byte slice of
-// the packed weight. Three 64 KiB buffers take chunks in turn: the iDMA issues a chunk before
+// the packed weight. With INT4 weights (DSV2_WBITS = 4, every job but the router, job 0) a chunk
+// is half the bytes, so the shared down's 32 columns fit a buffer too, and every chunk is one
+// column pair of the paired layout (snax-dsv2.h, WEIGHT WIDTH). Three 64 KiB buffers take chunks in turn: the iDMA issues a chunk before
 // it waits for the one before, so a transfer is always in flight, and runs up to two chunks
 // ahead of the GEMM, so the handoff of a freed buffer is off its path.
 //
@@ -93,7 +95,8 @@
 #define MOE_SY_BYTES 2048u
 #define MOE_NBUF 3u                       // weight buffers
 #define MOE_BUF (HID * 32u)               // a weight buffer: the largest chunk, 64 KiB
-#define MOE_CW(K) ((K) * 32u <= MOE_BUF ? 32u : 16u)  // chunk: output columns per GEMM task
+#define MOE_W4(j) (DSV2_W4 && (j) != 0u)  // job j's weights are INT4: all but the router's
+#define MOE_CW(K, w4) (DSV2_WB((K) * 32u, w4) <= MOE_BUF ? 32u : 16u)  // chunk: output columns per task
 #define MOE_NB 2u                         // n-blocks per chunk, at most
 #define MOE_NSLOT_MAX (NTOK * TOP_K)      // the union of the tokens' top-6
 #define MOE_NJOB_MAX (3 + 2 * MOE_NSLOT_MAX)
@@ -287,7 +290,7 @@ static void dsv2_moe_idma(dsv2_moe_t *m, const uint16_t *h16) {
         MOE_S_IN(m) = j + 1u;
         if (!w) continue;
         // chunk c is transfer base + c + 1: issue it, then publish chunk c - 1
-        const uint32_t cw = MOE_CW(K), nch = N / cw, cb = K * cw;
+        const uint32_t cw = MOE_CW(K, MOE_W4(j)), nch = N / cw, cb = DSV2_WB(K * cw, MOE_W4(j));
         for (uint32_t c = 0; c < nch; c++, g++) {
             if (g >= MOE_NBUF) MOE_W(m, MOE_FREED(m), g - MOE_NBUF + 1u, &wfree);
             x0 = snrt_mcycle();
@@ -321,7 +324,7 @@ static void dsv2_moe_xdma(dsv2_moe_t *m) {
         MOE_W(m, MOE_POSTED(m), j + 1u, &wpost);
         const uint32_t w = MOE_JOBS(m)[j].w, K = MOE_JOBS(m)[j].K, N = MOE_JOBS(m)[j].N;
         if (!w) continue;
-        const uint32_t cw = MOE_CW(K), nch = N / cw, cb = K * cw;
+        const uint32_t cw = MOE_CW(K, MOE_W4(j)), nch = N / cw, cb = DSV2_WB(K * cw, MOE_W4(j));
         const uint32_t xb = MOE_XBYTES(cb), off = cb - xb, j0 = snrt_mcycle();
         snax_xdma_read_arm((uint32_t)(m->bbuf[g % MOE_NBUF] + off), w + off, xb / DSV2_BEAT);
         for (uint32_t c = 0; c < nch; c++, g++) {
@@ -358,8 +361,8 @@ static void dsv2_moe_gemm(dsv2_moe_t *m) {
         const uint32_t w = MOE_JOBS(m)[j].w, K = MOE_JOBS(m)[j].K, N = MOE_JOBS(m)[j].N;
         const uint32_t k = MOE_JOBS(m)[j].k, a = MOE_JOBS(m)[j].a, y = MOE_JOBS(m)[j].y;
         if (w) {
-            const uint32_t cw = MOE_CW(K), nb = cw / DSV2_NU, nch = N / cw;
-            dsv2_gemv_arm_ntok(K / DSV2_KU, nb, 1u, 0u, k, NTOK);
+            const uint32_t cw = MOE_CW(K, MOE_W4(j)), nb = cw / DSV2_NU, nch = N / cw;
+            dsv2_gemv_arm_ntok(K / DSV2_KU, nb, 1u, 0u, k, NTOK, MOE_W4(j));
             if (NTOK == 2) dsv2_gemv_two_tokens(nb, MOE_JOBS(m)[j].r);
             for (uint32_t c = 0; c < nch; c++) {
                 const uint32_t g = cbase + c;
@@ -589,7 +592,7 @@ static inline const uint16_t *dsv2_moe_out(dsv2_moe_t *m, uint32_t t) {
 // iDMA's profile words.
 static void dsv2_moe_report(dsv2_moe_t *m, const char *tag) {
     for (uint32_t r = 0; r < (MOE_DUAL ? 3u : 2u); r++) MOE_SPIN(m, MOE_FIN(m, r), 1u);
-    printf("%s MoE, %u token(s):", tag, NTOK);
+    printf("%s MoE, %u token(s), INT%u weights (the router INT8):", tag, NTOK, DSV2_WBITS);
     for (uint32_t t = 0; t < NTOK; t++) {
         printf(" top-6");
         for (uint32_t i = 0; i < TOP_K; i++) printf(" %u", MOE_IDS(m, t, i));

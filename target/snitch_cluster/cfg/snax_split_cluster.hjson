@@ -522,10 +522,26 @@
             // With the single 16x4x16 shape here, snax-versacore-to-lib's "write
             // array_shape at base + 1" lands on the NEXT extension's register instead.
             // The xDMA carries its own transposer for data movement.
+            //
+            // B carries the INT4 -> INT8 converter: INT4 WEIGHTS on the INT8 array (A8W4).
+            // With its enable bit set, the low half of a B beat is read as 4-bit values,
+            // nibble i sign-extended into byte i of the full 1024-bit beat, so the array
+            // multiplies exact INT8 values and nothing past this port changes. The weights
+            // sit in DRAM and TCDM at half the bytes and the task masks B's channels
+            // 8..15 off: a (1, 4, 32) GEMV pass is 64 contiguous bytes of nibbles on
+            // channels 0..7, a (16, 4, 16) pass 32 bytes on channels 0..3. The array still
+            // takes 128 weights a pass, so INT4 halves the bytes a weight costs, not the
+            // passes. Disabled (the reset value) it is a wire. No user CSR, only the
+            // host's enable register -- see extra_streamer_csr.
             datapath_extensions:
             [
                 {}
-                {}
+                {
+                    HasIntlowToInthighConverter:
+                    {
+                        dataWidth: 1024
+                    }
+                }
             ]
         }
         data_reader_writer_params:
@@ -663,9 +679,10 @@
         // otherwise and which no flag covers -- hence +1. The C READ host adds its own
         // enable plus Int32ColumnScale's 17 (N, then 32 FP16 factors two per CSR): +18.
         // The converter's shift build adds a second user CSR (k) that the flag's
-        // count of 1 does not include: +1.
+        // count of 1 does not include: +1. The B reader's host adds its enable, the INT4
+        // converter's only register: +1.
         has_int32_to_fp16_converter: true
-        extra_streamer_csr: 20
+        extra_streamer_csr: 21
         snax_library_name: versacore-to
     }
     // The matmul array, 1024 INT8 multipliers, two spatial unrollings (Mu, Ku, Nu) picked per
@@ -674,8 +691,8 @@
     //   0  (16, 4, 16)  the GEMM: A 64 B, B 64 B a pass, a 16 x 16 output block
     //   1  (1, 4, 32)   a one-row GEMV, 128 weight bytes a pass: A 4 B, B 128 B, 32 outputs
     //
-    // A GEMV does one multiply-add per weight byte, so its rate is the B port's bytes per
-    // pass: 128 on this 1024 b port. A one-row task with an odd number of 16-column blocks
+    // A GEMV does one multiply-add per weight, so its rate is the weights B delivers a pass:
+    // 128 on this 1024 b port, as INT8 bytes or as INT4 nibbles through B's converter. A one-row task with an odd number of 16-column blocks
     // runs shape 1 at half width: B's channels 8..15 masked (they read zero) and the D mask
     // writing the lower 16 outputs, 64 weight bytes a pass. Both shapes keep Ku = 4, so they
     // read the same operand layouts: B in 4 x 16 blocks, and A in 16 x 4 blocks of which the

@@ -33,7 +33,8 @@
 //   loads   W_DKV chunks | W_Q chunks | W_UK heads | K0  V0  K1  V1  ..       V(nt-1) | W_UV heads | W_O chunks
 //
 // (a chunk is 32 output columns, K x 32 bytes = 64 KiB at K = 2,048; a head's absorbed weight
-// is 64 KiB too), so outside attention load t is what task t reads. Two SLABS of 68 KiB hold
+// is 64 KiB too; both half that with INT4 weights, DSV2_WBITS), so outside attention load t is
+// what task t reads. Two SLABS of 68 KiB hold
 // them: a GEMV load goes to slab (t & 1); attention tile j goes to slab (j & 1), K in its
 // first 36 KiB and V behind it. Two monotonic counters carry every handoff between the
 // iDMA and the GEMM: LOADED (loads landed) and RETIRED (tasks retired). A load waits until
@@ -88,9 +89,9 @@
 #ifndef DSV2_DUAL_LOAD
 #define DSV2_DUAL_LOAD 1
 #endif
-// The bytes of each 64 KiB chunk the xDMA carries (its tail); the iDMA carries the rest.
+// The bytes of each streamed chunk the xDMA carries (its tail); the iDMA carries the rest.
 #ifndef DSV2_DUAL_XBYTES
-#define DSV2_DUAL_XBYTES (MLA_CHB / 2u)
+#define DSV2_DUAL_XBYTES (MLA_CHW / 2u)
 #endif
 
 #if !SNAX_HAS_GEMM_CORE || !SNAX_HAS_SIMD_CORE || !SNAX_HAS_XDMA_CORE || !SNAX_HAS_IDMA_CORE
@@ -123,7 +124,8 @@
 #define MLA_ROPE_N ((HEADS + 1) * ROPE_DIM)  // 1,088: 16 q_pe and one k_pe
 #define MLA_ROPE_B (2u * MLA_ROPE_N)         // one RoPE operand, 34 beats
 #define MLA_CH 32u                           // GEMV chunk: output columns per task
-#define MLA_CHB (HID * MLA_CH)               // 64 KiB
+#define MLA_CHB (HID * MLA_CH)               // 64 KiB of INT8 weights
+#define MLA_CHW DSV2_WB(MLA_CHB, DSV2_W4)    // a chunk's bytes at the weights' width
 #define MLA_KT_S (MLA_DQK / DSV2_KU)         // 144: QK's contraction blocks
 #define MLA_M_S (BC / DSV2_MR)
 #define MLA_N_Q (MLA_BR / DSV2_NU)           // 2
@@ -135,8 +137,8 @@
 #define MLA_VTILE (MLA_DV * BC)              // 32 KiB
 #define MLA_SLAB (MLA_KTILE + MLA_VTILE)
 #define MLA_QT_PITCH (2u * MLA_DV + DSV2_BEAT)  // q~ rows: 17 beats, so A-order reads meet 2-way bank conflicts
-#define MLA_UK_BYTES (Q_NOPE * MLA_DV)       // one head's W_UK: 64 KiB
-#define MLA_UV_BYTES (MLA_DV * V_HEAD)       // one head's W_UV: 64 KiB
+#define MLA_UK_BYTES DSV2_WB(Q_NOPE * MLA_DV, DSV2_W4)  // one head's W_UK: 64 KiB at INT8
+#define MLA_UV_BYTES DSV2_WB(MLA_DV * V_HEAD, DSV2_W4)  // one head's W_UV: 64 KiB at INT8
 #define MLA_SCORE_MASK 0xC77FE000u           // FP32 -65504: a padding key's score
 #define MLA_TOK0_LANES 0x0Fu                 // writer channels 0..3: FP16 lanes 0..15, token 0's heads
 
@@ -391,6 +393,7 @@ __attribute__((always_inline)) static inline void mla_ab_walk(uint32_t kt, uint3
     csrw_ss(ADDR_REMAP_INDEX_READER_1, 0);
     csrw_ss(S_STRIDE_READER_1_1, 0);
     csrw_ss(ENABLED_CHANNEL_READER_1, 0xFFu);  // shape 0: one 4 x 16 block, channels 0..7
+    dsv2_b_int4(0u);                           // Q8 and P8 are INT8 operands
     csrw_ss(OVERWRITE_ACCUM, 1);
     csrw_ss(ACCUM_BOUND, kt);
     csrw_ss(OUTPUT_BOUND, mb * MLA_N_Q);
@@ -481,7 +484,7 @@ static void dsv2_mla_gemm(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     MLA_W(m, MLA_XA_OK(m), 1u, MLA_PGW(m, 0) + 1);
     mla_prio(DSV2_TCDM_PRIO_STREAM);
     s0 = snrt_mcycle();
-    dsv2_gemv_arm_ntok(HID / DSV2_KU, MLA_CH / DSV2_NU, 1u, 0u, K_X, NTOK);
+    dsv2_gemv_arm_ntok(HID / DSV2_KU, MLA_CH / DSV2_NU, 1u, 0u, K_X, NTOK, DSV2_W4);
     if (NTOK == 2) dsv2_gemv_two_tokens(MLA_CH / DSV2_NU, MLA_YP_KV);
     mla_gemv_run(m, MLA_T_KV0, MLA_NC_KV, m->xa, 0u, (uint8_t *)m->ykv,
                  DSV2_SLOT(MLA_CH / DSV2_NU), &id, MLA_PGW(m, 0));
@@ -496,7 +499,7 @@ static void dsv2_mla_gemm(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     MLA_W(m, MLA_QN_OK(m), 1u, MLA_PGW(m, 2) + 1);
     mla_prio(DSV2_TCDM_PRIO_HEAD);
     s0 = snrt_mcycle();
-    dsv2_gemv_arm_ntok(Q_NOPE / DSV2_KU, MLA_DV / DSV2_NU, 1u, 0u, K_UK, NTOK);
+    dsv2_gemv_arm_ntok(Q_NOPE / DSV2_KU, MLA_DV / DSV2_NU, 1u, 0u, K_UK, NTOK, DSV2_W4);
     if (NTOK == 2) dsv2_gemv_two_tokens(MLA_DV / DSV2_NU, MLA_YP_UK);
     mla_gemv_run(m, MLA_T_UK0, HEADS, m->qn8, DSV2_MR * Q_NOPE, (uint8_t *)m->yqt,
                  DSV2_SLOT(MLA_DV / DSV2_NU), &id, MLA_PGW(m, 2));
@@ -536,7 +539,7 @@ static void dsv2_mla_gemm(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     MLA_W(m, MLA_AUV_OK(m), 1u, MLA_PGW(m, 4) + 1);
     mla_prio(DSV2_TCDM_PRIO_HEAD);
     s0 = snrt_mcycle();
-    dsv2_gemv_arm_ntok(MLA_DV / DSV2_KU, V_HEAD / DSV2_NU, 1u, 0u, K_UV, NTOK);
+    dsv2_gemv_arm_ntok(MLA_DV / DSV2_KU, V_HEAD / DSV2_NU, 1u, 0u, K_UV, NTOK, DSV2_W4);
     if (NTOK == 2) dsv2_gemv_two_tokens(V_HEAD / DSV2_NU, MLA_YP_UV);
     mla_gemv_run(m, mla_t_uv0(nt), HEADS, m->auv, DSV2_MR * MLA_DV, (uint8_t *)m->yoh,
                  DSV2_SLOT(V_HEAD / DSV2_NU), &id, MLA_PGW(m, 4));
@@ -545,7 +548,7 @@ static void dsv2_mla_gemm(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     MLA_W(m, MLA_OA_OK(m), 1u, MLA_PGW(m, 5) + 1);
     mla_prio(DSV2_TCDM_PRIO_STREAM);
     s0 = snrt_mcycle();
-    dsv2_gemv_arm_ntok(HID / DSV2_KU, MLA_CH / DSV2_NU, 1u, 0u, K_X, NTOK);
+    dsv2_gemv_arm_ntok(HID / DSV2_KU, MLA_CH / DSV2_NU, 1u, 0u, K_X, NTOK, DSV2_W4);
     if (NTOK == 2) dsv2_gemv_two_tokens(MLA_CH / DSV2_NU, MLA_YP_A);
     mla_gemv_run(m, mla_t_o0(nt), MLA_NC_O, m->oa, 0u, (uint8_t *)m->ya,
                  DSV2_SLOT(MLA_CH / DSV2_NU), &id, MLA_PGW(m, 5));
@@ -593,7 +596,7 @@ static void dsv2_mla_idma(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
         MLA_W(m, MLA_RETIRED(m), need[s_], &waited);            \
         const uint32_t x0_ = snrt_mcycle();                     \
         MLA_XREQ(m) = (t) + 1u;                                 \
-        snrt_dma_start_1d(m->slab[s_], (src), MLA_CHB - DSV2_DUAL_XBYTES); \
+        snrt_dma_start_1d(m->slab[s_], (src), MLA_CHW - DSV2_DUAL_XBYTES); \
         snrt_dma_wait_all();                                    \
         const uint32_t x1_ = snrt_mcycle();                     \
         xfer += x1_ - x0_;                                      \
@@ -603,12 +606,12 @@ static void dsv2_mla_idma(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
         dsv2_span(m->tr, DSV2_TR_IDMA, (label), x0_, x1_);      \
     } while (0)
 #else
-#define MLA_STREAM(t, src, label) MLA_LOAD(t, src, MLA_CHB, label)
+#define MLA_STREAM(t, src, label) MLA_LOAD(t, src, MLA_CHW, label)
 #endif
     for (uint32_t c = 0; c < MLA_NC_KV; c++)
-        MLA_STREAM(MLA_T_KV0 + c, wdkv + c * MLA_CHB, "3 W_DKV");
+        MLA_STREAM(MLA_T_KV0 + c, wdkv + c * MLA_CHW, "3 W_DKV");
     for (uint32_t c = 0; c < MLA_NC_Q; c++)
-        MLA_STREAM(MLA_T_Q0 + c, wq + c * MLA_CHB, "2 W_Q");
+        MLA_STREAM(MLA_T_Q0 + c, wq + c * MLA_CHW, "2 W_Q");
     for (uint32_t hh = 0; hh < HEADS; hh++)
         MLA_LOAD(MLA_T_UK0 + hh, wuk + hh * MLA_UK_BYTES, MLA_UK_BYTES, "6 W_UK");
     // the tokens' rows, into both copies, before any key tile is read
@@ -646,7 +649,7 @@ static void dsv2_mla_idma(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     for (uint32_t hh = 0; hh < HEADS; hh++)
         MLA_LOAD(mla_t_uv0(nt) + hh, wuv + hh * MLA_UV_BYTES, MLA_UV_BYTES, "11 W_UV");
     for (uint32_t c = 0; c < MLA_NC_O; c++)
-        MLA_STREAM(mla_t_o0(nt) + c, wo + c * MLA_CHB, "12 W_O");
+        MLA_STREAM(mla_t_o0(nt) + c, wo + c * MLA_CHW, "12 W_O");
 #undef MLA_STREAM
 #undef MLA_LOAD
     MLA_D_WAIT(m) = waited;
@@ -664,7 +667,7 @@ static void dsv2_mla_idma(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
 // fill and the transpose leave other settings behind, and re-pointed per chunk.
 static void mla_xstream(dsv2_mla_t *m, uint32_t t0, uint32_t n, const int8_t *src,
                         const char *label, uint32_t *busy, uint32_t *free_wait) {
-    const uint32_t off = MLA_CHB - DSV2_DUAL_XBYTES, beats = DSV2_DUAL_XBYTES / DSV2_BEAT;
+    const uint32_t off = MLA_CHW - DSV2_DUAL_XBYTES, beats = DSV2_DUAL_XBYTES / DSV2_BEAT;
     snax_xdma_read_arm((uint32_t)(m->slab[t0 & 1u] + off), (uint32_t)(src + off), beats);
     for (uint32_t c = 0; c < n; c++) {
         const uint32_t t = t0 + c;
@@ -672,7 +675,7 @@ static void mla_xstream(dsv2_mla_t *m, uint32_t t0, uint32_t n, const int8_t *sr
         const uint32_t x0 = snrt_mcycle();
         if (c)
             snax_xdma_read_retask((uint32_t)(m->slab[t & 1u] + off),
-                                  (uint32_t)(src + c * MLA_CHB + off), beats);
+                                  (uint32_t)(src + c * MLA_CHW + off), beats);
         int to = 0;
         const snax_xdma_task_t tk = snax_xdma_start_bounded(MLA_XDMA_SPIN, &to);
         if (!to) to = snax_xdma_wait_bounded(tk, MLA_XDMA_SPIN);
@@ -1027,8 +1030,9 @@ static void dsv2_mla_simd(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
 // three roles' profile words.
 static void dsv2_mla_report(dsv2_mla_t *m, const char *tag) {
     for (uint32_t r = 0; r < 3u; r++) MLA_SPIN(m, MLA_FIN(m, r), 1u);
-    printf("%s MLA, %u token(s): %u keys in %u tiles of %u (%u in the last); h at %u cc\n", tag, NTOK,
-           (m->nt - 1u) * BC + m->nvalid, m->nt, BC, m->nvalid, MLA_T_SS(m, 7));
+    printf("%s MLA, %u token(s), INT%u weights: %u keys in %u tiles of %u (%u in the last); h at "
+           "%u cc\n", tag, NTOK, DSV2_WBITS, (m->nt - 1u) * BC + m->nvalid, m->nt, BC, m->nvalid,
+           MLA_T_SS(m, 7));
     printf("%s   GEMM phases done at: W_DKV %u | W_Q %u | W_UK %u | attention %u | W_UV %u | "
            "W_O %u cc\n",
            tag, MLA_T_PH(m, 0), MLA_T_PH(m, 1), MLA_T_PH(m, 2), MLA_T_PH(m, 3), MLA_T_PH(m, 4),

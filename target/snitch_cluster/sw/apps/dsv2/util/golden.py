@@ -18,6 +18,10 @@ THE GOLDEN TOKEN is the first draw whose routing is unambiguous on the device: t
 device model's top 6 must equal the reference's, and its sixth and seventh FP16 routing
 weights must be at least TIE_ULP apart, so the device's own softmax (within a few ULP of
 the model) cannot swap them.
+
+WEIGHT WIDTH. make(wbits=4) packs every weight but the router as INT4 (pack.py). The device
+is then a different model from the float reference, and its routing may part from the
+reference's, so at 4 bits only the device's own top 6 has to be unambiguous.
 """
 
 import argparse
@@ -36,6 +40,7 @@ TIE_ULP = 8
 @dataclass
 class Golden:
     seed: int
+    wbits: int
     L: int
     pos: int
     bc: int
@@ -56,10 +61,10 @@ def _draw_states(rng, n, hidden):
     return rng.normal(0.0, 1.0, size=(n, hidden)).astype(F16)
 
 
-def make(seed=1, L=511, n_calib=8, bc=64, max_tries=32):
+def make(seed=1, L=511, n_calib=8, bc=64, max_tries=32, wbits=8):
     d = model.load()
     W = LayerWeights(d, seed)
-    P = LayerPack(W)
+    P = LayerPack(W, wbits)
     rng = np.random.default_rng([seed, 2])
     prev = _draw_states(rng, L, d.hidden).astype(F32)
     cache = reference.build_cache(W, prev, range(L))
@@ -73,8 +78,9 @@ def make(seed=1, L=511, n_calib=8, bc=64, max_tries=32):
         H = hwmodel.run(P, S, x16, L, c8, kpe8, bc)
         order = np.argsort(-H["p16"].astype(np.float64), kind="stable")
         gap = int(ulp16(H["p16"][order[d.top_k - 1]], H["p16"][order[d.top_k]]))
-        if list(H["ids"]) == list(R["moe_ids"]) and gap >= TIE_ULP:
-            return Golden(seed, L, L, bc, d, W, P, cache, c8, kpe8, S, x16, R, H, tries)
+        agrees = wbits == 4 or list(H["ids"]) == list(R["moe_ids"])
+        if agrees and gap >= TIE_ULP:
+            return Golden(seed, wbits, L, L, bc, d, W, P, cache, c8, kpe8, S, x16, R, H, tries)
     raise RuntimeError(f"no token in {max_tries} draws routes unambiguously")
 
 
@@ -154,9 +160,9 @@ def stages(g):
 
 def report(g):
     d, H = g.dims, g.hw
-    lines = [f"DeepSeek-V2-Lite layer 1, seed {g.seed}: one token at position {g.pos}, "
-             f"{g.L} cached, Bc = {g.bc} ({-(-(g.L + 1) // g.bc)} key tiles); golden token draw "
-             f"{g.tries}",
+    lines = [f"DeepSeek-V2-Lite layer 1, seed {g.seed}, INT{g.wbits} weights: one token at "
+             f"position {g.pos}, {g.L} cached, Bc = {g.bc} ({-(-(g.L + 1) // g.bc)} key tiles); "
+             f"golden token draw {g.tries}",
              f"top-{d.top_k}: device {list(map(int, H['ids']))}  reference "
              f"{list(map(int, g.ref['moe_ids']))}",
              f"D-port shifts: {H['ks']}  O: {H['k_o']}   exp scale a' = {H['a_exp']:.6g}",
@@ -173,8 +179,9 @@ def main():
     ap.add_argument("--L", type=int, default=511)
     ap.add_argument("--bc", type=int, default=64)
     ap.add_argument("--calib", type=int, default=8)
+    ap.add_argument("--wbits", type=int, default=8, choices=(8, 4))
     a = ap.parse_args()
-    print(report(make(a.seed, a.L, a.calib, a.bc)))
+    print(report(make(a.seed, a.L, a.calib, a.bc, wbits=a.wbits)))
 
 
 if __name__ == "__main__":

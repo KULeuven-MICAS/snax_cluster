@@ -102,7 +102,7 @@ int main() {
     if (isG) {
         SPIN(READY, 1u);
         const uint32_t g0 = snrt_mcycle();
-        dsv2_gemv_arm(K_IN / DSV2_KU, NB, 1u, 0u, D_SHIFT);
+        dsv2_gemv_arm(K_IN / DSV2_KU, NB, 1u, 0u, D_SHIFT, 0u);  // the router is INT8
         uint32_t id = csrr_ss(GEMMX_FINISHED_TASK);
         dsv2_gemv_fire(abuf, wbuf, y);
         TMO += dsv2_gemm_wait(id + 1u);

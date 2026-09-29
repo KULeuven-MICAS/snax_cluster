@@ -173,6 +173,7 @@ __attribute__((always_inline)) static inline void ab_walk(uint32_t kt, uint32_t 
     csrw_ss(ADDR_REMAP_INDEX_READER_1, 0);
     csrw_ss(S_STRIDE_READER_1_1, 0);
     csrw_ss(ENABLED_CHANNEL_READER_1, 0xFFu);  // shape 0: one 4 x 16 block, channels 0..7
+    dsv2_b_int4(0u);                           // Q8 and P8 are INT8 operands
     csrw_ss(OVERWRITE_ACCUM, 1);
     csrw_ss(ACCUM_BOUND, kt);
     csrw_ss(OUTPUT_BOUND, m * N_Q);

@@ -32,6 +32,8 @@ def main():
     ap.add_argument("--hwcfg", type=pathlib.Path, required=True)
     ap.add_argument("--header", type=pathlib.Path, required=True)
     ap.add_argument("--blob-dir", type=pathlib.Path, required=True)
+    ap.add_argument("--wbits", type=int, default=8, choices=(8, 4),
+                    help="weight width: INT8, or INT4 through the B converter")
     args = ap.parse_args()
     prm = hjson.loads(args.swcfg.read_text())
     mesh = mesh_from_hwcfg(hjson.loads(args.hwcfg.read_text()))
@@ -39,7 +41,7 @@ def main():
         raise ValueError(f"the cache layout assumes a (16, 4, 16) mesh, not {mesh}")
     cap, n_app = int(prm["capacity"]), int(prm["appends"])
 
-    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]))
+    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), wbits=args.wbits)
     L, d = g.L, g.dims
     if cap % 16 or L + n_app > cap:
         raise ValueError(f"capacity {cap} must be a multiple of 16 holding {L + n_app} tokens")
@@ -53,6 +55,7 @@ def main():
     rows = np.concatenate([rows0, new])
 
     em = Emitter(args.blob_dir)
+    em.define("DSV2_DATA_WBITS", g.wbits, "the weights' width; the kernel's DSV2_WBITS must match")
     em.c(f"// DeepSeek-V2-Lite layer 1 latent cache, golden seed {g.seed}: {L} rows cached.")
     em.define("CACHE_CAP", cap, "tokens the copies hold")
     em.define("CACHE_L", L, "rows cached before the appends")

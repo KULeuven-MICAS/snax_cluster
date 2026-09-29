@@ -15,9 +15,10 @@ HW_CFG   := $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE)
 DSV2_PY  := $(wildcard $(DSV2_DIR)/util/*.py) $(DSV2_DIR)/util/config.json
 
 # One generator run writes data.h, blobs.S and the blobs; blobs.S rides on data.h.
-$(DATA_H): $(DATA_DIR)/datagen.py $(DATA_CFG) $(HW_CFG) $(DSV2_PY)
+$(DATA_H): $(DATA_DIR)/datagen.py $(DATA_CFG) $(HW_CFG) $(DSV2_PY) $(DSV2_WBITS_STAMP)
 	mkdir -p $(BLOB_DIR)
-	$< --swcfg $(DATA_CFG) --hwcfg $(HW_CFG) --header $@ --blob-dir $(BLOB_DIR)
+	$< --swcfg $(DATA_CFG) --hwcfg $(HW_CFG) --header $@ --blob-dir $(BLOB_DIR) \
+		--wbits $(DSV2_WBITS)
 
 $(DATA_S): $(DATA_H)
 

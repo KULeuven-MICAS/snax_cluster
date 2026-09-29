@@ -48,6 +48,8 @@ def main():
     ap.add_argument("--hwcfg", type=pathlib.Path, required=True)
     ap.add_argument("--header", type=pathlib.Path, required=True)
     ap.add_argument("--blob-dir", type=pathlib.Path, required=True)
+    ap.add_argument("--wbits", type=int, default=8, choices=(8, 4),
+                    help="weight width: INT8, or INT4 through the B converter")
     args = ap.parse_args()
     prm = hjson.loads(args.swcfg.read_text())
     mesh = mesh_from_hwcfg(hjson.loads(args.hwcfg.read_text()))
@@ -55,7 +57,7 @@ def main():
         raise ValueError(f"the kernel's descriptors assume a (16, 4, 16) mesh, not {mesh}")
     bc, cap = int(prm["bc"]), int(prm["capacity"])
 
-    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), bc=bc)
+    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), bc=bc, wbits=args.wbits)
     H, d = g.hw, g.dims
     att = H["att"]
     T = g.L + 1
@@ -63,6 +65,7 @@ def main():
         raise ValueError(f"capacity {cap} must be whole tiles of {bc} and hold {T} tokens")
 
     em = Emitter(args.blob_dir)
+    em.define("DSV2_DATA_WBITS", g.wbits, "the weights' width; the kernel's DSV2_WBITS must match")
     em.c(f"// DeepSeek-V2-Lite layer 1 MLA block, golden seed {g.seed}: the token at position "
          f"{g.pos}, {T} keys in tiles of {bc}.")
     appdata.model_defines(em, g, bc, cap)

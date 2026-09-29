@@ -16,8 +16,9 @@ import numpy as np
 
 from . import model, reference
 from .fp import F16, F32, bits16, d_port, d_shift_for_depth, quant_i8
-from .layout import MESH, b_chunks, from_a, from_b, gemv_a, to_a, to_b
-from .pack import LayerPack, unpack
+from .layout import (MESH, b_chunks, from_a, from_b, gemv_a, pack_int4, to_a, to_b, to_b_pairs,
+                     unpack_int4)
+from .pack import LayerPack, pack, unpack
 from .weights import LayerWeights
 
 # snax_utils, the RTL's golden models, is in the repository's util/sim
@@ -113,6 +114,70 @@ def test_packed_weights_approximate_the_folded_weights():
     h = 5
     want = W.w_uk(h).T * W.kv_norm[None, :]
     assert np.all(np.abs(P.wuk.dequant()[h] - want).max(axis=0) <= half * P.wuk.s[h])
+
+
+# ---- INT4 weights through B's converter -----------------------------------------------------
+
+def _b_beats(blob, loops, mask, s1=0):
+    """snax_split_cluster's B reader: 16 channels of 8 bytes, channel i at 8 (i % 8) + s1 (i // 8),
+    a disabled channel presenting zero, walking `loops` [(bound, stride), ...] innermost first.
+    Returns the beats, [passes, 128] uint8, channel 0 in bytes 0..7."""
+    mem = np.asarray(blob).view(np.uint8)
+    beats = []
+    for idx in np.ndindex(*[b for b, _ in reversed(loops)]):
+        off = sum(i * st for i, (_, st) in zip(idx, reversed(loops)))
+        beat = np.zeros(128, dtype=np.uint8)
+        for ch in range(16):
+            if mask >> ch & 1:
+                a = off + 8 * (ch % 8) + s1 * (ch // 8)
+                beat[8 * ch:8 * ch + 8] = mem[a:a + 8]
+        beats.append(beat)
+    return np.stack(beats)
+
+
+def _int4_converter(beats):
+    """B's IntlowToInthighConverter: nibble i of the beat's low half, sign-extended into byte i."""
+    return np.stack([unpack_int4(b[:64]).view(np.uint8) for b in beats])
+
+
+def test_int4_packs_and_unpacks():
+    v = np.array([-8, 7, -1, 0, 3, -5, 7, -8], dtype=np.int8)
+    assert pack_int4(v).view(np.uint8).tolist() == [0x78, 0x0F, 0xB3, 0x87]
+    assert np.array_equal(unpack_int4(pack_int4(v)), v)
+
+
+def test_int4_b_walks_feed_the_int8_beats():
+    """snax-dsv2.h's INT4 B walks over the paired, nibble-packed blob, through the converter,
+    hand the array the beats its INT8 walks read from the INT8 blob of the same values:
+    dsv2_gemv1_arm (two blocks a pass, groups) and dsv2_gemm16_arm (one block a pass)."""
+    rng = np.random.default_rng(7)
+    K, nb, groups = 64, 4, 2
+    kt, N = K // 4, 16 * nb
+    q = [rng.integers(-8, 8, size=(K, N)).astype(np.int8) for _ in range(groups)]
+    b8 = np.concatenate([to_b(m) for m in q])
+    b4 = np.concatenate([pack_int4(to_b_pairs(m)) for m in q])
+    want = _b_beats(b8, [(kt, 64), (nb // 2, 2 * kt * 64), (groups, kt * 64 * nb)], 0xFFFF,
+                    s1=kt * 64)
+    got = _int4_converter(_b_beats(b4, [(kt, 64), (nb // 2, kt * 64), (groups, kt * 32 * nb)],
+                                   0xFF))
+    assert np.array_equal(got, want), "(1, 4, 32)"
+    want = _b_beats(b8[:K * N], [(kt, 64), (nb, kt * 64), (1, 0)], 0xFF)
+    got = _int4_converter(_b_beats(b4[:K * N // 2], [(kt, 64), (2, 32), (nb // 2, kt * 64)], 0x0F))
+    assert np.array_equal(got, want), "(16, 4, 16)"
+
+
+def test_int4_weights_round_trip_and_chunk():
+    """An INT4 weight: values in [-7, 7] within half a step of W', unpack(blob) == q, and its
+    first 64 columns are the blob's first K * 32 bytes (a streamed chunk)."""
+    W, _ = _layer()
+    p = pack("wq", W.wq, row_gain=W.in_norm, wbits=4)
+    assert np.abs(p.q).max() <= 7
+    want = W.wq * W.in_norm[:, None]
+    assert np.all(np.abs(p.dequant() - want).max(axis=0) <= 0.5 * (1.0 + 1e-5) * p.s)
+    blob = p.blob()
+    assert blob.size == p.K * p.N // 2
+    assert np.array_equal(unpack(blob, p.K, p.N, wbits=4), p.q)
+    assert np.array_equal(blob[:p.K * 32], pack_int4(to_b_pairs(p.q[:, :64])))
 
 
 def test_rope_orders_agree():

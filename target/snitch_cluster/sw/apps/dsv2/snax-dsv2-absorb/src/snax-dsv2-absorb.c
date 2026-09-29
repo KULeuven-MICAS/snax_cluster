@@ -11,7 +11,7 @@
 //                   latents back to the head's 128 values
 //
 // for all 16 heads, then the per-column dequantisation y (.) s as in snax-dsv2-gemv. Each
-// projection is 1 MiB of INT8 weights; the inputs are the layer's own (the golden pack in
+// projection is 1 MiB of INT8 weights (half that at DSV2_WBITS = 4); the inputs are the layer's own (the golden pack in
 // sw/apps/dsv2/util), with the latent norm's gain folded into the weights.
 //
 // ======================================================================================
@@ -82,9 +82,10 @@ static void proj_report(volatile uint32_t *sy, uint32_t pj) {
     const uint32_t floor = ABS_HEADS * (K / DSV2_KU) * (nb / dsv2_gemv_blocks_per_pass(nb));
     const uint32_t dbusy = D_BUSY(pj);
     printf(TAG " %s  16 x (1 x %u x %u)  k=%u  %u tasks: %u cc (floor %u) GEMM %u%%  "
-               "iDMA %u B/cc, waited %u cc  dequant %u cc  [shape %u]\n",
+               "iDMA %u B/cc, waited %u cc  dequant %u cc  [shape %u, INT%u]\n",
            pr->name, K, N, k, NTASK, cyc, floor, cyc ? (100u * floor) / cyc : 0u,
-           dbusy ? (ABS_HEADS * K * N) / dbusy : 0u, D_WAIT(pj), T_DQ(pj), shape);
+           dbusy ? DSV2_WB(ABS_HEADS * K * N, DSV2_W4) / dbusy : 0u, D_WAIT(pj), T_DQ(pj), shape,
+           DSV2_WBITS);
 }
 
 // A projection's final result: yd bit for bit, and no Inf in it.
@@ -135,7 +136,7 @@ int main() {
         // ============================== the iDMA
         for (uint32_t pj = 0; pj < ABS_NPROJ; pj++) {
             const abs_proj_t *pr = &abs_projs[pj];
-            const uint32_t K = pr->K, N = pr->N, tbytes = ABS_HPT * K * N;
+            const uint32_t K = pr->K, N = pr->N, tbytes = DSV2_WB(ABS_HPT * K * N, DSV2_W4);
             const int8_t *w = pr->w;
             uint32_t o0 = snrt_mcycle();
             snrt_dma_start_2d(abuf, pr->a, DSV2_KU, DSV2_MR * DSV2_KU, DSV2_KU,
@@ -191,7 +192,7 @@ int main() {
             const uint32_t K = pr->K, N = pr->N, k = pr->k, nb = N / DSV2_NU;
             const uint32_t astep = DSV2_MR * K;
             SPIN(OPS, pj + 1u);
-            dsv2_gemv_arm(K / DSV2_KU, nb, ABS_HPT, astep, k);
+            dsv2_gemv_arm(K / DSV2_KU, nb, ABS_HPT, astep, k, DSV2_W4);
             uint32_t id = csrr_ss(GEMMX_FINISHED_TASK);
             for (uint32_t t = 0; t < NTASK; t++) {
                 SPIN(LOADED, pj * NTASK + t + 1u);

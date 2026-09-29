@@ -37,6 +37,8 @@ def main():
     ap.add_argument("--hwcfg", type=pathlib.Path, required=True)
     ap.add_argument("--header", type=pathlib.Path, required=True)
     ap.add_argument("--blob-dir", type=pathlib.Path, required=True)
+    ap.add_argument("--wbits", type=int, default=8, choices=(8, 4),
+                    help="weight width: INT8, or INT4 through the B converter")
     args = ap.parse_args()
     prm = hjson.loads(args.swcfg.read_text())
     mesh = mesh_from_hwcfg(hjson.loads(args.hwcfg.read_text()))
@@ -45,7 +47,7 @@ def main():
     bc, cap, ntok = int(prm["bc"]), int(prm["capacity"]), int(prm["ntok"])
     starts = [int(s) for s in prm["starts"]]
 
-    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), bc=bc)
+    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), bc=bc, wbits=args.wbits)
     d = g.dims
     if starts[0] != g.L:
         raise ValueError(f"the first pass starts at the golden token's position {g.L}")
@@ -56,6 +58,7 @@ def main():
     ids = sorted({e for q in passes for e in q["J"]["order"]})
 
     em = Emitter(args.blob_dir)
+    em.define("DSV2_DATA_WBITS", g.wbits, "the weights' width; the kernel's DSV2_WBITS must match")
     em.c(f"// DeepSeek-V2-Lite layer 1, golden seed {g.seed}: {len(passes)} passes of {ntok} "
          f"token(s) from positions {starts}; experts {ids} are in the ELF.")
     appdata.model_defines(em, g, bc, cap)

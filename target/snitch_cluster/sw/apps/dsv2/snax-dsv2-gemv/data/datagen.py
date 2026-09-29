@@ -12,7 +12,9 @@
 #
 # Per shape the app gets, all in DRAM:
 #   <s>_a    x (INT8, K), the vector alone; the app places it in row 0 of the A buffer
-#   <s>_w    the weight, [K, N] INT8 in B-layout; chunk j is bytes [j*K*64, (j+1)*K*64)
+#   <s>_w    the weight, [K, N] in B-layout: INT8, chunk j at bytes [j*K*64, (j+1)*K*64); or,
+#            with --wbits 4, INT4 in the paired layout (util/layout.py), K*32 bytes a chunk.
+#            The router is INT8 either way.
 #   <s>_s    the per-column dequantisation factor s_x * s_w[n] * 2^k, FP16
 #   <s>_y    expected RNE(x.W * 2^-k), FP16 (the D port's output)
 #   <s>_yd   expected y (.) s, FP16 (the dequantised output)
@@ -71,6 +73,8 @@ def main():
     ap.add_argument("--hwcfg", type=pathlib.Path, required=True)
     ap.add_argument("--header", type=pathlib.Path, required=True)
     ap.add_argument("--blob-dir", type=pathlib.Path, required=True)
+    ap.add_argument("--wbits", type=int, default=8, choices=(8, 4),
+                    help="weight width: INT8, or INT4 through the B converter")
     args = ap.parse_args()
     prm = hjson.loads(args.swcfg.read_text())
     mesh = mesh_from_hwcfg(hjson.loads(args.hwcfg.read_text()))
@@ -81,11 +85,12 @@ def main():
         raise ValueError(f"the packer's chunk is {GEMV_CHUNK} columns")
     keys = prm.get("shapes", [k for k, _ in SHAPES])
 
-    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]))
+    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), wbits=args.wbits)
     data = shape_data(g)
     names = dict(SHAPES)
 
     em = Emitter(args.blob_dir)
+    em.define("DSV2_DATA_WBITS", g.wbits, "the weights' width; the kernel's DSV2_WBITS must match")
     em.c(f"// DeepSeek-V2-Lite layer 1, golden seed {g.seed}, L = {g.L}; the expert shapes use"
          f" expert {int(g.hw['ids'][0])},\n// the golden token's first pick.")
     em.define("GEMV_CHUNK", chunk, "output columns per streamed weight chunk")
@@ -105,7 +110,8 @@ def main():
         sb = em.blob(f"{key}_s", bits16(s))
         yb = em.blob(f"{key}_y", bits16(y))
         ydb = em.blob(f"{key}_yd", bits16(yd))
-        rows.append(f'    {{"{names[key]}", {a}, {w}, {sb}, {yb}, {ydb}, {p.K}u, {p.N}u, {k}u}},')
+        rows.append(f'    {{"{names[key]}", {a}, {w}, {sb}, {yb}, {ydb}, {p.K}u, {p.N}u, {k}u, '
+                    f'{p.wbits}u}},')
         if key == "router":
             neg = i
             acc = np.asarray(x, dtype=np.int64) @ p.q.astype(np.int64)
@@ -115,7 +121,8 @@ def main():
                  f"{int(np.isinf(y0.astype(np.float32)).sum())} infinities out of {p.N}.")
     em.define("GEMV_NEG_SHAPE", neg, "the router's index, or -1 when it is not built")
     em.c("typedef struct {\n    const char *name;\n    const int8_t *a, *w;\n"
-         "    const uint16_t *s, *y, *yd;\n    uint32_t K, N, k;\n} gemv_shape_t;")
+         "    const uint16_t *s, *y, *yd;\n    uint32_t K, N, k;\n"
+         "    uint32_t wbits;  // 8, or 4: INT4 through the B converter\n} gemv_shape_t;")
     em.c("static const gemv_shape_t gemv_shapes[GEMV_NSHAPES] = {\n" + "\n".join(rows) + "\n};")
     em.write(args.header, args.blob_dir / "blobs.S")
     sys.stderr.write(f"[dsv2-gemv datagen] {len(keys)} shapes, {em.bytes / 2**20:.1f} MiB of blobs\n")

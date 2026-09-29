@@ -16,6 +16,13 @@ A GEMV is a GEMM with one real row: x fills row 0 of a 16-row A operand whose ro
 1..15 are zero. Its weight streams as CHUNKS of whole output columns: chunk j is
 columns [j*C, (j+1)*C) of W in B-layout, K*C bytes, so one GEMM task per chunk yields
 C finished outputs and nothing accumulates across tasks.
+
+INT4 WEIGHTS go through the B reader's converter, which widens the LOW half of a B beat,
+nibble i to byte i. A (1, 4, 32) pass takes two Nu-column blocks at one k, and the low
+half of the beat is the reader's channels 0..7: eight consecutive words. So the two blocks
+of a pass must sit together, which is the B-layout with blocks of 2 Nu columns
+(to_b_pairs), nibble-packed (pack_int4): 64 contiguous bytes a pass. Being n-major like
+to_b, any multiple of 2 Nu columns is still a byte slice of it.
 """
 
 import numpy as np
@@ -64,6 +71,38 @@ def from_b(flat, K, N, mesh=MESH):
     _, ts, mc = mesh
     return np.ascontiguousarray(
         np.asarray(flat).reshape(N // mc, K // ts, mc, ts).transpose(1, 3, 0, 2)).reshape(K, N)
+
+
+def to_b_pairs(R, mesh=MESH):
+    """B-layout of R [K, N] in blocks of 2 Nu columns: the weights of a (1, Ku, 2 Nu) pass, in
+    the order the array reads them from one B beat."""
+    mr, ts, mc = mesh
+    return to_b(R, (mr, ts, 2 * mc))
+
+
+def from_b_pairs(flat, K, N, mesh=MESH):
+    mr, ts, mc = mesh
+    return from_b(flat, K, N, (mr, ts, 2 * mc))
+
+
+def pack_int4(q):
+    """int8 values in [-8, 7], two to a byte, value 2i in the low nibble of byte i: what the B
+    reader's converter sign-extends back, nibble i into byte i."""
+    q = np.asarray(q).reshape(-1)
+    if q.size % 2 or np.any(q < -8) or np.any(q > 7):
+        raise ValueError("INT4 packing takes an even count of values in [-8, 7]")
+    u = (q.astype(np.int16) & 0xF).astype(np.uint8)
+    return (u[0::2] | (u[1::2] << 4)).view(np.int8)
+
+
+def unpack_int4(b):
+    """Inverse of pack_int4: nibble i sign-extended, as the converter does."""
+    u = np.asarray(b).reshape(-1).view(np.uint8)
+    lo, hi = (u & 0xF).astype(np.int8), (u >> 4).astype(np.int8)
+    out = np.empty(2 * u.size, dtype=np.int8)
+    out[0::2] = np.where(lo > 7, lo - 16, lo)
+    out[1::2] = np.where(hi > 7, hi - 16, hi)
+    return out
 
 
 def to_d(R, mesh=MESH):
