@@ -24,11 +24,15 @@
 //      consecutive.
 //   D  y_g at d + g * slot, slot = 32 nb bytes: FP16, contiguous.
 //
-// THE ARRAY SHAPE (DSV2_GEMV, sw/apps/dsv2/dsv2.mk). VersaCore runs one of two unrollings per
-// task on this cluster, both with Ku = 4, so both read the layouts above:
+// THE ARRAY SHAPE (DSV2_GEMV, sw/apps/dsv2/dsv2.mk). A one-token GEMV runs one of two
+// unrollings on this cluster, both with Ku = 4, so both read the layouts above:
 //
 //   1  (1, 4, 32)   one row, two column blocks a pass: 128 weight bytes, B on 16 channels
 //   0  (16, 4, 16)  the 16-row GEMM shape, row 0 kept (below)
+//
+// and a GEMV of two or four tokens runs the third (SEVERAL TOKENS, below):
+//
+//   2  (4, 4, 32)   rows 0..3, one token each: the same passes and weight bytes as shape 1
 //
 // A GEMV does one multiply-add per weight byte, so the shape's weight bytes per pass are its
 // rate. Shape 1 takes the column blocks in pairs. A GEMV of an odd nb runs it at half width, one
@@ -48,13 +52,23 @@
 // request -- the fresh accumulator every GEMV wants. take_in_new_c must stay 1, or the C
 // FIFO never drains.
 //
-// TWO TOKENS (dsv2_gemv_arm_ntok, then dsv2_gemv_two_tokens; one group per task) run shape 0:
-// A holds token 0 in row 0 and token 1 in row 4 (dsv2_quant_a2), so the array computes both
-// from one pass over the weights. The D port emits a block as four beats of four rows; the walk
-// writes beat 0 (row 0 first) to four slots, beat 1 (row 4 first) to four slots r bytes
-// further, and beats 2 and 3 one slot past beats 0 and 1, into slots the later groups
-// overwrite. Each token's outputs are then contiguous with 4 slots of spill, token 1's r bytes
-// after token 0's: r must cover a whole output plus DSV2_SPILL2(nb).
+// SEVERAL TOKENS (dsv2_gemv_arm_ntok, ntok = 2 or 4) run shape 2, (4, 4, 32): the passes and
+// weight bytes of shape 1, each weight used for every token, so the weights stream once for all.
+//
+//   A  COMPACT: A-block k is the first four rows alone, 16 bytes (DSV2_AROWS rows, not 16),
+//      token t in row t (dsv2_quant_at). Rows 0 and 2 are the low halves of the block's two
+//      words, rows 1 and 3 the high halves. The blocks are INTERLEAVED so that, within each run
+//      of eight, consecutive passes read 64 bytes apart, the stride B advances at:
+//          A-block k at 64 (k % 8) + 16 ((k / 8) % 4) + 512 (k / 32)
+//      Two streams at the same stride fall into step after one bank conflict and stay clear of
+//      each other; blocks 16 bytes apart would meet B's banks again every few passes (the GEMV
+//      runs 9% slower). K is a multiple of 128 (whole groups of 32 blocks). The A reader takes channel 0 (rows 0 and
+//      1), and with four tokens channel 1 as well.
+//   D  a block leaves as four beats, one per row, and row t's outputs go to d + t * r: each
+//      token's outputs are contiguous, r bytes apart. With two tokens rows 2 and 3 compute zero;
+//      the walk puts them one block further on, where the next block's rows 0 and 1 land later,
+//      so a token's output has DSV2_TOKSPILL bytes of spill behind it and r must cover the output
+//      plus the spill. Two tokens leave no loop for groups: one group per task.
 //
 // WEIGHT WIDTH (DSV2_WBITS, sw/apps/dsv2/dsv2.mk: 8 or 4). An INT4 GEMV (the arms' w4) runs the
 // same passes: B's converter (cfg: HasIntlowToInthighConverter) sign-extends the nibbles of the
@@ -62,9 +76,7 @@
 //
 //   W_g in the PAIRED layout, nibble-packed (util/layout.py to_b_pairs, pack_int4): per pair of
 //   column blocks, per k, block n's 32 bytes then block n + 1's. Group g at b + g * K * 8 nb.
-//   (1, 4, 32)   one pair a pass: 64 bytes on channels 0..7. nb must be even.
-//   (16, 4, 16)  one block a pass: 32 bytes on channels 0..3, walked k, half of the pair, pair;
-//                the three loops leave none for groups, so one group per task (two tokens).
+//   (1, 4, 32), (4, 4, 32)   one pair a pass: 64 bytes on channels 0..7. nb must be even.
 //
 // Every arm here writes the converter's enable, so an INT8 task never inherits an INT4 one's.
 
@@ -86,7 +98,9 @@
 #define DSV2_BEAT 64u
 #define DSV2_SLOT(nb) (32u * (nb))                       // one group's outputs, FP16
 #define DSV2_SPILL(nb) ((DSV2_MR - 1u) * DSV2_SLOT(nb))  // past the last group's slot
-#define DSV2_SPILL2(nb) (4u * DSV2_SLOT(nb))            // past each token's last slot, two tokens
+#define DSV2_TOKSPILL 64u  // past each token's output, several tokens: one block's junk rows
+// Rows of a GEMV's A operand for ntok tokens: the GEMM layout's 16, or the compact 4 (see above).
+#define DSV2_AROWS(ntok) ((ntok) > 1u ? 4u : 16u)
 #define DSV2_SPIN_LIMIT 4000000u
 
 // What an app checks (sw/apps/dsv2/dsv2.mk): 0, the final results only, after the kernel; 1, every
@@ -109,8 +123,10 @@
 #if DSV2_GEMV != 0 && DSV2_GEMV != 1
 #error "DSV2_GEMV is the one-token GEMV's array shape: 1, (1, 4, 32), or 0, (16, 4, 16)"
 #endif
-#define DSV2_SHAPE_GEMM 0u  // (16, 4, 16)
-#define DSV2_SHAPE_GEMV 1u  // (1, 4, 32)
+#define DSV2_SHAPE_GEMM 0u   // (16, 4, 16)
+#define DSV2_SHAPE_GEMV 1u   // (1, 4, 32)
+#define DSV2_SHAPE_GEMV4 2u  // (4, 4, 32)
+#define DSV2_GEMV4_ROWS 4u   // shape 2's rows: the tokens one pass serves
 
 // The weights' width (see the header): 8, or 4 through B's converter.
 #ifndef DSV2_WBITS
@@ -185,16 +201,14 @@ static inline void dsv2_tcdm_prio_install(uint32_t policy) {
      DSV2_TCDM_PRIO_ATTN != DSV2_TCDM_PRIO)
 
 // Arm the 16-row grouped GEMV (shape 0) for a run of tasks. k: the D port's RNE(acc * 2^-k).
-// amask: the A channels holding the tokens' rows, two rows a channel -- 0x01 for row 0, 0x05 for
-// rows 0 and 4. The other rows read zero. w4: INT4 weights (groups must be 1, nb even).
+// A's channel 0 holds rows 0 and 1; the other rows read zero. INT8 weights.
 __attribute__((always_inline)) static inline void dsv2_gemm16_arm(uint32_t kt, uint32_t nb,
                                                                   uint32_t groups,
-                                                                  uint32_t a_step, uint32_t k,
-                                                                  uint32_t amask, uint32_t w4) {
+                                                                  uint32_t a_step, uint32_t k) {
     const uint32_t blk = DSV2_MR * DSV2_KU;  // one A or B block = 64 B
     const uint32_t slot = DSV2_SLOT(nb);
     // A -- k inner, n broadcast (the same x for every block of a group), then the group.
-    csrw_ss(ENABLED_CHANNEL_READER_0, amask);
+    csrw_ss(ENABLED_CHANNEL_READER_0, 0x1u);
     csrw_ss(S_STRIDE_READER_0_0, 8);
     csrw_ss(T_BOUND_READER_0_0, kt);
     csrw_ss(T_STRIDE_READER_0_0, blk);
@@ -209,19 +223,18 @@ __attribute__((always_inline)) static inline void dsv2_gemm16_arm(uint32_t kt, u
     csrw_ss(T_BOUND_READER_0_5, 1);
     csrw_ss(T_STRIDE_READER_0_5, 0);
     csrw_ss(ADDR_REMAP_INDEX_READER_0, 0);
-    // B -- k inner, n, then the group; one 4 x 16 block a pass, channels 0..7. INT4: 32 bytes a
-    // pass on channels 0..3 -- k inner (a pair's 64 B apart), the pair's two halves, the pairs.
-    csrw_ss(ENABLED_CHANNEL_READER_1, w4 ? 0x0Fu : 0xFFu);
+    // B -- k inner, n, then the group; one 4 x 16 block a pass, channels 0..7.
+    csrw_ss(ENABLED_CHANNEL_READER_1, 0xFFu);
     csrw_ss(S_STRIDE_READER_1_0, 8);
     csrw_ss(S_STRIDE_READER_1_1, 0);
     csrw_ss(T_BOUND_READER_1_0, kt);
     csrw_ss(T_STRIDE_READER_1_0, blk);
-    csrw_ss(T_BOUND_READER_1_1, w4 ? 2u : nb);
-    csrw_ss(T_STRIDE_READER_1_1, w4 ? blk / 2u : kt * blk);
-    csrw_ss(T_BOUND_READER_1_2, w4 ? nb / 2u : groups);
-    csrw_ss(T_STRIDE_READER_1_2, w4 ? kt * blk : kt * blk * nb);
+    csrw_ss(T_BOUND_READER_1_1, nb);
+    csrw_ss(T_STRIDE_READER_1_1, kt * blk);
+    csrw_ss(T_BOUND_READER_1_2, groups);
+    csrw_ss(T_STRIDE_READER_1_2, kt * blk * nb);
     csrw_ss(ADDR_REMAP_INDEX_READER_1, 0);
-    dsv2_b_int4(w4);
+    dsv2_b_int4(0u);
     // C -- masked; the bounds still count the eight INT32 beats of every output block.
     csrw_ss(S_STRIDE_READER_WRITER_0_0, 8);
     csrw_ss(S_STRIDE_READER_WRITER_0_1, slot);
@@ -256,30 +269,46 @@ __attribute__((always_inline)) static inline void dsv2_gemm16_arm(uint32_t kt, u
     csrw_ss(DATA_TYPE_CFG, 0);
 }
 
-// Arm a one-row GEMV (shape 1) for a run of tasks: w = 2 column blocks a pass, or 1 for an odd
-// nb (half width). w4: INT4 weights, nb even.
-__attribute__((always_inline)) static inline void dsv2_gemv1_arm(uint32_t kt, uint32_t nb,
+// Column blocks a GEMV shape (1 or 2) takes a pass: two, or one for an odd nb (half width).
+static inline uint32_t dsv2_pair_blocks(uint32_t nb) { return (nb & 1u) ? 1u : 2u; }
+
+// Arm a GEMV of ntok tokens for a run of tasks: shape 1, (1, 4, 32), for one token (A in the
+// 16-row layout), shape 2, (4, 4, 32), for two or four (A compact; see the header). w = 2 column
+// blocks a pass, or 1 for an odd nb (half width). Token t's outputs go to d + t * r: a block
+// leaves as one D beat per row, walked row, block, group. w4: INT4 weights, nb even.
+__attribute__((always_inline)) static inline void dsv2_gemvw_arm(uint32_t kt, uint32_t nb,
                                                                  uint32_t groups,
                                                                  uint32_t a_step, uint32_t k,
-                                                                 uint32_t w4) {
-    const uint32_t blk = DSV2_MR * DSV2_KU;  // one A or B block = 64 B
-    const uint32_t w = dsv2_gemv_blocks_per_pass(nb);
+                                                                 uint32_t w4, uint32_t ntok,
+                                                                 uint32_t r) {
+    const uint32_t blk = DSV2_MR * DSV2_KU;  // one A or B block = 64 B (A: the 16-row layout)
+    const uint32_t rows = ntok > 1u ? DSV2_GEMV4_ROWS : 1u;  // D beats per output block
+    const uint32_t w = dsv2_pair_blocks(nb);
     const uint32_t nbp = nb / w;               // output blocks per group
     const uint32_t slot = DSV2_SLOT(nb);
-    // A -- row 0 of each block, channel 0 (rows 0 and 1; the array takes row 0): k inner, n
-    // broadcast, then the group.
-    csrw_ss(ENABLED_CHANNEL_READER_0, 0x1u);
+    // A -- the tokens' rows of each block, two a channel: k inner (three loops over the compact
+    // operand's interleave), n broadcast, then the group.
+    csrw_ss(ENABLED_CHANNEL_READER_0, ntok > 2u ? 0x3u : 0x1u);
     csrw_ss(S_STRIDE_READER_0_0, 8);
-    csrw_ss(T_BOUND_READER_0_0, kt);
-    csrw_ss(T_STRIDE_READER_0_0, blk);
-    csrw_ss(T_BOUND_READER_0_1, nbp);
-    csrw_ss(T_STRIDE_READER_0_1, 0);
-    csrw_ss(T_BOUND_READER_0_2, groups);
-    csrw_ss(T_STRIDE_READER_0_2, a_step);
-    csrw_ss(T_BOUND_READER_0_3, 1);
+    if (ntok > 1u) {
+        csrw_ss(T_BOUND_READER_0_0, 8);
+        csrw_ss(T_STRIDE_READER_0_0, 64);
+        csrw_ss(T_BOUND_READER_0_1, 4);
+        csrw_ss(T_STRIDE_READER_0_1, 16);
+        csrw_ss(T_BOUND_READER_0_2, kt / 32u);
+        csrw_ss(T_STRIDE_READER_0_2, 512);
+    } else {
+        csrw_ss(T_BOUND_READER_0_0, kt);
+        csrw_ss(T_STRIDE_READER_0_0, blk);
+        csrw_ss(T_BOUND_READER_0_1, 1);
+        csrw_ss(T_STRIDE_READER_0_1, 0);
+        csrw_ss(T_BOUND_READER_0_2, 1);
+        csrw_ss(T_STRIDE_READER_0_2, 0);
+    }
+    csrw_ss(T_BOUND_READER_0_3, nbp);
     csrw_ss(T_STRIDE_READER_0_3, 0);
-    csrw_ss(T_BOUND_READER_0_4, 1);
-    csrw_ss(T_STRIDE_READER_0_4, 0);
+    csrw_ss(T_BOUND_READER_0_4, groups);
+    csrw_ss(T_STRIDE_READER_0_4, a_step);
     csrw_ss(T_BOUND_READER_0_5, 1);
     csrw_ss(T_STRIDE_READER_0_5, 0);
     csrw_ss(ADDR_REMAP_INDEX_READER_0, 0);
@@ -297,39 +326,49 @@ __attribute__((always_inline)) static inline void dsv2_gemv1_arm(uint32_t kt, ui
     csrw_ss(T_STRIDE_READER_1_2, DSV2_WB(kt * blk * nb, w4));
     csrw_ss(ADDR_REMAP_INDEX_READER_1, 0);
     dsv2_b_int4(w4);
-    // C -- masked, one beat per output block.
+    // C -- masked, one beat per row of an output block.
     csrw_ss(ENABLED_CHANNEL_READER_WRITER_0, 0);
     csrw_ss(S_STRIDE_READER_WRITER_0_0, 8);
     csrw_ss(S_STRIDE_READER_WRITER_0_1, 32);
-    csrw_ss(T_BOUND_READER_WRITER_0_0, 1);
+    csrw_ss(T_BOUND_READER_WRITER_0_0, rows);
     csrw_ss(T_STRIDE_READER_WRITER_0_0, 0);
     csrw_ss(T_BOUND_READER_WRITER_0_1, nbp);
     csrw_ss(T_STRIDE_READER_WRITER_0_1, 32u * w);
     csrw_ss(T_BOUND_READER_WRITER_0_2, groups);
     csrw_ss(T_STRIDE_READER_WRITER_0_2, slot);
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_0, 0);
-    // D -- one beat per block, its 16 w FP16 values on channels 0 .. 4w - 1: 32 w bytes a block,
-    // contiguous.
+    // D -- one beat per row of a block, its 16 w FP16 values on channels 0 .. 4w - 1: 32 w
+    // bytes a block, contiguous within the row, r bytes between rows. Two tokens: rows 0 and 1,
+    // then rows 2 and 3 (zero) one block further on, where the next block overwrites them.
     csrw_ss(ENABLED_CHANNEL_READER_WRITER_1, w == 2u ? 0xFFu : 0xFu);
     csrw_ss(S_STRIDE_READER_WRITER_1_0, 8);
     csrw_ss(S_STRIDE_READER_WRITER_1_1, 32);
-    csrw_ss(T_BOUND_READER_WRITER_1_0, nbp);
-    csrw_ss(T_STRIDE_READER_WRITER_1_0, 32u * w);
-    csrw_ss(T_BOUND_READER_WRITER_1_1, groups);
-    csrw_ss(T_STRIDE_READER_WRITER_1_1, slot);
-    csrw_ss(T_BOUND_READER_WRITER_1_2, 1);
-    csrw_ss(T_STRIDE_READER_WRITER_1_2, 0);
+    csrw_ss(T_BOUND_READER_WRITER_1_0, ntok == 2u ? 2u : rows);
+    csrw_ss(T_STRIDE_READER_WRITER_1_0, r);
+    csrw_ss(T_BOUND_READER_WRITER_1_1, ntok == 2u ? 2u : nbp);
+    csrw_ss(T_STRIDE_READER_WRITER_1_1, 32u * w);
+    csrw_ss(T_BOUND_READER_WRITER_1_2, ntok == 2u ? nbp : groups);
+    csrw_ss(T_STRIDE_READER_WRITER_1_2, ntok == 2u ? 32u * w : slot);
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_1, 0);
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 0, 1u);  // Int32ToFp16 on
-    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, 3u);  // single-beat: a block is one beat
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, 3u);  // single-beat: a row is one beat
     (void)set_versacore_d_shift(k);                        // RNE(acc * 2^-k)
     // The array: output-stationary, kt passes per block, nbp blocks per group.
     csrw_ss(OVERWRITE_ACCUM, 1);
     csrw_ss(ACCUM_BOUND, kt);
     csrw_ss(OUTPUT_BOUND, nbp * groups);
     csrw_ss(SUBTRACTIONS, 0);
-    csrw_ss(ARRAY_SHAPE_CFG, DSV2_SHAPE_GEMV);
+    csrw_ss(ARRAY_SHAPE_CFG, ntok > 1u ? DSV2_SHAPE_GEMV4 : DSV2_SHAPE_GEMV);
     csrw_ss(DATA_TYPE_CFG, 0);
+}
+
+// Arm a one-row GEMV (shape 1) for a run of tasks. w4: INT4 weights, nb even.
+__attribute__((always_inline)) static inline void dsv2_gemv1_arm(uint32_t kt, uint32_t nb,
+                                                                 uint32_t groups,
+                                                                 uint32_t a_step, uint32_t k,
+                                                                 uint32_t w4) {
+    // row 0 is in channel 0, with row 1, which the array does not take
+    dsv2_gemvw_arm(kt, nb, groups, a_step, k, w4, 1u, 0u);
 }
 
 // Arm a one-token GEMV of nb 16-column blocks, in the shape DSV2_GEMV picks. w4: INT4 weights.
@@ -340,31 +379,25 @@ __attribute__((always_inline)) static inline void dsv2_gemv_arm(uint32_t kt, uin
     if (DSV2_GEMV)
         dsv2_gemv1_arm(kt, nb, groups, a_step, k, w4);
     else
-        dsv2_gemm16_arm(kt, nb, groups, a_step, k, 0x01u, w4);
+        dsv2_gemm16_arm(kt, nb, groups, a_step, k);
 }
 
-// Arm a GEMV for ntok tokens: one token as dsv2_gemv_arm; two on shape 0, rows 0 and 4, after
-// which the caller replaces the D walk with dsv2_gemv_two_tokens.
+// Arm a GEMV for ntok = 1, 2 or 4 tokens: one token as dsv2_gemv_arm; several in shape 2 with the
+// compact A operand, token t's outputs at d + t * r (see the header; two tokens take one group).
 __attribute__((always_inline)) static inline void dsv2_gemv_arm_ntok(uint32_t kt, uint32_t nb,
                                                                      uint32_t groups,
                                                                      uint32_t a_step,
-                                                                     uint32_t k,
-                                                                     uint32_t ntok, uint32_t w4) {
-    if (ntok == 2u)
-        dsv2_gemm16_arm(kt, nb, groups, a_step, k, 0x05u, w4);
+                                                                     uint32_t k, uint32_t ntok,
+                                                                     uint32_t w4, uint32_t r) {
+    if (ntok > 1u)
+        dsv2_gemvw_arm(kt, nb, groups, a_step, k, w4, ntok, r);
     else
         dsv2_gemv_arm(kt, nb, groups, a_step, k, w4);
 }
 
-// Two tokens per GEMV (see the header): after dsv2_gemv_arm_ntok(kt, nb, 1, 0, k, 2), replace
-// the D walk.
-__attribute__((always_inline)) static inline void dsv2_gemv_two_tokens(uint32_t nb, uint32_t r) {
-    csrw_ss(T_BOUND_READER_WRITER_1_0, 2u);  // beats 0, 1: token 0, token 1, r apart
+// Several tokens: the pitch between the tokens' outputs, for the GEMV armed last.
+__attribute__((always_inline)) static inline void dsv2_gemv_pitch(uint32_t r) {
     csrw_ss(T_STRIDE_READER_WRITER_1_0, r);
-    csrw_ss(T_BOUND_READER_WRITER_1_1, 2u);  // beats 2, 3: rows 8..15, one slot further
-    csrw_ss(T_STRIDE_READER_WRITER_1_1, DSV2_SLOT(nb));
-    csrw_ss(T_BOUND_READER_WRITER_1_2, nb);
-    csrw_ss(T_STRIDE_READER_WRITER_1_2, DSV2_NU * 2u);
 }
 
 // Point the armed descriptor at its operands and output, and submit. The descriptor is
@@ -631,28 +664,35 @@ static inline void dsv2_quant_flat(void *x, void *q, uint32_t n, uint32_t inv_bi
 
 // ---- the GEMV's A operand, row by row ------------------------------------------------------
 //
-// A GEMV's outputs come from row 0 of its A operand (row 4 for a second token), so the
-// quantiser writes those rows and nothing else. A-block k is 16 rows of four values at 64 k;
-// row r of it is four bytes at 64 k + 4 r.
+// A GEMV's outputs come from the rows of its A operand its tokens occupy -- row 0 of the 16-row
+// layout for one token, rows 0 .. ntok - 1 of the compact one for several (THE GROUPED GEMV,
+// SEVERAL TOKENS) -- so the quantiser writes those rows and nothing else. Row r of an A-block is
+// four bytes at its start + 4 r: the low half of the block's word r / 2 for an even r, the high
+// half for odd. Eight consecutive blocks are 64 bytes apart in both layouts.
 //   read   a beat of 16 values: channels 0, 2, 4, 6, four values each, 8 bytes apart (lane
-//          stride 4, the odd channels disabled: they read nothing and present zero)
-//   pack   two beats into one output beat, whose 8-byte words hold 4 values each in their
-//          low half
-//   write  word c to A-block c of the beat's eight (lane stride 64), low half only (byte mask)
+//          stride 4, the odd channels disabled: they read nothing and present zero); for an
+//          odd row the read starts 4 bytes lower, so channels 1, 3, 5, 7 read those values
+//   pack   two beats into one output beat, whose 8-byte words hold the 4 values each in the
+//          half the reading channels fill
+//   write  word c to A-block c of the beat's eight (lane stride 64), that half only (byte
+//          mask); the beats walk the layout's blocks, 512 bytes apart in the 16-row layout,
+//          the compact one's interleave in the other
 // so one output beat is 32 values in 8 blocks: n / 32 beats for n values, a quarter of what a
 // fully replicated operand costs the quantiser, which is the SIMD's limit on these tasks.
-#define DSV2_A_READ 0x55u   // reader channels 0, 2, 4, 6
-#define DSV2_A_WORD 0x0Fu   // a written word's low four bytes: one A row
+#define DSV2_A_READ 0x55u   // reader channels 0, 2, 4, 6: an even row
+#define DSV2_A_WORD 0x0Fu   // a written word's low four bytes: an even row
 
-// The shapes of a row write: n values from x (n a multiple of 32) into row `row` of A at a. `ops`
-// operands `od` bytes apart feed each value (1 for a plain quantise, 2 for a fused MUL); a plain
-// quantise leaves the reader's third loop free for the caller.
+// The shapes of a row write: n values from x into row `row` of A at a, in the 16-row layout or
+// the compact one (n a multiple of 32, or of 128 compact). `ops` operands `od` bytes apart feed
+// each value (1 for a plain quantise, 2 for a fused MUL); a plain quantise leaves the reader's
+// third loop free for the caller.
 static inline void dsv2_a_row_shapes(snax_simd_shape_t *in, snax_simd_shape_t *out, void *x,
                                      uint32_t ops, uint32_t od, void *a, uint32_t n,
-                                     uint32_t row) {
-    snax_simd_shape_flat(in, x, 1u);
+                                     uint32_t row, uint32_t compact) {
+    const uint32_t odd = row & 1u;
+    snax_simd_shape_flat(in, (uint8_t *)x - 4u * odd, 1u);
     in->lane_stride = 4u;
-    in->lane_mask = DSV2_A_READ;
+    in->lane_mask = DSV2_A_READ << odd;
     uint32_t d = 0;
     if (ops > 1u) {  // the operands of one value
         in->bound[d] = ops;
@@ -663,31 +703,41 @@ static inline void dsv2_a_row_shapes(snax_simd_shape_t *in, snax_simd_shape_t *o
     in->bound[d] = n / 32u;
     in->stride[d++] = 64u;
     in->dim = d;
-    snax_simd_shape_flat(out, (uint8_t *)a + 4u * row, n / 32u);
+    snax_simd_shape_flat(out, (uint8_t *)a + 8u * (row / 2u), n / 32u);
     out->lane_stride = 64u;
-    out->stride[0] = 8u * 64u;
-    out->byte_mask = DSV2_A_WORD;
+    if (compact) {  // the interleave: 4 beats 16 bytes apart, then the next 32 blocks
+        out->bound[0] = 4u;
+        out->stride[0] = 16u;
+        out->bound[1] = n / 128u;
+        out->stride[1] = 512u;
+        out->dim = 2u;
+    } else {
+        out->stride[0] = 8u * 64u;
+    }
+    out->byte_mask = DSV2_A_WORD << (4u * odd);
 }
 
-// n FP16 -> row `row` of a GEMV's A operand (16 n bytes; 0 for token 0, 4 for token 1).
-static inline void dsv2_quant_a_row(void *x, void *a, uint32_t n, uint32_t row,
+// n FP16 -> row `row` of a GEMV's A operand, the 16-row layout or the compact one.
+static inline void dsv2_quant_a_row(void *x, void *a, uint32_t n, uint32_t row, uint32_t compact,
                                     uint32_t inv_bits) {
     snax_simd_shape_t in, out;
-    dsv2_a_row_shapes(&in, &out, x, 1u, 0u, a, n, row);
+    dsv2_a_row_shapes(&in, &out, x, 1u, 0u, a, n, row, compact);
     snax_simd_use0(SIMD_EXT_FP16TOINT8);
     DSV2_ARM_QUANT(inv_bits);
     snax_simd_program_fast(&in, &out);
     snax_simd_fire();
 }
 
-// The A operand of one token (x1 == x0) or two (x1: token 1, into row 4).
-static inline void dsv2_quant_a2(void *x0, void *x1, void *a, uint32_t n, uint32_t inv_bits) {
-    dsv2_quant_a_row(x0, a, n, 0u, inv_bits);
-    if (x1 != x0) dsv2_quant_a_row(x1, a, n, 4u, inv_bits);
+// The A operand of ntok tokens, token t's n values at x + t * pitch: row 0 of the 16-row layout
+// for one token (16 n bytes), rows 0 .. ntok - 1 of the compact one for several (4 n bytes).
+static inline void dsv2_quant_at(void *x, uint32_t pitch, void *a, uint32_t n, uint32_t ntok,
+                                 uint32_t inv_bits) {
+    for (uint32_t t = 0; t < ntok; t++)
+        dsv2_quant_a_row((uint8_t *)x + t * pitch, a, n, t, ntok > 1u, inv_bits);
 }
 
 static inline void dsv2_quant_a(void *x, void *a, uint32_t n, uint32_t inv_bits) {
-    dsv2_quant_a_row(x, a, n, 0u, inv_bits);
+    dsv2_quant_at(x, 0u, a, n, 1u, inv_bits);
 }
 
 // ---- V3: RoPE, adjacent pairs, one task -----------------------------------------------------
@@ -726,15 +776,15 @@ static inline void dsv2_rope(void *x, uint32_t ostride, void *y, uint32_t n) {
 //   ew1   MUL over interleaved [sg, up]                      -> a  (i FP16)       (a16 != 0)
 //   ew1   MUL, then the quantiser into row 0 of the down GEMV's A operand (a8 != 0; the
 //         row write of dsv2_quant_a_row, each value from its two operands)
-// The products commute, so sg may sit on either side of g. tok: 0 for one token; for two, the
-// distance from token 0's g and sg to token 1's (the same for both), whose SwiGLU goes into
-// row 4.
+// The products commute, so sg may sit on either side of g, or be g itself: the SILU then
+// overwrites the gate in place. ntok tokens, token t's g and sg tok bytes further on for each t;
+// token t's SwiGLU goes into its row of the A operand (dsv2_quant_at's layout).
 #if !defined(SIMD_EXT_STREAMMAP_HAS_SILU)
 #error "the SwiGLU needs StreamMap SILU"
 #endif
 
 static inline void dsv2_swiglu(void *g, void *sg, void *a16, void *a8, uint32_t i,
-                               uint32_t inv_bits, uint32_t tok) {
+                               uint32_t inv_bits, uint32_t ntok, uint32_t tok) {
     uint8_t *up = (uint8_t *)g + 2u * i;
     snax_simd_shape_t in, out;
     snax_simd_shape_flat(&in, g, i / 32u);
@@ -752,10 +802,10 @@ static inline void dsv2_swiglu(void *g, void *sg, void *a16, void *a8, uint32_t 
     }
     if (a8) {
         const uint32_t us = (uint32_t)sg, uu = (uint32_t)up;
-        for (uint32_t t = 0; t < (tok ? 2u : 1u); t++) {
-            if (t) {  // token 1's silu
-                snax_simd_shape_flat(&in, (uint8_t *)g + tok, i / 32u);
-                snax_simd_shape_flat(&out, (uint8_t *)sg + tok, i / 32u);
+        for (uint32_t t = 0; t < ntok; t++) {
+            if (t) {  // token t's silu
+                snax_simd_shape_flat(&in, (uint8_t *)g + t * tok, i / 32u);
+                snax_simd_shape_flat(&out, (uint8_t *)sg + t * tok, i / 32u);
                 snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, 0x3F800000u, 0u,
                                SIMD_FUNC_SILU);
                 snax_simd_program_fast(&in, &out);
@@ -763,7 +813,7 @@ static inline void dsv2_swiglu(void *g, void *sg, void *a16, void *a8, uint32_t 
             }
             // sg and up, the lower first (MUL commutes)
             dsv2_a_row_shapes(&in, &out, (void *)((us < uu ? us : uu) + t * tok), 2u,
-                              us < uu ? uu - us : us - uu, a8, i, 4u * t);
+                              us < uu ? uu - us : us - uu, a8, i, t, ntok > 1u);
             snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMELEMENTWISE_1) |
                                                              (1u << SIMD_EXT_FP16TOINT8));
             snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_1_CSR, 0, 2u);

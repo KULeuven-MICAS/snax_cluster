@@ -241,12 +241,12 @@ int main() {
     SIMD_SPAN("14 post-attention norm, A operand", c_post);
 
     t = snrt_mcycle();
-    dsv2_swiglu(eg, esg, ea16, ea8, I_EXPERT, INV_AE, 0u);
+    dsv2_swiglu(eg, esg, ea16, ea8, I_EXPERT, INV_AE, 1u, 0u);
     c_e = drain(t, "expert swiglu", &hung);
     SIMD_SPAN("18 SwiGLU, expert", c_e);
 
     t = snrt_mcycle();
-    dsv2_swiglu(sg, ssg, sa16, sa8, I_SHARED, INV_AS, 0u);
+    dsv2_swiglu(sg, ssg, sa16, sa8, I_SHARED, INV_AS, 1u, 0u);
     c_s = drain(t, "shared swiglu", &hung);
     SIMD_SPAN("21 SwiGLU, shared", c_s);
 

@@ -33,10 +33,10 @@
 #define DSV2_TR_XDMA 2u
 #define DSV2_TR_IDMA 3u
 
-// spans per track (the MLA's iDMA makes one per load, about 230 at L = 511; with DSV2_DUAL_LOAD
-// and one token its xDMA hart makes one per streamed chunk, 178), and where each track starts in
-// the span words. NTOK comes from the app's data.h, included first; unset means one token. An
-// app that records more spans on a track defines its DSV2_TR_CAP_* before including this.
+// spans per track (the MLA's iDMA makes one per load, about 230 at L = 511 and 250 with four
+// tokens, whose attention loads every key tile twice; with DSV2_DUAL_LOAD its xDMA hart makes one
+// per streamed chunk, 178), and where each track starts in the span words. An app that records
+// more spans on a track defines its DSV2_TR_CAP_* before including this.
 #ifndef DSV2_TR_CAP_GEMM
 #define DSV2_TR_CAP_GEMM 128u
 #endif
@@ -44,7 +44,7 @@
 #define DSV2_TR_CAP_SIMD 128u
 #endif
 #ifndef DSV2_TR_CAP_XDMA
-#if defined(DSV2_DUAL_LOAD) && DSV2_DUAL_LOAD && (!defined(NTOK) || NTOK == 1)
+#if defined(DSV2_DUAL_LOAD) && DSV2_DUAL_LOAD
 #define DSV2_TR_CAP_XDMA 192u
 #else
 #define DSV2_TR_CAP_XDMA 32u

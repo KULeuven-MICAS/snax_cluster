@@ -33,8 +33,9 @@ GEMV_CHUNK = 64     # output columns per streamed weight chunk: 4 n-blocks of Nu
 
 def mesh_from_hwcfg(hw):
     """(Mu, Ku, Nu) of array shape 0, whose blocks the operand layouts use, from a parsed cluster
-    cfg of one data type. Every other shape must be a one-row GEMV unrolling with the same Ku and
-    a multiple of that Nu: it reads the same layouts (snax-dsv2.h, THE GROUPED GEMV)."""
+    cfg of one data type. Every other shape must be a GEMV unrolling with the same Ku, at most
+    Mu rows and a multiple of that Nu: it reads the first rows of the same layouts (snax-dsv2.h,
+    THE GROUPED GEMV)."""
     acc = hw["snax_versacore_core_template"]["snax_acc_cfg"][0]
     unrolling = acc["snax_versacore_spatial_unrolling"]
     if len(unrolling) != 1:
@@ -42,7 +43,7 @@ def mesh_from_hwcfg(hw):
     mesh = tuple(int(v) for v in unrolling[0][0])
     for shape in unrolling[0][1:]:
         mu, ku, nu = (int(v) for v in shape)
-        if mu != 1 or ku != mesh[1] or nu % mesh[2]:
+        if mu > mesh[0] or ku != mesh[1] or nu % mesh[2]:
             raise ValueError(f"array shape {(mu, ku, nu)} does not read shape 0's layouts {mesh}")
     return mesh
 
@@ -122,11 +123,28 @@ def gemv_a(x, mesh=MESH):
 
 def gemv_a_rep(x, mesh=MESH):
     """A GEMV's A operand with x in all Mu rows, so every row of the output is x @ W: what
-    snax-dsv2-mla-fa's kernel writes for the W_UV GEMVs. A GEMV reads row 0 (and row 4 for a
-    second token); the apps' inputs are the vectors alone, and the quantiser writes those rows
-    only (snax-dsv2.h, dsv2_quant_a2)."""
+    snax-dsv2-mla-fa's kernel writes for the W_UV GEMVs. A one-token GEMV reads row 0 (several
+    tokens use a compact four-row operand, token t in row t); the apps' inputs are the vectors
+    alone, and the quantiser writes those rows only (snax-dsv2.h, dsv2_quant_at)."""
     mr, _, _ = mesh
     return to_a(np.repeat(np.asarray(x)[None, :], mr, axis=0), mesh)
+
+
+def to_a4(xs):
+    """The compact A operand of up to four tokens (snax-dsv2.h, SEVERAL TOKENS), flat: token t's
+    x in row t, the other rows zero; A-block k (row r's four values at byte 4 r) at
+    64 (k % 8) + 16 ((k // 8) % 4) + 512 (k // 32), so consecutive blocks are 64 bytes apart."""
+    xs = np.asarray(xs, dtype=np.int8)
+    T, K = xs.shape
+    if T > 4 or K % 128:
+        raise ValueError(f"[{T}, {K}]: at most four tokens, K a multiple of 128")
+    k = np.arange(K // 4)
+    base = 64 * (k % 8) + 16 * ((k // 8) % 4) + 512 * (k // 32)
+    out = np.zeros(4 * K, dtype=np.int8)
+    for t in range(T):
+        for i in range(4):
+            out[base + 4 * t + i] = xs[t, 4 * k + i]
+    return out
 
 
 def b_chunks(W, chunk=GEMV_CHUNK, mesh=MESH):

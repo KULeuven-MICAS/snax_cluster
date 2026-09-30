@@ -21,14 +21,12 @@
 #
 #   make -C sw/apps/dsv2/snax-dsv2-mla-fa DSV2_CHECK_TERMS=128
 #
-# DSV2_DUAL_LOAD selects how a one-token pass loads its streamed weights: the MLA's W_DKV, W_Q and
-# W_O chunks (snax-dsv2-mla.h) and the MoE's (snax-dsv2-moe.h):
+# DSV2_DUAL_LOAD selects how a pass loads its streamed weights: the MLA's W_DKV, W_Q and W_O
+# chunks (snax-dsv2-mla.h) and the MoE's (snax-dsv2-moe.h):
 #   1 (default)  each chunk in two parts at once: the iDMA reads the head of the chunk with AXI
 #                reads, the xDMA its tail (DSV2_DUAL_XBYTES, default half) through the
 #                main-memory endpoint, which pushes it into the cluster as AXI writes
 #   0            the whole chunk on the iDMA
-# Two tokens per pass load on the iDMA either way: their GEMV takes 64 weight bytes a cycle,
-# which the iDMA feeds alone.
 #
 # DSV2_GEMV selects the array shape a one-token GEMV runs (snax-dsv2.h, THE ARRAY SHAPE):
 #   1 (default)  (1, 4, 32): one row, 128 weight bytes a pass
@@ -41,6 +39,12 @@
 # The data regenerates when it flips (a stamp in build/), since the datagens pack the weights.
 #
 #   make -C sw/apps/dsv2/snax-dsv2-gemv DSV2_WBITS=4
+#
+# DSV2_GEMV_NTOK selects the tokens snax-dsv2-gemv runs through each GEMV:
+#   1 (default)  one token, in the shape DSV2_GEMV picks
+#   4            four tokens in shape 2, (4, 4, 32): the same passes, four outputs a weight
+#
+#   make -C sw/apps/dsv2/snax-dsv2-gemv DSV2_GEMV_NTOK=4
 #
 # DSV2_TCDM_PRIO selects the TCDM arbitration policy for the whole run (snax-tcdm-priority.h,
 # SNAX_TCDM_POLICY_*): 0 (default) the hardware's own, every requester's urgency and the
@@ -59,6 +63,7 @@ DSV2_CHECK_TERMS ?= 0
 DSV2_DUAL_LOAD ?= 1
 DSV2_GEMV ?= 1
 DSV2_WBITS ?= 8
+DSV2_GEMV_NTOK ?= 1
 DSV2_TCDM_PRIO ?= 0
 DSV2_TCDM_GUARD ?= 0
 RISCV_CFLAGS += -DDSV2_STAGE_CHECKS=$(DSV2_STAGE_CHECKS)
@@ -66,6 +71,7 @@ RISCV_CFLAGS += -DDSV2_CHECK_TERMS=$(DSV2_CHECK_TERMS)
 RISCV_CFLAGS += -DDSV2_DUAL_LOAD=$(DSV2_DUAL_LOAD)
 RISCV_CFLAGS += -DDSV2_GEMV=$(DSV2_GEMV)
 RISCV_CFLAGS += -DDSV2_WBITS=$(DSV2_WBITS)
+RISCV_CFLAGS += -DDSV2_GEMV_NTOK=$(DSV2_GEMV_NTOK)
 RISCV_CFLAGS += -DDSV2_TCDM_PRIO=$(DSV2_TCDM_PRIO)
 RISCV_CFLAGS += -DDSV2_TCDM_GUARD=$(DSV2_TCDM_GUARD)
 ifdef DSV2_DUAL_XBYTES
@@ -81,7 +87,7 @@ ifdef DSV2_TCDM_PRIO_ATTN
 RISCV_CFLAGS += -DDSV2_TCDM_PRIO_ATTN=$(DSV2_TCDM_PRIO_ATTN)
 endif
 
-DSV2_CFG_STAMP = $(BUILDDIR)/dsv2-cfg-$(DSV2_STAGE_CHECKS)-$(DSV2_CHECK_TERMS)-$(DSV2_DUAL_LOAD)-$(DSV2_GEMV)-$(DSV2_WBITS)-$(DSV2_TCDM_PRIO)-$(DSV2_TCDM_GUARD)-$(DSV2_TCDM_PRIO_STREAM)-$(DSV2_TCDM_PRIO_HEAD)-$(DSV2_TCDM_PRIO_ATTN)-$(DSV2_DUAL_XBYTES)
+DSV2_CFG_STAMP = $(BUILDDIR)/dsv2-cfg-$(DSV2_STAGE_CHECKS)-$(DSV2_CHECK_TERMS)-$(DSV2_DUAL_LOAD)-$(DSV2_GEMV)-$(DSV2_WBITS)-$(DSV2_GEMV_NTOK)-$(DSV2_TCDM_PRIO)-$(DSV2_TCDM_GUARD)-$(DSV2_TCDM_PRIO_STREAM)-$(DSV2_TCDM_PRIO_HEAD)-$(DSV2_TCDM_PRIO_ATTN)-$(DSV2_DUAL_XBYTES)
 
 $(DSV2_CFG_STAMP): | $(BUILDDIR)
 	rm -f $(BUILDDIR)/stage-checks-* $(BUILDDIR)/dsv2-cfg-*

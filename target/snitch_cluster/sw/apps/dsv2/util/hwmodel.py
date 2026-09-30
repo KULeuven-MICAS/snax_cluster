@@ -347,44 +347,55 @@ def union_order(id_lists):
 
 
 def run_tokens(pack, scales, xs16, pos, cache_c8, cache_kpe8, bc=64):
-    """Layer 1 for ntok = len(xs16) consecutive tokens in one pass, ntok <= 2 (the Br = 32 query
-    lanes hold 16 heads per token): token t sits at position pos + t, every token appends its
-    row, and token t attends to keys 0 .. pos + t. The MoE runs the union of the tokens' experts
-    (union_order) and each token adds its slots in that order.
+    """Layer 1 for ntok = len(xs16) consecutive tokens in one pass, ntok in (1, 2, 4): token t sits
+    at position pos + t, every token appends its row, and token t attends to keys 0 .. pos + t.
+    The attention's 32 query lanes hold two tokens of 16 heads, so it runs once per PAIR of tokens
+    over all pos + ntok keys; a pair's token t has the keys of the pass's later tokens masked. The
+    MoE runs the union of the tokens' experts (union_order) and each token adds its slots in that
+    order.
 
-    Returns (J, toks): the pass's joint values (the attention) and one dict per token."""
+    Returns (J, toks): the pass's joint values (the attention; `pairs` holds each pair's, and the
+    first pair's are also at the top level) and one dict per token."""
     d = pack.W.d
     H = d.heads
     ntok = len(xs16)
-    if ntok not in (1, 2):
-        raise ValueError(f"{ntok} tokens: the 32 query lanes hold one or two tokens of {H} heads")
+    if ntok not in (1, 2, 4):
+        raise ValueError(f"{ntok} tokens: a pass holds 1, 2 or 4 (two tokens of {H} heads fill "
+                         f"the attention's 32 query lanes)")
     ks = shifts(d)
     toks = [mla_token(pack, scales, x, pos + t) for t, x in enumerate(xs16)]
     c8 = np.concatenate([cache_c8] + [tk["c8_new"][None] for tk in toks], axis=0)
     kpe8 = np.concatenate([cache_kpe8] + [tk["kpe8_new"][None] for tk in toks], axis=0)
     Kc = np.concatenate([c8, kpe8], axis=1)             # [pos + ntok, 576], the key copy's rows
 
-    # ---- 8-10: query assembly, scores, softmax, weighted sum ---------------------------------
-    Br = 2 * H
-    Q8 = np.zeros((Br, d.latent), dtype=np.int8)
-    for t, tk in enumerate(toks):
-        Q8[t * H:(t + 1) * H, :d.kv_rank] = quant_i8(tk["qt16"], scales.qt.inv)
-        Q8[t * H:(t + 1) * H, d.kv_rank:] = quant_i8(tk["qpe_rot"], scales.qpe.inv)
-    masked = [(pos + u, slice(t * H, (t + 1) * H)) for t in range(ntok) for u in range(t + 1, ntok)]
-    a_exp = d.softmax_scale * scales.qt.s * scales.c.s * 2.0 ** ks["s"]
-    att = mla_attention(Q8, Kc, c8, a_exp, ks["s"], bc, masked)
+    # ---- 8-10: query assembly, scores, softmax, weighted sum, per pair of tokens -------------
     # The last PV leaves through the D port as FP16, O16 = RNE(O * 2^-k_o). Each query's
     # factor c / l, c = 2^k_o s_c / 127, is ONE task: the l beat read twice, Map RSQRT with
     # a = 1/c on both copies (sqrt(c / l), whose square cannot overflow the way l^2 would),
     # then EW1 MUL of the pair. A sticky MUL applies it to O16.
+    Br = 2 * H
+    a_exp = d.softmax_scale * scales.qt.s * scales.c.s * 2.0 ** ks["s"]
     k_o = d_shift_for_depth(Kc.shape[0])
-    O16 = d_port(att["o"], k_o)                                       # [512, Br], O^T
     a_n = F32(P8_SCALE / (2.0 ** k_o * scales.c.s))
-    t16 = simd.stream_map(att["l"], a_n, 0.0, simd.RSQRT)
-    rsc16 = mul16(t16, t16)
-    ot_all = mul16(O16, rsc16[None, :]).T                             # [Br, 512]
-    J = dict(ks=ks, Kc=Kc, Vc=c8, Q8=Q8, a_exp=float(F32(a_exp)), att=att, k_o=k_o, O16=O16,
-             a_n=float(a_n), rsc16=rsc16, masked=masked)
+    ot_all = np.zeros((ntok * H, d.kv_rank), dtype=F16)
+    pairs = []
+    for p0 in range(0, ntok, 2):
+        pt = toks[p0:p0 + 2]
+        Q8 = np.zeros((Br, d.latent), dtype=np.int8)
+        for lt, tk in enumerate(pt):
+            Q8[lt * H:(lt + 1) * H, :d.kv_rank] = quant_i8(tk["qt16"], scales.qt.inv)
+            Q8[lt * H:(lt + 1) * H, d.kv_rank:] = quant_i8(tk["qpe_rot"], scales.qpe.inv)
+        masked = [(pos + u, slice(lt * H, (lt + 1) * H))
+                  for lt in range(len(pt)) for u in range(p0 + lt + 1, ntok)]
+        att = mla_attention(Q8, Kc, c8, a_exp, ks["s"], bc, masked)
+        O16 = d_port(att["o"], k_o)                                   # [512, Br], O^T
+        t16 = simd.stream_map(att["l"], a_n, 0.0, simd.RSQRT)
+        rsc16 = mul16(t16, t16)
+        ot = mul16(O16, rsc16[None, :]).T                             # [Br, 512]
+        ot_all[p0 * H:(p0 + len(pt)) * H] = ot[:len(pt) * H]
+        pairs.append(dict(Q8=Q8, att=att, O16=O16, rsc16=rsc16, masked=masked))
+    J = dict(ks=ks, Kc=Kc, Vc=c8, a_exp=float(F32(a_exp)), k_o=k_o, a_n=float(a_n), pairs=pairs,
+             **pairs[0])
 
     # ---- 11-23: per token: W_UV, W_O, residual, then the MoE -----------------------------------
     for t, tk in enumerate(toks):

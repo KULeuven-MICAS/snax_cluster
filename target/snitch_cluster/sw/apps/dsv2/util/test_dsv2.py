@@ -16,8 +16,8 @@ import numpy as np
 
 from . import model, reference
 from .fp import F16, F32, bits16, d_port, d_shift_for_depth, quant_i8
-from .layout import (MESH, b_chunks, from_a, from_b, gemv_a, pack_int4, to_a, to_b, to_b_pairs,
-                     unpack_int4)
+from .layout import (MESH, b_chunks, from_a, from_b, gemv_a, pack_int4, to_a, to_b, to_a4,
+                     to_b_pairs, unpack_int4)
 from .pack import LayerPack, pack, unpack
 from .weights import LayerWeights
 
@@ -164,6 +164,36 @@ def test_int4_b_walks_feed_the_int8_beats():
     want = _b_beats(b8[:K * N], [(kt, 64), (nb, kt * 64), (1, 0)], 0xFF)
     got = _int4_converter(_b_beats(b4[:K * N // 2], [(kt, 64), (2, 32), (nb // 2, kt * 64)], 0x0F))
     assert np.array_equal(got, want), "(16, 4, 16)"
+
+
+def test_compact_a_walks_read_the_tokens_rows():
+    """The compact A operand of several tokens (snax-dsv2.h, SEVERAL TOKENS) three ways: to_a4's
+    bytes; the A reader's walk (T0 8 x 64 B, T1 4 x 16 B, T2 kt / 32 x 512 B, channels 0 and 1)
+    hands the array pass k the tokens' four values at 4 k in rows 0..3; and the quantiser's
+    writes (beat b's word c at lane stride 64, beats walked 4 x 16 B then n / 128 x 512 B, row r
+    at 8 (r / 2) + 4 (r % 2) in the word) rebuild the same bytes. Within each run of eight
+    blocks consecutive passes read 64 B apart, the stride B advances at."""
+    rng = np.random.default_rng(11)
+    K, T = 384, 4
+    kt = K // 4
+    xs = rng.integers(-128, 128, size=(T, K)).astype(np.int8)
+    a4 = to_a4(xs)
+    assert a4.size == 4 * K
+    addrs = [b0 + b1 + b2 for b2 in range(0, 512 * (kt // 32), 512) for b1 in range(0, 64, 16)
+             for b0 in range(0, 512, 64)]
+    assert all(addrs[k + 1] - addrs[k] == 64 for k in range(kt - 1) if k % 8 != 7)
+    for k, a in enumerate(addrs):
+        rows = a4[a:a + 16].reshape(4, 4)
+        assert np.array_equal(rows, xs[:, 4 * k:4 * k + 4]), f"pass {k}"
+    got = np.zeros(4 * K, dtype=np.int8)
+    for t in range(T):
+        beats = [s0 + s1 for s1 in range(0, 512 * (K // 128), 512) for s0 in range(0, 64, 16)]
+        for b, base in enumerate(beats):
+            for c in range(8):
+                vals = xs[t, 32 * b + 4 * c:32 * b + 4 * c + 4]
+                at = base + 64 * c + 8 * (t // 2) + 4 * (t % 2)
+                got[at:at + 4] = vals
+    assert np.array_equal(got, a4)
 
 
 def test_int4_weights_round_trip_and_chunk():

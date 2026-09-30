@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// DeepSeek-V2-Lite layer 1's mixture of experts for NTOK = 1 or 2 tokens, h -> out = h + MoE(h),
+// DeepSeek-V2-Lite layer 1's mixture of experts for NTOK = 1, 2 or 4 tokens, h -> out = h + MoE(h),
 // on the four-engine split cluster:
 //
 //     hn  = rmsnorm(h)                                   V1, then V2 into the GEMV A operand
@@ -13,7 +13,7 @@
 //
 // The app includes data.h first, for HID, N_EXP, TOP_K, I_EXP, I_SH, the shifts K_X, K_ED,
 // K_SD, the scale INV_H, and the router (wr, its factors wr_s) and the expert table; and NTOK
-// when a pass holds two tokens (1 by default).
+// when a pass holds several tokens (1 by default).
 //
 // ======================================================================================
 // EXPERT SLOTS, NOT BRANCHES (D3)
@@ -26,10 +26,11 @@
 // carries only the experts its tokens pick; any other id finds a zero entry, which the block
 // refuses loudly (it posts the slot's jobs as empty and counts a refusal).
 //
-// TWO TOKENS. The slots are the union of the tokens' top-6 (hwmodel.union_order: token 0's in
-// its order, then token 1's new ones), and every slot's GEMVs carry both tokens (snax-dsv2.h,
-// two tokens per GEMV): an expert both tokens pick streams once. A token adds the slots it
-// picked, in slot order.
+// SEVERAL TOKENS. The slots are the union of the tokens' top-6 (hwmodel.union_order: token 0's
+// in its order, then each later token's new ones), and every slot's GEMVs carry all the tokens
+// (snax-dsv2.h, SEVERAL TOKENS): an expert several tokens pick streams once. A token adds the
+// slots it picked, in slot order. The gate|up outputs are dequantised in place and the SwiGLU's
+// SILU overwrites the gate, so a unit's gate|up buffer is its whole SwiGLU workspace.
 //
 // THE JOB QUEUE. Every GEMV of the block is one job {weight, K, N, k, A, y, token pitch of y}.
 // Unit 0 is the shared experts, unit u > 0 the slot u - 1; G_u is a unit's gate|up, D_u its
@@ -53,7 +54,7 @@
 // it waits for the one before, so a transfer is always in flight, and runs up to two chunks
 // ahead of the GEMM, so the handoff of a freed buffer is off its path.
 //
-// TWO WAYS IN (MOE_DUAL: DSV2_DUAL_LOAD, sw/apps/dsv2/dsv2.mk, with one token). The iDMA loads each
+// TWO WAYS IN (MOE_DUAL: DSV2_DUAL_LOAD, sw/apps/dsv2/dsv2.mk). The iDMA loads each
 // chunk's first half and the xDMA hart its second, at once (snax-xdma-lib.h): the xDMA hart
 // walks the same chunks into the same buffers once the GEMM has freed them, and publishes
 // XLOADED; a task waits for both.
@@ -79,20 +80,17 @@
 #ifndef NTOK
 #define NTOK 1
 #endif
-#if NTOK != 1 && NTOK != 2
-#error "a pass holds one or two tokens"
+#if NTOK != 1 && NTOK != 2 && NTOK != 4
+#error "a pass holds one, two or four tokens"
 #endif
 
-// Whether the chunks load in two parts (DSV2_DUAL_LOAD): with one token only. Two tokens run the
-// (16, 4, 16) shape, 64 weight bytes a cycle, which the iDMA's stream already feeds: a second
-// writer would only take TCDM banks from the array.
-#if DSV2_DUAL_LOAD && NTOK == 1
+// Whether the chunks load in two parts (DSV2_DUAL_LOAD). Every token count's GEMV takes 128
+// weight bytes a pass, more than the iDMA's stream feeds alone.
+#if DSV2_DUAL_LOAD
 #define MOE_DUAL 1
 #else
 #define MOE_DUAL 0
 #endif
-
-#define MOE_SY_BYTES 2048u
 #define MOE_NBUF 3u                       // weight buffers
 #define MOE_BUF (HID * 32u)               // a weight buffer: the largest chunk, 64 KiB
 #define MOE_W4(j) (DSV2_W4 && (j) != 0u)  // job j's weights are INT4: all but the router's
@@ -100,20 +98,21 @@
 #define MOE_NB 2u                         // n-blocks per chunk, at most
 #define MOE_NSLOT_MAX (NTOK * TOP_K)      // the union of the tokens' top-6
 #define MOE_NJOB_MAX (3 + 2 * MOE_NSLOT_MAX)
+#define MOE_AROWS DSV2_AROWS(NTOK)        // rows of a GEMV A operand (snax-dsv2.h)
 #define MOE_EXP_BEATS (N_EXP / 32)
 #define MOE_HP (DSV2_BEAT + 2u * HID)     // the caller's h, and hn: a free beat below each row
 #define MOE_LGP (DSV2_BEAT + 2u * N_EXP)  // logits, a latch below
 #define MOE_ELP (DSV2_BEAT + 2u * N_EXP + DSV2_BEAT)  // [latch][e][sum]
 #define MOE_TB (6u * I_SH)                // a token's [gate|up | silu(gate)], FP16
 // A GEMV output of `bytes` per token: one token's buffer ends in the packed output's 15 slots of
-// spill; two tokens' outputs sit a pitch apart, 4 slots each (snax-dsv2.h, two tokens per
-// GEMV).
+// spill; several tokens' outputs sit a pitch apart, each with its spill (snax-dsv2.h, SEVERAL
+// TOKENS).
 #if NTOK == 1
 #define MOE_YP(bytes) 0u
 #define MOE_YBUF(bytes) ((bytes) + DSV2_SPILL(MOE_NB))
 #else
-#define MOE_YP(bytes) ((((bytes) + DSV2_SPILL2(MOE_NB)) + 63u) & ~63u)
-#define MOE_YBUF(bytes) (2u * MOE_YP(bytes))
+#define MOE_YP(bytes) ((((bytes) + DSV2_TOKSPILL) + 63u) & ~63u)
+#define MOE_YBUF(bytes) (NTOK * MOE_YP(bytes))
 #endif
 #define MOE_YP_R MOE_YP(2u * N_EXP)
 #define MOE_YP_GU(b) ((b) ? MOE_YP(2u * 2u * I_EXP) : MOE_YP(2u * 2u * I_SH))  // ygu[b]
@@ -141,15 +140,22 @@ typedef struct {
 #define MOE_XLOADED(m) (m)->sy[14] // chunks whose xDMA half is in L1 (xDMA hart -> GEMM)
 #define MOE_NSLOT(m) (m)->sy[15]  // slots: the union of the tokens' top-6
 #define MOE_HALF(m, t) (m)->sy[16 + (t)]  // which half of token t's ping-pong holds its out
-#define MOE_FIN(m, r) (m)->sy[18 + (r)]  // role r (0 iDMA, 1 GEMM, 2 xDMA hart) wrote its profile words
-#define MOE_T_JOB(m, j) (m)->sy[32 + (j)]   // job j done, cycles from the origin
-#define MOE_FACT(m, j) (m)->sy[64 + (j)]    // job j's dequant factors (DRAM)
-#define MOE_IDS(m, t, i) (m)->sy[96 + 8 * (t) + (i)]  // token t's top-6 ids, in order
-#define MOE_SLOT_ID(m, s) (m)->sy[112 + (s)]          // slot s's expert
-#define MOE_JOBS(m) ((volatile dsv2_moe_job_t *)((m)->sy + 128))
+#define MOE_FIN(m, r) (m)->sy[24 + (r)]  // role r (0 iDMA, 1 GEMM, 2 xDMA hart) wrote its profile words
+// the per-job, per-token and per-slot words, sized by the token count
+#define MOE_SY_FACT (32 + MOE_NJOB_MAX)
+#define MOE_SY_IDS (MOE_SY_FACT + MOE_NJOB_MAX)
+#define MOE_SY_SLOT (MOE_SY_IDS + 8 * NTOK)
+#define MOE_SY_JOBS (MOE_SY_SLOT + MOE_NSLOT_MAX)
+#define MOE_SY_P (MOE_SY_JOBS + 7 * MOE_NJOB_MAX)
+#define MOE_SY_BYTES ((((MOE_SY_P + 16) * 4u) + 1023u) & ~1023u)
+#define MOE_T_JOB(m, j) (m)->sy[32 + (j)]             // job j done, cycles from the origin
+#define MOE_FACT(m, j) (m)->sy[MOE_SY_FACT + (j)]     // job j's dequant factors (DRAM)
+#define MOE_IDS(m, t, i) (m)->sy[MOE_SY_IDS + 8 * (t) + (i)]  // token t's top-6 ids, in order
+#define MOE_SLOT_ID(m, s) (m)->sy[MOE_SY_SLOT + (s)]  // slot s's expert
+#define MOE_JOBS(m) ((volatile dsv2_moe_job_t *)((m)->sy + MOE_SY_JOBS))
 #define MOE_SPIN(m, w, v) dsv2_spin_ge(&(w), (v), &MOE_TMO(m))
 // Where each engine's time went (dsv2_moe_report)
-#define MOE_P(m, i) (m)->sy[320 + (i)]
+#define MOE_P(m, i) (m)->sy[MOE_SY_P + (i)]
 #define MOE_P_GLOAD 0    // GEMM core: waiting for a weight chunk
 #define MOE_P_GAOK 1     // GEMM core: waiting for a job or its A operand (the SIMD)
 #define MOE_P_GARRAY 2   // GEMM core: waiting for the array
@@ -216,9 +222,9 @@ static inline uint8_t *dsv2_moe_carve(dsv2_moe_t *m, uint8_t *p, volatile uint32
     m->sh = (uint16_t *)MOE_TAKE(NTOK * 2 * HID);            // the shared output, per token
     m->hn = (uint16_t *)(MOE_TAKE(NTOK * MOE_HP) + DSV2_BEAT);  // [latch][hn] per token
     m->ssq = MOE_TAKE(NTOK * DSV2_BEAT);
-    m->ha = (int8_t *)MOE_TAKE(DSV2_MR * HID);               // hn's A operand, both tokens
-    m->a8[0] = (int8_t *)MOE_TAKE(DSV2_MR * I_SH);           // a down's A: even units (the shared's)
-    m->a8[1] = (int8_t *)MOE_TAKE(DSV2_MR * I_EXP);          // ... odd units (slots)
+    m->ha = (int8_t *)MOE_TAKE(MOE_AROWS * HID);             // hn's A operand, every token
+    m->a8[0] = (int8_t *)MOE_TAKE(MOE_AROWS * I_SH);         // a down's A: even units (the shared's)
+    m->a8[1] = (int8_t *)MOE_TAKE(MOE_AROWS * I_EXP);        // ... odd units (slots)
     m->yr = (uint16_t *)MOE_TAKE(MOE_YBUF(2 * N_EXP));       // the router's raw logits
     m->ygu[0] = (uint16_t *)MOE_TAKE(MOE_YBUF(2 * 2 * I_SH));   // a gate|up's raw output, even units
     m->ygu[1] = (uint16_t *)MOE_TAKE(MOE_YBUF(2 * 2 * I_EXP));  // ... odd units
@@ -229,13 +235,13 @@ static inline uint8_t *dsv2_moe_carve(dsv2_moe_t *m, uint8_t *p, volatile uint32
     m->el = MOE_TAKE(NTOK * MOE_ELP);                        // [latch][e][sum] per token
     m->pr = (uint16_t *)MOE_TAKE(NTOK * 2 * N_EXP);
     m->w = (uint16_t *)MOE_TAKE(NTOK * DSV2_BEAT);           // the top-6 weights, a beat per token
-    m->gb = (uint16_t *)MOE_TAKE(NTOK * MOE_TB);             // per token [gate|up | silu(gate)]
 #if NTOK == 1
+    m->gb = (uint16_t *)MOE_TAKE(MOE_TB);                    // [gate|up | silu(gate)]
     m->gu = (uint16_t *)MOE_TAKE(TOP_K * 2 * 2 * I_EXP);     // every slot's [gate | up], dequantised
     m->sgu = (uint16_t *)MOE_TAKE(2 * 2 * I_SH);             // the shared [gate | up]
     m->es = (uint16_t *)MOE_TAKE(TOP_K * 2 * HID);           // every slot's e_i
 #else
-    m->gu = m->sgu = (uint16_t *)0;
+    m->gb = m->gu = m->sgu = (uint16_t *)0;  // the SwiGLU works in its gate|up buffer
     m->es = (uint16_t *)MOE_TAKE(NTOK * 2 * HID);            // the slot's e_i, per token
 #endif
     m->tw = (uint16_t *)MOE_TAKE(2 * HID);                   // w_i e_i
@@ -362,8 +368,7 @@ static void dsv2_moe_gemm(dsv2_moe_t *m) {
         const uint32_t k = MOE_JOBS(m)[j].k, a = MOE_JOBS(m)[j].a, y = MOE_JOBS(m)[j].y;
         if (w) {
             const uint32_t cw = MOE_CW(K, MOE_W4(j)), nb = cw / DSV2_NU, nch = N / cw;
-            dsv2_gemv_arm_ntok(K / DSV2_KU, nb, 1u, 0u, k, NTOK, MOE_W4(j));
-            if (NTOK == 2) dsv2_gemv_two_tokens(nb, MOE_JOBS(m)[j].r);
+            dsv2_gemv_arm_ntok(K / DSV2_KU, nb, 1u, 0u, k, NTOK, MOE_W4(j), MOE_JOBS(m)[j].r);
             for (uint32_t c = 0; c < nch; c++) {
                 const uint32_t g = cbase + c;
                 MOE_W(m, MOE_LOADED(m), g + 1u, &wload);
@@ -404,19 +409,20 @@ static inline void moe_drain(dsv2_moe_t *m, const char *what) {
     MOE_P(m, MOE_P_SDRAIN) += snrt_mcycle() - t0;
 }
 
-// Unit u's gate|up outputs (job j), both tokens: dequantise, then the SwiGLU into its down's
-// A operand.
+// Unit u's gate|up outputs (job j), every token: dequantise, then the SwiGLU into its down's A
+// operand. One token: the dequantised gate|up goes to g0 (the slot's own copy, for a check) and
+// silu(gate) behind it in gb. Several: both in place, in the unit's gate|up buffer.
 static void moe_gate_up(dsv2_moe_t *m, uint32_t u, uint32_t j, uint32_t inter, uint16_t *g0,
                         uint32_t inv_a) {
+    uint16_t *y = m->ygu[u & 1u];
+    const uint32_t yp = MOE_YP_GU(u & 1u);
+    uint16_t *g = NTOK == 1 ? g0 : y;
     for (uint32_t t = 0; t < NTOK; t++) {
-        dsv2_dequant_prep(MOE_TOK(m->ygu[u & 1u], t, MOE_YP_GU(u & 1u)), m->sbuf[j & 1u],
-                          MOE_TOK(g0, t, MOE_TB), 2 * inter);
+        dsv2_dequant_prep(MOE_TOK(y, t, yp), m->sbuf[j & 1u], MOE_TOK(g, t, yp), 2 * inter);
         snax_simd_fire();
     }
-    // silu(gate) at the back of the token's block; the gate|up at g0 (a slot's own copy with
-    // one token)
-    dsv2_swiglu(g0, (uint8_t *)m->gb + 4u * I_SH, (void *)0, m->a8[u & 1u], inter, inv_a,
-                (NTOK - 1u) * MOE_TB);
+    dsv2_swiglu(g, NTOK == 1 ? (uint8_t *)m->gb + 4u * I_SH : (uint8_t *)g, (void *)0,
+                m->a8[u & 1u], inter, inv_a, NTOK, yp);
 }
 
 // out_t += w e_t: Map(a = w) scales, EW ADD accumulates into the token's other ping-pong half.
@@ -453,7 +459,7 @@ static void dsv2_moe_simd(dsv2_moe_t *m) {
     for (uint32_t t = 0; t < NTOK; t++)
         dsv2_rmsnorm_row(MOE_TOK(m->h, t, MOE_HP), m->ssq + t * DSV2_BEAT,
                          MOE_TOK(m->hn, t, MOE_HP), 11);
-    dsv2_quant_a2(m->hn, MOE_TOK(m->hn, NTOK - 1u, MOE_HP), m->ha, HID, INV_H);
+    dsv2_quant_at(m->hn, MOE_HP, m->ha, HID, NTOK, INV_H);
     moe_drain(m, "norm");
     MOE_A_OK(m) = 2u;  // the router's and the shared gate|up's A operand is hn's
     MOE_SPAN("14 norm, A operand");
@@ -525,7 +531,7 @@ static void dsv2_moe_simd(dsv2_moe_t *m) {
             MOE_W(m, MOE_Y_DONE(m), jg + 1u, &wg);
             t0 = s0 = snrt_mcycle();
             if (!refused || !u) {
-                uint16_t *g0 = NTOK == 1 ? (u ? m->gu + (u - 1u) * 2 * I_EXP : m->sgu) : m->gb;
+                uint16_t *g0 = NTOK == 1 ? (u ? m->gu + (u - 1u) * 2 * I_EXP : m->sgu) : 0;
                 moe_gate_up(m, u, jg, u ? I_EXP : I_SH, g0, ex->inv_a);
                 moe_drain(m, u ? "gate|up + swiglu" : "shared gate|up + swiglu");
             }

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// DeepSeek-V2-Lite layer 1, pass after pass (I3; I4 for consecutive passes; I7 with two tokens
+// DeepSeek-V2-Lite layer 1, pass after pass (I3; I4 for consecutive passes; I7 with four tokens
 // per pass, as snax-dsv2-spec): per pass of NTOK tokens,
 //
 //     h   = x + MLA(x)      snax-dsv2-mla.h, stages 1 to 13; appends the tokens' cache rows

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// DeepSeek-V2-Lite layer 1's MLA block for NTOK = 1 or 2 consecutive tokens, x -> h = x + MLA(x),
+// DeepSeek-V2-Lite layer 1's MLA block for NTOK = 1, 2 or 4 consecutive tokens, x -> h = x + MLA(x),
 // with each token's row appended to the latent cache, on the four-engine split cluster:
 //
 //      1  xn  = rmsnorm(x)                          V1, V2 into the GEMV A operand
@@ -32,6 +32,8 @@
 //   tasks   W_DKV chunks | W_Q chunks | W_UK heads | QK0 QK1 PV0 QK2 PV1 .. PV(nt-1) | W_UV heads | W_O chunks
 //   loads   W_DKV chunks | W_Q chunks | W_UK heads | K0  V0  K1  V1  ..       V(nt-1) | W_UV heads | W_O chunks
 //
+// where the attention's part repeats once per pair of tokens (SEVERAL TOKENS).
+//
 // (a chunk is 32 output columns, K x 32 bytes = 64 KiB at K = 2,048; a head's absorbed weight
 // is 64 KiB too; both half that with INT4 weights, DSV2_WBITS), so outside attention load t is
 // what task t reads. Two SLABS of 68 KiB hold
@@ -50,31 +52,37 @@
 // free it raises XREQ, and it publishes LOADED when its part has landed and XLOADED says the
 // xDMA's has. W_UK, W_UV and the attention tiles stay on the iDMA.
 //
-// One token's GEMV reads 128 B of weights and 8 B of A a cycle, so the TCDM has room for the second
-// writer: with the TCDM arbitrating on every requester's urgency (snax-tcdm-priority.h) the
-// xDMA's part lands at 59 B a cycle, the iDMA's at 61, and W_Q streams at 82 B a cycle against 57
-// on the iDMA alone. Two tokens run the (16, 4, 16) shape at 64 B a cycle, which the iDMA feeds
-// alone, so they load on the iDMA only (MLA_DUAL).
+// A GEMV reads 128 B of weights a cycle for any token count (snax-dsv2.h: shape 1 for one token,
+// shape 2 for several) and 8 or 16 B of A, so the TCDM has room for the second writer: with the
+// TCDM arbitrating on every requester's urgency (snax-tcdm-priority.h) the xDMA's part lands at
+// 59 B a cycle, the iDMA's at 61, and W_Q streams at 82 B a cycle against 57 on the iDMA alone.
 //
 //   iDMA (hart 3)   x, the factors, the RoPE tables; the load stream; the cache append
 //   GEMM (hart 0)   the task stream
 //   SIMD (hart 1)   every SIMD stage, in order
 //   xDMA (hart 2)   seeds m; stages the RoPE row and its pair swap (core code: a pair of FP16
-//                   is one word, so the swap is a 16-bit rotate); transposes o~; with
-//                   MLA_DUAL, its part of every W_DKV, W_Q and W_O chunk
+//                   is one word, so the swap is a 16-bit rotate); transposes o~, a pair of
+//                   tokens at a time; with MLA_DUAL, its part of every W_DKV, W_Q and W_O chunk
 //
 // THE PASS. Token t sits at position pos + t; pos + NTOK keys run in nt = ceil((pos + NTOK) /
 // BC) tiles. A last tile with fewer keys runs whole: the cache's rows past the pass are zero, and
 // before its softmax the SIMD overwrites their scores with -65504 (one Map task), so their P is
 // exactly 0 (hwmodel.mla_attention).
 //
-// TWO TOKENS (NTOK = 2, from data.h; 1 by default). Every GEMV carries both: A holds token 0 in
-// row 0 and token 1 in row 4, and the D walk splits them into two outputs a pitch apart
-// (snax-dsv2.h dsv2_gemv_two_tokens), so the weights stream once for two tokens. Per-token
-// buffers sit at fixed pitches, so a SIMD task reads both through one extra loop. The attention
-// is one pass over the keys: Q8's 32 rows are token 0's 16 heads and token 1's, and token 0 must
-// not see token 1's key -- the last one -- whose score its 16 lanes get as -65504 from a Map
-// task that writes only those lanes.
+// SEVERAL TOKENS (NTOK = 2 or 4, from data.h; 1 by default). Every GEMV carries all of them in
+// the (4, 4, 32) shape: A is the compact four-row operand, token t in row t, and the D walk puts
+// the tokens' outputs a pitch apart (snax-dsv2.h, SEVERAL TOKENS), so the weights stream once
+// for every token. Per-token buffers sit at fixed pitches, so a SIMD task reads them through one
+// extra loop. The attention holds two tokens at a time: Q8's 32 rows are a PAIR's 16 heads each,
+// and the key tiles run once per pair (MLA_NPAIR passes over the keys; a pair's m, l and O start
+// afresh). A token must not see the keys of the pass's later tokens -- the last keys -- whose
+// scores its 16 lanes get as -65504 from Map tasks that write only those lanes.
+//
+// L1 WITH SEVERAL TOKENS. The buffers of the stages before the attention (xn, ckv, cn, q, the
+// RoPE rows, the factors of W_DKV, W_Q and W_UK, the cache rows) are one run, dead once Q8 is
+// assembled; over it sit the second pair's Q8 (over xn, f_kv and ykv, dead by then), o~, and
+// then W_UV's and W_O's outputs in turn. attn reuses oh. One token keeps every intermediate, for
+// snax-dsv2-mla's checks.
 //
 // USE. The whole L1 the block carves (dsv2_mla_carve) must be zero when a pass starts (TCDM
 // has no reset, and Q8's rows 16..31 and l must start at zero), and its sync words fresh: the
@@ -105,19 +113,21 @@
 #ifndef NTOK
 #define NTOK 1
 #endif
-#if NTOK != 1 && NTOK != 2
-#error "a pass holds one or two tokens: 16 heads each in the 32 query lanes"
+#if NTOK != 1 && NTOK != 2 && NTOK != 4
+#error "a pass holds one, two or four tokens: the attention takes two of 16 heads at a time"
 #endif
 
-// Whether the streamed chunks load in two parts (DSV2_DUAL_LOAD): with one token only. Two
-// tokens run the (16, 4, 16) shape, 64 weight bytes a cycle, which the iDMA's stream feeds alone.
-#if DSV2_DUAL_LOAD && NTOK == 1
+// Whether the streamed chunks load in two parts (DSV2_DUAL_LOAD).
+#if DSV2_DUAL_LOAD
 #define MLA_DUAL 1
 #else
 #define MLA_DUAL 0
 #endif
 
-#define MLA_BR 32                            // query lanes: 16 heads per token, zero rows past them
+#define MLA_NPAIR ((NTOK + 1) / 2)          // attention passes over the keys: two tokens each
+#define MLA_AROWS DSV2_AROWS(NTOK)          // rows of a GEMV A operand (snax-dsv2.h)
+
+#define MLA_BR 32                            // query lanes: a pair's 16 heads each, zero rows past them
 #define MLA_DQK 576                          // [c | k_pe]
 #define MLA_DV KV_RANK                       // 512
 #define MLA_Q_N (HEADS * Q_HEAD)             // 3072
@@ -136,11 +146,12 @@
 #define MLA_KTILE (BC * MLA_DQK)             // 36 KiB
 #define MLA_VTILE (MLA_DV * BC)              // 32 KiB
 #define MLA_SLAB (MLA_KTILE + MLA_VTILE)
+#define MLA_Q8B (MLA_BR * MLA_DQK)           // one pair's Q^T operand, 18 KiB
 #define MLA_QT_PITCH (2u * MLA_DV + DSV2_BEAT)  // q~ rows: 17 beats, so A-order reads meet 2-way bank conflicts
 #define MLA_UK_BYTES DSV2_WB(Q_NOPE * MLA_DV, DSV2_W4)  // one head's W_UK: 64 KiB at INT8
 #define MLA_UV_BYTES DSV2_WB(MLA_DV * V_HEAD, DSV2_W4)  // one head's W_UV: 64 KiB at INT8
 #define MLA_SCORE_MASK 0xC77FE000u           // FP32 -65504: a padding key's score
-#define MLA_TOK0_LANES 0x0Fu                 // writer channels 0..3: FP16 lanes 0..15, token 0's heads
+#define MLA_TOK_LANES(lt) (0x0Fu << (4u * (lt)))  // writer channels of a pair's token lt: its 16 FP16 lanes
 
 // Per-token pitches (bytes). A row with a norm on it keeps a free beat below it.
 #define MLA_XP (DSV2_BEAT + 2u * HID)        // x, and the caller's h
@@ -149,14 +160,15 @@
 #define MLA_ROPE_BT (NTOK * MLA_ROPE_B)      // one RoPE operand, all tokens
 #define MLA_XTP (2u * HEADS * MLA_DV)        // o~, [16, 512] per token
 // A GEMV output of `bytes` per token with n-blocks nb per chunk: one token's buffer ends in the
-// packed output's 15 slots of spill; two tokens' outputs sit a pitch apart, 4 slots each
-// (snax-dsv2.h, two tokens per GEMV).
+// packed output's 15 slots of spill; several tokens' outputs sit a pitch apart, each with its
+// spill (snax-dsv2.h, SEVERAL TOKENS).
+#define MLA_R64(n) (((n) + 63u) & ~63u)
 #if NTOK == 1
 #define MLA_YP(bytes, nb) 0u
 #define MLA_YBUF(bytes, nb) ((bytes) + DSV2_SPILL(nb))
 #else
-#define MLA_YP(bytes, nb) ((((bytes) + DSV2_SPILL2(nb)) + 63u) & ~63u)
-#define MLA_YBUF(bytes, nb) (2u * MLA_YP(bytes, nb))
+#define MLA_YP(bytes, nb) MLA_R64((bytes) + DSV2_TOKSPILL)
+#define MLA_YBUF(bytes, nb) (NTOK * MLA_YP(bytes, nb))
 #endif
 #define MLA_YP_KV MLA_YP(2u * MLA_DQK, MLA_CH / DSV2_NU)
 #define MLA_YP_Q MLA_YP(2u * MLA_Q_N, MLA_CH / DSV2_NU)
@@ -172,14 +184,17 @@
 #define MLA_T_Q0 (MLA_T_KV0 + MLA_NC_KV)
 #define MLA_T_UK0 (MLA_T_Q0 + MLA_NC_Q)
 #define MLA_T_ATT (MLA_T_UK0 + HEADS)
-#define MLA_L_K(j) (MLA_T_ATT + 2u * (j))
-#define MLA_L_V(j) (MLA_T_ATT + 2u * (j) + 1u)
+// pair p's attention: its loads K0 V0 K1 V1 .., its tasks QK(j) then PV(j-1), 2 nt of each per pair
+#define MLA_L_K(nt, p, j) (MLA_T_ATT + 2u * (nt) * (p) + 2u * (j))
+#define MLA_L_V(nt, p, j) (MLA_L_K(nt, p, j) + 1u)
 // the GEMM runs QK(j) then PV(j-1): QK0 QK1 PV0 QK2 PV1 .. QK(nt-1) PV(nt-2) PV(nt-1)
-static inline uint32_t mla_t_qk(uint32_t j) { return MLA_T_ATT + (j ? 2u * j - 1u : 0u); }
-static inline uint32_t mla_t_pv(uint32_t nt, uint32_t j) {
-    return MLA_T_ATT + (j == nt - 1u ? 2u * nt - 1u : 2u * j + 2u);
+static inline uint32_t mla_t_qk(uint32_t nt, uint32_t p, uint32_t j) {
+    return MLA_T_ATT + 2u * nt * p + (j ? 2u * j - 1u : 0u);
 }
-static inline uint32_t mla_t_uv0(uint32_t nt) { return MLA_T_ATT + 2u * nt; }
+static inline uint32_t mla_t_pv(uint32_t nt, uint32_t p, uint32_t j) {
+    return MLA_T_ATT + 2u * nt * p + (j == nt - 1u ? 2u * nt - 1u : 2u * j + 2u);
+}
+static inline uint32_t mla_t_uv0(uint32_t nt) { return MLA_T_ATT + 2u * nt * MLA_NPAIR; }
 static inline uint32_t mla_t_o0(uint32_t nt) { return mla_t_uv0(nt) + HEADS; }
 static inline uint32_t mla_t_end(uint32_t nt) { return mla_t_o0(nt) + MLA_NC_O; }
 
@@ -195,9 +210,9 @@ static inline uint32_t mla_t_end(uint32_t nt) { return mla_t_o0(nt) + MLA_NC_O; 
 #define MLA_APPENDED(m) (m)->sy[8]  // the row is in both copies          (iDMA -> SIMD)
 #define MLA_Q_OUT(m) (m)->sy[9]     // Q8 assembled                       (SIMD -> GEMM)
 #define MLA_M_INIT(m) (m)->sy[10]   // m seeded to -65504                 (xDMA -> SIMD)
-#define MLA_P_OUT(m) (m)->sy[11]    // P8 tiles published                 (SIMD -> GEMM)
-#define MLA_N_OUT(m) (m)->sy[12]    // o~^T written                       (SIMD -> xDMA)
-#define MLA_X_OUT(m) (m)->sy[13]    // o~ transposed                      (xDMA -> SIMD)
+#define MLA_P_OUT(m) (m)->sy[11]    // P8 tiles published, over the pairs (SIMD -> GEMM)
+#define MLA_N_OUT(m) (m)->sy[12]    // pairs whose o~^T is written        (SIMD -> xDMA)
+#define MLA_X_OUT(m) (m)->sy[13]    // pairs whose o~ is transposed       (xDMA -> SIMD)
 #define MLA_AUV_OK(m) (m)->sy[14]   // W_UV's 16 A operands               (SIMD -> GEMM)
 #define MLA_OA_OK(m) (m)->sy[15]    // W_O's A operand                    (SIMD -> GEMM)
 #define MLA_DONE(m) (m)->sy[16]     // h computed                         (SIMD -> the caller)
@@ -250,7 +265,7 @@ typedef struct {
     uint16_t *x, *xn, *f_kv, *f_q, *f_uk, *f_uv, *yoh, *f_o, *ya, *ykv, *ckv, *cn, *q16, *rot;
     uint16_t *xt, *oh, *attn, *h;
     uint8_t *ssq, *qt, *sbuf, *rmax, *mrun, *mnew, *corr, *lrun, *lnew, *p8[2], *rsc;
-    int8_t *row, *q8;
+    int8_t *row, *q8[2];  // Q^T per pair of tokens
     // one region, three views in turn
     int8_t *xa, *qn8, *auv, *oa;
     uint16_t *yqt, *yq, *o16, *ot16;
@@ -272,6 +287,7 @@ static inline uint8_t *dsv2_mla_carve(dsv2_mla_t *m, uint8_t *p, volatile uint32
     // reduce reads its pair as consecutive beats
     m->x = (uint16_t *)(MLA_TAKE(NTOK * MLA_XP) + DSV2_BEAT);        // [seed][x] per token
     m->ssq = MLA_TAKE(NTOK * DSV2_BEAT);
+#if NTOK == 1
     m->xn = (uint16_t *)MLA_TAKE(NTOK * 2 * HID);
     m->f_kv = (uint16_t *)MLA_TAKE(2 * MLA_DQK);
     m->f_q = (uint16_t *)MLA_TAKE(2 * MLA_Q_N);
@@ -286,7 +302,44 @@ static inline uint8_t *dsv2_mla_carve(dsv2_mla_t *m, uint8_t *p, volatile uint32
     m->row = (int8_t *)MLA_TAKE(NTOK * MLA_DQK);                        // [c8 | kpe8] per token
     m->q16 = (uint16_t *)MLA_TAKE(NTOK * 2 * MLA_Q_N);
     m->rot = (uint16_t *)MLA_TAKE(MLA_ROPE_BT);                         // [q_pe x 16 | k_pe] rotated
-    m->q8 = (int8_t *)MLA_TAKE(MLA_BR * MLA_DQK);                       // Q^T operand, 16 rows per token
+    m->q8[0] = (int8_t *)MLA_TAKE(MLA_Q8B);                             // Q^T operand, 16 rows per token
+    m->q8[1] = (int8_t *)0;
+#else
+    // the stages before the attention, in one run (L1 WITH SEVERAL TOKENS)
+    uint8_t *g1 = MLA_TAKE(0);
+    m->xn = (uint16_t *)MLA_TAKE(NTOK * 2 * HID);
+    m->f_kv = (uint16_t *)MLA_TAKE(2 * MLA_DQK);
+    m->ykv = (uint16_t *)MLA_TAKE(MLA_YBUF(2 * MLA_DQK, MLA_CH / DSV2_NU));
+    m->ckv = (uint16_t *)(MLA_TAKE(NTOK * MLA_CKP) + DSV2_BEAT);        // [seed][ckv] per token
+    m->cn = (uint16_t *)MLA_TAKE(NTOK * 2 * MLA_DV);
+    m->q16 = (uint16_t *)MLA_TAKE(NTOK * 2 * MLA_Q_N);
+    m->rot = (uint16_t *)MLA_TAKE(MLA_ROPE_BT);                         // [q_pe x 16 | k_pe] rotated
+    m->f_q = (uint16_t *)MLA_TAKE(2 * MLA_Q_N);
+    m->f_uk = (uint16_t *)MLA_TAKE(2 * HEADS * MLA_DV);
+    m->row = (int8_t *)MLA_TAKE(NTOK * MLA_DQK);                        // [c8 | kpe8] per token
+    //   over it: the second pair's Q8, then o~ and, once it is quantised, W_UV's and W_O's outputs
+    m->q8[1] = MLA_NPAIR > 1 ? (int8_t *)g1 : (int8_t *)0;
+    m->xt = (uint16_t *)(g1 + (MLA_NPAIR > 1 ? MLA_Q8B : 0u));
+    m->yoh = m->xt;
+    m->ya = m->xt;
+    _Static_assert(MLA_NPAIR == 1 || MLA_R64(NTOK * 2 * HID) + MLA_R64(2 * MLA_DQK) +
+                                         MLA_R64(MLA_YBUF(2 * MLA_DQK, MLA_CH / DSV2_NU)) >=
+                                     MLA_Q8B,
+                   "the second pair's Q8 must lie over xn, f_kv and ykv alone");
+    _Static_assert(
+        MLA_R64(NTOK * 2 * HID) + MLA_R64(2 * MLA_DQK) +
+                MLA_R64(MLA_YBUF(2 * MLA_DQK, MLA_CH / DSV2_NU)) + MLA_R64(NTOK * MLA_CKP) +
+                MLA_R64(NTOK * 2 * MLA_DV) + MLA_R64(NTOK * 2 * MLA_Q_N) + MLA_R64(MLA_ROPE_BT) +
+                MLA_R64(2 * MLA_Q_N) + MLA_R64(2 * HEADS * MLA_DV) + MLA_R64(NTOK * MLA_DQK) >=
+            (MLA_NPAIR > 1 ? MLA_Q8B : 0u) + NTOK * MLA_XTP,
+        "o~ must fit over the stages before the attention");
+    _Static_assert(NTOK * MLA_XTP >= MLA_YBUF(HEADS * DSV2_SLOT(V_HEAD / DSV2_NU), V_HEAD / DSV2_NU) &&
+                       NTOK * MLA_XTP >= MLA_YBUF(2 * HID, MLA_CH / DSV2_NU),
+                   "W_UV's and W_O's outputs must fit where o~ was");
+    m->f_uv = (uint16_t *)MLA_TAKE(2 * HEADS * V_HEAD);
+    m->f_o = (uint16_t *)MLA_TAKE(2 * HID);
+    m->q8[0] = (int8_t *)MLA_TAKE(MLA_Q8B);                             // the first pair's Q^T
+#endif
     m->sbuf = MLA_TAKE(2 * (1 + MLA_SBEATS) * DSV2_BEAT);               // [latch][S^T], by tile parity
     m->rmax = MLA_TAKE(DSV2_BEAT);
     m->mrun = MLA_TAKE(DSV2_BEAT);
@@ -297,21 +350,27 @@ static inline uint8_t *dsv2_mla_carve(dsv2_mla_t *m, uint8_t *p, volatile uint32
     m->p8[0] = MLA_TAKE((MLA_PBEATS + 2) * DSV2_BEAT);                  // [P8][rowsum][corr*l]
     m->p8[1] = MLA_TAKE((MLA_PBEATS + 2) * DSV2_BEAT);
     m->rsc = MLA_TAKE(DSV2_BEAT);                                       // c / l, for a check
+#if NTOK == 1
     m->xt = (uint16_t *)MLA_TAKE(NTOK * MLA_XTP);                       // o~, [16, 512] per token
     m->oh = (uint16_t *)MLA_TAKE(NTOK * 2 * HID);                       // the heads' outputs
     m->attn = (uint16_t *)MLA_TAKE(NTOK * 2 * HID);
+#else
+    m->oh = (uint16_t *)MLA_TAKE(NTOK * 2 * HID);                       // the heads' outputs, then attn
+    m->attn = m->oh;
+#endif
     uint8_t *R = m->region = MLA_TAKE(0);
-    //   up to Q8: xn's A operand (then W_UK's outputs over it), q, the RoPE operands, W_UK's A;
-    //   q~'s padded rows behind W_UK's outputs, over q, the RoPE operands and W_UK's A, all dead
-    //   by the time the W_UK outputs are dequantised
+    //   up to Q8: xn's A operand and q (then W_UK's outputs over both), the RoPE operands, W_UK's
+    //   A; q~'s padded rows behind W_UK's outputs, over q, the RoPE operands and W_UK's A, all
+    //   dead by the time the W_UK outputs are dequantised
     const uint32_t yqt_bytes = MLA_YBUF(HEADS * DSV2_SLOT(MLA_DV / DSV2_NU), MLA_DV / DSV2_NU);
+    const uint32_t xa_yq = MLA_R64(MLA_AROWS * HID) + MLA_R64(MLA_YBUF(2 * MLA_Q_N, MLA_CH / DSV2_NU));
     m->xa = (int8_t *)R;
     m->yqt = (uint16_t *)R;
-    m->yq = (uint16_t *)(R + DSV2_MR * HID);
-    m->rope = (uint8_t *)m->yq + ((MLA_YBUF(2 * MLA_Q_N, MLA_CH / DSV2_NU) + 63u) & ~63u);
+    m->yq = (uint16_t *)(R + MLA_R64(MLA_AROWS * HID));
+    m->rope = R + (xa_yq > MLA_R64(yqt_bytes) ? xa_yq : MLA_R64(yqt_bytes));
     m->qn8 = (int8_t *)(m->rope + 4 * MLA_ROPE_BT);
-    m->qt = R + ((yqt_bytes + 63u) & ~63u);
-    uint8_t *r1_end = (uint8_t *)m->qn8 + HEADS * DSV2_MR * Q_NOPE;
+    m->qt = R + MLA_R64(yqt_bytes);
+    uint8_t *r1_end = (uint8_t *)m->qn8 + HEADS * MLA_AROWS * Q_NOPE;
     if (m->qt + NTOK * HEADS * MLA_QT_PITCH > r1_end) r1_end = m->qt + NTOK * HEADS * MLA_QT_PITCH;
     //   attention: O16 behind its latch (c / l), o~^T, O^T in INT32; then W_UV's A operands
     m->olatch = R;
@@ -320,9 +379,10 @@ static inline uint8_t *dsv2_mla_carve(dsv2_mla_t *m, uint8_t *p, volatile uint32
     m->oacc = (int32_t *)(m->ot16 + MLA_DV * MLA_BR);
     m->auv = (int8_t *)R;
     uint8_t *r2_end = R + DSV2_BEAT + 2 * MLA_DV * MLA_BR * 2 + MLA_DV * MLA_BR * 4;
+    if (R + HEADS * MLA_AROWS * MLA_DV > r2_end) r2_end = R + HEADS * MLA_AROWS * MLA_DV;
     //   behind them: W_O's A operand, written while W_UV's are still being read
     m->oa = (int8_t *)(r1_end > r2_end ? r1_end : r2_end);
-    return (uint8_t *)m->oa + DSV2_MR * HID;
+    return (uint8_t *)m->oa + MLA_AROWS * HID;
 #undef MLA_TAKE
 }
 
@@ -484,14 +544,13 @@ static void dsv2_mla_gemm(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     MLA_W(m, MLA_XA_OK(m), 1u, MLA_PGW(m, 0) + 1);
     mla_prio(DSV2_TCDM_PRIO_STREAM);
     s0 = snrt_mcycle();
-    dsv2_gemv_arm_ntok(HID / DSV2_KU, MLA_CH / DSV2_NU, 1u, 0u, K_X, NTOK, DSV2_W4);
-    if (NTOK == 2) dsv2_gemv_two_tokens(MLA_CH / DSV2_NU, MLA_YP_KV);
+    dsv2_gemv_arm_ntok(HID / DSV2_KU, MLA_CH / DSV2_NU, 1u, 0u, K_X, NTOK, DSV2_W4, MLA_YP_KV);
     mla_gemv_run(m, MLA_T_KV0, MLA_NC_KV, m->xa, 0u, (uint8_t *)m->ykv,
                  DSV2_SLOT(MLA_CH / DSV2_NU), &id, MLA_PGW(m, 0));
     MLA_T_PH(m, 0) = snrt_mcycle() - org;
     dsv2_span(m->tr, DSV2_TR_GEMM, "3 W_DKV", s0, snrt_mcycle());
     s0 = snrt_mcycle();
-    if (NTOK == 2) dsv2_gemv_two_tokens(MLA_CH / DSV2_NU, MLA_YP_Q);
+    if (NTOK > 1) dsv2_gemv_pitch(MLA_YP_Q);
     mla_gemv_run(m, MLA_T_Q0, MLA_NC_Q, m->xa, 0u, (uint8_t *)m->yq, DSV2_SLOT(MLA_CH / DSV2_NU),
                  &id, MLA_PGW(m, 1));
     MLA_T_PH(m, 1) = snrt_mcycle() - org;
@@ -499,39 +558,42 @@ static void dsv2_mla_gemm(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     MLA_W(m, MLA_QN_OK(m), 1u, MLA_PGW(m, 2) + 1);
     mla_prio(DSV2_TCDM_PRIO_HEAD);
     s0 = snrt_mcycle();
-    dsv2_gemv_arm_ntok(Q_NOPE / DSV2_KU, MLA_DV / DSV2_NU, 1u, 0u, K_UK, NTOK, DSV2_W4);
-    if (NTOK == 2) dsv2_gemv_two_tokens(MLA_DV / DSV2_NU, MLA_YP_UK);
-    mla_gemv_run(m, MLA_T_UK0, HEADS, m->qn8, DSV2_MR * Q_NOPE, (uint8_t *)m->yqt,
+    dsv2_gemv_arm_ntok(Q_NOPE / DSV2_KU, MLA_DV / DSV2_NU, 1u, 0u, K_UK, NTOK, DSV2_W4,
+                       MLA_YP_UK);
+    mla_gemv_run(m, MLA_T_UK0, HEADS, m->qn8, MLA_AROWS * Q_NOPE, (uint8_t *)m->yqt,
                  DSV2_SLOT(MLA_DV / DSV2_NU), &id, MLA_PGW(m, 2));
     MLA_T_PH(m, 2) = snrt_mcycle() - org;
     dsv2_span(m->tr, DSV2_TR_GEMM, "6 W_UK", s0, snrt_mcycle());
-    // attention: QK(j), then PV(j-1), one task at a time
+    // attention, per pair of tokens: QK(j), then PV(j-1), one task at a time
     MLA_W(m, MLA_Q_OUT(m), 1u, MLA_PGW(m, 3) + 1);
     mla_prio(DSV2_TCDM_PRIO_ATTN);
     uint32_t t = MLA_T_ATT;
-    for (uint32_t j = 0; j <= nt; j++) {
-        if (j < nt) {
-            MLA_W(m, MLA_LOADED(m), MLA_L_K(j) + 1u, MLA_PGW(m, 3));
-            s0 = snrt_mcycle();
-            mla_qk_arm();
-            mla_gemm_go(m->slab[j & 1u], m->q8, m->oacc,
-                        m->sbuf + (j & 1u) * (1 + MLA_SBEATS) * DSV2_BEAT + DSV2_BEAT);
-            mla_retire(m, ++id, MLA_PGW(m, 3) + 2);
-            MLA_RETIRED(m) = ++t;
-            dsv2_span(m->tr, DSV2_TR_GEMM, "8 QK", s0, snrt_mcycle());
-        }
-        if (j > 0) {
-            const uint32_t tt = j - 1u, last = (tt == nt - 1u);
-            MLA_W(m, MLA_P_OUT(m), tt + 1u, MLA_PGW(m, 3) + 1);
-            MLA_W(m, MLA_LOADED(m), MLA_L_V(tt) + 1u, MLA_PGW(m, 3));
-            s0 = snrt_mcycle();
-            mla_pv_arm(tt == 0u, last, ps->k_o);
-            if (tt) mla_pv_factors((const volatile uint32_t *)(m->corr + (tt & 1u) * DSV2_BEAT));
-            mla_gemm_go(m->slab[tt & 1u] + MLA_KTILE, m->p8[tt & 1u], m->oacc,
-                        last ? (void *)m->o16 : (void *)m->oacc);
-            mla_retire(m, ++id, MLA_PGW(m, 3) + 2);
-            MLA_RETIRED(m) = ++t;
-            dsv2_span(m->tr, DSV2_TR_GEMM, "10 PV", s0, snrt_mcycle());
+    for (uint32_t pp = 0; pp < MLA_NPAIR; pp++) {
+        for (uint32_t j = 0; j <= nt; j++) {
+            if (j < nt) {
+                MLA_W(m, MLA_LOADED(m), MLA_L_K(nt, pp, j) + 1u, MLA_PGW(m, 3));
+                s0 = snrt_mcycle();
+                mla_qk_arm();
+                mla_gemm_go(m->slab[j & 1u], m->q8[pp], m->oacc,
+                            m->sbuf + (j & 1u) * (1 + MLA_SBEATS) * DSV2_BEAT + DSV2_BEAT);
+                mla_retire(m, ++id, MLA_PGW(m, 3) + 2);
+                MLA_RETIRED(m) = ++t;
+                dsv2_span(m->tr, DSV2_TR_GEMM, "8 QK", s0, snrt_mcycle());
+            }
+            if (j > 0) {
+                const uint32_t tt = j - 1u, last = (tt == nt - 1u);
+                MLA_W(m, MLA_P_OUT(m), pp * nt + tt + 1u, MLA_PGW(m, 3) + 1);
+                MLA_W(m, MLA_LOADED(m), MLA_L_V(nt, pp, tt) + 1u, MLA_PGW(m, 3));
+                s0 = snrt_mcycle();
+                mla_pv_arm(tt == 0u, last, ps->k_o);
+                if (tt)
+                    mla_pv_factors((const volatile uint32_t *)(m->corr + (tt & 1u) * DSV2_BEAT));
+                mla_gemm_go(m->slab[tt & 1u] + MLA_KTILE, m->p8[tt & 1u], m->oacc,
+                            last ? (void *)m->o16 : (void *)m->oacc);
+                mla_retire(m, ++id, MLA_PGW(m, 3) + 2);
+                MLA_RETIRED(m) = ++t;
+                dsv2_span(m->tr, DSV2_TR_GEMM, "10 PV", s0, snrt_mcycle());
+            }
         }
     }
     csrw_ss(MLA_COLSCALE + 0, 0u);  // no dispatch inherits an armed scaler
@@ -539,17 +601,16 @@ static void dsv2_mla_gemm(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     MLA_W(m, MLA_AUV_OK(m), 1u, MLA_PGW(m, 4) + 1);
     mla_prio(DSV2_TCDM_PRIO_HEAD);
     s0 = snrt_mcycle();
-    dsv2_gemv_arm_ntok(MLA_DV / DSV2_KU, V_HEAD / DSV2_NU, 1u, 0u, K_UV, NTOK, DSV2_W4);
-    if (NTOK == 2) dsv2_gemv_two_tokens(V_HEAD / DSV2_NU, MLA_YP_UV);
-    mla_gemv_run(m, mla_t_uv0(nt), HEADS, m->auv, DSV2_MR * MLA_DV, (uint8_t *)m->yoh,
+    dsv2_gemv_arm_ntok(MLA_DV / DSV2_KU, V_HEAD / DSV2_NU, 1u, 0u, K_UV, NTOK, DSV2_W4,
+                       MLA_YP_UV);
+    mla_gemv_run(m, mla_t_uv0(nt), HEADS, m->auv, MLA_AROWS * MLA_DV, (uint8_t *)m->yoh,
                  DSV2_SLOT(V_HEAD / DSV2_NU), &id, MLA_PGW(m, 4));
     MLA_T_PH(m, 4) = snrt_mcycle() - org;
     dsv2_span(m->tr, DSV2_TR_GEMM, "11 W_UV", s0, snrt_mcycle());
     MLA_W(m, MLA_OA_OK(m), 1u, MLA_PGW(m, 5) + 1);
     mla_prio(DSV2_TCDM_PRIO_STREAM);
     s0 = snrt_mcycle();
-    dsv2_gemv_arm_ntok(HID / DSV2_KU, MLA_CH / DSV2_NU, 1u, 0u, K_X, NTOK, DSV2_W4);
-    if (NTOK == 2) dsv2_gemv_two_tokens(MLA_CH / DSV2_NU, MLA_YP_A);
+    dsv2_gemv_arm_ntok(HID / DSV2_KU, MLA_CH / DSV2_NU, 1u, 0u, K_X, NTOK, DSV2_W4, MLA_YP_A);
     mla_gemv_run(m, mla_t_o0(nt), MLA_NC_O, m->oa, 0u, (uint8_t *)m->ya,
                  DSV2_SLOT(MLA_CH / DSV2_NU), &id, MLA_PGW(m, 5));
     MLA_T_PH(m, 5) = snrt_mcycle() - org;
@@ -622,28 +683,29 @@ static void dsv2_mla_idma(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     MLA_T_APPEND(m) = snrt_mcycle() - t_app;
     dsv2_span(m->tr, DSV2_TR_IDMA, "7 cache append", t_app, snrt_mcycle());
     MLA_APPENDED(m) = 1u;
-    // attention: K(j) frees after QK(j), V(j) after PV(j)
+    // attention, per pair of tokens: K(j) frees after QK(j), V(j) after PV(j)
     uint32_t kneed[2] = {need[0], need[1]}, vneed[2] = {need[0], need[1]};
-    for (uint32_t j = 0; j < nt; j++) {
-        const uint32_t s = j & 1u;
-        MLA_W(m, MLA_RETIRED(m), kneed[s], &waited);
-        uint32_t x0 = snrt_mcycle();
-        snrt_dma_start_1d(m->slab[s], key + j * MLA_KTILE, MLA_KTILE);
-        snrt_dma_wait_all();
-        xfer += snrt_mcycle() - x0;
-        dsv2_span(m->tr, DSV2_TR_IDMA, "8 key tile", x0, snrt_mcycle());
-        kneed[s] = mla_t_qk(j) + 1u;
-        MLA_LOADED(m) = MLA_L_K(j) + 1u;
-        MLA_W(m, MLA_RETIRED(m), vneed[s], &waited);
-        x0 = snrt_mcycle();
-        snrt_dma_start_2d(m->slab[s] + MLA_KTILE, val + j * (16u * BC), 16u * BC, 16u * BC,
-                          16u * CAP, MLA_DV / DSV2_MR);
-        snrt_dma_wait_all();
-        xfer += snrt_mcycle() - x0;
-        dsv2_span(m->tr, DSV2_TR_IDMA, "10 value tile", x0, snrt_mcycle());
-        vneed[s] = mla_t_pv(nt, j) + 1u;
-        MLA_LOADED(m) = MLA_L_V(j) + 1u;
-    }
+    for (uint32_t pp = 0; pp < MLA_NPAIR; pp++)
+        for (uint32_t j = 0; j < nt; j++) {
+            const uint32_t s = j & 1u;
+            MLA_W(m, MLA_RETIRED(m), kneed[s], &waited);
+            uint32_t x0 = snrt_mcycle();
+            snrt_dma_start_1d(m->slab[s], key + j * MLA_KTILE, MLA_KTILE);
+            snrt_dma_wait_all();
+            xfer += snrt_mcycle() - x0;
+            dsv2_span(m->tr, DSV2_TR_IDMA, "8 key tile", x0, snrt_mcycle());
+            kneed[s] = mla_t_qk(nt, pp, j) + 1u;
+            MLA_LOADED(m) = MLA_L_K(nt, pp, j) + 1u;
+            MLA_W(m, MLA_RETIRED(m), vneed[s], &waited);
+            x0 = snrt_mcycle();
+            snrt_dma_start_2d(m->slab[s] + MLA_KTILE, val + j * (16u * BC), 16u * BC, 16u * BC,
+                              16u * CAP, MLA_DV / DSV2_MR);
+            snrt_dma_wait_all();
+            xfer += snrt_mcycle() - x0;
+            dsv2_span(m->tr, DSV2_TR_IDMA, "10 value tile", x0, snrt_mcycle());
+            vneed[s] = mla_t_pv(nt, pp, j) + 1u;
+            MLA_LOADED(m) = MLA_L_V(nt, pp, j) + 1u;
+        }
     need[0] = vneed[0];
     need[1] = vneed[1];
     for (uint32_t hh = 0; hh < HEADS; hh++)
@@ -720,13 +782,19 @@ static void dsv2_mla_xdma(dsv2_mla_t *m) {
     MLA_ROPE_IN(m) = 1u;
     MLA_P(m, MLA_P_XROPE) = snrt_mcycle() - x0;
     dsv2_span(m->tr, DSV2_TR_XDMA, "5 RoPE rows (core)", x0, snrt_mcycle());
-    // o~^T is [512, 32] FP16; its first 16 NTOK columns are the tokens' heads
-    MLA_SPIN(m, MLA_N_OUT(m), 1u);
-    x0 = snrt_mcycle();
-    dsv2_xdma_transpose16(m->ot16, 2u * MLA_BR, m->xt, 2u * MLA_DV, MLA_DV, NTOK * HEADS);
-    MLA_P(m, MLA_P_XTRANS) = snrt_mcycle() - x0;
-    dsv2_span(m->tr, DSV2_TR_XDMA, "10 o~ transpose", x0, snrt_mcycle());
-    MLA_X_OUT(m) = 1u;
+    // a pair's o~^T is [512, 32] FP16; its first 16 columns per token are the token's heads
+    uint32_t xtrans = 0;
+    for (uint32_t pp = 0; pp < MLA_NPAIR; pp++) {
+        const uint32_t ntp = NTOK - 2u * pp < 2u ? NTOK - 2u * pp : 2u;  // the pair's tokens
+        MLA_SPIN(m, MLA_N_OUT(m), pp + 1u);
+        x0 = snrt_mcycle();
+        dsv2_xdma_transpose16(m->ot16, 2u * MLA_BR, (uint8_t *)m->xt + 2u * pp * MLA_XTP,
+                              2u * MLA_DV, MLA_DV, ntp * HEADS);
+        xtrans += snrt_mcycle() - x0;
+        dsv2_span(m->tr, DSV2_TR_XDMA, "10 o~ transpose", x0, snrt_mcycle());
+        MLA_X_OUT(m) = pp + 1u;
+    }
+    MLA_P(m, MLA_P_XTRANS) = xtrans;
 #if MLA_DUAL
     mla_xstream(m, mla_t_o0(m->nt), MLA_NC_O, wo, "12 W_O", &xbusy, &xfree);
 #endif
@@ -766,13 +834,13 @@ static void mla_quant_q_segment(const void *rows, uint32_t pitch, void *q8, uint
 }
 
 // Per-head A operands of an absorbed GEMV, one task per token, in snax-dsv2.h's row write: x_h
-// is `k` values at x + h * pitch, head h's operand 16 k bytes at a + 16 k h; token t's rows
-// (tok bytes further in x) go to row 4 t.
+// is `k` values at x + h * pitch, head h's operand MLA_AROWS k bytes at a + MLA_AROWS k h; token
+// t's values (tok bytes further in x) go to row t.
 static void mla_quant_heads(const void *x, uint32_t pitch, uint32_t k, void *a, uint32_t inv,
                             uint32_t tok) {
     snax_simd_shape_t in, out;
     for (uint32_t t = 0; t < NTOK; t++) {
-        dsv2_a_row_shapes(&in, &out, (uint8_t *)x + t * tok, 1u, 0u, a, HEADS * k, 4u * t);
+        dsv2_a_row_shapes(&in, &out, (uint8_t *)x + t * tok, 1u, 0u, a, HEADS * k, t, NTOK > 1);
         in.bound[1] = k / 32u;  // per head: its k values, then the next head's
         in.dim = 3u;
         in.bound[2] = HEADS;
@@ -795,7 +863,7 @@ static void dsv2_mla_simd(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     for (uint32_t t = 0; t < NTOK; t++)
         dsv2_rmsnorm_row(MLA_TOK(m->x, t, MLA_XP), m->ssq + t * DSV2_BEAT,
                          MLA_TOK(m->xn, t, 2 * HID), 11);
-    dsv2_quant_a2(m->xn, MLA_TOK(m->xn, NTOK - 1u, 2 * HID), m->xa, HID, INV_X);
+    dsv2_quant_at(m->xn, 2 * HID, m->xa, HID, NTOK, INV_X);
     mla_drain(m, "input norm");
     MLA_XA_OK(m) = 1u;
     MLA_SPAN("1 norm, A operand");
@@ -824,7 +892,7 @@ static void dsv2_mla_simd(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     }
     mla_drain(m, "q");
     MLA_Q_DQ(m) = 1u;
-    mla_quant_heads(m->q16, 2u * Q_HEAD, Q_NOPE, m->qn8, INV_QN, (NTOK - 1u) * 2 * MLA_Q_N);
+    mla_quant_heads(m->q16, 2u * Q_HEAD, Q_NOPE, m->qn8, INV_QN, 2 * MLA_Q_N);
     mla_drain(m, "W_UK operands");
     MLA_QN_OK(m) = 1u;
     MLA_SPAN("2 q, W_UK operands");
@@ -838,9 +906,9 @@ static void dsv2_mla_simd(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
                         m->row + t * MLA_DQK + MLA_DV, ROPE_DIM, INV_KPE);
     mla_drain(m, "rope");
     MLA_ROW_OK(m) = 1u;
-    for (uint32_t t = 0; t < NTOK; t++)  // Q8's m-block t is token t's 16 heads
+    for (uint32_t t = 0; t < NTOK; t++)  // pair t / 2's Q8, m-block t % 2: token t's 16 heads
         mla_quant_q_segment((uint8_t *)m->rot + t * MLA_ROPE_B, 2u * ROPE_DIM,
-                            m->q8 + (t * MLA_KT_S + MLA_DV / DSV2_KU) * DSV2_BEAT,
+                            m->q8[t / 2u] + ((t & 1u) * MLA_KT_S + MLA_DV / DSV2_KU) * DSV2_BEAT,
                             ROPE_DIM / DSV2_KU, INV_QPE);
     MLA_T_SS(m, 3) = snrt_mcycle() - org;
     MLA_SPAN("5 RoPE, kpe8, q_pe");
@@ -854,139 +922,159 @@ static void dsv2_mla_simd(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
         snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_0, SIMD_EXT_STREAMELEMENTWISE_0_CSR, 2u,
                        SIMD_EW_MUL);
         mla_task(&in, &out);
-        mla_quant_q_segment(qt, MLA_QT_PITCH, m->q8 + t * MLA_KT_S * DSV2_BEAT, MLA_DV / DSV2_KU,
-                            INV_QT);
+        mla_quant_q_segment(qt, MLA_QT_PITCH, m->q8[t / 2u] + (t & 1u) * MLA_KT_S * DSV2_BEAT,
+                            MLA_DV / DSV2_KU, INV_QT);
     }
     mla_drain(m, "Q8");
     MLA_Q_OUT(m) = 1u;
     MLA_SPAN("6 q~, Q8");
     MLA_T_SS(m, 4) = snrt_mcycle() - org;
 
-    // 8-10: the online softmax per key tile, eight tasks
-    for (uint32_t j = 0; j < nt; j++) {
-        uint8_t *latch = m->sbuf + (j & 1u) * (1 + MLA_SBEATS) * DSV2_BEAT, *st = latch + DSV2_BEAT;
-        uint8_t *cj = m->corr + (j & 1u) * DSV2_BEAT;
-        uint8_t *rs = m->p8[j & 1u] + MLA_PBEATS * DSV2_BEAT, *lsc = rs + DSV2_BEAT;
-        MLA_W(m, MLA_RETIRED(m), mla_t_qk(j) + 1u, &wg);
-        if (j == 0) MLA_W(m, MLA_M_INIT(m), 1u, &wf);
+    // 8-10: per pair of tokens, the online softmax per key tile (eight tasks), then o~
+    const uint32_t keys = (nt - 1u) * BC + m->nvalid;
+    for (uint32_t pp = 0; pp < MLA_NPAIR; pp++) {
+        if (pp) {  // the pair's own m = -65504 and l = 0; the first pair's are the fill's and zero
+            snax_simd_shape_flat(&in, m->mrun, 1);
+            snax_simd_shape_flat(&out, m->mrun, 1);
+            snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, 0u, MLA_SCORE_MASK,
+                           SIMD_FUNC_LINEAR);
+            mla_task(&in, &out);
+            snax_simd_shape_flat(&in, m->lrun, 1);
+            snax_simd_shape_flat(&out, m->lrun, 1);
+            snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, 0u, 0u, SIMD_FUNC_LINEAR);
+            mla_task(&in, &out);
+        }
+        for (uint32_t j = 0; j < nt; j++) {
+            uint8_t *latch = m->sbuf + (j & 1u) * (1 + MLA_SBEATS) * DSV2_BEAT, *st = latch + DSV2_BEAT;
+            uint8_t *cj = m->corr + (j & 1u) * DSV2_BEAT;
+            uint8_t *rs = m->p8[j & 1u] + MLA_PBEATS * DSV2_BEAT, *lsc = rs + DSV2_BEAT;
+            MLA_W(m, MLA_RETIRED(m), mla_t_qk(nt, pp, j) + 1u, &wg);
+            if (j == 0 && pp == 0) MLA_W(m, MLA_M_INIT(m), 1u, &wf);
+            s0 = snrt_mcycle();
+            // 0 the padding keys of a partial last tile score -65504, in place: P = 0 for them; and
+            //   the pair's token t must not see the keys of the pass's later tokens, the last
+            //   NTOK - 1 - t: only its 16 lanes are written, in whichever tiles those keys are
+            if (j == nt - 1u && m->nvalid < BC) {
+                snax_simd_shape_flat(&in, st + m->nvalid * DSV2_BEAT, BC - m->nvalid);
+                snax_simd_shape_flat(&out, st + m->nvalid * DSV2_BEAT, BC - m->nvalid);
+                snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, 0u, MLA_SCORE_MASK,
+                               SIMD_FUNC_LINEAR);
+                mla_task(&in, &out);
+            }
+            for (uint32_t lt = 0; lt < 2u && 2u * pp + lt < NTOK; lt++) {
+                const uint32_t hide = NTOK - 1u - (2u * pp + lt), k0 = j * BC;
+                const uint32_t b0 = keys - hide > k0 ? keys - hide - k0 : 0u;
+                const uint32_t b1 = keys - k0 < BC ? keys - k0 : BC;
+                if (b0 >= b1) continue;
+                snax_simd_shape_flat(&in, st + b0 * DSV2_BEAT, b1 - b0);
+                snax_simd_shape_flat(&out, st + b0 * DSV2_BEAT, b1 - b0);
+                out.lane_mask = MLA_TOK_LANES(lt);
+                snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, 0u, MLA_SCORE_MASK,
+                               SIMD_FUNC_LINEAR);
+                mla_task(&in, &out);
+            }
+            // 1 rowmax
+            snax_simd_shape_flat(&in, st, MLA_SBEATS);
+            snax_simd_shape_flat(&out, m->rmax, 1);
+            snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, MLA_SBEATS,
+                           SIMD_RED_MAX | SIMD_RED_LANEWISE);
+            mla_task(&in, &out);
+            // 2 m_new = max(rowmax, m_old)
+            snax_simd_shape_flat(&in, m->rmax, 2);
+            snax_simd_shape_flat(&out, m->mnew, 1);
+            snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, 2,
+                           SIMD_RED_MAX | SIMD_RED_LANEWISE);
+            mla_task(&in, &out);
+            // 3 -m_new into the tile's latch and into rmax
+            snax_simd_shape_broadcast(&in, m->mnew, 2);
+            snax_simd_shape_2d(&out, latch, 2, (uint32_t)(m->rmax - latch), 1, 0);
+            snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR,
+                           snax_simd_f32_neg(SIMD_F32_ONE), 0, SIMD_FUNC_LINEAR);
+            mla_task(&in, &out);
+            // 4 corr = exp(a' (m_old - m_new))
+            snax_simd_shape_flat(&in, m->rmax, 2);
+            snax_simd_shape_flat(&out, cj, 1);
+            snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMELEMENTWISE_0) |
+                                                             (1u << SIMD_EXT_STREAMMAP));
+            snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 0, 2u);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_ADD);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 0, A_EXP);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 1, 0u);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 2, SIMD_FUNC_EXP);
+            mla_task(&in, &out);
+            // 5 P8 and the rowsum in one sweep over [-m_new][S^T]
+            snax_simd_shape_flat(&in, latch, 1 + MLA_SBEATS);
+            snax_simd_shape_flat(&out, m->p8[j & 1u], MLA_PBEATS + 1);
+            snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMELEMENTWISE_0) |
+                                                             (1u << SIMD_EXT_STREAMMAP) |
+                                                             (1u << SIMD_EXT_STREAMREDUCE) |
+                                                             (1u << SIMD_EXT_FP16TOINT8));
+            snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 0, 1u);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_ADD | SIMD_EW_STICKY_B);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 0, A_EXP);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 1, 0u);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 2, SIMD_FUNC_EXP);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMREDUCE_CSR, 0, MLA_SBEATS);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMREDUCE_CSR, 1,
+                                 SIMD_RED_ADD | SIMD_RED_LANEWISE | SIMD_RED_TAP);
+            snax_simd_set_op_csr(SIMD_EXT_FP16TOINT8_CSR, 0, P8_INV);
+            snax_simd_set_op_csr(SIMD_EXT_FP16TOINT8_CSR, 1,
+                                 SIMD_QUANT_TAIL(MLA_SBEATS) | SIMD_QUANT_ILV4);
+            mla_task(&in, &out);
+            mla_drain(m, "softmax epilogue");
+            MLA_P_OUT(m) = pp * nt + j + 1u;
+            MLA_SPAN("9 softmax");
+            // 6 corr * l_old
+            snax_simd_shape_2d(&in, cj, 2, (uint32_t)(m->lrun - cj), 1, 0);
+            snax_simd_shape_flat(&out, lsc, 1);
+            snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1,
+                           SIMD_EW_MUL | SIMD_EW_STICKY_B);
+            mla_task(&in, &out);
+            // 7 l_new = rowsum + corr * l_old
+            snax_simd_shape_flat(&in, rs, 2);
+            snax_simd_shape_flat(&out, m->lnew, 1);
+            snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, 2,
+                           SIMD_RED_ADD | SIMD_RED_LANEWISE);
+            mla_task(&in, &out);
+            // 8 commit: mnew -> mrun, lnew -> lrun in one strided copy
+            snax_simd_shape_2d(&in, m->mnew, 2, (uint32_t)(m->lnew - m->mnew), 1, 0);
+            snax_simd_shape_2d(&out, m->mrun, 2, (uint32_t)(m->lrun - m->mrun), 1, 0);
+            snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, SIMD_F32_ONE, 0,
+                           SIMD_FUNC_LINEAR);
+            mla_task(&in, &out);
+        }
+        mla_drain(m, "softmax state");
+        // o~ = O16 (.) c / l per query: c / l = RSQRT(l / c)^2 into O16's latch, then a sticky MUL
+        // over [c/l][O16], into o~^T once the pair before has been transposed out of it
+        MLA_W(m, MLA_RETIRED(m), mla_t_pv(nt, pp, nt - 1u) + 1u, &wg);
+        if (pp) MLA_W(m, MLA_X_OUT(m), pp, &wf);
         s0 = snrt_mcycle();
-        // 0 the padding keys of a partial last tile score -65504, in place: P = 0 for them; and
-        //   token 0 must not see token 1's key, the last one: only its 16 lanes are written
-        if (j == nt - 1u && m->nvalid < BC) {
-            snax_simd_shape_flat(&in, st + m->nvalid * DSV2_BEAT, BC - m->nvalid);
-            snax_simd_shape_flat(&out, st + m->nvalid * DSV2_BEAT, BC - m->nvalid);
-            snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, 0u, MLA_SCORE_MASK,
-                           SIMD_FUNC_LINEAR);
-            mla_task(&in, &out);
-        }
-        if (NTOK == 2 && j == nt - 1u) {
-            snax_simd_shape_flat(&in, st + (m->nvalid - 1u) * DSV2_BEAT, 1);
-            snax_simd_shape_flat(&out, st + (m->nvalid - 1u) * DSV2_BEAT, 1);
-            out.lane_mask = MLA_TOK0_LANES;
-            snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, 0u, MLA_SCORE_MASK,
-                           SIMD_FUNC_LINEAR);
-            mla_task(&in, &out);
-        }
-        // 1 rowmax
-        snax_simd_shape_flat(&in, st, MLA_SBEATS);
-        snax_simd_shape_flat(&out, m->rmax, 1);
-        snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, MLA_SBEATS,
-                       SIMD_RED_MAX | SIMD_RED_LANEWISE);
-        mla_task(&in, &out);
-        // 2 m_new = max(rowmax, m_old)
-        snax_simd_shape_flat(&in, m->rmax, 2);
-        snax_simd_shape_flat(&out, m->mnew, 1);
-        snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, 2,
-                       SIMD_RED_MAX | SIMD_RED_LANEWISE);
-        mla_task(&in, &out);
-        // 3 -m_new into the tile's latch and into rmax
-        snax_simd_shape_broadcast(&in, m->mnew, 2);
-        snax_simd_shape_2d(&out, latch, 2, (uint32_t)(m->rmax - latch), 1, 0);
-        snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR,
-                       snax_simd_f32_neg(SIMD_F32_ONE), 0, SIMD_FUNC_LINEAR);
-        mla_task(&in, &out);
-        // 4 corr = exp(a' (m_old - m_new))
-        snax_simd_shape_flat(&in, m->rmax, 2);
-        snax_simd_shape_flat(&out, cj, 1);
-        snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMELEMENTWISE_0) |
-                                                         (1u << SIMD_EXT_STREAMMAP));
-        snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 0, 2u);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_ADD);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 0, A_EXP);
+        snax_simd_shape_broadcast(&in, m->lrun, 2);
+        snax_simd_shape_flat(&out, m->olatch, 1);
+        snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMMAP) |
+                                                         (1u << SIMD_EXT_STREAMELEMENTWISE_1));
+        snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 0, ps->a_n);
         snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 1, 0u);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 2, SIMD_FUNC_EXP);
+        snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 2, SIMD_FUNC_RSQRT);
+        snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_1_CSR, 0, 2u);
+        snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1, SIMD_EW_MUL);
         mla_task(&in, &out);
-        // 5 P8 and the rowsum in one sweep over [-m_new][S^T]
-        snax_simd_shape_flat(&in, latch, 1 + MLA_SBEATS);
-        snax_simd_shape_flat(&out, m->p8[j & 1u], MLA_PBEATS + 1);
-        snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMELEMENTWISE_0) |
-                                                         (1u << SIMD_EXT_STREAMMAP) |
-                                                         (1u << SIMD_EXT_STREAMREDUCE) |
-                                                         (1u << SIMD_EXT_FP16TOINT8));
-        snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 0, 1u);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_ADD | SIMD_EW_STICKY_B);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 0, A_EXP);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 1, 0u);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 2, SIMD_FUNC_EXP);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMREDUCE_CSR, 0, MLA_SBEATS);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMREDUCE_CSR, 1,
-                             SIMD_RED_ADD | SIMD_RED_LANEWISE | SIMD_RED_TAP);
-        snax_simd_set_op_csr(SIMD_EXT_FP16TOINT8_CSR, 0, P8_INV);
-        snax_simd_set_op_csr(SIMD_EXT_FP16TOINT8_CSR, 1,
-                             SIMD_QUANT_TAIL(MLA_SBEATS) | SIMD_QUANT_ILV4);
-        mla_task(&in, &out);
-        mla_drain(m, "softmax epilogue");
-        MLA_P_OUT(m) = j + 1u;
-        MLA_SPAN("9 softmax");
-        // 6 corr * l_old
-        snax_simd_shape_2d(&in, cj, 2, (uint32_t)(m->lrun - cj), 1, 0);
-        snax_simd_shape_flat(&out, lsc, 1);
+        snax_simd_shape_flat(&in, m->olatch, 1 + MLA_DV);
+        snax_simd_shape_flat(&out, m->ot16, MLA_DV);
         snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1,
                        SIMD_EW_MUL | SIMD_EW_STICKY_B);
         mla_task(&in, &out);
-        // 7 l_new = rowsum + corr * l_old
-        snax_simd_shape_flat(&in, rs, 2);
-        snax_simd_shape_flat(&out, m->lnew, 1);
-        snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, 2,
-                       SIMD_RED_ADD | SIMD_RED_LANEWISE);
-        mla_task(&in, &out);
-        // 8 commit: mnew -> mrun, lnew -> lrun in one strided copy
-        snax_simd_shape_2d(&in, m->mnew, 2, (uint32_t)(m->lnew - m->mnew), 1, 0);
-        snax_simd_shape_2d(&out, m->mrun, 2, (uint32_t)(m->lrun - m->mrun), 1, 0);
-        snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, SIMD_F32_ONE, 0,
-                       SIMD_FUNC_LINEAR);
-        mla_task(&in, &out);
+        mla_drain(m, "normalise");
+        // c / l, kept for a check (the region is reused); volatile, or this becomes a memcpy()
+        for (uint32_t i = 0; i < DSV2_BEAT / 4u; i++)
+            ((volatile uint32_t *)m->rsc)[i] = ((const volatile uint32_t *)m->olatch)[i];
+        MLA_N_OUT(m) = pp + 1u;
+        MLA_SPAN("10 O / l");
     }
-    mla_drain(m, "softmax state");
-    // o~ = O16 (.) c / l per query: c / l = RSQRT(l / c)^2 into O16's latch, then a sticky MUL
-    // over [c/l][O16]
-    MLA_W(m, MLA_RETIRED(m), mla_t_pv(nt, nt - 1u) + 1u, &wg);
-    s0 = snrt_mcycle();
-    snax_simd_shape_broadcast(&in, m->lrun, 2);
-    snax_simd_shape_flat(&out, m->olatch, 1);
-    snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMMAP) |
-                                                     (1u << SIMD_EXT_STREAMELEMENTWISE_1));
-    snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 0, ps->a_n);
-    snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 1, 0u);
-    snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 2, SIMD_FUNC_RSQRT);
-    snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_1_CSR, 0, 2u);
-    snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1, SIMD_EW_MUL);
-    mla_task(&in, &out);
-    snax_simd_shape_flat(&in, m->olatch, 1 + MLA_DV);
-    snax_simd_shape_flat(&out, m->ot16, MLA_DV);
-    snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1,
-                   SIMD_EW_MUL | SIMD_EW_STICKY_B);
-    mla_task(&in, &out);
-    mla_drain(m, "normalise");
-    // c / l, kept for a check (the region is reused); volatile, or this becomes a memcpy()
-    for (uint32_t i = 0; i < DSV2_BEAT / 4u; i++)
-        ((volatile uint32_t *)m->rsc)[i] = ((const volatile uint32_t *)m->olatch)[i];
-    MLA_N_OUT(m) = 1u;
-    MLA_SPAN("10 O / l");
-    MLA_W(m, MLA_X_OUT(m), 1u, &wf);
+    MLA_W(m, MLA_X_OUT(m), MLA_NPAIR, &wf);
     s0 = snrt_mcycle();
     // 11: W_UV's 16 A operands from o~
-    mla_quant_heads(m->xt, 2u * MLA_DV, MLA_DV, m->auv, INV_OT, (NTOK - 1u) * MLA_XTP);
+    mla_quant_heads(m->xt, 2u * MLA_DV, MLA_DV, m->auv, INV_OT, MLA_XTP);
     mla_drain(m, "W_UV operands");
     MLA_AUV_OK(m) = 1u;
     MLA_SPAN("11 W_UV operands");
@@ -998,7 +1086,7 @@ static void dsv2_mla_simd(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
         dsv2_dequant_prep(MLA_TOK(m->yoh, t, MLA_YP_UV), m->f_uv, MLA_TOK(m->oh, t, 2 * HID), HID);
         snax_simd_fire();
     }
-    dsv2_quant_a2(m->oh, MLA_TOK(m->oh, NTOK - 1u, 2 * HID), m->oa, HID, INV_O);
+    dsv2_quant_at(m->oh, 2 * HID, m->oa, HID, NTOK, INV_O);
     mla_drain(m, "W_O operand");
     MLA_OA_OK(m) = 1u;
     MLA_SPAN("12 o, W_O operand");

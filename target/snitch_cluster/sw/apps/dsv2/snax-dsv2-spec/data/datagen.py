@@ -4,7 +4,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Data for snax-dsv2-spec: snax-dsv2-layer's generator, run on this app's params.hjson (two
+# Data for snax-dsv2-spec: snax-dsv2-layer's generator, run on this app's params.hjson (four
 # tokens per pass).
 
 import os

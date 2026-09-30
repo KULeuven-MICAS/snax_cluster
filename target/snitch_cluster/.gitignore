@@ -5,7 +5,7 @@
 /cfg/default.hjson
 /cfg/lru.hjson
 /work/
-/work-vsim/
+/work-vsim*/
 /work-vlt/
 /work-vcs/
 /*.log

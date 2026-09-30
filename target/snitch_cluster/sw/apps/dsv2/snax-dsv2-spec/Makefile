@@ -16,7 +16,7 @@ SNAX_LIBS += ../../../snax/simd/build/snax-simd-lib.o
 SNAX_LIBS += ../../../snax/xdma/build/snax-xdma-lib.o
 RISCV_LDFLAGS += $(SNAX_LIBS)
 
-# The layer app's kernel; the passes (data/params.hjson) hold two tokens each.
+# The layer app's kernel; the passes (data/params.hjson) hold four tokens each.
 SRCS    = ../snax-dsv2-layer/src/snax-dsv2-layer.c
 
 # Data blobs: disassemble the code only.

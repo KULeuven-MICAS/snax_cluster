@@ -455,16 +455,18 @@
     {
         // Reader 0 is A, reader 1 is B.
         //
-        // B is 16 channels, two groups of 8 with their own spatial stride, because the one-row
-        // GEMV shape (1, 4, 32) takes TWO 4 x 16 weight blocks per pass -- 128 B -- and those
-        // blocks sit a whole column block apart in the weight layout (one group reads column
-        // block n, the other column block n + 1, at the same k). The 16 x 4 x 16 shape, and a
-        // one-row task with an odd number of column blocks, take one block: channels 0..7.
+        // B is 16 channels, two groups of 8 with their own spatial stride, because the GEMV
+        // shapes (1, 4, 32) and (4, 4, 32) take TWO 4 x 16 weight blocks per pass -- 128 B --
+        // and those blocks sit a whole column block apart in the weight layout (one group reads
+        // column block n, the other column block n + 1, at the same k). The 16 x 4 x 16 shape,
+        // and a GEMV task with an odd number of column blocks, take one block: channels 0..7.
         //
         // Every reader has a channel mask (ENABLED_CHANNEL_*): a disabled channel presents
-        // zero and issues no TCDM request. The one-row shapes read A's row 0 alone -- 4 bytes
-        // in channel 0 of each 64 B block -- so a GEMV asks the TCDM for 8 B of A a pass
-        // instead of 64. The masks reset to 0: a task that does not write its mask reads zero.
+        // zero and issues no TCDM request. The GEMV shapes read the first rows of an A block
+        // alone -- (1, 4, 32) row 0, 4 bytes in channel 0; (4, 4, 32) rows 0..3, 16 bytes in
+        // channels 0 and 1, which a several-token operand stores alone, 16 B a block -- so a
+        // GEMV asks the TCDM for 8 or 16 B of A a pass instead of 64. The masks reset to 0: a
+        // task that does not write its mask reads zero.
         data_reader_params:
         {
             spatial_bounds:
@@ -607,7 +609,7 @@
                 4
             ]
             // C's mask gives a GEMV its fresh accumulator (every channel off reads zero); D's
-            // drops the unused half of a one-row shape's output beat.
+            // drops the unused half of a GEMV shape's output beat.
             configurable_channel:
             [
                 1
@@ -685,20 +687,25 @@
         extra_streamer_csr: 21
         snax_library_name: versacore-to
     }
-    // The matmul array, 1024 INT8 multipliers, two spatial unrollings (Mu, Ku, Nu) picked per
-    // task by the array-shape CSR:
+    // The matmul array, 1024 INT8 multipliers, three spatial unrollings (Mu, Ku, Nu) picked
+    // per task by the array-shape CSR:
     //
     //   0  (16, 4, 16)  the GEMM: A 64 B, B 64 B a pass, a 16 x 16 output block
-    //   1  (1, 4, 32)   a one-row GEMV, 128 weight bytes a pass: A 4 B, B 128 B, 32 outputs
+    //   1  (1, 4, 32)   a one-token GEMV, 128 weight bytes a pass: A 4 B, B 128 B, 32 outputs
+    //   2  (4, 4, 32)   a GEMV of up to four tokens, one per row: A 16 B, the same 128 weight
+    //                   bytes as shape 1, each used four times; 4 x 32 outputs (512 MACs)
     //
-    // A GEMV does one multiply-add per weight, so its rate is the weights B delivers a pass:
-    // 128 on this 1024 b port, as INT8 bytes or as INT4 nibbles through B's converter. A one-row task with an odd number of 16-column blocks
-    // runs shape 1 at half width: B's channels 8..15 masked (they read zero) and the D mask
-    // writing the lower 16 outputs, 64 weight bytes a pass. Both shapes keep Ku = 4, so they
-    // read the same operand layouts: B in 4 x 16 blocks, and A in 16 x 4 blocks of which the
-    // one-row shape reads row 0. Shape 0 is the one the apps know as meshRow / tileSize /
-    // meshCol. C and D are Mu*Nu*32 bits serialised onto the 1024 b port: 8 beats a block for
-    // shape 0, one for shape 1.
+    // A GEMV does one multiply-add per weight and token, so its rate is the weights B delivers
+    // a pass: 128 on this 1024 b port, as INT8 bytes or as INT4 nibbles through B's converter.
+    // Shape 2 serves four tokens at the rate shape 1 serves one. A GEMV task with an odd number
+    // of 16-column blocks runs its shape at half width: B's channels 8..15 masked (they read
+    // zero) and the D mask writing the lower 16 outputs of each row, 64 weight bytes a pass.
+    // All shapes keep Ku = 4, so they read the same operand layouts: B in 4 x 16 blocks, and A
+    // in blocks of four values a row, of which the GEMV shapes read the first 1 or 4 rows (a
+    // several-token operand keeps only those four rows, 16 B a block). Shape 0 is the one the
+    // apps know as meshRow / tileSize / meshCol. C and D are Mu*Nu*32 bits serialised onto
+    // the 1024 b port: 8 beats a block for shape 0, one for shape 1, four (one per row) for
+    // shape 2.
     snax_versacore_core_template:
     {
         // The matmul array. Cross-checked against the cfg by util/snaxgen/core_roles.py.
@@ -788,6 +795,11 @@
                         ]
                         [
                             1
+                            4
+                            32
+                        ]
+                        [
+                            4
                             4
                             32
                         ]

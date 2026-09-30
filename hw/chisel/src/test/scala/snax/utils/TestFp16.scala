@@ -29,7 +29,7 @@ object TestFp16 {
         val rest  = mant & 0x1fff
         val round = if (rest > 0x1000 || (rest == 0x1000 && (m & 1) == 1)) 1 else 0
         sign | (((e << 10) | m) + round)                 // a mantissa carry walks into the exponent
-      } else if (e > -10) {                              // subnormal
+      } else if (e >= -10) {                             // subnormal; e = -10 is [2^-25, 2^-24): rounds to 0 or 2^-24
         val full  = mant | 0x800000
         val shift = 14 - e
         val m     = full >>> shift
