@@ -84,7 +84,7 @@ Observe that the `snrt_mcycle()` is located at the start and end of the DMA task
 
 Next, we transfer the data through the `snrt_dma_start_1d()` function where the arguments are the destination, source, and the number of bytes to transfer. You can find the function definition in `./sw/snRuntime/src/dma.h`.
 
-`local_a` and `local_b` are the destinations inside the TCDM L1 memory. Data arrays `A` and `B` are declared inside the `data.h` and it is stored in the L2. `vectore_size` is of course the amount of data to transfer.
+`local_a` and `local_b` are the destinations inside the TCDM L1 memory. Data arrays `A` and `B` are declared inside the `data.h` and it is stored in the L2. `vector_size` is of course the amount of data to transfer.
 
 ## Synchronizing Cores
 
