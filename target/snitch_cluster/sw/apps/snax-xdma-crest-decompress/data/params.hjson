@@ -1,0 +1,18 @@
+// Cases of the weight-decompressor test, by crest_codec.py case name. real_* are chunks of
+// published checkpoints from the cache CREST_WEIGHT_CACHE names (skipped with a warning when
+// it is unset); the others are crest_codec's synthetic edge cases. max_beats bounds each case so
+// one case, its expected output and a copy fit in L1.
+{
+    cases: [
+        "real_int4_gptq"     // Qwen2.5-7B GPTQ INT4, nibbles around zero point 8
+        "real_fp8_dsv3"      // DeepSeek-V3 FP8 E4M3, sign-magnitude bytes
+        "real_int8"          // Qwen2.5-7B W8A8 INT8 bytes
+        "real_bf16"          // Qwen2.5-7B BF16, exponent coded
+        "real_mxfp4"         // gpt-oss-20b MXFP4: incompressible, every group raw
+        "nib_esc_full"       // an escape region of ~11 words (the buffer holds 12)
+        "byte_sm_straddle"   // both sign-magnitude tiers, then a raw group
+        "bf16_dense"         // one beat all tier 2, one all tier 1
+    ]
+    max_beats: 2048
+    seed: 0
+}

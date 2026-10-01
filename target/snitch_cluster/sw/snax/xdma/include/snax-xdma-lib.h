@@ -112,6 +112,19 @@ int32_t snax_xdma_disable_src_ext(uint8_t ext);
 int32_t snax_xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value);
 int32_t snax_xdma_disable_dst_ext(uint8_t ext);
 
+// CREST weight decompressor (writer extension CrestDecompressor,
+// hw/chisel/doc/crest_decompressor.md).
+// Configures one 1-D transfer that reads `in_words` compressed 64-byte words at
+// `src` (the stream crest_codec.py encodes: INT4 / FP4, INT8 / FP8 or BF16, as
+// its header says) and writes `out_beats` 64-byte beats of the weights as
+// stored at `dst`, and arms the extension with CSR 0 = out_beats. The two
+// counts differ: the reader moves the compressed length and the writer the
+// expanded one. The caller starts the task (snax_xdma_start_task) and disables
+// the extension again (snax_xdma_disable_dst_ext(WRITER_EXT_CRESTDECOMPRESSOR))
+// before a plain copy. Returns -1 on a cluster without the extension.
+int32_t snax_xdma_crest_decompress(void* src, uint32_t in_words, void* dst,
+                                   uint32_t out_beats);
+
 // Start
 // Handle for one issued xDMA transfer. `task_id` is the value the committed finish
 // counter must reach; `remote` records WHICH counter the hardware bumped

@@ -279,6 +279,21 @@
                             writer_extensions:
                             {
                                 HasVerilogMemset: {}
+                                // CREST lossless weight decompressor (hw/chisel/doc/crest_decompressor.md) on
+                                // the way into L1, one 512-bit beat per cycle: INT4 / FP4 nibbles, INT8 /
+                                // FP8 bytes and BF16, the format chosen per transfer by the stream header.
+                                // groupBeats and escWords are the format crest_codec.py encodes; k1/k2Lanes
+                                // are the escape entries one cycle places (a beat with more takes extra
+                                // cycles); planeDepth hides a group's escape words behind the last beats.
+                                HasCrestDecompressor:
+                                {
+                                    groupBeats: 64
+                                    escWords: 12
+                                    k1Lanes: 32
+                                    k2Lanes: 16
+                                    planeDepth: 8
+                                    dataWidth: 512
+                                }
                             }
                             writer_junctions:
                             {

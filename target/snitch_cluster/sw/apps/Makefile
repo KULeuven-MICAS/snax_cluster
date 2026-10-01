@@ -63,6 +63,7 @@ SUBDIRS += snax-simd-rope
 SUBDIRS += snax-simd-reduce-multirow
 # Kernels that stay on the xDMA core (hart 2): writer extension / plain moves.
 SUBDIRS += snax-xdma-memset
+SUBDIRS += snax-xdma-crest-decompress
 SUBDIRS += snax-xdma-reshape-comparison
 # Proves the testbench's main-memory xDMA endpoint: the engine can only move bytes
 # it did not write itself once there is a second endpoint to talk to.

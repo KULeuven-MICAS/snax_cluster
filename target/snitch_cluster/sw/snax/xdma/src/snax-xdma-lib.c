@@ -556,6 +556,29 @@ int32_t snax_xdma_enable_dst_ext(uint8_t ext, uint32_t* csr_value) {
     return 0;
 }
 
+int32_t snax_xdma_crest_decompress(void* src, uint32_t in_words, void* dst,
+                                   uint32_t out_beats) {
+#ifdef WRITER_EXT_CRESTDECOMPRESSOR
+    uint32_t stride[1] = {XDMA_WIDTH};
+    uint32_t src_bound[1] = {in_words};
+    uint32_t dst_bound[1] = {out_beats};
+    if (snax_xdma_memcpy_nd(src, dst, XDMA_WIDTH / XDMA_SPATIAL_CHAN,
+                            XDMA_WIDTH / XDMA_SPATIAL_CHAN, 1, stride,
+                            src_bound, 1, stride, dst_bound, 0xFFFFFFFF,
+                            0xFFFFFFFF, 0xFFFFFFFF) != 0) {
+        return -1;
+    }
+    uint32_t csr[1] = {out_beats};
+    return snax_xdma_enable_dst_ext(WRITER_EXT_CRESTDECOMPRESSOR, csr);
+#else
+    (void)src;
+    (void)in_words;
+    (void)dst;
+    (void)out_beats;
+    return -1;
+#endif
+}
+
 int32_t snax_xdma_disable_src_ext(uint8_t ext) {
     if (ext >= XDMA_SRC_EXT_NUM) {
         return 0;
