@@ -182,6 +182,10 @@ object BlockGemmRescaleSIMD extends App {
 }
 
 object BlockGemmRescaleSIMDGen {
+  // busy_o and performance_counter: the read-only CSRs the shell wires. util/snaxgen requires the cluster cfg's
+  // snax_num_ro_csr, which sizes the CSR manager, to equal it.
+  val numRoCsr = 2
+
   def main(args: Array[String]): Unit = {
     // Helper function to parse command-line arguments into a Map
     def parseArgs(args: Array[String]): Map[String, String] = {
@@ -324,7 +328,7 @@ module snax_streamer_gemmX_shell_wrapper #(
     // Custom parameters. As much as possible,
     // these parameters should not be taken from outside
     parameter int unsigned RegRWCount   = $GeMMXReadWriteCsrNum,
-    parameter int unsigned RegROCount   = 2,
+    parameter int unsigned RegROCount   = $numRoCsr,
     parameter int unsigned DataWidthA   = $DataWidthA,
     parameter int unsigned DataWidthB   = $DataWidthB,
     parameter int unsigned DataWidthC   = $DataWidthC,

@@ -44,12 +44,14 @@ typedef struct {
     uint32_t fp16;            // drain D through the int32->fp16 converter: HALF the beats
     uint32_t simd_on, simd_pad;
     uint32_t idma_on, idma_pad;
+    uint32_t c_drop;          // take_in_new_c = 0 with the C stream still on: the array drains it
 } phase_cfg_t;
 
 static const phase_cfg_t PHASES[] = {
     {"C_on_idle",     1, 0, 0, 0, 0, 0},   // the C-read's own cost
     {"C_off_idle",    0, 0, 0, 0, 0, 0},   // int32 drain: mr*mc*4/K bytes per pass
     {"C_off_fp16",    0, 1, 0, 0, 0, 0},   // fp16 drain: half that, at the same K
+    {"C_drop_idle",   1, 0, 0, 0, 0, 0, 1},  // C fetched and discarded: counted in GEMMX_C_DROPPED
 };
 #define N_PHASES (sizeof(PHASES) / sizeof(PHASES[0]))
 
@@ -59,6 +61,7 @@ typedef struct {
 } phase_t;
 
 static phase_t ph[N_PHASES];
+static uint32_t c_dropped_in_phase[N_PHASES];
 // What the neighbours actually achieved, so the derate is reported against MEASURED background
 // activity rather than against the duty this app intended to produce.
 static volatile uint32_t simd_busy_in_phase[N_PHASES];
@@ -182,8 +185,9 @@ int main() {
                 channel_en_D, array_shape,
                 quantization_enable, shift_i, multiplier_i, input_zp_i, output_zp_i,
                 int32tofp16_enable, int4_a_enable, int4_b_enable);
-            set_versacore_csr(1, K, N * M, gen_subtraction_config(subtraction_a, subtraction_b),
-                              array_shape, data_type);
+            set_versacore_csr(cfg->c_drop ? 0 : 1, K, N * M,
+                              gen_subtraction_config(subtraction_a, subtraction_b), array_shape,
+                              data_type);
             // Mask the C reader AFTER the full configure, and only ever CLEAR it: the
             // configure already wrote data.h's own mask, and writing an all-ones word back
             // would enable channels the C/D port does not have. A disabled channel still pops
@@ -237,11 +241,13 @@ int main() {
         } else if (snax_is_gemm_core()) {
             uint32_t w0 = snrt_mcycle();
             if (phase == 0) counter_before_first = csrr_ss(GEMMX_FINISHED_TASK);
+            uint32_t d0 = csrr_ss(GEMMX_C_DROPPED);
             for (uint32_t i = 0; i < REPS; i++) {
                 if (dispatch_once(&ph[phase], i)) break;
                 if (phase == 0 && i == 0) counter_after_first = csrr_ss(GEMMX_FINISHED_TASK);
             }
             phase_wall[phase] = snrt_mcycle() - w0;
+            c_dropped_in_phase[phase] = csrr_ss(GEMMX_C_DROPPED) - d0;
             *traffic_go = 0;
         }
         snrt_cluster_hw_barrier();
@@ -290,6 +296,16 @@ int main() {
                     err++;
         printf("  array passes per dispatch %d, counter algebra %s (%d off)\n", M * N * K,
                err ? "FAIL" : "PASS", err);
+        // GEMMX_C_DROPPED moves only in a c_drop phase, and then by every C beat the reader
+        // issued: one Mu x Nu INT32 block is meshRow * meshCol * 32 / 1024 beats of the C port.
+        for (uint32_t p = 0; p < N_PHASES; p++) {
+            uint32_t want = PHASES[p].c_drop ? REPS * M * N * meshRow * meshCol * 32 / 1024 : 0;
+            if (c_dropped_in_phase[p] != want) err++;
+            if (PHASES[p].c_drop || c_dropped_in_phase[p])
+                printf("  %s: c_dropped %lu, expected %lu: %s\n", PHASES[p].name,
+                       (unsigned long)c_dropped_in_phase[p], (unsigned long)want,
+                       c_dropped_in_phase[p] == want ? "PASS" : "FAIL");
+        }
         // One summary line per phase. Printing every repetition put dozens of UART writes in
         // the simulation's path and dominated its wall clock; the first dispatch is reported
         // separately because it is cold and the rest are the steady state.
@@ -309,5 +325,5 @@ int main() {
         printf("CALIBG done\n");
     }
     snrt_cluster_hw_barrier();
-    return 0;
+    return snax_is_gemm_core() ? err : 0;
 }

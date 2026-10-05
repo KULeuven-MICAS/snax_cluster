@@ -16,19 +16,19 @@ import chisel3.util._
   *   - Saturates to +/- Infinity on overflow.
   *   - Zero maps exactly to +0 or -0 (sign bit from input).
   *
-  * POWER-OF-TWO SCALE (`shift`): the output is RNE(in * 2^-shift), not RNE(in). A power of two only moves the
-  * exponent, so the 11 significant bits are the same ones as without it: the shift costs no precision and no
-  * multiplier -- it is one subtract on the exponent. What it buys is RANGE. An INT8 x INT8 dot product over d = 128
-  * reaches 127^2 * 128 = 2,064,512, 31x past FP16's 65,504, and overflows to Inf without it.
+  * POWER-OF-TWO SCALE (`shift`): the output is RNE(in * 2^-shift), not RNE(in). A power of two only moves the exponent,
+  * so the 11 significant bits are the same ones as without it: the shift costs no precision and no multiplier -- it is
+  * one subtract on the exponent. What it buys is RANGE. An INT8 x INT8 dot product over d = 128 reaches 127^2 * 128 =
+  * 2,064,512, 31x past FP16's 65,504, and overflows to Inf without it.
   *
-  * `shift` is clamped to 0..14. The smallest non-zero input is 1 (exponent 0), so 2^-14 is the smallest result and
-  * it is FP16's smallest NORMAL number: with shift <= 14 no input can land in the subnormal range, and no
-  * subnormal path is needed.
+  * `shift` is clamped to 0..14. The smallest non-zero input is 1 (exponent 0), so 2^-14 is the smallest result and it
+  * is FP16's smallest NORMAL number: with shift <= 14 no input can land in the subnormal range, and no subnormal path
+  * is needed.
   */
 class Int32ToFp16PE extends Module {
   val io = IO(new Bundle {
     val in    = Input(SInt(32.W))
-    val shift = Input(UInt(4.W)) // output = RNE(in * 2^-shift); clamped to 14
+    val shift = Input(UInt(4.W))   // output = RNE(in * 2^-shift); clamped to 14
     val out   = Output(UInt(16.W)) // IEEE-754 fp16
   })
 
@@ -87,7 +87,7 @@ class Int32ToFp16PE extends Module {
     // -----------------------------
     // Biased exponent of in * 2^-shift. msbIndex >= 0 and shift <= 14, so this is >= 1: always normal.
     val shiftC         = Mux(io.shift > 14.U, 14.U, io.shift)
-    val expPreWide     = (expUnbiased +& expBias) - shiftC           // 6-bit result
+    val expPreWide     = (expUnbiased +& expBias) - shiftC         // 6-bit result
     val expIncWide     = expPreWide + 1.U
     val expRoundedWide = Mux(mantOverflow, expIncWide, expPreWide) // 6 bits
 
@@ -164,13 +164,13 @@ class Int32ToFp16Converter(
   counter.io.reset := ext_start_i
   counter.io.tick  := ext_data_i.fire
   // Declared here because ext_busy_o needs it; driven by the handshake at the bottom.
-  val outValid     = RegInit(false.B)
-  ext_busy_o       := (counter.io.value =/= 0.U) || outValid
+  val outValid = RegInit(false.B)
+  ext_busy_o := (counter.io.value =/= 0.U) || outValid
 
   // -------------------------
   // PE Array
   // -------------------------
-  val peArray = Seq.fill(numPEs) {
+  val peArray  = Seq.fill(numPEs) {
     Module(new Int32ToFp16PE() {
       override def desiredName = extensionParam.moduleName + "_int32_to_fp16_pe"
     })
@@ -249,7 +249,7 @@ class Int32ToFp16Converter(
   when(ext_start_i) {
     outValid := false.B
   }.elsewhen(update_final_regs) {
-    outValid := true.B                       // wins over the clear: a 1-beat group emits back to back
+    outValid := true.B // wins over the clear: a 1-beat group emits back to back
   }.elsewhen(ext_data_o.ready) {
     outValid := false.B
   }
@@ -259,8 +259,9 @@ class Int32ToFp16Converter(
 
 /** @param shift
   *   1 builds a power-of-two output scale: csr(1)[3:0] = k gives RNE(x * 2^-k), k clamped to 0..14. It adds one user
-  *   CSR, which the cluster cfg's streamer CSR count must include (extra_streamer_csr). 0 builds the plain
-  *   converter, with one user CSR.
+  *   CSR, which the cluster cfg's streamer CSR count must include (extra_streamer_csr), and publishes the SHIFT
+  *   capability, so a streamer header carries `<HOST>_HAS_SHIFT` and `<HOST>_SHIFT_EXT_CSR_BASE` (k is that base + 1).
+  *   0 builds the plain converter, with one user CSR.
   */
 class HasInt32ToFp16Converter(dataWidth: Int = 512, shift: Int = 0) extends HasDataPathExtension {
   // The length of row, col, and elementWidth should be the same
@@ -268,9 +269,10 @@ class HasInt32ToFp16Converter(dataWidth: Int = 512, shift: Int = 0) extends HasD
 
   implicit val extensionParam: DataPathExtensionParam =
     new DataPathExtensionParam(
-      moduleName = s"Int32ToFp16Converter_${dataWidth}" + (if (shift != 0) "_shift" else ""),
-      userCsrNum = if (shift != 0) 2 else 1,
-      dataWidth  = dataWidth
+      moduleName   = s"Int32ToFp16Converter_${dataWidth}" + (if (shift != 0) "_shift" else ""),
+      userCsrNum   = if (shift != 0) 2 else 1,
+      dataWidth    = dataWidth,
+      capabilities = if (shift != 0) Seq("SHIFT") else Nil
     )
 
   def instantiate(clusterName: String): Int32ToFp16Converter =

@@ -453,19 +453,19 @@
     // The streamer that feeds VersaCore:
     //
     //   reader 0        A   8 channels x 64 b =  512 b   Mu*Ku INT8
-    //   reader 1        B   8 channels x 64 b =  512 b   Ku*Nu INT8
-    //   reader_writer   C  32 channels x 64 b = 2048 b   read  (accumulator in)
-    //                   D  32 channels x 64 b = 2048 b   write (result out)
+    //   reader 1        B  16 channels x 64 b = 1024 b   Ku*Nu INT8, or INT4 through its converter
+    //   reader_writer   C  16 channels x 64 b = 1024 b   read  (accumulator in)
+    //                   D  16 channels x 64 b = 1024 b   write (result out)
     //
-    // The reader_writer is ONE bidirectional 32-port set, so the cluster spends
-    // 8 + 8 + 32 = 48 TCDM ports. VersaCore has a single D port -- its rescale lives on
-    // the streamer's write path, not in the accelerator -- so a quantised output needs no
-    // writer of its own.
+    // The reader_writer is ONE bidirectional 16-port set, so the cluster spends
+    // 8 + 16 + 16 = 40 TCDM ports (snax_tcdm_ports). VersaCore has a single D port and no
+    // INT8 requantisation on it: D leaves as INT32, or as FP16 through the write path's
+    // converter.
     //
     // The apps' descriptor arithmetic follows from this layout: Atlstride is
-    // a_len*tileSize*meshRow/8, and C/D32 serialise 4:1 over a chunk addressed by TWO
-    // spatial strides. The block order reaching TCDM is (m, n, meshRow, meshCol), which
-    // is what block_gemm_golden_model() assumes.
+    // a_len*tileSize*meshRow/8, and C/D serialise a block over Mu*Nu*32/1024 beats (8 for
+    // shape 0) addressed by TWO spatial strides. The block order reaching TCDM is
+    // (m, n, meshRow, meshCol), which is what block_gemm_golden_model() assumes.
     snax_versacore_streamer_template:
     {
         // Reader 0 is A, reader 1 is B.
@@ -747,7 +747,8 @@
                 // Fixed by VersaCore: take_in_new_c, accumulation bound, output bound,
                 // subtractions, array shape, data type, start. VersaCoreGen REQUIRES 7.
                 snax_num_rw_csr: 7
-                snax_num_ro_csr: 6
+                // busy, perf counter, stall A/B/D, finished tasks, C dropped: VersaCore.numRoCsr
+                snax_num_ro_csr: 7
                 // Two configurations may be outstanding on the accelerator's own CSR
                 // space: one running, one staged behind it. The kernel programs BOTH this
                 // and the streamer per dispatch, so queueing only the streamer still

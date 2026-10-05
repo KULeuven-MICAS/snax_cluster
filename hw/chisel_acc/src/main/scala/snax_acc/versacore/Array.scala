@@ -23,8 +23,8 @@ class SpatialArrayDataIO(params: SpatialArrayParam) extends Bundle {
 
 // control io
 class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
-  val arrayShapeCfg  = Input(UInt(params.configWidth.W))
-  val dataTypeCfg    = Input(UInt(params.configWidth.W))
+  val arrayShapeCfg    = Input(UInt(params.configWidth.W))
+  val dataTypeCfg      = Input(UInt(params.configWidth.W))
   // Two stages need to know about the external C, and they need to know at different times.
   // accAddExtInInput gates the input side: it says the pass now being ACCEPTED is the first
   // of an output block, so one C word is taken from the port and buffered. accAddExtIn gates
@@ -37,8 +37,11 @@ class SpatialArrayCtrlIO(params: SpatialArrayParam) extends Bundle {
   // The third case: no C at all. Then nothing resets the accumulator between output
   // blocks, so the first pass of a block has to be told to start from zero.
   val accClear         = Input(Bool())
-  val cstate_is_busy = Input(Bool())
-  val computeFire    = Output(Bool())
+  // A task that takes no C is busy: accept and discard any C word offered, so a C stream launched for it anyway
+  // drains instead of stalling the streamer. Never asserted together with accAddExtInInput.
+  val drainC           = Input(Bool())
+  val cstate_is_busy   = Input(Bool())
+  val computeFire      = Output(Bool())
 }
 
 class SpatialArrayIO(params: SpatialArrayParam) extends Bundle {
@@ -344,11 +347,12 @@ class SpatialArray(params: SpatialArrayParam) extends Module with RequireAsyncRe
   io.array_data.in_a.ready := io.array_data.in_b.valid && (io.array_data.in_c.valid || !in_c_active) && common_accept_data_ready && io.ctrl.cstate_is_busy
   io.array_data.in_b.ready := io.array_data.in_a.valid && (io.array_data.in_c.valid || !in_c_active) && common_accept_data_ready && io.ctrl.cstate_is_busy
   // only takes in c when accAddExtIn is true to accept new c input data
-  io.array_data.in_c.ready := io.array_data.in_a.valid && io.array_data.in_b.valid && common_accept_data_ready && io.ctrl.cstate_is_busy && in_c_active
+  io.array_data.in_c.ready := (io.array_data.in_a.valid && io.array_data.in_b.valid && common_accept_data_ready && io.ctrl.cstate_is_busy && in_c_active) ||
+    io.ctrl.drainC
 
   // Drive the valid signals for the first stage
   multipliers.foreach(_.foreach(_.io.in.valid := common_valid))
-  in_c_before_pipe.valid := common_valid && in_c_active
+  in_c_before_pipe.valid := common_valid     && in_c_active
   in_c_after_pipe.ready  := selectedIn2Ready && io.ctrl.accAddExtIn
 
   // output data and valid signals

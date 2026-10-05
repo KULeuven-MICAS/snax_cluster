@@ -37,9 +37,13 @@
 #define GEMMX_STALL_B (GEMMX_STALL_A + 1)
 #define GEMMX_STALL_D (GEMMX_STALL_B + 1)
 // Matmuls this array has retired, free-running. The completion signal to wait on when more
-// than one configuration can be queued: busy_o cannot separate two back-to-back dispatches,
-// and the streamer's counter marks its data movers done, which lands before the array is.
+// than one configuration can be queued: busy_o cannot separate two back-to-back dispatches.
 #define GEMMX_FINISHED_TASK (GEMMX_STALL_D + 1)
+// C beats discarded by tasks with take_in_new_c = 0, free-running. Such a task drains a C
+// stream launched for it anyway instead of hanging the streamer, and counts it here. A
+// correct program never moves it: a fresh product masks its C channels with
+// take_in_new_c = 1, or launches no C stream at all.
+#define GEMMX_C_DROPPED (GEMMX_FINISHED_TASK + 1)
 
 // Pack two subtraction values to one CSR
 int32_t gen_subtraction_config(int8_t subtraction_a, int8_t subtraction_b);
@@ -88,9 +92,13 @@ inline void set_versacore_start() { csrw_ss(GEMMX_START, 1); }
 // dispatches. set_versacore_streamer_csr() never writes it, so one call here holds
 // for every later dispatch until the next call. Returns 0 on success, or 1 when this
 // build has no shift register and a non-zero k was asked for.
-#if defined(READER_WRITER_EXTENSION_1_CSR_NUM) && READER_WRITER_EXTENSION_1_CSR_NUM == 3
+//
+// The generated header names the converter's own registers through its SHIFT
+// capability, so k is found wherever the cfg stacks the converter on the D host: it is
+// the converter's csr(1).
+#if defined(READER_WRITER_EXTENSION_1_HAS_SHIFT)
 #define VERSACORE_HAS_D_SHIFT 1
-#define VERSACORE_D_SHIFT_CSR (READER_WRITER_EXTENSION_1_CSR_BASE + 2)
+#define VERSACORE_D_SHIFT_CSR (READER_WRITER_EXTENSION_1_SHIFT_EXT_CSR_BASE + 1)
 #else
 #define VERSACORE_HAS_D_SHIFT 0
 #endif
@@ -108,51 +116,12 @@ __attribute__((always_inline)) static inline int set_versacore_d_shift(
 // Poll until Streamer and GEMM accelerator finish
 void wait_versacore_and_streamer();
 
-// ---- task accounting -------------------------------------------------------
-//
-// The busy flag is a level: it says work is happening, not WHICH work. That is
-// enough only while at most one configuration can be in flight. Once the CSR
-// manager can stage a second one behind the first (cfgQueueDepth > 1), a poll on
-// busy can return between two queued tasks and report the wrong one finished.
-//
-// These two counters make it exact. Submitting returns an id, and the task is
-// complete once the finished counter reaches it. Both are free-running and wrap
-// together, so the comparison below stays correct across a wrap.
-__attribute__((always_inline)) static inline uint32_t
-snax_versacore_submitted_tasks() {
-    return csrr_ss(STREAMER_SUBMITTED_TASK_CSR);
-}
-
-__attribute__((always_inline)) static inline uint32_t
-snax_versacore_finished_tasks() {
-    return csrr_ss(STREAMER_FINISHED_TASK_CSR);
-}
-
-// Start the configured task and return its id. The trailing zero write leaves the
-// start register clear so the next non-zero write is a fresh submission rather
-// than a repeat of this one.
-__attribute__((always_inline)) static inline uint32_t
-snax_versacore_submit() {
-    csrw_ss(STREAMER_START_CSR, 1);
-    csrw_ss(STREAMER_START_CSR, 0);
-    return csrr_ss(STREAMER_SUBMITTED_TASK_CSR);
-}
-
-// Wait for one specific task. Subtracting before comparing is what makes this
-// wrap-safe: it asks "has the finished counter reached or passed id", not
-// "is finished numerically at least id".
-__attribute__((always_inline)) static inline void
-snax_versacore_wait_task(uint32_t task_id) {
-    while ((int32_t)(csrr_ss(STREAMER_FINISHED_TASK_CSR) - task_id) < 0) {
-    }
-}
-
 // ---- waiting on the ARRAY, and proving the counter exists first --------------
 //
 // GEMMX_FINISHED_TASK is the array's own retired-task count, and it is the only
 // completion signal that is correct for a pipeline: GEMMX_BUSY is a level that spans
-// queued dispatches, and the STREAMER counter fires when the writer's address
-// generator has finished ISSUING, which is before the array has finished producing.
+// queued dispatches. The task id is the caller's: the counter read before its first
+// dispatch plus the dispatches issued since, compared wrap-safe below.
 //
 // It is also a READ-ONLY CSR the array only gained when the array-side counter was
 // added. Run against a cluster built before that -- a stale `work-vsim`, a Verilator

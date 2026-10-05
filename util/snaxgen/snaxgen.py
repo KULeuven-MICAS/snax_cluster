@@ -818,6 +818,14 @@ def main():
                     "snax_gemmx_tile_size, snax_gemmx_serial_c32_d32_width, "
                     "snax_gemmx_serial_d8_width, with_pipeline"
                 )
+            # The shell wires exactly BlockGemmRescaleSIMDGen.numRoCsr read-only CSRs (busy,
+            # performance counter). A different snax_num_ro_csr sizes the CSR manager to
+            # another width, and the mismatch is truncated silently rather than reported.
+            if acc_cfgs[i]["snax_num_ro_csr"] != 2:
+                raise ValueError(
+                    "snax_num_ro_csr must be 2 for snax_streamer_gemmX "
+                    f"(got {acc_cfgs[i]['snax_num_ro_csr']})"
+                )
             gen_chisel_file(
                 chisel_path=chisel_acc_path,
                 chisel_param="snax_acc.gemmx.BlockGemmRescaleSIMDGen "

@@ -60,6 +60,15 @@ class VersaCoreIO(params: SpatialArrayParam) extends Bundle {
   // the array itself is done -- which is what makes it the only usable completion signal
   // once more than one configuration can be queued.
   val finished_tasks      = Output(UInt(params.configWidth.W))
+  // Free-running count of C beats taken and discarded by tasks with take_in_new_c = 0, see c_dropped in VersaCore.
+  val c_dropped           = Output(UInt(params.configWidth.W))
+}
+
+object VersaCore {
+  // busy_o, performance_counter, stall_a, stall_b, stall_d, finished_tasks, c_dropped. The ONE place this number
+  // lives: VersaCoreGen emits the shell's RegROCount from it and requires the cluster cfg's snax_num_ro_csr, which
+  // sizes the CSR manager, to equal it.
+  val numRoCsr = 7
 }
 
 /** VersaCore is the top-level module for VersaCore. */
@@ -475,11 +484,11 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   // accepted several cycles before it retires, so it cannot share computeFireCounter: that
   // counter ticks at retire, and the mark would stay asserted over every pass accepted in
   // between, taking one C word from the port for each of them. Count accepted passes instead.
-  val accAddExtInInput  = WireInit(0.B)
-  val inputFireCounter  = Module(new BasicCounter(params.configWidth, hasCeil = true, nameTag = "inputFireCounter"))
+  val accAddExtInInput = WireInit(0.B)
+  val inputFireCounter = Module(new BasicCounter(params.configWidth, hasCeil = true, nameTag = "inputFireCounter"))
   inputFireCounter.io.ceilOpt.get := csrReg.fsmCfg.temporal_accumulation_times
-  inputFireCounter.io.tick  := array.io.array_data.in_a.fire && cstate === sBUSY
-  inputFireCounter.io.reset := versacore_finish
+  inputFireCounter.io.tick        := array.io.array_data.in_a.fire && cstate === sBUSY
+  inputFireCounter.io.reset       := versacore_finish
 
   accAddExtInInput := inputFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 1.U && cstate === sBUSY
 
@@ -490,13 +499,23 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
   val accClear = WireInit(0.B)
   accClear := computeFireCounter.io.value === 0.U && csrReg.fsmCfg.take_in_new_c === 0.U && cstate === sBUSY
 
+  // take_in_new_c = 0 with the C read stream still launched: nothing would consume those beats, the streamer's C
+  // FIFO would fill and the streamer would stay busy for ever. While such a task is busy the array takes and
+  // discards every C word instead, so the stream drains and the task completes. Each C beat that arrives in that
+  // window belongs to this task: the streamer runs one task at a time and cannot start the next one's C stream
+  // before this task's last D -- which this array emits after everything else -- has been written. Beats still in
+  // flight when the task retires are NOT drained (the next task may legitimately want C), so a C stream that
+  // outlasts its task still hangs.
+  val drainC = cstate === sBUSY && csrReg.fsmCfg.take_in_new_c === 0.U
+
   // array ctrl signals
-  array.io.ctrl.arrayShapeCfg  := csrReg.arrayCfg.arrayShapeCfg
-  array.io.ctrl.dataTypeCfg    := csrReg.arrayCfg.dataTypeCfg
+  array.io.ctrl.arrayShapeCfg    := csrReg.arrayCfg.arrayShapeCfg
+  array.io.ctrl.dataTypeCfg      := csrReg.arrayCfg.dataTypeCfg
   array.io.ctrl.accAddExtIn      := accAddExtIn
   array.io.ctrl.accAddExtInInput := accAddExtInInput
   array.io.ctrl.accClear         := accClear
-  array.io.ctrl.cstate_is_busy := cstate === sBUSY
+  array.io.ctrl.drainC           := drainC
+  array.io.ctrl.cstate_is_busy   := cstate === sBUSY
 
   // array data signals
   array.io.array_data.in_a <> A_s2p.io.out
@@ -549,6 +568,15 @@ class VersaCore(params: SpatialArrayParam) extends Module with RequireAsyncReset
     finished_tasks := finished_tasks + 1.U
   }
   io.finished_tasks := finished_tasks
+
+  // C beats discarded by drainC, free-running like finished_tasks. A correct program never moves it: a fresh-product
+  // task either masks its C channels with take_in_new_c = 1 or launches no C stream at all. Software reads it around
+  // a dispatch to catch the third, wasteful form -- a C stream fetched from TCDM only to be thrown away.
+  val c_dropped = RegInit(0.U(params.configWidth.W))
+  when(drainC && io.versacore_data.in_c.fire) {
+    c_dropped := c_dropped + 1.U
+  }
+  io.c_dropped := c_dropped
 
   // Stall census. Every busy cycle is either a pass entering the array or exactly one of these
   // three stalls, so stall_a + stall_b + stall_d + (cycles with a pass accepted) equals

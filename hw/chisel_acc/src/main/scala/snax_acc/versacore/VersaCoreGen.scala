@@ -29,6 +29,13 @@ object SpatialArrayParamParser {
       cfg.obj.get("snax_num_rw_csr").map(_.num.toInt) == Some(7),
       "snax_num_rw_csr should be 7 for VersaCore"
     )
+    // snax_num_ro_csr sizes the CSR manager's read-only set, and the shell's RegROCount the outputs wired into it.
+    // A mismatch is not an elaboration error further down: the wider side is truncated, and every read-only CSR past
+    // the narrower count reads back as zero or a stuck value.
+    require(
+      cfg.obj.get("snax_num_ro_csr").map(_.num.toInt) == Some(VersaCore.numRoCsr),
+      s"snax_num_ro_csr should be ${VersaCore.numRoCsr} for VersaCore"
+    )
 
     /** Convert input widths to corresponding FP types
       */
@@ -182,11 +189,8 @@ module snax_versacore_shell_wrapper #(
     // Custom parameters. As much as possible,
     // these parameters should not be taken from outside
     parameter int unsigned RegRWCount   = ${params.csrNum},
-    // busy_o, performance_counter, stall_a, stall_b, stall_d, finished_tasks. This MUST equal snax_num_ro_csr
-    // in the cluster cfg, which is what sizes the CSR manager: the shell declares
-    // csr_reg_ro_set_o with this width, so a value smaller than the number of outputs wired
-    // below drops the top ones with no error and they read back as zero.
-    parameter int unsigned RegROCount   = 6,
+    // VersaCore.numRoCsr, which SpatialArrayParamParser requires snax_num_ro_csr to equal.
+    parameter int unsigned RegROCount   = ${VersaCore.numRoCsr},
     parameter int unsigned DataWidthA   = $DataWidthA,
     parameter int unsigned DataWidthB   = $DataWidthB,
     parameter int unsigned DataWidthC   = $DataWidthC,
@@ -268,7 +272,8 @@ module snax_versacore_shell_wrapper #(
       .io_stall_a_counter(csr_reg_ro_set_o[2]),
       .io_stall_b_counter(csr_reg_ro_set_o[3]),
       .io_stall_d_counter(csr_reg_ro_set_o[4]),
-      .io_finished_tasks(csr_reg_ro_set_o[5])
+      .io_finished_tasks(csr_reg_ro_set_o[5]),
+      .io_c_dropped(csr_reg_ro_set_o[6])
 
   );
 

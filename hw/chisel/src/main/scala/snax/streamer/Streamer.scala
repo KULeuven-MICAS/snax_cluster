@@ -146,10 +146,13 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
   val csrManager = Module(
     new ReqRspManager(
       numReadWriteReg = csrNumReadWrite,
-      // 4 read only csr for every streamer: busy, the performance counter, and the
-      // submitted/finished task pair that makes completion unambiguous once more than one
-      // configuration can be in flight. Busy alone cannot say WHICH task it refers to.
-      numReadOnlyReg  = 4,
+      // 2 read only csr for every streamer: busy and the performance counter. The
+      // cluster wrapper decodes the streamer's window with util/snaxgen's
+      // streamer_csr_num(), which counts exactly these two: a read-only register added
+      // here and not there lands in the ACCELERATOR's window, where it reads back the
+      // accelerator's first registers instead. Per-task completion is the accelerator's
+      // job (VersaCore: GEMMX_FINISHED_TASK), not the streamer's.
+      numReadOnlyReg  = 2,
       addrWidth       = param.csrAddrWidth,
       ioDataWidth     = 32,
       regDataWidth    = 32,
@@ -380,21 +383,9 @@ class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
     performance_counter := performance_counter + 1.U
   }
 
-  // connect the performance counter to the first ready only csr
-  // TASK ACCOUNTING. busy is a level and says nothing about how many tasks are outstanding,
-  // so with a staging queue software cannot use it to wait for a specific dispatch. These
-  // two counters make it exact: submit returns an id, and the task is done once the finished
-  // counter reaches it. Same contract the SIMD and the xDMA already expose.
-  val submittedTasks = RegInit(0.U(32.W))
-  val finishedTasks  = RegInit(0.U(32.W))
-  when(csrManager.io.cfgSubmitted) { submittedTasks := submittedTasks + 1.U }
-  // A task retires when the datapath leaves sBUSY.
-  when(!streamer_busy && RegNext(streamer_busy)) { finishedTasks := finishedTasks + 1.U }
-
+  // connect the busy flag and the performance counter to the read only csrs
   csrManager.io.readOnlyReg(0) := streamer_busy
   csrManager.io.readOnlyReg(1) := performance_counter
-  csrManager.io.readOnlyReg(2) := submittedTasks
-  csrManager.io.readOnlyReg(3) := finishedTasks
 
   // store the configuration csr for each data mover when config fire
   val csrCfgReg = RegInit(VecInit(Seq.fill(csrNumReadWrite)(0.U(32.W))))
@@ -782,6 +773,29 @@ object Streamer {
       extension_csr_num
     }
 
+    // Per extension that elaborated an optional feature: `<HOST>_HAS_<CAP>`, the enable bit it owns in the host's
+    // first CSR (its position in the cfg list) and the address of its own first user CSR. Software reaches the
+    // feature through these rather than through the host's window length, which changes with whatever else the cfg
+    // stacks on the same host.
+    def capabilityMacros(host: String, hostBase: Int, extensions: Seq[HasDataPathExtension]): String = {
+      val caps     = extensions.flatMap(_.extensionParam.capabilities.map(_.toUpperCase))
+      require(
+        caps.distinct.length == caps.length,
+        s"$host: two extensions publish the same capability (${caps.mkString(", ")}), so its macros would collide"
+      )
+      var userBase = hostBase + 1 // the host's enable register comes first
+      var macros   = ""
+      for ((ext, bit) <- extensions.zipWithIndex) {
+        for (cap <- ext.extensionParam.capabilities.map(_.toUpperCase)) {
+          macros = macros + s"#define ${host}_HAS_${cap} 1\n"
+          macros = macros + s"#define ${host}_${cap}_ENABLE_BIT ${bit}\n"
+          macros = macros + s"#define ${host}_${cap}_EXT_CSR_BASE ${userBase}\n"
+        }
+        userBase = userBase + ext.extensionParam.userCsrNum
+      }
+      macros
+    }
+
     val reader_extension_csr        = get_extension_list_csr_num(param.readerDatapathExtention)
     val writer_extension_csr        = get_extension_list_csr_num(param.writerDatapathExtention)
     val reader_writer_extension_csr = get_extension_list_csr_num(param.readerWriterDatapathExtention)
@@ -795,6 +809,7 @@ object Streamer {
         )
         csrMap    = csrMap + "#define READER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
         csrMap    = csrMap + s"#define READER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+        csrMap    = csrMap + capabilityMacros(s"READER_EXTENSION_${i}", csrBase_i, param.readerDatapathExtention(i))
       }
     }
     csrBase = csrBase + reader_extension_csr
@@ -808,6 +823,7 @@ object Streamer {
         )
         csrMap    = csrMap + "#define WRITER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
         csrMap    = csrMap + s"#define WRITER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+        csrMap    = csrMap + capabilityMacros(s"WRITER_EXTENSION_${i}", csrBase_i, param.writerDatapathExtention(i))
       }
     }
     csrBase = csrBase + writer_extension_csr
@@ -823,6 +839,8 @@ object Streamer {
         )
         csrMap    = csrMap + "#define READER_WRITER_EXTENSION_" + i + "_CSR_BASE " + csrBase_i + "\n"
         csrMap    = csrMap + s"#define READER_WRITER_EXTENSION_${i}_CSR_NUM ${extension_csr_num}\n"
+        csrMap    =
+          csrMap + capabilityMacros(s"READER_WRITER_EXTENSION_${i}", csrBase_i, param.readerWriterDatapathExtention(i))
       }
     }
     csrBase = csrBase + reader_writer_extension_csr
@@ -839,13 +857,7 @@ object Streamer {
     csrBase = csrBase + 1
 
     // streamer performance counter csr
-    csrMap  = csrMap + "#define STREAMER_PERFORMANCE_COUNTER_CSR " + csrBase + "\n"
-    csrBase = csrBase + 1
-
-    // task accounting: submit returns an id, done when finished reaches it
-    csrMap  = csrMap + "#define STREAMER_SUBMITTED_TASK_CSR " + csrBase + "\n"
-    csrBase = csrBase + 1
-    csrMap  = csrMap + "#define STREAMER_FINISHED_TASK_CSR " + csrBase + "\n"
+    csrMap = csrMap + "#define STREAMER_PERFORMANCE_COUNTER_CSR " + csrBase + "\n"
 
     val macro_dir      = param.headerFilepath + "/streamer_csr_addr_map.h"
     val macro_template =

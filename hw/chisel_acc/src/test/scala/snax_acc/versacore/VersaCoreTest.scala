@@ -34,6 +34,7 @@ class VersaCoreHarness(params: SpatialArrayParam) extends Module with RequireAsy
   io.stall_b_counter     := dut.io.stall_b_counter
   io.stall_d_counter     := dut.io.stall_d_counter
   io.finished_tasks      := dut.io.finished_tasks
+  io.c_dropped           := dut.io.c_dropped
 }
 
 trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {

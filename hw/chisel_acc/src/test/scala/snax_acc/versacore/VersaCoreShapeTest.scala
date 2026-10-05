@@ -21,9 +21,12 @@ import org.scalatest.flatspec.AnyFlatSpec
   *                   output block that leaves as four 1024-bit D beats, one per row
   *
   * One instance runs a sequence of tasks, so the runtime shape switch is covered: shape 2 without C (take_in_new_c =
-  * 0, the accumulator cleared at each block's first pass -- how a GEMV runs when the C reader carries the D port's
-  * column scale), shape 2 with C, then shapes 1 and 0. A and B bytes past what a shape reads are random, so a shape
-  * that read them would fail. Operands are driven back to back; D is drained without backpressure.
+  * 0, the accumulator cleared at each block's first pass -- how a GEMV runs with no C stream), shape 2 with C, then
+  * shapes 1 and 0. A and B bytes past what a shape reads are random, so a shape that read them would fail. Operands are
+  * driven back to back; D is drained without backpressure.
+  *
+  * A second sequence offers a full C stream to take_in_new_c = 0 tasks: the array must drain it (no hang), ignore it
+  * (D = the fresh product), count every beat in c_dropped, and leave the next task's C untouched.
   */
 class VersaCoreShapeTest extends AnyFlatSpec with ChiselScalatestTester {
 
@@ -67,7 +70,16 @@ class VersaCoreShapeTest extends AnyFlatSpec with ChiselScalatestTester {
     * checks them against the golden: D(m, n) = C(m, n) + sum_k sum_kk A[k](m, kk) * B[k](n, kk), with A's pass word
     * holding A(m, kk) at byte m * Ku + kk and B's holding B(n, kk) at byte n * Ku + kk.
     */
-  def runTask(dut: VersaCoreHarness, shape: Int, blocks: Int, K: Int, withC: Boolean, rng: Random): Double = {
+  def runTask(
+    dut:    VersaCoreHarness,
+    shape:  Int,
+    blocks: Int,
+    K:      Int,
+    withC:  Boolean,
+    rng:    Random,
+    strayC: Boolean = false // offer a C stream to a task with take_in_new_c = 0
+  ): Double = {
+    require(!(withC && strayC), "strayC is a C stream the task does not take")
     val Seq(mu, ku, nu) = shapes(shape)
     val beatsPerBlock   = math.max(1, mu * nu * 32 / 1024)
     val lanesPerBeat    = 32
@@ -85,6 +97,7 @@ class VersaCoreShapeTest extends AnyFlatSpec with ChiselScalatestTester {
       }
     }
 
+    val droppedBefore = dut.io.c_dropped.peek().litValue
     dut.io.ctrl.bits.fsmCfg.take_in_new_c.poke((if (withC) 1 else 0).U)
     dut.io.ctrl.bits.fsmCfg.temporal_accumulation_times.poke(K.U)
     dut.io.ctrl.bits.fsmCfg.output_times.poke(blocks.U)
@@ -116,7 +129,7 @@ class VersaCoreShapeTest extends AnyFlatSpec with ChiselScalatestTester {
       }
       dut.io.versacore_data.in_b.valid.poke(false.B)
     }
-    if (withC) threads = threads.fork {
+    if (withC || strayC) threads = threads.fork {
       for (b <- 0 until blocks; beat <- 0 until beatsPerBlock) {
         val lanes = cw(b).slice(beat * lanesPerBeat, (beat + 1) * lanesPerBeat)
         dut.io.versacore_data.in_c.bits.poke(word32(lanes).U)
@@ -139,6 +152,9 @@ class VersaCoreShapeTest extends AnyFlatSpec with ChiselScalatestTester {
     threads.join()
     until(!dut.io.busy_o.peekBoolean(), dut, "busy_o to fall")
     val cycles = dut.io.performance_counter.peek().litValue.toDouble
+    val dropped = dut.io.c_dropped.peek().litValue - droppedBefore
+    val expectDropped = if (strayC) blocks * beatsPerBlock else 0
+    assert(dropped == expectDropped, s"shape $shape: c_dropped moved by $dropped, expected $expectDropped")
 
     for (b <- 0 until blocks; e <- 0 until mu * nu)
       assert(
@@ -166,6 +182,19 @@ class VersaCoreShapeTest extends AnyFlatSpec with ChiselScalatestTester {
       runTask(dut, shape = 2, blocks = 2, K = 8, withC = false, rng)
       // a GEMV block drains its four D beats while the next block's passes run: the rate is the array's
       assert(c2 < 1.05, f"(4, 4, 32) should run near one pass a cycle, measured $c2%.3f")
+    }
+  }
+
+  it should "drain and count a C stream offered to a task that takes no C, and leave the next task's C intact" in {
+    test(new VersaCoreHarness(params)).withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
+      val rng = new Random(0xc0de)
+      dut.clock.setTimeout(0)
+      dut.clock.step(5)
+      runTask(dut, shape = 0, blocks = 2, K = 8, withC = false, rng, strayC = true)
+      runTask(dut, shape = 0, blocks = 2, K = 8, withC = true, rng)
+      runTask(dut, shape = 2, blocks = 3, K = 16, withC = false, rng, strayC = true)
+      runTask(dut, shape = 1, blocks = 4, K = 16, withC = false, rng, strayC = true)
+      runTask(dut, shape = 2, blocks = 3, K = 16, withC = true, rng)
     }
   }
 }

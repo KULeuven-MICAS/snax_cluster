@@ -114,8 +114,8 @@ __attribute__((always_inline)) static inline void gemm_set_bases(uint32_t a, uin
 // presents a beat -- it just presents ZERO and issues no TCDM request -- which is precisely
 // the seed a fresh output block wants, so the first k step of a block masks C off instead of
 // zeroing the accumulator and the steps after it read their own previous output back.
-// take_in_new_c stays 1 either way: at 0 the array stops draining the C reader, whose beats
-// keep coming, and its depth-1 FIFO fills and never reports empty.
+// take_in_new_c stays 1 either way: at 0 the array would discard the C reader's beats
+// (counted in GEMMX_C_DROPPED) instead of using them, and the later k steps need them.
 __attribute__((always_inline)) static inline void gemm_accumulate(uint32_t on) {
     csrw_ss(ENABLED_CHANNEL_READER_WRITER_0, on ? (uint32_t)channel_en_C[0] : 0u);
 }
