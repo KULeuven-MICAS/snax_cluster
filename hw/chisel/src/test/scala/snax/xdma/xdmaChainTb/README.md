@@ -36,6 +36,7 @@ make sim-p2      # the control: no middle hop
 make sim-p4      # two middle hops, the HeMAiA failing case
 make sim-p16     # 16 endpoints, one width
 make sim-role    # ~1 min: can a node that COLLECTED then be a MIDDLE HOP?
+make sim-overlap # a gather across another task on its middle hop, and back-to-back reader tasks
 make sim-tree4   # the balanced G=4 two-stage tree + the barrier question
 make sim-tree    # every tree shape, G in {2,4,8}
 make sim-bench   # sw baseline vs chain vs tree: latency, hops, SRAM; P and volume sweeps
@@ -44,7 +45,9 @@ make gui-p3      # same, in the GUI
 ```
 
 `sim-role` is the fastest gate for the adapter's stranded-AW-descriptor bug (§ *The role change*
-below) and `sim-tree4` for the tree; run both after any adapter change.
+below) and `sim-tree4` for the tree; run both after any adapter change. `sim-overlap` gates the
+frontend's task ordering: run it after any change to `XDMACtrl`, the switch, or what makes the reader
+or writer busy. Its cases and the bugs they found are in `hw/chisel/doc/xdma_overlap_bug_report.md`.
 
 These are SystemVerilog testbenches living in the Scala test tree so that everything testing the
 xDMA sits in one place. **sbt does not see them** -- only `bender` does, through the
