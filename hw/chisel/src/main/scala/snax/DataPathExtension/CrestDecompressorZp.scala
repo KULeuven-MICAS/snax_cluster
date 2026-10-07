@@ -9,46 +9,29 @@ import chisel3.util._
 
 import snax.utils.RegQueue
 
-/** CrestDecompressor: decoder of CREST (Centre-Relative Encoding with Split Tiers), the lossless multi-format weight
-  * format; one output beat per cycle.
+/** CrestDecompressorZp: CrestDecompressor with zero-point-aware nibbles (HasCrestDecompressor(zeroPoint = true)).
   *
-  * The format is the one `hw/chisel/doc/crest_decompressor/crest_codec.py` encodes (spec: crest_decompressor.md). The output is
-  * the weight tensor as stored, in beats of L lanes:
+  * Asymmetric INT4 (AWQ, compressed-tensors w4a16) stores each code q around a zero point z per group of 128 weights;
+  * the stream codes d = (q - z) mod 16 (crest_codec.py, stream header [18:17] zl = 1 or 2, mode 0). One ZERO-POINT
+  * WORD of 128 nibbles covers each period of 128 output beats and precedes the header of the group in which the period
+  * starts (groupBeats must divide 128, so a period starts with a group).
   *
-  *   - mode 0, nib: 128 lanes of 4 bits (INT4 / MXFP4 / NVFP4 nibbles)
-  *   - mode 1, byte: 64 lanes of 8 bits (INT8 / FP8)
-  *   - mode 2, bf16: 32 lanes of 16 bits; the exponent byte is coded, sign and mantissa travel raw
+  *   - zl 1: nibble i is the zero point of lane i for every beat of the period (AWQ, beats in (row group, column
+  *     block, row) order).
+  *   - zl 2: nibble i is the zero point of every lane of the period's beat i (w4a16: one beat is one group).
   *
-  * Word 0 of the stream configures the transfer: [1:0] mode, [2] keymap, [10:3] centre, [13:11] p, [16:14] e1. A lane's
-  * p-bit plane code is a KEY (keys < K0 = 2^p - 2 are direct), K0 = a tier-1 escape (an e1-bit entry, key = K0 + entry)
-  * or K0 + 1 = a tier-2 escape (the raw symbol). The key orders symbols outward from the centre: keymap 0 = zigzag of
-  * the two's-complement distance, keymap 1 = sign-magnitude, 2 * zigzag(|m| - centre) + sign. No table: the inverse is
-  * an adder per lane.
-  *
-  * Groups of `groupBeats` beats: coded = E escape words (32-bit header: [14:0] E, [15] 0, [31:16] n1; then n1 tier-1
-  * entries, then the tier-2 entries, lane order) + ceil(gb * L * lb / 512) plane words, lb = p (+ 8 raw bits in bf16);
-  * raw = a header word with bit 15 set + the gb beats. CSR 0 = N output beats.
-  *
-  * DATAPATH:
-  *   - Router: stream header, then HDR -> ESC -> PLANE (or RAW) per group, two escape buffers so groups overlap.
-  *   - Plane window A, B and a plane bit pointer. Every lane field width times L is a multiple of 32 bits, so a beat's
-  *     slice is a 16:1 funnel over the 2-word window at 32-bit steps.
-  *   - Stage 1: each lane's field for the configured (mode, p), its class, two prefix popcounts (tier-1 and tier-2
-  *     entry numbers), and two escape windows: the escape buffer shifted by the tier-1 and tier-2 pointers. Both
-  *     pointer updates depend only on plane-derived counts.
-  *   - Stage 2: escaped lanes take their entries (K1 / K2 per pass), every key is mapped back to its symbol, and the
-  *     lanes are assembled in the mode's width.
-  *
-  * A beat with more than `k1Lanes` tier-1 or `k2Lanes` tier-2 escapes takes extra passes. On real checkpoints (GPTQ
-  * INT4, FP8, INT8, BF16) at 32 / 16 that is 0-1.4% of the beats.
+  * The router puts each zero-point word in a 2-deep queue (it reads up to two groups ahead); the decoder takes it into
+  * zpCur when that group starts, loads the beat's per-lane zero points into stage 2 at issue, and adds them, mod 16, to
+  * every nibble lane of a coded beat. Raw groups carry q and pass unchanged. Everything else is CrestDecompressor's.
   */
-class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: Int, planeDepth: Int)(implicit
+class CrestDecompressorZp(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: Int, planeDepth: Int)(implicit
   extensionParam: DataPathExtensionParam
 ) extends DataPathExtension {
 
   val W   = extensionParam.dataWidth
   val S   = W / 4 // lane slots: lanes of the nibble mode
   val HB  = 32    // group header bits
+  val ZP  = 128   // output beats a zero-point word covers
   val G   = groupBeats
   val K1  = k1Lanes
   val K2  = k2Lanes
@@ -59,6 +42,7 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
   require(escWords   >= 1, "CrestDecompressor: escWords must be at least 1")
   require(isPow2(K1) && K1 >= 2 && K1 <= S && isPow2(K2) && K2 >= 2 && K2 <= S, "CrestDecompressor: k1/k2Lanes")
   require(planeDepth >= 2, "CrestDecompressor: planeDepth must be at least 2")
+  require(ZP % G == 0, s"CrestDecompressor: with zero points, groupBeats ($G) must divide $ZP")
 
   val lgK1 = log2Ceil(K1)
   val lgK2 = log2Ceil(K2)
@@ -88,6 +72,7 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
   val cCentre = RegInit(0.U(8.W))
   val cP      = RegInit(2.U(3.W))
   val cE1     = RegInit(1.U(3.W))
+  val cZl     = RegInit(0.U(2.W)) // zero-point layout: 0 none, 1 a vector per lane, 2 a scalar per beat
   val cfgSel  = VecInit(cfgs.map(c => cMode === c.mode.U && cP === c.p.U))
   val bpb     = Mux1H(cfgSel, cfgs.map(c => c.bpb.U(10.W))) // plane bits per beat (<= 480)
   val sbBits  = Mux(cMode === 0.U, 4.U(4.W), 8.U(4.W))      // tier-2 entry width = symbol width
@@ -117,6 +102,9 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
   val escValid = RegInit(VecInit(Seq.fill(2)(false.B)))
 
   val grpQ   = Module(new RegQueue(new GroupInfo, 2, hasFlush = true))
+  val zpQ    = Module(new RegQueue(UInt(W.W), 2, hasFlush = true))   // zero-point words read ahead
+  val total  = RegInit(0.U(32.W))                                      // CSR 0: the transfer's output beats
+  val zpTook = RegInit(false.B)                                        // this group's zero-point word is in
   val planeQ = Module(new RegQueue(UInt(W.W), planeDepth, hasFlush = true))
 
   val word   = ext_data_i.bits
@@ -132,6 +120,8 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
   grpQ.io.enq.bits.n1  := rN1
   planeQ.io.enq.valid  := false.B
   planeQ.io.enq.bits   := word
+  zpQ.io.enq.valid     := false.B
+  zpQ.io.enq.bits      := word
 
   def finishEscape(gb: UInt, n1: UInt): Unit = {
     grpQ.io.enq.valid   := true.B
@@ -153,17 +143,26 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
             ((m === 1.U || m === 2.U) && p >= 2.U && word(16, 14) >= 1.U),
           "CrestDecompressor: unsupported stream header (mode, p, e1)"
         )
+        assert(word(18, 17) =/= 3.U && (word(18, 17) === 0.U || m === 0.U), "CrestDecompressor: bad zero-point layout")
         cMode                         := m
         cKeymap                       := word(2)
         cCentre                       := word(10, 3)
         cP                            := p
         cE1                           := word(16, 14)
+        cZl                           := word(18, 17)
         rState                        := RState.sHdr
       }
     }
     is(RState.sHdr) {
+      val zpExpect = cZl =/= 0.U && (total - inRemain)(6, 0) === 0.U && !zpTook
+      when(zpExpect) {
+        ext_data_i.ready := inRemain =/= 0.U && zpQ.io.enq.ready
+        zpQ.io.enq.valid := ext_data_i.valid && inRemain =/= 0.U
+        when(ext_data_i.fire)(zpTook := true.B)
+      }.otherwise {
       ext_data_i.ready := inRemain =/= 0.U && grpQ.io.enq.ready && !escValid(fillBuf)
       when(ext_data_i.fire) {
+        zpTook   := false.B
         inRemain := inRemain - gbIn
         rGb      := gbIn
         when(hdrRaw) {
@@ -184,6 +183,7 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
             rEscIdx := 1.U
           }
         }
+      }
       }
     }
     is(RState.sEsc) {
@@ -307,6 +307,9 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
   val s2Ent1  = RegInit(VecInit(Seq.fill(K1)(0.U(7.W))))
   val s2Ent2  = RegInit(VecInit(Seq.fill(K2)(0.U(8.W))))
   val acc     = RegInit(VecInit(Seq.fill(S)(0.U(8.W)))) // lanes placed by earlier passes
+  val zpCur   = RegInit(0.U(W.W))                        // the zero-point word of the current period
+  val zpStart = RegInit(0.U(7.W))                        // the current group's first beat within its period
+  val s2Zp    = RegInit(0.U(W.W))                        // the stage-2 beat's zero point per nibble lane
 
   val s2Consume = s2Valid && (!s2Last || outQ.io.enq.ready)
   val s2Free    = !s2Valid || s2Consume
@@ -344,7 +347,7 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
     val v    = Mux(s2F2(i), t2, sym)
     Mux(s2In1(i) || s2In2(i), v, Mux(s2F1(i) || s2F2(i), acc(i), v))
   })
-  val beatNib  = Cat((0 until 128).reverse.map(i => laneSym(i)(3, 0)))
+  val beatNib  = Cat((0 until 128).reverse.map(i => (laneSym(i)(3, 0) +& s2Zp(4 * i + 3, 4 * i))(3, 0)))
   val beatByte = Cat((0 until 64).reverse.map(i => laneSym(i)))
   val beatBf16 = Cat((0 until 32).reverse.map(i => Cat(s2Raw(i)(7), laneSym(i), s2Raw(i)(6, 0))))
   val beatOut  = MuxLookup(cMode, beatNib)(Seq(1.U -> beatByte, 2.U -> beatBf16))
@@ -354,7 +357,11 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
   ext_data_o <> outQ.io.deq
   when(s2Valid && !s2Last)(acc := laneSym)
 
+  val zpScalar = (zpCur >> ((zpStart + j.pad(7)(6, 0)) ## 0.U(2.W)))(3, 0)
+  val zpBeat   = Mux(cZl === 1.U, zpCur, Mux(cZl === 2.U, Fill(S, zpScalar), 0.U(W.W)))
+
   when(issue) {
+    s2Zp    := zpBeat
     s2Valid := true.B
     s2Last  := lastPass
     s2Code  := code
@@ -390,6 +397,12 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
   val gbNew    = minG(outRemain)
   val nplNew   = nplOf(gbNew)
   grpQ.io.deq.ready := startGrp
+  val grpFirst = total - outRemain                       // the starting group's first beat in the transfer
+  val zpNew    = startGrp && cZl =/= 0.U && grpFirst(6, 0) === 0.U
+  zpQ.io.deq.ready := zpNew
+  assert(!zpNew || zpQ.io.deq.valid, "CrestDecompressor: a period starts without its zero-point word")
+  when(startGrp)(zpStart := grpFirst(6, 0))
+  when(zpNew)(zpCur      := zpQ.io.deq.bits)
 
   // ---- plane window: the bit pointer advances by bpb a beat; crossing 512 retires word A ----
   val ppNext = pp +& bpb
@@ -432,6 +445,7 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
   // Start
   // ---------------------------------------------------------------------------------------------------------------
   grpQ.io.flush.get   := ext_start_i
+  zpQ.io.flush.get    := ext_start_i
   planeQ.io.flush.get := ext_start_i
   outQ.io.flush.get   := ext_start_i
 
@@ -439,6 +453,8 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
     rState    := RState.sStream
     inRemain  := ext_csr_i(0)
     outRemain := ext_csr_i(0)
+    total     := ext_csr_i(0)
+    zpTook    := false.B
     fillBuf   := 0.U
     escValid  := VecInit(Seq.fill(2)(false.B))
     curValid  := false.B
@@ -453,35 +469,4 @@ class CrestDecompressor(groupBeats: Int, escWords: Int, k1Lanes: Int, k2Lanes: I
 
   ext_busy_o := inRemain =/= 0.U || rState =/= RState.sHdr || outRemain =/= 0.U || curValid || s2Valid ||
     outQ.io.deq.valid
-}
-
-/** `groupBeats` and `escWords` are the format the encoder used (crest_codec.py: G = 64, EMAX = 12), so a cfg has to state
-  * them. `k1Lanes` / `k2Lanes` (escape entries placed per cycle) and `planeDepth` only trade area against cycles.
-  * `planeDepth` = 8 lets the router read a group's (up to 12) escape words while the previous group's last beats still
-  * decode; at 4 the FP8 and INT8 checkpoints lose ~4 cycles per group boundary.
-  */
-class HasCrestDecompressor(
-  groupBeats: Int,
-  escWords:   Int,
-  k1Lanes:    Int = 32,
-  k2Lanes:    Int = 16,
-  planeDepth: Int = 8,
-  dataWidth:  Int = 512,
-  zeroPoint:  Boolean = false // CrestDecompressorZp: zero-point-aware nibbles (crest_codec.py zl 1 / 2)
-) extends HasDataPathExtension {
-  implicit val extensionParam: DataPathExtensionParam =
-    new DataPathExtensionParam(
-      moduleName = "CrestDecompressor",
-      userCsrNum = 1,
-      dataWidth  = dataWidth
-    )
-  def instantiate(clusterName: String): DataPathExtension = if (zeroPoint) instantiateZp(clusterName) else
-    Module(new CrestDecompressor(groupBeats, escWords, k1Lanes, k2Lanes, planeDepth) {
-      override def desiredName = clusterName + namePostfix
-    })
-
-  def instantiateZp(clusterName: String): CrestDecompressorZp =
-    Module(new CrestDecompressorZp(groupBeats, escWords, k1Lanes, k2Lanes, planeDepth) {
-      override def desiredName = clusterName + namePostfix
-    })
 }
