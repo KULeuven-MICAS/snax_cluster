@@ -411,6 +411,7 @@ sources:
       - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_tree.sv
       - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_tree4.sv
       - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_role.sv
+      - hw/chisel/src/test/scala/snax/xdma/xdmaChainTb/tb_xdma_chaingather_overlap.sv
 
   - target: test
     files:

@@ -171,8 +171,11 @@ class Reader(
   // Busy Signal
   io.busy := addressgen.io.busy | (~addressgen.io.bufferEmpty)
 
-  // The debug signal from the dataBuffer to see if AGU and requestor / responser work correctly: It should be high when valid signal at the combined output is low
-  io.bufferEmpty := dataBuffer.io.allEmpty
+  // High when the reader holds no data: the data buffer is empty AND no response is still on its way from the TCDM.
+  // The second term matters at the end of a stream. Once the AGU has issued its last request, `busy` is low, and
+  // until that request's response lands the buffer is empty too: without the term, the reader would look idle for
+  // the TCDM latency while a beat of its stream is still to come.
+  io.bufferEmpty := dataBuffer.io.allEmpty && !responsers.io.map(_.pending).reduce(_ || _)
 }
 
 object ReaderEmitter extends App {

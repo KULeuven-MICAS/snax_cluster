@@ -23,6 +23,9 @@ class DataResponserIO(tcdmDataWidth: Int = 64, numChannel: Int = 8) extends Bund
     val rspReady  = Output(Bool())
     val reqSubmit = Input(Bool())
   }
+  // A request this responser counted has not left the data buffer yet: its response is still on its way from the
+  // TCDM, or it waits in the buffer.
+  val pending    = Output(Bool())
 }
 
 class DataResponser(tcdmDataWidth: Int, fifoDepth: Int, moduleNamePrefix: String = "unnamed_cluster")
@@ -49,6 +52,7 @@ class DataResponser(tcdmDataWidth: Int, fifoDepth: Int, moduleNamePrefix: String
   fifoUtilizationCounter.io.tickUp   := io.reqrspLink.reqSubmit
   fifoUtilizationCounter.io.tickDown := io.out.dataFifoPopped
   io.reqrspLink.rspReady             := ~fifoUtilizationCounter.io.lastVal || io.out.dataFifoPopped
+  io.pending                         := fifoUtilizationCounter.io.value =/= 0.U
 }
 
 // In this module is the multiple instantiation of DataRequestor. No Buffer is required from the data requestor's side, as it will be done at the outside.

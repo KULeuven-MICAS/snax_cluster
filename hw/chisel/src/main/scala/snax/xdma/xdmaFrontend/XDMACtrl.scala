@@ -381,8 +381,10 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   preRoute_src_local.bits.axiTransferBeatSize := axiTransferBeatSize
   preRoute_dst_local.bits.axiTransferBeatSize := axiTransferBeatSize
 
-  // Connect Valid and bits: Only when both preRoutes are ready, postRulecheck is ready
-  csrManager.io.readWriteRegIO.ready := preRoute_src_local.ready & preRoute_dst_local.ready
+  // Connect Valid and bits: Only when both preRoutes are ready, postRulecheck is ready. A local submission also
+  // waits while a gather hop's frame pair is open (`gatherFramesOpen`, below).
+  val localSubmitHold = Wire(Bool())
+  csrManager.io.readWriteRegIO.ready := preRoute_src_local.ready & preRoute_dst_local.ready & ~localSubmitHold
   preRoute_src_local.valid           := csrManager.io.readWriteRegIO.fire
   preRoute_dst_local.valid           := csrManager.io.readWriteRegIO.fire
 
@@ -521,6 +523,25 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   dstCfgRouter.io.to.remote.ready := cfgToRemoteMux.io.in(2).ready
   cfgToRemoteMux.io.in(2).bits.convertFromXDMACfgIO(writerSide = true, cfg = dstCfgRouter.io.to.remote.bits)
 
+  // ---- A HOP'S TWO GATHER FRAMES ARE NEVER SPLIT BY A LOCAL SUBMISSION -----------------------
+  //
+  // A ChainGather MIDDLE hop is configured by two frames from the collector, the reader frame first. The halves
+  // of a gather start only as a pair (below), and so do the halves of a local-loopback task. A task this node's
+  // core submitted between the two frames would enter the reader queue BEHIND the reader frame and the writer
+  // queue AHEAD of the writer frame: each queue's head would then wait for a counterpart queued behind the other
+  // head, for good. So local submission waits from the reader frame's acceptance until the writer frame's.
+  // Remote cfgs need no such hold: a remote read or a remote write occupies one queue only.
+  val gatherFramesOpen    = RegInit(0.U(3.W))
+  val midReaderFrameIn    = srcCfgRouter.io.from.remote.fire && srcCfgRouter.io.from.remote.bits.collectiveMode &&
+    srcCfgRouter.io.from.remote.bits.chainRole === XDMAChainRole.MIDDLE.U
+  val gatherWriterFrameIn = dstCfgRouter.io.from.remote.fire && dstCfgRouter.io.from.remote.bits.junctionEnabled
+  when(midReaderFrameIn && !gatherWriterFrameIn) {
+    gatherFramesOpen := gatherFramesOpen + 1.U
+  }.elsewhen(gatherWriterFrameIn && !midReaderFrameIn && gatherFramesOpen =/= 0.U) {
+    gatherFramesOpen := gatherFramesOpen - 1.U
+  }
+  localSubmitHold := gatherFramesOpen =/= 0.U
+
   // Judge remoteLoopback signal
   postRoute_src_local.bits.remoteLoopback := false.B
   postRoute_dst_local.bits.remoteLoopback := {
@@ -561,25 +582,36 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   nextStateSrc                := currentStateSrc
   nextStateDst                := currentStateDst
 
-  // ---- A GATHER'S COLLECTOR MUST NOT START ITS READER BEFORE ITS OWN WRITER FRAME ----------
+  // ---- A GATHER OWNS THE CROSSING WHILE IT RUNS -------------------------------------------
   //
-  // `junctionEnabled` lives on the WRITER frame, and it is what raises `junctionHost.io.active`
-  // -> `gatherCfg` -> `isGather`. Until `isGather` is up, `localReadDemux.io.sel := isGather`
-  // routes the reader's beats out to the next hop instead of into the junction, and the
-  // to-remote accompany cfg reads as a fresh chain head.
+  // The data switch takes its mode from the WRITER's current cfg alone: `junctionEnabled` on the writer frame
+  // raises `junctionHost.io.active` -> `gatherCfg` -> `isGather`, and `localReadDemux.io.sel := isGather`
+  // decides where the READER's beats go. The two cfg queues, however, each start their head on their own
+  // conditions. Two failures follow when they disagree:
+  //   * A gather's operand reader -- the collector's own reader, or a MIDDLE hop's reader frame -- started while
+  //     the writer still runs another task (a local expand whose reader has finished, say) finds `isGather`
+  //     low: its partial leaves raw through `toRemote` under a to-remote cfg that reads as a fresh transfer, and
+  //     the junction later waits for an operand that never comes.
+  //   * Any other reader that feeds the crossing while a gather writer frame runs (a remote read this node
+  //     serves, a push, a chain head's reader) finds `isGather` high: its beats are folded as the gather's
+  //     operand.
+  // So the two halves of a gather start together, as a local-loopback pair does: each starts only with its
+  // counterpart at the head of the other queue and the other side idle. And no other reader starts while a
+  // gather writer frame runs.
   //
-  // A collector's reader cfg has BOTH loopbacks false, so it satisfies the "remote read
-  // condition" below on its own. Without this term it starts the instant it arrives, which can
-  // be many cycles before the writer frame exists -- and a beat sent out in that window has no
-  // descriptor behind it, so the receiving path claims its wide channel on data alone and never
-  // completes.
-  //
-  // Only the COLLECTOR waits. A chain HEAD's reader cfg is collective too, but arrives FROM the
-  // collector (`isInitiator` 0) and has no junction of its own, so making it wait would deadlock
-  // it. No circular wait: a gather root's writer frame has both loopbacks false and its Dst FSM
-  // starts without consulting the Src state.
-  val gatherReaderReady =
-    (~(currentCfgSrc.bits.collectiveMode && currentCfgSrc.bits.isInitiator)) || currentCfgDst.valid
+  // Counterparts carry the collector's taskID. The collector submits both halves with one CSR start; a hop's two
+  // frames come from one unroll pass, the reader frame's readerPtr being the writer frame's writerPtr(0) (the
+  // hop's own operand). A chain HEAD's reader frame is not an operand reader: the head has no junction and no
+  // writer frame, and sources the chain like any remote read.
+  val srcIsGatherOperand = currentCfgSrc.bits.collectiveMode &&
+    (currentCfgSrc.bits.isInitiator || currentCfgSrc.bits.chainRole === XDMAChainRole.MIDDLE.U)
+  val dstIsGatherFrame   = currentCfgDst.bits.junctionEnabled
+  val gatherPairCurrent  =
+    currentCfgSrc.valid && currentCfgDst.valid && srcIsGatherOperand && dstIsGatherFrame &&
+      currentCfgSrc.bits.taskID === currentCfgDst.bits.taskID &&
+      currentCfgSrc.bits.isInitiator === currentCfgDst.bits.isInitiator &&
+      (currentCfgSrc.bits.isInitiator || currentCfgSrc.bits.readerPtr === currentCfgDst.bits.writerPtr(0))
+  val gatherFrameRunning = currentCfgDst.valid && dstIsGatherFrame && currentStateDst =/= sIdle
 
   // Control signals in Src Path
   switch(currentStateSrc) {
@@ -590,7 +622,11 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
         // A chained GATHER does not, because the reader is what supplies the junction's local operand and must run
         // concurrently with the chained transfer. The matching half is in the Dst path below; both must agree.
         currentCfgSrc.valid                       && (~(currentCfgDst.valid && currentCfgDst.bits.remoteLoopback &&
-          (~currentCfgDst.bits.junctionEnabled))) && gatherReaderReady && (
+          (~currentCfgDst.bits.junctionEnabled))) && Mux(
+          srcIsGatherOperand,
+          gatherPairCurrent && currentStateDst === sIdle,
+          ~gatherFrameRunning
+        ) && (
           // The local loopback condition: The next cfg at the writer side is its counterpart
           (currentCfgSrc.bits.localLoopback && currentCfgSrc.bits.readerPtr === currentCfgDst.bits.readerPtr && currentCfgSrc.bits
             .writerPtr(0) === currentCfgDst.bits.writerPtr(0)) ||
@@ -625,17 +661,18 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
     is(sIdle) {
       when {
         // Cfg at destination side is valid, Writer is not busy
-        currentCfgDst.valid && (
+        // A gather writer frame starts only together with its operand reader (see "A GATHER OWNS THE CROSSING").
+        currentCfgDst.valid && Mux(
+          dstIsGatherFrame,
+          gatherPairCurrent && currentStateSrc === sIdle,
           // The local loopback condition: The next cfg at the writer side is its counterpart
           (currentCfgDst.bits.localLoopback && currentCfgSrc.bits.readerPtr === currentCfgDst.bits.readerPtr && currentCfgSrc.bits
             .writerPtr(0) === currentCfgDst.bits.writerPtr(0)) ||
             // The remote write condition: All loopback is false
             (currentCfgDst.bits.localLoopback === false.B && currentCfgDst.bits.remoteLoopback === false.B) ||
             // The remote chained write condition: The remote loopback is true and the next state of the counterpart is sIdle
-            // INTERLOCK HALF 2 of 2. Symmetric to the Src path above: a chained WRITE waits for an idle reader, a
-            // chained GATHER requires a concurrently running reader. Both halves must agree.
-            (currentCfgDst.bits.remoteLoopback === true.B &&
-              (currentStateSrc === sIdle || currentCfgDst.bits.junctionEnabled))
+            // INTERLOCK HALF 2 of 2. Symmetric to the Src path above: a chained WRITE waits for an idle reader.
+            (currentCfgDst.bits.remoteLoopback === true.B && currentStateSrc === sIdle)
         )
       } {
         // Start the reader side
@@ -665,7 +702,7 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   // Data Signals in Dst Path
   io.localXDMACfg.writerCfg.convertFromXDMACfgIO(currentCfgDst.bits)
 
-  // ---- THE JUNCTION ENABLE MUST NOT OUTLIVE ITS OWN TRANSFER ------------------------------
+  // ---- THE JUNCTION ENABLE MUST NOT OUTLIVE, NOR PRECEDE, ITS OWN TRANSFER ----------------
   // `currentCfgDst` is a one-entry `-|>` cut, and `RegQueue.io.deq.bits` keeps presenting the
   // last frame after it is popped (`io.deq.bits := ram(deq_ptr.value)`, ungated on empty). The
   // datapath reads this bundle unconditionally, so between tasks it is shown the DEQUEUED
@@ -683,10 +720,17 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
   // symptom, and the reason it needs THREE rounds at P=2 to show up but only two with a middle
   // hop.
   //
+  // Nor may it PRECEDE its transfer. A gather writer frame waits at the head of the queue for
+  // its operand reader (see "A GATHER OWNS THE CROSSING"), possibly while another reader runs.
+  // `gatherCfg` raised by that waiting frame would meet `readerBusy` in the gather FSM's entry
+  // condition: the switch would enter gather mode on the other reader's stream, grant the
+  // upstream hop through `io.writerBusy`, and fold the other stream's beats. So the plugin
+  // region is shown from the start pulse until the frame is popped.
+  //
   // Gate only the plugin region: the rest of the cfg is harmless while stale (nothing consumes
   // it without a start pulse), and zeroing it wholesale would disturb the loopback bits the
   // switch reads combinationally.
-  when(!currentCfgDst.valid) {
+  when(!currentCfgDst.valid || (currentStateDst === sIdle && !io.localXDMACfg.writerStart)) {
     io.localXDMACfg.writerCfg.extCfg.foreach(_ := 0.U)
   }
 

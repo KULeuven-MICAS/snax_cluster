@@ -85,8 +85,13 @@ class DataPathExtensionHost(
       }
     }
 
-    // Connect busy signal
-    io.busy := extensions.map(_.io.busy_o).reduce(_ | _)
+    // Connect busy signal. Busy covers every beat still inside the host, not only the enabled extensions' own
+    // state: the cuts between extensions hold beats too, bypassed extensions included. Each cut's output is the
+    // next extension's input and the last one's output is the host's output, so those valid levels see every
+    // cut. Without them, a reader stream "ends" with up to two beats per cut still in flight, and whatever task
+    // the next reader cfg routes to receives them.
+    io.busy := extensions.map(_.io.busy_o).reduce(_ | _) |
+      extensions.map(_.io.data_i.valid).reduce(_ | _) | io.data.out.valid
 
     if (remainingCSR.length != 0)
       println(

@@ -13,6 +13,7 @@
 #   make sim-p16         # 16 endpoints, one width
 #   make sim-sweep       # THE SWEEP: P in {2,4,8,16} x {lin,mom}, with a latency table
 #   make sim-tree        # tree vs chain, and whether stage 2 needs a barrier
+#   make sim-overlap     # a gather across another task on its middle hop (+OVL_CASE=n: one case)
 #   make sim-star        # 4 endpoints, 3 concurrent writes into ep0
 #   make sim-exchange    # 4 endpoints, 2 concurrent pairs -- every node sends AND receives
 #   make sim-multi       # star, then exchange
@@ -145,9 +146,9 @@ vcd-$(1): wave-$(1)
 	@echo "VCD: $(BUILDDIR)/$(1).vcd"
 endef
 
-$(foreach tb,p2 p3 p4 p16 sweep tree tree4 role bench star exchange probe_exchange probe_tree4 probe_star hang_tree4 p2mom,$(eval $(call WAVE_TB,$(tb))))
+$(foreach tb,p2 p3 p4 p16 sweep tree tree4 role overlap bench star exchange probe_exchange probe_tree4 probe_star hang_tree4 p2mom,$(eval $(call WAVE_TB,$(tb))))
 
-$(foreach tb,p2 p3 p4 p16 sweep tree tree4 role bench star exchange probe_exchange probe_tree4 probe_star hang_tree4 p2mom,$(eval $(call RUN_TB,$(tb))))
+$(foreach tb,p2 p3 p4 p16 sweep tree tree4 role overlap bench star exchange probe_exchange probe_tree4 probe_star hang_tree4 p2mom,$(eval $(call RUN_TB,$(tb))))
 
 sim-all: sim-p2 sim-p3 sim-p4
 

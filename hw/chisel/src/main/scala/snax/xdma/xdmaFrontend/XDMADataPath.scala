@@ -146,7 +146,10 @@ class XDMADataPath(readerParam: XDMAParam, writerParam: XDMAParam, clusterName: 
   readerExtensions.io.data.out <> readerDataAfterExtension
   readerExtensions.io.connectCfgWithList(io.readerCfg.extCfg)
   readerExtensions.io.start := io.readerStart
-  io.readerBusy := reader.io.busy | (~reader.io.bufferEmpty) | readerExtensions.io.busy
+  // The reader side is busy until the last beat of its stream has entered the data switch: the switch routes a
+  // beat by the CURRENT reader cfg, so a beat still inside the reader or its extension host when the next reader
+  // cfg starts would follow that task instead of its own.
+  io.readerBusy := reader.io.busy | (~reader.io.bufferEmpty) | reader.io.data.valid | readerExtensions.io.busy
 
   // Writer side
   val writerDataBeforeExtension = Wire(chiselTypeOf(writer.io.data))

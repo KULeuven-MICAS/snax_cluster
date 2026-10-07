@@ -71,6 +71,10 @@ module xdma_chaingather_body #(
     parameter int unsigned TreeUnsyncG  = 4,
     /// 1 = run the minimal ROLE-CHANGE reproducer instead of anything else (see run_role_change).
     parameter bit          RoleChange   = 1'b0,
+    /// 1 = run the OVERLAP experiment instead of anything else: a ChainGather passes a middle
+    /// hop whose xDMA is running another task (see run_overlap). Needs NumEndpoints >= 4.
+    /// `+OVL_CASE=<n>` runs case n alone.
+    parameter bit          Overlap      = 1'b0,
     /// CONCURRENT MULTI-ISSUER experiment. 0 = off.
     ///   1 = STAR-IN   endpoints 1..MultiWidth-1 all remote-write into ep0 at once
     ///   2 = EXCHANGE  disjoint pairs write to each other at once, so every participating
@@ -511,8 +515,9 @@ module xdma_chaingather_body #(
   end
 
   // ==========================================================================================
-  // TCDM model: one behavioural array per endpoint, `q_ready` always high, one-cycle read
-  // latency, no `p_ready` (a TCDM response cannot be backpressured).
+  // TCDM model: one behavioural array per endpoint, `q_ready` high for every read, one-cycle read
+  // latency, no `p_ready` (a TCDM response cannot be backpressured). Writes are granted at once
+  // unless the endpoint's `wr_throttle` is set (see below).
   //
   // `q.addr` is a BYTE address (TCDMAddrWidth = clog2(TCDMSize in bytes)); the low 3 bits are
   // the byte offset within a 64-bit word. All 16 ports of one endpoint are served from a single
@@ -523,9 +528,23 @@ module xdma_chaingather_body #(
   logic          [NumEndpoints-1:0][TcdmNumPorts-1:0] rsp_valid_q;
   tb_tcdm_data_t [NumEndpoints-1:0][TcdmNumPorts-1:0] rsp_data_q;
 
+  // Write throttle, per endpoint: 0 grants every write at once, N grants writes on one cycle in
+  // N. It stretches a task's WRITER well past its reader, which is the window run_overlap()
+  // needs: the reader is done and the next reader cfg may start while the writer still drains.
+  int unsigned             wr_throttle[NumEndpoints] = '{default: 0};
+  logic        [15:0]      thr_cnt;
+  logic [NumEndpoints-1:0] wr_open;
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) thr_cnt <= '0;
+    else thr_cnt <= thr_cnt + 1;
+  end
+  for (genvar e = 0; e < NumEndpoints; e++) begin : gen_wr_open
+    assign wr_open[e] = (wr_throttle[e] == 0) || ((thr_cnt % wr_throttle[e]) == 0);
+  end
+
   for (genvar e = 0; e < NumEndpoints; e++) begin : gen_tcdm_rsp
     for (genvar p = 0; p < TcdmNumPorts; p++) begin : gen_port
-      assign tcdm_rsp[e][p].q_ready = 1'b1;
+      assign tcdm_rsp[e][p].q_ready = ~tcdm_req[e][p].q.write | wr_open[e];
       assign tcdm_rsp[e][p].p_valid = rsp_valid_q[e][p];
       assign tcdm_rsp[e][p].p.data  = rsp_data_q[e][p];
     end
@@ -538,7 +557,7 @@ module xdma_chaingather_body #(
       end else begin
         for (int unsigned p = 0; p < TcdmNumPorts; p++) begin
           rsp_valid_q[e][p] <= 1'b0;
-          if (tcdm_req[e][p].q_valid) begin
+          if (tcdm_req[e][p].q_valid && tcdm_rsp[e][p].q_ready) begin
             if (tcdm_req[e][p].q.write) begin
               for (int unsigned b = 0; b < TcdmDataWidth / 8; b++) begin
                 if (tcdm_req[e][p].q.strb[b]) begin
@@ -2767,6 +2786,434 @@ module xdma_chaingather_body #(
   endtask
 
   // ==========================================================================================
+  // THE OVERLAP EXPERIMENT
+  //
+  // A ChainGather middle hop is configured by two frames from the collector: a READER frame
+  // (read this node's partial) and a WRITER frame (arm the junction, forward the fold). They
+  // land in the node's two cfg queues, and each queue starts its head on its own conditions.
+  // The data switch takes its mode from the WRITER's current cfg alone (`gatherCfg =
+  // junctionHost.io.active`), so the hop's partial reaches the junction only while the writer
+  // runs the matching writer frame, and nothing but that partial may reach the junction then.
+  //
+  // Each case runs a P=3 linear gather (ep2 -> ep1 -> ep0, ep1 the middle hop) across another
+  // task on ep1's xDMA:
+  //   1  a local copy on ep1 whose READER has finished while its writer still drains when the
+  //      gather is issued (on HeMAiA: a CREST expand, whose reader finishes long before its
+  //      writer)
+  //   2  the same copy, the gather issued while the copy's reader still runs
+  //   3  ep3 pulls from ep1: ep1's reader serves the pull when the gather's frames arrive
+  //   4  a local copy on ep1 submitted right after ep1 accepted the gather's reader frame,
+  //      before its writer frame: the order the two cfg queues must not cross
+  // Each case checks the fold at ep0, the other task's data, both completions, and that every
+  // endpoint is idle afterwards. Case 0 is the gather alone.
+  //
+  // Cases 5 and 6 have no gather. They isolate what cases 1-3 also depend on: a reader task's
+  // beats still in flight between the reader and the switch when the next reader cfg starts.
+  // The switch steers a beat by the CURRENT reader cfg's loopback bit, so such a beat follows
+  // the next task instead of its own.
+  //   5  ep1 serves ep3's pull right after its own local copy's reader finished
+  //   6  ep1 runs a local copy right after its reader finished serving ep3's pull
+  // ==========================================================================================
+  localparam int unsigned OvlBeats    = 128;  // the other task: 8 KiB
+  localparam int unsigned OvlSrcOff   = 32'h0000_4000;
+  localparam int unsigned OvlDstOff   = 32'h0000_8000;
+  localparam int unsigned OvlThrottle = 32;
+  localparam int unsigned OvlHop      = 1;
+  localparam int unsigned OvlPuller   = 3;
+  localparam int unsigned OvlWords    = OvlBeats * BeatBytes / 8;
+  localparam int unsigned OvlSrc2Off  = 32'h0000_C000;  // case 6's copy, distinct from the pull
+  localparam int unsigned OvlDst2Off  = 32'h0000_E000;
+  localparam int unsigned OvlNumCases = 7;
+
+  // Per-endpoint cfg-queue probes, the cycle each one last fired:
+  //   t_src_mid  the reader queue accepted a gather MIDDLE reader frame from remote
+  //   t_dst_jct  the writer queue accepted a gather writer frame from remote
+  //   t_loc_acc  the reader queue accepted a cfg submitted by this node's own CSR start
+  int unsigned n_src_mid[NumEndpoints];
+  logic [31:0] t_src_mid[NumEndpoints];
+  logic [31:0] t_dst_jct[NumEndpoints];
+  logic [31:0] t_loc_acc[NumEndpoints];
+  for (genvar e = 0; e < NumEndpoints; e++) begin : gen_ovl_probe
+    wire src_mid =
+        gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.srcCfgRouter.io_from_remote_valid &&
+        gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.srcCfgRouter.io_from_remote_ready &&
+        gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.srcCfgRouter.io_from_remote_bits_collectiveMode &&
+        (gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.srcCfgRouter.io_from_remote_bits_chainRole == 2'd1);
+    wire dst_jct =
+        gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.dstCfgRouter.io_from_remote_valid &&
+        gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.dstCfgRouter.io_from_remote_ready &&
+        gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.dstCfgRouter.io_from_remote_bits_collectiveMode;
+    wire loc_acc =
+        gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.srcCfgRouter.io_from_local_valid &&
+        gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.srcCfgRouter.io_from_local_ready;
+    always_ff @(posedge clk or negedge rst_n) begin
+      if (!rst_n) begin
+        n_src_mid[e] <= 0;
+        t_src_mid[e] <= '0;
+        t_dst_jct[e] <= '0;
+        t_loc_acc[e] <= '0;
+      end else begin
+        if (src_mid) begin
+          n_src_mid[e] <= n_src_mid[e] + 1;
+          t_src_mid[e] <= cyc_cnt;
+        end
+        if (dst_jct) t_dst_jct[e] <= cyc_cnt;
+        if (loc_acc) t_loc_acc[e] <= cyc_cnt;
+      end
+    end
+  end
+
+  // `+OVL_TRACE=<ep>` traces one endpoint's datapath: every reader/writer start with the loopback
+  // bits it was started with, every edge of the reader/writer busy levels, and each beat leaving
+  // the reader side, with where the switch sent it (local loopback or the crossing).
+  int ovl_trace_ep = -1;
+  initial if (!$value$plusargs("OVL_TRACE=%d", ovl_trace_ep)) ovl_trace_ep = -1;
+  for (genvar e = 0; e < NumEndpoints; e++) begin : gen_ovl_trace
+    logic rb_q, wb_q;
+    int unsigned n_loop, n_cross, n_out;
+    always_ff @(posedge clk or negedge rst_n) begin
+      if (!rst_n) begin
+        rb_q <= 1'b0;
+        wb_q <= 1'b0;
+        n_loop <= 0;
+        n_cross <= 0;
+        n_out <= 0;
+      end else if (ovl_trace_ep == e) begin
+        rb_q <= gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_readerBusy;
+        wb_q <= gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_writerBusy;
+        if (gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_readerStart)
+          $display("   [trc] t=%0t ep%0d READER START loopback=%0b ptr=%h", $time, e,
+                   gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_readerCfg_localLoopback,
+                   gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_readerCfg_readerPtr);
+        if (gen_ovl_probe[e].src_mid)
+          $display("   [trc] t=%0t ep%0d reader queue takes a MIDDLE reader frame", $time, e);
+        if (gen_ovl_probe[e].dst_jct)
+          $display("   [trc] t=%0t ep%0d writer queue takes a gather writer frame", $time, e);
+        if (gen_ovl_probe[e].loc_acc)
+          $display("   [trc] t=%0t ep%0d queues take a locally submitted task", $time, e);
+        if (gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_writerStart)
+          $display("   [trc] t=%0t ep%0d WRITER START loopback=%0b", $time, e,
+                   gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_writerCfg_localLoopback);
+        if (gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_readerBusy !== rb_q)
+          $display("   [trc] t=%0t ep%0d readerBusy -> %0b (reader busy=%0b bufEmpty=%0b; beats loop=%0d cross=%0d)",
+                   $time, e, gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_readerBusy,
+                   gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.reader.io_busy,
+                   gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.reader.io_bufferEmpty,
+                   n_loop, n_cross);
+        if (gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_writerBusy !== wb_q)
+          $display("   [trc] t=%0t ep%0d writerBusy -> %0b", $time, e,
+                   gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaCtrl.io_localXDMACfg_writerBusy);
+        if (gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_localIn_valid &&
+            gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_localIn_ready) begin
+          if (gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_readerLocalLoopback)
+            n_loop <= n_loop + 1;
+          else begin
+            n_cross <= n_cross + 1;
+            $display("   [trc] t=%0t ep%0d beat to the CROSSING: %h", $time, e,
+                     gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_localIn_bits[63:0]);
+          end
+        end
+        if (gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_toRemote_valid &&
+            gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_toRemote_ready) begin
+          n_out <= n_out + 1;
+          $display("   [trc] t=%0t ep%0d toRemote beat %0d: %h", $time, e, n_out + 1,
+                   gen_ep[e].i_ep.i_snax_xdma_cluster_xdma.xdmaDatapath.dataSwitch.io_toRemote_bits[63:0]);
+        end
+      end
+    end
+  end
+
+  // Word w of source pattern `pat` held by endpoint `ep`. Distinct per pattern, endpoint and
+  // word, so a misrouted beat names where it came from.
+  function automatic logic [63:0] ovl_word(input int unsigned pat, input int unsigned ep,
+                                           input int unsigned w);
+    return {(pat == 0) ? 16'hC0DE : 16'hBEE5, ep[7:0], pat[7:0], w[31:0]};
+  endfunction
+
+  task automatic ovl_fill(input int unsigned ep, input int unsigned off, input int unsigned pat);
+    for (int unsigned w = 0; w < OvlWords; w++) mem[ep][(off>>3)+w] = ovl_word(pat, ep, w);
+  endtask
+
+  task automatic ovl_sentinel(input int unsigned ep, input int unsigned off);
+    for (int unsigned w = 0; w < OvlWords; w++) mem[ep][(off>>3)+w] = {32'hDEAD_BEEF, 32'hDEAD_BEEF};
+  endtask
+
+  task automatic ovl_seed(input int unsigned src_ep, input int unsigned dst_ep);
+    begin
+      ovl_fill(src_ep, OvlSrcOff, 0);
+      ovl_sentinel(dst_ep, OvlDstOff);
+    end
+  endtask
+
+  // dst_ep's copy at dst_off must be pattern `pat` of src_ep.
+  task automatic ovl_check(input int unsigned src_ep, input int unsigned pat,
+                           input int unsigned dst_ep, input int unsigned dst_off,
+                           input string what, output bit ok);
+    int unsigned bad;
+    logic [63:0] got;
+    begin
+      bad = 0;
+      for (int unsigned w = 0; w < OvlWords; w++) begin
+        got = mem[dst_ep][(dst_off>>3)+w];
+        if (got !== ovl_word(pat, src_ep, w)) begin
+          if (bad < 4)
+            $display("      %s word %0d: got 0x%016x want 0x%016x", what, w, got,
+                     ovl_word(pat, src_ep, w));
+          bad++;
+        end
+      end
+      ok = (bad == 0);
+      if (!ok) fail($sformatf("%s: %0d/%0d words wrong", what, bad, OvlWords));
+    end
+  endtask
+
+  task automatic ovl_check_copy(input int unsigned src_ep, input int unsigned dst_ep,
+                                input string what, output bit ok);
+    ovl_check(src_ep, 0, dst_ep, OvlDstOff, what, ok);
+  endtask
+
+  task automatic ovl_program_copy(input int unsigned ep, input tb_addr_t src, input tb_addr_t dst);
+    begin
+      set_volume(OvlBeats);
+      program_copy(ep, src, dst);
+      set_volume(NumBeats);
+    end
+  endtask
+
+  // Bounded wait on endpoint `ep`: kind 0 = reader busy, 1 = reader idle, 2 = a MIDDLE reader
+  // frame accepted since the count was `n0`.
+  task automatic ovl_wait(input int unsigned ep, input int unsigned kind, input int unsigned n0,
+                          input string what, output bit ok);
+    int unsigned g;
+    begin
+      ok = 1'b1;
+      g  = 0;
+      forever begin
+        @(posedge clk);
+        if (kind == 0 && ep_reader_busy[ep] === 1'b1) break;
+        if (kind == 1 && ep_reader_busy[ep] === 1'b0) break;
+        if (kind == 2 && n_src_mid[ep] != n0) break;
+        g++;
+        if (g > 50000) begin
+          fail($sformatf("%s: never happened", what));
+          ok = 1'b0;
+          break;
+        end
+      end
+    end
+  endtask
+
+  task automatic ovl_case(input int unsigned c, output bit pass, output bit idle);
+    logic [31:0] wg, wo, cl0, cr0, cl1, cr1;
+    bit lg, lo, okg, oko, okw, okfg, okfo, okd, okc, oki;
+    int unsigned issuer, dst_ep, n0, g;
+    string name;
+    begin
+      okg  = 1'b1;
+      oko  = 1'b1;
+      okw  = 1'b1;
+      okfg = 1'b1;
+      okfo = 1'b1;
+      okc  = 1'b1;
+      wo   = '0;
+      lo   = 1'b0;
+      case (c)
+        0:       name = "case 0, the gather alone";
+        1:       name = "case 1, the hop's copy: reader done, writer draining";
+        2:       name = "case 2, the hop's copy: reader still running";
+        3:       name = "case 3, ep3 pulls from the hop";
+        default: name = "case 4, the hop's copy submitted between its two frames";
+      endcase
+      $display("");
+      $display("---- OVERLAP %s ----", name);
+
+      issuer = (c == 3) ? OvlPuller : OvlHop;
+      dst_ep = issuer;
+      fill_sentinel(ModeLin);
+      if (c != 0) begin
+        ovl_seed(OvlHop, dst_ep);
+        ovl_program_copy(issuer, cluster_base(OvlHop) + OvlSrcOff, cluster_base(dst_ep) + OvlDstOff);
+        wr_throttle[dst_ep] = OvlThrottle;
+      end
+      issue_gather(3, ModeLin);
+      repeat (5) @(posedge clk);
+
+      case (c)
+        0: issue_start(0, wg, lg, okg);
+        1: begin
+          issue_start(issuer, wo, lo, oko);
+          ovl_wait(OvlHop, 0, 0, "case 1: copy reader busy", okw);
+          if (okw) ovl_wait(OvlHop, 1, 0, "case 1: copy reader done", okw);
+          $display("   [ovl] t=%0t copy reader done, writer busy=%0b: issuing the gather", $time,
+                   ep_writer_busy[OvlHop]);
+          issue_start(0, wg, lg, okg);
+        end
+        2: begin
+          issue_start(issuer, wo, lo, oko);
+          issue_start(0, wg, lg, okg);
+        end
+        3: begin
+          issue_start(issuer, wo, lo, oko);
+          ovl_wait(OvlHop, 0, 0, "case 3: hop reader serving the pull", okw);
+          $display("   [ovl] t=%0t hop reader busy with the pull: issuing the gather", $time);
+          issue_start(0, wg, lg, okg);
+        end
+        default: begin
+          // The commit counters are read first, so the START write follows the reader frame
+          // within a few cycles.
+          csr_rd(issuer, CSR_COMMIT_LOCAL, cl0);
+          csr_rd(issuer, CSR_COMMIT_REMOTE, cr0);
+          n0 = n_src_mid[OvlHop];
+          fork
+            issue_start(0, wg, lg, okg);
+            begin
+              ovl_wait(OvlHop, 2, n0, "case 4: the hop's reader frame", okw);
+              csr_wr(issuer, CSR_START, 32'd1);
+            end
+          join
+          oko = 1'b0;
+          g   = 0;
+          forever begin
+            csr_rd(issuer, CSR_COMMIT_LOCAL, cl1);
+            csr_rd(issuer, CSR_COMMIT_REMOTE, cr1);
+            if (cl1 !== cl0 || cr1 !== cr0) begin
+              oko = 1'b1;
+              break;
+            end
+            g++;
+            if (g > 2000) begin
+              fail("case 4: the copy never committed");
+              break;
+            end
+          end
+          lo = (cl1 !== cl0);
+          wo = lo ? cl1 : cr1;
+        end
+      endcase
+
+      // Both completions are awaited together, so a wedged one cannot hide the other.
+      if (okg && oko) begin
+        fork
+          wait_finish(0, wg, lg, $sformatf("%s: gather", name), okfg);
+          if (c != 0) wait_finish(issuer, wo, lo, $sformatf("%s: other task", name), okfo);
+        join
+      end else begin
+        okfg = 1'b0;
+        okfo = 1'b0;
+      end
+      repeat (50) @(posedge clk);
+      wr_throttle[dst_ep] = 0;
+      if (c == 4)
+        $display("   [ovl] ep%0d accepted: reader frame @%0d, its own copy @%0d, writer frame @%0d: %s",
+                 OvlHop, t_src_mid[OvlHop], t_loc_acc[OvlHop], t_dst_jct[OvlHop],
+                 (t_loc_acc[OvlHop] > t_src_mid[OvlHop] && t_loc_acc[OvlHop] < t_dst_jct[OvlHop]) ?
+                 "the copy sits BETWEEN the two frames" : "the copy is outside the frame pair");
+
+      check_result(c, 3, ModeLin, okd);
+      if (c != 0) ovl_check_copy(OvlHop, dst_ep, name, okc);
+      check_idle(c, NumEndpoints, oki);
+      pass = okg && oko && okw && okfg && okfo && okd && okc && oki;
+      idle = oki;
+      $display("   OVERLAP %s: %s", name, pass ? "PASS" : "FAIL");
+    end
+  endtask
+
+  // Cases 5 and 6: two non-gather tasks back to back on ep1's reader, the first one's writer
+  // (or its remote writer) throttled so its beats back up into ep1's reader side.
+  task automatic ovl_case_pair(input int unsigned c, output bit pass, output bit idle);
+    logic [31:0] wc, wp;
+    bit lc, lp, okc, okp, okw, okfc, okfp, okdc, okdp, oki;
+    string name;
+    begin
+      okw  = 1'b1;
+      okfc = 1'b1;
+      okfp = 1'b1;
+      name = (c == 5) ? "case 5, ep1 serves a pull right after its local copy"
+                      : "case 6, ep1 runs a local copy right after serving a pull";
+      $display("");
+      $display("---- OVERLAP %s ----", name);
+      // the pull: ep3 reads ep1's pattern 0; the copy: ep1 copies its pattern 0 (case 5) or its
+      // pattern 1 (case 6, so a pull beat in the copy is told apart from a copy beat)
+      ovl_fill(OvlHop, OvlSrcOff, 0);
+      ovl_fill(OvlHop, OvlSrc2Off, 1);
+      ovl_sentinel(OvlPuller, OvlDstOff);
+      ovl_sentinel(OvlHop, (c == 5) ? OvlDstOff : OvlDst2Off);
+      ovl_program_copy(OvlPuller, cluster_base(OvlHop) + OvlSrcOff,
+                       cluster_base(OvlPuller) + OvlDstOff);
+      if (c == 5)
+        ovl_program_copy(OvlHop, cluster_base(OvlHop) + OvlSrcOff, cluster_base(OvlHop) + OvlDstOff);
+      else
+        ovl_program_copy(OvlHop, cluster_base(OvlHop) + OvlSrc2Off,
+                         cluster_base(OvlHop) + OvlDst2Off);
+      repeat (5) @(posedge clk);
+      if (c == 5) begin
+        wr_throttle[OvlHop] = OvlThrottle;
+        issue_start(OvlHop, wc, lc, okc);
+        ovl_wait(OvlHop, 0, 0, "case 5: copy reader busy", okw);
+        if (okw) ovl_wait(OvlHop, 1, 0, "case 5: copy reader done", okw);
+        $display("   [ovl] t=%0t copy reader done, writer busy=%0b: starting the pull", $time,
+                 ep_writer_busy[OvlHop]);
+        issue_start(OvlPuller, wp, lp, okp);
+      end else begin
+        wr_throttle[OvlPuller] = OvlThrottle;
+        issue_start(OvlPuller, wp, lp, okp);
+        ovl_wait(OvlHop, 0, 0, "case 6: ep1 reader serving the pull", okw);
+        if (okw) ovl_wait(OvlHop, 1, 0, "case 6: ep1 reader done with the pull", okw);
+        $display("   [ovl] t=%0t ep1 reader done with the pull: starting its copy", $time);
+        issue_start(OvlHop, wc, lc, okc);
+      end
+      if (okc && okp) begin
+        fork
+          wait_finish(OvlHop, wc, lc, $sformatf("%s: copy", name), okfc);
+          wait_finish(OvlPuller, wp, lp, $sformatf("%s: pull", name), okfp);
+        join
+      end else begin
+        okfc = 1'b0;
+        okfp = 1'b0;
+      end
+      repeat (50) @(posedge clk);
+      wr_throttle[OvlHop]    = 0;
+      wr_throttle[OvlPuller] = 0;
+      ovl_check(OvlHop, 0, OvlPuller, OvlDstOff, "pull", okdp);
+      if (c == 5) ovl_check(OvlHop, 0, OvlHop, OvlDstOff, "copy", okdc);
+      else ovl_check(OvlHop, 1, OvlHop, OvlDst2Off, "copy", okdc);
+      check_idle(c, NumEndpoints, oki);
+      pass = okc && okp && okw && okfc && okfp && okdc && okdp && oki;
+      idle = oki;
+      $display("   OVERLAP %s: %s", name, pass ? "PASS" : "FAIL");
+    end
+  endtask
+
+  task automatic run_overlap();
+    int unsigned sel, n_pass, n_run;
+    bit pass, idle;
+    begin
+      if (NumEndpoints < 4) begin
+        fail("run_overlap needs NumEndpoints >= 4");
+        return;
+      end
+      if (!$value$plusargs("OVL_CASE=%d", sel)) sel = OvlNumCases;
+      n_pass = 0;
+      n_run  = 0;
+      for (int unsigned c = 0; c < OvlNumCases; c++) begin
+        if (sel != OvlNumCases && c != sel) continue;
+        if (c < 5) ovl_case(c, pass, idle);
+        else ovl_case_pair(c, pass, idle);
+        n_run++;
+        if (pass) n_pass++;
+        if (!idle) begin
+          $display("   [ovl] an endpoint is not idle after case %0d; the later cases would run on a wedged design, stopping",
+                   c);
+          break;
+        end
+        repeat (100) @(posedge clk);
+      end
+      $display("");
+      $display("[Overlap] %0d/%0d cases passed", n_pass, n_run);
+    end
+  endtask
+
+  // ==========================================================================================
   // Stimulus
   // ==========================================================================================
   logic [31:0] res_task[2][NumSweepP];
@@ -2815,6 +3262,9 @@ module xdma_chaingather_body #(
       $display("   every transfer is LAUNCHED before any is waited on");
     end else if (RoleChange) begin
       $display(" MINIMAL ROLE-CHANGE REPRODUCER: 3 endpoints");
+    end else if (Overlap) begin
+      $display(" OVERLAP: a P=3 gather across another task on its middle hop, %0d endpoints",
+               NumEndpoints);
     end else if (Bench) begin
       $display(" COLLECTIVE COMPARISON: software baseline vs chain reduce vs tree reduce");
       $display("   %0d endpoints max, %0d B per endpoint, sweeping P", NumEndpoints, XferBytes);
@@ -2839,6 +3289,8 @@ module xdma_chaingather_body #(
       run_multisource_experiment();
     end else if (RoleChange) begin
       run_role_change();
+    end else if (Overlap) begin
+      run_overlap();
     end else if (Bench) begin
       run_bench_experiment();
     end else if (Tree) begin
@@ -2861,7 +3313,7 @@ module xdma_chaingather_body #(
                    (mode == ModeLin) ? "lin" : "mom", tc, wc, (ce == 0) ? "PASS" : "FAIL");
         end
       end
-    end else if (!Tree && !RoleChange && !Bench) begin
+    end else if (!Tree && !RoleChange && !Bench && !Overlap) begin
       run_config(ChainWidth, JunctionId, tc, wc, ce);
       $display(" P=%0d %s: %0d task cycles, %0d wall cycles  %s", ChainWidth,
                (JunctionId == 0) ? "lin" : "mom", tc, wc, (ce == 0) ? "PASS" : "FAIL");
