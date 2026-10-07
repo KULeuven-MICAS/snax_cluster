@@ -7,6 +7,6 @@
     seed: 1,
     L: 511,
     // Heads per GEMM task. A head's weight is 64 KiB, so a task's B buffer is 64 KiB times
-    // this, twice over for double buffering; all 16 heads (1 MiB) do not fit the 512 KiB L1.
+    // this, twice over for double buffering; all 16 heads (1 MiB) would be the whole 1 MiB L1.
     heads_per_task: 2,
 }
