@@ -53,6 +53,12 @@ RISCV_LDFLAGS += -T$(abspath $(SNRT_DIR)/base.ld)
 RISCV_LDFLAGS += $(addprefix -L,$(LIBDIRS))
 RISCV_LDFLAGS += $(addprefix -l,$(LIBNAMES))
 
+# The SNAX library objects the app links (RISCV_LDFLAGS += .../snax/<lib>/build/<obj>.o).
+# Each is a prerequisite of the ELF and is brought up to date by its own Makefile first,
+# so a regenerated CSR header (snax-xdma-addr.h and the like) recompiles the library and
+# relinks every app that links it, also when an app is built on its own.
+LIB_OBJS = $(abspath $(filter %.o,$(RISCV_LDFLAGS)))
+
 ###########
 # Outputs #
 ###########
@@ -81,8 +87,16 @@ $(BUILDDIR):
 $(DEP): $(SRCS) | $(BUILDDIR)
 	$(RISCV_CC) $(RISCV_CFLAGS) -MM -MT '$(ELF)' $< > $@
 
-$(ELF): $(SRCS) $(DEP) $(LIBS) | $(BUILDDIR)
+$(ELF): $(SRCS) $(DEP) $(LIBS) $(LIB_OBJS) | $(BUILDDIR)
 	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(SRCS) -o $@
+
+# make re-reads the object's timestamp after the sub-make, so an up-to-date library
+# relinks nothing. flock on the library's Makefile serialises apps built in parallel,
+# which would otherwise compile the same object at once.
+$(LIB_OBJS): FORCE
+	@flock $(abspath $(dir $@)../Makefile) $(MAKE) --no-print-directory -C $(abspath $(dir $@)..)
+
+FORCE:
 
 # -D disassembles every section, data included. An app that links large data blobs sets
 # OBJDUMP_FLAGS = -d (code sections only), or its dump is hundreds of MB of fake opcodes.

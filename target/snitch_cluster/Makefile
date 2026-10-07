@@ -111,12 +111,13 @@ rtl-snax-gen: | $(GENERATED_DIR)
 		--bypass_accgen="${BYPASS_ACCGEN}" \
 		--disable_header_gen="${DISABLE_HEADER_GEN}" \
 		--gen_path="${GENERATED_DIR}/"
+	@cp "$(CFG_FILE)" $(SNAX_SW_GEN_CFG)
 
-# SW-only path: regenerate just the SNAX SW headers (streamer_csr_addr_map.h)
-# via StreamerSwHeaderGen. Skips all SystemVerilog wrapper templating and the
-# heavy accelerator / XDMA / sparse-interconnect Chisel elaborations. Intended
-# to be called from a downstream `make sw` so SW builds pick up CSR layout
-# changes without paying for full RTL generation.
+# SW-only path: regenerate just the SNAX SW headers (snax-xdma-addr.h,
+# snax-simd-addr.h, streamer_csr_addr_map.h). Skips all SystemVerilog wrapper
+# templating and the heavy accelerator / XDMA / sparse-interconnect Chisel
+# elaborations. `make sw` runs it through $(SNAX_SW_GEN_CFG) whenever the cfg
+# changed, so SW builds pick up CSR layout changes without a full RTL generation.
 sw-snax-gen: | $(GENERATED_DIR)
 	@echo "-------------------------------------------------------------"
 	@echo "Generating SNAX SW headers only (no RTL emission)"
@@ -130,6 +131,7 @@ sw-snax-gen: | $(GENERATED_DIR)
 		--disable_header_gen="${DISABLE_HEADER_GEN}" \
 		--sw_only="true" \
 		--gen_path="${GENERATED_DIR}/"
+	@cp "$(CFG_FILE)" $(SNAX_SW_GEN_CFG)
 
 
 rtl-cluster-gen: | $(GENERATED_DIR)
@@ -330,10 +332,21 @@ TCDM_PORTS_HEADER = snax-tcdm-ports-defs.h
 TARGET_C_HDRS = $(addprefix $(TARGET_C_HDRS_DIR)/,$(CLUSTER_GEN_HEADERS) $(REGGEN_HEADERS) \
                                                   $(CORE_ROLES_HEADER) $(TCDM_PORTS_HEADER))
 
+# A copy of the cfg the SNAX SW headers were last generated from. snaxgen writes those
+# headers (snax-xdma-addr.h, snax-simd-addr.h, the streamer CSR maps), not clustergen,
+# so `make sw` reruns sw-snax-gen whenever the active cfg differs from this copy and the
+# libraries never compile against another cfg's CSR offsets. Content decides, not the
+# timestamp, so a `make sw` after an rtl-gen of the same cfg regenerates nothing.
+SNAX_SW_GEN_CFG = $(GENERATED_DIR)/sw-snax-gen.hjson
+
 .PHONY: sw clean-headers clean-sw
 
-sw: $(TARGET_C_HDRS)
+sw: $(TARGET_C_HDRS) $(SNAX_SW_GEN_CFG)
 	$(MAKE) -C $(SW_DIR) CFG_OVERRIDE=$(CFG_OVERRIDE)
+
+$(SNAX_SW_GEN_CFG): $(CFG) | $(GENERATED_DIR)
+	@cmp -s $(CFG) $@ || $(MAKE) sw-snax-gen CFG_OVERRIDE=$(or $(CFG_OVERRIDE),$(CFG))
+	@touch $@
 
 clean-headers:
 	rm -f $(TARGET_C_HDRS)

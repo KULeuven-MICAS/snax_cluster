@@ -29,7 +29,6 @@ include ./data/Makefile
 # The weight blobs link in through an assembly file of .incbin directives.
 SRCS += $(DATA_S)
 
-# data.h must exist before the dependency scan, and an ELF must relink when a library
-# object it links changes -- common.mk lists only the runtime archives.
+# data.h must exist before the dependency scan.
 $(DEP): $(DATA_H)
-$(ELF): $(DATA_S) $(SNAX_LIBS)
+$(ELF): $(DATA_S)
