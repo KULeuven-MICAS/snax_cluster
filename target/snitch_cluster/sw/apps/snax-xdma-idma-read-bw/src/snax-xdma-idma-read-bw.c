@@ -41,13 +41,15 @@
 #define DST_BYTES (2u * BIG + 256u)    // L1: both destinations and the largest shift
 #define SPIN_LIMIT 200000u             // CSR polls, about 5 cycles each
 
-// In main memory, and not in .bss, which the runtime clears word by word at boot. The source
-// starts 320 KiB into a buffer that sits on a 1 MiB boundary, so the xDMA's reads cross the
-// 512 KiB line at 0x8018_0000: the endpoint's 19-bit TCDM address wraps there, and the
-// testbench has to carry it on into the next 512 KiB (tb_memory_tcdm).
-static uint32_t dram_buf[(640u * KIB) / 4u]
-    __attribute__((section(".dram"), aligned(1024u * KIB)));
-#define src_buf (dram_buf + (320u * KIB) / 4u)
+// In main memory, and not in .bss, which the runtime clears word by word at boot. The
+// endpoint's TCDM address covers one WINDOW, the cluster's TCDM size, so it wraps at every
+// multiple of WINDOW in main memory and the testbench has to carry it on into the next
+// window (tb_memory_tcdm). The buffer sits on a 2 * WINDOW boundary and the source starts
+// 1.5 BIG below the first such line, so the xDMA's reads (src + BIG .. src + 2 BIG) cross it.
+#define WINDOW ((uint32_t)SNRT_TCDM_SIZE)
+static uint32_t dram_buf[(WINDOW + BIG) / 4u]
+    __attribute__((section(".dram"), aligned(2u * WINDOW)));
+#define src_buf (dram_buf + (WINDOW - 3u * BIG / 2u) / 4u)
 
 static inline uint32_t pattern(uint32_t word) { return 0xA5000000u + word; }
 

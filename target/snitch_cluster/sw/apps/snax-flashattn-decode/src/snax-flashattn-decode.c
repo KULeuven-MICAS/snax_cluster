@@ -314,7 +314,7 @@
 // fit inside its shadow. Neither engine is short of time; TCDM BANDWIDTH is what the two
 // of them contend for, which is why the beats written matter as much as the cycles.
 // The whole run is NKV of these. Every buffer above lives in TCDM at once; the footprint
-// guard in main() reports the total against the 512 kB budget.
+// guard in main() reports the total against the cluster's TCDM size.
 //
 // TWO IDEAS CARRY THIS KERNEL.
 //
@@ -742,10 +742,11 @@
 
 // The cluster's TCDM, which is both the footprint guard's limit and the ceiling on the
 // arena zero-fill below.
-#define TCDM_BYTES (512u * 1024u)
+#define TCDM_BYTES ((unsigned)SNRT_TCDM_SIZE)
 // The most one xDMA transfer from main memory may span: the testbench's endpoint walks it
-// with the cluster's 19-bit TCDM address, placed relative to where the transfer starts.
-#define XDMA_TASK_SPAN (512u * 1024u)
+// with the cluster's TCDM address, placed relative to where the transfer starts, and that
+// address covers the TCDM size rounded up to a power of two.
+#define XDMA_TASK_SPAN TCDM_BYTES
 
 // ---- the running-state fill, armed with CONSTANT CSR addresses ----------------
 //

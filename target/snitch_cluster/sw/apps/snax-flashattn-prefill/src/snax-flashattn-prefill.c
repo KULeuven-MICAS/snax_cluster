@@ -312,7 +312,7 @@
 // fit inside its shadow. Neither engine is short of time; TCDM BANDWIDTH is what the two
 // of them contend for, which is why the beats written matter as much as the cycles.
 // The whole run is NKV of these. Every buffer above lives in TCDM at once; the footprint
-// guard in main() reports the total against the 512 kB budget.
+// guard in main() reports the total against the cluster's TCDM size.
 //
 // TWO IDEAS CARRY THIS KERNEL.
 //
@@ -697,7 +697,11 @@
 
 // The cluster's TCDM, which is both the footprint guard's limit and the ceiling on the
 // arena zero-fill below.
-#define TCDM_BYTES (512u * 1024u)
+#define TCDM_BYTES ((unsigned)SNRT_TCDM_SIZE)
+// The most one xDMA transfer from main memory may span: the testbench's endpoint walks it
+// with the cluster's TCDM address, placed relative to where the transfer starts, and that
+// address covers the TCDM size rounded up to a power of two.
+#define XDMA_TASK_SPAN TCDM_BYTES
 
 // ---- the running-state fill, armed with CONSTANT CSR addresses ----------------
 //
@@ -1459,12 +1463,12 @@ int main() {
         // faulting, so check the layout rather than trust the arithmetic.
         printf("  TCDM footprint  %lu bytes of %u  (Bc=%d, d=%d, S16 = S_int * 2^-%d)\n",
                (unsigned long)top, TCDM_BYTES, BC, DHEAD, D32_FP16_SHIFT);
-        // One xDMA transfer spans less than 512 KiB of main memory: the testbench's endpoint
-        // walks it with the cluster's 19-bit TCDM address, and past that it wraps onto the
-        // transfer's own first bytes. The xDMA moves a V tile, or half of K(0), per transfer.
-        if (KVBYTES >= 512u * 1024u) {
-            printf("  xDMA SPAN: a V tile is %lu bytes, one transfer spans under 512 KiB\n",
-                   (unsigned long)KVBYTES);
+        // ONE xDMA TRANSFER SPANS LESS THAN XDMA_TASK_SPAN of main memory: past it the
+        // endpoint's address wraps onto the transfer's own first bytes, at full rate and with
+        // no error. The xDMA moves a V tile, or half of K(0), per transfer.
+        if (KVBYTES >= XDMA_TASK_SPAN) {
+            printf("  xDMA SPAN: a V tile is %lu bytes, one transfer spans under %lu\n",
+                   (unsigned long)KVBYTES, (unsigned long)XDMA_TASK_SPAN);
             cfg_err++;
         }
         if (top > TCDM_BYTES) {

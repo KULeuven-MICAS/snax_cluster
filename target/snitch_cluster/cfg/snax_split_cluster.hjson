@@ -21,7 +21,7 @@
         user_width: 3
         tcdm:
         {
-            size: 512
+            size: 1024
             banks: 32
             sparse_interconnect: false
         }
@@ -81,7 +81,7 @@
                     //
                     // 16 KiB, not 8, because main() spans ~9.6 KiB against a cache four
                     // harts share: at 8 KiB the longer line would trade compulsory misses
-                    // for conflict misses. The extra 8 KiB of SRAM sits next to 512 KiB
+                    // for conflict misses. The extra 8 KiB of SRAM sits next to 1 MiB
                     // of TCDM.
                     //
                     // depth = size*1024 / sets / (cacheline/8) = 16384/2/128 = 64 per set.
@@ -279,21 +279,6 @@
                             writer_extensions:
                             {
                                 HasVerilogMemset: {}
-                                // CREST lossless weight decompressor (hw/chisel/doc/crest_decompressor.md) on
-                                // the way into L1, one 512-bit beat per cycle: INT4 / FP4 nibbles, INT8 /
-                                // FP8 bytes and BF16, the format chosen per transfer by the stream header.
-                                // groupBeats and escWords are the format crest_codec.py encodes; k1/k2Lanes
-                                // are the escape entries one cycle places (a beat with more takes extra
-                                // cycles); planeDepth hides a group's escape words behind the last beats.
-                                HasCrestDecompressor:
-                                {
-                                    groupBeats: 64
-                                    escWords: 12
-                                    k1Lanes: 32
-                                    k2Lanes: 16
-                                    planeDepth: 8
-                                    dataWidth: 512
-                                }
                             }
                             writer_junctions:
                             {

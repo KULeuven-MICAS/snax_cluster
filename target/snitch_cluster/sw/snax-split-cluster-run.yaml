@@ -16,7 +16,6 @@
 runs:
   - elf: apps/snax-simd-test/build/snax-simd-test.elf
   - elf: apps/snax-xdma-memset/build/snax-xdma-memset.elf
-  - elf: apps/snax-xdma-crest-decompress/build/snax-xdma-crest-decompress.elf
   - elf: apps/snax-simd-softmax/build/snax-simd-softmax.elf
   - elf: apps/snax-simd-rmsnorm/build/snax-simd-rmsnorm.elf
   - elf: apps/snax-simd-silu/build/snax-simd-silu.elf
