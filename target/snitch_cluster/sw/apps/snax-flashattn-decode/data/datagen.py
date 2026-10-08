@@ -43,9 +43,9 @@ def _mesh(kwargs):
 
     VersaCore carries one triple per [data type][array shape] and selects between them at
     run time with two CSRs. The kernel runs data type 0, array shape 0 -- it writes both
-    CSRs as 0 -- so the mesh is that entry. The cluster's other shapes are one-row GEMV
-    unrollings the kernel never selects; the assert keeps shape 0 a matmul shape, since a
-    one-row shape there would emit descriptors for the wrong mesh.
+    CSRs as 0 -- so the mesh is that entry. The kernel never selects the cluster's other
+    shapes; the assert keeps shape 0 a matmul shape, since a one-row shape there would emit
+    descriptors for the wrong mesh.
     """
     unrolling = _acc(kwargs)["snax_versacore_spatial_unrolling"]
     mesh = tuple(unrolling[0][0])

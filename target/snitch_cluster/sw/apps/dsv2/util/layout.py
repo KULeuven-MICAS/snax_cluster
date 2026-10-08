@@ -31,17 +31,23 @@ MESH = (16, 4, 16)  # snax_split_cluster's VersaCore: (Mu, Ku, Nu)
 GEMV_CHUNK = 64     # output columns per streamed weight chunk: 4 n-blocks of Nu
 
 
+GEMV_SHAPES = (1, 2)  # snax-dsv2.h DSV2_SHAPE_GEMV, DSV2_SHAPE_GEMV4
+
+
 def mesh_from_hwcfg(hw):
     """(Mu, Ku, Nu) of array shape 0, whose blocks the operand layouts use, from a parsed cluster
-    cfg of one data type. Every other shape must be a GEMV unrolling with the same Ku, at most
-    Mu rows and a multiple of that Nu: it reads the first rows of the same layouts (snax-dsv2.h,
-    THE GROUPED GEMV)."""
+    cfg of one data type. The GEMV shapes the kernels select (GEMV_SHAPES) must have the same Ku,
+    at most Mu rows and a multiple of that Nu: they read the first rows of the same layouts
+    (snax-dsv2.h, THE GROUPED GEMV). The cfg's other shapes are never selected here."""
     acc = hw["snax_versacore_core_template"]["snax_acc_cfg"][0]
     unrolling = acc["snax_versacore_spatial_unrolling"]
     if len(unrolling) != 1:
         raise ValueError("the kernels program data_type = 0; the cfg declares more data types")
+    if len(unrolling[0]) <= max(GEMV_SHAPES):
+        raise ValueError(f"the kernels select array shapes 0, {GEMV_SHAPES}; the cfg declares "
+                         f"{len(unrolling[0])}")
     mesh = tuple(int(v) for v in unrolling[0][0])
-    for shape in unrolling[0][1:]:
+    for shape in (unrolling[0][i] for i in GEMV_SHAPES):
         mu, ku, nu = (int(v) for v in shape)
         if mu > mesh[0] or ku != mesh[1] or nu % mesh[2]:
             raise ValueError(f"array shape {(mu, ku, nu)} does not read shape 0's layouts {mesh}")

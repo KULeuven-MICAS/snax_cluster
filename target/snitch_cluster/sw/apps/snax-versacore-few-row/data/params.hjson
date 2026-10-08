@@ -1,0 +1,13 @@
+// Copyright 2026 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// The few-row GEMM: D (M x N) = X (M x K) . W (K x N) for M up to m_max, at DeepSeek-V2-Lite's
+// hidden size K. N is one tile of an expert's columns: the column count does not change a pass,
+// only how many output blocks a task runs.
+{
+  K: 2048,
+  N: 128,
+  m_max: 32,
+  seed: 8816,
+}

@@ -84,6 +84,9 @@ SUBDIRS += snax-xdma-idma-read-bw
 # prefill on this machine.
 SUBDIRS += snax-flashattn-decode
 SUBDIRS += snax-flashattn-prefill
+# A few-row GEMM (an MoE expert's routed tokens) in the two GEMM array shapes, (16, 4, 16) and
+# (8, 8, 16), INT8 and INT4 weights: checked against the golden, and the array's efficiency.
+SUBDIRS += snax-versacore-few-row
 # The layer stretch that FEEDS FlashAttention: RMSNorm -> quantise -> Q/K/V projections
 # -> int8 operands in FA's own layouts, all four engines, checked against FA's two matmuls.
 SUBDIRS += snax-llm-qkv-to-fa

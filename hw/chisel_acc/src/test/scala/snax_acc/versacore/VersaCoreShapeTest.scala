@@ -13,24 +13,26 @@ import chiseltest.simulator.VerilatorBackendAnnotation
 import fp_unit._
 import org.scalatest.flatspec.AnyFlatSpec
 
-/** snax_split_cluster's VersaCore, its exact parameters: 1024 INT8 multipliers, three array shapes picked per task.
+/** snax_split_cluster's VersaCore, its exact parameters: 1024 INT8 multipliers, four array shapes picked per task.
   *
   *   0  (16, 4, 16)  the GEMM
   *   1  (1, 4, 32)   one-token GEMV
   *   2  (4, 4, 32)   four-token GEMV: rows 0..3 of A's first 16 bytes, the same 128 weights as shape 1, and a 4 x 32
   *                   output block that leaves as four 1024-bit D beats, one per row
+  *   3  (8, 8, 16)   the few-row GEMM: all 64 A bytes and all 128 B bytes, Ku = 8 (a three-level adder tree), and an
+  *                   8 x 16 output block that leaves as four D beats, two rows each
   *
   * One instance runs a sequence of tasks, so the runtime shape switch is covered: shape 2 without C (take_in_new_c =
   * 0, the accumulator cleared at each block's first pass -- how a GEMV runs with no C stream), shape 2 with C, then
-  * shapes 1 and 0. A and B bytes past what a shape reads are random, so a shape that read them would fail. Operands are
-  * driven back to back; D is drained without backpressure.
+  * shapes 1 and 0; shape 3 likewise, between shapes 0..2. A and B bytes past what a shape reads are random, so a shape
+  * that read them would fail. Operands are driven back to back; D is drained without backpressure.
   *
   * A second sequence offers a full C stream to take_in_new_c = 0 tasks: the array must drain it (no hang), ignore it
   * (D = the fresh product), count every beat in c_dropped, and leave the next task's C untouched.
   */
 class VersaCoreShapeTest extends AnyFlatSpec with ChiselScalatestTester {
 
-  val shapes = Seq(Seq(16, 4, 16), Seq(1, 4, 32), Seq(4, 4, 32))
+  val shapes = Seq(Seq(16, 4, 16), Seq(1, 4, 32), Seq(4, 4, 32), Seq(8, 8, 16))
 
   val params = SpatialArrayParam(
     multiplierNum          = Seq(1024),
@@ -185,6 +187,23 @@ class VersaCoreShapeTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
+  it should "run (8, 8, 16) with and without C, between the other three shapes" in {
+    test(new VersaCoreHarness(params)).withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
+      val rng = new Random(0x8816)
+      dut.clock.setTimeout(0)
+      dut.clock.step(5)
+      val c3 = runTask(dut, shape = 3, blocks = 5, K = 64, withC = false, rng)
+      runTask(dut, shape = 3, blocks = 3, K = 16, withC = true, rng)
+      runTask(dut, shape = 0, blocks = 2, K = 8, withC = true, rng)
+      runTask(dut, shape = 3, blocks = 4, K = 2, withC = true, rng)
+      runTask(dut, shape = 2, blocks = 2, K = 8, withC = false, rng)
+      runTask(dut, shape = 1, blocks = 2, K = 8, withC = false, rng)
+      runTask(dut, shape = 3, blocks = 2, K = 8, withC = false, rng)
+      // four D beats a block drain while the next block's passes run: the rate is the array's
+      assert(c3 < 1.05, f"(8, 8, 16) should run near one pass a cycle, measured $c3%.3f")
+    }
+  }
+
   it should "drain and count a C stream offered to a task that takes no C, and leave the next task's C intact" in {
     test(new VersaCoreHarness(params)).withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
       val rng = new Random(0xc0de)
@@ -195,6 +214,8 @@ class VersaCoreShapeTest extends AnyFlatSpec with ChiselScalatestTester {
       runTask(dut, shape = 2, blocks = 3, K = 16, withC = false, rng, strayC = true)
       runTask(dut, shape = 1, blocks = 4, K = 16, withC = false, rng, strayC = true)
       runTask(dut, shape = 2, blocks = 3, K = 16, withC = true, rng)
+      runTask(dut, shape = 3, blocks = 3, K = 16, withC = false, rng, strayC = true)
+      runTask(dut, shape = 3, blocks = 2, K = 16, withC = true, rng)
     }
   }
 }

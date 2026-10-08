@@ -28,3 +28,4 @@ runs:
   - elf: apps/snax-flashattn-decode/build/snax-flashattn-decode.elf
   - elf: apps/snax-flashattn-prefill/build/snax-flashattn-prefill.elf
   - elf: apps/snax-llm-qkv-to-fa/build/snax-llm-qkv-to-fa.elf
+  - elf: apps/snax-versacore-few-row/build/snax-versacore-few-row.elf

@@ -518,12 +518,11 @@
             // S^T = K.Q^T is the same GEMM with its operands swapped -- so it has no use
             // for one.
             //
-            // Declaring one is also not free. VersaCore's transposer is the flexible one,
-            // indexed by the array-shape CSR, and HasTransposer emits that index register
-            // only when given MORE THAN ONE shape (userCsrNum = 0 at row.length == 1).
-            // With the single 16x4x16 shape here, snax-versacore-to-lib's "write
-            // array_shape at base + 1" lands on the NEXT extension's register instead.
-            // The xDMA carries its own transposer for data movement.
+            // Declaring one is also not free. VersaCore's transposer is the flexible one:
+            // one (row, col) entry per array shape, picked by an index register that
+            // snax-versacore-to-lib writes with the array shape at base + 1, so its lists
+            // would have to track every shape VersaCore declares below. The xDMA carries
+            // its own transposer for data movement.
             //
             // B carries the INT4 -> INT8 converter: INT4 WEIGHTS on the INT8 array (A8W4).
             // With its enable bit set, the low half of a B beat is read as 4-bit values,
@@ -638,7 +637,8 @@
             // adds P.V apply it, so a moving row maximum costs no extra pass. Opt-in
             // per dispatch (the host's enable bit); every other GEMM leaves it off.
             // colsPerBlock = meshCol, beatsPerBlock = Mu*Nu*32 / 1024, maxColBlocks =
-            // Br / meshCol.
+            // Br / meshCol, all of array shape 0: a shape 3 block is 4 beats, so a shape 3
+            // task leaves the scale off.
             //
             // Slot 1 converts the INT32 result to FP16 on the way out. That is the one
             // extension FlashAttention depends on: the score tile is consumed as FP16 by
@@ -687,25 +687,31 @@
         extra_streamer_csr: 21
         snax_library_name: versacore-to
     }
-    // The matmul array, 1024 INT8 multipliers, three spatial unrollings (Mu, Ku, Nu) picked
+    // The matmul array, 1024 INT8 multipliers, four spatial unrollings (Mu, Ku, Nu) picked
     // per task by the array-shape CSR:
     //
     //   0  (16, 4, 16)  the GEMM: A 64 B, B 64 B a pass, a 16 x 16 output block
     //   1  (1, 4, 32)   a one-token GEMV, 128 weight bytes a pass: A 4 B, B 128 B, 32 outputs
     //   2  (4, 4, 32)   a GEMV of up to four tokens, one per row: A 16 B, the same 128 weight
     //                   bytes as shape 1, each used four times; 4 x 32 outputs (512 MACs)
+    //   3  (8, 8, 16)   the few-row GEMM: A 64 B, B 128 B a pass, an 8 x 16 output block.
+    //                   Shape 0's MACs on half its rows, so a GEMM of a few rows (an MoE
+    //                   expert's routed tokens) pads to a multiple of 8 rather than 16
     //
     // A GEMV does one multiply-add per weight and token, so its rate is the weights B delivers
     // a pass: 128 on this 1024 b port, as INT8 bytes or as INT4 nibbles through B's converter.
     // Shape 2 serves four tokens at the rate shape 1 serves one. A GEMV task with an odd number
     // of 16-column blocks runs its shape at half width: B's channels 8..15 masked (they read
     // zero) and the D mask writing the lower 16 outputs of each row, 64 weight bytes a pass.
-    // All shapes keep Ku = 4, so they read the same operand layouts: B in 4 x 16 blocks, and A
+    // Shapes 0..2 keep Ku = 4, so they read the same operand layouts: B in 4 x 16 blocks, and A
     // in blocks of four values a row, of which the GEMV shapes read the first 1 or 4 rows (a
     // several-token operand keeps only those four rows, 16 B a block). Shape 0 is the one the
-    // apps know as meshRow / tileSize / meshCol. C and D are Mu*Nu*32 bits serialised onto
-    // the 1024 b port: 8 beats a block for shape 0, one for shape 1, four (one per row) for
-    // shape 2.
+    // apps know as meshRow / tileSize / meshCol. Shape 3 has Ku = 8 and layouts of its own: A
+    // in 8 x 8 blocks (byte m*8 + k), B in 8 x 16 blocks (byte n*8 + k, 128 B on channels
+    // 0..15; INT4, 64 B of nibbles on channels 0..7), so an operand is laid out for shape 3
+    // or for shapes 0..2, never both. C and D are Mu*Nu*32 bits serialised onto the 1024 b
+    // port: 8 beats a block for shape 0, one for shape 1, four (one per row) for shape 2,
+    // four (two rows each) for shape 3.
     snax_versacore_core_template:
     {
         // The matmul array. Cross-checked against the cfg by util/snaxgen/core_roles.py.
@@ -803,6 +809,11 @@
                             4
                             4
                             32
+                        ]
+                        [
+                            8
+                            8
+                            16
                         ]
                     ]
                 ]

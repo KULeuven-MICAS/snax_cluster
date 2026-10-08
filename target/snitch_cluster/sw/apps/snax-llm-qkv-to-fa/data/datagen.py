@@ -56,7 +56,7 @@ W_SCALE = 16.0
 
 def _mesh(hw):
     """(meshRow, tileSize, meshCol) = VersaCore's (Mu, Ku, Nu) for data type 0, array shape 0:
-    the kernel writes both CSRs as 0. The cluster's other shapes are one-row GEMV unrollings."""
+    the kernel writes both CSRs as 0 and never selects the cluster's other shapes."""
     acc = hw["snax_versacore_core_template"]["snax_acc_cfg"][0]
     unrolling = acc["snax_versacore_spatial_unrolling"]
     mesh = tuple(unrolling[0][0])
