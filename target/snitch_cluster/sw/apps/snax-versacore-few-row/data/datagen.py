@@ -12,8 +12,12 @@
 #                    at 128 (k % H) + 64 (k / H), H = K / (2 Ku), so A advances 128 B a pass, as
 #                    shape 3's INT8 B does
 #   fr_b<s>_8        W8 [K, N], INT8, B-layout of shape s: (Ku x Nu) blocks, n-major
-#   fr_b<s>_4        W4 [K, N], values in [-8, 7], the same B-layout nibble-packed: value 2i in
-#                    the low nibble of byte i, which the B reader's converter widens back
+#   fr_b<s>_4        W4 [K, N], values in [-8, 7], nibble-packed: value 2i in the low nibble of
+#                    byte i, which the B reader's converter widens back. Shape 3: its B-layout,
+#                    64 B a pass. Shape 0: the paired layout (blocks of 2 Nu columns, util/layout.py
+#                    to_b_pairs), so that a block's 32 B passes sit 64 B apart, the stride A
+#                    advances at; in the B-layout they would sit 32 B apart and B's banks would
+#                    cross A's two passes in eight
 #   fr_g<s>_<w>      X . W<w> [m_max, N], INT32, D-layout of shape s with N / Nu column blocks
 #   fr_g<s>_<w>_n16  X . W<w>[:, :16] [m_max, Nu], INT32, the same with one column block
 #
@@ -31,7 +35,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../dsv2"))  # the util package
 from util.emit import Emitter  # noqa E402
-from util.layout import pack_int4, to_a, to_b, to_d  # noqa E402
+from util.layout import pack_int4, to_a, to_b, to_b_pairs, to_d  # noqa E402
 
 GEMM = (16, 4, 16)
 FEW = (8, 8, 16)
@@ -72,6 +76,7 @@ def main():
     s_gemm, s_few = shapes_from_hwcfg(hw)
     for mu, ku, nu in (GEMM, FEW):
         assert K % ku == 0 and N % nu == 0 and m_max % mu == 0
+    assert N % (2 * GEMM[2]) == 0  # shape 0's INT4 weights in pairs of column blocks
     rng = np.random.default_rng(int(sw["seed"]))
     X = rng.integers(-128, 128, size=(m_max, K), dtype=np.int64).astype(np.int8)
     W = {8: rng.integers(-128, 128, size=(K, N), dtype=np.int64).astype(np.int8),
@@ -88,7 +93,7 @@ def main():
     for tag, mesh in (("0", GEMM), ("3", FEW)):
         e.blob(f"fr_a{tag}", to_a(X, mesh))
         e.blob(f"fr_b{tag}_8", to_b(W[8], mesh))
-        e.blob(f"fr_b{tag}_4", pack_int4(to_b(W[4], mesh)))
+        e.blob(f"fr_b{tag}_4", pack_int4((to_b_pairs if mesh == GEMM else to_b)(W[4], mesh)))
         for w in (8, 4):
             D = X.astype(np.int64) @ W[w].astype(np.int64)
             assert np.all(np.abs(2 * D) < 2**31)  # the C pass accumulates D twice

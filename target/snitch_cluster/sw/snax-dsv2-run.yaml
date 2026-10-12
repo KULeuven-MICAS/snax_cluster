@@ -20,3 +20,4 @@ runs:
   - elf: apps/dsv2/snax-dsv2-moe/build/snax-dsv2-moe.elf
   - elf: apps/dsv2/snax-dsv2-layer/build/snax-dsv2-layer.elf
   - elf: apps/dsv2/snax-dsv2-spec/build/snax-dsv2-spec.elf
+  - elf: apps/dsv2/snax-dsv2-gemm-bench/build/snax-dsv2-gemm-bench.elf

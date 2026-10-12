@@ -1,0 +1,14 @@
+// Copyright 2026 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    // Random operands: A INT8, the weights INT4 values (stored as INT8 or as nibbles).
+    seed: 1,
+    // The D port's RNE(acc * 2^-k): HeMAiA's FFN prefill GEMMs run k = 9.
+    k: 9,
+    // Runs of each case: the last is the measurement; the first also pays the instruction fetch.
+    reps: 2,
+    // B's bytes past a 256-byte boundary (A sits on one), outside the offsets set: B's banks
+    // 16 past A's, with room either side for the paired layout's second block.
+    b_offset: 128,
+}

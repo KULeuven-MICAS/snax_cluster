@@ -77,8 +77,28 @@
 //   W_g in the PAIRED layout, nibble-packed (util/layout.py to_b_pairs, pack_int4): per pair of
 //   column blocks, per k, block n's 32 bytes then block n + 1's. Group g at b + g * K * 8 nb.
 //   (1, 4, 32), (4, 4, 32)   one pair a pass: 64 bytes on channels 0..7. nb must be even.
+//   (16, 4, 16)              one block of the pair a pass: 32 bytes on channels 0..3 (THE GEMM)
 //
 // Every arm here writes the converter's enable, so an INT8 task never inherits an INT4 one's.
+//
+// ======================================================================================
+// THE GEMM
+// ======================================================================================
+//
+// dsv2_gemm_arm runs a whole GEMM on (16, 4, 16): mt row tiles, kt passes deep, nt column tiles,
+//
+//     D (16 mt x 16 nt, FP16) = RNE(A . B * 2^-k)
+//
+//   A  [16 mt, 4 kt] INT8 in A-layout: row tile m at a + 64 kt m, pass k 64 bytes on.
+//   B  [4 kt, 16 nt] INT8 in B-layout (tile n at b + 64 kt n), or INT4 in the paired layout
+//      (pair p at b + 64 kt p, pass k of its block n % 2 at 64 k + 32 (n % 2)); nt even for INT4.
+//   D  D-layout: tile (m, n) at d + 512 (m nt + n), row r of it 32 r bytes on.
+//
+// A and B each read 64 bytes a pass, and both readers advance 64 bytes from one pass to the
+// next: A, INT8 B, and INT4 B within one block of a pair. Two streams at the same stride keep a
+// fixed bank distance, so they collide at most once before falling out of step for good. INT4
+// in the B-layout instead would advance B 32 bytes a pass to A's 64, walking B's four banks
+// through A's eight two passes in every eight, and lose the array one cycle in eight.
 
 #pragma once
 
@@ -147,6 +167,9 @@
 #endif
 #if DSV2_W4 && !DSV2_GEMV
 #error "INT4 weights run the one-token GEMV in shape 1: shape 0 walks one group per task"
+#endif
+#if T_BOUND_NUM_READER_0 != 6 || T_BOUND_NUM_READER_1 != 6
+#error "the arms program six loops on A and on B (cfg/snax_split_cluster.hjson temporal_dim)"
 #endif
 // Bytes of n weights stored at width w4 ? 4 : 8.
 #define DSV2_WB(n, w4) ((w4) ? (n) / 2u : (n))
@@ -233,6 +256,12 @@ __attribute__((always_inline)) static inline void dsv2_gemm16_arm(uint32_t kt, u
     csrw_ss(T_STRIDE_READER_1_1, kt * blk);
     csrw_ss(T_BOUND_READER_1_2, groups);
     csrw_ss(T_STRIDE_READER_1_2, kt * blk * nb);
+    csrw_ss(T_BOUND_READER_1_3, 1);
+    csrw_ss(T_STRIDE_READER_1_3, 0);
+    csrw_ss(T_BOUND_READER_1_4, 1);
+    csrw_ss(T_STRIDE_READER_1_4, 0);
+    csrw_ss(T_BOUND_READER_1_5, 1);
+    csrw_ss(T_STRIDE_READER_1_5, 0);
     csrw_ss(ADDR_REMAP_INDEX_READER_1, 0);
     dsv2_b_int4(0u);
     // C -- masked; the bounds still count the eight INT32 beats of every output block.
@@ -324,6 +353,12 @@ __attribute__((always_inline)) static inline void dsv2_gemvw_arm(uint32_t kt, ui
     csrw_ss(T_STRIDE_READER_1_1, DSV2_WB(w * kt * blk, w4));
     csrw_ss(T_BOUND_READER_1_2, groups);
     csrw_ss(T_STRIDE_READER_1_2, DSV2_WB(kt * blk * nb, w4));
+    csrw_ss(T_BOUND_READER_1_3, 1);
+    csrw_ss(T_STRIDE_READER_1_3, 0);
+    csrw_ss(T_BOUND_READER_1_4, 1);
+    csrw_ss(T_STRIDE_READER_1_4, 0);
+    csrw_ss(T_BOUND_READER_1_5, 1);
+    csrw_ss(T_STRIDE_READER_1_5, 0);
     csrw_ss(ADDR_REMAP_INDEX_READER_1, 0);
     dsv2_b_int4(w4);
     // C -- masked, one beat per row of an output block.
@@ -393,6 +428,83 @@ __attribute__((always_inline)) static inline void dsv2_gemv_arm_ntok(uint32_t kt
         dsv2_gemvw_arm(kt, nb, groups, a_step, k, w4, ntok, r);
     else
         dsv2_gemv_arm(kt, nb, groups, a_step, k, w4);
+}
+
+// Arm a GEMM on (16, 4, 16) for a run of tasks (see THE GEMM): mt x nt output tiles, kt passes
+// each, D = RNE(A . B * 2^-k). w4: INT4 B in the paired layout, nt even. Fire with dsv2_gemv_fire.
+__attribute__((always_inline)) static inline void dsv2_gemm_arm(uint32_t mt, uint32_t kt,
+                                                                uint32_t nt, uint32_t k,
+                                                                uint32_t w4) {
+    const uint32_t blk = DSV2_MR * DSV2_KU;  // one A or INT8 B block = 64 B
+    // A -- k inner, n broadcast (a row tile serves every column tile), then the row tile.
+    csrw_ss(ENABLED_CHANNEL_READER_0, 0xFFu);
+    csrw_ss(S_STRIDE_READER_0_0, 8);
+    csrw_ss(T_BOUND_READER_0_0, kt);
+    csrw_ss(T_STRIDE_READER_0_0, blk);
+    csrw_ss(T_BOUND_READER_0_1, nt);
+    csrw_ss(T_STRIDE_READER_0_1, 0);
+    csrw_ss(T_BOUND_READER_0_2, mt);
+    csrw_ss(T_STRIDE_READER_0_2, kt * blk);
+    csrw_ss(T_BOUND_READER_0_3, 1);
+    csrw_ss(T_STRIDE_READER_0_3, 0);
+    csrw_ss(T_BOUND_READER_0_4, 1);
+    csrw_ss(T_STRIDE_READER_0_4, 0);
+    csrw_ss(T_BOUND_READER_0_5, 1);
+    csrw_ss(T_STRIDE_READER_0_5, 0);
+    csrw_ss(ADDR_REMAP_INDEX_READER_0, 0);
+    // B -- k inner, 64 bytes a pass, then the column tile, then the row tile at stride 0. INT8:
+    // a 64-byte block on channels 0..7, tile n kt * 64 bytes on. INT4: the block's 32 bytes of
+    // nibbles on channels 0..3, the pair's other block 32 bytes on, the next pair kt * 64.
+    csrw_ss(ENABLED_CHANNEL_READER_1, w4 ? 0x0Fu : 0xFFu);
+    csrw_ss(S_STRIDE_READER_1_0, 8);
+    csrw_ss(S_STRIDE_READER_1_1, 0);
+    csrw_ss(T_BOUND_READER_1_0, kt);
+    csrw_ss(T_STRIDE_READER_1_0, blk);
+    csrw_ss(T_BOUND_READER_1_1, w4 ? 2u : nt);
+    csrw_ss(T_STRIDE_READER_1_1, w4 ? blk / 2u : kt * blk);
+    csrw_ss(T_BOUND_READER_1_2, w4 ? nt / 2u : mt);
+    csrw_ss(T_STRIDE_READER_1_2, w4 ? kt * blk : 0u);
+    csrw_ss(T_BOUND_READER_1_3, w4 ? mt : 1u);
+    csrw_ss(T_STRIDE_READER_1_3, 0);
+    csrw_ss(T_BOUND_READER_1_4, 1);
+    csrw_ss(T_STRIDE_READER_1_4, 0);
+    csrw_ss(T_BOUND_READER_1_5, 1);
+    csrw_ss(T_STRIDE_READER_1_5, 0);
+    csrw_ss(ADDR_REMAP_INDEX_READER_1, 0);
+    dsv2_b_int4(w4);
+    // C -- masked; the bounds still count the eight INT32 beats of every output tile.
+    csrw_ss(ENABLED_CHANNEL_READER_WRITER_0, 0);
+    csrw_ss(S_STRIDE_READER_WRITER_0_0, 8);
+    csrw_ss(S_STRIDE_READER_WRITER_0_1, 32);
+    csrw_ss(T_BOUND_READER_WRITER_0_0, DSV2_MR * DSV2_NU * 32u / 1024u);
+    csrw_ss(T_STRIDE_READER_WRITER_0_0, 0);
+    csrw_ss(T_BOUND_READER_WRITER_0_1, nt);
+    csrw_ss(T_STRIDE_READER_WRITER_0_1, 0);
+    csrw_ss(T_BOUND_READER_WRITER_0_2, mt);
+    csrw_ss(T_STRIDE_READER_WRITER_0_2, 0);
+    csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_0, 0);
+    // D -- a tile leaves as four beats of four rows: channel (i % 4) = 4 columns, (i / 4) = a
+    // row of the beat, rows 32 bytes apart; tiles in (m, n) order, 512 bytes each.
+    csrw_ss(ENABLED_CHANNEL_READER_WRITER_1, 0xFFFFFFFFu);
+    csrw_ss(S_STRIDE_READER_WRITER_1_0, 8);
+    csrw_ss(S_STRIDE_READER_WRITER_1_1, 32);
+    csrw_ss(T_BOUND_READER_WRITER_1_0, DSV2_MR / 4u);
+    csrw_ss(T_STRIDE_READER_WRITER_1_0, 128);
+    csrw_ss(T_BOUND_READER_WRITER_1_1, nt);
+    csrw_ss(T_STRIDE_READER_WRITER_1_1, 512);
+    csrw_ss(T_BOUND_READER_WRITER_1_2, mt);
+    csrw_ss(T_STRIDE_READER_WRITER_1_2, 512u * nt);
+    csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_1, 0);
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 0, 1u);  // Int32ToFp16 on
+    csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 1, 0u);  // extra-loop 0: the 2:1 narrowing
+    (void)set_versacore_d_shift(k);                        // RNE(acc * 2^-k)
+    // The array: output-stationary, kt passes per tile, mt * nt tiles.
+    csrw_ss(OVERWRITE_ACCUM, 1);
+    csrw_ss(ACCUM_BOUND, kt);
+    csrw_ss(OUTPUT_BOUND, mt * nt);
+    csrw_ss(SUBTRACTIONS, 0);
+    csrw_ss(ARRAY_SHAPE_CFG, DSV2_SHAPE_GEMM);
+    csrw_ss(DATA_TYPE_CFG, 0);
 }
 
 // Several tokens: the pitch between the tokens' outputs, for the GEMV armed last.

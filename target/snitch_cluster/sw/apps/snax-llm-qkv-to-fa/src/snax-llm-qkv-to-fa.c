@@ -296,6 +296,12 @@ __attribute__((always_inline)) static inline void gemm_cfg(
     csrw_ss(T_STRIDE_READER_1_1, K * blk);
     csrw_ss(T_BOUND_READER_1_2, M);
     csrw_ss(T_STRIDE_READER_1_2, 0);
+    csrw_ss(T_BOUND_READER_1_3, 1);
+    csrw_ss(T_STRIDE_READER_1_3, 0);
+    csrw_ss(T_BOUND_READER_1_4, 1);
+    csrw_ss(T_STRIDE_READER_1_4, 0);
+    csrw_ss(T_BOUND_READER_1_5, 1);
+    csrw_ss(T_STRIDE_READER_1_5, 0);
     csrw_ss(ADDR_REMAP_INDEX_READER_1, 0);
     csrw_ss(S_STRIDE_READER_1_1, 0);
     csrw_ss(ENABLED_CHANNEL_READER_1, 0xFFu);  // shape 0: one 4 x 16 block, channels 0..7

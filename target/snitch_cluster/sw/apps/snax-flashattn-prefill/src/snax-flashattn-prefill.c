@@ -973,8 +973,8 @@ __attribute__((always_inline)) static inline uint32_t gemm_drain(void) {
 static void gemm_configure_once(void) {
     int32_t Atlbound[] = {Atlbound0, Atlbound1, Atlbound2, Atlbound3, Atlbound4, Atlbound5};
     int32_t Atlstride[] = {Atlstride0, Atlstride1, Atlstride2, Atlstride3, Atlstride4, Atlstride5};
-    int32_t Btlbound[] = {Btlbound0, Btlbound1, Btlbound2};
-    int32_t Btlstride[] = {Btlstride0, Btlstride1, Btlstride2};
+    int32_t Btlbound[] = {Btlbound0, Btlbound1, Btlbound2, 1, 1, 1};
+    int32_t Btlstride[] = {Btlstride0, Btlstride1, Btlstride2, 0, 0, 0};
     // TWO spatial strides: the C and D32 ports declare spatial_bounds [[8, 4]] and the
     // streamer reads S_STRIDE_NUM_READER_WRITER_* = 2 of them. A 1-element array would
     // feed the second from off the end of the stack.

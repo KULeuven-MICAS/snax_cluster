@@ -149,7 +149,8 @@ def test_int4_packs_and_unpacks():
 def test_int4_b_walks_feed_the_int8_beats():
     """snax-dsv2.h's INT4 B walks over the paired, nibble-packed blob, through the converter,
     hand the array the beats its INT8 walks read from the INT8 blob of the same values:
-    dsv2_gemv1_arm (two blocks a pass, groups) and dsv2_gemm16_arm (one block a pass)."""
+    dsv2_gemv1_arm (two blocks a pass, groups) and dsv2_gemm_arm (one block a pass, row tiles).
+    dsv2_gemm_arm's INT4 walk advances 64 B a pass within a block, as its INT8 walk does."""
     rng = np.random.default_rng(7)
     K, nb, groups = 64, 4, 2
     kt, N = K // 4, 16 * nb
@@ -161,8 +162,10 @@ def test_int4_b_walks_feed_the_int8_beats():
     got = _int4_converter(_b_beats(b4, [(kt, 64), (nb // 2, kt * 64), (groups, kt * 32 * nb)],
                                    0xFF))
     assert np.array_equal(got, want), "(1, 4, 32)"
-    want = _b_beats(b8[:K * N], [(kt, 64), (nb, kt * 64), (1, 0)], 0xFF)
-    got = _int4_converter(_b_beats(b4[:K * N // 2], [(kt, 64), (2, 32), (nb // 2, kt * 64)], 0x0F))
+    mt = 3
+    want = _b_beats(b8[:K * N], [(kt, 64), (nb, kt * 64), (mt, 0)], 0xFF)
+    got = _int4_converter(_b_beats(b4[:K * N // 2],
+                                   [(kt, 64), (2, 32), (nb // 2, kt * 64), (mt, 0)], 0x0F))
     assert np.array_equal(got, want), "(16, 4, 16)"
 
 

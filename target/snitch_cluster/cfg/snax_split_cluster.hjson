@@ -479,10 +479,19 @@
                     2
                 ]
             ]
+            // Six loops on each reader, so A and B are programmed alike. A walks the compact
+            // several-token GEMV operand in five: three over its interleave, n, the group. B
+            // takes four for INT4 weights on (16, 4, 16): a pass reads one column block's 32
+            // bytes of nibbles, and the weights sit in the PAIRED layout (32 columns a block,
+            // sw/apps/dsv2/util/layout.py to_b_pairs), so consecutive passes are 64 bytes
+            // apart, the stride A advances at -- k, the block of the pair, the pair, then the
+            // row tile at stride 0. At 32 bytes a pass, B's banks would cross A's in two passes
+            // of eight and cost the array one cycle in eight. A loop a task does not use has
+            // bound 1: a bound of 0 never starts the reader.
             temporal_dim:
             [
                 6
-                3
+                6
             ]
             num_channel:
             [

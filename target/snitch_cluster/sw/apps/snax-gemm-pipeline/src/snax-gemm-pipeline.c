@@ -203,8 +203,8 @@ int main() {
         int32_t Atlstride[] = {Atlstride0, Atlstride1, Atlstride2,
                                Atlstride3, Atlstride4, Atlstride5};
         int32_t Bslstride[] = {Bslstride0};
-        int32_t Btlbound[] = {Btlbound0, Btlbound1, Btlbound2};
-        int32_t Btlstride[] = {Btlstride0, Btlstride1, Btlstride2};
+        int32_t Btlbound[] = {Btlbound0, Btlbound1, Btlbound2, 1, 1, 1};
+        int32_t Btlstride[] = {Btlstride0, Btlstride1, Btlstride2, 0, 0, 0};
         int32_t Cslstride[] = {Cslstride0};
         int32_t Ctlbound[] = {Ctlbound0, Ctlbound1, Ctlbound2, Ctlbound3};
         int32_t Ctlstride[] = {Ctlstride0, Ctlstride1, Ctlstride2, Ctlstride3};
@@ -261,8 +261,8 @@ int main() {
         int32_t Atb[] = {Atlbound0, Atlbound1, Atlbound2, Atlbound3, Atlbound4, Atlbound5};
         int32_t Ats[] = {Atlstride0, Atlstride1, Atlstride2, Atlstride3, Atlstride4, Atlstride5};
         int32_t Bsl[] = {Bslstride0};
-        int32_t Btb[] = {Btlbound0, Btlbound1, Btlbound2};
-        int32_t Bts[] = {Btlstride0, Btlstride1, Btlstride2};
+        int32_t Btb[] = {Btlbound0, Btlbound1, Btlbound2, 1, 1, 1};
+        int32_t Bts[] = {Btlstride0, Btlstride1, Btlstride2, 0, 0, 0};
         int32_t Csl[] = {Cslstride0};
         int32_t Ctb[] = {Ctlbound0, Ctlbound1, Ctlbound2, Ctlbound3};
         int32_t Cts[] = {Ctlstride0, Ctlstride1, Ctlstride2, Ctlstride3};

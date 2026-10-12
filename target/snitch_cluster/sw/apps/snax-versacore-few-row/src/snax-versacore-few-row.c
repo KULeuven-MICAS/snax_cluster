@@ -27,7 +27,8 @@
 //      first half of K at 128 B steps, then the second half 64 B on
 //   B  Ku x Nu weights a pass: INT8 64 B (shape 0, channels 0..7) or 128 B (shape 3, 0..15);
 //      INT4 32 B (0..3) or 64 B (0..7) of nibbles, widened by B's converter. Channel i reads
-//      8 i: S_STRIDE_1 = 64 joins the two 8-channel groups into one 128-byte run.
+//      8 i: S_STRIDE_1 = 64 joins the two 8-channel groups into one 128-byte run. Shape 0's
+//      INT4 weights sit in pairs of column blocks, so a block's passes are 64 B apart as A's.
 //   C/D  one Mu x Nu INT32 block = Mu*Nu*32/1024 beats (8 or 4) of 128 B; channel i at 8 i
 //      (spatial strides 8 and 32), so a block is contiguous and blocks follow n, then m.
 //
@@ -91,17 +92,25 @@ __attribute__((always_inline)) static inline void fr_arm(uint32_t few, uint32_t 
     csrw_ss(T_BOUND_READER_0_5, 1);
     csrw_ss(T_STRIDE_READER_0_5, 0);
     csrw_ss(ADDR_REMAP_INDEX_READER_0, 0);
-    // B -- k inner, n, then m broadcast; one bblk-byte run a pass.
+    // B -- k inner, n, then m broadcast; one bblk-byte run a pass. Shape 0's INT4 weights are
+    // paired: k at 64 B, the block of the pair at 32 B, the pair, then m (nt = 1 or even).
+    const uint32_t paired = w4 && !few, pairs = nt > 1u ? nt / 2u : 1u;
     csrw_ss(BASE_PTR_READER_1_LOW, b);
     csrw_ss(ENABLED_CHANNEL_READER_1, (1u << (bblk / 8u)) - 1u);
     csrw_ss(S_STRIDE_READER_1_0, 8);
     csrw_ss(S_STRIDE_READER_1_1, 64);
     csrw_ss(T_BOUND_READER_1_0, kt);
-    csrw_ss(T_STRIDE_READER_1_0, bblk);
-    csrw_ss(T_BOUND_READER_1_1, nt);
-    csrw_ss(T_STRIDE_READER_1_1, kt * bblk);
-    csrw_ss(T_BOUND_READER_1_2, mt);
-    csrw_ss(T_STRIDE_READER_1_2, 0);
+    csrw_ss(T_STRIDE_READER_1_0, paired ? 2u * bblk : bblk);
+    csrw_ss(T_BOUND_READER_1_1, paired ? nt / pairs : nt);
+    csrw_ss(T_STRIDE_READER_1_1, paired ? bblk : kt * bblk);
+    csrw_ss(T_BOUND_READER_1_2, paired ? pairs : mt);
+    csrw_ss(T_STRIDE_READER_1_2, paired ? 2u * kt * bblk : 0u);
+    csrw_ss(T_BOUND_READER_1_3, paired ? mt : 1u);
+    csrw_ss(T_STRIDE_READER_1_3, 0);
+    csrw_ss(T_BOUND_READER_1_4, 1);
+    csrw_ss(T_STRIDE_READER_1_4, 0);
+    csrw_ss(T_BOUND_READER_1_5, 1);
+    csrw_ss(T_STRIDE_READER_1_5, 0);
     csrw_ss(ADDR_REMAP_INDEX_READER_1, 0);
     csrw_ss(READER_EXTENSION_1_CSR_BASE, w4);  // INT4 -> INT8 converter
     // C -- D's own blocks, or masked: a disabled channel presents zero, a fresh accumulator.

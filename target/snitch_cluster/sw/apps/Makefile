@@ -102,6 +102,8 @@ SUBDIRS += dsv2/snax-dsv2-router
 SUBDIRS += dsv2/snax-dsv2-moe
 SUBDIRS += dsv2/snax-dsv2-layer
 SUBDIRS += dsv2/snax-dsv2-spec
+# GEMM shapes in isolation (HeMAiA's FFN prefill GEMM bench), checked against a golden.
+SUBDIRS += dsv2/snax-dsv2-gemm-bench
 endif
 # The FP16 SIMD apps below need the StreamMap / StreamReduce / StreamElementwise /
 # Fp16ToInt8 reader extensions, which only cfg/snax_xdma_cluster.hjson builds --
