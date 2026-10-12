@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-    // ROWS must be 32 -- the FP16 lane count of a 512-bit beat. The transposed path puts
-    // one token per lane, so a whole tile's per-token max and sum are exactly one beat.
+    // ROWS must be a multiple of the SIMD lane count (SIMD_FP16_LANES). The transposed
+    // path puts one token per lane, so the tile is ROWS / lanes lane groups of one beat.
     ROWS: 32,
-    // Row length in FP16 elements, a multiple of 32. Also bounded by the on-device
+    // Row length in FP16 elements, a multiple of the lanes. Also bounded by the on-device
     // reciprocal: 1/s is rsqrt(s*s) and s <= D, so D*D must fit FP16 (D <= 255 in the
     // worst case). The datagen checks what this tile actually reaches.
     D: 128,

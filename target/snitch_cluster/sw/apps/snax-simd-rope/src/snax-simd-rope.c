@@ -30,14 +30,15 @@
 //
 //     read -> EW0 -> Map -> Reduce -> EW1 -> Fp16ToInt8 -> write
 //
-// The unit of that stream is a BEAT: 512 bits = 64 B = 32 FP16 LANES. Every operator is
-// PER LANE: lane j of the output is a function of lane j of the inputs and of nothing
-// else. Data crosses lanes in exactly one place in the whole block -- StreamReduce's
-// cross-lane fold -- and that is a fold to a scalar, not a permutation.
+// The unit of that stream is a BEAT: SIMD_BEAT_BYTES = SIMD_FP16_LANES FP16 lanes (32 B = 16
+// lanes on the split cluster). Every operator is PER LANE: lane j of the output is a
+// function of lane j of the inputs and of nothing else. Data crosses lanes in exactly one
+// place in the whole block -- StreamReduce's cross-lane fold -- and that is a fold to a
+// scalar, not a permutation.
 //
 // So the reader is where any rearrangement has to happen, and the reader is affine:
 //
-//     addr = base + o*operand_stride + b*64        (+ further nested axes)
+//     addr = base + o*operand_stride + b*SIMD_BEAT_BYTES      (+ further nested axes)
 //
 // One stride per axis, whole beats at a time, plus a single `lane_stride` inside the beat.
 // A pair swap -- lane 2k takes lane 2k+1's value and vice versa -- is not any stride: it
@@ -54,8 +55,9 @@
 // A WORKED EXAMPLE -- 4 pairs, 8 lanes to a beat
 // ======================================================================================
 //
-// Real shapes are 32 lanes and N/32 beats; shrink to 8 lanes and the whole thing is one
-// beat. The angles are the four right angles, so every number below is exact:
+// Real shapes are SIMD_FP16_LANES lanes and N/SIMD_FP16_LANES beats; shrink to 8 lanes and
+// the whole thing is one beat. The angles are the four right angles, so every number below
+// is exact:
 //
 //     pair k      0        1        2        3
 //     theta       0      90 deg   180 deg  270 deg
@@ -138,17 +140,17 @@
 //     kernel to find a use for it. Nothing here is RoPE-specific: any a*b + c*d over four
 //     equally spaced operands is one task.
 //
-// MEASURED, warm, Verilator, snax_split_cluster, N=256:
+// MEASURED, warm, vsim, snax_split_cluster (16 lanes), N=256:
 //
-//     3 passes   datapath 207 cc  (69 + 69 + 69)      wall 1,184 cc
-//     1 task     datapath 131 cc                      wall   304 cc
+//     3 passes   datapath 132 cc  (44 + 44 + 44)      wall 1,112 cc
+//     1 task     datapath  80 cc                      wall   256 cc
 //
 // Two numbers because they measure two different things. The DATAPATH figure is the
-// fusion alone -- 36% less, from 6 operand beats per output beat down to 4 and from two
+// fusion alone -- 39% less, from 6 operand beats per output beat down to 4 and from two
 // intermediate tiles down to none. The WALL figure also folds in the orchestration: the
 // fused path programs its descriptor with snax_simd_program_fast and constant-address
 // operator writes, where the 3-pass path pays snax_simd_memcpy_nd_fast plus three
-// enable/disable round trips. So 74% is the two effects together, not the fusion alone.
+// enable/disable round trips. So 77% is the two effects together, not the fusion alone.
 //
 // The fused result is BIT-EXACT against the 3-pass result, and it has to be: fusing
 // widens nothing. EW0's product is narrowed to FP16 on its way to EW1 exactly as tmp1 and
@@ -159,7 +161,7 @@
 // WHAT IS NOT REMOVED, AND WHY -- THE SWAP
 // ======================================================================================
 //
-// xswap is still staged by the iDMA (532 cc at N=256, on hart 3, off the SIMD block's
+// xswap is still staged by the iDMA (542 cc at N=256, on hart 3, off the SIMD block's
 // critical path). It survives the fusion because it is a permutation of ADJACENT LANES,
 // and the reader has no lane permutation: the operand and beat axes move whole beats, and
 // `lane_stride` is one stride, not a shuffle.
@@ -223,14 +225,14 @@ static inline uint32_t fp16_mono(uint16_t h) {
 //   write  one beat
 //
 // The four operands must be EQUALLY SPACED, because the reader adds a single stride per
-// axis: addr = base + o*operand_stride + b*BEAT. The buffers below are already laid out
-// that way, one row_bytes apart in the order the pairing needs.
+// axis: addr = base + o*operand_stride + b*SIMD_BEAT_BYTES. The buffers below are already
+// laid out that way, one row_bytes apart in the order the pairing needs.
 //
 // Nothing new in the hardware -- the pre-map elementwise slot was added for attention's
 // quantise(exp(S - m)), and RoPE is the second kernel that turns out to need a combine on
 // each side of the Map.
 // How long to let one task run before calling it hung. The whole 3-pass kernel measures
-// ~2k cycles at N=256, so anything past this is not slow, it is stuck -- and a bounded wait
+// ~1.1k cycles at N=256, so anything past this is not slow, it is stuck -- and a bounded wait
 // is what lets the run say which pass died instead of producing no output at all.
 #define ROPE_TASK_BUDGET 50000u
 
@@ -297,7 +299,7 @@ int main() {
         // prep -- and it is timed and reported HERE, because a cycle count read
         // on the engine core would not be measuring the core that did it.
         uint32_t ts0 = snrt_mcycle();
-        uint32_t pairs = beats * 16;  // N/2
+        uint32_t pairs = rope_n / 2u;
         snrt_dma_start_2d(xswap, x_in + 2, 2, 4, 4, pairs);
         snrt_dma_start_2d(xswap + 2, x_in, 2, 4, 4, pairs);
         snrt_dma_wait_all();

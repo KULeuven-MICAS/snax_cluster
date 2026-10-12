@@ -2,48 +2,47 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Standalone multi-row xDMA StreamReduce test. Drives S independent per-row
+// Standalone multi-row SIMD StreamReduce test. Drives S independent per-row
 // reductions in ONE dispatch (the per-row form RMSNorm/Softmax need): a 2D
 // reader {beats inner, rows outer} feeds StreamReduce, whose counter wraps
 // every `beats` beats and re-inits the per-lane accumulators, emitting one
-// splatted scalar beat per row; a 1D writer drains `rows` beats. No RTL change
-// vs the single-row reduce -- only the AGU shape ({beats,rows} reader, {rows}
-// writer) differs.
+// splatted scalar beat per row; a 1D writer drains `rows` beats. Only the AGU
+// shape ({beats,rows} reader, {rows} writer) differs from a single-row reduce.
 //
 // It also exercises the mem_wide_narrow_mux DMAWriteDataCorrect assert: with
 // the input fully initialized, the reduce writes defined (non-X) data, so the
 // assert (gated on q.write) stays silent.
 //
-// LANE DATAFLOW -- StreamReduce (N beats in -> 1 beat out; a row's 32 lanes
-// collapse to one scalar). This is NOT a 512b-in/512b-out element-wise op: the
-// output beat carries ONE useful value, not 32.
-//   in  beat k=0..N-1 : [ l0  l1  ... l31 ]   32 FP16 lanes/beat; N = beats per
-//   row (= D/32)
-//        the 32 per-lane FP32 partials accumulate down the N beats; a
-//        horizontal reduce-tree then folds them into ONE scalar s = max | sum |
-//        sum-of-squares over the whole D-element row.
-//   out beat          : [ s   s   ...  s  ]   s SPLATTED across all 32 lanes (1
-//   useful + 31 copies) Read lane 0 only (stride 32 lanes = one 64-B beat). N
-//   input beats -> 1 output beat per row.
+// LANE DATAFLOW -- StreamReduce (N beats in -> 1 beat out; a row's L lanes
+// collapse to one scalar), L = SIMD_FP16_LANES, B = SIMD_BEAT_BYTES. This is
+// NOT an element-wise op: the output beat carries ONE useful value, not L.
+//   in  beat k=0..N-1 : [ l0  l1  ... l(L-1) ]   N = beats per row = D/L
+//        each lane accumulates its column down the N beats in FP32 (3 rotating
+//        partials, beat k into partial k mod 3, folded as (p0+p1)+p2 at the
+//        row's end); a balanced pairwise tree then folds the L lanes into ONE
+//        scalar s = max | sum | sum-of-squares over the whole D-element row.
+//   out beat          : [ s   s   ...  s  ]   s SPLATTED across the beat (FP16
+//        x L, or FP32 x B/4 with FP32OUT). Read the first element only (one
+//        B-byte beat per row).
 //
-// EXAMPLE (params.hjson default: rows=4, D=64 -> beats=D/32=2; FP16, all
-// L1-local)
+// EXAMPLE (params.hjson default: rows=4, D=64; split cluster: L=16, B=32 B,
+// so beats=4; FP16, all L1-local)
 //   in   x    [rows=4, D=64] fp16  = 4*128 = 512 B
-//   out  one scalar PER ROW per op -> 4 splatted 64-B beats = 256 B/op (useful
+//   out  one scalar PER ROW per op -> 4 splatted 32-B beats = 128 B/op (useful
 //   payload 4 fp16 = 8 B/op)
 //
-//   L1 memory map (byte offset from cluster base):
+//   L1 memory map (byte offset from cluster base, split cluster):
 //     +0     x      512 B   [4,64] input
-//     +512   ssq    256 B   [4] SUMSQ scalars (4 splatted 64-B beats)
-//     +768   max    256 B   [4] MAX   scalars
-//     +1024  add    256 B   [4] ADD   scalars
-//     total  1280 B
+//     +512   ssq    128 B   [4] SUMSQ scalars (4 splatted 32-B beats)
+//     +640   max    128 B   [4] MAX   scalars
+//     +768   add    128 B   [4] ADD   scalars
+//     ...    xbig, ssq16_big, ssq32_big (the overflow A/B below)
 //
-// Performance (FP16, vsim, L1<->L1) on the native-Chisel FP RTL (StreamReduce
-// FpAdd/FpMul, fpPipe=1 cut, treePipe=1 reduce-tree cut; computeLanes=4).
-// Default rows=4, D=64 (2 beats/row): each op (SUMSQ/MAX/ADD, and the fp32out
-// big16/big32 paths) measures 131 cycles. Outputs match the FP64 golden to 0
-// FP16 ULP; the fp32out SUMSQ recovers the rows that overflow the FP16 grid.
+// Performance (FP16, vsim, L1<->L1, split cluster: 16 lanes, one beat per
+// cycle, rows back to back): default rows=4, D=64 (16 beats): each op
+// (SUMSQ/MAX/ADD, and the fp32out big16/big32 paths) measures 34 cycles.
+// Outputs match the golden to 0 FP16 ULP; the fp32out SUMSQ recovers the rows
+// that overflow the FP16 grid.
 
 #include "data.h"
 #include "snax-core-roles.h"
@@ -63,10 +62,10 @@
     "This cluster's StreamReduce does not build all of MAX/ADD/SUMSQ, which this sweep exercises."
 #endif
 
-// SIMD_BEAT_BYTES comes from the library (= SIMD_WIDTH, the cfg's actual transport width);
-// a local 64 shadowed it and happened to agree.
-#define FP16_PER_BEAT 32
-#define FP32_PER_BEAT 16
+// SIMD_BEAT_BYTES and SIMD_FP16_LANES come from the library (both follow the cfg's SIMD
+// beat). A splatted scalar beat holds SIMD_FP16_LANES FP16 copies, or FP32_PER_BEAT FP32
+// copies with FP32OUT.
+#define FP32_PER_BEAT (SIMD_BEAT_BYTES / 4u)
 // StreamReduce op CSR (ext CSR 1, bits[7:0]). The datapath now has one fused
 // "FMA" op plus the "MAX" compare: MAX=0 (compare), ADD=1 (FMA acc+x,
 // multiplicand 1.0), SUMSQ=2 (FMA acc+x*x). Values are unchanged from the old
@@ -123,13 +122,13 @@ static uint32_t retask_and_run(void* src, void* dst, uint32_t dst_bound0) {
 }
 
 // Check `rows` per-row scalars (one splatted beat each: lane 0 is at uint16
-// index r*FP16_PER_BEAT) against the golden. Returns the number of rows beyond
+// index r*SIMD_FP16_LANES) against the golden. Returns the number of rows beyond
 // tolerance.
 static uint32_t check_rows(const char* name, uint16_t* out,
                            const uint16_t* golden, uint32_t rows) {
     uint32_t worst = 0, bad = 0;
     for (uint32_t r = 0; r < rows; r++) {
-        uint16_t got = out[r * FP16_PER_BEAT];
+        uint16_t got = out[r * SIMD_FP16_LANES];
         uint32_t o = fp16_mono(got), g = fp16_mono(golden[r]);
         uint32_t ulp = (o > g) ? (o - g) : (g - o);
         if (ulp > worst) worst = ulp;
@@ -182,7 +181,7 @@ static uint32_t count_fp16_broken(const char* name, const uint16_t* out,
                                   const uint32_t* golden_f32, uint32_t rows) {
     uint32_t broken = 0;
     for (uint32_t r = 0; r < rows; r++) {
-        uint16_t got = out[r * FP16_PER_BEAT];
+        uint16_t got = out[r * SIMD_FP16_LANES];
         uint32_t got32 = fp16_to_fp32_bits(got);
         uint32_t inf = ((got & 0x7FFFu) == 0x7C00u);
         uint32_t o = fp32_mono(got32), g = fp32_mono(golden_f32[r]);

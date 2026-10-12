@@ -72,31 +72,35 @@
 //
 //   6 SIMD passes, 0 xDMA passes, 3 GEMMs.
 //
-// PATH T -- O's projections behind snax-simd-rmsnorm's TRANSPOSED norm, which trades the
-// reduce's cross-lane fold (~35 cc a row) for two xDMA transposes on an otherwise idle
-// engine. The second transpose goes straight from y^T to A-layout, the same one-pass trick
-// as path H's V fix.
+// PATH T -- O's projections behind snax-simd-rmsnorm's TRANSPOSED norm, which replaces the
+// reduce's cross-lane fold and the replicated plane with two xDMA transposes on an otherwise
+// idle engine. The second transpose goes straight from y^T to A-layout, the same one-pass
+// trick as path H's V fix.
 //
 //     xDMA   x -> x^T
-//     SIMD   reduce(SUMSQ|LANEWISE) -> map(RSQRT), 1 beat -> ew(MUL|STICKY_B)
+//     SIMD   reduce(SUMSQ|LANEWISE) -> map(RSQRT), 1 row -> ew(MUL|STICKY_B) per lane group
 //     xDMA   y^T -> A (transposer)
 //     SIMD   quantise
 //     GEMM + SIMD   as path O
 //
 // All three produce the same bytes: every check below is bit-exact.
 //
-// MEASURED, warm, Verilator, snax_split_cluster, T = 32, d = 128. Makespan is first op to
-// last op, engines running concurrently and handing off through TCDM flags; every path
-// programs a dependent task before waiting for its input, so the paths differ in dataflow
-// only.
+// MEASURED, warm, QuestaSim, snax_split_cluster (16-lane SIMD core), T = 32, d = 128.
+// Makespan is first op to last op, engines running concurrently and handing off through
+// TCDM flags; every path programs a dependent task before waiting for its input, so the
+// paths differ in dataflow only.
 //
 //                 makespan    GEMM busy   SIMD busy   xDMA busy
-//     H             6,941       1,840       4,929         844
-//     O             4,890       1,759       3,761           0      -29%
-//     T             3,487       1,751       1,901         447      -49%
+//     H             5,379       1,812       3,522         782
+//     O             3,331       1,748       2,300           0      -38%
+//     T             3,646       1,685       2,125         453      -32%
 //
-// T is bounded by the array: 1,751 of its 3,487 cycles are the three projections at
-// ~92% utilisation, behind a ~1,400-cycle norm prologue and one 330-cycle requant.
+// O is bounded by the array once its norm is done: from its first projection at 1,268 to the
+// last at 3,016 the array never idles, and one 301-cycle requant is left on the tail. T's
+// prologue (transpose, norm^T, transpose, quantise) reaches the first projection 280 cycles
+// later than O's single norm pass: the reduce folds a row's lanes in a pipeline that never
+// stalls the next row, so the fold T avoids costs O nothing, while T pays a quantise pass of
+// its own and one sticky task per lane group.
 //
 // THE THREE FOLDS, and why each is legal.
 //
@@ -121,18 +125,19 @@
 //    the transpose costs nothing at run time -- not a pass, not even a second copy of the
 //    activation -- and the D port then writes A(V^T) by fold 1.
 //
-// 3. NORM -> A-LAYOUT -> QUANTISE IS ONE SIMD PASS. The SIMD reader's lane stride is
-//    programmable. Read x and the replicated scale plane with lane stride = one ROW, and
-//    each 8 B lane is one A atom of a different row: a beat is rows 8g..8g+7 at one k,
-//    which is half an A block. EW1 multiplies, Fp16ToInt8 pairs two such beats into one
-//    INT8 beat -- rows 16m..16m+15 at k, exactly one 64 B A/i8 block -- and the writer
-//    drops it at block (m, k). Reader {operand, g, k}, writer {m, k}: three and two loops,
-//    inside the SIMD's three. The quantise has to come AFTER the reshape because the int8
-//    atom is 4 B against the 8 B lane -- and here it does, inside the same pass.
+// 3. NORM -> A-LAYOUT -> QUANTISE IS ONE SIMD PASS. The SIMD reader's lane stride (the
+//    distance between the beat's 8 B TCDM channels) is programmable. Read x and the
+//    replicated scale plane with lane stride = one ROW, and each channel is one A atom of a
+//    different row: a beat is CHANS rows at one k (4 on this cluster), a slice of an A
+//    block. EW1 multiplies, Fp16ToInt8 packs two such beats into one INT8 beat -- 2*CHANS
+//    rows at k, 4 B each, the next contiguous BEAT bytes of A/i8 block (m, k) -- and the
+//    writer drops it there. Reader {operand, g, k}, writer {beat in block, m, k}: three
+//    loops each, the SIMD's three. The quantise has to come AFTER the reshape because the
+//    int8 atom is 4 B against the 8 B channel -- and here it does, inside the same pass.
 //
-//    The row pitch is padded 256 -> 264 B for this. At 256 every lane of an A-order beat
-//    sits in the SAME TCDM bank (32 banks x 8 B = 256 B), an 8-way conflict on every beat;
-//    at 264 = 33 words the eight rows land in eight banks.
+//    The row pitch is padded 256 -> 264 B for this. At 256 every channel of an A-order beat
+//    sits in the SAME TCDM bank (32 banks x 8 B = 256 B), a CHANS-way conflict on every beat;
+//    at 264 = 33 words consecutive rows land in consecutive banks.
 //
 // ======================================================================================
 // THE PRECISION FINDING, which no layout fix would have surfaced
@@ -204,11 +209,25 @@
 #if MESH_ROW != 16 || TILE_SIZE != 4
 #error "the D-port descriptors assume a 16x4x16 mesh: a 4-row x 16-col FP16 beat, 8 B atoms"
 #endif
-#if T_TOK != 32 || D_MODEL % 32
-#error "T must be 32 (one FP16 lane per token) and d a multiple of 32"
+#if T_TOK != 32
+#error "T must be 32: FlashAttention's Br and Bc"
 #endif
 
-#define BEAT SIMD_BEAT_BYTES
+// The SIMD core's beat. Its lane counts come from the cfg (num_channel); nothing below assumes
+// one. The xDMA's beat is a different, wider port (XDMA_WIDTH).
+#define BEAT SIMD_BEAT_BYTES                    // bytes per SIMD beat
+#define LANES SIMD_FP16_LANES                   // FP16 operator lanes per beat
+#define CHANS (SIMD_BEAT_BYTES / SIMD_LANE_BYTES)  // 8 B TCDM channels per beat
+#if T_TOK % SIMD_FP16_LANES || D_MODEL % SIMD_FP16_LANES
+#error "T and d must be whole SIMD beats of FP16: x rows are d features, x^T rows T tokens"
+#endif
+#if SIMD_LANE_BYTES != TILE_SIZE * 2
+#error "the A-order passes read one A atom (tileSize fp16) per TCDM channel"
+#endif
+#if MESH_ROW % (2 * (SIMD_BEAT_BYTES / SIMD_LANE_BYTES))
+#error "an A/i8 block must be whole INT8 beats: two input beats of one channel per row each"
+#endif
+
 #define ROWB (D_MODEL * 2u)         // one packed fp16 row
 #define PITCH (ROWB + 8u)           // the padded row: 33 words, one bank apart per row
 #define F16B (T_TOK * D_MODEL * 2u) // an fp16 [T, d] tile
@@ -220,6 +239,8 @@
 #define M_D (D_MODEL / MESH_ROW)    // feature row-tiles (V^T rows) = 8
 #define N_TK (T_TOK / MESH_COL)     // token col-tiles              = 2
 #define K_TK (T_TOK / TILE_SIZE)    // token k-tiles (P.V)          = 8
+#define XT_ROWB (T_TOK * 2u)        // one x^T row: one feature of every token
+#define NG (T_TOK / LANES)          // lane groups in an x^T row, one token per lane
 
 // ============================================================ the GEMM (hart 0)
 
@@ -484,24 +505,32 @@ static void pass_requant(volatile uint32_t *hung, void *src, void *dst, uint32_t
 
 // Fold 3: x * plane -> Fp16ToInt8 -> A/i8, reading in A-ORDER. Both operands sit at the
 // padded pitch. Reader, innermost first:
-//   lane    8 lanes, PITCH apart     rows 8g..8g+7, one 8 B atom each (4 features)
-//   dim 0   operand, 2               x, then its plane beat
-//   dim 1   g, 4, 8*PITCH            the next 8 rows (so g = 2m + half)
-//   dim 2   k, K_T, 8 B              the next 4 features
-// Fp16ToInt8 pairs (g = 2m, 2m+1) into rows 16m..16m+15 at k: one 64 B A/i8 block.
-// Writer: dim 0 m (M_T, K_T*64), dim 1 k (K_T, 64).
+//   lane    CHANS, PITCH apart           rows CHANS*g.., one 8 B atom each (4 features)
+//   dim 0   operand, 2                   x, then its plane beat
+//   dim 1   g, T/CHANS, CHANS*PITCH      the next CHANS rows
+//   dim 2   k, K_T, 8 B                  the next 4 features
+// Fp16ToInt8 packs beats (2h, 2h+1) into one INT8 beat: rows 2*CHANS*h.. at k, 4 B per row,
+// which is the next BEAT bytes of A/i8 block (m, k). Writer: dim 0 the beat in the block
+// (iblk/BEAT, BEAT), dim 1 m (M_T, K_T*iblk), dim 2 k (K_T, iblk).
 static void pass_norm_quant_a(volatile uint32_t *hung, void *x, void *plane, void *dst,
                               uint32_t scale, uint32_t how) {
+    const uint32_t iblk = MESH_ROW * TILE_SIZE;  // one A/i8 block
     snax_simd_shape_t in, out;
     snax_simd_shape_flat(&in, x, 1);
     in.lane_stride = PITCH;
     in.bound[0] = 2u;
     in.stride[0] = (uint32_t)plane - (uint32_t)x;
-    in.bound[1] = 4u;
-    in.stride[1] = 8u * PITCH;
+    in.bound[1] = T_TOK / CHANS;
+    in.stride[1] = CHANS * PITCH;
     in.bound[2] = K_T;
     in.stride[2] = TILE_SIZE * 2u;
-    snax_simd_shape_2d(&out, dst, M_T, K_T * BEAT, K_T, BEAT);
+    snax_simd_shape_flat(&out, dst, 1);
+    out.bound[0] = iblk / BEAT;
+    out.stride[0] = BEAT;
+    out.bound[1] = M_T;
+    out.stride[1] = K_T * iblk;
+    out.bound[2] = K_T;
+    out.stride[2] = iblk;
     snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMELEMENTWISE_1) |
                                                      (1u << SIMD_EXT_FP16TOINT8));
     snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_1_CSR, 0, 2u);
@@ -512,41 +541,50 @@ static void pass_norm_quant_a(volatile uint32_t *hung, void *x, void *plane, voi
 
 // ---- the transposed RMSNorm (path T) -- snax-simd-rmsnorm's fast path -----------------
 //
-// On x^T [d, T] a beat is one feature of ALL 32 tokens, lane t = token t, so the per-token
-// sum of squares is what the per-lane accumulators hold after d beats: LANEWISE emits it
-// as one beat with no fold. One map turns that beat into the 32 scales, and STICKY-B
-// latches it as operand B for the whole tile -- no replicated plane at all.
+// On x^T [d, T] a row is one feature of every token, NG beats of LANES tokens, lane = token.
+// Read lane group j of every row in turn and the per-token sum of squares is what the
+// per-lane accumulators hold after d beats: LANEWISE emits it as one beat with no fold. One
+// map turns those NG beats into the T scales, and STICKY-B latches group j's beat as operand
+// B for group j of the whole tile -- no replicated plane at all.
 
-// SUMSQ | LANEWISE over x^T: d beats in, ONE beat out (lane t = token t's sum).
+// SUMSQ | LANEWISE over x^T: reduce row j is lane group j of the d x^T rows, d beats
+// XT_ROWB apart; NG beats out, lane t of the row they form = token t's sum.
 static void pass_ssq_lanewise(volatile uint32_t *hung, void *xt, void *dst, uint32_t how) {
     snax_simd_shape_t in, out;
-    snax_simd_shape_rows(&in, xt, 1u, D_MODEL, D_MODEL * BEAT);
-    snax_simd_shape_flat(&out, dst, 1u);
+    snax_simd_shape_2d(&in, xt, D_MODEL, XT_ROWB, NG, BEAT);
+    snax_simd_shape_flat(&out, dst, NG);
     snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, D_MODEL,
                    SIMD_RED_SUMSQ | SIMD_RED_LANEWISE);
     simd_go(hung, "ssq_lanewise", &in, &out, how);
 }
 
-// map(a = 1/D, RSQRT) over one beat: the 32 per-token scales.
-static void pass_rsqrt1(volatile uint32_t *hung, void *src, void *dst, uint32_t how) {
+// map(a = 1/D, RSQRT) over one x^T-shaped row of sums: the T per-token scales.
+static void pass_rsqrt_scales(volatile uint32_t *hung, void *src, void *dst, uint32_t how) {
     snax_simd_shape_t in, out;
-    snax_simd_shape_flat(&in, src, 1u);
-    snax_simd_shape_flat(&out, dst, 1u);
+    snax_simd_shape_flat(&in, src, NG);
+    snax_simd_shape_flat(&out, dst, NG);
     snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR,
                    0x3F800000u - ((uint32_t)LOG2D << 23), 0u, SIMD_FUNC_RSQRT);
-    simd_go(hung, "rsqrt1", &in, &out, how);
+    simd_go(hung, "rsqrt_scales", &in, &out, how);
 }
 
-// ew(MUL | STICKY_B): beat 0 (the scales, IMMEDIATELY below x^T) is latched and emits
-// nothing; beats 1..d emit x^T * scales. d+1 in, d out.
-static void pass_sticky_mul(volatile uint32_t *hung, void *seed_then_xt, void *dst,
-                            uint32_t how) {
-    snax_simd_shape_t in, out;
-    snax_simd_shape_flat(&in, seed_then_xt, D_MODEL + 1u);
-    snax_simd_shape_flat(&out, dst, D_MODEL);
-    snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1u,
-                   SIMD_EW_MUL | SIMD_EW_STICKY_B);
-    simd_go(hung, "sticky_mul", &in, &out, how);
+// ew(MUL | STICKY_B), one task per lane group j, since a latch is one beat. The scale row sits
+// IMMEDIATELY below x^T, so the task's stream of d+1 beats XT_ROWB apart from group j's scale
+// beat is that beat and then group j of every x^T row: beat 0 is latched and emits nothing,
+// beats 1..d emit x^T * scales into group j of the y^T rows, `pitch` apart. `how` is FIRE or
+// DRAIN and applies to the last task.
+static void pass_sticky_mul(volatile uint32_t *hung, uint8_t *seed_then_xt, uint8_t *dst,
+                            uint32_t pitch, uint32_t how) {
+    for (uint32_t j = 0; j < NG; j++) {
+        snax_simd_shape_t in, out;
+        snax_simd_shape_flat(&in, seed_then_xt + j * BEAT, D_MODEL + 1u);
+        in.stride[0] = XT_ROWB;
+        snax_simd_shape_flat(&out, dst + j * BEAT, D_MODEL);
+        out.stride[0] = pitch;
+        snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1u,
+                       SIMD_EW_MUL | SIMD_EW_STICKY_B);
+        simd_go(hung, "sticky_mul", &in, &out, j + 1u == NG ? how : FIRE);
+    }
 }
 
 // ---- the HeMAiA rmsnorm's blocked routes, ported pass for pass ------------------------
@@ -556,14 +594,16 @@ static void pass_sticky_mul(volatile uint32_t *hung, void *seed_then_xt, void *d
 // so its two routes are reproduced here with the same shapes and checked against what the
 // paths above already produce. `blocked` is its simd_pass_blocked.
 //
-// The reader's lane stride is one ROW of `src`, so lane c carries one 4-element run of row
-// 8g+c and beats g = 2b, 2b+1 at the same k are operand block (b, k): int8 packs them into
-// one 64 B block, fp16 writes them as the block's two 64 B halves. row_major src -> A,
-// col_major src -> B. pitch/8 must be odd so the eight lanes hit eight banks.
+// The reader's lane stride is one ROW of `src`, so channel c carries one 4-element run of
+// row CHANS*g+c, and the MESH_ROW/CHANS beats g of one block row b at the same k are operand
+// block (b, k), in order: fp16 writes each beat as the block's next BEAT bytes, int8 packs
+// each pair into the next BEAT bytes. Writer: the block's beats, then b, then k. row_major
+// src -> A, col_major src -> B. pitch/8 must be odd so the channels hit distinct banks.
 static void pass_blocked(volatile uint32_t *hung, void *src, void *mul_by, uint32_t pitch,
                          uint32_t nrows, uint32_t kt, void *dst, uint32_t out_i8,
                          uint32_t scale, uint32_t how) {
-    const uint32_t lanes = 8u, blocks = nrows / 16u;
+    const uint32_t blocks = nrows / MESH_ROW;
+    const uint32_t blk = MESH_ROW * TILE_SIZE * (out_i8 ? 1u : 2u);  // one operand block
     snax_simd_shape_t in, out;
     uint32_t mask = 0u, d = 0u;
     snax_simd_shape_flat(&in, src, 1);
@@ -576,22 +616,18 @@ static void pass_blocked(volatile uint32_t *hung, void *src, void *mul_by, uint3
         d = 1u;
         mask |= 1u << SIMD_EXT_STREAMELEMENTWISE_1;
     }
-    in.bound[d] = nrows / lanes;
-    in.stride[d] = lanes * pitch;
+    in.bound[d] = nrows / CHANS;
+    in.stride[d] = CHANS * pitch;
     in.bound[d + 1u] = kt;
-    in.stride[d + 1u] = 8u;
-    if (out_i8) {
-        snax_simd_shape_2d(&out, dst, blocks, kt * BEAT, kt, BEAT);
-        mask |= 1u << SIMD_EXT_FP16TOINT8;
-    } else {
-        snax_simd_shape_flat(&out, dst, 1);
-        out.bound[0] = 2u;
-        out.stride[0] = BEAT;
-        out.bound[1] = blocks;
-        out.stride[1] = kt * 2u * BEAT;
-        out.bound[2] = kt;
-        out.stride[2] = 2u * BEAT;
-    }
+    in.stride[d + 1u] = TILE_SIZE * 2u;
+    snax_simd_shape_flat(&out, dst, 1);
+    out.bound[0] = blk / BEAT;
+    out.stride[0] = BEAT;
+    out.bound[1] = blocks;
+    out.stride[1] = kt * blk;
+    out.bound[2] = kt;
+    out.stride[2] = blk;
+    if (out_i8) mask |= 1u << SIMD_EXT_FP16TOINT8;
     snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, mask);
     if (mul_by) {
         snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_1_CSR, 0, 2u);
@@ -601,8 +637,9 @@ static void pass_blocked(volatile uint32_t *hung, void *src, void *mul_by, uint3
     simd_go(hung, "blocked", &in, &out, how);
 }
 
-// row_major -> A: reduce(SUMSQ|TAP) re-lays x at a (beats+1)*64+8 B pitch with each row's
-// scalar right after it, bcast(RSQRT) writes the plane at the same pitch, blocked(xs*plane).
+// row_major -> A: reduce(SUMSQ|TAP) re-lays x at a (beats+1)*BEAT+8 B pitch with each row's
+// scalar beat right after it, bcast(RSQRT) writes the plane at the same pitch,
+// blocked(xs*plane). The datagen derives the same pitch for its blocked descriptors.
 #define TAP_PITCH ((ROWB / BEAT + 1u) * BEAT + 8u)
 static void route_row_to_a(volatile uint32_t *hung, void *x, uint8_t *xs, uint8_t *plane,
                            void *dst, uint32_t out_i8) {
@@ -620,19 +657,15 @@ static void route_row_to_a(volatile uint32_t *hung, void *x, uint8_t *xs, uint8_
     pass_blocked(hung, xs, plane, TAP_PITCH, T_TOK, K_T, dst, out_i8, SCALE_N1_BITS, DRAIN);
 }
 
-// col_major -> B: lanewise SUMSQ, 1-beat RSQRT into the seed, sticky MUL writing y^T at a
-// 72 B pitch, blocked(y^T) -- lanes are eight features, each carrying four tokens.
-#define YT_PITCH (2u * T_TOK + 8u)
+// col_major -> B: lanewise SUMSQ, RSQRT into the scale row, sticky MUL writing y^T at a
+// 72 B pitch (XT_ROWB + 8), blocked(y^T) -- a beat's channels are CHANS features, each
+// carrying four tokens.
+#define YT_PITCH (XT_ROWB + 8u)
 static void route_col_to_b(volatile uint32_t *hung, uint8_t *xt_seed, uint8_t *ssq,
                            uint8_t *ytp, void *dst, uint32_t out_i8) {
-    snax_simd_shape_t in, out;
-    pass_ssq_lanewise(hung, xt_seed + BEAT, ssq, FIRE);
-    pass_rsqrt1(hung, ssq, xt_seed, FIRE);
-    snax_simd_shape_flat(&in, xt_seed, D_MODEL + 1u);
-    snax_simd_shape_rows(&out, ytp, D_MODEL, 1u, YT_PITCH);
-    snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1u,
-                   SIMD_EW_MUL | SIMD_EW_STICKY_B);
-    simd_go(hung, "sticky_mul_pitch", &in, &out, FIRE);
+    pass_ssq_lanewise(hung, xt_seed + XT_ROWB, ssq, FIRE);
+    pass_rsqrt_scales(hung, ssq, xt_seed, FIRE);
+    pass_sticky_mul(hung, xt_seed, ytp, YT_PITCH, FIRE);
     pass_blocked(hung, ytp, (void *)0, YT_PITCH, D_MODEL, T_TOK / 4u, dst, out_i8,
                  SCALE_N1_BITS, DRAIN);
 }
@@ -742,10 +775,11 @@ static uint32_t xdma_run(void) {
     return snax_xdma_last_task_cycle();
 }
 
-// Zero [dst, dst + beats*64) with the writer memset -- reader channels off, so nothing is
-// read. TCDM has no reset: on RTL an unwritten word reads X, and Verilator's zeroes hide it.
+// Zero [dst, dst + beats*XDMA_WIDTH) with the writer memset -- reader channels off, so
+// nothing is read. TCDM has no reset: on RTL an unwritten word reads X, and Verilator's
+// zeroes hide it.
 static void xdma_fill_zero(void *dst, uint32_t beats) {
-    uint32_t b5[5] = {beats, 1, 1, 1, 1}, s5[5] = {BEAT, 0, 0, 0, 0};
+    uint32_t b5[5] = {beats, 1, 1, 1, 1}, s5[5] = {XDMA_WIDTH, 0, 0, 0, 0};
     xdma_program_fast(dst, dst, 8, 8, b5, s5, b5, s5);
     XD_W(XDMA_SRC_ENABLED_CHAN_PTR, 0);
     XD_W(XDMA_SRC_ENABLE_PTR, 0);
@@ -1022,11 +1056,11 @@ int main() {
     int8_t *qkv_h = (int8_t *)TAKE(3 * I8B);    // H: FA operands  Q8 | K8 | V^T8
     uint8_t *yo = TAKE(3 * F16B);               // O: Q | K | V^T in A/f16, ADJACENT
     int8_t *qkv_o = (int8_t *)TAKE(3 * I8B);    // O: FA operands  Q8 | K8 | V^T8
-    // path T. The scale beat MUST sit immediately below x^T: the sticky task reads one
-    // flat stream of 1 + d beats and the latch is simply its first.
-    uint8_t *xt_seed = TAKE(BEAT + D_MODEL * BEAT);
-    uint8_t *xt = xt_seed + BEAT;               // x^T [d, T]
-    uint8_t *ssq = TAKE(BEAT);                  // per-token SUMSQ, lane t = token t
+    // path T. The scale row MUST sit immediately below x^T: each sticky task reads one
+    // stream of 1 + d beats an x^T row apart, and the latch is simply its first.
+    uint8_t *xt_seed = TAKE(XT_ROWB + D_MODEL * XT_ROWB);
+    uint8_t *xt = xt_seed + XT_ROWB;            // x^T [d, T]
+    uint8_t *ssq = TAKE(XT_ROWB);               // per-token SUMSQ, lane t = token t
     uint8_t *yt = TAKE(F16B);                   // norm1^T [d, T]
     uint8_t *ya = TAKE(F16B);                   // norm1, A/f16
     int8_t *n1q_t = (int8_t *)TAKE(I8B);        // norm1, A/i8       (path T)
@@ -1049,7 +1083,7 @@ int main() {
     int8_t *gl_qkv = (int8_t *)TAKE(3 * I8B);
     uint16_t *gl_s = (uint16_t *)TAKE(T_TOK * T_TOK * 2u);
     uint16_t *gl_o = (uint16_t *)TAKE(D_MODEL * T_TOK * 2u);
-    uint32_t arena_beats = (uint32_t)(p - arena) / BEAT;
+    uint32_t arena_beats = (uint32_t)(p - arena) / XDMA_WIDTH;  // every TAKE is whole 64 B
 #undef TAKE
 
     // ---- define every byte, then load ----------------------------------------------------
@@ -1170,8 +1204,8 @@ int main() {
             WAIT(T_XT);
             BEGIN(T_NS);
             snax_simd_fire();
-            pass_rsqrt1(HUNG, ssq, xt_seed, FIRE);
-            pass_sticky_mul(HUNG, xt_seed, yt, DRAIN);
+            pass_rsqrt_scales(HUNG, ssq, xt_seed, FIRE);
+            pass_sticky_mul(HUNG, xt_seed, yt, XT_ROWB, DRAIN);
             END(T_NS);
             pass_quant(HUNG, ya, n1q_t, F16B / BEAT, SCALE_N1_BITS, PREP);
             WAIT(T_YA);

@@ -4,12 +4,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Data generator for the xDMA FP16 SwiGLU test. Emits two FP16 rows of length N (a multiple of 32):
-# `gate` and `up`. The xDMA offloads sg = silu(gate); the host then forms out = sg * up. We emit
-# both the
-# silu(gate) golden (verified on-cluster) and the full swiglu golden out = silu(gate)*up (the host's
-# reference). Inputs are snapped onto the FP16 grid first so the goldens reflect what the hardware
-# consumes.
+# Data generator for the SIMD FP16 SwiGLU test. Emits two FP16 rows of length N: `gate` and `up`.
+# The SIMD block computes sg = silu(gate) and then out = sg * up. We emit both the silu(gate)
+# golden and the full swiglu golden out = silu(gate)*up. Inputs are snapped onto the FP16 grid
+# first so the goldens reflect what the hardware consumes.
+#
+# The SIMD beat holds simd_fp16_lanes(hw) FP16 lanes, read from the hardware cfg, so a row is
+# N / lanes beats. The fused quantise packs 2 beats into 1, so N must be a whole number of beat
+# pairs.
 
 import argparse
 import os
@@ -21,16 +23,16 @@ import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
+from snax_utils import simd_fp16_lanes  # noqa E402
 
-FP16_PER_BEAT = 32
 RNG_SEED = 320
 
 
-def emit_header_file(**kwargs):
+def emit_header_file(lanes, **kwargs):
     n = int(kwargs["N"])
-    if n <= 0 or n % FP16_PER_BEAT != 0:
-        raise ValueError(f"N must be a positive multiple of {FP16_PER_BEAT}, got {n}")
-    beats = n // FP16_PER_BEAT
+    if n <= 0 or n % (2 * lanes) != 0:
+        raise ValueError(f"N must be a positive multiple of 2 beats ({2 * lanes}), got {n}")
+    beats = n // lanes
 
     rng = np.random.default_rng(RNG_SEED)
     gate = rng.uniform(-8.0, 8.0, size=n).astype(np.float16)
@@ -85,12 +87,16 @@ def emit_header_file(**kwargs):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generating data for the xDMA swiglu kernel")
+    parser = argparse.ArgumentParser(description="Generating data for the SIMD swiglu kernel")
     parser.add_argument("-c", "--cfg", type=pathlib.Path, required=True)
+    parser.add_argument("--hwcfg", type=pathlib.Path, required=True,
+                        help="cluster hardware cfg (sets the SIMD lane count)")
     args = parser.parse_args()
     with args.cfg.open() as f:
         param = hjson.loads(f.read())
-    print(emit_header_file(**param))
+    with args.hwcfg.open() as f:
+        hw = hjson.loads(f.read())
+    print(emit_header_file(simd_fp16_lanes(hw), **param))
 
 
 if __name__ == "__main__":

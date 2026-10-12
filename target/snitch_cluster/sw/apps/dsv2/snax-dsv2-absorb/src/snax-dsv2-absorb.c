@@ -114,7 +114,7 @@ int main() {
     bbuf[0] = (int8_t *)TAKE(ABS_HPT * ABS_HEAD_BYTES);
     bbuf[1] = (int8_t *)TAKE(ABS_HPT * ABS_HEAD_BYTES);
     uint16_t *gold = (uint16_t *)bbuf[0];  // goldens, once the tasks reading the buffers retired
-    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_BEAT;
+    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_XBEAT;
 #undef TAKE
 
     const int isG = snax_is_gemm_core(), isS = snax_is_simd_core();

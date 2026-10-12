@@ -33,24 +33,26 @@
 // extra pass over the tile just to subtract. With EW0 in front of the Map, the subtract,
 // the exponential and the row sum are ONE task.
 //
-// The unit of the stream is a BEAT: 512 bits = 64 B = 32 FP16 LANES. And the one fact
-// that decides everything about this kernel is how the reduce is built --
+// The unit of the stream is a BEAT: SIMD_BEAT_BYTES = SIMD_FP16_LANES FP16 lanes (32 B =
+// 16 lanes on the split cluster). And the one fact that decides everything about this
+// kernel is how the reduce is built --
 //
-//     StreamReduce carries ONE FP32 ACCUMULATOR PER LANE, acc[0..31], which persist
-//     from beat to beat. Every beat, lane k folds into acc[k]. Nothing else moves.
+//     StreamReduce ACCUMULATES PER LANE, in FP32, from beat to beat: every beat, lane k
+//     folds into lane k's own accumulator (3 rotating partials, folded at the row's
+//     end, because the FMA is a 3-cycle recurrence). Nothing else moves.
 //
 // So a reduction ALONG BEATS is free: it is the accumulators doing what they already do,
 // one beat per cycle, and the answer is sitting in them when the stream ends. A reduction
-// ACROSS THE LANES of a beat is a completely different machine: a log-depth fold through
-// treeBuf, serialised over treeLanes ALUs, holding the reader's input port low while it
-// runs -- once per row -- and then the single result has to be SPLATTED back across all
-// 32 lanes to be usable as a beat again. Softmax pays that twice, once for the max and
-// once for the sum.
+// ACROSS THE LANES of a beat needs one more step, a log-depth fold of the lanes into one
+// scalar. That fold is a fully pipelined tree, so it costs latency and no throughput --
+// rows follow each other with no bubble -- but its single result has to be SPLATTED back
+// across every lane to be usable as a beat again. Softmax does that twice, once for the
+// max and once for the sum.
 //
-// Worse, a splatted beat is then hard to CONSUME. A 2-operand elementwise reads both
-// operands from ONE 3-D affine address stream {operand, beat, row}:
+// And a splatted beat is hard to CONSUME. A 2-operand elementwise reads both operands
+// from ONE 3-D affine address stream {operand, beat, row}:
 //
-//     addr = base + o*operand_delta + b*64 + r*row_stride
+//     addr = base + o*operand_delta + b*SIMD_BEAT_BYTES + r*row_stride
 //
 // Operand 0 (the data) wants exactly that. Operand 1 wants the SAME scalar for every beat
 // b of row r -- i.e. no b term. The three loops share one stride set, so b cannot be
@@ -66,7 +68,8 @@
 // A WORKED EXAMPLE -- 4 tokens, 8 features, 4 lanes to a beat
 // ======================================================================================
 //
-// Real shapes are T=32, D=128, 32 lanes; shrink everything by 8 and it fits on a page.
+// Real shapes are T=32, D=128 and SIMD_FP16_LANES lanes (16); shrink everything and it
+// fits on a page.
 // Write L = ln 2, so every exponential below is an exact power of two and nothing has to
 // be rounded to be read:
 //
@@ -108,27 +111,20 @@
 //   accumulate datapath does that:
 //
 //   FOLD ACROSS LANES -- the only step in the whole reduce that moves data sideways. It
-//   is a balanced binary tree: each round pairs up the survivors, halving the count, and
-//   round r+1 cannot start until round r has finished. So the number of ROUNDS is
-//   log2(lanes) -- here log2(4) = 2:
+//   is a balanced binary tree: each round pairs up the survivors, halving the count. So
+//   the number of ROUNDS is log2(lanes) -- here log2(4) = 2:
 //
 //     round 1   [ 0  -L  -L  -L ]  ->  [ max(0,-L) , max(-L,-L) ]  =  [ 0  -L ]
 //     round 2   [ 0  -L ]          ->  [ max(0,-L) ]               =  [ 0 ]
 //
-//   At the real width that is log2(32) = 5 rounds and 31 compares. Cycles are not the
-//   depth alone: the compares of a round are spread over `treeLanes` fold ALUs (2 in this
-//   cfg), each chunk held 2 cycles, so
+//   At the real width that is log2(16) = 4 rounds and 15 compares, each pair with its own
+//   comparator and a register between rounds. So the fold is 4 cycles of LATENCY per row
+//   and no throughput: the next row's beats keep streaming in while this row folds, and
+//   the row-major reduce costs what the transposed one does (274 vs 270 cc of datapath
+//   for the [32,128] tile).
 //
-//     round      1    2   3   4   5
-//     pairs     16    8   4   2   1   = 31 compares
-//     chunks     8    4   2   1   1   = 16 chunks / 2 ALUs, x2 cc = ~32 cc PER ROW
-//
-//   and the reader's input port is held low for all of it. SOFTMAX PAYS THIS TWICE: once
-//   here and once for the row sum below. (`treeLanes` is a cfg knob: 16 would take the
-//   fold to ~10 cc/row. It is set to 2 today.)
-//
-//   SPLAT -- the fold produced one NUMBER, but the datapath only moves whole 64 B BEATS;
-//   there is no narrower write. So the result is copied into every lane, 0 -> [0 0 0 0],
+//   SPLAT -- the fold produced one NUMBER, but the datapath only moves whole BEATS; there
+//   is no narrower write. So the result is copied into every lane, 0 -> [0 0 0 0],
 //   which is exactly the shape the elementwise below wants. The waste is one step later:
 //   that beat has to be REPEATED for every beat of the row.
 //
@@ -185,6 +181,17 @@
 //   (Transposing the row-major answer above gives the same values: t0's Sexp is 4, t1's
 //   is 8, and the tap beat is [4 8 4 8]. Same arithmetic, different order in memory.)
 //
+// ---- MORE TOKENS THAN LANES : LANE GROUPS ---------------------------------------------
+//
+// The real tile has T = 32 tokens and a beat holds SIMD_FP16_LANES = 16, so one x^T row
+// (one feature of every token) is TWO beats: tokens 0..15 and 16..31, two LANE GROUPS.
+// Each group is a column of x^T, D beats one row apart, and everything above happens per
+// column. A reduce takes both columns in ONE task -- each column is one "row" of the
+// reduce, so LANEWISE emits one beat per group. A sticky pass cannot: its latch is ONE
+// beat per task, so it runs once per group, seed g + column g. Every set of seeds is
+// therefore one extra transposed row just below its data, group g's seed in beat g, and
+// the exp pass's TAP sum beats land in one extra row just past ex^T.
+//
 // ======================================================================================
 // THE RECIPROCAL, WITHOUT A HOST -- rsqrt(s*s) = 1/s
 // ======================================================================================
@@ -205,17 +212,17 @@
 //     Map     1/sqrt(s*s) = 1/s        <- exact for any positive s
 //     write   [ 1/s ]
 //
-// Transposed, that is ONE PASS -- two beats in, one out, 33 cc of datapath -- because all
-// T sums live in the lanes of a single beat, and EW0 runs in STICKY-B form (beat 0 seeds
-// the latch and emits nothing, beat 1 emits s*s). On the worked example:
+// Transposed, that is ONE PASS -- each lane group's sum beat paired with itself, 2*T/L
+// beats in and T/L out (4 and 2 here), 26 cc of datapath -- because all T sums live in
+// the lanes of T/L beats. On the worked example:
 // [ 4 8 4 8 ] -> [ 16 64 16 64 ] -> [ .25 .125 .25 .125 ], every value exact.
 //
-// Row-major there are T scalars rather than one, so the sticky latch cannot hold them all
-// and EW0 runs in its ordinary 2-operand form over each row's tap beat paired with itself:
-// 64 beats read, 32 written, against the plane's 128. The inversion then rides the
-// broadcast pass that had to replicate the scalar anyway -- that pass was carrying an
-// identity multiply, so giving it func = RSQRT costs the SAME 296 cc of datapath it already
-// spent. Either way the scalar never leaves the block.
+// Row-major there is one scalar beat per row, and EW0 runs the same 2-operand form over
+// each row's tap beat paired with itself: 64 beats read, 32 written, against the plane's
+// 256. The inversion then rides the broadcast pass that had to replicate the scalar
+// anyway -- that pass was carrying an identity multiply, so giving it func = RSQRT costs
+// the SAME 274 cc of datapath it already spent. Either way the scalar never leaves the
+// block.
 //
 //   THE RANGE THIS RUNS ON. The transport between two chained operators is FP16, so s*s
 //   is what has to fit, not s. Every term of Sexp is exp(x - max) <= 1, so s <= D and the
@@ -251,52 +258,55 @@
 //                                      is never re-read and the exp row is never re-swept
 //     4a EW0(MUL)                      Sexp -> Sexp*Sexp   each row's tap beat presented
 //                                      twice at stride 0; 64 beats read, not the plane's
-//                                      256
+//                                      512
 //     4b bcast_map(a=1, RSQRT)         Sexp*Sexp -> 1/Sexp plane    pass 6 AND its host
 //                                      reciprocal, riding the replication that had to
 //                                      happen anyway, at the same cost it already had
 //     5  ew(MUL) [| quantise]          (ex, plane) -> y        unchanged, and the INT8
 //                                      narrow chains onto it for free
 //
-//   TRANSPOSED -- the worked example above, using all three mechanisms.
+//   TRANSPOSED -- the worked example above, using all three mechanisms, per lane group.
 //     0  xDMA 8x8 transpose            x -> x^T    ON HART 2, not the SIMD block
-//     1  reduce(MAX|LANEWISE)          x^T -> mx   one beat, all T tokens, NO FOLD
-//     2  map(a=-1) ONE BEAT            mx -> seed  21 cc of datapath
-//     3  EW0(ADD|STICKY_B) | Map(EXP) | Reduce(ADD|LANEWISE|TAP)
+//     1  reduce(MAX|LANEWISE)          x^T -> mx   one beat per lane group, one task,
+//                                                  NO FOLD
+//     2  map(a=-1) T/L BEATS           mx -> seeds 20 cc of datapath
+//     3  EW0(ADD|STICKY_B) | Map(EXP) | Reduce(ADD|LANEWISE|TAP), once per lane group
 //                                      seed+x^T -> ex^T + Sexp   no plane, no fold,
-//                                      D+1 beats read
-//     4  EW0(MUL|STICKY_B) | Map(RSQRT) ONE BEAT   Sexp -> 1/Sexp
-//     5  ew(MUL|STICKY_B)              seed+ex^T -> y^T          no plane, D+1 read
+//                                      D+1 beats read per group
+//     4  EW0(MUL) | Map(RSQRT) T/L BEATS   Sexp -> 1/Sexp        one task
+//     5  ew(MUL|STICKY_B), once per lane group
+//                                      seed+ex^T -> y^T          no plane, D+1 read
 //
 //     Pass 0 is REAL here, not assumed: the app drives the xDMA's transposer on hart 2
 //     and checks its output against the reference bit for bit, so the transposed numbers
 //     below are paid for, not free.
 //
-// MEASURED, warm, Verilator, snax_split_cluster, T=32 D=128 (+-0.5% run to run):
+// MEASURED, warm, vsim, snax_split_cluster (16 lanes), T=32 D=128:
 //
 //   hart 1, the SIMD block            hart 2, the xDMA (layout conversions)
-//     legacy       39,696 cc            x   -> x^T   236 cc  (179 datapath)
-//     row-major     5,665 cc            y^T -> y     385 cc  (327 datapath)
-//     transposed    1,748 cc            y   -> A     299 cc  (240 datapath, NO extension)
+//     legacy       36,952 cc            x   -> x^T   261 cc  (177 datapath)
+//     row-major     3,374 cc            y^T -> y     387 cc  (325 datapath)
+//     transposed    2,030 cc            y   -> A     318 cc  (240 datapath, NO extension)
 //
-//     row-major path:   5,665 on hart 1  +  299 on hart 2
-//     transposed path:  1,748 on hart 1  +  920 on hart 2
+//     row-major path:   3,374 on hart 1  +  318 on hart 2
+//     transposed path:  2,030 on hart 1  +  966 on hart 2
 //
-// Two engines, so two honest bounds: SIMD-only the transposed path is 69% cheaper, fully
-// serialised it is still 55% cheaper (2,668 vs 5,964). It always wins on hart 1, which is
+// Two engines, so two honest bounds: SIMD-only the transposed path is 39% cheaper, fully
+// serialised it is still 19% cheaper (2,996 vs 3,692). It always wins on hart 1, which is
 // the busier engine, and the direction of that trade -- work off the SIMD and onto the
 // xDMA -- is the one a layer wants. (The conversions are short enough that their WALL time
 // moves a few percent between runs; their datapath figures do not.)
 //
-// Of the legacy path's 39,696 cc, 33,944 are the two core broadcast loops -- 85% of the
+// Of the legacy path's 36,952 cc, 33,880 are the two core broadcast loops -- 92% of the
 // kernel spent replicating two numbers per row, at ~4.1 cc per halfword store. Neither
 // loop survives, and one of them could not have: the reciprocal it broadcast came from
 // data.h because this core cannot divide.
 //
-// Where the row-major path's remaining time goes: the fold. Its reduce(MAX) is 1,387 cc of
-// datapath for 128 beats, of which only ~128 is the compare -- the rest is 32 rows x ~35
-// cc of cross-lane fold, and the sum reduce pays it again. The transposed reduce over the
-// same 128 beats is 270 cc. That 5.1x is the fold, and nothing else.
+// Where the row-major path's remaining time goes: the REPLICATION, not the fold. Its
+// reduce(MAX) is 274 cc of datapath for 256 beats, the transposed one 270 -- the lane fold
+// is pipelined. What row-major still pays is the two broadcast planes (512 + 518 cc), the
+// squaring pass (257), and two elementwise passes that read two beats per beat they write
+// (787 + 783 cc, against the transposed path's per-group sticky passes, 586 + 541).
 //
 // ======================================================================================
 // SO SHOULD THE INPUT BE TRANSPOSED? -- READ THIS BEFORE BUILDING ANYTHING
@@ -345,8 +355,8 @@
 //   So the input side is free and the output side is not, and the last line is why: the
 //   P.V matmul run in swapped form needs y^T as its B operand, and packed -> B is a
 //   transpose no stride nest expresses. Either way y^T has to become y again. Net, the
-//   transposed path costs ONE conversion more than the row-major one -- the 385 cc
-//   y^T -> y -- to save 3,917 cc of SIMD time.
+//   transposed path costs ONE conversion more than the row-major one -- the 387 cc
+//   y^T -> y -- to save 1,344 cc of SIMD time.
 //
 //   Check before banking it: swapping the producer propagates a layout requirement onto
 //   ITS operands. A weight can be staged swapped offline for nothing; an activation
@@ -392,7 +402,6 @@
 #endif
 
 #define BEAT SIMD_BEAT_BYTES
-#define FP16_PER_BEAT 32
 
 // ============================================================ the core's FPU-less recip
 //
@@ -483,9 +492,21 @@ static inline uint32_t run_shapes(const char *what, const snax_simd_shape_t *in,
     return snax_simd_last_task_cycle();
 }
 
+// Re-run the task just programmed with new bases: same geometry, same operators, five CSR
+// writes instead of a full program. For a pass split over lane groups only the bases move.
+static inline uint32_t rerun_at(const char *what, void *in, void *out, uint32_t out_beats) {
+    if (simd_hung) return 0xFFFFFFFFu;
+    (void)snax_simd_repoint(in, out, out_beats);
+    snax_simd_fire();
+    if (snax_simd_wait_all_checked(what, SIMD_WAIT_BUDGET)) {
+        simd_hung = 1;
+        return 0xFFFFFFFFu;
+    }
+    return snax_simd_last_task_cycle();
+}
+
 // Per-row reduction. 2-D reader {beat, row}, 1-D writer. `mode` carries MAX or ADD plus
-// any of TAP / LANEWISE; with LANEWISE pass rows=1 and beats=D, so the whole tile is one
-// "row" and the per-lane accumulators ARE the per-token scalars.
+// any of TAP / LANEWISE.
 static uint32_t pass_reduce(void *src, void *dst, uint32_t rows, uint32_t beats,
                             uint32_t mode, uint32_t dst_beats) {
     snax_simd_shape_t in, out;
@@ -494,6 +515,20 @@ static uint32_t pass_reduce(void *src, void *dst, uint32_t rows, uint32_t beats,
     ARM(M_RED);
     cfg_red(beats, mode);
     return run_shapes("reduce", &in, &out);
+}
+
+// The transposed path's reduce: x^T holds one feature per ROW of `groups` beats (one beat
+// per lane group of tokens), rows `row_stride` bytes apart. Each lane group is one reduce
+// "row" of `beats` beats walking DOWN its column, and LANEWISE emits the per-lane
+// accumulators, so the writer gets `groups` beats: every token's scalar, one lane each.
+static uint32_t pass_reduce_cols(void *src, void *dst, uint32_t groups, uint32_t beats,
+                                 uint32_t row_stride, uint32_t mode) {
+    snax_simd_shape_t in, out;
+    snax_simd_shape_2d(&in, src, beats, row_stride, groups, BEAT);
+    snax_simd_shape_flat(&out, dst, groups);
+    ARM(M_RED);
+    cfg_red(beats, mode | SIMD_RED_LANEWISE);
+    return run_shapes("reduce(LANEWISE)", &in, &out);
 }
 
 // out = func(a*x + b) over `beats` contiguous beats.
@@ -589,7 +624,7 @@ static uint32_t pass_sub_exp_sum(void *x, void *plane, void *dst, uint32_t rows,
 
 // ROW-MAJOR RECIPROCAL, half of it. Square each row's Sexp: the reader presents that row's
 // tap beat TWICE at stride 0 and EW0's 2-operand combine multiplies the pair. `rows` beats
-// in each direction -- 32 of them at this shape, against the tile's 128.
+// out from 2*rows in -- 32 of them at this shape, against the tile's 256.
 //
 // The other half is free. The inversion rides pass_bcast_map, which the row-major path has
 // to run anyway to replicate the scalar, and which was carrying an identity multiply: give
@@ -608,12 +643,14 @@ static uint32_t pass_sq_beats(void *tap0, void *dst, uint32_t rows,
 
 // TRANSPOSED, THREE PASSES IN ONE. Same fusion as pass_sub_exp_sum, but the max arrives
 // as a STICKY seed beat instead of a replicated plane, and the reduce is LANEWISE, so
-// there is no fold and no [T,D] operand anywhere. D+1 beats in (seed + tile), D+1 out
-// (tile + the one sum beat).
-static uint32_t pass_t_exp_sum(void *seed_then_xt, void *dst, uint32_t d) {
+// there is no fold and no [T,D] operand anywhere. ONE LANE GROUP's column: D+1 beats in
+// (seed + column), D+1 out (column + its sum beat), all `stride` apart -- so the sum lands
+// one row past the column, in the sum row.
+static uint32_t pass_t_exp_sum(void *seed_then_xt, void *dst, uint32_t d,
+                               uint32_t stride) {
     snax_simd_shape_t in, out;
-    snax_simd_shape_flat(&in, seed_then_xt, d + 1u);
-    snax_simd_shape_flat(&out, dst, d + 1u);
+    snax_simd_shape_2d(&in, seed_then_xt, d + 1u, stride, 1u, 0u);
+    snax_simd_shape_2d(&out, dst, d + 1u, stride, 1u, 0u);
     ARM(M_EW0 | M_MAP | M_RED);
     cfg_ew0(1u, SIMD_EW_ADD | SIMD_EW_STICKY_B);
     cfg_map(SIMD_F32_ONE, 0u, SIMD_FUNC_EXP);
@@ -621,26 +658,28 @@ static uint32_t pass_t_exp_sum(void *seed_then_xt, void *dst, uint32_t d) {
     return run_shapes("EW0(STICKY)|Map(EXP)|Reduce(LANE,TAP)", &in, &out);
 }
 
-// TRANSPOSED RECIPROCAL: 1/s for every token in the tile, from ONE beat. The sum beat is
-// read twice at stride 0, EW0's sticky latch squares it, Map's RSQRT inverts it.
-static uint32_t pass_recip_beat(void *sum_beat, void *dst) {
+// TRANSPOSED RECIPROCAL: 1/s for every token in the tile, from its `groups` sum beats in
+// ONE task. Each sum beat is read twice at stride 0, EW0's 2-operand combine squares the
+// pair, Map's RSQRT inverts it.
+static uint32_t pass_recip_beats(void *sum_beats, void *dst, uint32_t groups) {
     snax_simd_shape_t in, out;
-    snax_simd_shape_2d(&in, sum_beat, 2u, 0u, 1u, 0u);
-    snax_simd_shape_flat(&out, dst, 1u);
+    snax_simd_shape_2d(&in, sum_beats, 2u, 0u, groups, BEAT);
+    snax_simd_shape_flat(&out, dst, groups);
     ARM(M_EW0 | M_MAP);
-    cfg_ew0(1u, SIMD_EW_MUL | SIMD_EW_STICKY_B);
+    cfg_ew0(2u, SIMD_EW_MUL);
     cfg_map(SIMD_F32_ONE, 0u, SIMD_FUNC_RSQRT);
-    return run_shapes("EW0(MUL,STICKY)|Map(RSQRT)", &in, &out);
+    return run_shapes("EW0(MUL)|Map(RSQRT)", &in, &out);
 }
 
 // One-operand elementwise with STICKY-B: beat 0 seeds operand B and emits NOTHING, beats
-// 1..N emit op(B, beat). N+1 beats in, N out -- so the seed must sit immediately below the
-// data and the writer covers exactly the data, not one beat early.
+// 1..N emit op(B, beat). N+1 beats in, N out -- so the seed must sit one `stride` below the
+// data and the writer covers exactly the data, not one beat early. The latch is ONE beat
+// per task, so a tile wider than one beat of tokens takes one task per lane group.
 static uint32_t pass_ew_sticky(void *seed_then_data, void *dst, uint32_t data_beats,
-                               uint32_t op) {
+                               uint32_t stride, uint32_t op) {
     snax_simd_shape_t in, out;
-    snax_simd_shape_flat(&in, seed_then_data, data_beats + 1u);
-    snax_simd_shape_flat(&out, dst, data_beats);
+    snax_simd_shape_2d(&in, seed_then_data, data_beats + 1u, stride, 1u, 0u);
+    snax_simd_shape_2d(&out, dst, data_beats, stride, 1u, 0u);
     ARM(M_EW0);
     cfg_ew0(1u, op | SIMD_EW_STICKY_B);
     return run_shapes("ew(STICKY)", &in, &out);
@@ -799,7 +838,10 @@ int main() {
     uint32_t scal_b = rows * BEAT;
     uint32_t pad_row_b = (beats + 1u) * BEAT;  // a row plus its trailing scalar beat
     uint32_t pad_b = rows * pad_row_b;
-    uint32_t t_b = (uint32_t)(d * BEAT);  // the transposed tile: D beats of T lanes
+    // The transposed path: one token per lane, so the T tokens are `groups` lane groups and
+    // one x^T row (one feature of every token) is `groups` beats, xt_row_b bytes.
+    uint32_t groups = rows / SIMD_FP16_LANES;
+    uint32_t xt_row_b = rows * 2u;
 
     uint8_t *x_in = (uint8_t *)base;
     uint8_t *mx = x_in + tot_b;        // reduce(MAX) out, rows splatted beats
@@ -814,16 +856,17 @@ int main() {
                                        // it shares a row stride with ex_p
     uint8_t *out_r = rplane + pad_b;   // row-major result
     uint8_t *q_r = out_r + tot_b;      // row-major result, INT8, quant chained on
-    // The sticky seed beat MUST sit immediately below the data it seeds: the reader is one
-    // flat sweep of 1 + N beats and the seed is simply its first.
-    uint8_t *xt_seed = q_r + tot_b / 2u;
-    uint8_t *xt = xt_seed + BEAT;       // x^T, D beats
-    uint8_t *mx_t = xt + t_b;           // one beat: the LANEWISE max
-    uint8_t *ex_seed = mx_t + BEAT;     // one beat: 1/Sexp, and the sticky seed for pass 5
-    uint8_t *ex_t = ex_seed + BEAT;     // exp^T, D beats, then its sum beat
-    uint8_t *out_t = ex_t + (d + 1u) * BEAT;         // y^T
-    uint8_t *xt_ref = out_t + t_b;                   // L3 copy of x^T, to check against
-    uint8_t *y_p = xt_ref + t_b;                     // y^T transposed back to row-major
+    // The sticky seeds MUST sit one transposed row below the data they seed: lane group g's
+    // reader is one sweep of 1 + D beats down column g, and its seed is simply the first.
+    // So each set of seeds is a row of its own, group g's seed in beat g of it.
+    uint8_t *xt_seed = q_r + tot_b / 2u;  // -max seeds, one row
+    uint8_t *xt = xt_seed + xt_row_b;     // x^T [D, T]
+    uint8_t *mx_t = xt + tot_b;           // one row: the LANEWISE max, `groups` beats
+    uint8_t *ex_seed = mx_t + xt_row_b;   // one row: 1/Sexp, the sticky seeds for pass 5
+    uint8_t *ex_t = ex_seed + xt_row_b;   // exp^T [D, T], then the sum row
+    uint8_t *out_t = ex_t + tot_b + xt_row_b;        // y^T
+    uint8_t *xt_ref = out_t + tot_b;                 // L3 copy of x^T, to check against
+    uint8_t *y_p = xt_ref + tot_b;                   // y^T transposed back to row-major
     uint8_t *y_a = y_p + tot_b;                      // ...and reshaped into A-layout
     uint8_t *q_a = y_a + tot_b;                      // ...and quantised, in A-layout
     // Six words hart 2 writes and hart 1 reads: every xDMA conversion runs on the xDMA
@@ -834,7 +877,7 @@ int main() {
         snrt_dma_start_1d(x_in, sm_input, tot_b);
         // NOT the transposed input -- that is produced on the device below. This is only
         // the reference the device's own transpose is checked against.
-        snrt_dma_start_1d(xt_ref, sm_input_t, t_b);
+        snrt_dma_start_1d(xt_ref, sm_input_t, tot_b);
         snrt_dma_wait_all();
     }
     // Unconditional: the hardware barrier counts every core in the cluster, so a hart that
@@ -854,7 +897,17 @@ int main() {
     }
     snrt_cluster_hw_barrier();
 
-    if (snax_is_simd_core()) printf("[Softmax] T=%u D=%u beats/row=%u\n", rows, d, beats);
+    if (snax_is_simd_core()) {
+        printf("[Softmax] T=%u D=%u beats/row=%u lanes=%u lane groups=%u\n", rows, d, beats,
+               (uint32_t)SIMD_FP16_LANES, groups);
+        // data.h was generated for a lane count; this library has its own. Disagreeing,
+        // every beat count above is wrong, so stop here rather than measure garbage.
+        if (beats * SIMD_FP16_LANES != d || groups * SIMD_FP16_LANES != rows) {
+            printf("[Softmax] FAIL: data.h is not for %u-lane SIMD\n",
+                   (uint32_t)SIMD_FP16_LANES);
+            simd_hung = 1;
+        }
+    }
 
     // Declared OUT here, not inside: the kernel runs on the SIMD core but the report is
     // printed after the xDMA epilogue below, past the block's closing brace.
@@ -895,7 +948,7 @@ int main() {
             // one of the row's D features.
             t0 = snrt_mcycle();
             for (uint32_t r = 0; r < rows; r++) {
-                uint16_t neg = (uint16_t)(mxh[r * FP16_PER_BEAT] ^ 0x8000u);
+                uint16_t neg = (uint16_t)(mxh[r * SIMD_FP16_LANES] ^ 0x8000u);
                 for (uint32_t c = 0; c < d; c++) pl[r * d + c] = neg;
             }
             t1 = snrt_mcycle();
@@ -968,28 +1021,35 @@ int main() {
 
             // ================= TRANSPOSED: no fold, no plane, no host ==================
             t0 = snrt_mcycle();
-            d_s1 = pass_reduce(xt, mx_t, 1u, d, SIMD_RED_MAX | SIMD_RED_LANEWISE, 1u);
+            d_s1 = pass_reduce_cols(xt, mx_t, groups, d, xt_row_b, SIMD_RED_MAX);
             t1 = snrt_mcycle();
             t_s1 = t1 - t0;
 
             t0 = snrt_mcycle();
-            d_s2 = pass_map(mx_t, xt_seed, 1u, SIMD_F32_NEG_ONE, 0u,
+            d_s2 = pass_map(mx_t, xt_seed, groups, SIMD_F32_NEG_ONE, 0u,
                             SIMD_FUNC_LINEAR);
             t1 = snrt_mcycle();
             t_s2 = t1 - t0;
 
+            // One task per lane group, because the sticky latch is one beat: the first
+            // programs the column sweep, the others only move it one beat to the right.
             t0 = snrt_mcycle();
-            d_s3 = pass_t_exp_sum(xt_seed, ex_t, d);
+            d_s3 = pass_t_exp_sum(xt_seed, ex_t, d, xt_row_b);
+            for (uint32_t g = 1; g < groups; g++)
+                d_s3 += rerun_at("EW0(STICKY)|Map(EXP)|Reduce(LANE,TAP)", xt_seed + g * BEAT,
+                                 ex_t + g * BEAT, d + 1u);
             t1 = snrt_mcycle();
             t_s3 = t1 - t0;
 
             t0 = snrt_mcycle();
-            d_s4 = pass_recip_beat(ex_t + (uint32_t)(d * BEAT), ex_seed);
+            d_s4 = pass_recip_beats(ex_t + tot_b, ex_seed, groups);
             t1 = snrt_mcycle();
             t_s4 = t1 - t0;
 
             t0 = snrt_mcycle();
-            d_s5 = pass_ew_sticky(ex_seed, out_t, d, SIMD_EW_MUL);
+            d_s5 = pass_ew_sticky(ex_seed, out_t, d, xt_row_b, SIMD_EW_MUL);
+            for (uint32_t g = 1; g < groups; g++)
+                d_s5 += rerun_at("ew(STICKY)", ex_seed + g * BEAT, out_t + g * BEAT, d);
             t1 = snrt_mcycle();
             t_s5 = t1 - t0;
         }
@@ -1057,12 +1117,14 @@ int main() {
            "%u)\n",
            t_rq, d_rq, t_rq - t_r5);
     printf("[Softmax] TRANS   reduce(MAX|LANE)   wall=%u  datapath=%u\n", t_s1, d_s1);
-    printf("[Softmax] TRANS   map(a=-1) 1 beat   wall=%u  datapath=%u\n", t_s2, d_s2);
-    printf("[Softmax] TRANS   EW0(STICKY)|MAP|RED(LANE,TAP) wall=%u  datapath=%u\n", t_s3,
-           d_s3);
-    printf("[Softmax] TRANS   EW0(MUL,STICKY)|MAP(RSQ) 1 beat wall=%u  datapath=%u\n",
+    printf("[Softmax] TRANS   map(a=-1) %u beats  wall=%u  datapath=%u\n", groups, t_s2,
+           d_s2);
+    printf("[Softmax] TRANS   EW0(STICKY)|MAP|RED(LANE,TAP) x%u wall=%u  datapath=%u\n",
+           groups, t_s3, d_s3);
+    printf("[Softmax] TRANS   EW0(MUL)|MAP(RSQ) %u beats wall=%u  datapath=%u\n", groups,
            t_s4, d_s4);
-    printf("[Softmax] TRANS   ew(MUL|STICKY)     wall=%u  datapath=%u\n", t_s5, d_s5);
+    printf("[Softmax] TRANS   ew(MUL|STICKY) x%u  wall=%u  datapath=%u\n", groups, t_s5,
+           d_s5);
     printf("[Softmax] --- hart 2 (xDMA): the layout conversions ---\n");
     printf("[Softmax] XPOSE   x   -> x^T          wall=%u  datapath=%u\n", xc[0], xc[1]);
     printf("[Softmax] XPOSE   y^T -> y            wall=%u  datapath=%u\n", xc[2], xc[3]);
@@ -1129,8 +1191,8 @@ int main() {
     // Both paths' sums come out of a TAP beat; the row-major one folds across lanes and
     // the transposed one does not, so this also checks the two agree.
     uint32_t iworst_r = 0, iworst_s = 0, ibad = 0;
-    uint16_t *st = (uint16_t *)(ex_t + (uint32_t)(d * BEAT));  // [T] sums, one per lane
-    uint16_t *is = (uint16_t *)ex_seed;                        // [T] 1/sum, one per lane
+    uint16_t *st = (uint16_t *)(ex_t + tot_b);  // the sum row: [T] sums, one per lane
+    uint16_t *is = (uint16_t *)ex_seed;         // [T] 1/sum, one per lane
     for (uint32_t r = 0; r < rows; r++) {
         uint16_t sum_row = *(uint16_t *)(ex_p + r * pad_row_b + beats * BEAT);
         uint32_t u = f16_ulp(*(uint16_t *)(rplane + r * pad_row_b), recip_f16(sum_row));

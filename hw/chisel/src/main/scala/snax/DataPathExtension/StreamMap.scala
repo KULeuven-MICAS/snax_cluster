@@ -3,7 +3,8 @@ package snax.DataPathExtension
 import chisel3._
 import chisel3.util._
 
-/** StreamMap: per-lane pointwise map act(a*x + b) over a streamed row.
+/** StreamMap: per-lane pointwise map act(a*x + b) over a streamed row. This is the xDMA's reader extension, with
+  * `computeLanes` units time-multiplexed over the AXI-width beat; the SIMD core's map is snax.simd.SimdStreamMap.
   *
   *   - x is a transport-precision lane (the element type — FP16/BF16/FP8/FP32 — is set by the op-set); a, b are FP32
   *     CSR-immediates; the math is FP32; the output is narrowed back to the transport type.
@@ -103,7 +104,7 @@ class StreamMap(
   val hasLinear = funcs.contains("LINEAR")
   val hasAct    = hasExp || hasSilu || hasRsqrt
 
-  // FpActivation ROM depths (measured via a ULP-vs-depth sweep, 2026-07-08):
+  // FpActivation ROM depths (from a ULP-vs-depth sweep):
   //   exp: 2^(i/N) linear interp stays at 1 FP16 ULP down to lutN=16 (budget <=2) -> 32 keeps margin cheaply.
   //   silu: odd-symmetry tabulation g(m)=sigmoid(-|x|) (reflect via 1-g for x>0) over [0,16]; the deep tail
   //   (x~-10.8) needs 256 nodes for <=1 ULP (128 = 3 ULP with linear interp). Quadratic interp holds <=1 ULP
@@ -141,7 +142,7 @@ class StreamMap(
   def computeLane(laneIn: UInt): UInt = {
     // affine a*x+b: feed x RAW (transport precision) into a mixed FMA (FP32*FP16+FP32) instead of widening
     // it to FP32 first — bit-identical (x is exact in FP32) but a 24x11 multiplier and no widen. The
-    // ShiftRegister keeps x's arrival (and thus preLat = 2*fpPipe+1) unchanged, so the streaming FSM is intact.
+    // ShiftRegister cuts the sub-group select off the FMA and sets preLat = 2*fpPipe+1.
     val t      = sr(ffmaT(a, ShiftRegister(laneIn, fpPipe), b, transport, fpPipe))
     // EXP, SILU and RSQRT share ONE merged activation core (mutually exclusive at runtime; func picks).
     val actES  = if (hasAct) {
@@ -161,8 +162,7 @@ class StreamMap(
   }
 
   // ---- streaming time-mux + pipeline FSM --------------------------------------------------------------
-  // Continuous-issue rewrite (was: accept 1 beat -> issue subCycles -> DRAIN P cycles idle -> emit ->
-  // re-accept). The `computeLanes` pipelined units are kept busy every cycle: a free-running (beat, sub)
+  // Continuous issue: the `computeLanes` pipelined units are kept busy every cycle: a free-running (beat, sub)
   // issue pointer feeds one sub-group per cycle across back-to-back beats, so the P-cycle compute latency
   // is a one-time fill instead of a per-beat bubble. Results retire P cycles later, are reassembled into
   // whole beats, and land in a small output Queue (skid buffer) that absorbs the consumer's backpressure.

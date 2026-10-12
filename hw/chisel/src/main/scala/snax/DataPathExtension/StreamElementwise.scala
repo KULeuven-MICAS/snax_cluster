@@ -7,7 +7,8 @@ import fp_unit._
 import fp_native._
 
 /** StreamElementwise: per-lane FP binary combine of `operandCount` consecutive input beats, emitted as ONE full output
-  * beat (NO horizontal collapse — the element-wise sibling of StreamReduce).
+  * beat (NO horizontal collapse — the element-wise sibling of StreamReduce). This is the xDMA's reader extension, with
+  * `computeLanes` ALUs time-multiplexed over the AXI-width beat; the SIMD core's is snax.simd.SimdStreamElementwise.
   *
   *   - Transport: configurable element type (FP16/BF16/FP8/FP32, set by the op-set; e.g. 32 FP16 lanes per 512-bit
   *     beat). Internal math: FP32 (widen on input, narrow on output). op = MUL | ADD, runtime CSR.
@@ -43,7 +44,7 @@ class HasStreamElementwise(
     new DataPathExtensionParam(
       moduleName   = "StreamElementwise",
       // operandCount + (op-select). The op-select CSR is needed when both combines are runtime-selectable:
-      // the fused FMA op provides both, and a legacy MUL+ADD set lists both. A single legacy op fixes it.
+      // the fused FMA op provides both, and a MUL+ADD set lists both. A single-op set fixes it.
       userCsrNum   = if (ops.contains("FMA") || ops.size > 1) 2 else 1,
       dataWidth    = dataWidth,
       // The RUNTIME opcodes (0=MUL, 1=ADD), not the cfg's op list: one fused "FMA" build op answers to both
@@ -81,8 +82,8 @@ class StreamElementwise(
 
   // The single fused "FMA" op covers BOTH combines (MUL = acc*x+0, ADD = acc*1+x), selected at runtime by
   // the op CSR. hasMul/hasAdd are the runtime capabilities the built datapath must provide; the FMA op
-  // provides both, so `bothOps` is true and the op CSR is honoured. Legacy single-op sets still build the
-  // cheaper plain mul/add.
+  // provides both, so `bothOps` is true and the op CSR is honoured. Single-op sets build the cheaper plain
+  // mul/add.
   // Expanded once in OpSpec, so the generated header and the built datapath cannot disagree about which
   // opcodes exist. The fused FMA op provides both combines.
   private val runtimeOps = OpSpec.runtimeOps(ops, Seq("MUL", "ADD"))
@@ -90,7 +91,7 @@ class StreamElementwise(
   val hasAdd  = runtimeOps.contains("ADD")
   val bothOps = hasMul && hasAdd // both combines available => the FMA path with a runtime op-select
 
-  // op CSR (ext_csr_i(1)[7:0]) values — UNCHANGED for source-compatibility: 0=MUL, 1=ADD.
+  // op CSR (ext_csr_i(1)[7:0]) values: 0=MUL, 1=ADD.
   def OP_MUL = 0.U
   def OP_ADD = 1.U
 
@@ -111,14 +112,13 @@ class StreamElementwise(
   //
   // This is worth a bit precisely because a broadcast operand is common ONCE THE DATA IS TRANSPOSED. In
   // FlashAttention the row maxima are one beat for the whole tile (one lane per query row), so `sm = S - m`
-  // is a single latched beat against a 64-beat stream. In the untransposed form m varied per row and this
-  // mode would not have applied at all.
+  // is a single latched beat against a 64-beat stream. In the untransposed form m varies per row and this
+  // mode does not apply.
   //
   // Use it with operandCount=1, so each beat is its own row: beat 0 seeds the latch and emits NOTHING,
   // and beats 1..N emit op(B, beat). So a task of N+1 input beats produces N output beats, and the writer
-  // descriptor covers exactly the data. (It used to pass the seed through as a junk beat that software had
-  // to aim past; that cost a scratch beat, an extra descriptor beat, and made the mode unusable anywhere
-  // but last in the chain, since a downstream stage would consume the junk as data.)
+  // descriptor covers exactly the data -- and a downstream stage sees only data beats, so the mode works
+  // anywhere in the chain.
   val stickyB: Bool = if (extensionParam.userCsrNum >= 2) ext_csr_i(1)(8).asBool else false.B
 
   // ---- pipeline depth (timing) ----------------------------------------------------------------
@@ -179,11 +179,10 @@ class StreamElementwise(
   val regs = RegInit(VecInit(Seq.fill(lanes)(0.U(accWidth.W))))
 
   // ---- streaming time-mux + pipeline FSM --------------------------------------------------------------
-  // Continuous-issue rewrite (was: per input beat accept -> issue subCycles -> DRAIN accLat idle -> re-accept,
-  // paying the accLat drain on EVERY operand beat plus an emit stall per row). The computeLanes pipelined
-  // ALUs now issue one sub-group per cycle across back-to-back operand beats AND back-to-back rows; the
-  // per-lane partials retire accLat cycles later. A row's result (Cat(narrow(regs))) is captured the cycle
-  // its last operand beat's last sub retires and pushed into a small output Queue (skid) for backpressure.
+  // Continuous issue: the computeLanes pipelined ALUs issue one sub-group per cycle across back-to-back
+  // operand beats AND back-to-back rows; the per-lane partials retire accLat cycles later. A row's result
+  // (Cat(narrow(regs))) is captured the cycle its last operand beat's last sub retires and pushed into a small
+  // output Queue (skid) for backpressure.
   //
   // Per-lane ACCUMULATOR RECURRENCE: operand beat k+1 reads regs[L] written by beat k. The time-mux spaces
   // successive same-lane issues by `subCycles` cycles, so the recurrence is met with NO stall when
@@ -200,9 +199,7 @@ class StreamElementwise(
   // exemption bypasses `gap` entirely (overlapOK is always true), so beats issue every `subCycles`
   // cycles, not every `beatSpan`. Sizing by beatSpan under-counts the rows in flight by exactly that
   // ratio, the credit then caps outstanding rows below the pipeline depth, and the unit runs at
-  // roughly accLat cycles per beat instead of streaming. Measured on FlashAttention: 3.2 cc/beat at
-  // computeLanes=16 and still 2.6 at computeLanes=32 -- i.e. adding lanes did almost nothing, because
-  // lanes were never the limiter.
+  // roughly accLat cycles per beat instead of streaming -- whatever computeLanes is.
   val inFlightRows  = (accLat + beatSpan - 1) / beatSpan + 1   // long rows: the gap really does apply
   val inFlightBeats = (accLat + subCycles - 1) / subCycles + 2 // 1-beat rows: the gap is bypassed
   val inFlightMax   = scala.math.max(inFlightRows, inFlightBeats)
@@ -288,8 +285,7 @@ class StreamElementwise(
   // because each earlier sub-group has already written its result there. Sticky mode holds regs (that is
   // the whole point), so the earlier sub-groups have nowhere to land and the assembled beat reads back the
   // broadcast in every lane but the last group's. `outRegs` is that landing place: always written, never
-  // read as an operand. Costs lanes x 32 flops; invisible at computeLanes == lanes, which is why this only
-  // showed up in the cl=8 test.
+  // read as an operand. Costs lanes x 32 flops; at computeLanes == lanes there are no earlier sub-groups.
   val outRegs       = Reg(Vec(lanes, UInt(accWidth.W)))
   val seedRetiring  = ShiftRegister(stickySeed && issuing, accLat, false.B, true.B)
   // The latch is only complete when the seed's LAST sub-group has retired, not its first: under the time
@@ -328,10 +324,9 @@ class StreamElementwise(
   // The seed still RESERVES a credit and then releases it when it retires, rather than not reserving at
   // all. That looks redundant -- the beat never leaves -- but `ext_busy_o` is derived from `credit`, and
   // between the seed's last issue cycle and its retire there is no other signal holding busy high:
-  // `haveBeat` has already dropped and acceptance is blocked until `seedDone`. Skipping the reservation
-  // therefore made the block report IDLE for accLat cycles while the seed was still in flight, which the
-  // controller is entitled to read as task completion. Reserve-and-release keeps the busy window exactly
-  // as it was before the seed was suppressed.
+  // `haveBeat` has already dropped and acceptance is blocked until `seedDone`. Without the reservation the
+  // block would report IDLE for accLat cycles while the seed is still in flight, which the controller is
+  // entitled to read as task completion.
   val doReserve = accept && nextIsRowStart
   val effDeq    = deq || seedLastRetire
   when(ext_start_i) {

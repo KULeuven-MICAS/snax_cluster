@@ -97,6 +97,11 @@
                     }
                     {
                         // hart 1: the SIMD operator bank on its own core.
+                        //
+                        // LANES = TCDM PORTS. The beat is num_channel x 64 b, and every operator below has
+                        // one lane per beat element and processes one beat per cycle -- no lane is shared
+                        // over cycles. So num_channel alone sets the lane count of the whole chain:
+                        // 4 channels = a 32 B beat = 16 FP16 lanes, 16 FP16 results per cycle.
                         roles: ["simd"]
                         isa: rv32ima
                         snax_simd_cfg:
@@ -106,7 +111,7 @@
                                 snax_split_cluster_simd
                             ]
                             cfg_io_width: 32
-                            num_channel: 8
+                            num_channel: 4
                             reader_buffer: 12
                             writer_buffer: 12
                             reader_agu_temporal_dimension: 3
@@ -128,22 +133,20 @@
                                 // Every stage below is FP16 transport, FP32 internal. No INT32 reaches the
                                 // SIMD, so an INT32 elementwise stage would have nothing upstream of it.
                                 // ARRAY form (not the keyed object): a JSON object cannot repeat a key, and
-                                // StreamElementwise has to appear TWICE -- see below.
+                                // the elementwise stage has to appear TWICE -- see below.
                                 // PRE-MAP elementwise. The chain is a fixed linear order, so it can express
                                 // reduce(f(x)) but not f(x - s): a combine against a broadcast operand that
                                 // must happen BEFORE the pointwise transform has nowhere to go. Two important
-                                // kernels need exactly that and today pay an extra full pass over the tile:
+                                // kernels need exactly that:
                                 //   - attention's second pass, quantise(exp(S - m))
                                 //   - dequantise-then-activate, the standard quantised-inference epilogue
-                                // One more instance is about a StreamMap's worth of area and removes a whole
-                                // pass; a general routing crossbar over the chain would cost far more and put
-                                // muxes in the critical path of a wire-speed pipeline.
+                                // One more instance is about a map's worth of area and removes a whole pass;
+                                // a general routing crossbar over the chain would cost far more and put muxes
+                                // in the critical path of a wire-speed pipeline.
                                 {
-                                    HasStreamElementwise:
+                                    HasSimdStreamElementwise:
                                     {
-                                        dataWidth: 512
                                         elementWidth: 16
-                                        computeLanes: 16
                                         op:
                                         [
                                             FMA_FP16
@@ -152,11 +155,9 @@
                                     }
                                 }
                                 {
-                                    HasStreamMap:
+                                    HasSimdStreamMap:
                                     {
-                                        dataWidth: 512
                                         elementWidth: 16
-                                        computeLanes: 16
                                         func:
                                         [
                                             LINEAR_FP16
@@ -167,24 +168,15 @@
                                         fpPipe: 1
                                     }
                                 }
-                                // accPartials 4.
-                                //
-                                // The accumulate recurrence needs subCycles*accPartials >= accLat+1 = 4. With a
-                                // single bank that caps computeLanes at lanes/4 = 8; four rotating partials make
-                                // the same bank re-read only every accPartials*subCycles cycles, which lifts the
-                                // cap entirely -- the lane count is then free to be chosen on area/throughput
-                                // grounds rather than forced by the recurrence.
-                                //
-                                // Cost: three extra banks of lanes x FP32 partial registers plus a per-lane
-                                // combinational fold at the row boundary. NOTE a short row (fewer beats than
-                                // accPartials) leaves the top banks holding the PREVIOUS task's partials --
-                                // the fold masks them to the op's identity, see StreamReduce.banksUsed.
+                                // The accumulate is a recurrence through a 2 * fpPipe FMA, so each lane keeps
+                                // 2 * fpPipe + 1 = 3 rotating FP32 partials (beat k into partial k mod 3) and
+                                // folds them at the row's end; a row shorter than that folds only the partials
+                                // it wrote. The fold across lanes is a full pipelined tree, so rows follow each
+                                // other with no bubble.
                                 {
-                                    HasStreamReduce:
+                                    HasSimdStreamReduce:
                                     {
-                                        dataWidth: 512
                                         elementWidth: 16
-                                        computeLanes: 16
                                         op:
                                         [
                                             FMA_FP16
@@ -192,18 +184,14 @@
                                         ]
                                         fpPipe: 1
                                         treePipe: 1
-                                        treeLanes: 2
-                                        accPartials: 4
                                     }
                                 }
                                 // POST-MAP elementwise: SwiGLU (silu(a)*b) and any scale-after-reduce need the
                                 // combine on this side of the map. Same operator, other position.
                                 {
-                                    HasStreamElementwise:
+                                    HasSimdStreamElementwise:
                                     {
-                                        dataWidth: 512
                                         elementWidth: 16
-                                        computeLanes: 16
                                         op:
                                         [
                                             FMA_FP16
@@ -212,25 +200,21 @@
                                     }
                                 }
                                 // tailPassthrough: pass the row's LAST beat through unquantised (csr(1) =
-                                // beats per row, 0 = off). StreamReduce in TAP mode emits the row and then
+                                // beats per row, 0 = off). The reduce in TAP mode emits the row and then
                                 // its reduction as a trailing beat; without this the quantiser would narrow
                                 // that scalar along with the data, so a pass that produces both a tile and
                                 // its row statistic could not also quantise the tile, and FA would need a
                                 // THIRD read of the score tile purely to narrow it.
                                 //
                                 // interleave: csr(1) bit 16 packs FOUR input beats into two output beats
-                                // as out[q/16][4*(q%16)+b] = quant(beat_b[q]) instead of concatenating
-                                // two. FA's P tile arrives as [key][query] beats, but PV consumes P^T as
-                                // a B operand -- per query, four consecutive KEYS in one 32-bit atom --
-                                // and no DMA can build 4-byte atoms from int8. Interleaving here writes
-                                // P already in the B layout, at the pass that quantises it anyway.
+                                // as out[q/8][4*(q%8)+b] = quant(beat_b[q]) instead of concatenating two.
+                                // FA's P tile arrives as [key][query] beats, but PV consumes P^T as a B
+                                // operand -- per query, four consecutive KEYS in one 32-bit atom -- and no
+                                // DMA can build 4-byte atoms from int8. Interleaving here writes P already
+                                // in the B layout, at the pass that quantises it anyway.
                                 {
-                                    HasFp16ToInt8:
+                                    HasSimdFp16ToInt8:
                                     {
-                                        in_elementWidth: 16
-                                        out_elementWidth: 8
-                                        dataWidth: 512
-                                        computeLanes: 16
                                         fpPipe: 1
                                         tailPassthrough: 1
                                         interleave: 1

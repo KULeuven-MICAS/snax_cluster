@@ -2,5 +2,5 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-    N: 256, // row length (FP16 elements), a multiple of 32
+    N: 256, // row length (FP16 elements), a multiple of 2 SIMD beats (2 x SIMD_FP16_LANES)
 }

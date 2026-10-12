@@ -110,7 +110,7 @@ int main() {
     uint16_t *dbuf = (uint16_t *)TAKE(GB_DBYTES);
     uint16_t *gold = (uint16_t *)TAKE(GB_DBYTES);
 #undef TAKE
-    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_BEAT;
+    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_XBEAT;
 
     const int isG = snax_is_gemm_core(), isS = snax_is_simd_core();
     const int isX = snax_is_xdma_core(), isD = snax_is_idma_core();
@@ -152,7 +152,7 @@ int main() {
             }
             snrt_dma_wait_all();
         }
-        if (isX) dsv2_xdma_fill(dbuf, dbytes / DSV2_BEAT, GB_NAN16X2);
+        if (isX) dsv2_xdma_fill(dbuf, dbytes / DSV2_XBEAT, GB_NAN16X2);
         snrt_cluster_hw_barrier();
         // ---- the GEMM, alone
         if (isG) {

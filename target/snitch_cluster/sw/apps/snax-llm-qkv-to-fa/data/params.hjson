@@ -7,10 +7,11 @@
 // from the same seed and in the same order as util/sim/llm/llm_layer_data.py, so every
 // tensor here is the tensor that layer computes.
 //
-// TOKENS must be 32: it is FlashAttention's query tile Br (one FP16 lane per query) and,
-// for this decode-shaped layer, also its key tile Bc -- the projected K of these tokens
-// IS the KV tile the check matmul reads. D_MODEL must be a power of two (the RMSNorm's
-// 1/D is an exponent subtract) and a multiple of 32.
+// TOKENS must be 32: it is FlashAttention's query tile Br and, for this decode-shaped
+// layer, also its key tile Bc -- the projected K of these tokens IS the KV tile the check
+// matmul reads. It must also be whole SIMD beats of FP16 (the transposed norm puts one token
+// per lane). D_MODEL must be a power of two (the RMSNorm's 1/D is an exponent subtract) and
+// a multiple of the SIMD beat's FP16 lane count, which the datagen reads from the cluster cfg.
 {
     TOKENS: 32,
     D_MODEL: 128,

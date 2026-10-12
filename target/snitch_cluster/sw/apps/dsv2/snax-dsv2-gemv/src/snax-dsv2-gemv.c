@@ -130,11 +130,11 @@
 #define X_BUSY(s) sy[16 + 8 * (s) + 5]   // xDMA hart: cycles inside its parts' transfers
 
 // With DSV2_DUAL_LOAD a chunk loads in two parts at once: its head on the iDMA and its last
-// XBYTES on the xDMA (snax-xdma-lib.h), GEMV_XFRAC sixteenths of it, beat-aligned.
+// XBYTES on the xDMA (snax-xdma-lib.h), GEMV_XFRAC sixteenths of it, in whole xDMA beats.
 #ifndef GEMV_XFRAC
 #define GEMV_XFRAC 8u
 #endif
-#define XBYTES(cbytes) (((cbytes) / 16u * GEMV_XFRAC) & ~(DSV2_BEAT - 1u))
+#define XBYTES(cbytes) (((cbytes) / 16u * GEMV_XFRAC) & ~(DSV2_XBEAT - 1u))
 #define XSPIN 200000u  // CSR polls per xDMA start or wait
 #define SPIN(w, v) dsv2_spin_ge(&(w), (v), &TMO)
 
@@ -218,7 +218,7 @@ int main() {
     bbuf[0] = (int8_t *)TAKE(GEMV_KMAX * GEMV_CHUNK);
     bbuf[1] = (int8_t *)TAKE(GEMV_KMAX * GEMV_CHUNK);
     uint16_t *gold = (uint16_t *)bbuf[0];  // goldens, once the tasks reading bbuf[0] retired
-    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_BEAT;
+    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_XBEAT;
     (void)y0buf;  // the control's output, with the stage checks only; both builds share one L1 map
 #undef TAKE
 
@@ -364,13 +364,13 @@ int main() {
 #if DSV2_DUAL_LOAD
             const uint32_t xb = XBYTES(cbytes), off = cbytes - xb;
             uint32_t busy = 0;
-            snax_xdma_read_arm((uint32_t)(bbuf[0] + off), (uint32_t)(sh->w + off), xb / DSV2_BEAT);
+            snax_xdma_read_arm((uint32_t)(bbuf[0] + off), (uint32_t)(sh->w + off), xb / DSV2_XBEAT);
             for (uint32_t j = 0; j < nch; j++) {
                 SPIN(XREQ, cbase + j + 1u);
                 const uint32_t x0 = snrt_mcycle();
                 if (j)
                     snax_xdma_read_retask((uint32_t)(bbuf[j & 1u] + off),
-                                          (uint32_t)(sh->w + j * cbytes + off), xb / DSV2_BEAT);
+                                          (uint32_t)(sh->w + j * cbytes + off), xb / DSV2_XBEAT);
                 int to = 0;
                 const snax_xdma_task_t tk = snax_xdma_start_bounded(XSPIN, &to);
                 if (!to) to = snax_xdma_wait_bounded(tk, XSPIN);

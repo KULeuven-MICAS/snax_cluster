@@ -29,7 +29,7 @@ import hjson
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))  # the util package
-from util import appdata, golden  # noqa E402
+from util import appdata, golden, simd  # noqa E402
 from util.emit import Emitter  # noqa E402
 from util.fp import bits16  # noqa E402
 from util.layout import mesh_from_hwcfg  # noqa E402
@@ -45,7 +45,9 @@ def main():
                     help="weight width: INT8, or INT4 through the B converter")
     args = ap.parse_args()
     prm = hjson.loads(args.swcfg.read_text())
-    mesh = mesh_from_hwcfg(hjson.loads(args.hwcfg.read_text()))
+    hw = hjson.loads(args.hwcfg.read_text())
+    mesh = mesh_from_hwcfg(hw)
+    simd.use_hwcfg(hw)  # the SIMD core the goldens model
     if mesh != (16, 4, 16):
         raise ValueError(f"the kernel's descriptors assume a (16, 4, 16) mesh, not {mesh}")
 

@@ -15,37 +15,31 @@
 // shapes, so each does its own memcpy_nd_fast. FP16 transport, FP32-internal;
 // out matches the FP64 golden to <=2 FP16 ULP.
 //
-// LANE DATAFLOW (FP16 transport = 32 lanes per 512-b beat):
-//   T1 StreamMap(SILU)        1 beat -> 1 beat:  sg[i] = silu(gate[i]) (clean
-//   512b->512b) T2 StreamElementwise(MUL) 2 beats -> 1 beat: out[i] = sg[i] *
-//   up[i]
-//      The reader feeds the two operands INTERLEAVED {sg_beat, up_beat}, so it
-//      reads 2x the beats the writer emits (2:1). Each output beat is a full
-//      32-lane product:
-//        sg [ s0 s1 ... s31 ]   up [ u0 u1 ... u31 ]   ->   out [ s0*u0  s1*u1
-//        ... s31*u31 ]
-//   Fp16ToInt8 (fused quant pass): packs 2 FP16 beats -> 1 INT8 beat (64 int8 =
-//   512b); writer drains
-//      beats/2 (needs an even beat count). NOT a 512->512 op.
+// LANE DATAFLOW (FP16 transport, L = SIMD_FP16_LANES lanes per SIMD_BEAT_BYTES beat;
+// 16 lanes / 32 B on the split cluster):
+//   T1 StreamMap(SILU)        1 beat -> 1 beat:  sg[i] = silu(gate[i])
+//   T2 StreamElementwise(MUL) 2 beats -> 1 beat: out[i] = sg[i] * up[i]
+//      The reader feeds the two operands INTERLEAVED {sg_beat, up_beat}, so it reads 2x
+//      the beats the writer emits (2:1). Each output beat is a full L-lane product:
+//        sg [ s0 ... s(L-1) ]   up [ u0 ... u(L-1) ]   ->   out [ s0*u0 ... s(L-1)*u(L-1) ]
+//   Fp16ToInt8 (fused quant pass): packs 2 FP16 beats -> 1 INT8 beat (2L int8); the
+//      writer drains beats/2 (needs an even beat count).
 //
-// Performance (FP16, vsim, L1<->L1) on the area/timing-optimized RTL: pipelined
-// FP datapaths + time-mux computeLanes (StreamMap=4, StreamElementwise=4,
-// Fp16ToInt8=4). host(full) = a single host vector core, full FP32 silu_mul
-// (op-LUT). Outputs match the FP64 golden to <=2 FP16 ULP.
+// Performance (FP16, vsim, L1<->L1) on the split cluster's 16-lane SIMD core: one FP lane
+// per element, every operator one beat (16 elements) per cycle. host(full) = a single
+// host vector core, full FP32 silu_mul (op-LUT). Outputs match the FP64 golden to <=2
+// FP16 ULP.
 //
-//   N      beats   silu  mul    xdma_total   warm     cold     host(full) warm
-//   speedup
-//   ----   -----   ----  -----  ----------   ------   ------   ----------
-//   ------------ 64     2       38    48     86           1,891    2,151 2,308
-//   1.2x 256    8       86    144    230          2,131    2,391
-//   8,662        4.1x 1024   32      278   528    806          3,089    3,350
-//   34,493       11.2x 4096   128     1,046 2,064  3,110        6,929    7,190
-//   137,799      19.9x
+//   N      beats   silu   mul    xdma_total   warm     cold     host(full)   warm speedup
+//   ----   -----   ----   ----   ----------   ------   ------   ----------   ------------
+//   64     4       22     20     42           1,293    1,356    2,308        1.8x
+//   256    16      34     44     78           1,349    1,412    8,662        6.4x
+//   1024   64      82     140    222          1,583    1,645    34,493       21.8x
+//   4096   256     274    524    798          2,542    2,604    137,799      54.2x
 //
-// The mul datapath (48..2,064 cc) replaces the host's O(n) (.)up, so the
-// speedup climbs with n instead of collapsing (both StreamMap-silu and
-// StreamElementwise-mul are cl=4 time-mux). warm ~= 1.8k fixed (three task
-// setups: two AGU + retask) + xdma_total; the setup overhead amortizes in
+// The mul datapath (2 operand beats per output beat, so 2N/16 cc) replaces the host's
+// O(n) (.)up, so the speedup climbs with n instead of collapsing. warm ~= 1.25k fixed
+// (three task setups: two AGU + retask) + the datapath; the setup overhead amortizes in
 // batched inference (one silu over all [S,F], then one mul).
 
 #include "data.h"
@@ -64,8 +58,8 @@
     "This cluster's SIMD block cannot run SwiGLU: it needs StreamMap SILU, a post-map StreamElementwise MUL, and Fp16ToInt8."
 #endif
 
-// SIMD_BEAT_BYTES comes from the library (= SIMD_WIDTH, the cfg's actual transport width);
-// a local 64 shadowed it and happened to agree.
+// SIMD_BEAT_BYTES comes from the library (= SIMD_WIDTH, the cfg's actual transport width),
+// and so does the beat count: data.h derives it from the same cfg.
 // Op selectors come from snax-simd-lib.h, NOT from a local #define. A local copy of the
 // encoding compiles against any cluster, including one whose SIMD block never built the op
 // -- which is exactly the silent-wrong-answer the capability macros exist to stop.

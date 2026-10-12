@@ -8,8 +8,12 @@ DATA_DIR := $(realpath $(MK_DIR))
 DATA_CFG ?= $(DATA_DIR)/params.hjson
 DATA_H = $(DATA_DIR)/data.h
 
-$(DATA_H): $(DATA_DIR)/datagen.py $(DATA_CFG)
-	$< -c $(DATA_CFG) > $@
+# The generator reads the SIMD lane count from the HARDWARE cfg, so data.h must be
+# rebuilt when that changes.
+HW_CFG := $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE)
+
+$(DATA_H): $(DATA_DIR)/datagen.py $(DATA_CFG) $(HW_CFG)
+	$< -c $(DATA_CFG) --hwcfg $(HW_CFG) > $@
 
 .PHONY: clean-data clean
 clean-data:

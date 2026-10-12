@@ -22,18 +22,32 @@ here, table by table and operation by operation:
                   RSQRT  t = 2^e m, m' = 2^p m in [1, 4):     65 tangent nodes over [1, 4],
                          fma(frac, slope[i], base[i]) * 2^-(e-p)/2
 
-    StreamReduce  per lane, four rotating FP32 partials (beat k into partial k mod 4, each an
-                  FMA accumulate: x*1 + acc for ADD, x*x + acc for SUMSQ), folded
-                  ((p0 + p1) + p2) + p3; then, unless LANEWISE, a pairwise tree over the 32
-                  lanes; narrow to FP16.
+    StreamReduce  per lane, P rotating FP32 partials, beat k into partial k mod P (each an
+                  FMA accumulate: x*1 + acc for ADD, x*x + acc for SUMSQ; the first beat of a
+                  partial seeds it), folded by a balanced pairwise tree, a partial the row did
+                  not write entering as the op's identity: ((p0 + p1) + p2) for P = 3; then,
+                  unless LANEWISE, a balanced pairwise tree over the beat's lanes; narrow to FP16.
+
+THE GEOMETRY comes from the cluster cfg (simd_geometry): the lanes are the SIMD core's beat,
+num_channel TCDM channels of four FP16 each; P is the reduce's accumulate latency, 2 fpPipe + 1.
+The module starts on cfg/snax_split_cluster.hjson; a data generator built for another cfg calls
+use_hwcfg() with it before it computes anything.
 
 The tables are computed as the Scala generator computes them (a double, rounded once to
 float); test_dsv2 checks them against the generated SystemVerilog when it is present.
 """
 
 import math
+import os
+import sys
 
+import hjson
 import numpy as np
+
+# snax_utils, the RTL's golden models and the cfg readers, is in the repository's util/sim
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), *[".."] * 6, "util",
+                             "sim"))
+from snax_utils import simd_fp16_lanes  # noqa E402
 
 F16 = np.float16
 F32 = np.float32
@@ -43,8 +57,32 @@ F64 = np.float64
 EXP_LUT_N = 32
 SILU_N = 256
 RSQ_N = 64
-# StreamReduce accPartials in cfg/snax_split_cluster.hjson
-REDUCE_PARTIALS = 4
+
+SPLIT_CFG = os.path.join(os.path.dirname(os.path.abspath(__file__)), *[".."] * 4, "cfg",
+                         "snax_split_cluster.hjson")
+
+
+def simd_geometry(hw):
+    """(FP16 lanes of a beat, partials of a reduce lane) of a parsed cluster cfg's SIMD core: the
+    beat's lanes (snax_utils.simd_fp16_lanes), and HasSimdStreamReduce's accumulate latency,
+    2 fpPipe + 1 (hw/chisel snax/simd/SimdStreamReduce.scala; fpPipe 1 by default)."""
+    for core in hw["cluster"]["hives"][0]["cores"]:
+        if isinstance(core, dict) and "snax_simd_cfg" in core:
+            for ext in core["snax_simd_cfg"].get("reader_extensions", []):
+                if "HasSimdStreamReduce" in ext:
+                    fp_pipe = int(ext["HasSimdStreamReduce"].get("fpPipe", 1))
+                    return simd_fp16_lanes(hw), 2 * fp_pipe + 1
+    raise ValueError("the cluster cfg has no SIMD core with a HasSimdStreamReduce")
+
+
+def use_hwcfg(hw):
+    """Model the SIMD core of the parsed cluster cfg `hw` from here on."""
+    global LANES, REDUCE_PARTIALS
+    LANES, REDUCE_PARTIALS = simd_geometry(hw)
+
+
+with open(SPLIT_CFG) as _f:
+    LANES, REDUCE_PARTIALS = simd_geometry(hjson.loads(_f.read()))
 
 LINEAR, EXP, SILU, RSQRT = 0, 1, 2, 3  # the StreamMap func CSR encoding
 
@@ -197,22 +235,35 @@ def _acc(op, v, acc):
     return fma32(v, y, np.zeros_like(v) if acc is None else acc)
 
 
-def reduce_lanes(beats16, op, partials=REDUCE_PARTIALS):
+def _node(op, a, b):
+    """One fold node: FP32 MAX (a unless b is larger) or FP32 add."""
+    return fp32max(a, b) if op == MAX else (a + b).astype(F32)
+
+
+def _tree(vals, op):
+    """The balanced pairwise fold of SimdStreamOp.treeReduce: each level combines element 2i with
+    2i + 1, and an odd one out moves up a level unchanged."""
+    vals = list(vals)
+    while len(vals) > 1:
+        nxt = [_node(op, vals[i], vals[i + 1]) for i in range(0, len(vals) - 1, 2)]
+        vals = nxt + ([vals[-1]] if len(vals) % 2 else [])
+    return vals[0]
+
+
+def reduce_lanes(beats16, op, partials=None):
     """The per-lane FP32 result of a reduce over beats16 [n_beats, lanes] (FP16): partial k mod P
-    accumulates beat k, the partials fold left in order, an unused partial is the identity."""
+    accumulates beat k, and the partials fold as a balanced tree, one the row never wrote
+    entering as the op's identity (+0, or -Inf for MAX). P = REDUCE_PARTIALS by default."""
+    partials = REDUCE_PARTIALS if partials is None else partials
     x = np.asarray(beats16, dtype=F16).astype(F32)
+    ident = np.full(x.shape[1:], -np.inf if op == MAX else 0.0, dtype=F32)
     parts = []
-    for p in range(min(partials, x.shape[0])):
+    for p in range(partials):
         acc = None
         for k in range(p, x.shape[0], partials):
             acc = _acc(op, x[k], acc)
-        parts.append(acc)
-    tot = parts[0]
-    for q in parts[1:]:
-        tot = fp32max(tot, q) if op == MAX else (tot + q).astype(F32)
-    if op != MAX and len(parts) < partials:
-        tot = (tot + F32(0.0)).astype(F32)  # the masked partials add +0 (turns -0 into +0)
-    return tot
+        parts.append(ident if acc is None else acc)
+    return _tree(parts, op)
 
 
 def reduce_lanewise(beats16, op):
@@ -221,16 +272,15 @@ def reduce_lanewise(beats16, op):
 
 
 def reduce_row(beats16, op):
-    """StreamReduce row mode: the per-lane results folded pairwise across lanes, one FP16 scalar."""
+    """StreamReduce row mode: the per-lane results folded across the lanes by a balanced tree,
+    one FP16 scalar."""
     v = reduce_lanes(beats16, op)
-    while v.shape[-1] > 1:
-        a, b = v[..., 0::2], v[..., 1::2]
-        v = fp32max(a, b) if op == MAX else (a + b).astype(F32)
-    return narrow16(v[..., 0])
+    return narrow16(_tree([v[..., i] for i in range(v.shape[-1])], op))
 
 
-def as_beats(row16, lanes=32):
-    """A 1-D FP16 row as the beats the reduce reads: [len / lanes, lanes]."""
+def as_beats(row16, lanes=None):
+    """A 1-D FP16 row as the beats the reduce reads: [len / lanes, lanes], LANES by default."""
+    lanes = LANES if lanes is None else lanes
     r = np.asarray(row16, dtype=F16).reshape(-1)
     if r.size % lanes:
         raise ValueError(f"a row of {r.size} does not fill beats of {lanes} lanes")

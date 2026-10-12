@@ -40,8 +40,10 @@
 #error "Regenerate the SIMD CSR map with StreamReduce, StreamMap and StreamElementwise."
 #endif
 
-#define BEAT_BYTES 64
-#define FP16_PER_BEAT 32
+// The SIMD beat and its FP16 lane count, from the library (both follow the cfg's
+// num_channel). A splatted per-row scalar beat is read at its first lane.
+#define BEAT_BYTES SIMD_BEAT_BYTES
+#define FP16_PER_BEAT SIMD_FP16_LANES
 
 // Op selectors come from snax-simd-lib.h, NOT from a local #define. A local copy of the
 // encoding compiles against any cluster, including one whose SIMD block never built the op

@@ -53,13 +53,32 @@ object SimdCfgParser {
     toolbox
       .compile(toolbox.parse(s"""
 import snax.DataPathExtension._
+import snax.simd._
 return new $extensionName($extensionArgs)
       """))()
       .asInstanceOf[HasDataPathExtension]
 
-  private def extensionsOf(obj: JsObject): Seq[HasDataPathExtension] =
+  /** The xDMA's compute extensions. They time-share `computeLanes` FP units over a beat whose width the AXI bus fixes;
+    * the SIMD core's operators (`HasSimd*`) have one lane per beat element instead, so these do not belong here.
+    */
+  private val xdmaComputeExtensions =
+    Set("HasStreamMap", "HasStreamReduce", "HasStreamElementwise", "HasFp16ToInt8")
+
+  /** A SIMD operator's lane count is the beat's: `dataWidth` comes from `num_channel`, never from the cfg. */
+  private def extensionsOf(obj: JsObject, beatWidth: Int): Seq[HasDataPathExtension] =
     obj.fields.filter { case (k, _) => k.startsWith("Has") }.toSeq.map { case (k, v) =>
-      instantiateExtension(k, renderExtensionArgs(k, v))
+      require(
+        !xdmaComputeExtensions.contains(k),
+        s"snax_simd_cfg: $k is the xDMA's time-shared extension; the SIMD core uses ${k.replace("Has", "HasSimd")}"
+      )
+      if (k.startsWith("HasSimd")) {
+        require(
+          (v \ "dataWidth").toOption.isEmpty,
+          s"snax_simd_cfg: $k takes its width from num_channel (the beat is num_channel x 64 bits); drop dataWidth"
+        )
+        val args = renderExtensionArgs(k, v)
+        instantiateExtension(k, (if (args.isEmpty) "" else args + ", ") + s"dataWidth = $beatWidth")
+      } else instantiateExtension(k, renderExtensionArgs(k, v))
     }
 
   /** `reader_extensions` accepts two shapes, and declaration order is chain order in both.
@@ -73,19 +92,19 @@ return new $extensionName($extensionArgs)
     * be instantiated twice. Dequantise-then-activate wants an elementwise combine ahead of the map;
     * SwiGLU wants one behind it.
     */
-  def extensions(parsedSimdCfg: JsValue): Seq[HasDataPathExtension] =
+  def extensions(parsedSimdCfg: JsValue, beatWidth: Int): Seq[HasDataPathExtension] =
     (parsedSimdCfg \ "reader_extensions").toOption match {
       case Some(arr: JsArray)  =>
         arr.value.toSeq.flatMap {
-          case o: JsObject => extensionsOf(o)
+          case o: JsObject => extensionsOf(o, beatWidth)
           case _           => Seq.empty
         }
-      case Some(obj: JsObject) => extensionsOf(obj)
+      case Some(obj: JsObject) => extensionsOf(obj, beatWidth)
       case _                   => Seq.empty
     }
 
-  /** The number of 64-bit TCDM channels on each side. Defaults to the DMA beat width so a cfg that omits the
-    * knob matches the xDMA's geometry.
+  /** The number of 64-bit TCDM channels on each side, which sets the beat and with it every operator's lane count.
+    * Defaults to the DMA beat width.
     */
   def numChannel(parsedSimdCfg: JsValue, tcdmDataWidth: Int, axiDataWidth: Int): Int =
     (parsedSimdCfg \ "num_channel").asOpt[Int].getOrElse(axiDataWidth / tcdmDataWidth)
@@ -132,7 +151,7 @@ return new $extensionName($extensionArgs)
       ),
       readerParam = readerParam,
       writerParam = writerParam,
-      extParam    = extensions(parsedSimdCfg)
+      extParam    = extensions(parsedSimdCfg, nCh * tcdmDataWidth)
     )
   }
 }

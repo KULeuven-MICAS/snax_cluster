@@ -170,12 +170,11 @@ def test_int4_b_walks_feed_the_int8_beats():
 
 
 def test_compact_a_walks_read_the_tokens_rows():
-    """The compact A operand of several tokens (snax-dsv2.h, SEVERAL TOKENS) three ways: to_a4's
-    bytes; the A reader's walk (T0 8 x 64 B, T1 4 x 16 B, T2 kt / 32 x 512 B, channels 0 and 1)
-    hands the array pass k the tokens' four values at 4 k in rows 0..3; and the quantiser's
-    writes (beat b's word c at lane stride 64, beats walked 4 x 16 B then n / 128 x 512 B, row r
-    at 8 (r / 2) + 4 (r % 2) in the word) rebuild the same bytes. Within each run of eight
-    blocks consecutive passes read 64 B apart, the stride B advances at."""
+    """The compact A operand of several tokens (snax-dsv2.h, SEVERAL TOKENS) two ways: to_a4's
+    bytes, and the A reader's walk (T0 8 x 64 B, T1 4 x 16 B, T2 kt / 32 x 512 B, channels 0 and
+    1), which hands the array pass k the tokens' four values at 4 k in rows 0..3. Within each run
+    of eight blocks consecutive passes read 64 B apart, the stride B advances at. (The SIMD's
+    writes of the same bytes: test_a_row_writes_rebuild_the_gemv_operands.)"""
     rng = np.random.default_rng(11)
     K, T = 384, 4
     kt = K // 4
@@ -188,15 +187,121 @@ def test_compact_a_walks_read_the_tokens_rows():
     for k, a in enumerate(addrs):
         rows = a4[a:a + 16].reshape(4, 4)
         assert np.array_equal(rows, xs[:, 4 * k:4 * k + 4]), f"pass {k}"
-    got = np.zeros(4 * K, dtype=np.int8)
-    for t in range(T):
-        beats = [s0 + s1 for s1 in range(0, 512 * (K // 128), 512) for s0 in range(0, 64, 16)]
-        for b, base in enumerate(beats):
-            for c in range(8):
-                vals = xs[t, 32 * b + 4 * c:32 * b + 4 * c + 4]
-                at = base + 64 * c + 8 * (t // 2) + 4 * (t % 2)
-                got[at:at + 4] = vals
-    assert np.array_equal(got, a4)
+
+
+# ---- the SIMD core's AGUs (snax-simd-lib.h shapes), at the cfg's beat ------------------------
+
+def _walk(loops):
+    """The offsets a shape's loops [(bound, stride), ...] (innermost first) visit, in order."""
+    return [sum(i * st for i, (_, st) in zip(idx, reversed(loops)))
+            for idx in np.ndindex(*[b for b, _ in reversed(loops)])]
+
+
+def _simd_read(mem, base, lane_stride, mask, loops, chan):
+    """The SIMD reader: per beat, channel c reads 8 bytes at the beat's address + lane_stride c,
+    a disabled channel presenting zero. Returns [beats, 8 chan] uint8."""
+    beats = []
+    for off in _walk(loops):
+        beat = np.zeros(8 * chan, dtype=np.uint8)
+        for c in range(chan):
+            if mask >> c & 1:
+                a = base + off + lane_stride * c
+                beat[8 * c:8 * c + 8] = mem[a:a + 8]
+        beats.append(beat)
+    return np.stack(beats)
+
+
+def _simd_write(mem, base, lane_stride, byte_mask, loops, chan, beats):
+    """The SIMD writer: channel c of each beat to the beat's address + lane_stride c, the bytes
+    byte_mask selects of every 8-byte word."""
+    offs = _walk(loops)
+    assert len(offs) == len(beats), f"{len(beats)} beats for a walk of {len(offs)}"
+    for off, beat in zip(offs, beats):
+        for c in range(chan):
+            for b in range(8):
+                if byte_mask >> b & 1:
+                    mem[base + off + lane_stride * c + b] = beat[8 * c + b]
+
+
+def _a_row_write(x16, ops, a, n, row, compact, chan):
+    """snax-dsv2.h dsv2_a_row_shapes and the chain it feeds, on a byte image: x16 holds the n
+    FP16 values (and, ops = 2, a second operand of ones at +od), written into row `row` of the A
+    operand `a` (uint8, modified). The quantiser runs at inv_scale 1 on integer values."""
+    lanes = 4 * chan
+    od = 2 * n + 64
+    mem = np.zeros(od * ops + 64, dtype=np.uint8)
+    pad = 64  # x sits 64 bytes in, so an odd row's read 4 bytes lower stays inside the image
+    mem[pad:pad + 2 * n] = np.asarray(x16, dtype=F16).view(np.uint8)
+    if ops > 1:
+        mem[pad + od:pad + od + 2 * n] = np.ones(n, dtype=F16).view(np.uint8)
+    odd = row & 1
+    loops = ([(ops, od)] if ops > 1 else []) + [(2, lanes), (n // lanes, 2 * lanes)]
+    beats = _simd_read(mem, pad - 4 * odd, 4, 0x55555555 << odd, loops, chan)
+    lanes16 = beats.view(F16).astype(np.float32)
+    if ops > 1:  # StreamElementwise MUL of each operand pair
+        lanes16 = lanes16[0::2] * lanes16[1::2]
+    q = quant_i8(lanes16.astype(F16), 1.0).reshape(-1, 2 * lanes).view(np.uint8)  # 2 beats -> 1
+    if compact:
+        oloops = [(8 // chan, 64 * chan), (4, 16), (n // 128, 512)]
+    else:
+        oloops = [(n // lanes, 64 * chan)]
+    _simd_write(a, 8 * (row // 2), 64, 0x0F << (4 * odd), oloops, chan, q)
+
+
+def test_a_row_writes_rebuild_the_gemv_operands():
+    """The quantiser's row writes (snax-dsv2.h dsv2_a_row_shapes, at the cfg's SIMD beat) put x
+    in row 0 of the 16-row layout (gemv_a) and token t in row t of the compact one (to_a4),
+    writing nothing else, plain or fused with a MUL, even rows and odd."""
+    from . import simd
+    chan = simd.LANES // 4
+    rng = np.random.default_rng(12)
+    n = 384
+    xs = rng.integers(-127, 128, size=(4, n)).astype(np.int8)
+    for ops in (1, 2):
+        a = np.zeros(16 * n, dtype=np.uint8)
+        _a_row_write(xs[0].astype(F16), ops, a, n, 0, False, chan)
+        assert np.array_equal(a.view(np.int8), gemv_a(xs[0])), f"16-row layout, ops {ops}"
+        a = np.zeros(4 * n, dtype=np.uint8)
+        for t in range(4):
+            _a_row_write(xs[t].astype(F16), ops, a, n, t, True, chan)
+        assert np.array_equal(a.view(np.int8), to_a4(xs)), f"compact layout, ops {ops}"
+    # an odd row of the 16-row layout: row 1 alone
+    a = np.zeros(16 * n, dtype=np.uint8)
+    _a_row_write(xs[1].astype(F16), 1, a, n, 1, False, chan)
+    R = np.zeros((16, n), dtype=np.int8)
+    R[1] = xs[1]
+    assert np.array_equal(a.view(np.int8), to_a(R)), "16-row layout, row 1"
+
+
+def test_reduce_follows_the_rtls_order():
+    """simd.reduce_lanes against the order SimdStreamReduce computes, written out: beat k into
+    partial k mod P, the partials folded by a balanced tree, unwritten ones the identity."""
+    from . import simd
+    rng = np.random.default_rng(13)
+    for nb in (1, 2, 3, 4, 7, 11):
+        x = (rng.standard_normal((nb, 4)) * 300).astype(F16)
+        xf = x.astype(F32)
+        for P in (1, 3, 5):
+            parts = [np.zeros(4, dtype=F32) for _ in range(P)]
+            for k in range(nb):
+                parts[k % P] = (parts[k % P] + xf[k]).astype(F32)
+            lvl = parts
+            while len(lvl) > 1:
+                lvl = [(lvl[i] + lvl[i + 1]).astype(F32) for i in range(0, len(lvl) - 1, 2)] + \
+                    ([lvl[-1]] if len(lvl) % 2 else [])
+            got = simd.reduce_lanes(x, simd.ADD, partials=P)
+            assert np.array_equal(got.view(np.uint32), lvl[0].view(np.uint32)), (nb, P)
+        got = simd.reduce_lanes(x, simd.MAX, partials=3)
+        assert np.array_equal(got, xf.max(axis=0)), nb
+    # row mode: the per-lane results, then a balanced tree across the cfg's lanes
+    lanes = simd.LANES
+    x = (rng.standard_normal((5, lanes)) * 30).astype(F16)
+    per_lane = simd.reduce_lanes(x, simd.ADD)
+    lvl = [per_lane[i] for i in range(lanes)]
+    while len(lvl) > 1:
+        lvl = [(lvl[i] + lvl[i + 1]).astype(F32) for i in range(0, len(lvl) - 1, 2)] + \
+            ([lvl[-1]] if len(lvl) % 2 else [])
+    assert simd.reduce_row(x, simd.ADD) == simd.narrow16(lvl[0])
 
 
 def test_int4_weights_round_trip_and_chunk():

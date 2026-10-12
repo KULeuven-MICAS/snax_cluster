@@ -37,7 +37,7 @@ import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 from data_utils import format_vector_definition  # noqa E402
-from snax_utils import int32_to_fp16_golden  # noqa E402
+from snax_utils import int32_to_fp16_golden, simd_beat_bytes, simd_fp16_lanes  # noqa E402
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from blocked_nest import blocked_nest  # noqa E402
@@ -112,10 +112,18 @@ def f32bits(x):
 def emit(**kw):
     T, d = int(kw["TOKENS"]), int(kw["D_MODEL"])
     mr, ts, mc = _mesh(kw)
+    # The SIMD core's beat: `lanes` TCDM channels of `lane_bytes`, `fp16_lanes` operator lanes.
+    beat, fp16_lanes = simd_beat_bytes(kw), simd_fp16_lanes(kw)
+    lane_bytes = int(kw["cluster"]["data_width"]) // 8
+    lanes = beat // lane_bytes
     if T != 32:
         raise ValueError(f"TOKENS must be 32 (FlashAttention's Br and Bc), got {T}")
-    if d % 32 or d & (d - 1):
-        raise ValueError(f"D_MODEL must be a power of two and a multiple of 32, got {d}")
+    if T % fp16_lanes:
+        raise ValueError(f"TOKENS ({T}) must be whole {fp16_lanes}-lane SIMD beats: path T puts "
+                         f"one token per FP16 lane")
+    if d % fp16_lanes or d & (d - 1):
+        raise ValueError(f"D_MODEL must be a power of two and a multiple of {fp16_lanes} (one "
+                         f"SIMD beat of FP16), got {d}")
     if mr != mc:
         raise ValueError(
             f"meshRow ({mr}) != meshCol ({mc}): B-layout of Q^T is then NOT the A-layout "
@@ -175,7 +183,9 @@ def emit(**kw):
     o16 = d_port_fp16(o)
 
     # ---- blocked-pass descriptors, one per (mesh, operand, precision) that has a nest ----
-    pitch_a = (d // 32 + 1) * 64 + 8          # the TAP reduce's pitch
+    # The pitches the C allocates: TAP_PITCH (a row's beats, its scalar beat, 8 B) and
+    # YT_PITCH (one y^T row of T fp16, 8 B). Both are an odd number of 8 B words.
+    pitch_a = (2 * d // beat + 1) * beat + 8   # the TAP reduce's pitch
     pitch_b = 2 * T + 8                        # y^T from the sticky multiply
     cases = []
     for mu, ku, nu in BLOCKED_MESHES:
@@ -183,7 +193,8 @@ def emit(**kw):
                                                   (d, T, pitch_b, nu, False))):
             for ob in (2, 1):
                 try:
-                    n = blocked_nest(R, C, P, mb, ku, ob, fused_mul=mul)
+                    n = blocked_nest(R, C, P, mb, ku, ob, fused_mul=mul, lanes=lanes,
+                                     lane_bytes=lane_bytes)
                 except ValueError:
                     continue
                 rd = list(n.rd) + [(1, 0)] * (3 - len(n.rd))

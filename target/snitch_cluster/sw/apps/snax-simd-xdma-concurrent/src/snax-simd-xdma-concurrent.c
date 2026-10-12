@@ -26,11 +26,16 @@
 #include "snrt.h"
 
 // Four buffers plus a result block must fit in TCDM alongside the four cores'
-// stacks. 128 beats = 8 KiB each, 32 KiB total on a 128 KiB TCDM. Sizing this
-// wrong overruns into another hart's stack, which shows up as that hart jumping
-// into your test pattern rather than as an allocation error.
-#define BEATS 128
-#define BYTES (BEATS * SIMD_WIDTH)
+// stacks: 8 KiB each, 32 KiB total. Sizing this wrong overruns into another
+// hart's stack, which shows up as that hart jumping into your test pattern
+// rather than as an allocation error.
+//
+// Sized in BYTES, not beats: the two engines have different beats (the SIMD
+// core SIMD_BEAT_BYTES, the xDMA XDMA_WIDTH), so each side moves the same 8 KiB
+// in its own beat count.
+#define BYTES 8192u
+#define SIMD_BEATS (BYTES / SIMD_BEAT_BYTES)
+#define XDMA_BEATS (BYTES / XDMA_WIDTH)
 
 // The SIMD side runs an identity map -- out = 1.0f*x + 0.0f -- which is exact for
 // FP16 but still exercises the whole FP datapath, so it has real work to do.
@@ -51,8 +56,8 @@ static int err_hang = 0;
 
 int main() {
     uint8_t *base = (uint8_t *)snrt_l1_next();
-    base = (uint8_t *)(((uintptr_t)base + SIMD_WIDTH - 1) &
-                       ~(uintptr_t)(SIMD_WIDTH - 1));
+    base = (uint8_t *)(((uintptr_t)base + XDMA_WIDTH - 1) &
+                       ~(uintptr_t)(XDMA_WIDTH - 1));
 
     // Disjoint buffers: the two engines must not touch the same words, or we
     // would be measuring a data race rather than concurrency.
@@ -80,8 +85,8 @@ int main() {
     if (snax_is_simd_core()) {
         snax_simd_shape_t in, out;
         snax_simd_op_t op;
-        snax_simd_shape_flat(&in, simd_src, BEATS);
-        snax_simd_shape_flat(&out, simd_dst, BEATS);
+        snax_simd_shape_flat(&in, simd_src, SIMD_BEATS);
+        snax_simd_shape_flat(&out, simd_dst, SIMD_BEATS);
         snax_simd_op_map(&op, SIMD_EXT_STREAMMAP, SIMD_FUNC_LINEAR,
                          SIMD_F32_ONE, SIMD_F32_ZERO);
         snax_simd_configure(&in, &out, &op, 1);
@@ -115,8 +120,8 @@ int main() {
     if (snax_is_simd_core()) {
         snax_simd_shape_t in, out;
         snax_simd_op_t op;
-        snax_simd_shape_flat(&in, simd_src, BEATS);
-        snax_simd_shape_flat(&out, simd_dst, BEATS);
+        snax_simd_shape_flat(&in, simd_src, SIMD_BEATS);
+        snax_simd_shape_flat(&out, simd_dst, SIMD_BEATS);
         snax_simd_op_map(&op, SIMD_EXT_STREAMMAP, SIMD_FUNC_LINEAR,
                          SIMD_F32_ONE, SIMD_F32_ZERO);
         snax_simd_configure(&in, &out, &op, 1);
@@ -148,7 +153,8 @@ int main() {
         uint32_t ct = res->simd_together > res->xdma_together
                           ? res->simd_together
                           : res->xdma_together;
-        printf("\n=== four-engine concurrency, %d beats each ===\n", BEATS);
+        printf("\n=== four-engine concurrency, %u B each (SIMD %u beats, xDMA %u beats) ===\n",
+               BYTES, SIMD_BEATS, XDMA_BEATS);
         printf("A  SIMD alone      : %u cycles (engine busy %u)\n", a,
                res->simd_busy);
         printf("B  xDMA alone      : %u cycles (engine busy %u)\n", b,

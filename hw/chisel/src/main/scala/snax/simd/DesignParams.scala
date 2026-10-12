@@ -6,9 +6,10 @@ import snax.readerWriter.ReaderWriterParam
 /*
  * Parameters for the standalone SIMD block.
  *
- * The SIMD block is the reader-side half of the xDMA datapath -- reader AGU, the DataPathExtension chain, writer
- * AGU -- with a CSR port and TCDM ports and nothing else. It deliberately has NO AXI, no cross-cluster cfg, no
- * data switch and no junctions, so none of the xDMA's cross-cluster parameters appear here.
+ * The SIMD block is a reader AGU, a chain of SIMD operators (SimdStreamOp), and a writer AGU, with a CSR port and
+ * TCDM ports and nothing else. It deliberately has NO AXI, no cross-cluster cfg, no data switch and no junctions,
+ * so none of the xDMA's cross-cluster parameters appear here. The beat is the TCDM port width, and every operator
+ * has one lane per beat element.
  *
  * The CSR layout is kept in the same ORDER as the xDMA's (reader, extensions, writer, start) so that the software
  * port from snax-xdma-lib to snax-simd-lib is mechanical. See tmp/xdma-four-engine-decoupling-plan.md §3.3.

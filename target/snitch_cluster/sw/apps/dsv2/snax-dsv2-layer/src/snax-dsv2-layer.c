@@ -13,7 +13,7 @@
 // rows (a rejected draft). The data's passes (data/params.hjson) decide which.
 //
 // L1. The two blocks take turns in ONE region; each carves it its own way. Between them, only h
-// (with a free beat below it, the MoE norm's seed) and the sync words live outside it. Before
+// (with a free slot below it, the MoE norm's seed) and the sync words live outside it. Before
 // each block every hart meets at a barrier, the xDMA zeroes the region (TCDM has no reset, and
 // the blocks need Q8's zero rows and l = 0), and each block gets fresh sync words, so no pass
 // sees a counter or a stale store of the one before.
@@ -31,6 +31,10 @@
 #include "snax-core-roles.h"
 #include "snax-dsv2-mla.h"
 #include "snax-dsv2-moe.h"
+
+#if MLA_HP != MOE_HP
+#error "the MLA writes h at the token pitch the MoE reads it at: MLA_HP must equal MOE_HP"
+#endif
 
 #define TAG "[LAYER]"
 #define GOLD(p) sy[1 + (p)]  // pass p's goldens staged (iDMA -> SIMD)
@@ -88,7 +92,7 @@ int main() {
     p += NP * (1024 + MOE_SY_BYTES);
     dsv2_trace_t *tr = (dsv2_trace_t *)p;            // a block's spans
     p += (sizeof(dsv2_trace_t) + 63u) & ~63u;
-    uint16_t *h = (uint16_t *)(p + DSV2_BEAT);        // [the norm's seed][h] per token
+    uint16_t *h = (uint16_t *)(p + DSV2_PAD);         // [the norm's seed][h] per token
     p += NTOK * MLA_HP;
     uint8_t *region = p;
     dsv2_mla_t ma;
@@ -98,7 +102,7 @@ int main() {
     ma.tr = tr;
     mo.tr = tr;
     uint8_t *end = end_a > end_o ? end_a : end_o;
-    const uint32_t region_beats = (uint32_t)(end - region) / DSV2_BEAT;
+    const uint32_t region_beats = (uint32_t)(end - region) / DSV2_XBEAT;
     // a pass's goldens, staged into the MoE's weight buffers once out is computed
     uint16_t *g_h_l = (uint16_t *)mo.bbuf[0];
     uint16_t *g_out_l = g_h_l + NTOK * HID;
@@ -127,7 +131,7 @@ int main() {
                    (uint32_t)end, DSV2_L1_TOP);
         return isS ? 1 : 0;
     }
-    if (isX) dsv2_xdma_fill_zero(arena, (uint32_t)(end - arena) / DSV2_BEAT);
+    if (isX) dsv2_xdma_fill_zero(arena, (uint32_t)(end - arena) / DSV2_XBEAT);
 
     uint32_t fails = 0;
     snax_perf_snapshot_t census;
@@ -182,7 +186,7 @@ int main() {
                 for (uint32_t i = 0; i < TOP_K; i++) idbad += MOE_IDS(&mo, t, i) != g_ids_l[8 * t + i];
                 fails += dsv2_check(TAG, idbad == 0 && !MOE_REFUSED(&mo), "top-6",
                                     "the golden's ids, in order, all present");
-                fails += chk16(t, "weights", MOE_TOK(mo.w, t, DSV2_BEAT), g_w_l + 8 * t, TOP_K);
+                fails += chk16(t, "weights", MOE_TOK(mo.w, t, MOE_WP), g_w_l + 8 * t, TOP_K);
                 fails += chk16(t, "out = h + MoE(h)", dsv2_moe_out(&mo, t), g_out_l + t * HID, HID);
             }
             if (MLA_TMO(&ma) || MOE_TMO(&mo)) {

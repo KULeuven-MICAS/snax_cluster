@@ -773,3 +773,24 @@ def int32_to_fp16_golden(x: int, shift: int = 0) -> int:
         return (sign << 15) | (0x1F << 10)
 
     return (sign << 15) | (exp_field << 10) | frac_rounded
+
+
+def simd_beat_bytes(hw: dict) -> int:
+    """Bytes in one beat of the cluster's SIMD core: its `num_channel` TCDM channels.
+
+    Every SIMD operator has one lane per beat element, so this also fixes the lane count
+    (an FP16 lane per 2 bytes). `num_channel` defaults to the DMA beat, as in SimdCfgParser.
+    `hw` is the cluster cfg as loaded by hjson.
+    """
+    cluster = hw["cluster"]
+    for core in cluster["hives"][0]["cores"]:
+        if isinstance(core, dict) and "snax_simd_cfg" in core:
+            simd = core["snax_simd_cfg"]
+            n = simd.get("num_channel", cluster["dma_data_width"] // cluster["data_width"])
+            return int(n) * int(cluster["data_width"]) // 8
+    raise ValueError("this cluster has no snax_simd_cfg")
+
+
+def simd_fp16_lanes(hw: dict) -> int:
+    """FP16 lanes in one SIMD-core beat."""
+    return simd_beat_bytes(hw) // 2

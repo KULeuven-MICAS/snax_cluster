@@ -3,5 +3,5 @@
 // SPDX-License-Identifier: Apache-2.0
 {
     ROWS: 4, // independent rows per dispatch
-    D: 64,   // row length (FP16 elements), a multiple of 32
+    D: 64,   // row length (FP16 elements), a multiple of SIMD_FP16_LANES
 }

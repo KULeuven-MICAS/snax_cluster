@@ -6,7 +6,7 @@
 //
 //   GEMM   logits_raw = RNE(hn8 . W_r * 2^-k)            the router GEMV, one 64-column chunk
 //   SIMD   logits = logits_raw (.) s                     G3's dequantisation
-//          p = softmax(logits)                           one row of 2 beats, five tasks
+//          p = softmax(logits)                           one row of BEATS beats, five tasks
 //   core   ids = the 6 largest p, w = p[ids]              FP16 bit patterns as integers; ties
 //                                                        to the lower index; w NOT renormalised
 //
@@ -30,7 +30,7 @@
 
 #define TAG "[ROUTER]"
 #define NB (N_EXP / DSV2_NU)       // n-blocks: 4
-#define BEATS (N_EXP / 32)         // FP16 beats: 2
+#define BEATS (N_EXP / DSV2_LANES)  // the logits' SIMD beats
 #define READY sy[0]  // the operands in L1                 (iDMA -> GEMM, SIMD)
 #define G_DONE sy[1] // the GEMV retired                   (GEMM -> SIMD)
 #define TMO sy[2]
@@ -57,16 +57,16 @@ int main() {
     int8_t *wbuf = (int8_t *)TAKE(K_IN * N_EXP);
     uint16_t *y = (uint16_t *)TAKE(2 * N_EXP + DSV2_SPILL(NB));
     uint16_t *s = (uint16_t *)TAKE(2 * N_EXP);                 // the dequant factors
-    uint8_t *lgl = TAKE(DSV2_BEAT + 2 * N_EXP);                // [latch][logits]
-    uint16_t *lg = (uint16_t *)(lgl + DSV2_BEAT);
-    uint8_t *tmp = TAKE(DSV2_BEAT);
-    uint8_t *el = TAKE(DSV2_BEAT + 2 * N_EXP + DSV2_BEAT);     // [latch][e][sum]
-    uint16_t *e = (uint16_t *)(el + DSV2_BEAT);
+    uint8_t *lgl = TAKE(DSV2_PAD + 2 * N_EXP);                 // [latch][logits]
+    uint16_t *lg = (uint16_t *)(lgl + DSV2_PAD);
+    uint8_t *tmp = TAKE(DSV2_SBEAT);
+    uint8_t *el = TAKE(DSV2_PAD + 2 * N_EXP + DSV2_PAD);       // [latch][e][sum]
+    uint16_t *e = (uint16_t *)(el + DSV2_PAD);
     uint16_t *pr = (uint16_t *)TAKE(2 * N_EXP);
     uint16_t *glg = (uint16_t *)TAKE(2 * N_EXP), *gp = (uint16_t *)TAKE(2 * N_EXP);
     uint32_t *gids = (uint32_t *)TAKE(4 * TOP_K);
     uint16_t *gw = (uint16_t *)TAKE(2 * TOP_K);
-    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_BEAT;
+    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_XBEAT;
 #undef TAKE
 
     const int isG = snax_is_gemm_core(), isS = snax_is_simd_core();

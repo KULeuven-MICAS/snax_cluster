@@ -12,7 +12,7 @@ source. So every array goes out as raw bytes, linked into DRAM by an assembly fi
 
 .rodata is placed in L3 (DRAM) by the linker script, which is where the iDMA streams
 from. A blob the kernel WRITES (a KV cache) goes to .data.dsv2 instead, also in L3, and is
-declared without const. Every blob starts 64-byte aligned, one beat.
+declared without const. Every blob starts 64-byte aligned, one DMA beat.
 """
 
 import os

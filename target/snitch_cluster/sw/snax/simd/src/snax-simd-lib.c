@@ -563,6 +563,10 @@ int32_t snax_simd_transpose(void* in, void* out, uint32_t rows, uint32_t cols,
     SIMD_DEBUG_PRINT("This SIMD block has no transposer\n");
     return -5;
 #else
+    // One 8 x 8 tile row per TCDM channel: the transposer's beat is 8 channels.
+#if SIMD_SPATIAL_CHAN != 8
+#error "snax_simd_transpose needs an 8-channel SIMD beat (the transposer is an 8 x 8 tile)"
+#endif
     uint32_t tile_width, transfer_count, mode;
     switch (element_width_bits) {
         case 8:

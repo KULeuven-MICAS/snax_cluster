@@ -74,8 +74,13 @@
 // different harts, so there is no conflict.
 #define SIMD_CFG_ADDR 960
 
-// Bytes moved per beat, and bytes per lane within a beat.
+// Bytes per beat: the SIMD core's TCDM port width. Every operator has one lane
+// per beat element, so the beat also fixes the lane count -- SIMD_FP16_LANES at
+// FP16. NOT the xDMA's beat (XDMA_WIDTH), which is a different, wider port.
 #define SIMD_BEAT_BYTES SIMD_WIDTH
+#define SIMD_FP16_LANES (SIMD_WIDTH / 2)
+// Bytes per TCDM channel: the AGU's spatial unit within a beat ("lane" in the
+// shape API's lane_stride/lane_mask means a channel, not an operator lane).
 #define SIMD_LANE_BYTES (SIMD_WIDTH / SIMD_SPATIAL_CHAN)
 
 // Deepest nested sweep the hardware supports, and the widest operator CSR block.
@@ -250,8 +255,9 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 #endif
 
 // Fp16ToInt8 csr(1) bit 16: the 4-beat INTERLEAVE. Four input beats become two
-// output beats laid out as a GEMM B operand -- out beat q/16, byte 4*(q%16)+b holds
-// lane q of input beat b -- instead of the plain 2:1 concatenation. OR it into the
+// output beats laid out as a GEMM B operand -- with L = SIMD_FP16_LANES, out beat
+// q/(L/2), byte 4*(q%(L/2))+b holds lane q of input beat b -- instead of the plain
+// 2:1 concatenation. OR it into the
 // same word as SIMD_QUANT_TAIL. The stream (and tailPeriod) must then be a whole
 // number of 4-beat groups; a trailing partial group is never emitted.
 //
@@ -263,7 +269,9 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 #define SIMD_QUANT_ILV4 SIMD_CAP_MISSING_(FP16TOINT8_INTERLEAVE4)
 #endif
 
-// StreamElementwise: combine `operand_beats` interleaved operands into one.
+// StreamElementwise: out = B op x. `operand_beats` = 2 takes B and x as
+// interleaved pairs; 1 passes every beat through, or with SIMD_EW_STICKY_B
+// combines every beat against the task's first. No other count is supported.
 //
 // NOT gated, deliberately, and this is the one place the scheme does not reach.
 // The chain holds TWO elementwise instances (pre-map and post-map) and these
@@ -314,7 +322,7 @@ void snax_simd_op_map(snax_simd_op_t* op, uint8_t ext, uint32_t func,
 void snax_simd_op_reduce(snax_simd_op_t* op, uint8_t ext, uint32_t mode,
                          uint32_t operand_beats);
 
-// Combine `operand_beats` interleaved operands elementwise.
+// Combine B and x elementwise; `operand_beats` is 1 or 2 (see SIMD_EW_*).
 void snax_simd_op_elementwise(snax_simd_op_t* op, uint8_t ext, uint32_t mode,
                               uint32_t operand_beats);
 

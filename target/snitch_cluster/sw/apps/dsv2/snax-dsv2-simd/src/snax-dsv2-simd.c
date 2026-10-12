@@ -12,9 +12,11 @@
 //   V6+V2  SwiGLU          [gate | up] of an expert (2 x 1408) and of the shared (2 x 2816)
 //                          -> silu(gate) (.) up (FP16) -> the down projection's A operand
 //   V1+V2  unit rows       mean square exactly 1: 1/rms is exactly 1, so bit-exact
+//   V2     compact A       xn, hn, the unit row and x into rows 0..3 of the several-token
+//                          GEMV's compact A operand: even rows and odd, the compact walk
 //
 // The kernels are snax-dsv2.h's. The A operands are the GEMV's, x in row 0, written there by the
-// quantiser directly; the check compares that row.
+// quantiser directly; the check compares that row, and the compact operand whole.
 //
 // THE RoPE ROW. q_pe of head h is q[192 h + 128 .. 192 h + 192), so the 16 heads' q_pe are
 // strided in q; the iDMA gathers them and k_pe into one contiguous row (a 2-D copy), then
@@ -47,7 +49,7 @@
 
 #define TAG "[SIMD]"
 #define ROPE_N ((ROPE_HEADS + 1) * ROPE_DIM)  // 1,088: 16 q_pe and one k_pe
-#define ROPE_B (2u * ROPE_N)                    // one operand's bytes, 34 beats
+#define ROPE_B (2u * ROPE_N)                    // one operand's bytes
 #define READY sy[0]   // inputs and the RoPE row in L1      (iDMA -> SIMD)
 #define TMO sy[1]
 #define STAGED sy[2]  // every stage has run               (SIMD -> iDMA)
@@ -90,20 +92,20 @@ static uint32_t drain(uint32_t t0, const char *what, uint32_t *hung) {
 }
 
 int main() {
-    // ---- L1, derived identically on every hart. A norm's input has its seed beat below. -
+    // ---- L1, derived identically on every hart. A norm's input has its seed slot below. -
     uint8_t *p = (uint8_t *)(((uint32_t)snrt_l1_next() + 63u) & ~63u);
     uint8_t *arena = p;
 #define TAKE(n) (p += (((n) + 63u) & ~63u), p - (((n) + 63u) & ~63u))
     volatile uint32_t *sy = (volatile uint32_t *)TAKE(256);
     dsv2_trace_t *tr = (dsv2_trace_t *)TAKE(sizeof(dsv2_trace_t));
-    uint8_t *ssq = TAKE(DSV2_BEAT);
+    uint8_t *ssq = TAKE(DSV2_SBEAT);
     // input norm
-    TAKE(DSV2_BEAT);
+    TAKE(DSV2_PAD);
     uint16_t *x = (uint16_t *)TAKE(4096);
     uint16_t *xn = (uint16_t *)TAKE(4096), *gxn = (uint16_t *)TAKE(4096);
     int8_t *xa = (int8_t *)TAKE(16 * 2048), *gxa = (int8_t *)TAKE(2048);
     // latent norm: ckv = [c 512 | k_pe 64]
-    TAKE(DSV2_BEAT);
+    TAKE(DSV2_PAD);
     uint16_t *ckv = (uint16_t *)TAKE(2 * (KV_RANK + ROPE_DIM));
     uint16_t *cn = (uint16_t *)TAKE(2 * KV_RANK), *gcn = (uint16_t *)TAKE(2 * KV_RANK);
     int8_t *c8 = (int8_t *)TAKE(KV_RANK), *gc8 = (int8_t *)TAKE(KV_RANK);
@@ -112,7 +114,7 @@ int main() {
     uint8_t *rope = TAKE(4 * ROPE_B);  // x | cos | swap(x) | sin
     uint16_t *ry = (uint16_t *)TAKE(ROPE_B), *gry = (uint16_t *)TAKE(ROPE_B);
     // post-attention norm
-    TAKE(DSV2_BEAT);
+    TAKE(DSV2_PAD);
     uint16_t *h = (uint16_t *)TAKE(4096);
     uint16_t *hn = (uint16_t *)TAKE(4096), *ghn = (uint16_t *)TAKE(4096);
     int8_t *ha = (int8_t *)TAKE(16 * 2048), *gha = (int8_t *)TAKE(2048);
@@ -128,18 +130,20 @@ int main() {
     uint16_t *gssg = (uint16_t *)TAKE(2 * I_SHARED), *gsa16 = (uint16_t *)TAKE(2 * I_SHARED);
     int8_t *gsa8 = (int8_t *)TAKE(I_SHARED);
     // the unit rows
-    TAKE(DSV2_BEAT);
+    TAKE(DSV2_PAD);
     uint16_t *u2k = (uint16_t *)TAKE(4096);
     uint16_t *u2kn = (uint16_t *)TAKE(4096);
     int8_t *u2ka = (int8_t *)TAKE(16 * 2048), *gu2ka = (int8_t *)TAKE(2048);
-    TAKE(DSV2_BEAT);
+    TAKE(DSV2_PAD);
     uint16_t *u512 = (uint16_t *)TAKE(1024);
     uint16_t *u512n = (uint16_t *)TAKE(1024);
     int8_t *u512a = (int8_t *)TAKE(16 * 512), *gu512a = (int8_t *)TAKE(512);
+    // the compact A operand of four tokens
+    int8_t *a4 = (int8_t *)TAKE(4 * 2048), *ga4 = (int8_t *)TAKE(4 * 2048);
     // far operands: a pattern and its product, more than 256 KiB past x
-    if (p < (uint8_t *)x + (1u << 18) + DSV2_BEAT) p = (uint8_t *)x + (1u << 18) + DSV2_BEAT;
+    if (p < (uint8_t *)x + (1u << 18) + 64u) p = (uint8_t *)x + (1u << 18) + 64u;
     uint16_t *pat = (uint16_t *)TAKE(4096), *prod = (uint16_t *)TAKE(4096);
-    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_BEAT;
+    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_XBEAT;
 #undef TAKE
 
     const int isS = snax_is_simd_core(), isX = snax_is_xdma_core(), isD = snax_is_idma_core();
@@ -192,6 +196,7 @@ int main() {
         snrt_dma_start_1d(gsa8, g_s_a8, I_SHARED);
         snrt_dma_start_1d(gu2ka, g_unit2048a, 2048);
         snrt_dma_start_1d(gu512a, g_unit512a, 512);
+        snrt_dma_start_1d(ga4, g_a4, 4 * 2048);
 #if DSV2_STAGE_CHECKS
         snrt_dma_start_1d(gxn, g_xn, 4096);
         snrt_dma_start_1d(gcn, g_cn, 2 * KV_RANK);
@@ -213,7 +218,7 @@ int main() {
 
     SPIN(READY, 1u);
     uint32_t hung = 0, fails = 0, t;
-    uint32_t c_in, c_lat, c_rope, c_post, c_e, c_s, c_u;
+    uint32_t c_in, c_lat, c_rope, c_post, c_e, c_s, c_u, c_a4;
     const uint32_t busy0 = snax_simd_busy_cycles();
 #define SIMD_SPAN(label, c) dsv2_span(tr, DSV2_TR_SIMD, (label), t, t + (c))
 
@@ -257,14 +262,23 @@ int main() {
     dsv2_quant_a(u512n, u512a, 512, INV_X);
     c_u = drain(t, "unit rows", &hung);
     SIMD_SPAN("1 unit rows (exact norms)", c_u);
+
+    t = snrt_mcycle();
+    dsv2_quant_a_row(xn, a4, 2048, 0u, 1u, INV_X);
+    dsv2_quant_a_row(hn, a4, 2048, 1u, 1u, INV_X);
+    dsv2_quant_a_row(u2kn, a4, 2048, 2u, 1u, INV_X);
+    dsv2_quant_a_row(x, a4, 2048, 3u, 1u, INV_X);
+    c_a4 = drain(t, "compact A operand", &hung);
+    SIMD_SPAN("1 compact A operand, 4 rows", c_a4);
     const uint32_t simd_busy = snax_simd_busy_cycles() - busy0;
     snax_perf_snapshot_t census;
     snax_perf_read(&census);
     STAGED = 1u;
 
     printf(TAG " cycles: input norm+quant %u | latent norm+quant %u | RoPE %u (iDMA staging %u) "
-               "| post-attn norm+quant %u | SwiGLU expert %u, shared %u | unit rows %u\n",
-           c_in, c_lat, c_rope, sy[8], c_post, c_e, c_s, c_u);
+               "| post-attn norm+quant %u | SwiGLU expert %u, shared %u | unit rows %u "
+               "| compact A %u\n",
+           c_in, c_lat, c_rope, sy[8], c_post, c_e, c_s, c_u, c_a4);
 
     SPIN(GOLD, 1u);
     printf(TAG " V1+V2 input norm (1 x 2048)\n");
@@ -303,6 +317,8 @@ int main() {
 #endif
     fails += chka("2048: A operand", u2ka, gu2ka, 2048);
     fails += chka("512: A operand", u512a, gu512a, 512);
+    printf(TAG " V2 compact A operand (4 x 2048: xn, hn, unit row, x in rows 0..3)\n");
+    fails += chk8("rows 0..3, the whole operand", a4, ga4, 4 * 2048, 0);
 
 #if DSV2_STAGE_CHECKS
     // far operands: ones at the arena's start (x), a pattern at its end

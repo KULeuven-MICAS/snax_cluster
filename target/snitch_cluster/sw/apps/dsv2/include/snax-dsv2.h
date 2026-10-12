@@ -115,7 +115,15 @@
 #define DSV2_MR 16  // VersaCore (Mu, Ku, Nu) = (16, 4, 16), array shape 0
 #define DSV2_KU 4
 #define DSV2_NU 16
-#define DSV2_BEAT 64u
+// Two beats, of two ports: the xDMA's (its fills and loads count XBEATs) and the SIMD core's (a
+// SIMD task's shapes count SBEATs, DSV2_LANES FP16 values each). Both come from the cluster cfg.
+#define DSV2_XBEAT XDMA_WIDTH
+#define DSV2_SBEAT SIMD_BEAT_BYTES
+#define DSV2_LANES SIMD_FP16_LANES
+// A free slot beside a SIMD row -- the latch beat a sticky task reads just below it, or the
+// trailing beat a reduce writes just after it: one SIMD beat, padded to the 64-byte alignment
+// every buffer here keeps.
+#define DSV2_PAD (DSV2_SBEAT > 64u ? DSV2_SBEAT : 64u)
 #define DSV2_SLOT(nb) (32u * (nb))                       // one group's outputs, FP16
 #define DSV2_SPILL(nb) ((DSV2_MR - 1u) * DSV2_SLOT(nb))  // past the last group's slot
 #define DSV2_TOKSPILL 64u  // past each token's output, several tokens: one block's junk rows
@@ -593,7 +601,7 @@ static inline uint32_t dsv2_dma_quiet(void) {
 
 static inline void dsv2_xdma_fill(void *dst, uint32_t beats, uint32_t pattern);
 
-// Zero [dst, dst + beats * 64) with the writer memset (reader channels off, nothing read).
+// Zero [dst, dst + beats * DSV2_XBEAT) with the writer memset (reader channels off, nothing read).
 // TCDM has no reset: on RTL an unwritten word reads X, which Verilator's zeroes hide.
 static inline void dsv2_xdma_fill_zero(void *dst, uint32_t beats) {
     dsv2_xdma_fill(dst, beats, 0u);
@@ -614,7 +622,7 @@ static inline void dsv2_xdma_fill(void *dst, uint32_t beats, uint32_t pattern) {
     snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_BOUND_PTR + 2, 1);
     snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_BOUND_PTR + 3, 1);
     snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_BOUND_PTR + 4, 1);
-    snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + 0, DSV2_BEAT);
+    snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + 0, DSV2_XBEAT);
     snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + 1, 0);
     snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + 2, 0);
     snax_write_xdma_cfg_reg(XDMA_SRC_TEMP_STRIDE_PTR + 3, 0);
@@ -624,7 +632,7 @@ static inline void dsv2_xdma_fill(void *dst, uint32_t beats, uint32_t pattern) {
     snax_write_xdma_cfg_reg(XDMA_DST_TEMP_BOUND_PTR + 2, 1);
     snax_write_xdma_cfg_reg(XDMA_DST_TEMP_BOUND_PTR + 3, 1);
     snax_write_xdma_cfg_reg(XDMA_DST_TEMP_BOUND_PTR + 4, 1);
-    snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + 0, DSV2_BEAT);
+    snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + 0, DSV2_XBEAT);
     snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + 1, 0);
     snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + 2, 0);
     snax_write_xdma_cfg_reg(XDMA_DST_TEMP_STRIDE_PTR + 3, 0);
@@ -688,22 +696,23 @@ static inline void dsv2_xdma_transpose16(const void *src, uint32_t src_pitch, vo
 #error "the dequantisation needs StreamElementwise 0 with MUL"
 #endif
 
-// A 2-operand read of a COMMUTATIVE op, from wherever the two operands sit: the reader's
-// operand stride is unsigned (an operand below the base would wrap the address and read
-// garbage while the task still completes), so the read starts at the LOWER of the two.
+// A 2-operand read of a COMMUTATIVE op over `beats` SIMD beats of each operand, from wherever
+// the two operands sit: the reader's operand stride is unsigned (an operand below the base would
+// wrap the address and read garbage while the task still completes), so the read starts at the
+// LOWER of the two.
 static inline void dsv2_shape_pair(snax_simd_shape_t *in, const void *a, const void *b,
                                    uint32_t beats) {
     uint32_t ua = (uint32_t)a, ub = (uint32_t)b;
     snax_simd_shape_2d(in, (void *)(ua < ub ? ua : ub), 2u, ua < ub ? ub - ua : ua - ub, beats,
-                       DSV2_BEAT);
+                       DSV2_SBEAT);
 }
 
-// yd = y (.) s over n FP16 (a multiple of 32): EW0 MUL on interleaved beats. Programs the bank
-// only; a later snax_simd_fire() submits it (the bank is snapshotted on the fire).
+// yd = y (.) s over n FP16 (a multiple of DSV2_LANES): EW0 MUL on interleaved beats. Programs
+// the bank only; a later snax_simd_fire() submits it (the bank is snapshotted on the fire).
 static inline void dsv2_dequant_prep(void *y, void *s, void *yd, uint32_t n) {
     snax_simd_shape_t in, out;
-    dsv2_shape_pair(&in, y, s, n / 32u);
-    snax_simd_shape_flat(&out, yd, n / 32u);
+    dsv2_shape_pair(&in, y, s, n / DSV2_LANES);
+    snax_simd_shape_flat(&out, yd, n / DSV2_LANES);
     snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_0, SIMD_EXT_STREAMELEMENTWISE_0_CSR, 2u,
                    SIMD_EW_MUL);
     snax_simd_program_fast(&in, &out);
@@ -711,8 +720,8 @@ static inline void dsv2_dequant_prep(void *y, void *s, void *yd, uint32_t n) {
 
 // ---- V1: RMSNorm of one row, no gain (the gain is folded into the weights that follow) ----
 //
-// Three tasks on a row x of n FP16 (n = 32 beats, a power of two so 1/n is exact), with a
-// one-beat SEED slot immediately below x:
+// Three tasks on a row x of n FP16 (a power of two, so 1/n is exact, and a whole number of
+// beats), with a one-beat SEED slot immediately below x (x - DSV2_SBEAT; DSV2_PAD reserves it):
 //
 //   reduce   SUMSQ over the row: FP32 accumulate, one splatted FP16 beat          -> ssq
 //   map      RSQRT(ssq / n), the 1/rms beat                                       -> seed
@@ -727,10 +736,10 @@ static inline void dsv2_dequant_prep(void *y, void *s, void *yd, uint32_t n) {
 
 // All three tasks, queued back to back; the block runs them in order. `log2n` = log2(n).
 static inline void dsv2_rmsnorm_row(void *x, void *ssq, void *y, uint32_t log2n) {
-    const uint32_t beats = (1u << log2n) / 32u;
-    uint8_t *seed = (uint8_t *)x - DSV2_BEAT;
+    const uint32_t beats = (1u << log2n) / DSV2_LANES;
+    uint8_t *seed = (uint8_t *)x - DSV2_SBEAT;
     snax_simd_shape_t in, out;
-    snax_simd_shape_rows(&in, x, 1u, beats, beats * DSV2_BEAT);
+    snax_simd_shape_rows(&in, x, 1u, beats, beats * DSV2_SBEAT);
     snax_simd_shape_flat(&out, ssq, 1u);
     snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, beats, SIMD_RED_SUMSQ);
     snax_simd_program_fast(&in, &out);
@@ -763,11 +772,12 @@ static inline void dsv2_rmsnorm_row(void *x, void *ssq, void *y, uint32_t log2n)
         snax_simd_set_op_csr(SIMD_EXT_FP16TOINT8_CSR, 1, 0u);             \
     } while (0)
 
-// n FP16 -> n INT8, in order (a cache row, say). n a multiple of 64.
+// n FP16 -> n INT8, in order (a cache row, say): two input beats pack into one output beat.
+// n a multiple of 2 DSV2_LANES.
 static inline void dsv2_quant_flat(void *x, void *q, uint32_t n, uint32_t inv_bits) {
     snax_simd_shape_t in, out;
-    snax_simd_shape_flat(&in, x, n / 32u);
-    snax_simd_shape_flat(&out, q, n / 64u);
+    snax_simd_shape_flat(&in, x, n / DSV2_LANES);
+    snax_simd_shape_flat(&out, q, n / (2u * DSV2_LANES));
     snax_simd_use0(SIMD_EXT_FP16TOINT8);
     DSV2_ARM_QUANT(inv_bits);
     snax_simd_program_fast(&in, &out);
@@ -780,28 +790,32 @@ static inline void dsv2_quant_flat(void *x, void *q, uint32_t n, uint32_t inv_bi
 // layout for one token, rows 0 .. ntok - 1 of the compact one for several (THE GROUPED GEMV,
 // SEVERAL TOKENS) -- so the quantiser writes those rows and nothing else. Row r of an A-block is
 // four bytes at its start + 4 r: the low half of the block's word r / 2 for an even r, the high
-// half for odd. Eight consecutive blocks are 64 bytes apart in both layouts.
-//   read   a beat of 16 values: channels 0, 2, 4, 6, four values each, 8 bytes apart (lane
+// half for odd. Eight consecutive blocks are 64 bytes apart in both layouts. A SIMD beat is C
+// channels of 8 bytes (C = SIMD_SPATIAL_CHAN) and L = 4 C FP16 lanes (DSV2_LANES):
+//   read   a beat of L / 2 values: the even channels, four values each, 8 bytes apart (lane
 //          stride 4, the odd channels disabled: they read nothing and present zero); for an
-//          odd row the read starts 4 bytes lower, so channels 1, 3, 5, 7 read those values
-//   pack   two beats into one output beat, whose 8-byte words hold the 4 values each in the
-//          half the reading channels fill
-//   write  word c to A-block c of the beat's eight (lane stride 64), that half only (byte
-//          mask); the beats walk the layout's blocks, 512 bytes apart in the 16-row layout,
-//          the compact one's interleave in the other
-// so one output beat is 32 values in 8 blocks: n / 32 beats for n values, a quarter of what a
+//          odd row the read starts 4 bytes lower, so the odd channels read those values
+//   pack   two beats into one output beat, whose C words hold the 4 values each in the half
+//          the reading channels fill
+//   write  word c to A-block c of the beat's C (lane stride 64), that half only (byte mask);
+//          the beats walk the layout's blocks, 64 C bytes apart in the 16-row layout; in the
+//          compact one 8 / C beats cover a run of eight blocks, then its interleave
+// so one output beat is L values in C blocks: n / L beats for n values, a quarter of what a
 // fully replicated operand costs the quantiser, which is the SIMD's limit on these tasks.
-#define DSV2_A_READ 0x55u   // reader channels 0, 2, 4, 6: an even row
-#define DSV2_A_WORD 0x0Fu   // a written word's low four bytes: an even row
+#if 8 % SIMD_SPATIAL_CHAN
+#error "the A-row write covers a run of eight A-blocks in whole SIMD beats: 1, 2, 4 or 8 channels"
+#endif
+#define DSV2_A_READ 0x55555555u  // reader channels 0, 2, 4, ...: an even row
+#define DSV2_A_WORD 0x0Fu        // a written word's low four bytes: an even row
 
 // The shapes of a row write: n values from x into row `row` of A at a, in the 16-row layout or
-// the compact one (n a multiple of 32, or of 128 compact). `ops` operands `od` bytes apart feed
-// each value (1 for a plain quantise, 2 for a fused MUL); a plain quantise leaves the reader's
-// third loop free for the caller.
+// the compact one (n a multiple of DSV2_LANES, or of 128 compact). `ops` operands `od` bytes
+// apart feed each value (1 for a plain quantise, 2 for a fused MUL); a plain quantise leaves the
+// reader's third loop free for the caller.
 static inline void dsv2_a_row_shapes(snax_simd_shape_t *in, snax_simd_shape_t *out, void *x,
                                      uint32_t ops, uint32_t od, void *a, uint32_t n,
                                      uint32_t row, uint32_t compact) {
-    const uint32_t odd = row & 1u;
+    const uint32_t odd = row & 1u, words = SIMD_SPATIAL_CHAN;  // A-blocks an output beat writes
     snax_simd_shape_flat(in, (uint8_t *)x - 4u * odd, 1u);
     in->lane_stride = 4u;
     in->lane_mask = DSV2_A_READ << odd;
@@ -810,21 +824,23 @@ static inline void dsv2_a_row_shapes(snax_simd_shape_t *in, snax_simd_shape_t *o
         in->bound[d] = ops;
         in->stride[d++] = od;
     }
-    in->bound[d] = 2u;  // the two beats of one output beat
-    in->stride[d++] = 32u;
-    in->bound[d] = n / 32u;
-    in->stride[d++] = 64u;
+    in->bound[d] = 2u;  // the two beats of one output beat, L / 2 FP16 values (L bytes) apart
+    in->stride[d++] = DSV2_LANES;
+    in->bound[d] = n / DSV2_LANES;
+    in->stride[d++] = DSV2_SBEAT;
     in->dim = d;
-    snax_simd_shape_flat(out, (uint8_t *)a + 8u * (row / 2u), n / 32u);
+    snax_simd_shape_flat(out, (uint8_t *)a + 8u * (row / 2u), n / DSV2_LANES);
     out->lane_stride = 64u;
-    if (compact) {  // the interleave: 4 beats 16 bytes apart, then the next 32 blocks
-        out->bound[0] = 4u;
-        out->stride[0] = 16u;
-        out->bound[1] = n / 128u;
-        out->stride[1] = 512u;
-        out->dim = 2u;
+    if (compact) {  // a run of eight blocks, 4 runs 16 bytes apart, then the next 32 blocks
+        out->bound[0] = 8u / words;
+        out->stride[0] = 64u * words;
+        out->bound[1] = 4u;
+        out->stride[1] = 16u;
+        out->bound[2] = n / 128u;
+        out->stride[2] = 512u;
+        out->dim = 3u;
     } else {
-        out->stride[0] = 8u * 64u;
+        out->stride[0] = 64u * words;
     }
     out->byte_mask = DSV2_A_WORD << (4u * odd);
 }
@@ -857,6 +873,7 @@ static inline void dsv2_quant_a(void *x, void *a, uint32_t n, uint32_t inv_bits)
 // out = x (.) cos + swap(x) (.) sin over n FP16, with cos repeated per pair and sin carrying
 // the pair's sign ([-s0, +s0, -s1, +s1, ...]); swap(x) exchanges the two halves of every
 // pair. The four operands sit EQUALLY SPACED, `ostride` apart from `x`: x, cos, swap(x), sin.
+// n a multiple of DSV2_LANES.
 //
 //   read   [ x_b , cos_b , swap_b , sin_b ]    operand dim, 4 deep
 //   EW0    MUL, 2 operands ->  [ x*cos , swap*sin ]
@@ -869,8 +886,8 @@ static inline void dsv2_quant_a(void *x, void *a, uint32_t n, uint32_t inv_bits)
 
 static inline void dsv2_rope(void *x, uint32_t ostride, void *y, uint32_t n) {
     snax_simd_shape_t in, out;
-    snax_simd_shape_2d(&in, x, 4u, ostride, n / 32u, DSV2_BEAT);
-    snax_simd_shape_flat(&out, y, n / 32u);
+    snax_simd_shape_2d(&in, x, 4u, ostride, n / DSV2_LANES, DSV2_SBEAT);
+    snax_simd_shape_flat(&out, y, n / DSV2_LANES);
     snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMELEMENTWISE_0) |
                                                      (1u << SIMD_EXT_STREAMELEMENTWISE_1));
     snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 0, 2u);
@@ -890,7 +907,8 @@ static inline void dsv2_rope(void *x, uint32_t ostride, void *y, uint32_t n) {
 //         row write of dsv2_quant_a_row, each value from its two operands)
 // The products commute, so sg may sit on either side of g, or be g itself: the SILU then
 // overwrites the gate in place. ntok tokens, token t's g and sg tok bytes further on for each t;
-// token t's SwiGLU goes into its row of the A operand (dsv2_quant_at's layout).
+// token t's SwiGLU goes into its row of the A operand (dsv2_quant_at's layout). i a multiple of
+// DSV2_LANES (of 128 for several tokens).
 #if !defined(SIMD_EXT_STREAMMAP_HAS_SILU)
 #error "the SwiGLU needs StreamMap SILU"
 #endif
@@ -899,14 +917,14 @@ static inline void dsv2_swiglu(void *g, void *sg, void *a16, void *a8, uint32_t 
                                uint32_t inv_bits, uint32_t ntok, uint32_t tok) {
     uint8_t *up = (uint8_t *)g + 2u * i;
     snax_simd_shape_t in, out;
-    snax_simd_shape_flat(&in, g, i / 32u);
-    snax_simd_shape_flat(&out, sg, i / 32u);
+    snax_simd_shape_flat(&in, g, i / DSV2_LANES);
+    snax_simd_shape_flat(&out, sg, i / DSV2_LANES);
     snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, 0x3F800000u, 0u, SIMD_FUNC_SILU);
     snax_simd_program_fast(&in, &out);
     snax_simd_fire();
     if (a16) {
-        dsv2_shape_pair(&in, sg, up, i / 32u);
-        snax_simd_shape_flat(&out, a16, i / 32u);
+        dsv2_shape_pair(&in, sg, up, i / DSV2_LANES);
+        snax_simd_shape_flat(&out, a16, i / DSV2_LANES);
         snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 2u,
                        SIMD_EW_MUL);
         snax_simd_program_fast(&in, &out);
@@ -916,8 +934,8 @@ static inline void dsv2_swiglu(void *g, void *sg, void *a16, void *a8, uint32_t 
         const uint32_t us = (uint32_t)sg, uu = (uint32_t)up;
         for (uint32_t t = 0; t < ntok; t++) {
             if (t) {  // token t's silu
-                snax_simd_shape_flat(&in, (uint8_t *)g + t * tok, i / 32u);
-                snax_simd_shape_flat(&out, (uint8_t *)sg + t * tok, i / 32u);
+                snax_simd_shape_flat(&in, (uint8_t *)g + t * tok, i / DSV2_LANES);
+                snax_simd_shape_flat(&out, (uint8_t *)sg + t * tok, i / DSV2_LANES);
                 snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, 0x3F800000u, 0u,
                                SIMD_FUNC_SILU);
                 snax_simd_program_fast(&in, &out);
@@ -939,10 +957,11 @@ static inline void dsv2_swiglu(void *g, void *sg, void *a16, void *a8, uint32_t 
 
 // ---- V5: softmax over one row, and the top k ------------------------------------------------
 //
-// The router's softmax over `beats` beats of FP16 logits (64 experts = 2 beats). The row's max
-// and sum fold ACROSS lanes (the reduce's row mode), so each comes out splatted. Buffers:
-// x with a free latch beat below it; e with a free latch beat below it and room for the sum
-// beat after it; tmp one beat; p `beats` beats. Five tasks, queued back to back:
+// The router's softmax over `beats` SIMD beats of FP16 logits (64 experts = 64 / DSV2_LANES
+// beats). The row's max and sum fold ACROSS lanes (the reduce's row mode), so each comes out
+// splatted. Buffers: x with a free latch beat below it (x - DSV2_SBEAT); e with a free latch beat
+// below it and room for the sum beat after it (e + beats DSV2_SBEAT); tmp one beat; p `beats`
+// beats. DSV2_PAD reserves each free beat. Five tasks, queued back to back:
 //
 //   1  Reduce MAX over x                                   -> m, splatted      (tmp)
 //   2  Map LINEAR a = -1                                   -> -m               (x's latch)
@@ -957,8 +976,8 @@ static inline void dsv2_swiglu(void *g, void *sg, void *a16, void *a8, uint32_t 
 #endif
 
 static inline void dsv2_softmax_row(void *x, void *tmp, void *e, void *p, uint32_t beats) {
-    uint8_t *xl = (uint8_t *)x - DSV2_BEAT, *el = (uint8_t *)e - DSV2_BEAT;
-    uint8_t *s = (uint8_t *)e + beats * DSV2_BEAT;
+    uint8_t *xl = (uint8_t *)x - DSV2_SBEAT, *el = (uint8_t *)e - DSV2_SBEAT;
+    uint8_t *s = (uint8_t *)e + beats * DSV2_SBEAT;
     snax_simd_shape_t in, out;
     snax_simd_shape_flat(&in, x, beats);
     snax_simd_shape_flat(&out, tmp, 1);

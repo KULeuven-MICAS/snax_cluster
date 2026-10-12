@@ -13,30 +13,30 @@
 // * x, sharing FP units with exp; see FpActivation.scala). FP16 transport,
 // FP32-internal.
 //
-// LANE DATAFLOW (FP16 transport = 32 lanes per 512-b beat):
-//   StreamMap(SILU)  1 beat -> 1 beat, all 32 lanes used (clean 512b in / 512b
-//   out):
-//     in  [ x0  x1  ... x31 ]   ->   out [ silu(x0) silu(x1) ... silu(x31) ]
+// LANE DATAFLOW (FP16 transport, L = SIMD_FP16_LANES lanes per SIMD_BEAT_BYTES beat;
+// 16 lanes / 32 B on the split cluster):
+//   StreamMap(SILU)  1 beat -> 1 beat, all L lanes used:
+//     in  [ x0  x1  ... x(L-1) ]   ->   out [ silu(x0) silu(x1) ... silu(x(L-1)) ]
 //     (a=1, b=0 -> act on x)
-//   Fp16ToInt8 (fused quant pass) is NOT 512->512: it packs 2 FP16 beats -> 1
-//   INT8 beat (half the bytes):
-//     beat0 [x0..x31]->int8 = LOW 32 B,  beat1 [x32..x63]->int8 = HIGH 32 B  ->
-//     out [q0..q63] (64 int8) emitted on beat1 only; the writer drains beats/2
-//     (needs an even beat count).
+//   Fp16ToInt8 (fused quant pass) packs 2 FP16 beats -> 1 INT8 beat (same bytes, twice
+//   the elements):
+//     beat0 [x0..x(L-1)] -> int8 = LOW half,  beat1 [xL..x(2L-1)] -> int8 = HIGH half
+//     -> out [q0..q(2L-1)] emitted on beat1 only; the writer drains beats/2 (needs an
+//     even beat count).
 //
-// Performance (FP16, vsim, L1<->L1) on the native-Chisel FP RTL (fpPipe=1 cut,
-// FpActivation 256-node odd-symmetry silu ROM) + time-mux StreamMap
-// computeLanes=4, Fp16ToInt8=4. host = a single host vector core, full FP32
-// silu (op-LUT baseline). Outputs match the FP64 golden to <=1 FP16 ULP at
-// every N. The CSR orchestration is a fixed ~0.7k cc (2 task setups); the
-// datapath scales with N (CSR-bound at small N, datapath-bound for N>=1k).
+// Performance (FP16, vsim, L1<->L1) on the split cluster's 16-lane SIMD core: one FP lane
+// per element, one beat (16 elements) per cycle, fpPipe=1, the FpActivation 256-node
+// odd-symmetry silu ROM. host = a single host vector core, full FP32 silu (op-LUT
+// baseline). Outputs match the FP64 golden to <=1 FP16 ULP at every N. The CSR
+// orchestration is a fixed ~0.6k cc (2 task setups); the datapath is N/16 + ~18 cc per
+// pass, so the orchestration dominates up to N of several thousand.
 //
-//   N      beats   warm    cold    host       warm speedup
-//   ----   -----   -----   -----   -------    ------------
-//   64     2       805     1,341   2,258      2.8x
-//   256    8       1,129   1,669   8,264      7.3x
-//   1024   32      2,440   2,977   32,718     13.4x
-//   4096   128     7,624   8,161   130,686    17.1x
+//   N      beats   silu   warm    cold    host       warm speedup
+//   ----   -----   ----   -----   -----   -------    ------------
+//   64     4       22     663     956     2,258      3.4x
+//   256    16      34     691     984     8,264      12.0x
+//   1024   64      82     786     1,075   32,718     41.6x
+//   4096   256     274    1,171   1,453   130,686    111.6x
 
 #include "data.h"
 #include "snax-core-roles.h"
@@ -54,8 +54,8 @@
     "This cluster's SIMD block cannot run SiLU: StreamMap was built without the SILU func, or there is no Fp16ToInt8."
 #endif
 
-// SIMD_BEAT_BYTES comes from the library (= SIMD_WIDTH, the cfg's actual transport width);
-// a local 64 shadowed it and happened to agree.
+// SIMD_BEAT_BYTES comes from the library (= SIMD_WIDTH, the cfg's actual transport width),
+// and so does the beat count: data.h derives it from the same cfg.
 // Op selectors come from snax-simd-lib.h, NOT from a local #define. A local copy of the
 // encoding compiles against any cluster, including one whose SIMD block never built the op
 // -- which is exactly the silent-wrong-answer the capability macros exist to stop.

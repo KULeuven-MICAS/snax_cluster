@@ -21,12 +21,13 @@ import play.api.libs.json._
   * snax_simd_cfg: {
   *   bender_target: [ snax_..._cluster_simd ]
   *   cfg_io_width: 32
-  *   num_channel: 8                      // beat = num_channel * cluster.data_width bits
+  *   num_channel: 4                      // beat = num_channel * cluster.data_width bits, and with it the
+  *                                       // lane count of every operator (one lane per beat element)
   *   reader_buffer: 12
   *   writer_buffer: 12
   *   reader_agu_temporal_dimension: 5
   *   writer_agu_temporal_dimension: 5
-  *   reader_extensions: { HasStreamMap: {...}, HasStreamReduce: {...}, ... }
+  *   reader_extensions: [ {HasSimdStreamMap: {...}}, {HasSimdStreamReduce: {...}}, ... ]  // chain order
   * }
   * }}}
   */

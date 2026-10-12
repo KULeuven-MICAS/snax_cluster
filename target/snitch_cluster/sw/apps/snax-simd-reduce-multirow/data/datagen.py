@@ -4,13 +4,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Data generator for the standalone multi-row xDMA StreamReduce test. Emits ROWS independent
-# FP16 rows
-# of length D and the per-row FP16 goldens for SUMSQ / MAX / ADD -- the three reductions the llama3
-# per-row RMSNorm/Softmax need. Each row gets its OWN data so a broken row-boundary re-init (a stale
-# carry across rows) would show up as a wrong per-row scalar. The default rows use small
-# values so the
-# per-row SUMSQ stays inside the FP16 range of the narrowed reduce scalar.
+# Data generator for the standalone multi-row SIMD StreamReduce test. Emits ROWS independent
+# FP16 rows of length D (a whole number of SIMD beats, simd_fp16_lanes(hw) lanes each, read from
+# the hardware cfg) and the per-row FP16 goldens for SUMSQ / MAX / ADD -- the three reductions
+# the llama3 per-row RMSNorm/Softmax need. Each row gets its OWN data so a broken row-boundary
+# re-init (a stale carry across rows) would show up as a wrong per-row scalar. The default rows
+# use small values so the per-row SUMSQ stays inside the FP16 range of the narrowed reduce
+# scalar.
 #
 # It ALSO emits a second, large-magnitude input (reduce_input_big, ~+-4096) whose per-row SUMSQ
 # ~1e8-1e9
@@ -30,19 +30,19 @@ import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
+from snax_utils import simd_fp16_lanes  # noqa E402
 
-FP16_PER_BEAT = 32
 RNG_SEED = 0x5EED
 
 
-def emit_header_file(**kwargs):
+def emit_header_file(lanes, **kwargs):
     rows = int(kwargs["ROWS"])
     d = int(kwargs["D"])
-    if d <= 0 or d % FP16_PER_BEAT != 0:
-        raise ValueError(f"D must be a positive multiple of {FP16_PER_BEAT}, got {d}")
+    if d <= 0 or d % lanes != 0:
+        raise ValueError(f"D must be a positive multiple of the {lanes} SIMD lanes, got {d}")
     if rows <= 0:
         raise ValueError(f"ROWS must be positive, got {rows}")
-    beats = d // FP16_PER_BEAT
+    beats = d // lanes
 
     rng = np.random.default_rng(RNG_SEED)
     xf = rng.uniform(-4.0, 4.0, size=(rows, d)).astype(np.float32)
@@ -101,12 +101,16 @@ def emit_header_file(**kwargs):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generating data for the xDMA multi-row reduce test")
+        description="Generating data for the SIMD multi-row reduce test")
     parser.add_argument("-c", "--cfg", type=pathlib.Path, required=True)
+    parser.add_argument("--hwcfg", type=pathlib.Path, required=True,
+                        help="cluster hardware cfg (sets the SIMD lane count)")
     args = parser.parse_args()
     with args.cfg.open() as f:
         param = hjson.loads(f.read())
-    print(emit_header_file(**param))
+    with args.hwcfg.open() as f:
+        hw = hjson.loads(f.read())
+    print(emit_header_file(simd_fp16_lanes(hw), **param))
 
 
 if __name__ == "__main__":

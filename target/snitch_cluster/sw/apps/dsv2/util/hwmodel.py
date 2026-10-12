@@ -20,8 +20,9 @@ its D-port shift -- are all in the dict run() returns; golden.py packages them.
 
 THE ATTENTION TILE follows snax-flashattn-decode's online softmax, transposed: scores
 S^T = K . Q^T are [key][query], so a SIMD lane is a query and the row max over keys is a
-lanewise max. The query tile has Br = 32 lanes: the 16 heads and 16 zero rows (the SIMD
-beat is 32 FP16 lanes). Per KV tile j of Bc keys:
+lanewise max. The query tile has Br = 32 query rows: two tokens' 16 heads, or one token's and
+16 zero rows. A lanewise reduce is per query, so the model holds whatever the SIMD beat's lane
+count, as long as each query's keys reach its lane in key order. Per KV tile j of Bc keys:
 
     S16   = RNE(S * 2^-k_s)                         D port, k_s from depth 576
     m     = max(m_old, max over keys of S16)         exact
@@ -349,7 +350,7 @@ def union_order(id_lists):
 def run_tokens(pack, scales, xs16, pos, cache_c8, cache_kpe8, bc=64):
     """Layer 1 for ntok = len(xs16) consecutive tokens in one pass, ntok in (1, 2, 4): token t sits
     at position pos + t, every token appends its row, and token t attends to keys 0 .. pos + t.
-    The attention's 32 query lanes hold two tokens of 16 heads, so it runs once per PAIR of tokens
+    The attention's 32 query rows hold two tokens of 16 heads, so it runs once per PAIR of tokens
     over all pos + ntok keys; a pair's token t has the keys of the pass's later tokens masked. The
     MoE runs the union of the tokens' experts (union_order) and each token adds its slots in that
     order.
@@ -361,7 +362,7 @@ def run_tokens(pack, scales, xs16, pos, cache_c8, cache_kpe8, bc=64):
     ntok = len(xs16)
     if ntok not in (1, 2, 4):
         raise ValueError(f"{ntok} tokens: a pass holds 1, 2 or 4 (two tokens of {H} heads fill "
-                         f"the attention's 32 query lanes)")
+                         f"the attention's 32 query rows)")
     ks = shifts(d)
     toks = [mla_token(pack, scales, x, pos + t) for t, x in enumerate(xs16)]
     c8 = np.concatenate([cache_c8] + [tk["c8_new"][None] for tk in toks], axis=0)

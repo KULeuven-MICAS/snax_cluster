@@ -7,7 +7,8 @@ import fp_unit._
 import fp_native._
 
 /** StreamReduce: vertical (across-beat) + horizontal (across-lane) FP reduction of a streamed row to a single scalar,
-  * splatted across all lanes of one output beat.
+  * splatted across all lanes of one output beat. This is the xDMA's reader extension: its beat is the AXI width, so
+  * `computeLanes` ALUs are time-multiplexed over the lanes. The SIMD core's reduce is snax.simd.SimdStreamReduce.
   *
   *   - Transport: configurable element type (FP16/BF16/FP8/FP32, set by the op-set; e.g. 32 FP16 lanes per 512-bit
   *     beat). Internal math: FP32 (widen on input, narrow on output).
@@ -23,8 +24,8 @@ import fp_native._
   * overflows FP16, e.g. an unscaled-GEMM SUMSQ ~1e9, this delivers the true value to the host instead of inf; the
   * scalar is splatted as FP32 so the host reads the beat's low 32 bits as a float). When tap=1 the row is passed
   * through unchanged (1:1) AND the reduction is accumulated in parallel; after the last input beat one extra trailing
-  * beat (the scalar, splatted) is emitted, so the output is N+1 beats. tap=0 = legacy behaviour (consume N beats, emit
-  * only the scalar). The tap mode lets one chained task produce both a transformed row and its reduction (e.g. softmax
+  * beat (the scalar, splatted) is emitted, so the output is N+1 beats. tap=0 consumes N beats and emits only the
+  * scalar. The tap mode lets one chained task produce both a transformed row and its reduction (e.g. softmax
   * exp-row + Σexp).
   *
   * Configurable from the hjson: `op` (the LIST of supported reductions, a subset of {MAX, ADD, SUMSQ} — only those ops'
@@ -33,7 +34,7 @@ import fp_native._
   * `computeLanes` ALUs across the lane partials over `subCycles` cycles per beat), and `elementWidth` (the transport
   * element width in bits — must match the op-set precision: FP16/BF16⇒16, FP8⇒8, FP32⇒32). All are REQUIRED (no
   * defaults) — the config must spell them out, e.g. {elementWidth:16, computeLanes:32,
-  * op:["MAX_FP16","ADD_FP16","SUMSQ_FP16"]}. The tap and fp32out bits stay runtime, so userCsrNum=2 is unchanged.
+  * op:["MAX_FP16","ADD_FP16","SUMSQ_FP16"]}. The tap, fp32out and lanewise bits are runtime, so userCsrNum is 2.
   *
   * HARDWARE UNIT COUNT — for a 512-bit input there are `computeLanes` physical ALUs (widen + add/max/square), NOT one
   * per lane, time-multiplexed over `subCycles` (= lanes/computeLanes) cycles per beat; but there are ALWAYS `lanes` (=
@@ -64,8 +65,7 @@ class HasStreamReduce(
   dataWidth:    Int = 512,
   fpPipe:       Int = 1, // accumulate FP-unit internal pipeline depth, 0..2 (per-op timing cut knob)
   treePipe:     Int = 1, // reduce-fold add internal pipeline depth, 0..2 (SEPARATE cut knob)
-  treeLanes:    Int = 2, // # of horizontal-fold ALUs (area knob): the once-per-row collapse is time-muxed
-  accPartials:  Int = 1  // Track C / C2: rotating FP32 partials per lane, see the note in the module
+  treeLanes:    Int = 2  // # of horizontal-fold ALUs (area knob): the once-per-row collapse is time-muxed
 ) extends HasDataPathExtension {
   private val (opNames, transport) =
     OpSpec.parse(op, Set("MAX", "ADD", "SUMSQ", "FMA"), "HasStreamReduce") // validate op names + precision
@@ -83,7 +83,7 @@ class HasStreamReduce(
     )
 
   def instantiate(clusterName: String): StreamReduce =
-    Module(new StreamReduce(computeLanes, op, elementWidth, fpPipe, treePipe, treeLanes, accPartials) {
+    Module(new StreamReduce(computeLanes, op, elementWidth, fpPipe, treePipe, treeLanes) {
       override def desiredName = clusterName + namePostfix
     })
 }
@@ -95,7 +95,6 @@ class StreamReduce(
   fpPipeParam:       Int         = 1,
   treePipeParam:     Int         = 1,
   treeLanesParam:    Int         = 2,
-  accPartialsParam:  Int         = 1,
   pipelined:         Boolean     = true
 )(implicit
   extensionParam:    DataPathExtensionParam
@@ -115,29 +114,10 @@ class StreamReduce(
   // lanes/2 (max useful) and >=1.
   val treeLanes = scala.math.max(1, scala.math.min(treeLanesParam, lanes / 2))
 
-  // Track C / C2 -- ROTATING ACCUMULATOR PARTIALS.
-  //
-  // The accumulate is a recurrence: operand beat k+1 reads the partial that beat k wrote, accLat cycles
-  // after it issued. The time mux spaces same-lane issues by `subCycles`, so the recurrence is met for free
-  // only while subCycles >= accLat+1 -- which CAPS computeLanes at lanes/(accLat+1), i.e. 8 of 32 at the
-  // shipped fpPipe. Past that the FSM inserts `gap` idle cycles and more ALUs buy nothing: at
-  // computeLanes=16 you get gap=2 and land on the same 4 cycles/beat with twice the area.
-  //
-  // With P partials a beat accumulates into partial (beat % P), so the same partial is re-read only every
-  // P*subCycles cycles and the cap becomes computeLanes <= P*lanes/(accLat+1). The partials are folded
-  // together once at the end of each row.
-  //
-  // Defaults to 1 = exactly the previous hardware, so this costs nothing unless a cfg asks for it. P must
-  // be a power of two (the beat->partial index is a bit slice, not a modulo).
-  val accPartials = scala.math.max(1, accPartialsParam)
-  require((accPartials & (accPartials - 1)) == 0, "StreamReduce: accPartials must be a power of two")
-  val pIdxW       = scala.math.max(1, log2Ceil(accPartials))
-
   // which reductions are built
-  // Op-set is now the single fused "FMA" op (covers the add- and square-accumulate, selected at runtime by
-  // the op CSR) plus the non-FMA "MAX" compare. hasAdd/hasSumsq are the runtime CAPABILITIES the built
-  // datapath must provide: the FMA op provides both, so every accLane/fold expression below stays as-is.
-  // Legacy op-sets ("ADD"/"SUMSQ"/"MAX") still parse and build the same minimal subset.
+  // The fused "FMA" op covers the add- and square-accumulate (selected at runtime by the op CSR); "MAX" is the
+  // compare. hasAdd/hasSumsq are the runtime CAPABILITIES the built datapath must provide. Single-op sets
+  // ("ADD"/"SUMSQ"/"MAX") build only their own subset.
   // The runtime opcode set, expanded once in OpSpec so the header and the hardware cannot disagree about
   // which ops exist. FMA covers both accumulate forms: ADD is acc' = x*1 + acc, SUMSQ is acc' = x*x + acc,
   // and the op CSR picks the multiplicand.
@@ -147,7 +127,7 @@ class StreamReduce(
   val hasSumsq = runtimeOps.contains("SUMSQ")
   val multiOp  = ops.size > 1
 
-  // op CSR (ext_csr_i(1)[7:0]) values — UNCHANGED so the SW interface is source-compatible: 0=MAX (compare),
+  // op CSR (ext_csr_i(1)[7:0]) values: 0=MAX (compare),
   // 1=ADD (FMA, multiplicand 1.0), 2=SUMSQ (FMA, multiplicand = the input).
   def OP_MAX   = 0.U
   def OP_ADD   = 1.U
@@ -167,8 +147,7 @@ class StreamReduce(
   // partials, and every cycle spent folding them is waste.
   //
   // FlashAttention is that caller: with the score tile stored transposed, one lane is one query row, so a
-  // LANEWISE MAX over Bc beats IS rowmax -- one output beat, no fold, no per-row bubble. Measured on the
-  // shipped path a row-reduce costs ~40 cycles for 2 beats of actual work.
+  // LANEWISE MAX over Bc beats IS rowmax -- one output beat, no fold, no per-row bubble.
   val lanewise        = opField(10).asBool
   val fp32out         = opField(9).asBool // emit the scalar in FP32 (no narrow) so a large reduction (e.g. an
   //                                 unscaled-GEMM SUMSQ ~1e9) reaches the host as the true value instead
@@ -188,9 +167,8 @@ class StreamReduce(
   val treePipe   = if (pipelined) treePipeParam else 0 // reduce-tree add pipeline depth (cfg, separate knob)
   val laneLat    = if (pipelined) 1 else 0             // register after the time-mux lane-select mux
   val accLat     = laneLat + 2 * fpPipe                // issue -> per-lane accumulate result
-  // The ADD/SUMSQ accumulate fuses the (square)+(add) into ONE mixed-format FMA (see accLane). Give it the
-  // SAME latency as the old widen/square + add (2*fpPipe) so accLat — and the whole streaming FSM built on
-  // it — is unchanged; FpFma caps numPipe at 2, so for 2*fpPipe>2 the remainder is a plain output shift-reg.
+  // The ADD/SUMSQ accumulate is ONE mixed-format FMA (see accLane) with the same 2*fpPipe latency as the MAX
+  // path's widen + compare; FpFma caps numPipe at 2, so for 2*fpPipe>2 the remainder is a plain output shift-reg.
   val fmaPipe    = scala.math.min(2, 2 * fpPipe)
   // +1.0 in the transport format (sign 0, exp = bias, mantissa 0): FMA(x, 1.0, prev) == x + prev for ADD.
   val ONE_T      = ((((1 << (transport.expWidth - 1)) - 1) << transport.sigWidth)).U(transport.width.W)
@@ -225,9 +203,9 @@ class StreamReduce(
 
   // one lane's new partial: accumulate `laneIn` into `prev` per the active op (only built ops built).
   // ADD/SUMSQ share ONE fused multiply-add: FMA(x, y, prev) with y = x for SUMSQ (x^2+prev) and y = 1.0 for
-  // ADD (x+prev) — bit-identical to the old square-then-add (FP16^2 is exact in the FMA product), one FP unit
-  // per lane instead of two (square + add). MAX keeps its own cheap widen+compare on a separate path.
-  // Pipeline (total issue->result latency = accLat = laneLat + 2*fpPipe, UNCHANGED):
+  // ADD (x+prev) — equal to a square then an add (FP16^2 is exact in the FMA product), with one FP unit per
+  // lane. MAX keeps its own cheap widen+compare on a separate path.
+  // Pipeline (total issue->result latency = accLat = laneLat + 2*fpPipe):
   //   ADD/SUMSQ: laneR (+laneLat) -> FMA (+fmaPipe) -> output shift (+2*fpPipe-fmaPipe).
   //   MAX:       laneR (+laneLat) -> widen (+fpPipe) -> compare -> shift (+fpPipe).
   def accLane(laneIn: UInt, prev: UInt, first: Bool): UInt = {
@@ -254,14 +232,14 @@ class StreamReduce(
     else accAdd
   }
 
-  // ---- per-lane FP32 partials, accPartials banks of them ----
-  val regs = RegInit(VecInit(Seq.fill(accPartials)(VecInit(Seq.fill(lanes)(0.U(accWidth.W))))))
+  // ---- per-lane FP32 partials ----
+  val regs = RegInit(VecInit(Seq.fill(lanes)(0.U(accWidth.W))))
 
   // ---- streaming time-mux + pipeline FSM (accumulate core is identical to StreamElementwise) -----------
   // Continuous-issue: the computeLanes ALUs fold one sub-group per cycle into the per-lane partials across
-  // back-to-back operand beats AND back-to-back rows (was: per-beat accLat drain + per-row tree-drain
-  // stall). At a row's last-sub retire the COMPLETE partials are captured (outNow) and pushed into the
-  // horizontal reduce tree; the scalar lands `treeLat` later and is narrowed/splatted into one output beat.
+  // back-to-back operand beats AND back-to-back rows. At a row's last-sub retire the COMPLETE partials are
+  // captured (outNow) and pushed into the horizontal reduce tree; the scalar lands `treeLat` later and is
+  // narrowed/splatted into one output beat.
   // Feeding the tree from the CAPTURED partials (not `regs`) lets the next row start accumulating into regs
   // immediately, so rows pipeline through the tree. Steady-state = 1 beat/subCycles cycles.
   //
@@ -271,8 +249,7 @@ class StreamReduce(
   // in-flight+queued OUTPUT beats to the queue depth. tap mode re-emits each input beat (passthrough) before
   // the row's scalar; to keep that order on a single stream it serializes rows (next row waits for the
   // scalar). CONTRACT: ext_start_i only asserts when idle (ext_busy_o low).
-  // P partials space the same-partial reuse by P*subCycles, so the stall shrinks (and vanishes) as P grows.
-  val gap      = scala.math.max(0, accLat + 1 - subCycles * accPartials)
+  val gap      = scala.math.max(0, accLat + 1 - subCycles)
   val beatSpan = subCycles + gap                           // issue cycles allotted per operand beat
 
   // index of lane (s*computeLanes + j) into the `lanes`-wide Vec, width-exact to silence W004
@@ -288,9 +265,7 @@ class StreamReduce(
   val stall    = RegInit(0.U(log2Ceil(gap + 1).max(1).W)) // remaining recurrence-gap cycles (gap>0 only)
 
   val lastSub        = sub === (subCycles - 1).U
-  // The first P beats each SEED their own bank rather than accumulating into it.
-  val firstBeat      = beatIdx < accPartials.U
-  val pIssue         = if (accPartials == 1) 0.U(1.W) else beatIdx(pIdxW - 1, 0)
+  val firstBeat      = beatIdx === 0.U
   val lastBeatInRow  = beatIdx === (operandCount - 1.U)
   val nextIsRowStart = nextIdx === 0.U
   val overlapOK      = if (gap == 0) true.B else nextIsRowStart
@@ -308,10 +283,9 @@ class StreamReduce(
   val treeBusy    = RegInit(false.B) // the horizontal fold is running (input held off so treeBuf is safe)
   // A row's fold is OWED but not yet finished. treeBusy alone is not enough to protect treeBuf: it rises
   // from rowLastRetire, which trails the row's last ISSUE by accLat, and in that window ext_data_i.ready is
-  // still high. Whether the window is wide enough to let a whole next row in is a function of the cfg --
-  // it takes ceil(accLat / subCycles) beats, so operandCount <= 2 with subCycles = 2 (the shipped
-  // computeLanes=16) slips an entire row past and clobbers treeBuf mid-fold, while computeLanes=8
-  // (subCycles=4) does not. foldArmed closes the window at issue time instead, for every cfg.
+  // still high. That window holds ceil(accLat / subCycles) beats, so a short enough next row (operandCount
+  // <= 2 at subCycles = 2) slips past and clobbers treeBuf mid-fold. foldArmed closes the window at issue
+  // time instead, for every cfg.
   val foldArmed   = RegInit(false.B)
 
   // accept a new input beat: overlap the current beat's last-sub issue when the successor needs no gap,
@@ -331,7 +305,7 @@ class StreamReduce(
   val issuing = haveBeat
   val res     = Wire(Vec(computeLanes, UInt(accWidth.W)))
   for (j <- 0 until computeLanes)
-    res(j) := accLane(inLanes(li(sub, j)), regs(pIssue)(li(sub, j)), firstBeat)
+    res(j) := accLane(inLanes(li(sub, j)), regs(li(sub, j)), firstBeat)
 
   // A valid-pulse pipeline that is CLEARED by ext_start_i, so an in-flight scalar pulse from the previous
   // task (still propagating through accLat + the treeLat-deep reduce tree) can never fire — and push an
@@ -351,61 +325,20 @@ class StreamReduce(
   val retireValid   = ShiftRegister(issuing, accLat, false.B, true.B)
   val rowLastIssue  = issuing && lastSub && lastBeatInRow
   val rowLastRetire = clrPipe(rowLastIssue, accLat)
-  val pRetire       = ShiftRegister(pIssue, accLat)
+  // The row's partials at its last sub's retire, with that cycle's in-flight results merged in.
+  val outNow        = WireInit(regs)
   when(retireValid) {
-    for (j <- 0 until computeLanes) regs(pRetire)(li(subRetire, j)) := res(j)
-  }
-
-  // The row's result is the per-lane fold ACROSS banks, taken at the last sub's retire -- with that
-  // cycle's in-flight results merged in, exactly as the single-bank version merged `res` into `regs`.
-  //
-  // Combinational, `lanes` wide, and instantiated ONLY when accPartials > 1: at P=1 this collapses to the
-  // previous wiring and infers nothing. That is the area price of C2 -- one FP32 combine per lane on top
-  // of the accumulate ALUs -- and it is why accPartials is a cfg knob rather than a fixed choice.
-  val outPart = Wire(Vec(accPartials, Vec(lanes, UInt(accWidth.W))))
-  for (pp <- 0 until accPartials; i <- 0 until lanes) outPart(pp)(i) := regs(pp)(i)
-  when(retireValid) {
-    for (j <- 0 until computeLanes) outPart(pRetire)(li(subRetire, j)) := res(j)
-  }
-  // The partial fold is COMBINATIONAL, so it needs a combinational adder: treeAdd carries treePipe
-  // pipeline registers and its result would arrive a cycle after the capture, which reads as zero.
-  // (fp32max is already combinational, which is why MAX passed and ADD did not.) This adder sits in a
-  // register-to-register path at the ROW BOUNDARY, not in the per-beat accumulate recurrence, so it does
-  // not lengthen the loop that fpPipe exists to cut.
-  def partAdd(a: UInt, b: UInt): UInt = {
-    val m = Module(new FpAdd(FP32, FP32, FP32, 0)); m.io.in_a := a; m.io.in_b := b; m.io.out
-  }
-  // How many banks THIS row actually touched. Beat k of a row seeds/accumulates bank k % P, so a row of
-  // fewer than P beats never writes the top banks -- they still hold the PREVIOUS task's partials, and
-  // folding them in adds stale data to the result. Rows are short in practice (FlashAttention's state
-  // updates reduce over 2 beats), so this is the common case, not a corner: it is invisible at P=1, and at
-  // P=2 only because those rows happen to be exactly 2 beats. It surfaced the moment P went to 4.
-  // Banks at or above banksUsed contribute the op's identity instead: +0.0 for the sum, -inf for the max.
-  val FP32_NEG_INF = "hFF800000".U(accWidth.W)
-  val banksUsed    =
-    if (accPartials == 1) 1.U
-    else Mux(operandCount < accPartials.U, operandCount, accPartials.U)
-
-  val outNow = Wire(Vec(lanes, UInt(accWidth.W)))
-  for (i <- 0 until lanes) {
-    outNow(i) :=
-      (if (accPartials == 1) outPart(0)(i)
-       else
-         (1 until accPartials).foldLeft(outPart(0)(i)) { (acc, pp) =>
-           val live = pp.U < banksUsed
-           val b    = outPart(pp)(i)
-           if (multiOp) Mux(opcode === OP_MAX, fp32max(acc, Mux(live, b, FP32_NEG_INF)),
-                            partAdd(acc, Mux(live, b, FP32_ZERO)))
-           else if (hasMax) fp32max(acc, Mux(live, b, FP32_NEG_INF))
-           else partAdd(acc, Mux(live, b, FP32_ZERO))
-         })
+    for (j <- 0 until computeLanes) {
+      regs(li(subRetire, j))   := res(j)
+      outNow(li(subRetire, j)) := res(j)
+    }
   }
 
   // ---- horizontal collapse: TIME-MUXED in-place log-fold (area knob) ----------------------------------
-  // Replaces the fully-parallel `lanes-1` FP adder tree (the module's dominant area) with a small fold:
-  // once per row, snapshot the captured partials (outNow) into treeBuf and reduce over numLevels rounds;
+  // Instead of a fully-parallel `lanes-1` FP adder tree (which would be the module's dominant area), a small
+  // fold: once per row, snapshot the captured partials (outNow) into treeBuf and reduce over numLevels rounds;
   // round r pairs treeBuf[2i],treeBuf[2i+1] -> treeBuf[i] for i in [0,pairs) with `treeLanes` pipelined FP
-  // ops per cycle (the SAME pairwise order as the old balanced tree => bit-identical). ext_data_i.ready is
+  // ops per cycle (the pairwise order of a balanced tree). ext_data_i.ready is
   // held low while folding (treeBusy) so the next row cannot overwrite treeBuf: a single big row (softmax)
   // hides the fold entirely, multi-row pays a per-row fold bubble. treeLanes trades ALUs for fold cycles.
   val treeBuf   = Reg(Vec(lanes, UInt(accWidth.W)))
@@ -459,7 +392,7 @@ class StreamReduce(
   }
   // LANEWISE: narrow each lane's partial in place and emit them as one beat, registered so the timing
   // matches treeDone (one cycle after rowLastRetire). The row still produces exactly ONE output beat, so
-  // the credit reservation and the tap ordering above are unchanged.
+  // the credit reservation and the tap ordering above hold for it too.
   val laneBeatReg = Reg(UInt((lanes * elementWidth).W))
   val laneDone    = RegInit(false.B)
   when(ext_start_i) {
@@ -487,9 +420,9 @@ class StreamReduce(
   // treeBuf mid-fold. This guards a mis-sized treeLanes (fold slower than a 1-beat row) in sim.
   assert(!(treeBusy && rowLastRetire), "StreamReduce fold: a row completed while the fold was still busy")
   // Output packing: narrow the FP32 scalar to the transport grid (default), or — when fp32out is set and
-  // the transport is narrower than FP32 — splat the raw FP32 scalar across the 512-bit beat (dataWidth/32
-  // copies). The beat stays 512-bit either way, so the writer AGU is unchanged. (FP32 transport => nothing
-  // to narrow, the mux folds away at elaboration.)
+  // the transport is narrower than FP32 — splat the raw FP32 scalar across the beat (dataWidth/32 copies).
+  // The beat width is the same either way, so the writer AGU does not care. (FP32 transport => nothing to
+  // narrow, the mux folds away at elaboration.)
   // ONE narrow, splatted: every lane carries the same scalar, so one conversion serves the whole beat, where
   // `Seq.fill(lanes)(narrow(x))` would build `lanes` identical converters.
   val scalarNarrow  = narrow(scalarFP32)

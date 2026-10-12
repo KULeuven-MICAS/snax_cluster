@@ -15,6 +15,8 @@
 #                           -> silu(gate) (.) up (FP16) -> the down GEMV's A operand
 #   V1+V2  unit rows        a 2048- and a 512-wide row whose mean square is EXACTLY 1: the
 #                           1/rms is exactly 1, so norm and quantise must be bit-exact
+#   V2     compact A        four 2048-wide rows (xn, hn, the unit row, x) into rows 0..3 of
+#                           the several-token GEMV's compact A operand (util/layout.py to_a4)
 #
 # The A operands' goldens are their INT8 values: the app compares the row the GEMV reads.
 
@@ -27,10 +29,10 @@ import hjson
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))  # the util package
-from util import golden, hwmodel  # noqa E402
+from util import golden, hwmodel, simd  # noqa E402
 from util.emit import Emitter  # noqa E402
 from util.fp import F16, bits16, f32bits, quant_i8  # noqa E402
-from util.layout import mesh_from_hwcfg  # noqa E402
+from util.layout import mesh_from_hwcfg, to_a4  # noqa E402
 
 
 def unit_row(n, rng):
@@ -53,7 +55,9 @@ def main():
                     help="weight width: INT8, or INT4 through the B converter")
     args = ap.parse_args()
     prm = hjson.loads(args.swcfg.read_text())
-    mesh = mesh_from_hwcfg(hjson.loads(args.hwcfg.read_text()))
+    hw = hjson.loads(args.hwcfg.read_text())
+    mesh = mesh_from_hwcfg(hw)
+    simd.use_hwcfg(hw)  # the SIMD core the goldens model
     if mesh != (16, 4, 16):
         raise ValueError(f"the A operand's row write assumes a (16, 4, 16) mesh, not {mesh}")
 
@@ -107,12 +111,18 @@ def main():
         em.blob(f"g_{key}_a8", np.asarray(sl["a8"], dtype=np.int8))
 
     # ---- the unit rows: mean square exactly 1 --------------------------------------------
+    units = {}
     for n in (2048, 512):
         u = unit_row(n, rng)
         un = hwmodel.rmsnorm(u)
         assert np.array_equal(bits16(un), bits16(u)), "1/rms of a unit row must be exactly 1"
         em.blob(f"unit{n}", bits16(u))
         em.blob(f"g_unit{n}a", np.asarray(quant_i8(un, S.x.inv), dtype=np.int8))
+        units[n] = un
+
+    # ---- the compact A operand of four tokens: rows 0..3, every row quantised by INV_X ------
+    rows = [H["xn"], H["hn"], units[2048], H["x16"]]
+    em.blob("g_a4", to_a4(np.stack([quant_i8(r, S.x.inv) for r in rows])))
     em.write(args.header, args.blob_dir / "blobs.S")
     sys.stderr.write(f"[dsv2-simd datagen] {em.bytes / 2**10:.0f} KiB of blobs\n")
 

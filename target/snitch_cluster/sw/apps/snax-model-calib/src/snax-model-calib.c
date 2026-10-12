@@ -14,6 +14,10 @@
 //   3a SIMD    cycles vs number of 1-beat tasks -> the per-task start/drain cost
 //   3b SIMD    cycles vs beats in one task    -> the per-beat initiation interval and fill
 //
+// The two engines have different beats: the xDMA's is XDMA_WIDTH, the SIMD core's
+// SIMD_BEAT_BYTES (its TCDM port, which also sets its lane count). Each sweep counts in
+// its own engine's beat.
+//
 // Each point is run TWICE and the second value reported: the first pays the instruction
 // cache, and a cold number would be fitted into a steady-state constant.
 //
@@ -27,7 +31,8 @@
 #include "snax-xdma-lib.h"
 #include "snrt.h"
 
-#define BEAT SIMD_BEAT_BYTES
+#define SIMD_BEAT SIMD_BEAT_BYTES
+#define XDMA_BEAT XDMA_WIDTH
 
 // ---- sweep points -------------------------------------------------------------
 #define N_COPY 9
@@ -40,9 +45,21 @@ static const uint32_t task_counts[N_TASKS] = {1, 2, 4, 8, 16, 32, 64};
 #define N_BEATS 8
 static const uint32_t beat_counts[N_BEATS] = {1, 2, 4, 8, 32, 128, 256, 512};
 
+// The FlashAttention tile the 3c sequence mimics (snax-flashattn-decode): Bc keys by Br
+// queries, one beat = one key x SIMD_FP16_LANES queries, so the score tile is FA_PLANES
+// planes of FA_BC beats.
+#define FA_BC 512u
+#define FA_BR 32u
+#define FA_PLANES (FA_BR / SIMD_FP16_LANES)
+#define N_SEQ (7u + FA_PLANES)  // rowmax, 3 state updates, one epilogue per plane, 3 more
+
+#define MAX2(a, b) ((a) > (b) ? (a) : (b))
 #define MAX_COPY 131072u
-#define MAX_MEMSET_BYTES (2048u * BEAT)
-#define SIMD_BUF_BYTES (512u * BEAT)
+#define MAX_MEMSET_BYTES (2048u * XDMA_BEAT)
+// The largest SIMD task below: the 3b sweep's 512 beats, the tile's rowmax over every
+// plane, or one plane's epilogue (latch + plane).
+#define SIMD_BUF_BEATS MAX2(MAX2(512u, FA_PLANES * FA_BC), 1u + FA_BC)
+#define SIMD_BUF_BYTES (SIMD_BUF_BEATS * SIMD_BEAT)
 
 // The iDMA source. .bss maps to main memory on this target, which is what makes this a
 // DRAM->TCDM transfer rather than a TCDM->TCDM one.
@@ -110,7 +127,7 @@ int main() {
     uint32_t simd_src = top;    top += SIMD_BUF_BYTES;
     uint32_t simd_dst = top;    top += SIMD_BUF_BYTES;
     uint32_t res_off  = top;    top += sizeof(results_t);
-    top = (top + BEAT - 1u) & ~(BEAT - 1u);
+    top = (top + XDMA_BEAT - 1u) & ~(XDMA_BEAT - 1u);
 
     volatile results_t *res = (volatile results_t *)(l1 + res_off);
 
@@ -118,14 +135,16 @@ int main() {
     // propagates. Define the whole arena before anyone reads it -- the same rule the
     // FlashAttention kernels follow.
     if (snax_is_xdma_core()) {
-        xdma_fill_arm((uint32_t)l1, BEAT, (top + BEAT - 1u) / BEAT, 0u);
+        xdma_fill_arm((uint32_t)l1, XDMA_BEAT, top / XDMA_BEAT, 0u);
         snax_xdma_local_wait(snax_xdma_start());
     }
     snrt_cluster_hw_barrier();
 
     if (snax_is_gemm_core()) {
         printf("=== split-cluster engine calibration ===\n");
-        printf("  arena %lu B, beat %u B\n", (unsigned long)top, (unsigned)BEAT);
+        printf("  arena %lu B, xDMA beat %u B, SIMD beat %u B (%u FP16 lanes)\n",
+               (unsigned long)top, (unsigned)XDMA_BEAT, (unsigned)SIMD_BEAT,
+               (unsigned)SIMD_FP16_LANES);
     }
     snrt_cluster_hw_barrier();
 
@@ -148,7 +167,7 @@ int main() {
         for (uint32_t i = 0; i < N_MEMSET; i++) {
             for (uint32_t rep = 0; rep < 2; rep++) {
                 uint32_t t0 = snrt_mcycle();
-                xdma_fill_arm((uint32_t)(l1 + mset_dst), BEAT, memset_beats[i], 0u);
+                xdma_fill_arm((uint32_t)(l1 + mset_dst), XDMA_BEAT, memset_beats[i], 0u);
                 snax_xdma_local_wait(snax_xdma_start());
                 uint32_t t1 = snrt_mcycle();
                 res->memset_wall[i] = t1 - t0;
@@ -207,15 +226,27 @@ int main() {
         // 3c  A SEQUENCE OF DIFFERENT SHAPES, which is what a real kernel issues.
         //
         // The sweeps above re-fire ONE configured task, so they price the fire path and nothing
-        // else. A kernel's tile is nine tasks with nine different shapes, each re-programmed
-        // before it is fired, and the first pass through that pays for nine distinct code paths
+        // else. A kernel's tile is a run of tasks with different shapes, each re-programmed
+        // before it is fired, and the first pass through that pays for distinct code paths
         // in a cold instruction cache. That one-time cost lands on the lane, not on the engine:
         // it delays when the tile's result is published without adding a cycle of engine busy,
         // which is exactly the kind of term a busy-counter model cannot see.
-        static const uint32_t seq_beats[9] = {512, 2, 2, 2, 1, 513, 2, 2, 2};
+        //
+        // The run is the FA tile's, in beats read: the rowmax over every plane in one task
+        // (FA_PLANES rows of FA_BC), three per-query state updates over both halves (pairs,
+        // 2 beats per plane), one epilogue per plane (its -m latch + the plane), and three
+        // more state updates (corr*l, l_new, the commit).
+        uint32_t seq_beats[N_SEQ];
+        {
+            uint32_t n = 0;
+            seq_beats[n++] = FA_PLANES * FA_BC;
+            for (uint32_t k = 0; k < 3; k++) seq_beats[n++] = 2u * FA_PLANES;
+            for (uint32_t h = 0; h < FA_PLANES; h++) seq_beats[n++] = 1u + FA_BC;
+            for (uint32_t k = 0; k < 3; k++) seq_beats[n++] = 2u * FA_PLANES;
+        }
         for (uint32_t rep = 0; rep < 2; rep++) {
             uint32_t t0 = snrt_mcycle();
-            for (uint32_t i = 0; i < 9; i++) {
+            for (uint32_t i = 0; i < N_SEQ; i++) {
                 snax_simd_shape_flat(&in, l1 + simd_src, seq_beats[i]);
                 snax_simd_shape_flat(&out, l1 + simd_dst, seq_beats[i]);
                 snax_simd_configure(&in, &out, &op, 1);
@@ -229,8 +260,8 @@ int main() {
     snrt_cluster_hw_barrier();
 
     if (snax_is_gemm_core()) {
-        printf("CALIB simd_seq 9 %lu %lu\n", (unsigned long)res->seq_cold,
-               (unsigned long)res->seq_warm);
+        printf("CALIB simd_seq %lu %lu %lu\n", (unsigned long)N_SEQ,
+               (unsigned long)res->seq_cold, (unsigned long)res->seq_warm);
         for (uint32_t i = 0; i < N_COPY; i++)
             printf("CALIB idma_copy %lu %lu 0\n", (unsigned long)copy_bytes[i],
                    (unsigned long)res->copy_wall[i]);

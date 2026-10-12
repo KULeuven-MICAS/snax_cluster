@@ -29,6 +29,8 @@ from data_utils import format_scalar_definition, format_vector_definition  # noq
 from snax_utils import (  # noqa E402
     block_gemm_golden_model,
     align_wide_addr,
+    simd_beat_bytes,
+    simd_fp16_lanes,
 )  # noqa E402
 
 np.random.seed(42)
@@ -53,6 +55,102 @@ def _mesh(kwargs):
         "this kernel emits array_shape = data_type = 0, and the cfg's shape 0 is %s" % (mesh,)
     )
     return mesh
+
+
+def _simd_cfg(kwargs):
+    for core in kwargs["cluster"]["hives"][0]["cores"]:
+        if isinstance(core, dict) and "snax_simd_cfg" in core:
+            return core["snax_simd_cfg"]
+    raise ValueError("this cluster has no SIMD core")
+
+
+def _reduce_partials(kwargs):
+    """Rotating FP32 partials per lane in the SIMD core's StreamReduce: its accumulate latency.
+
+    Beat k of a row accumulates into partial k mod P, P = 2*fpPipe + 1, and the row's result
+    folds the partials as a balanced tree -- that order is what the rowsum golden follows.
+    """
+    for ext in _simd_cfg(kwargs)["reader_extensions"]:
+        if "HasSimdStreamReduce" in ext:
+            return 2 * int(ext["HasSimdStreamReduce"].get("fpPipe", 1)) + 1
+    raise ValueError("the SIMD core has no StreamReduce")
+
+
+def fa_layout(kwargs):
+    """The kernel's score-tile and P8 layouts, which the descriptors and the goldens share.
+
+    ONE SIMD BEAT IS ONE KEY OF ONE ARRAY COLUMN BLOCK: meshCol queries, one FP16 lane each.
+    The kernel requires SIMD_FP16_LANES == meshCol, so a beat is exactly one row of an array
+    output block, and Br = N*meshCol queries are N beats per key. The score tile S^T is
+    therefore stored as N PLANES, plane n = queries n*meshCol.., one beat per key, with a
+    spare beat on either side:
+
+        plane n:  [ latch ][ key 0 ][ key 1 ] .. [ key Bc-1 ][ m_old ]      s_pitch bytes
+
+    The latch is the sticky-B operand the epilogue needs immediately before its data (-m_new
+    of half n); m_old is read as the row's last beat by the rowmax, so that one lanewise MAX
+    gives max(m_old, rowmax) directly. The D32 port writes the key rows (see cd_map).
+
+    P8 is laid out n-major, one half per epilogue task, each followed by its two tail beats:
+
+        half n:   [ B block (k=0, n) ] .. [ B block (k=Bc/4-1, n) ][ rowsum ][ corr*l_old ]
+
+    so PV's B reader walks k in tileSize*meshCol = 64 B steps, the rate its A reader walks V.
+    """
+    meshRow, tileSize, meshCol = _mesh(kwargs)
+    lanes, beat = simd_fp16_lanes(kwargs), simd_beat_bytes(kwargs)
+    assert lanes == meshCol, (
+        "one SIMD beat must be one array output row: %d FP16 lanes against meshCol = %d"
+        % (lanes, meshCol))
+    Bc = kwargs["M"] * meshRow
+    return {
+        "beat": beat,
+        "lanes": lanes,
+        "s_pitch": (Bc + 2) * beat,
+        "p_pitch": Bc * meshCol + 2 * beat,
+    }
+
+
+def cd_map(kwargs):
+    """The C/D port's address map: spatial strides and the INT32 and FP16 temporal walks.
+
+    The port's 16 channels are grouped by the cfg's spatial_bounds (channel i at
+    sl0*(i % b0) + sl1*((i / b0) % b1)), with sl1 = b0 banks, so one 1024 b transaction is
+    128 contiguous bytes: 4 key rows of meshCol FP16 scores, or 2 rows of meshCol INT32.
+    Temporal loop 0 steps those chunks (contiguous in both widths), loop 1 the N column
+    blocks, loop 2 the M row blocks:
+
+        INT32 (C and D, PV's O^T)  block (m, n) at m*N*1 KiB + n*1 KiB, row-major inside
+        FP16  (D, QK's S^T)        block (m, n) at n*s_pitch + m*meshRow*beat: plane n
+
+    C and D share the INT32 map, so O += P.V accumulates against itself. The converter halves
+    the beats D emits, so the FP16 walk has its own bound 0, n stride and m stride; the kernel
+    writes them per dispatch (gemm_d32_emit_fp16).
+    """
+    meshRow, tileSize, meshCol = _mesh(kwargs)
+    serial = _acc(kwargs)["snax_versacore_serial_c_d_width"]
+    sbounds = [
+        int(b)
+        for b in kwargs["snax_versacore_streamer_template"]["data_reader_writer_params"][
+            "spatial_bounds"
+        ][0]
+    ]
+    lay = fa_layout(kwargs)
+    blk32 = meshRow * meshCol * output_data_width // 8
+    m = {
+        "sbounds": sbounds,
+        "sl": [bankWidth // 8, sbounds[0] * bankWidth // 8],
+        "i32": {
+            "b0": output_data_width * meshRow * meshCol // serial,
+            "ts": [serial // 8, blk32, kwargs["N"] * blk32],
+        },
+        "f16": {
+            "b0": 16 * meshRow * meshCol // serial,
+            "ts": [serial // 8, lay["s_pitch"], meshRow * lay["beat"]],
+        },
+    }
+    assert m["i32"]["ts"][0] == m["f16"]["ts"][0], "the kernel does not rewrite D's chunk stride"
+    return m
 
 
 def score_scale_split(a):
@@ -83,16 +181,37 @@ def _scores(Kj, B, M, N, K, meshRow, tileSize, meshCol):
     return S.transpose(0, 2, 1, 3).reshape(M * meshRow, N * meshCol)
 
 
-def p8_interleave_offset(key, q, N, tileSize, meshCol):
-    """Byte offset of P8(key, query) in the buffer the INTERLEAVE quantiser writes.
+def p8_interleave_offset(key, q, tileSize, meshCol, p_pitch):
+    """Byte offset of P8(key, query) in a P8 buffer, as the kernel's epilogue writes it.
 
-    Input beat b of 4-beat group g is key 4g+b; output beat (2g + q/16) holds, at byte
-    4*(q%16)+b, lane q of that input beat. Output beat h of group g is therefore B block
-    (k = g, n = h), k-major: block (k, n) at (k*N + n)*64. The kernel's P8_OFF() places the
-    same blocks P8_SLOT bytes apart instead of 64.
+    One epilogue task quantises one N half (queries n*meshCol..) and writes its B blocks
+    (k, n) one after another, k = key/tileSize: n-major, half n at n*p_pitch, block k at
+    k*tileSize*meshCol, and inside the block one tileSize-byte atom per query. The kernel's
+    P8_OFF() is this formula; emit_attention_golden() checks it against the quantiser's
+    INTERLEAVE4 output order and against the walk PV's B reader performs.
     """
-    blk = (key // tileSize) * N + q // meshCol
-    return blk * tileSize * meshCol + (q % meshCol) * tileSize + key % tileSize
+    n, c = q // meshCol, q % meshCol
+    return n * p_pitch + (key // tileSize) * tileSize * meshCol + c * tileSize + key % tileSize
+
+
+def lanewise_sum(x16, partials):
+    """StreamReduce ADD|LANEWISE over the beats of x16 [beats, lanes], in the core's order.
+
+    Beat k accumulates into FP32 partial k mod `partials` (one rounding per add: the FMA's
+    product x*1 is exact), and the row's result folds the partials it wrote as a balanced
+    pairwise tree, ((p0 + p1) + p2) for three, before one narrowing to FP16.
+    """
+    f32 = np.float32
+    x = x16.astype(f32)
+    acc = [None] * partials
+    for k in range(x.shape[0]):
+        p = k % partials
+        acc[p] = x[k].copy() if acc[p] is None else (acc[p] + x[k]).astype(f32)
+    vals = [a for a in acc if a is not None]
+    while len(vals) > 1:
+        vals = [(vals[i] + vals[i + 1]).astype(f32) if i + 1 < len(vals) else vals[i]
+                for i in range(0, len(vals), 2)]
+    return vals[0].astype(np.float16)
 
 
 def emit_attention_golden(Ks, Vs, B, **kwargs):
@@ -105,7 +224,7 @@ def emit_attention_golden(Ks, Vs, B, **kwargs):
         m      max over keys of S16, running across tiles           (exact)
         corr   exp(a * fp16(m_old - m_new))                        EW0 ADD -> Map EXP
         P      exp(a * fp16(S16 - m_new)), stored FP16 in-chain     EW0 ADD -> Map EXP
-        rowsum sum over keys of P in FP32, narrowed to FP16         Reduce TAP
+        rowsum sum over keys of P in FP32 partials, narrowed once   Reduce TAP (lanewise_sum)
         P8     sat(rne(127 * P))                                    Fp16ToInt8, inv_scale 127
         l      fp16(rowsum + fp16(corr * l_old))                    EW1 MUL, Reduce ADD
         O      rne(O * corr[col]) + V^T . P8^T                      Int32ColumnScale on C, PV
@@ -132,6 +251,9 @@ def emit_attention_golden(Ks, Vs, B, **kwargs):
     s2_m = (K * tileSize) // meshRow      # d / meshRow
     s2_k = Bc // tileSize                 # Bc / tileSize
     assert Bc % tileSize == 0, "the interleave groups keys by tileSize = 4"
+    lay = fa_layout(kwargs)
+    lanes, beat, p_pitch = lay["lanes"], lay["beat"], lay["p_pitch"]
+    partials = _reduce_partials(kwargs)
 
     m16 = np.full(Br, -65504.0, dtype=f16)   # the xDMA seeds 0xFBFF
     l16 = np.zeros(Br, dtype=f16)
@@ -152,7 +274,7 @@ def emit_attention_golden(Ks, Vs, B, **kwargs):
             corr16 = np.exp(a32 * d16.astype(f32)).astype(f16)
         x16 = (S16.astype(f32) - mnew.astype(f32)).astype(f16)
         p16 = np.exp(a32 * x16.astype(f32)).astype(f16)
-        rsum16 = p16.astype(f32).sum(axis=0).astype(f16)
+        rsum16 = lanewise_sum(p16, partials)
         lsc16 = (corr16.astype(f32) * l16.astype(f32)).astype(f16)
         l16 = (rsum16.astype(f32) + lsc16.astype(f32)).astype(f16)
         pq = q127 * p16.astype(f32)
@@ -183,21 +305,34 @@ def emit_attention_golden(Ks, Vs, B, **kwargs):
         m16 = mnew
 
         # ---- the layout claim, checked here rather than trusted ----------------------
-        # Build the bytes the interleave quantiser writes, then walk them the way PV's B
-        # reader does with its k-major strides {N*64, 64}. The result must be b_can.
+        # Build the bytes the epilogue writes -- one task per N half, its quantiser's
+        # INTERLEAVE4 turning each group of 4 key beats (lanes = the half's queries) into two
+        # output beats, out[q / (L/2)][4*(q % (L/2)) + b] = quant(beat_b[q]) at L lanes, the
+        # writer laying the output beats down contiguously -- then walk them the way PV's B
+        # reader does, strides {tileSize*meshCol, p_pitch}. The result must be b_can, and
+        # every byte must sit where p8_interleave_offset() (the kernel's P8_OFF) says.
         if j == 0:
-            mem = np.zeros(Bc * Br, dtype=np.int64)
-            for key in range(Bc):
+            mem = np.full(N * p_pitch, -999, dtype=np.int64)
+            half = lanes // 2
+            for nn in range(N):
+                for g in range(Bc // tileSize):
+                    for b in range(tileSize):
+                        for q in range(lanes):
+                            at = (nn * p_pitch + (2 * g + q // half) * beat
+                                  + tileSize * (q % half) + b)
+                            mem[at] = p8[tileSize * g + b, nn * meshCol + q]
+            for key in range(0, Bc, 7):
                 for q in range(Br):
-                    mem[p8_interleave_offset(key, q, N, tileSize, meshCol)] = p8[key, q]
+                    assert mem[p8_interleave_offset(key, q, tileSize, meshCol, p_pitch)] \
+                        == p8[key, q], "P8_OFF disagrees with the quantiser's output order"
             blk = tileSize * meshCol
             walked = np.zeros((N, s2_k, meshCol, tileSize), dtype=np.int64)
             for kk in range(s2_k):
                 for nn in range(N):
-                    base = kk * (N * blk) + nn * blk
+                    base = nn * p_pitch + kk * blk
                     walked[nn, kk] = mem[base:base + blk].reshape(meshCol, tileSize)
             assert (walked.reshape(-1) == b_can).all(), \
-                "interleaved P8 walked k-major is not the B operand P^T"
+                "interleaved P8 walked by PV's B reader is not the B operand P^T"
             # ...while the plain 2:1 pack, read the same way, is not: that is why the interleave
             # exists.
             assert not (p8.reshape(-1) == b_can).all()
@@ -221,31 +356,16 @@ def emit_attention_golden(Ks, Vs, B, **kwargs):
 
     # ---- then put it where the port actually writes it -------------------------
     #
-    # The C/D spatial map is chosen so the FP16 score tile lands row-major -- one key per
-    # 64 B beat, which is what the LANEWISE reduce needs. C and D share those strides and
-    # the INT32 side is twice as wide, so O comes out PERMUTED. That is deliberate (C and
-    # D permute identically, so O += P.V still accumulates against itself) but it means a
-    # golden in canonical block order is not comparable.
-    #
-    # The map is derived from the emitted descriptors, not assumed: the array serialises a
-    # meshRow x meshCol block into chunks of serial_c_d_width, each chunk into 16 channels
-    # of bankWidth, and the AGU places channel i at sl0*(i%4) + sl1*((i/4)%4). The same
-    # formula run at FP16 has to come out exactly row-major -- that is the assert below,
-    # and it is what says the model of the serialisation is right rather than plausible.
+    # O^T is compared in the order the C/D port lays it down, derived from the emitted
+    # descriptors (cd_map) rather than assumed: the array serialises a meshRow x meshCol
+    # block into chunks of serial_c_d_width, each chunk into 16 channels of bankWidth, and
+    # the AGU places channel i at sl0*(i % b0) + sl1*((i / b0) % b1). The same model run on
+    # the FP16 walk has to come out as the kernel's score planes -- that is the self-test
+    # below, and it is what says the model of the serialisation is right rather than
+    # plausible.
     serial_c_d = _acc(kwargs)["snax_versacore_serial_c_d_width"]
-    slstride = [bankWidth // 8, N * meshCol * 16 // 8]
-    ts0, ts1 = serial_c_d * N // 8, meshCol * 16 // 8
-
-    # How the AGU places channel i. The port declares its own spatial grouping, so read it
-    # rather than assume one: [4, 4] interleaves N blocks (needed when Nu < Br), [16] is a
-    # plain contiguous transaction (available once Nu == Br). Getting this wrong is what the
-    # FP16 assert below catches.
-    sbounds = [
-        int(b)
-        for b in kwargs["snax_versacore_streamer_template"]["data_reader_writer_params"][
-            "spatial_bounds"
-        ][0]
-    ]
+    cdm = cd_map(kwargs)
+    sbounds, slstride = cdm["sbounds"], cdm["sl"]
 
     def chan_off(ch):
         off, rem = 0, ch
@@ -254,7 +374,7 @@ def emit_attention_golden(Ks, Vs, B, **kwargs):
             rem //= b
         return off
 
-    def scatter(width, blocks, ts2, elem_bytes):
+    def scatter(width, blocks, ts, elem_bytes):
         """byte offset of every (block, row, col) element, in the port's order."""
         per_chunk = serial_c_d // width          # elements in one serialised chunk
         per_chan  = bankWidth // width           # elements in one channel
@@ -266,23 +386,22 @@ def emit_attention_golden(Ks, Vs, B, **kwargs):
                         e = r * meshCol + c
                         ch = (e % per_chunk) // per_chan
                         out[(mm, nn, r, c)] = (
-                            mm * ts2 + nn * ts1 + (e // per_chunk) * ts0
+                            mm * ts[2] + nn * ts[1] + (e // per_chunk) * ts[0]
                             + chan_off(ch)
                             + (e % per_chan) * elem_bytes
                         )
         return out
 
-    # self-test: at FP16 the same model must give plain [key][query] row-major
-    fp16_map = scatter(16, 1, N * 16 * meshRow * meshCol // 8, 2)
-    for (mm, nn, r, c), b in fp16_map.items():
-        want = ((mm * meshRow + r) * (N * meshCol) + nn * meshCol + c) * 2
-        assert b == want, "D32 address model disagrees with the FP16 row-major layout"
+    # self-test: the FP16 walk lands key k of plane n at n*s_pitch + k*beat, query c of the
+    # plane at 2c -- one SIMD beat per key, the layout the lanewise reductions need.
+    for (mm, nn, r, c), b in scatter(16, M, cdm["f16"]["ts"], 2).items():
+        want = nn * lay["s_pitch"] + (mm * meshRow + r) * beat + c * 2
+        assert b == want, "D32 address model disagrees with the FP16 score planes"
 
-    ts2 = N * output_data_width * meshRow * meshCol // 8
     o_mem = np.zeros(o.size, dtype=np.int64)
     tol_mem = np.zeros(o.size, dtype=np.int64)
     seen = np.zeros(o.size, dtype=bool)
-    for (mm, nn, r, c), b in scatter(output_data_width, s2_m, ts2, 4).items():
+    for (mm, nn, r, c), b in scatter(output_data_width, s2_m, cdm["i32"]["ts"], 4).items():
         w = b // 4
         assert b % 4 == 0 and not seen[w], "D32 INT32 address map is not a bijection"
         seen[w] = True
@@ -302,7 +421,7 @@ def emit_attention_golden(Ks, Vs, B, **kwargs):
         "#define D32_FP16_SHIFT %d  // Int32ToFp16 csr(1): power-of-two output scale" % shift,
         "#define SCORE_SCALE_BITS 0x%08Xu  // a' = %r, FP32: the part of a the exp applies"
         % (int(np.array(a32).view(np.uint32)), float(a32)),
-        "#define PGOLD_STRIDE %d  // every Nth beat of P is checked" % stride,
+        "#define PGOLD_STRIDE %d  // every Nth key of P is checked" % stride,
         "#define PGOLD_NBEATS %d" % len(beats),
         "// (query, tile >= 1) pairs whose running max moved, i.e. where corr != 1 and the",
         "// O rescale is load-bearing; and the smallest corr applied.",
@@ -358,9 +477,25 @@ def emit_geometry_section(**kwargs):
         "#define %-*s %*d  // %s" % (n, name, w, value, note)
         for name, value, note in rows
     )
+    # The score-plane and P8 layouts (fa_layout) and the D port's FP16 walk onto the planes
+    # (cd_map): the kernel allocates its buffers and programs QK's D32 writer from these.
+    lay, f16 = fa_layout(kwargs), cd_map(kwargs)["f16"]
+    lrows = [
+        ("S_PITCH", lay["s_pitch"], "one N plane of S^T: [latch][Bc key beats][m_old]"),
+        ("P_PITCH", lay["p_pitch"], "one N half of P8: [Bc/4 B blocks][rowsum][corr*l_old]"),
+        ("D16_TLBOUND0", f16["b0"], "QK's D32 walk at FP16: chunks per output block"),
+        ("D16_TLSTRIDE1", f16["ts"][1], "                     the next N block = plane"),
+        ("D16_TLSTRIDE2", f16["ts"][2], "                     the next M block = 16 keys"),
+    ]
+    n = max(len(name) for name, _, _ in lrows)
+    w = max(len(str(v)) for _, v, _ in lrows)
+    lbody = "\n".join(
+        "#define %-*s %*du  // %s" % (n, name, w, value, note)
+        for name, value, note in lrows
+    )
     return (
         "// ---- TILE GEOMETRY -------------------------------------------------------"
-        "---\n" + body + "\n"
+        "---\n" + body + "\n" + lbody + "\n"
     )
 
 
@@ -384,9 +519,6 @@ quantized_output_data_width = 8
 def emit_matmul_data(**kwargs):
 
     meshRow, tileSize, meshCol = _mesh(kwargs)
-    # C and D are Mu*Nu INT32 = 8192 b in the array and reach TCDM over a 2048 b port, so
-    # every output block is four serialised chunks. One number drives both descriptors.
-    serial_c_d_width = _acc(kwargs)["snax_versacore_serial_c_d_width"]
 
     # matmul settings
     data_str = []
@@ -443,108 +575,41 @@ def emit_matmul_data(**kwargs):
     data_str += [format_scalar_definition("int32_t", "Btlstride2", 0)]
 
     # -----------------------------------------------------------
-    # streamer c32 settings
+    # streamer c32 and d32 settings
     # -----------------------------------------------------------
-    # The C/D port's 16 channels are grouped [4, 4] (see the cluster cfg): channel i sits
-    # at sl0*(i % 4) + sl1*((i / 4) % 4). Four channels carry 32 B -- one key's meshCol
-    # FP16 scores -- and the eight groups step by a WHOLE key row of Br = N*meshCol FP16,
-    # so the two N blocks INTERLEAVE and a 64 B beat is 32 queries of ONE key. That is the
-    # layout snax-flashattn.c reduces over; under a contiguous [8, 4] map a beat would be
-    # 16 queries x 2 keys and the LANEWISE rowmax would be meaningless.
+    # C and D share ONE INT32 map (cd_map): the 16 channels of the port are one contiguous
+    # 128 B transaction, and the temporal loops place output block (m, n) at
+    # m*N*1 KiB + n*1 KiB, row-major inside. That is PV's O^T, read back through C and
+    # written through D in place. QK's D writes FP16 score planes instead; the kernel
+    # switches D's bound 0 and strides 1 and 2 to the D16_* walk for it.
     #
-    #   spatial 0 : 4 channels x bankWidth/8   = 32 B   one key, meshCol FP16 scores
-    #   spatial 1 : 8 groups   x Br*2          = 64 B   pitch: one whole key row
-    #   temporal 0: serial chunk               = 512 B  the rows one transaction covers
-    #   temporal 1: the OTHER N block          = 32 B   the interleave offset
-    #   temporal 2: the next M block           = 2048 B
+    #   spatial 0 : one channel                = 8 B
+    #   spatial 1 : the next 4 channels        = 32 B    -> 16 channels = 128 B contiguous
+    #   temporal 0: serial chunk               = 128 B   2 INT32 rows (4 FP16 rows)
+    #   temporal 1: the next N block           = 1 KiB
+    #   temporal 2: the next M block           = N KiB
     #
-    # BOTH strides must be emitted: the port declares two, so a 1-element array feeds the
-    # second from off the end of the caller's stack and 8 of the 16 channels address
-    # garbage.
-    data_str += [format_scalar_definition("int32_t", "Cslstride0", bankWidth / 8)]
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "Cslstride1", kwargs["N"] * meshCol * 16 / 8
-        )
-    ]
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "Ctlbound0",
-            output_data_width * meshRow * meshCol / serial_c_d_width,
-        )
-    ]
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "Ctlstride0", serial_c_d_width * kwargs["N"] / 8
-        )
-    ]
-    data_str += [format_scalar_definition("int32_t", "Ctlbound1", kwargs["N"])]
-    data_str += [
-        format_scalar_definition("int32_t", "Ctlstride1", meshCol * 16 / 8)
-    ]
-    data_str += [format_scalar_definition("int32_t", "Ctlbound2", kwargs["M"])]
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "Ctlstride2",
-            kwargs["N"] * output_data_width * meshRow * meshCol / 8,
-        )
-    ]
-    data_str += [format_scalar_definition("int32_t", "Ctlbound3", 1)]
-    data_str += [format_scalar_definition("int32_t", "Ctlstride3", 0)]
-
-    # -----------------------------------------------------------
-    # streamer d32 settings
-    # -----------------------------------------------------------
-    # The C/D port's 16 channels are grouped [4, 4] (see the cluster cfg): channel i sits
-    # at sl0*(i % 4) + sl1*((i / 4) % 4). Four channels carry 32 B -- one key's meshCol
-    # FP16 scores -- and the eight groups step by a WHOLE key row of Br = N*meshCol FP16,
-    # so the two N blocks INTERLEAVE and a 64 B beat is 32 queries of ONE key. That is the
-    # layout snax-flashattn.c reduces over; under a contiguous [8, 4] map a beat would be
-    # 16 queries x 2 keys and the LANEWISE rowmax would be meaningless.
-    #
-    #   spatial 0 : 4 channels x bankWidth/8   = 32 B   one key, meshCol FP16 scores
-    #   spatial 1 : 8 groups   x Br*2          = 64 B   pitch: one whole key row
-    #   temporal 0: serial chunk               = 512 B  the rows one transaction covers
-    #   temporal 1: the OTHER N block          = 32 B   the interleave offset
-    #   temporal 2: the next M block           = 2048 B
-    #
-    # BOTH strides must be emitted: the port declares two, so a 1-element array feeds the
-    # second from off the end of the caller's stack and 8 of the 16 channels address
-    # garbage.
-    data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "D32slstride1", kwargs["N"] * meshCol * 16 / 8
-        )
-    ]
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "D32tlbound0",
-            output_data_width * meshRow * meshCol / serial_c_d_width,
-        )
-    ]
-    data_str += [
-        format_scalar_definition(
-            "int32_t", "D32tlstride0", serial_c_d_width * kwargs["N"] / 8
-        )
-    ]
-    data_str += [format_scalar_definition("int32_t", "D32tlbound1", kwargs["N"])]
-    data_str += [
-        format_scalar_definition("int32_t", "D32tlstride1", meshCol * 16 / 8)
-    ]
-    data_str += [format_scalar_definition("int32_t", "D32tlbound2", kwargs["M"])]
-    data_str += [
-        format_scalar_definition(
-            "int32_t",
-            "D32tlstride2",
-            kwargs["N"] * output_data_width * meshRow * meshCol / 8,
-        )
-    ]
-    data_str += [format_scalar_definition("int32_t", "D32tlbound3", 1)]
-    data_str += [format_scalar_definition("int32_t", "D32tlstride3", 0)]
+    # BOTH spatial strides must be emitted: the port declares two, so a 1-element array
+    # feeds the second from off the end of the caller's stack and 12 of the 16 channels
+    # address garbage.
+    cdm = cd_map(kwargs)
+    for port in ("C", "D32"):
+        data_str += [format_scalar_definition("int32_t", port + "slstride0", cdm["sl"][0])]
+        data_str += [format_scalar_definition("int32_t", port + "slstride1", cdm["sl"][1])]
+        data_str += [format_scalar_definition("int32_t", port + "tlbound0", cdm["i32"]["b0"])]
+        data_str += [
+            format_scalar_definition("int32_t", port + "tlstride0", cdm["i32"]["ts"][0])
+        ]
+        data_str += [format_scalar_definition("int32_t", port + "tlbound1", kwargs["N"])]
+        data_str += [
+            format_scalar_definition("int32_t", port + "tlstride1", cdm["i32"]["ts"][1])
+        ]
+        data_str += [format_scalar_definition("int32_t", port + "tlbound2", kwargs["M"])]
+        data_str += [
+            format_scalar_definition("int32_t", port + "tlstride2", cdm["i32"]["ts"][2])
+        ]
+        data_str += [format_scalar_definition("int32_t", port + "tlbound3", 1)]
+        data_str += [format_scalar_definition("int32_t", port + "tlstride3", 0)]
 
     # No D8 descriptors: VersaCore has ONE output port, and the quantised path is a write
     # extension on it rather than a writer of its own.

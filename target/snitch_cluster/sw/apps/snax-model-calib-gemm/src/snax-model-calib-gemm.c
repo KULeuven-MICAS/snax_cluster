@@ -31,7 +31,10 @@
 #include "snrt.h"
 
 #define REPS 8            // dispatches per phase; the first is cold and is reported separately
-#define TRAFFIC_BEATS 512 // SIMD task length while generating background traffic
+// SIMD task length while generating background traffic, sized in BYTES so the task moves
+// the same data (and, at one beat per cycle, runs as long) whatever the SIMD beat is.
+#define SIMD_TRAFFIC_BYTES 32768u
+#define TRAFFIC_BEATS (SIMD_TRAFFIC_BYTES / SIMD_BEAT_BYTES)
 #define TRAFFIC_BYTES 16384
 
 // The phases. `simd_pad` / `idma_pad` are idle cycles inserted after each unit of background

@@ -8,7 +8,9 @@
 #
 # x    [rows, cols]  row-major -- one token per row, the layout the layer hands the kernel
 # x_t  [cols, rows]  transposed -- one token per FP16 LANE, the layout that makes BOTH
-#                    reductions (max and sum) run along beats instead of across lanes
+#                    reductions (max and sum) run along beats instead of across lanes. A
+#                    beat holds simd_fp16_lanes(hw) tokens (read from the hardware cfg), so
+#                    the tile's rows are rows / lanes LANE GROUPS, one beat each per x_t row.
 #
 # Same numbers, same goldens, so the paths in the app are directly comparable.
 #
@@ -35,8 +37,8 @@ import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
+from snax_utils import simd_fp16_lanes  # noqa E402
 
-FP16_PER_BEAT = 32
 RNG_SEED = 320
 FP16_MAX = 65504.0
 
@@ -46,16 +48,17 @@ def fp16_mono(h: int) -> int:
     return (0x8000 - mag) if (h & 0x8000) else (0x8000 + mag)
 
 
-def emit_header_file(**kwargs):
+def emit_header_file(lanes, **kwargs):
     rows = int(kwargs["ROWS"])
     d = int(kwargs["D"])
-    if d <= 0 or d % FP16_PER_BEAT != 0:
-        raise ValueError(f"D must be a positive multiple of {FP16_PER_BEAT}, got {d}")
-    if rows != FP16_PER_BEAT:
+    if d <= 0 or d % lanes != 0:
+        raise ValueError(f"D must be a positive multiple of the {lanes} SIMD lanes, got {d}")
+    if rows <= 0 or rows % lanes != 0:
         raise ValueError(
-            f"ROWS must be {FP16_PER_BEAT}: the transposed path puts one token per FP16 "
-            f"lane, so a whole tile's per-token scalars are exactly one beat. Got {rows}.")
-    beats = d // FP16_PER_BEAT
+            f"ROWS must be a positive multiple of the {lanes} SIMD lanes: the transposed path "
+            f"puts one token per FP16 lane, so the tile is ROWS/{lanes} whole lane groups. "
+            f"Got {rows}.")
+    beats = d // lanes
 
     rng = np.random.default_rng(RNG_SEED)
     x16 = rng.uniform(-4.0, 4.0, size=(rows, d)).astype(np.float32).astype(np.float16)
@@ -136,10 +139,14 @@ def emit_header_file(**kwargs):
 def main():
     parser = argparse.ArgumentParser(description="Data for the SIMD FP16 softmax kernel")
     parser.add_argument("-c", "--cfg", type=pathlib.Path, required=True)
+    parser.add_argument("--hwcfg", type=pathlib.Path, required=True,
+                        help="cluster hardware cfg (sets the SIMD lane count)")
     args = parser.parse_args()
     with args.cfg.open() as f:
         param = hjson.loads(f.read())
-    print(emit_header_file(**param))
+    with args.hwcfg.open() as f:
+        hw = hjson.loads(f.read())
+    print(emit_header_file(simd_fp16_lanes(hw), **param))
 
 
 if __name__ == "__main__":

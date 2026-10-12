@@ -66,7 +66,7 @@
 //
 // USE. The L1 the block carves (dsv2_moe_carve) must be zero when a pass starts, and its sync
 // words (MOE_SY_BYTES) fresh. The input h is the caller's: NTOK rows MOE_HP apart, each with a
-// free beat right below it (the norm's seed). With one token the block keeps every slot's
+// free DSV2_PAD slot right below it (the norm's seed). With one token the block keeps every slot's
 // dequantised gate|up and down output for a check.
 
 #pragma once
@@ -99,10 +99,14 @@
 #define MOE_NSLOT_MAX (NTOK * TOP_K)      // the union of the tokens' top-6
 #define MOE_NJOB_MAX (3 + 2 * MOE_NSLOT_MAX)
 #define MOE_AROWS DSV2_AROWS(NTOK)        // rows of a GEMV A operand (snax-dsv2.h)
-#define MOE_EXP_BEATS (N_EXP / 32)
-#define MOE_HP (DSV2_BEAT + 2u * HID)     // the caller's h, and hn: a free beat below each row
-#define MOE_LGP (DSV2_BEAT + 2u * N_EXP)  // logits, a latch below
-#define MOE_ELP (DSV2_BEAT + 2u * N_EXP + DSV2_BEAT)  // [latch][e][sum]
+#define MOE_EXP_BEATS (N_EXP / DSV2_LANES)  // the router's logits, in SIMD beats
+#define MOE_HP (DSV2_PAD + 2u * HID)      // the caller's h, and hn: a free slot below each row
+#define MOE_LGP (DSV2_PAD + 2u * N_EXP)   // logits, a latch below
+#define MOE_ELP (DSV2_PAD + 2u * N_EXP + DSV2_PAD)  // [latch][e][sum]
+#define MOE_WP 16u                        // a token's top-6 weights: FP16, a row of eight
+#if TOP_K > 8
+#error "a token's top-k weights take a row of eight (MOE_WP)"
+#endif
 #define MOE_TB (6u * I_SH)                // a token's [gate|up | silu(gate)], FP16
 // A GEMV output of `bytes` per token: one token's buffer ends in the packed output's 15 slots of
 // spill; several tokens' outputs sit a pitch apart, each with its spill (snax-dsv2.h, SEVERAL
@@ -171,10 +175,10 @@ typedef struct {
 #define MOE_P_XPOST 12   // xDMA hart: waiting for a job
 #define MOE_XDMA_SPIN 200000u  // CSR polls per xDMA start or wait, about 5 cycles each
 
-// The bytes of a chunk of cb the xDMA carries: its second half, beat-aligned; none without
-// MOE_DUAL.
+// The bytes of a chunk of cb the xDMA carries: its second half, in whole xDMA beats; none
+// without MOE_DUAL.
 #if MOE_DUAL
-#define MOE_XBYTES(cb) (((cb) / 2u) & ~(DSV2_BEAT - 1u))
+#define MOE_XBYTES(cb) (((cb) / 2u) & ~(DSV2_XBEAT - 1u))
 #else
 #define MOE_XBYTES(cb) 0u
 #endif
@@ -220,8 +224,8 @@ static inline uint8_t *dsv2_moe_carve(dsv2_moe_t *m, uint8_t *p, volatile uint32
     m->sbuf[0] = (uint16_t *)MOE_TAKE(2 * 2 * I_SH);         // two factor slots, by job parity
     m->sbuf[1] = (uint16_t *)MOE_TAKE(2 * 2 * I_SH);
     m->sh = (uint16_t *)MOE_TAKE(NTOK * 2 * HID);            // the shared output, per token
-    m->hn = (uint16_t *)(MOE_TAKE(NTOK * MOE_HP) + DSV2_BEAT);  // [latch][hn] per token
-    m->ssq = MOE_TAKE(NTOK * DSV2_BEAT);
+    m->hn = (uint16_t *)(MOE_TAKE(NTOK * MOE_HP) + DSV2_PAD);  // [latch][hn] per token
+    m->ssq = MOE_TAKE(NTOK * DSV2_SBEAT);                    // a beat per token
     m->ha = (int8_t *)MOE_TAKE(MOE_AROWS * HID);             // hn's A operand, every token
     m->a8[0] = (int8_t *)MOE_TAKE(MOE_AROWS * I_SH);         // a down's A: even units (the shared's)
     m->a8[1] = (int8_t *)MOE_TAKE(MOE_AROWS * I_EXP);        // ... odd units (slots)
@@ -230,11 +234,11 @@ static inline uint8_t *dsv2_moe_carve(dsv2_moe_t *m, uint8_t *p, volatile uint32
     m->ygu[1] = (uint16_t *)MOE_TAKE(MOE_YBUF(2 * 2 * I_EXP));  // ... odd units
     m->ydn[0] = (uint16_t *)MOE_TAKE(MOE_YBUF(2 * HID));     // a down's raw output, by unit parity
     m->ydn[1] = (uint16_t *)MOE_TAKE(MOE_YBUF(2 * HID));
-    m->lg = (uint16_t *)(MOE_TAKE(NTOK * MOE_LGP) + DSV2_BEAT);  // [latch][logits] per token
-    m->tmp = MOE_TAKE(NTOK * DSV2_BEAT);
+    m->lg = (uint16_t *)(MOE_TAKE(NTOK * MOE_LGP) + DSV2_PAD);  // [latch][logits] per token
+    m->tmp = MOE_TAKE(NTOK * DSV2_SBEAT);                     // a beat per token
     m->el = MOE_TAKE(NTOK * MOE_ELP);                        // [latch][e][sum] per token
     m->pr = (uint16_t *)MOE_TAKE(NTOK * 2 * N_EXP);
-    m->w = (uint16_t *)MOE_TAKE(NTOK * DSV2_BEAT);           // the top-6 weights, a beat per token
+    m->w = (uint16_t *)MOE_TAKE(NTOK * MOE_WP);              // the top-6 weights, per token
 #if NTOK == 1
     m->gb = (uint16_t *)MOE_TAKE(MOE_TB);                    // [gate|up | silu(gate)]
     m->gu = (uint16_t *)MOE_TAKE(TOP_K * 2 * 2 * I_EXP);     // every slot's [gate | up], dequantised
@@ -332,13 +336,13 @@ static void dsv2_moe_xdma(dsv2_moe_t *m) {
         if (!w) continue;
         const uint32_t cw = MOE_CW(K, MOE_W4(j)), nch = N / cw, cb = DSV2_WB(K * cw, MOE_W4(j));
         const uint32_t xb = MOE_XBYTES(cb), off = cb - xb, j0 = snrt_mcycle();
-        snax_xdma_read_arm((uint32_t)(m->bbuf[g % MOE_NBUF] + off), w + off, xb / DSV2_BEAT);
+        snax_xdma_read_arm((uint32_t)(m->bbuf[g % MOE_NBUF] + off), w + off, xb / DSV2_XBEAT);
         for (uint32_t c = 0; c < nch; c++, g++) {
             if (g >= MOE_NBUF) MOE_W(m, MOE_FREED(m), g - MOE_NBUF + 1u, &wfree);
             const uint32_t x0 = snrt_mcycle();
             if (c)
                 snax_xdma_read_retask((uint32_t)(m->bbuf[g % MOE_NBUF] + off), w + c * cb + off,
-                                      xb / DSV2_BEAT);
+                                      xb / DSV2_XBEAT);
             int to = 0;
             const snax_xdma_task_t tk = snax_xdma_start_bounded(MOE_XDMA_SPIN, &to);
             if (!to) to = snax_xdma_wait_bounded(tk, MOE_XDMA_SPIN);
@@ -430,14 +434,14 @@ static void moe_accumulate(dsv2_moe_t *m, uint32_t t, uint16_t w, const uint16_t
                            uint32_t *half) {
     snax_simd_shape_t in, out;
     uint16_t *acc = m->outb + (2u * t + half[t]) * HID, *nxt = m->outb + (2u * t + (half[t] ^ 1u)) * HID;
-    snax_simd_shape_flat(&in, (void *)e, HID / 32u);
-    snax_simd_shape_flat(&out, m->tw, HID / 32u);
+    snax_simd_shape_flat(&in, (void *)e, HID / DSV2_LANES);
+    snax_simd_shape_flat(&out, m->tw, HID / DSV2_LANES);
     snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, snax_simd_f32_from_f16(w), 0u,
                    SIMD_FUNC_LINEAR);
     snax_simd_program_fast(&in, &out);
     snax_simd_fire();
-    dsv2_shape_pair(&in, acc, m->tw, HID / 32u);  // ADD commutes: either operand first
-    snax_simd_shape_flat(&out, nxt, HID / 32u);
+    dsv2_shape_pair(&in, acc, m->tw, HID / DSV2_LANES);  // ADD commutes: either operand first
+    snax_simd_shape_flat(&out, nxt, HID / DSV2_LANES);
     snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_0, SIMD_EXT_STREAMELEMENTWISE_0_CSR, 2u, SIMD_EW_ADD);
     snax_simd_program_fast(&in, &out);
     snax_simd_fire();
@@ -457,7 +461,7 @@ static void dsv2_moe_simd(dsv2_moe_t *m) {
     moe_post(m, 1, shared_expert.gu, HID, 2 * I_SH, K_X, m->ha, m->ygu[0], MOE_YP_GU(0));
     MOE_POSTED(m) = 2u;
     for (uint32_t t = 0; t < NTOK; t++)
-        dsv2_rmsnorm_row(MOE_TOK(m->h, t, MOE_HP), m->ssq + t * DSV2_BEAT,
+        dsv2_rmsnorm_row(MOE_TOK(m->h, t, MOE_HP), m->ssq + t * DSV2_SBEAT,
                          MOE_TOK(m->hn, t, MOE_HP), 11);
     dsv2_quant_at(m->hn, MOE_HP, m->ha, HID, NTOK, INV_H);
     moe_drain(m, "norm");
@@ -470,8 +474,8 @@ static void dsv2_moe_simd(dsv2_moe_t *m) {
     for (uint32_t t = 0; t < NTOK; t++) {
         dsv2_dequant_prep(MOE_TOK(m->yr, t, MOE_YP_R), m->sbuf[0], MOE_TOK(m->lg, t, MOE_LGP), N_EXP);
         snax_simd_fire();
-        dsv2_softmax_row(MOE_TOK(m->lg, t, MOE_LGP), m->tmp + t * DSV2_BEAT,
-                         m->el + t * MOE_ELP + DSV2_BEAT, MOE_TOK(m->pr, t, 2 * N_EXP),
+        dsv2_softmax_row(MOE_TOK(m->lg, t, MOE_LGP), m->tmp + t * DSV2_SBEAT,
+                         m->el + t * MOE_ELP + DSV2_PAD, MOE_TOK(m->pr, t, 2 * N_EXP),
                          MOE_EXP_BEATS);
     }
     moe_drain(m, "router");
@@ -484,7 +488,7 @@ static void dsv2_moe_simd(dsv2_moe_t *m) {
         const uint16_t *pr = MOE_TOK(m->pr, t, 2 * N_EXP);
         dsv2_top_k16(pr, N_EXP, TOP_K, ids[t]);
         for (uint32_t i = 0; i < TOP_K; i++) {
-            MOE_TOK(m->w, t, DSV2_BEAT)[i] = pr[ids[t][i]];
+            MOE_TOK(m->w, t, MOE_WP)[i] = pr[ids[t][i]];
             MOE_IDS(m, t, i) = ids[t][i];
             uint32_t s = 0;
             while (s < nslot && slot_id[s] != ids[t][i]) s++;
@@ -552,8 +556,8 @@ static void dsv2_moe_simd(dsv2_moe_t *m) {
                                   MOE_TOK(m->sh, t, 2 * HID), HID);
                 snax_simd_fire();
                 dsv2_shape_pair(&in, MOE_TOK(m->h, t, MOE_HP), MOE_TOK(m->sh, t, 2 * HID),
-                                HID / 32u);
-                snax_simd_shape_flat(&out, m->outb + 2u * t * HID, HID / 32u);
+                                HID / DSV2_LANES);
+                snax_simd_shape_flat(&out, m->outb + 2u * t * HID, HID / DSV2_LANES);
                 snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_0, SIMD_EXT_STREAMELEMENTWISE_0_CSR, 2u,
                                SIMD_EW_ADD);
                 snax_simd_program_fast(&in, &out);
@@ -572,7 +576,7 @@ static void dsv2_moe_simd(dsv2_moe_t *m) {
             for (uint32_t t = 0; t < NTOK; t++)
                 for (uint32_t i = 0; i < TOP_K; i++)
                     if (ids[t][i] == slot_id[s])
-                        moe_accumulate(m, t, MOE_TOK(m->w, t, DSV2_BEAT)[i], MOE_TOK(e0, t, 2 * HID),
+                        moe_accumulate(m, t, MOE_TOK(m->w, t, MOE_WP)[i], MOE_TOK(e0, t, 2 * HID),
                                        half);
             moe_drain(m, "down + combine");
         }

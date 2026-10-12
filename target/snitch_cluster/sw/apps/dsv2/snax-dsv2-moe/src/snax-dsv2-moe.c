@@ -45,14 +45,14 @@ int main() {
     volatile uint32_t *sy = (volatile uint32_t *)p;  // this app's words
     volatile uint32_t *bsy = sy + 256;               // the block's
     p += 1024 + MOE_SY_BYTES;
-    uint16_t *h = (uint16_t *)(p + DSV2_BEAT);       // [the norm's seed][h]
-    p += DSV2_BEAT + 2 * HID;
+    uint16_t *h = (uint16_t *)(p + DSV2_PAD);        // [the norm's seed][h]
+    p += DSV2_PAD + 2 * HID;
     dsv2_trace_t *tr = (dsv2_trace_t *)p;           // the block's spans (snax-dsv2-trace.h)
     p += (sizeof(dsv2_trace_t) + 63u) & ~63u;
     dsv2_moe_t m;
     p = dsv2_moe_carve(&m, p, bsy, h);
     m.tr = tr;
-    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_BEAT;
+    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_XBEAT;
     // goldens, staged into the weight buffers once the last job has retired
     uint8_t *gb = (uint8_t *)m.bbuf[0];
     uint16_t *g_hn_l = (uint16_t *)gb;          gb += 2 * HID;

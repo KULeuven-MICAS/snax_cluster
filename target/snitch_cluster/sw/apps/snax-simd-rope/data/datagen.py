@@ -4,15 +4,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Data generator for the xDMA FP16 RoPE test. Emits one FP16 row x of length N (a multiple of 32),
-# treated as a single head_dim row at position pos. RoPE uses the INTERLEAVED adjacent-pair
+# Data generator for the SIMD FP16 RoPE test. Emits one FP16 row x of length N (a whole number of
+# SIMD beats: simd_fp16_lanes(hw) lanes each, read from the hardware cfg), treated as a single
+# head_dim row at position pos. RoPE uses the INTERLEAVED adjacent-pair
 # convention
 # (Meta/complex-rotation): pair k = (x[2k], x[2k+1]) rotates by angle theta_k.
 #
 #   out[2k]   = x[2k]*cos_k - x[2k+1]*sin_k
 #   out[2k+1] = x[2k]*sin_k + x[2k+1]*cos_k
 #
-# On the xDMA this is 3 StreamElementwise passes over per-pair-duplicated tables (no new HW):
+# On the SIMD block this is 3 StreamElementwise passes over per-pair-duplicated tables (no new HW):
 #   P1 tmp1 = x     (.) cos_full      cos_full   = [c0,c0,c1,c1,...]
 #   P2 tmp2 = xswap (.) sin_signed    sin_signed = [-s0,+s0,-s1,+s1,...]  (sign folded in)
 #   P3 out  = tmp1  (+) tmp2          xswap      = [x1,x0,x3,x2,...] (adjacent halfword swap,
@@ -31,18 +32,18 @@ import numpy as np
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
+from snax_utils import simd_fp16_lanes  # noqa E402
 
-FP16_PER_BEAT = 32
 RNG_SEED = 320
 ROPE_BASE = 10000.0
 ROPE_POS = 1
 
 
-def emit_header_file(**kwargs):
+def emit_header_file(lanes, **kwargs):
     n = int(kwargs["N"])
-    if n <= 0 or n % FP16_PER_BEAT != 0:
-        raise ValueError(f"N must be a positive multiple of {FP16_PER_BEAT}, got {n}")
-    beats = n // FP16_PER_BEAT
+    if n <= 0 or n % lanes != 0:
+        raise ValueError(f"N must be a positive multiple of the {lanes} SIMD lanes, got {n}")
+    beats = n // lanes
     half = n // 2
 
     # theta_k for a head_dim = N row at position ROPE_POS. FP16-snapped, FP32 math (matches HW
@@ -122,12 +123,16 @@ def emit_header_file(**kwargs):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generating data for the xDMA RoPE kernel")
+    parser = argparse.ArgumentParser(description="Generating data for the SIMD RoPE kernel")
     parser.add_argument("-c", "--cfg", type=pathlib.Path, required=True)
+    parser.add_argument("--hwcfg", type=pathlib.Path, required=True,
+                        help="cluster hardware cfg (sets the SIMD lane count)")
     args = parser.parse_args()
     with args.cfg.open() as f:
         param = hjson.loads(f.read())
-    print(emit_header_file(**param))
+    with args.hwcfg.open() as f:
+        hw = hjson.loads(f.read())
+    print(emit_header_file(simd_fp16_lanes(hw), **param))
 
 
 if __name__ == "__main__":
