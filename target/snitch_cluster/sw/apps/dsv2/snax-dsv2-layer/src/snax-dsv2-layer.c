@@ -15,17 +15,22 @@
 // L1. The two blocks take turns in ONE region; each carves it its own way. Between them, only h
 // (with a free slot below it, the MoE norm's seed) and the sync words live outside it. Before
 // each block every hart meets at a barrier, the xDMA zeroes the region (TCDM has no reset, and
-// the blocks need Q8's zero rows and l = 0), and each block gets fresh sync words, so no pass
+// the blocks need l = 0), and each block gets fresh sync words, so no pass
 // sees a counter or a stale store of the one before.
 //
-// CHECKS, per pass and token, against the device model's values bit for bit: h, the top-6 ids
-// and weights, out; after the last pass, the key and value blocks every append touched. These
-// are the layer's results, so DSV2_STAGE_CHECKS changes nothing here: snax-dsv2-mla and
-// snax-dsv2-moe check the blocks' intermediates. main returns the number of failed checks.
+// CHECKS, per pass, every token, against the device model's values bit for bit: h, the top-6 ids
+// and weights, out, one line each over the pass's tokens; after the last pass, the key and value
+// blocks every append touched. These are the layer's results, so DSV2_STAGE_CHECKS changes
+// nothing here: snax-dsv2-mla and snax-dsv2-moe check the blocks' intermediates. main returns
+// the number of failed checks. Each pass prints the cycles of its two blocks.
 //
-// TRACE. After each block the SIMD hart prints the block's engine spans and the cluster census
-// over it ([BLOCK], [SPAN], [UTIL]; snax-dsv2-trace.h), while the other harts wait at the next
-// barrier, and empties the trace for the next block.
+// TRACE (DSV2_TRACE = 1, sw/apps/dsv2/dsv2.mk). After each block the SIMD hart prints where its
+// engines' time went (dsv2_mla_report, dsv2_moe_report), its spans and the cluster census over
+// it ([BLOCK], [SPAN], [UTIL]; snax-dsv2-trace.h), while the other harts wait at the next
+// barrier. The trace is emptied for the next block either way.
+//
+// TEST SIZE (data/params.hjson): a narrower model, a short cache and two passes; the full-size
+// layer runs on HeMAiA.
 
 #include "data.h"
 #include "snax-core-roles.h"
@@ -47,12 +52,19 @@ typedef struct {
     const uint16_t *w, *out;
 } layer_gold_t;
 
-static uint32_t chk16(uint32_t tok, const char *what, const uint16_t *got, const uint16_t *want,
-                      uint32_t n) {
-    n = dsv2_check_terms(n);
-    uint32_t worst, bad = dsv2_ulp16(got, want, n, &worst);
-    printf(TAG "   %s token %u: %-22s %5u/%5u differ, worst %u ULP\n", bad ? "FAIL" : "PASS", tok,
-           what, bad, n, worst);
+// The pass's tokens' n FP16 values each, token t's at got + t * pitch (bytes) and want + t * wp
+// (values): one line, the values that differ over every token and the worst distance.
+static uint32_t chk16(const char *what, const void *got, uint32_t pitch, const uint16_t *want,
+                      uint32_t wp, uint32_t n) {
+    uint32_t bad = 0, worst = 0;
+    for (uint32_t t = 0; t < NTOK; t++) {
+        uint32_t w;
+        bad += dsv2_ulp16((const uint16_t *)((const uint8_t *)got + t * pitch), want + t * wp, n,
+                          &w);
+        if (w > worst) worst = w;
+    }
+    printf(TAG "   %s %-22s %5u/%5u differ over %u token(s), worst %u ULP\n",
+           bad ? "FAIL" : "PASS", what, bad, NTOK * dsv2_check_terms(n), NTOK, worst);
     return bad ? 1u : 0u;
 }
 
@@ -63,12 +75,14 @@ static void next_block(int isX, uint8_t *region, uint32_t beats) {
     snrt_cluster_hw_barrier();
 }
 
-// A block's spans and utilisation, then an empty trace for the next block.
+// With DSV2_TRACE, a block's spans and utilisation; then an empty trace for the next block.
 static void layer_trace(dsv2_trace_t *tr, uint32_t pass, const char *block, uint32_t org,
                         const snax_perf_snapshot_t *census, uint32_t simd_busy) {
-    printf("[BLOCK] %u %s %u\n", pass, block, org);
-    dsv2_trace_print(tr);
-    dsv2_util_print(census, simd_busy);
+    if (DSV2_TRACE) {
+        printf("[BLOCK] %u %s %u\n", pass, block, org);
+        dsv2_trace_print(tr);
+        dsv2_util_print(census, simd_busy);
+    }
     dsv2_trace_clear(tr);
 }
 
@@ -150,7 +164,7 @@ int main() {
             dsv2_mla_simd(&ma, ps);
             snax_perf_read(&census);
             printf(TAG " pass %u, %u token(s) from position %u\n", pp, NTOK, ps->pos);
-            dsv2_mla_report(&ma, TAG);
+            if (DSV2_TRACE) dsv2_mla_report(&ma, TAG);
             layer_trace(tr, pp, "mla", MLA_T_ORG(&ma), &census, MLA_P(&ma, MLA_P_SBUSY));
         }
         // ---- the MoE block: h -> out ----------------------------------------------------
@@ -175,20 +189,30 @@ int main() {
         if (isS) {
             dsv2_moe_simd(&mo);
             snax_perf_read(&census);
-            dsv2_moe_report(&mo, TAG);
+            if (DSV2_TRACE) dsv2_moe_report(&mo, TAG);
             layer_trace(tr, pp, "moe", MOE_T_ORG(&mo), &census, MOE_P(&mo, MOE_P_SBUSY));
             dsv2_spin_ge(&GOLD(pp), 1u, &APP_TMO);
             printf(TAG " pass %u: MLA %u cc + MoE %u cc\n", pp, MLA_T_SS(&ma, 7),
                    MOE_T_JOB(&mo, MOE_NJOBS(&mo) - 1u));
+            fails += chk16("h = x + MLA(x)", h, MLA_HP, g_h_l, HID, HID);
+            uint32_t idbad = 0;
+            for (uint32_t t = 0; t < NTOK; t++)
+                for (uint32_t i = 0; i < TOP_K; i++)
+                    idbad += MOE_IDS(&mo, t, i) != g_ids_l[8 * t + i];
+            fails += dsv2_check(TAG, idbad == 0 && !MOE_REFUSED(&mo), "top-6",
+                                "every token's: the golden's ids, in order, all present");
+            fails += chk16("weights", mo.w, MOE_WP, g_w_l, 8u, TOP_K);
+            // out_t sits in one half of token t's ping-pong (dsv2_moe_out)
+            uint32_t obad = 0, oworst = 0;
             for (uint32_t t = 0; t < NTOK; t++) {
-                fails += chk16(t, "h = x + MLA(x)", MOE_TOK(h, t, MLA_HP), g_h_l + t * HID, HID);
-                uint32_t idbad = 0;
-                for (uint32_t i = 0; i < TOP_K; i++) idbad += MOE_IDS(&mo, t, i) != g_ids_l[8 * t + i];
-                fails += dsv2_check(TAG, idbad == 0 && !MOE_REFUSED(&mo), "top-6",
-                                    "the golden's ids, in order, all present");
-                fails += chk16(t, "weights", MOE_TOK(mo.w, t, MOE_WP), g_w_l + 8 * t, TOP_K);
-                fails += chk16(t, "out = h + MoE(h)", dsv2_moe_out(&mo, t), g_out_l + t * HID, HID);
+                uint32_t w;
+                obad += dsv2_ulp16(dsv2_moe_out(&mo, t), g_out_l + t * HID, HID, &w);
+                if (w > oworst) oworst = w;
             }
+            printf(TAG "   %s %-22s %5u/%5u differ over %u token(s), worst %u ULP\n",
+                   obad ? "FAIL" : "PASS", "out = h + MoE(h)", obad, NTOK * dsv2_check_terms(HID),
+                   NTOK, oworst);
+            fails += obad ? 1u : 0u;
             if (MLA_TMO(&ma) || MOE_TMO(&mo)) {
                 printf(TAG " FAIL: a task never retired or a wait ran out\n");
                 fails++;

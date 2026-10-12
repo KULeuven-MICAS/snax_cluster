@@ -25,8 +25,11 @@ LEVEL 1 CALIBRATION (docs/dsv2_layer1_plan.md, section 8), from the apps' wait p
 
   STREAM_MLA  B/cycle end to end for the MLA's weights, by routes: the block's cycles less its
               attention tiles and MLA_REST
-  TILE        cycles per attention tile of 64 keys and 32 query lanes: the MLA at L + 1 = 4,096
-              against L + 1 = 512, 56 more tiles
+  TILE        cycles per attention tile of 64 keys, by the tokens of a pair: one token is one
+              16-lane score plane (snax-dsv2-mla.h, THE ATTENTION), the MLA at L + 1 = 1,024
+              against L + 1 = 512, 8 more tiles; two tokens are two planes, the 32 query lanes of
+              the MLA at L + 1 = 4,096 against 512, 56 more tiles. A pass of four tokens runs two
+              pairs over the keys
   MLA_REST    the MLA's other exposed cycles, per tokens per pass: the GEMM's waits for the
               SIMD, its array drains at phase boundaries, the attention's fill
   STREAM_MOE  B/cycle end to end for the MoE's weight stream, by routes: with one, the iDMA's
@@ -70,8 +73,8 @@ N_EXPERTS, TOP_K = 64, 6
 BC = 64                                     # keys per attention tile
 
 # ---- level 1 calibration (see the module docstring) -------------------------------------------
-STREAM_MLA = {1: 59.6, 2: 82.2}   # by routes
-TILE = 3_175
+STREAM_MLA = {1: 59.6, 2: 76.1}   # by routes
+TILE = {1: 1_990, 2: 3_175}       # by the tokens of a pair
 TILE_FILL = 3_000
 MLA_REST = {1: 21_400, 2: 35_700}  # by tokens per pass
 STREAM_MOE = {1: 63.7, 2: 90.8}   # by routes
@@ -123,6 +126,11 @@ class Pass:
     def tiles(self, clusters=1):
         return -(-(self.L + self.ntok) // (clusters * BC))
 
+    @property
+    def tile(self):
+        """Cycles per key tile of the pass: one per pair of tokens (the attention's passes)."""
+        return -(-self.ntok // 2) * TILE[min(self.ntok, 2)]
+
     def moe_bytes(self):
         return W_ROUTER + (self.nslot + 2) * EXPERT
 
@@ -134,7 +142,7 @@ def one_cluster(p: Pass, routes=None):
     def stream(nbytes, rate):
         return max(nbytes * w / rate, nbytes / p.array)
 
-    t_mla = (stream(MLA_W + FACTORS, STREAM_MLA[r]) + p.tiles() * TILE + TILE_FILL
+    t_mla = (stream(MLA_W + FACTORS, STREAM_MLA[r]) + p.tiles() * p.tile + TILE_FILL
              + MLA_REST[p.ntok])
     t_moe = stream(p.moe_bytes(), STREAM_MOE[r]) + MOE_REST[p.ntok]
     return dict(mla=t_mla, moe=t_moe, total=t_mla + t_moe, per_token=(t_mla + t_moe) / p.ntok)
@@ -150,7 +158,7 @@ def four_clusters(p: Pass, routes=1.0):
         return max(total * w / port, busiest * w / link, busiest / p.array)
 
     p1 = NORM + stream(W_DKV + W_Q + W_UK, (W_DKV + W_Q + W_UK) / 4)
-    att_compute = p.tiles(4) * TILE + TILE_FILL
+    att_compute = p.tiles(4) * p.tile + TILE_FILL
     att_port = p.cache_bytes() / port
     att = max(att_compute, att_port)
     p3 = stream(W_UV + W_O, (W_UV + W_O) / 4)
@@ -169,7 +177,8 @@ def _k(x):
 
 # The level 1 runs this model is calibrated on: (what, pass, routes, block, measured cycles).
 LEVEL1 = [
-    ("MLA, 1 token, L + 1 = 512, two routes", Pass(L=511), 2, "mla", 217_521),  # snax-dsv2-mla
+    ("MLA, 1 token, L + 1 = 512, two routes", Pass(L=511), 2, "mla", 221_459),  # snax-dsv2-mla
+    ("MLA, 1 token, L + 1 = 1,024, two routes", Pass(L=1023), 2, "mla", 237_377),
     ("MLA, 1 token, L + 1 = 512, iDMA alone", Pass(L=511), 1, "mla", 281_355),
     ("MLA, 1 token (layer), two routes", Pass(L=511), 2, "mla", 216_839),        # snax-dsv2-layer
     ("MLA, 2 tokens, L = 511", Pass(L=511, ntok=2), 1, "mla", 298_818),          # snax-dsv2-spec

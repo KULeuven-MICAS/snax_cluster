@@ -11,7 +11,7 @@
     // The GEMV shapes to run, in order. The router doubles as the D-port negative control.
     shapes: ["wq", "wdkv", "wo", "router", "expert_gu", "expert_down", "shared_gu", "shared_down"],
     // TEST SIZE: this app is a unit test, so each shape runs its first `chunks` chunks of
-    // columns (every depth and shift, about a twentieth of the weight bytes). The full shapes run on HeMAiA;
-    // drop `chunks` to run every column here.
+    // columns: every depth and shift, about a twentieth of the weight bytes. The full shapes run
+    // on HeMAiA; drop `chunks` to run every column here.
     chunks: 2,
 }

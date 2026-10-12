@@ -62,8 +62,8 @@
 //   GEMM (hart 0)   the task stream
 //   SIMD (hart 1)   every SIMD stage, in order
 //   xDMA (hart 2)   seeds m; stages the RoPE row and its pair swap (core code: a pair of FP16
-//                   is one word, so the swap is a 16-bit rotate); transposes o~, a pair of
-//                   tokens at a time; with MLA_DUAL, its part of every W_DKV, W_Q and W_O chunk
+//                   is one word, so the swap is a 16-bit rotate); transposes o~, token by
+//                   token; with MLA_DUAL, its part of every W_DKV, W_Q and W_O chunk
 //
 // THE PASS. Token t sits at position pos + t; pos + NTOK keys run in nt = ceil((pos + NTOK) /
 // BC) tiles. A last tile with fewer keys runs whole: the cache's rows past the pass are zero, and
@@ -87,7 +87,7 @@
 //   S^T   [latch_h][S^T plane h: BC key beats][mold_h]              planes MLA_SP apart
 //   P8    [B blocks (k, h): BC / 4 x 64 B][rowsum_h][lsc_h]          halves MLA_PP apart
 //   O16   [c/l_h][O16^T plane h: 512 latent beats][spare]           planes MLA_OP apart
-//   corr, l, m_seed, m_fin                                          MLA_NH contiguous beats
+//   corr, l, mseed, mfin                                            MLA_NH contiguous beats
 //
 // Per key tile j the SIMD runs, over every plane at once unless noted:
 //   0  the padding keys of a partial last tile, and the keys a token must not see: -65504
@@ -98,22 +98,21 @@
 //      through); P8(j) is published here
 //   4  lsc = corr * l_old: EW1 MUL over the pairs [corr][l]
 //   5  l = rowsum + lsc: Reduce ADD|LANEWISE over [rowsum][lsc]
-//   6  m_new into the next tile's mold beats; after the last tile, into m_fin
+//   6  m_new into the next tile's mold beats; after the last tile, into mfin
 // and the GEMM's PV(j) rescales O^T by corr_j on its C read path (Int32ColumnScale); the last PV
 // leaves through the D port as FP16 at k_o, plane by plane. Then per pair: c / l = RSQRT(a_n l)^2
 // into each plane's latch, a sticky MUL per plane into o~^T, and the xDMA's transpose per token.
 //
 // L1 WITH SEVERAL TOKENS. The buffers of the stages before the attention (xn, ckv, cn, q, the
 // RoPE rows, the factors of W_DKV, W_Q and W_UK, the cache rows) are one run, dead once Q8 is
-// assembled; over it sit the second pair's Q8 (over xn, f_kv and ykv, dead by then), o~, and
-// then W_UV's and W_O's outputs in turn. attn reuses oh. One token keeps every intermediate, for
-// snax-dsv2-mla's checks.
+// assembled; over it sit the second pair's Q8 (over xn, f_kv and ykv, dead by then, when they
+// hold it; behind the run when not: MLA_Q8_OVER), o~, and then W_UV's and W_O's outputs in turn.
+// attn reuses oh. One token keeps every intermediate, for snax-dsv2-mla's checks.
 //
 // USE. The whole L1 the block carves (dsv2_mla_carve) must be zero when a pass starts (TCDM
 // has no reset, and l must start at zero), and its sync words fresh: the caller zeroes the
-// region, then every hart runs its role. The output h (NTOK rows
-// MLA_HP apart, each with a free DSV2_PAD slot below it, for a norm on h) and the sync words are
-// the caller's.
+// region, then every hart runs its role. The output h (NTOK rows MLA_HP apart, each with a free
+// DSV2_PAD slot below it, for a norm on h) and the sync words are the caller's.
 
 #pragma once
 
@@ -323,9 +322,10 @@ typedef struct {
 // (xn, f_kv, ykv), and whether those hold the second pair's Q8.
 #define MLA_RUN_Q (MLA_R64(NTOK * 2 * HID) + MLA_R64(2 * MLA_DQK) + \
                    MLA_R64(MLA_YBUF(2 * MLA_DQK, MLA_CH / DSV2_NU)))
-#define MLA_RUN_ALL                                                                              \
-    (MLA_RUN_Q + MLA_R64(NTOK * MLA_CKP) + MLA_R64(NTOK * 2 * MLA_DV) + MLA_R64(NTOK * 2 * MLA_Q_N) + \
-     MLA_R64(MLA_ROPE_BT) + MLA_R64(2 * MLA_Q_N) + MLA_R64(2 * HEADS * MLA_DV) + MLA_R64(NTOK * MLA_DQK))
+#define MLA_RUN_ALL                                                                        \
+    (MLA_RUN_Q + MLA_R64(NTOK * MLA_CKP) + MLA_R64(NTOK * 2 * MLA_DV) +                    \
+     MLA_R64(NTOK * 2 * MLA_Q_N) + MLA_R64(MLA_ROPE_BT) + MLA_R64(2 * MLA_Q_N) +            \
+     MLA_R64(2 * HEADS * MLA_DV) + MLA_R64(NTOK * MLA_DQK))
 #define MLA_Q8_OVER (MLA_NPAIR > 1 && MLA_RUN_Q >= MLA_Q8B)
 
 // Carve the block's L1 from `p` (64-byte aligned); h is the caller's. Returns the end.
@@ -357,7 +357,7 @@ static inline uint8_t *dsv2_mla_carve(dsv2_mla_t *m, uint8_t *p, volatile uint32
     m->row = (int8_t *)MLA_TAKE(NTOK * MLA_DQK);                        // [c8 | kpe8] per token
     m->q16 = (uint16_t *)MLA_TAKE(NTOK * 2 * MLA_Q_N);
     m->rot = (uint16_t *)MLA_TAKE(MLA_ROPE_BT);                         // [q_pe x 16 | k_pe] rotated
-    m->q8[0] = (int8_t *)MLA_TAKE(MLA_Q8B);                             // Q^T operand, the token's 16 heads
+    m->q8[0] = (int8_t *)MLA_TAKE(MLA_Q8B);                             // Q^T, the token's 16 heads
     m->q8[1] = (int8_t *)0;
 #else
     // the stages before the attention, in one run (L1 WITH SEVERAL TOKENS)
@@ -395,7 +395,7 @@ static inline uint8_t *dsv2_mla_carve(dsv2_mla_t *m, uint8_t *p, volatile uint32
     m->corr = MLA_TAKE(2 * MLA_NH * DSV2_SBEAT);                        // by tile parity
     m->l = MLA_TAKE(MLA_NH * DSV2_SBEAT);
     m->mseed = MLA_TAKE(MLA_NH * DSV2_SBEAT);                           // -65504, the xDMA's fill
-    m->mfin = MLA_TAKE(MLA_NH * DSV2_SBEAT);                            // m after a pair's last tile
+    m->mfin = MLA_TAKE(MLA_NH * DSV2_SBEAT);                            // m after a pair's keys
     m->p8[0] = MLA_TAKE(MLA_NH * MLA_PP);                               // halves [P8][rowsum][lsc]
     m->p8[1] = MLA_TAKE(MLA_NH * MLA_PP);
     m->rsc = MLA_TAKE(MLA_NH * DSV2_SBEAT);                             // c / l, for a check
@@ -982,9 +982,10 @@ static void dsv2_mla_simd(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
     mla_drain(m, "rope");
     MLA_ROW_OK(m) = 1u;
     for (uint32_t t = 0; t < NTOK; t++)  // pair t / NH's Q8, m-block t % NH: token t's 16 heads
-        mla_quant_q_segment((uint8_t *)m->rot + t * MLA_ROPE_B, 2u * ROPE_DIM,
-                            m->q8[t / MLA_NH] + ((t % MLA_NH) * MLA_KT_S + MLA_DV / DSV2_KU) * MLA_BLK,
-                            ROPE_DIM / DSV2_KU, INV_QPE);
+        mla_quant_q_segment(
+            (uint8_t *)m->rot + t * MLA_ROPE_B, 2u * ROPE_DIM,
+            m->q8[t / MLA_NH] + ((t % MLA_NH) * MLA_KT_S + MLA_DV / DSV2_KU) * MLA_BLK,
+            ROPE_DIM / DSV2_KU, INV_QPE);
     MLA_T_SS(m, 3) = snrt_mcycle() - org;
     MLA_SPAN("5 RoPE, kpe8, q_pe");
     // 6: q~ into padded rows, then Q8's q~ segment
@@ -1066,7 +1067,8 @@ static void dsv2_mla_simd(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
                                                              (1u << SIMD_EXT_STREAMREDUCE) |
                                                              (1u << SIMD_EXT_FP16TOINT8));
             snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 0, 1u);
-            snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_SUB | SIMD_EW_STICKY_B);
+            snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1,
+                                 SIMD_EW_SUB | SIMD_EW_STICKY_B);
             snax_simd_set_op_csr(SIMD_EXT_STREAMREDUCE_CSR, 0, BC);
             snax_simd_set_op_csr(SIMD_EXT_STREAMREDUCE_CSR, 1,
                                  SIMD_RED_ADD | SIMD_RED_LANEWISE | SIMD_RED_TAP);
@@ -1095,7 +1097,8 @@ static void dsv2_mla_simd(dsv2_mla_t *m, const dsv2_mla_pass_t *ps) {
             // 6 m_new into the next tile's mold beats, or after the last tile into mfin: a copy
             snax_simd_shape_2d(&in, sb, MLA_NH, MLA_SP, 1u, 0u);
             if (j + 1u < nt)
-                snax_simd_shape_2d(&out, m->sbuf[(j + 1u) & 1u] + MLA_S_MOLD, MLA_NH, MLA_SP, 1u, 0u);
+                snax_simd_shape_2d(&out, m->sbuf[(j + 1u) & 1u] + MLA_S_MOLD, MLA_NH, MLA_SP, 1u,
+                                   0u);
             else
                 snax_simd_shape_flat(&out, m->mfin, MLA_NH);
             snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, 0u);

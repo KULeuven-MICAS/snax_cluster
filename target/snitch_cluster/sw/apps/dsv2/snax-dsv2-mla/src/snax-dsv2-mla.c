@@ -189,7 +189,7 @@ int main() {
                         "the appended row's 4-token blocks, byte-exact");
 #if DSV2_STAGE_CHECKS
     printf(TAG " 8-10: attention\n");
-    fails += chk8("Q8 (A-layout of [32 x 576])", m.q8, g_q8_l, MLA_BR * MLA_DQK);
+    fails += chk8("Q8 (A-layout of [16 x 576])", m.q8[0], g_q8_l, MLA_BR * MLA_DQK);
     for (uint32_t k = 0; k < 2u; k++) {
         const uint32_t j = m.nt - 2u + k;
         for (uint32_t pl = 0; pl < MLA_NH; pl++)  // each score plane, its keys alone
