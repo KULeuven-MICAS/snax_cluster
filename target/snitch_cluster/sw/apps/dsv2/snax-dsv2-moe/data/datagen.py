@@ -51,7 +51,8 @@ def main():
     if mesh != (16, 4, 16):
         raise ValueError(f"the kernel's descriptors assume a (16, 4, 16) mesh, not {mesh}")
 
-    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), wbits=args.wbits)
+    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), wbits=args.wbits,
+                    dims=prm.get("dims"))
     H = g.hw
     ids = [int(e) for e in H["ids"]]
 

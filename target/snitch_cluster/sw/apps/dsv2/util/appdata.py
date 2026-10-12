@@ -37,12 +37,13 @@ def model_defines(em, g, bc, cap):
     em.define("I_SH", d.shared_inter)
     em.define("BC", bc, "keys per attention tile")
     em.define("CAP", cap, "tokens the cache copies hold")
-    em.define("K_X", ks["x"], "D-port shift at depth 2048 (W_DKV, W_Q, W_O, router, gate|up)")
-    em.define("K_UK", ks["uk"], "at depth 128 (W_UK)")
-    em.define("K_S", ks["s"], "the scores, depth 576")
-    em.define("K_UV", ks["uv"], "at depth 512 (W_UV)")
-    em.define("K_ED", ks["ed"], "at depth 1408 (an expert's down)")
-    em.define("K_SD", ks["sd"], "at depth 2816 (the shared down)")
+    em.define("K_X", ks["x"], f"D-port shift at depth {d.hidden} (W_DKV, W_Q, router, gate|up)")
+    em.define("K_WO", ks["o"], f"at depth {d.heads * d.v_head} (W_O)")
+    em.define("K_UK", ks["uk"], f"at depth {d.q_nope} (W_UK)")
+    em.define("K_S", ks["s"], f"the scores, depth {d.latent}")
+    em.define("K_UV", ks["uv"], f"at depth {d.kv_rank} (W_UV)")
+    em.define("K_ED", ks["ed"], f"at depth {d.moe_inter} (an expert's down)")
+    em.define("K_SD", ks["sd"], f"at depth {d.shared_inter} (the shared down)")
     for name, sc, what in (("INV_X", S.x, "the normed input"), ("INV_C", S.c, "the normed latent"),
                            ("INV_KPE", S.kpe, "the rotated k_pe"), ("INV_QN", S.qn, "q_nope"),
                            ("INV_QT", S.qt, "q~"), ("INV_QPE", S.qpe, "the rotated q_pe"),

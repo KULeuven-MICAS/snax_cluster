@@ -44,8 +44,9 @@
   // NQ > 1 is prefill, where many query tiles attend the same resident K and V.
   //
   // Each query tile carries its own independent (m, l, O), so nothing about the recurrence
-  // changes -- only how many of them are in flight. The cost is L1: 16,896 B of accumulator
-  // and state per tile plus 4 KiB of Q.
+  // changes -- only how many of them are in flight. The cost is L1, per query tile: a
+  // 16 KiB INT32 accumulator, a 32,896 B score buffer of its own (the kernel keeps one per
+  // query tile, NSCORE = NQ), 128 B of m and l, and 4 KiB of Q.
   NQ: 4,
 
   K: 32,

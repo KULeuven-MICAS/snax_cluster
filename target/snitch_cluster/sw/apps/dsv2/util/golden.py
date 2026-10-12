@@ -22,9 +22,15 @@ the model) cannot swap them.
 WEIGHT WIDTH. make(wbits=4) packs every weight but the router as INT4 (pack.py). The device
 is then a different model from the float reference, and its routing may part from the
 reference's, so at 4 bits only the device's own top 6 has to be unambiguous.
+
+TEST SIZE. make(dims={...}) overrides model.Dims fields -- a narrower hidden state, narrower
+experts -- for the apps that run as unit tests here (their params.hjson); every weight, scale
+and golden then follows the overridden dimensions. Without it the pack is DeepSeek-V2-Lite's
+own, the size HeMAiA runs.
 """
 
 import argparse
+import dataclasses
 from dataclasses import dataclass
 
 import numpy as np
@@ -61,8 +67,10 @@ def _draw_states(rng, n, hidden):
     return rng.normal(0.0, 1.0, size=(n, hidden)).astype(F16)
 
 
-def make(seed=1, L=511, n_calib=8, bc=64, max_tries=32, wbits=8):
+def make(seed=1, L=511, n_calib=8, bc=64, max_tries=32, wbits=8, dims=None):
     d = model.load()
+    if dims:
+        d = dataclasses.replace(d, **dims)
     W = LayerWeights(d, seed)
     P = LayerPack(W, wbits)
     rng = np.random.default_rng([seed, 2])

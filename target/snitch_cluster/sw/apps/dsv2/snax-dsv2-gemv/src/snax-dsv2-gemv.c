@@ -17,6 +17,10 @@
 // With DSV2_WBITS = 4 every weight but the router's is INT4 (18 MiB), read through B's converter
 // (snax-dsv2.h, WEIGHT WIDTH): a chunk is half the bytes, the array passes are the same.
 //
+// TEST SIZE. As a unit test (data/params.hjson `chunks`) each shape runs its first few chunks
+// of columns, at its real depth and shift; data.h's N is the columns run. Every column of every
+// shape runs on HeMAiA.
+//
 // ======================================================================================
 // THE DATAFLOW
 // ======================================================================================

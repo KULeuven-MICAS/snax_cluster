@@ -9,51 +9,60 @@
 //     O^T += V^T . P^T     over the latent, 512      V^T: the value copy
 //     o~  = O / l                                    16 heads x 512, then W_UV's operands
 //
-// All 16 heads share the one cache, so a query tile is the 16 heads' queries (plus 16 zero
-// rows: the SIMD beat is Br = 32 lanes), and the two head sizes differ: d_qk = 576 for the
-// scores, d_v = 512 for the weighted sum. The golden pack (sw/apps/dsv2/util) supplies the
-// cache (L cached rows plus the token's own), q~ and the rotated q_pe.
+// All 16 heads share the one cache, so a query tile is the token's 16 heads -- one SIMD beat of
+// 16 FP16 lanes, one array column block: Br = 16 -- and the two head sizes differ: d_qk = 576
+// for the scores, d_v = 512 for the weighted sum. The golden pack (sw/apps/dsv2/util) supplies
+// the cache (L cached rows plus the token's own), q~ and the rotated q_pe.
 //
 // ======================================================================================
 // PER KEY TILE j -- snax-flashattn-decode's pipeline at MLA's shapes
 // ======================================================================================
 //
+// The scores are a SCORE PLANE, one beat per key, with a spare beat either side, and the
+// softmax state and outputs are laid out around it (snax-dsv2-mla.h, THE ATTENTION):
+//
+//   S^T(j)  [latch][S^T: BC key beats][mold]          the latch takes m_new, the mold m_old
+//   P8      [B blocks (k): BC / 4 x 64 B][rowsum][lsc]
+//   O16     [c / l][O16^T: 512 latent beats]
+//
 //   iDMA (hart 3)   K(j): one contiguous Bc x 576 block of the key copy
 //                   V(j): 32 runs of 16 Bc bytes of the value copy (V^T's tile)
 //   GEMM (hart 0)   QK(j) = K(j) . Q^T -> S^T(j) FP16, k_s; then PV(j-1) behind it
 //   SIMD (hart 1)   the online softmax of tile j, FlashAttention's chain:
-//                     1   rowmax over the tile                  Reduce MAX|LANEWISE
-//                     2   m_new = max(m_old, rowmax)            Reduce MAX|LANEWISE, 2 beats
-//                     3   -m_new into both latches              Map LINEAR a = -1
-//                     4   corr = exp(a' (m_old - m_new))        EW0 ADD -> Map EXP
-//                     5   P8 and the rowsum, one sweep          EW0 sticky ADD -> Map EXP ->
+//                     1   m_new = max(m_old, rowmax)            Reduce MAX|LANEWISE over
+//                                                               [keys][mold], into the latch
+//                     2   corr = exp(a' (m_old - m_new))        EW0 SUB over [latch][mold] ->
+//                                                               Map EXP
+//                     3   P8 and the rowsum, one sweep          EW0 sticky SUB -> Map EXP ->
 //                                                               Reduce ADD|TAP -> Fp16ToInt8
 //                                                               (interleaved: PV's B operand)
-//                     6   corr * l_old                          EW1 sticky MUL
-//                     7   l_new = rowsum + corr l_old           Reduce ADD|LANEWISE
-//                     8   commit m, l                           Map LINEAR a = 1
-//                   and P8(j) is published after task 5.
+//                     4   corr * l_old                          EW1 MUL over [corr][l]
+//                     5   l = rowsum + corr l_old               Reduce ADD|LANEWISE
+//                     6   m_new into the next tile's mold       a copy
+//                   and P8(j) is published after task 3.
 //   GEMM            PV(j): O^T += V(j) . P8^T, C scaled per query by corr_j (masked at
 //                   j = 0); the LAST tile's D leaves as FP16 through the converter (k_o).
 //
 // AFTER THE LAST TILE, the SIMD scales O16 by c / l per query, c = 2^k_o s_c / 127, in two
 // tasks -- RSQRT(l / c) on the l beat read twice, squared by EW1 MUL (l^2 would overflow
-// FP16; sqrt(c / l) squared does not), then a sticky MUL over [c/l][O16] -- the xDMA
-// transposes the 16 real columns, and ONE quantise task writes W_UV's 16 A operands (x_h in
-// all 16 rows, as snax-dsv2-absorb reads them).
+// FP16; sqrt(c / l) squared does not), into O16's latch, then a sticky MUL over [c/l][O16] --
+// the xDMA transposes it, and ONE quantise task writes W_UV's 16 A operands (x_h in all 16
+// rows, as snax-dsv2-absorb reads them).
 //
 // D2, THE QUERY, comes first: q~ (16 x 512) and q_pe (16 x 64) arrive FP16, row-major, and
-// two quantise tasks read them in A-ORDER -- lane stride = one row, so a beat is 8 heads x 4
-// values, half an A block -- and pack pairs into Q8's A blocks, each segment with its own
-// scale (s_q~ s_c = s_qpe s_kpe keeps a score one exact INT32 dot product). Rows 16..31 of
-// Q8 stay zero. The row pitches are padded to an odd word count so the eight lanes of a beat
-// fall in eight banks.
+// two quantise tasks read them in A-ORDER -- lane stride = one row, so a beat is one row per
+// channel, four values each -- and pack the beats of 16 rows into Q8's A blocks, each segment
+// with its own scale (s_q~ s_c = s_qpe s_kpe keeps a score one exact INT32 dot product). The row
+// pitches are padded to an odd word count so the rows of a beat fall in distinct banks.
 //
 // CHECKS (main returns the number that fail), bit for bit against the device model, which
 // reproduces the exp and rsqrt tables, once the kernel is done and its goldens loaded: the
 // outputs o~ and the W_UV operands; with DSV2_STAGE_CHECKS = 1 the intermediates as well, Q8,
 // every tile's S^T, m, l, the last tile's P8, O16 and c / l. The engines' spans and the cluster
 // census over the kernel follow ([SPAN], [UTIL]; snax-dsv2-trace.h).
+//
+// TEST SIZE (data/params.hjson): a short cache, two key tiles; the full-length attention runs on
+// HeMAiA.
 
 #include "data.h"
 #include "snax-core-roles.h"
@@ -64,8 +73,8 @@
 #error "this kernel needs the four-engine cluster"
 #endif
 #if !defined(SIMD_EXT_STREAMREDUCE_HAS_MAX) || !defined(SIMD_EXT_STREAMREDUCE_HAS_ADD) || \
-    !defined(SIMD_EXT_STREAMMAP_HAS_EXP) || !defined(SIMD_EXT_STREAMELEMENTWISE_0_HAS_ADD)
-#error "the online softmax needs StreamReduce MAX/ADD, StreamMap EXP and a pre-map ADD"
+    !defined(SIMD_EXT_STREAMMAP_HAS_EXP) || !defined(SIMD_EXT_STREAMELEMENTWISE_0_HAS_SUB)
+#error "the online softmax needs StreamReduce MAX/ADD, StreamMap EXP and a pre-map SUB"
 #endif
 #if !defined(READER_WRITER_EXTENSION_0_CSR_BASE) || READER_WRITER_EXTENSION_0_CSR_NUM != 18
 #error "the O rescale needs the C read path's Int32ColumnScale (18 CSRs)"
@@ -73,20 +82,26 @@
 #define COLSCALE_CSR READER_WRITER_EXTENSION_0_CSR_BASE
 
 #define TAG "[MLA]"
-#define BR 32                    // query lanes: 16 heads + 16 zero rows
 #define HEADS 16
+#if DSV2_LANES != DSV2_NU || HEADS != DSV2_LANES
+#error "the score plane is one SIMD beat, one array column block and the token's 16 heads"
+#endif
+#define BR DSV2_LANES            // query lanes: the token's 16 heads, one plane
 #define DQK 576                  // [c | k_pe]
 #define DV 512                   // c
 #define KT_S (DQK / DSV2_KU)     // 144: QK's contraction blocks
 #define M_S (BC / DSV2_MR)       // QK's key blocks
-#define N_Q (BR / DSV2_NU)       // 2: query blocks
+#define N_Q (BR / DSV2_NU)       // 1: query blocks
 #define KT_P (BC / DSV2_KU)      // PV's contraction blocks
 #define M_P (DV / DSV2_MR)       // 32: PV's latent blocks
-#define SBEATS BC                // S^T: one beat per key, 32 query lanes
-#define PBEATS (BC / 2)          // P8^T after the 2:1 pack
 #define KTILE (BC * DQK)         // bytes of a K tile
 #define VTILE (DV * BC)          // bytes of a V^T tile
-#define BEAT DSV2_BEAT
+#define BLK 64u                  // one A or B block, 16 x 4 or 4 x 16 INT8
+#define BEAT DSV2_SBEAT
+#define SP ((BC + 2u) * BEAT)    // a score plane: [latch][BC keys][mold]
+#define S_MOLD ((BC + 1u) * BEAT)
+#define PP (BC * DSV2_NU + 2u * BEAT)  // P8: [B blocks][rowsum][lsc]
+#define P_RS (BC * DSV2_NU)            // P8 -> its rowsum beat
 #define QT_PITCH (2 * DV + 8)    // q~ rows, padded to an odd word count
 #define QP_PITCH (2 * 64 + 8)    // q_pe rows
 
@@ -115,28 +130,31 @@
 
 // ============================================================ the GEMM (hart 0)
 
-// C and D of the one read/write port share their INT32 walk: O^T accumulates in place.
-// The FP16 walk halves the beats per block (4, not 8) and the block stride (1024, not 2048).
+// The port's 16 channels are four groups of 32 contiguous bytes, so one transaction is 128
+// contiguous bytes. C and D share the INT32 walk, block (m, n) at (m N + n) 1 KiB, row-major
+// inside: O^T accumulates in place. The FP16 walk puts block (m, n) at n np + m 512, one 32 B
+// beat per key or latent: a plane; its converter halves the beats per block.
 __attribute__((always_inline)) static inline void cd_walk(uint32_t m, uint32_t c_on,
-                                                          uint32_t d_fp16, uint32_t k) {
+                                                          uint32_t d_fp16, uint32_t k,
+                                                          uint32_t np) {
     csrw_ss(S_STRIDE_READER_WRITER_0_0, 8);
-    csrw_ss(S_STRIDE_READER_WRITER_0_1, 64);
+    csrw_ss(S_STRIDE_READER_WRITER_0_1, 32);
     csrw_ss(T_BOUND_READER_WRITER_0_0, 8);
-    csrw_ss(T_STRIDE_READER_WRITER_0_0, 256);
+    csrw_ss(T_STRIDE_READER_WRITER_0_0, 128);
     csrw_ss(T_BOUND_READER_WRITER_0_1, N_Q);
-    csrw_ss(T_STRIDE_READER_WRITER_0_1, 32);
+    csrw_ss(T_STRIDE_READER_WRITER_0_1, 1024);
     csrw_ss(T_BOUND_READER_WRITER_0_2, m);
-    csrw_ss(T_STRIDE_READER_WRITER_0_2, 2048);
+    csrw_ss(T_STRIDE_READER_WRITER_0_2, N_Q * 1024u);
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_0, 0);
     csrw_ss(ENABLED_CHANNEL_READER_WRITER_0, c_on ? 0xFFFFFFFFu : 0u);
     csrw_ss(S_STRIDE_READER_WRITER_1_0, 8);
-    csrw_ss(S_STRIDE_READER_WRITER_1_1, 64);
+    csrw_ss(S_STRIDE_READER_WRITER_1_1, 32);
     csrw_ss(T_BOUND_READER_WRITER_1_0, d_fp16 ? 4u : 8u);
-    csrw_ss(T_STRIDE_READER_WRITER_1_0, 256);
+    csrw_ss(T_STRIDE_READER_WRITER_1_0, 128);
     csrw_ss(T_BOUND_READER_WRITER_1_1, N_Q);
-    csrw_ss(T_STRIDE_READER_WRITER_1_1, 32);
+    csrw_ss(T_STRIDE_READER_WRITER_1_1, d_fp16 ? np : 1024u);
     csrw_ss(T_BOUND_READER_WRITER_1_2, m);
-    csrw_ss(T_STRIDE_READER_WRITER_1_2, d_fp16 ? 1024u : 2048u);
+    csrw_ss(T_STRIDE_READER_WRITER_1_2, d_fp16 ? 512u : N_Q * 1024u);
     csrw_ss(ADDR_REMAP_INDEX_READER_WRITER_1, 0);
     csrw_ss(ENABLED_CHANNEL_READER_WRITER_1, 0xFFFFFFFFu);  // shape 0: full output beats
     csrw_ss(READER_WRITER_EXTENSION_1_CSR_BASE + 0, d_fp16 ? 1u : 0u);
@@ -188,35 +206,31 @@ __attribute__((always_inline)) static inline void ab_walk(uint32_t kt, uint32_t 
     csrw_ss(DATA_TYPE_CFG, 0);
 }
 
-// QK: S^T [Bc, 32] = K [Bc, 576] . Q^T. B(Q^T) is A(Q)'s bytes (meshRow == meshCol), walked
-// n-major; D is packed FP16, one 64 B key row per beat.
+// QK: S^T [Bc, 16] = K [Bc, 576] . Q^T into the score plane. B(Q^T) is A(Q)'s bytes (meshRow ==
+// meshCol), walked n-major.
 __attribute__((always_inline)) static inline void qk_arm(void) {
     ab_walk(KT_S, M_S, KT_S * 64u, 64u, KT_S * 64u);
-    cd_walk(M_S, 0u, 1u, K_S);
+    cd_walk(M_S, 0u, 1u, K_S, SP);
     csrw_ss(COLSCALE_CSR + 1, N_Q);
     csrw_ss(COLSCALE_CSR + 0, 0u);
 }
 
-// PV: O^T [512, 32] += V^T [512, Bc] . P^T. P8 is k-major, as the interleaving quantiser
-// writes it: block (k, n) at (k N + n) 64. C carries O^T back in, scaled per query by corr_j
-// (masked at j = 0); the last tile's D leaves as FP16 at k_o, into its own buffer.
+// PV: O^T [512, 16] += V^T [512, Bc] . P^T, P8's B blocks k-major as the interleaving quantiser
+// writes them. C carries O^T back in, scaled per query by corr_j (masked at j = 0); the last
+// tile's D leaves as FP16 at k_o, into the O16 plane.
 __attribute__((always_inline)) static inline void pv_arm(uint32_t first, uint32_t last) {
-    ab_walk(KT_P, M_P, KT_P * 64u, N_Q * 64u, 64u);
-    cd_walk(M_P, !first, last, K_O);
+    ab_walk(KT_P, M_P, KT_P * 64u, 64u, PP);
+    cd_walk(M_P, !first, last, K_O, (DV + 2u) * BEAT);
     csrw_ss(COLSCALE_CSR + 1, N_Q);
     csrw_ss(COLSCALE_CSR + 0, first ? 0u : 1u);
 }
 
-// corr_j's 32 FP16 factors, two per word: the 64 B beat the softmax wrote, copied verbatim.
+// corr_j's 16 FP16 factors, two per word: the beat the softmax wrote, copied verbatim.
 __attribute__((always_inline)) static inline void pv_factors(const volatile uint32_t *f) {
     csrw_ss(COLSCALE_CSR + 2, f[0]);    csrw_ss(COLSCALE_CSR + 3, f[1]);
     csrw_ss(COLSCALE_CSR + 4, f[2]);    csrw_ss(COLSCALE_CSR + 5, f[3]);
     csrw_ss(COLSCALE_CSR + 6, f[4]);    csrw_ss(COLSCALE_CSR + 7, f[5]);
     csrw_ss(COLSCALE_CSR + 8, f[6]);    csrw_ss(COLSCALE_CSR + 9, f[7]);
-    csrw_ss(COLSCALE_CSR + 10, f[8]);   csrw_ss(COLSCALE_CSR + 11, f[9]);
-    csrw_ss(COLSCALE_CSR + 12, f[10]);  csrw_ss(COLSCALE_CSR + 13, f[11]);
-    csrw_ss(COLSCALE_CSR + 14, f[12]);  csrw_ss(COLSCALE_CSR + 15, f[13]);
-    csrw_ss(COLSCALE_CSR + 16, f[14]);  csrw_ss(COLSCALE_CSR + 17, f[15]);
 }
 
 __attribute__((always_inline)) static inline void gemm_go(const void *a, const void *b,
@@ -243,18 +257,22 @@ static inline void simd_drain(volatile uint32_t *sy, const char *what) {
     if (snax_simd_wait_all_checked(what, SIMD_WAIT_BUDGET)) TMO++;
 }
 
-// D2: one segment of Q8 from FP16 rows `pitch` apart. A beat is 8 rows x 4 values (lane
-// stride = pitch); two such beats (rows 0-7, 8-15) pack into one A block. `kt` blocks.
+// D2: one segment of Q8 from FP16 rows `pitch` apart. A beat is one row per channel, four
+// values each (lane stride = pitch); the 16 / C beats of rows 0..15 pack into one A block (C =
+// SIMD_SPATIAL_CHAN). `kt` blocks.
+#if (DSV2_MR / SIMD_SPATIAL_CHAN) % 2u
+#error "an A block's rows must fill whole pairs of SIMD beats: the quantiser packs two into one"
+#endif
 static void quant_q_segment(const void *rows, uint32_t pitch, void *q8, uint32_t kt,
                             uint32_t inv) {
     snax_simd_shape_t in, out;
     snax_simd_shape_flat(&in, (void *)rows, 1);
     in.lane_stride = pitch;
-    in.bound[0] = 2u;
-    in.stride[0] = 8u * pitch;
+    in.bound[0] = DSV2_MR / SIMD_SPATIAL_CHAN;
+    in.stride[0] = SIMD_SPATIAL_CHAN * pitch;
     in.bound[1] = kt;
     in.stride[1] = 8u;
-    snax_simd_shape_flat(&out, q8, kt);
+    snax_simd_shape_flat(&out, q8, kt * BLK / BEAT);
     snax_simd_use0(SIMD_EXT_FP16TOINT8);
     DSV2_ARM_QUANT(inv);
     simd_task(&in, &out);
@@ -293,18 +311,17 @@ int main() {
     int8_t *q8 = (int8_t *)TAKE(BR * DQK);                 // Q^T operand, A-layout of Q
     uint8_t *qt = TAKE(HEADS * QT_PITCH);                  // q~, padded rows
     uint8_t *qp = TAKE(HEADS * QP_PITCH);                  // q_pe, padded rows
-    uint8_t *sbuf = TAKE(NT * (1 + SBEATS) * BEAT);        // per tile: [latch][S^T]
-    // state: [rmax][mrun] is task 2's pair; corr ping-pong sits below lrun (task 6's
-    // stride is unsigned); [lrun][lnew]
-    uint8_t *rmax = TAKE(BEAT), *mrun = TAKE(BEAT), *mnew = TAKE(BEAT);
-    uint8_t *corr = TAKE(2 * BEAT), *lrun = TAKE(BEAT), *lnew = TAKE(BEAT);
-    uint8_t *p8[2];                                        // [P8 x PBEATS][rowsum][corr*l]
-    p8[0] = TAKE((PBEATS + 2) * BEAT);
-    p8[1] = TAKE((PBEATS + 2) * BEAT);
-    // O16's latch beat (c / l) right in front of it; o~^T behind; then O^T in INT32
-    uint8_t *rsc = TAKE(BEAT);
-    uint16_t *o16 = (uint16_t *)TAKE(DV * BR * 2);
-    uint16_t *ot16 = (uint16_t *)TAKE(DV * BR * 2);
+    // the score plane of every tile, kept for a check, at 32 mod 64: the keys on 64 B
+    uint8_t *sbuf = TAKE(NT * SP + 64u) + 32u;             // tile j's latch at sbuf + j SP
+    // the state, a beat each: corr's tile-parity slots below l (task 4's stride is unsigned)
+    uint8_t *corr = TAKE(2 * BEAT), *l = TAKE(BEAT), *mseed = TAKE(BEAT), *mfin = TAKE(BEAT);
+    uint8_t *p8[2];                                        // [P8 B blocks][rowsum][corr*l]
+    p8[0] = TAKE(PP);
+    p8[1] = TAKE(PP);
+    uint8_t *rsc = TAKE(BEAT);                             // c / l, for a check
+    // O16 behind its latch (c / l), 32 mod 64 like the score plane; o~^T; then O^T in INT32
+    uint8_t *o16 = TAKE((DV + 2u) * BEAT + 64u) + 32u;
+    uint16_t *ot16 = (uint16_t *)TAKE(DV * BEAT);
     int32_t *oacc = (int32_t *)TAKE(DV * BR * 4);
     uint16_t *xt = (uint16_t *)oacc;                       // o~, [16, 512], once O^T is dead
     int8_t *kbuf[2], *vbuf[2];
@@ -313,19 +330,19 @@ int main() {
     vbuf[0] = (int8_t *)TAKE(VTILE);
     vbuf[1] = (int8_t *)TAKE(VTILE);
     int8_t *auv = kbuf[0];                                 // W_UV's A operands, 128 KiB, after
-    // round 1's goldens get their own region; round 2's (the W_UV operands) reuse O's
-    uint8_t *gold = TAKE(BR * DQK + NT * SBEATS * BEAT + 2 * BEAT + PBEATS * BEAT +
-                         DV * BR * 2 + HEADS * DV * 2);
+    // round 1's goldens; round 2's, the W_UV operands, get their own 128 KiB
+    uint8_t *gold = TAKE(BR * DQK + NT * BC * BEAT + 2 * BEAT + BC * DSV2_NU + DV * BEAT +
+                         HEADS * DV * 2);
+    int8_t *g_auv_l = (int8_t *)TAKE(HEADS * DSV2_MR * DV);
     dsv2_trace_t *tr = (dsv2_trace_t *)TAKE(sizeof(dsv2_trace_t));
     int8_t *g_q8_l = (int8_t *)gold;
     uint16_t *g_s_l = (uint16_t *)(gold + BR * DQK);
-    uint16_t *g_m_l = g_s_l + NT * SBEATS * BR;
+    uint16_t *g_m_l = g_s_l + NT * BC * BR;
     uint16_t *g_l_l = g_m_l + BR;
     int8_t *g_p8_l = (int8_t *)(g_l_l + BR);
-    uint16_t *g_o16_l = (uint16_t *)(g_p8_l + PBEATS * BEAT);
+    uint16_t *g_o16_l = (uint16_t *)(g_p8_l + BC * DSV2_NU);
     uint16_t *g_ot_l = g_o16_l + DV * BR;
-    int8_t *g_auv_l = (int8_t *)o16;                       // 128 KiB: o16, ot16, oacc
-    const uint32_t arena_beats = (uint32_t)(p - arena) / BEAT;
+    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_XBEAT;
 #undef TAKE
 
     const int isG = snax_is_gemm_core(), isS = snax_is_simd_core();
@@ -350,11 +367,11 @@ int main() {
     if (isX) {
         // ============================== the xDMA: seed m, later transpose o~^T
         uint32_t x0 = snrt_mcycle();
-        dsv2_xdma_fill(mrun, 1u, 0xFBFFFBFFu);
+        dsv2_xdma_fill(mseed, 1u, 0xFBFFFBFFu);
         dsv2_span(tr, DSV2_TR_XDMA, "9 m = -65504", x0, snrt_mcycle());
         M_INIT = 1u;
         SPIN(N_OUT, 1u);
-        // o~^T is [512, 32] FP16 (64 B rows); its first 16 columns are the 16 heads.
+        // o~^T is [512, 16] FP16 (32 B rows), the token's 16 heads
         x0 = snrt_mcycle();
         dsv2_xdma_transpose16(ot16, 2u * BR, xt, 2u * DV, DV, HEADS);
         dsv2_span(tr, DSV2_TR_XDMA, "10 o~ transpose", x0, snrt_mcycle());
@@ -389,11 +406,11 @@ int main() {
         snrt_dma_start_1d(g_ot_l, g_ot, HEADS * DV * 2);
 #if DSV2_STAGE_CHECKS
         snrt_dma_start_1d(g_q8_l, g_q8, BR * DQK);
-        snrt_dma_start_1d(g_s_l, g_s, NT * SBEATS * BEAT);
+        snrt_dma_start_1d(g_s_l, g_s, NT * BC * BEAT);
         snrt_dma_start_1d(g_m_l, g_m, BEAT);
         snrt_dma_start_1d(g_l_l, g_l, BEAT);
-        snrt_dma_start_1d(g_p8_l, g_p8, PBEATS * BEAT);
-        snrt_dma_start_1d(g_o16_l, g_o16, DV * BR * 2);
+        snrt_dma_start_1d(g_p8_l, g_p8, BC * DSV2_NU);
+        snrt_dma_start_1d(g_o16_l, g_o16, DV * BEAT);
 #endif
         snrt_dma_wait_all();
         G1 = 1u;
@@ -413,7 +430,7 @@ int main() {
                 SPIN(K_IN, j + 1u);
                 const uint32_t g0 = snrt_mcycle();
                 qk_arm();
-                gemm_go(kbuf[j & 1u], q8, oacc, sbuf + j * (1 + SBEATS) * BEAT + BEAT);
+                gemm_go(kbuf[j & 1u], q8, oacc, sbuf + j * SP + BEAT);
                 TMO += dsv2_gemm_wait(++id);
                 T_QK(j) = snrt_mcycle() - org;
                 dsv2_span(tr, DSV2_TR_GEMM, "8 QK", g0, snrt_mcycle());
@@ -427,7 +444,7 @@ int main() {
                 const uint32_t g0 = snrt_mcycle();
                 pv_arm(t == 0u, last);
                 if (t) pv_factors((const volatile uint32_t *)(corr + (t & 1u) * BEAT));
-                gemm_go(vbuf[t & 1u], p8[t & 1u], oacc, last ? (void *)o16 : (void *)oacc);
+                gemm_go(vbuf[t & 1u], p8[t & 1u], oacc, last ? (void *)(o16 + BEAT) : (void *)oacc);
                 TMO += dsv2_gemm_wait(++id);
                 T_PV(t) = snrt_mcycle() - org;
                 dsv2_span(tr, DSV2_TR_GEMM, "10 PV", g0, snrt_mcycle());
@@ -444,88 +461,76 @@ int main() {
     const uint32_t busy0 = snax_simd_busy_cycles();
     uint32_t t_q0 = snrt_mcycle();
     quant_q_segment(qt, QT_PITCH, q8, DV / DSV2_KU, INV_QT);
-    quant_q_segment(qp, QP_PITCH, q8 + (DV / DSV2_KU) * BEAT, 64u / DSV2_KU, INV_QPE);
+    quant_q_segment(qp, QP_PITCH, q8 + (DV / DSV2_KU) * BLK, 64u / DSV2_KU, INV_QPE);
     simd_drain(sy, "Q8");
     uint32_t c_q = snrt_mcycle() - t_q0;
     dsv2_span(tr, DSV2_TR_SIMD, "D2 Q8", t_q0, snrt_mcycle());
     Q_OUT = 1u;
 
     snax_simd_shape_t in, out;
+    // m = -65504 into tile 0's mold beat, once the xDMA has filled the seed
+    SPIN(M_INIT, 1u);
+    snax_simd_shape_flat(&in, mseed, 1);
+    snax_simd_shape_flat(&out, sbuf + S_MOLD, 1);
+    snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, 0u);
+    simd_task(&in, &out);
     for (uint32_t j = 0; j < NT; j++) {
-        uint8_t *latch = sbuf + j * (1 + SBEATS) * BEAT, *st = latch + BEAT;
-        uint8_t *cj = corr + (j & 1u) * BEAT;
-        uint8_t *rs = p8[j & 1u] + PBEATS * BEAT, *lsc = rs + BEAT;
+        uint8_t *sb = sbuf + j * SP;  // the tile's latch; its keys one beat on
+        uint8_t *cj = corr + (j & 1u) * BEAT, *pb = p8[j & 1u];
         SPIN(S_OUT, j + 1u);
-        if (j == 0) SPIN(M_INIT, 1u);
         const uint32_t s0 = snrt_mcycle();
-        // 1 rowmax
-        snax_simd_shape_flat(&in, st, SBEATS);
-        snax_simd_shape_flat(&out, rmax, 1);
-        snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, SBEATS,
+        // 1 m_new = max(m_old, rowmax): a lanewise MAX over [keys][mold], into the latch
+        snax_simd_shape_flat(&in, sb + BEAT, BC + 1u);
+        snax_simd_shape_flat(&out, sb, 1);
+        snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, BC + 1u,
                        SIMD_RED_MAX | SIMD_RED_LANEWISE);
         simd_task(&in, &out);
-        // 2 m_new = max(rowmax, m_old)
-        snax_simd_shape_flat(&in, rmax, 2);
-        snax_simd_shape_flat(&out, mnew, 1);
-        snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, 2,
-                       SIMD_RED_MAX | SIMD_RED_LANEWISE);
-        simd_task(&in, &out);
-        // 3 -m_new into the tile's latch and into rmax (now task 4's partner of m_old)
-        snax_simd_shape_broadcast(&in, mnew, 2);
-        snax_simd_shape_2d(&out, latch, 2, (uint32_t)(rmax - latch), 1, 0);
-        snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR,
-                       snax_simd_f32_neg(SIMD_F32_ONE), 0, SIMD_FUNC_LINEAR);
-        simd_task(&in, &out);
-        // 4 corr = exp(a' (m_old - m_new)): EW0 ADD over [-m_new][m_old] -> Map EXP
-        snax_simd_shape_flat(&in, rmax, 2);
+        // 2 corr = exp(a' (m_old - m_new)): EW0 SUB over the pair [latch][mold] -> Map EXP
+        snax_simd_shape_2d(&in, sb, 2u, S_MOLD, 1u, 0u);
         snax_simd_shape_flat(&out, cj, 1);
         snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMELEMENTWISE_0) |
                                                          (1u << SIMD_EXT_STREAMMAP));
         snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 0, 2u);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_ADD);
+        snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_SUB);
         snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 0, A_EXP);
         snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 1, 0u);
         snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 2, SIMD_FUNC_EXP);
         simd_task(&in, &out);
-        // 5 P8 and the rowsum in one sweep over [-m_new][S^T]
-        snax_simd_shape_flat(&in, latch, 1 + SBEATS);
-        snax_simd_shape_flat(&out, p8[j & 1u], PBEATS + 1);
+        // 3 P8 and the rowsum in one sweep over [latch][keys]
+        snax_simd_shape_flat(&in, sb, 1u + BC);
+        snax_simd_shape_flat(&out, pb, BC / 2u + 1u);
         snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMELEMENTWISE_0) |
                                                          (1u << SIMD_EXT_STREAMMAP) |
                                                          (1u << SIMD_EXT_STREAMREDUCE) |
                                                          (1u << SIMD_EXT_FP16TOINT8));
         snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 0, 1u);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_ADD | SIMD_EW_STICKY_B);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 0, A_EXP);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 1, 0u);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 2, SIMD_FUNC_EXP);
-        snax_simd_set_op_csr(SIMD_EXT_STREAMREDUCE_CSR, 0, SBEATS);
+        snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_SUB | SIMD_EW_STICKY_B);
+        snax_simd_set_op_csr(SIMD_EXT_STREAMREDUCE_CSR, 0, BC);
         snax_simd_set_op_csr(SIMD_EXT_STREAMREDUCE_CSR, 1,
                              SIMD_RED_ADD | SIMD_RED_LANEWISE | SIMD_RED_TAP);
         snax_simd_set_op_csr(SIMD_EXT_FP16TOINT8_CSR, 0, P8_INV);
-        snax_simd_set_op_csr(SIMD_EXT_FP16TOINT8_CSR, 1, SIMD_QUANT_TAIL(SBEATS) | SIMD_QUANT_ILV4);
+        snax_simd_set_op_csr(SIMD_EXT_FP16TOINT8_CSR, 1, SIMD_QUANT_TAIL(BC) | SIMD_QUANT_ILV4);
         simd_task(&in, &out);
         simd_drain(sy, "softmax epilogue");
         T_SM(j) = snrt_mcycle() - org;
         dsv2_span(tr, DSV2_TR_SIMD, "9 softmax", s0, snrt_mcycle());
         P_OUT = j + 1u;
-        // 6 corr * l_old: sticky MUL over [corr_j][l_old]
-        snax_simd_shape_2d(&in, cj, 2, (uint32_t)(lrun - cj), 1, 0);
-        snax_simd_shape_flat(&out, lsc, 1);
-        snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1,
-                       SIMD_EW_MUL | SIMD_EW_STICKY_B);
+        // 4 corr * l_old: EW1 MUL over the pair [corr_j][l], behind the rowsum
+        snax_simd_shape_2d(&in, cj, 2u, (uint32_t)(l - cj), 1u, 0u);
+        snax_simd_shape_flat(&out, pb + P_RS + BEAT, 1);
+        snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 2u,
+                       SIMD_EW_MUL);
         simd_task(&in, &out);
-        // 7 l_new = rowsum + corr * l_old
-        snax_simd_shape_flat(&in, rs, 2);
-        snax_simd_shape_flat(&out, lnew, 1);
+        // 5 l = rowsum + corr * l_old, over l
+        snax_simd_shape_flat(&in, pb + P_RS, 2);
+        snax_simd_shape_flat(&out, l, 1);
         snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, 2,
                        SIMD_RED_ADD | SIMD_RED_LANEWISE);
         simd_task(&in, &out);
-        // 8 commit: mnew -> mrun, lnew -> lrun in one strided copy
-        snax_simd_shape_2d(&in, mnew, 2, (uint32_t)(lnew - mnew), 1, 0);
-        snax_simd_shape_2d(&out, mrun, 2, (uint32_t)(lrun - mrun), 1, 0);
-        snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, SIMD_F32_ONE, 0,
-                       SIMD_FUNC_LINEAR);
+        // 6 m_new into the next tile's mold, or after the last tile into mfin: a copy
+        snax_simd_shape_flat(&in, sb, 1);
+        snax_simd_shape_flat(&out, j + 1u < NT ? sb + SP + S_MOLD : mfin, 1);
+        snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, 0u);
         simd_task(&in, &out);
     }
     simd_drain(sy, "softmax state");
@@ -533,9 +538,10 @@ int main() {
     // ---- o~ = O16 (.) c / l per query ---------------------------------------------------
     SPIN(O_OUT, 1u);
     uint32_t t_n0 = snrt_mcycle();
-    // c / l = RSQRT(l / c)^2: l read twice, both through the map, the pair multiplied
-    snax_simd_shape_broadcast(&in, lrun, 2);
-    snax_simd_shape_flat(&out, rsc, 1);
+    // c / l = RSQRT(l / c)^2: l read twice, both through the map, the pair multiplied, into
+    // O16's latch
+    snax_simd_shape_broadcast(&in, l, 2);
+    snax_simd_shape_flat(&out, o16, 1);
     snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMMAP) |
                                                      (1u << SIMD_EXT_STREAMELEMENTWISE_1));
     snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 0, A_N);
@@ -545,26 +551,30 @@ int main() {
     snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1, SIMD_EW_MUL);
     simd_task(&in, &out);
     // o~^T = [c/l][O16 ...]: sticky MUL, lanes = queries
-    snax_simd_shape_flat(&in, rsc, 1 + DV);
+    snax_simd_shape_flat(&in, o16, 1 + DV);
     snax_simd_shape_flat(&out, ot16, DV);
     snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1, SIMD_EXT_STREAMELEMENTWISE_1_CSR, 1,
                    SIMD_EW_MUL | SIMD_EW_STICKY_B);
     simd_task(&in, &out);
     simd_drain(sy, "normalise");
+    // c / l, kept for a check; volatile, or this becomes a memcpy()
+    for (uint32_t i = 0; i < BEAT / 4u; i++)
+        ((volatile uint32_t *)rsc)[i] = ((const volatile uint32_t *)o16)[i];
     dsv2_span(tr, DSV2_TR_SIMD, "10 O / l", t_n0, snrt_mcycle());
     N_OUT = 1u;
     SPIN(X_OUT, 1u);
     const uint32_t t_a0 = snrt_mcycle();
-    // W_UV's 16 A operands in one task: per head, k, and the pair the quantiser packs
+    // W_UV's 16 A operands in one task: per head and k, every channel reads the same four values
+    // (lane stride 0), and the 16 / C beats of one block pack into its 16 rows
     snax_simd_shape_flat(&in, xt, 1);
     in.lane_stride = 0u;
-    in.bound[0] = 2u;
+    in.bound[0] = DSV2_MR / SIMD_SPATIAL_CHAN;
     in.stride[0] = 0u;
     in.bound[1] = DV / DSV2_KU;
     in.stride[1] = 8u;
     in.bound[2] = HEADS;
     in.stride[2] = 2u * DV;
-    snax_simd_shape_flat(&out, auv, HEADS * (DV / DSV2_KU));
+    snax_simd_shape_flat(&out, auv, HEADS * (DV / DSV2_KU) * BLK / BEAT);
     snax_simd_use0(SIMD_EXT_FP16TOINT8);
     DSV2_ARM_QUANT(INV_OT);
     simd_task(&in, &out);
@@ -587,31 +597,31 @@ int main() {
     SPIN(G1, 1u);
 #if DSV2_STAGE_CHECKS
     printf(TAG " D2 query assembly\n");
-    fails += chk8("Q8 (A-layout of [32 x 576])", q8, g_q8_l, BR * DQK, 0);
+    fails += chk8("Q8 (A-layout of [16 x 576])", q8, g_q8_l, BR * DQK, 0);
     printf(TAG " A1 scores and softmax\n");
     uint32_t sbad = 0, sworst = 0;
     for (uint32_t j = 0; j < NT; j++) {
-        uint32_t w, b = dsv2_ulp16((uint16_t *)(sbuf + j * (1 + SBEATS) * BEAT + BEAT),
-                                   g_s_l + j * SBEATS * BR, SBEATS * BR, &w);
+        uint32_t w, b = dsv2_ulp16((uint16_t *)(sbuf + j * SP + BEAT), g_s_l + j * BC * BR,
+                                   BC * BR, &w);
         sbad += b;
         if (w > sworst) sworst = w;
     }
     printf(TAG "   %s %-34s %5u/%5u differ, worst %u ULP (allowed 0)\n",
-           sworst ? "FAIL" : "PASS", "S^T, every tile", sbad, NT * dsv2_check_terms(SBEATS * BR),
+           sworst ? "FAIL" : "PASS", "S^T, every tile", sbad, NT * dsv2_check_terms(BC * BR),
            sworst);
     fails += sworst ? 1u : 0u;
-    fails += chk16("m", (uint16_t *)mrun, g_m_l, BR, 0);
-    fails += chk16("l", (uint16_t *)lrun, g_l_l, BR, 0);
+    fails += chk16("m", (uint16_t *)mfin, g_m_l, BR, 0);
+    fails += chk16("l", (uint16_t *)l, g_l_l, BR, 0);
     fails += chk8("P8, last tile (interleaved)", (int8_t *)p8[(NT - 1) & 1u], g_p8_l,
-                  PBEATS * BEAT, 0);
+                  BC * DSV2_NU, 0);
     printf(TAG " A1 output\n");
-    fails += chk16("O16 = RNE(O * 2^-k_o)", o16, g_o16_l, DV * BR, 0);
+    fails += chk16("O16 = RNE(O * 2^-k_o)", (const uint16_t *)(o16 + BEAT), g_o16_l, DV * BR, 0);
     {
         const uint16_t *r = (const uint16_t *)rsc;
         for (uint32_t q = 0; q < BR; q++)
             if (r[q] != g_rsc[q])
                 printf(TAG "     c/l lane %2u: l = %04x  got %04x  want %04x\n", q,
-                       ((const uint16_t *)lrun)[q], r[q], g_rsc[q]);
+                       ((const uint16_t *)l)[q], r[q], g_rsc[q]);
     }
     fails += chk16("c / l per query", (const uint16_t *)rsc, g_rsc, BR, 0);
 #else

@@ -136,6 +136,24 @@ def gemv_a_rep(x, mesh=MESH):
     return to_a(np.repeat(np.asarray(x)[None, :], mr, axis=0), mesh)
 
 
+def planes(X, lanes=16):
+    """A per-query tensor [rows, Br] as the MLA kernels lay it out: Br / lanes planes of
+    [rows, lanes], plane h holding queries lanes h .. lanes h + lanes - 1, one SIMD beat per row
+    (snax-dsv2-mla.h, THE ATTENTION). Returns [Br / lanes, rows, lanes]."""
+    X = np.asarray(X)
+    rows, br = X.shape
+    return np.ascontiguousarray(X.reshape(rows, br // lanes, lanes).transpose(1, 0, 2))
+
+
+def p8_halves(p8, mesh=MESH):
+    """P8 [Bc keys, Br queries] as the interleaving quantiser writes it, plane by plane: half h is
+    the B-layout of P^T's columns Nu h .. Nu h + Nu - 1, block k at 64 k, element (key, q) at
+    64 (key / Ku) + Ku (q % Nu) + key % Ku. Returns [Br / Nu, Bc Nu] int8."""
+    _, _, nu = mesh
+    p8 = np.asarray(p8, dtype=np.int8)
+    return np.stack([to_b(p8[:, nu * h:nu * (h + 1)], mesh) for h in range(p8.shape[1] // nu)])
+
+
 def to_a4(xs):
     """The compact A operand of up to four tokens (snax-dsv2.h, SEVERAL TOKENS), flat: token t's
     x in row t, the other rows zero; A-block k (row r's four values at byte 4 r) at

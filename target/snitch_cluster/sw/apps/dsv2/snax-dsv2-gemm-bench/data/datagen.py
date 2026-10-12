@@ -51,6 +51,8 @@ OFFSETS = list(range(0, 256, 32))
 
 def cases(name, b_offset):
     """[(shape, mode, B's bytes past a 256-byte boundary)] of a set, in run order."""
+    if name == "unit":
+        return [(s, m, b_offset) for s in ("gu32_k32", "dn32_n6") for m in ("i8", "i4", "i4b")]
     if name == "shapes":
         return [(s, m, b_offset) for s in SHAPES for m in ("i4b", "i4")]
     if name == "int8b":
@@ -58,7 +60,7 @@ def cases(name, b_offset):
                 for m in ("i4b", "i4", "i8")]
     if name == "offsets":
         return [("gu32", m, o) for m in ("i4b", "i4", "i8") for o in OFFSETS]
-    raise ValueError(f"no case set {name!r}: shapes, int8b or offsets")
+    raise ValueError(f"no case set {name!r}: unit, shapes, int8b or offsets")
 
 
 def b_blob(W, mode, mesh):
@@ -75,7 +77,7 @@ def main():
     ap.add_argument("--hwcfg", type=pathlib.Path, required=True)
     ap.add_argument("--header", type=pathlib.Path, required=True)
     ap.add_argument("--blob-dir", type=pathlib.Path, required=True)
-    ap.add_argument("--set", default="shapes", help="the cases: shapes, int8b or offsets")
+    ap.add_argument("--set", default="unit", help="the cases: unit, shapes, int8b or offsets")
     args = ap.parse_args()
     prm = hjson.loads(args.swcfg.read_text())
     mesh = mesh_from_hwcfg(hjson.loads(args.hwcfg.read_text()))

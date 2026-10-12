@@ -15,6 +15,9 @@
 #
 # GOLDENS, per pass and token, the device model's values: h = x + MLA(x), the top-6 ids and
 # weights, and out = h + MoE(h); after the last pass, both cache copies.
+#
+# TEST SIZE (params.hjson `dims`, L, starts): a narrower hidden state and narrower experts, a
+# short cache and two passes; the full-size layer runs on HeMAiA.
 
 import argparse
 import os
@@ -49,7 +52,8 @@ def main():
     bc, cap, ntok = int(prm["bc"]), int(prm["capacity"]), int(prm["ntok"])
     starts = [int(s) for s in prm["starts"]]
 
-    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), bc=bc, wbits=args.wbits)
+    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), bc=bc, wbits=args.wbits,
+                    dims=prm.get("dims"))
     d = g.dims
     if starts[0] != g.L:
         raise ValueError(f"the first pass starts at the golden token's position {g.L}")

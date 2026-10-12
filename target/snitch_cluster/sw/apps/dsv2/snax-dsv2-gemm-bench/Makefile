@@ -4,15 +4,19 @@
 
 # GEMM shapes in isolation on the array (src/snax-dsv2-gemm-bench.c). GEMM_BENCH_SET picks the
 # cases (data/datagen.py):
-#   shapes (default)  every shape, INT4 weights in the B-layout and in the paired layout
+#   unit (default)    the unit test: two small shapes (32 rows, K 32 and K 88, six column tiles)
+#                     in all three modes, so every walk of the bench runs
+#   shapes            every shape, INT4 weights in the B-layout and in the paired layout
 #   int8b             the gate|up shapes with INT4 weights in either layout and with INT8 weights
 #   offsets           the 32-row gate|up shape with B placed 0, 32, ..., 224 bytes past A's banks
+# The full-size sets are HeMAiA's FFN prefill shapes, measured on HeMAiA; here they are a
+# regression to run by hand.
 #
 #   make -C sw/apps/dsv2/snax-dsv2-gemm-bench GEMM_BENCH_SET=int8b
 
 APP     = snax-dsv2-gemm-bench
 
-GEMM_BENCH_SET ?= shapes
+GEMM_BENCH_SET ?= unit
 
 INCDIRS  = data
 INCDIRS += ../include

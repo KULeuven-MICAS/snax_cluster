@@ -2,12 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-    // The golden pack (sw/apps/dsv2/util): random weights at DeepSeek-V2-Lite's shapes, one
-    // token at position L with L tokens cached. The token appends its own row, so the
-    // attention runs over L + 1 keys, which must fill whole tiles of bc.
+    // The golden pack (sw/apps/dsv2/util): random weights, one token at position L with L tokens
+    // cached. The token appends its own row, so the attention runs over L + 1 keys in tiles of
+    // bc, the last one partial unless L + 1 fills it.
     seed: 1,
-    L: 511,
+    L: 100,
     bc: 64,
-    // Tokens the two DRAM cache copies hold.
-    capacity: 576,
+    // Tokens the two DRAM cache copies hold, in whole tiles of bc.
+    capacity: 128,
+    // TEST SIZE: this app is a unit test, so the model is DeepSeek-V2-Lite with a narrower hidden
+    // state (and experts), util/golden.py make(dims), and L is short: two key tiles, the second
+    // partial. The attention's dimensions are the real ones. The full model runs on HeMAiA; drop
+    // `dims` and set L: 511, capacity: 576 to run it here.
+    dims: {hidden: 256, moe_inter: 256},
 }

@@ -8,7 +8,8 @@
 // so no two harts write the same words. A span is one unit of an engine's work: a GEMM phase
 // or task, a load, a batch of SIMD tasks, a stretch of core code. Its label is a string
 // literal that starts with the layer stage it serves (docs/dsv2_layer1_plan.md, section 1):
-// "2 W_Q", "9 softmax". After the run one hart prints every track,
+// "2 W_Q", "9 softmax". After the run one hart prints every track (an app built with
+// DSV2_TRACE = 1, sw/apps/dsv2/dsv2.mk; without it the spans are recorded but not printed),
 //
 //     [SPAN] <track> <start> <end> <label>
 //
@@ -118,10 +119,16 @@ static inline void dsv2_put_span(uint32_t k, uint32_t t0, uint32_t t1, const cha
     snrt_putchar('\n');
 }
 
-// Print every track, one `[SPAN] <track> <start> <end> <label>` line a span. Call once every
-// hart has written its last span of the window.
+// Whether dsv2_trace_print prints (sw/apps/dsv2/dsv2.mk DSV2_TRACE): the spans are recorded either
+// way.
+#ifndef DSV2_TRACE
+#define DSV2_TRACE 0
+#endif
+
+// Print every track, one `[SPAN] <track> <start> <end> <label>` line a span, with DSV2_TRACE.
+// Call once every hart has written its last span of the window.
 static void dsv2_trace_print(const dsv2_trace_t *tr) {
-    if (!tr) return;
+    if (!tr || !DSV2_TRACE) return;
     for (uint32_t k = 0; k < 4u; k++) {
         const uint32_t n = ((const volatile uint32_t *)tr->n)[k];
         const volatile uint32_t *w = &tr->s[DSV2_TR_BASE(k)];

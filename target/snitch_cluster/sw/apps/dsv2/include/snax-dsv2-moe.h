@@ -83,6 +83,7 @@
 #if NTOK != 1 && NTOK != 2 && NTOK != 4
 #error "a pass holds one, two or four tokens"
 #endif
+_Static_assert(DSV2_POW2(HID), "the RMSNorm of h needs a power-of-two HID (1 / n exact)");
 
 // Whether the chunks load in two parts (DSV2_DUAL_LOAD). Every token count's GEMV takes 128
 // weight bytes a pass, more than the iDMA's stream feeds alone.
@@ -194,7 +195,7 @@ typedef struct {
     uint16_t *hn, *yr, *lg, *pr, *w, *gb, *es, *tw, *outb;
     uint16_t *ygu[2], *ydn[2];  // by unit parity: a gate|up's and a down's raw output
     uint16_t *gu, *sgu;  // one token: every slot's dequantised gate|up, and the shared one
-    uint8_t *ssq, *tmp, *el;
+    uint8_t *ssq, *el;
     int8_t *ha, *a8[2];  // hn's A operand; by unit parity, a down's
 } dsv2_moe_t;
 
@@ -235,7 +236,6 @@ static inline uint8_t *dsv2_moe_carve(dsv2_moe_t *m, uint8_t *p, volatile uint32
     m->ydn[0] = (uint16_t *)MOE_TAKE(MOE_YBUF(2 * HID));     // a down's raw output, by unit parity
     m->ydn[1] = (uint16_t *)MOE_TAKE(MOE_YBUF(2 * HID));
     m->lg = (uint16_t *)(MOE_TAKE(NTOK * MOE_LGP) + DSV2_PAD);  // [latch][logits] per token
-    m->tmp = MOE_TAKE(NTOK * DSV2_SBEAT);                     // a beat per token
     m->el = MOE_TAKE(NTOK * MOE_ELP);                        // [latch][e][sum] per token
     m->pr = (uint16_t *)MOE_TAKE(NTOK * 2 * N_EXP);
     m->w = (uint16_t *)MOE_TAKE(NTOK * MOE_WP);              // the top-6 weights, per token
@@ -462,7 +462,7 @@ static void dsv2_moe_simd(dsv2_moe_t *m) {
     MOE_POSTED(m) = 2u;
     for (uint32_t t = 0; t < NTOK; t++)
         dsv2_rmsnorm_row(MOE_TOK(m->h, t, MOE_HP), m->ssq + t * DSV2_SBEAT,
-                         MOE_TOK(m->hn, t, MOE_HP), 11);
+                         MOE_TOK(m->hn, t, MOE_HP), DSV2_LOG2(HID));
     dsv2_quant_at(m->hn, MOE_HP, m->ha, HID, NTOK, INV_H);
     moe_drain(m, "norm");
     MOE_A_OK(m) = 2u;  // the router's and the shared gate|up's A operand is hn's
@@ -474,8 +474,8 @@ static void dsv2_moe_simd(dsv2_moe_t *m) {
     for (uint32_t t = 0; t < NTOK; t++) {
         dsv2_dequant_prep(MOE_TOK(m->yr, t, MOE_YP_R), m->sbuf[0], MOE_TOK(m->lg, t, MOE_LGP), N_EXP);
         snax_simd_fire();
-        dsv2_softmax_row(MOE_TOK(m->lg, t, MOE_LGP), m->tmp + t * DSV2_SBEAT,
-                         m->el + t * MOE_ELP + DSV2_PAD, MOE_TOK(m->pr, t, 2 * N_EXP),
+        dsv2_softmax_row(MOE_TOK(m->lg, t, MOE_LGP), m->el + t * MOE_ELP + DSV2_PAD,
+                         MOE_TOK(m->pr, t, 2 * N_EXP),
                          MOE_EXP_BEATS);
     }
     moe_drain(m, "router");

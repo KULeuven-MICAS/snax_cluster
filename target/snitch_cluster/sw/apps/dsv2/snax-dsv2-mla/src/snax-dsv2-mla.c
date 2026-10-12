@@ -12,7 +12,10 @@
 // cache row, q, the rotated q_pe | k_pe, Q8 (q~ quantised: q~ itself shares its L1 with the
 // attention), the last two tiles' scores, m, l, the last P8, c / l, o~, the heads' outputs,
 // W_O's A operand (the row the GEMV reads) and raw output, and attn. main returns the number
-// of failed checks.
+// of failed checks. One token: the attention's query tile is one score plane of its 16 heads.
+//
+// TEST SIZE (data/params.hjson): a narrower hidden state and a short cache, two key tiles, the
+// last one partial; the full-size block runs on HeMAiA.
 // After the report, the block's engine spans and the cluster census over it ([ORIGIN], [SPAN],
 // [UTIL]; snax-dsv2-trace.h).
 
@@ -55,14 +58,14 @@ int main() {
     volatile uint32_t *sy = (volatile uint32_t *)p;  // this app's words
     volatile uint32_t *bsy = sy + 256;               // the block's
     p += 2048;
-    uint16_t *h = (uint16_t *)(p + DSV2_BEAT);       // [free beat][h]
-    p += DSV2_BEAT + 2 * HID;
+    uint16_t *h = (uint16_t *)(p + DSV2_PAD);        // [free slot][h]
+    p += DSV2_PAD + 2 * HID;
     dsv2_trace_t *tr = (dsv2_trace_t *)p;           // the block's spans (snax-dsv2-trace.h)
     p += (sizeof(dsv2_trace_t) + 63u) & ~63u;
     dsv2_mla_t m;
     p = dsv2_mla_carve(&m, p, bsy, h);
     m.tr = tr;
-    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_BEAT;
+    const uint32_t arena_beats = (uint32_t)(p - arena) / DSV2_XBEAT;
     static const dsv2_mla_pass_t passes[NP] = MLA_PASSES;
     const dsv2_mla_pass_t *ps = &passes[0];
     // the goldens, staged into the slabs once h is computed; the cache read-back after them
@@ -74,13 +77,13 @@ int main() {
     uint16_t *g_q_l = (uint16_t *)gb;           gb += 2 * MLA_Q_N;
     uint16_t *g_rot_l = (uint16_t *)gb;         gb += MLA_ROPE_B;
     int8_t *g_q8_l = (int8_t *)gb;              gb += MLA_BR * MLA_DQK;
-    uint16_t *g_s_l = (uint16_t *)gb;           gb += 2 * MLA_SBEATS * DSV2_BEAT;
-    uint16_t *g_m_l = (uint16_t *)gb;           gb += DSV2_BEAT;
-    uint16_t *g_l_l = (uint16_t *)gb;           gb += DSV2_BEAT;
-    int8_t *g_p8_l = (int8_t *)gb;              gb += MLA_PBEATS * DSV2_BEAT;
-    uint16_t *g_rsc_l = (uint16_t *)gb;         gb += DSV2_BEAT;
+    uint16_t *g_s_l = (uint16_t *)gb;           gb += 2 * MLA_NH * BC * DSV2_SBEAT;
+    uint16_t *g_m_l = (uint16_t *)gb;           gb += MLA_NH * DSV2_SBEAT;
+    uint16_t *g_l_l = (uint16_t *)gb;           gb += MLA_NH * DSV2_SBEAT;
+    int8_t *g_p8_l = (int8_t *)gb;              gb += MLA_NH * BC * DSV2_NU;
+    uint16_t *g_rsc_l = (uint16_t *)gb;         gb += MLA_NH * DSV2_SBEAT;
     uint16_t *g_ot_l = (uint16_t *)gb;          gb += 2 * HEADS * MLA_DV;
-    uint16_t *g_oh_l = (uint16_t *)gb;          gb += 2 * HID;
+    uint16_t *g_oh_l = (uint16_t *)gb;          gb += 2 * MLA_HO;
     uint16_t *g_attn_l = (uint16_t *)gb;        gb += 2 * HID;
     uint16_t *g_h_l = (uint16_t *)gb;           gb += 2 * HID;
     const uint32_t kblk = (MLA_DQK / DSV2_KU) * 64u;                  // one 16-token key block
@@ -90,7 +93,7 @@ int main() {
     int8_t *vgot = (int8_t *)gb;                gb += vbytes;
     int8_t *vwant = (int8_t *)gb;               gb += vbytes;
     int8_t *g_oa_l = (int8_t *)m.region;                              // R's first view is dead by then
-    uint16_t *g_ya_l = (uint16_t *)(m.region + DSV2_MR * HID);
+    uint16_t *g_ya_l = (uint16_t *)(m.region + MLA_R64(DSV2_MR * MLA_HO));
 
     const int isG = snax_is_gemm_core(), isS = snax_is_simd_core();
     const int isX = snax_is_xdma_core(), isD = snax_is_idma_core();
@@ -135,14 +138,14 @@ int main() {
         snrt_dma_start_1d(g_q_l, g_q, 2 * MLA_Q_N);
         snrt_dma_start_1d(g_rot_l, g_rot, MLA_ROPE_B);
         snrt_dma_start_1d(g_q8_l, g_q8, MLA_BR * MLA_DQK);
-        snrt_dma_start_1d(g_s_l, g_s, 2 * MLA_SBEATS * DSV2_BEAT);
-        snrt_dma_start_1d(g_m_l, g_m, DSV2_BEAT);
-        snrt_dma_start_1d(g_l_l, g_l, DSV2_BEAT);
-        snrt_dma_start_1d(g_p8_l, g_p8, MLA_PBEATS * DSV2_BEAT);
-        snrt_dma_start_1d(g_rsc_l, g_rsc, DSV2_BEAT);
+        snrt_dma_start_1d(g_s_l, g_s, 2 * MLA_NH * BC * DSV2_SBEAT);
+        snrt_dma_start_1d(g_m_l, g_m, MLA_NH * DSV2_SBEAT);
+        snrt_dma_start_1d(g_l_l, g_l, MLA_NH * DSV2_SBEAT);
+        snrt_dma_start_1d(g_p8_l, g_p8, MLA_NH * BC * DSV2_NU);
+        snrt_dma_start_1d(g_rsc_l, g_rsc, MLA_NH * DSV2_SBEAT);
         snrt_dma_start_1d(g_ot_l, g_ot, 2 * HEADS * MLA_DV);
-        snrt_dma_start_1d(g_oh_l, g_oh, 2 * HID);
-        snrt_dma_start_1d(g_oa_l, g_oa, HID);
+        snrt_dma_start_1d(g_oh_l, g_oh, 2 * MLA_HO);
+        snrt_dma_start_1d(g_oa_l, g_oa, MLA_HO);
         snrt_dma_start_1d(g_ya_l, g_ya, 2 * HID);
         snrt_dma_start_1d(g_attn_l, g_attn, 2 * HID);
 #endif
@@ -189,20 +192,22 @@ int main() {
     fails += chk8("Q8 (A-layout of [32 x 576])", m.q8, g_q8_l, MLA_BR * MLA_DQK);
     for (uint32_t k = 0; k < 2u; k++) {
         const uint32_t j = m.nt - 2u + k;
-        fails += chk16(j == m.nt - 1u ? "S^T, last tile" : "S^T, tile before last",
-                       (const uint16_t *)(m.sbuf + (j & 1u) * (1 + MLA_SBEATS) * DSV2_BEAT +
-                                          DSV2_BEAT),
-                       g_s_l + k * MLA_SBEATS * MLA_BR, MLA_SBEATS * MLA_BR);
+        for (uint32_t pl = 0; pl < MLA_NH; pl++)  // each score plane, its keys alone
+            fails += chk16(j == m.nt - 1u ? "S^T, last tile" : "S^T, tile before last",
+                           (const uint16_t *)(m.sbuf[j & 1u] + pl * MLA_SP + DSV2_SBEAT),
+                           g_s_l + (k * MLA_NH + pl) * BC * DSV2_LANES, BC * DSV2_LANES);
     }
-    fails += chk16("m", (const uint16_t *)m.mrun, g_m_l, MLA_BR);
-    fails += chk16("l", (const uint16_t *)m.lrun, g_l_l, MLA_BR);
-    fails += chk8("P8, last tile (interleaved)", (const int8_t *)m.p8[(m.nt - 1u) & 1u], g_p8_l,
-                  MLA_PBEATS * DSV2_BEAT);
+    fails += chk16("m", (const uint16_t *)m.mfin, g_m_l, MLA_BR);
+    fails += chk16("l", (const uint16_t *)m.l, g_l_l, MLA_BR);
+    for (uint32_t pl = 0; pl < MLA_NH; pl++)  // each P8 half, its B blocks alone
+        fails += chk8("P8, last tile (interleaved)",
+                      (const int8_t *)m.p8[(m.nt - 1u) & 1u] + pl * MLA_PP,
+                      g_p8_l + pl * BC * DSV2_NU, BC * DSV2_NU);
     fails += chk16("c / l per query", (const uint16_t *)m.rsc, g_rsc_l, MLA_BR);
     fails += chk16("o~ (16 heads x 512)", m.xt, g_ot_l, HEADS * MLA_DV);
     printf(TAG " 11-13: W_UV, W_O, the residual\n");
-    fails += chk16("o = o~ . W_UV (dequantised)", m.oh, g_oh_l, HID);
-    fails += chka("W_O A operand", m.oa, g_oa_l, HID);
+    fails += chk16("o = o~ . W_UV (dequantised)", m.oh, g_oh_l, MLA_HO);
+    fails += chka("W_O A operand", m.oa, g_oa_l, MLA_HO);
     fails += chk16("attn raw = RNE(o8 . W_O * 2^-k)", m.ya, g_ya_l, HID);
     fails += chk16("attn = o . W_O (dequantised)", m.attn, g_attn_l, HID);
 #else

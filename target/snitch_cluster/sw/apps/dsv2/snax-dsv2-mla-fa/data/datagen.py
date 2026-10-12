@@ -7,13 +7,18 @@
 # Data for snax-dsv2-mla-fa: DeepSeek-V2-Lite's multi-head latent attention for one token
 # against L + 1 cached rows (the golden pack's L plus the token's own), from golden inputs:
 #
-#   D2   q~ (16 x 512) and the rotated q_pe (16 x 64), FP16 -> Q8, the [32 x 576] A operand
-#        (rows 16..31 zero), two segment scales tied by s_q~ s_c = s_qpe s_kpe
+#   D2   q~ (16 x 512) and the rotated q_pe (16 x 64), FP16 -> Q8, the [16 x 576] A operand,
+#        two segment scales tied by s_q~ s_c = s_qpe s_kpe
 #   A1   per key tile of Bc: S^T = K . Q^T (D port, k_s), the online softmax (V4), then
 #        O^T += V^T . P^T with the column scaler; the last tile leaves as FP16 (k_o)
 #   out  o~ = O16 (.) c / l per query, transposed, then quantised into W_UV's 16 A operands
 #
-# The cache is the two DRAM copies of layout.py (key_copy, value_copy).
+# The cache is the two DRAM copies of layout.py (key_copy, value_copy). The per-query goldens
+# (scores, m, l, P8, O16, c / l) are the token's 16 heads in the kernel's score-plane layouts
+# (util/layout.py planes, p8_halves).
+#
+# TEST SIZE (params.hjson `dims`, L): a short cache, and the golden pack's narrower hidden state
+# (which only the pack's earlier stages see); the attention's dimensions are the real ones.
 
 import argparse
 import os
@@ -24,23 +29,12 @@ import hjson
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../"))  # the util package
-from util import golden  # noqa E402
+from util import golden, simd  # noqa E402
 from util.emit import Emitter  # noqa E402
 from util.fp import bits16, f32bits  # noqa E402
 from util.hwmodel import P8_SCALE  # noqa E402
-from util.layout import gemv_a_rep, key_copy, mesh_from_hwcfg, to_a, value_copy  # noqa E402
-
-
-def p8_interleaved(p8, n_blk, ku, nu):
-    """P8 [Bc keys, Br queries] as the interleaving quantiser writes it: B block (k, n) of
-    P^T at (k * n_blk + n) * ku * nu, element (key, q) at (q % nu) * ku + key % ku."""
-    bc, br = p8.shape
-    out = np.zeros(bc * br, dtype=np.int8)
-    for key in range(bc):
-        for q in range(br):
-            blk = (key // ku) * n_blk + q // nu
-            out[blk * ku * nu + (q % nu) * ku + key % ku] = p8[key, q]
-    return out
+from util.layout import (gemv_a_rep, key_copy, mesh_from_hwcfg, p8_halves, planes,  # noqa E402
+                         to_a, value_copy)
 
 
 def main():
@@ -53,12 +47,15 @@ def main():
                     help="weight width: INT8, or INT4 through the B converter")
     args = ap.parse_args()
     prm = hjson.loads(args.swcfg.read_text())
-    mesh = mesh_from_hwcfg(hjson.loads(args.hwcfg.read_text()))
+    hw = hjson.loads(args.hwcfg.read_text())
+    mesh = mesh_from_hwcfg(hw)
+    simd.use_hwcfg(hw)  # the SIMD core the goldens model
     if mesh != (16, 4, 16):
         raise ValueError(f"the kernel's descriptors assume a (16, 4, 16) mesh, not {mesh}")
     bc, cap = int(prm["bc"]), int(prm["capacity"])
 
-    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), bc=bc, wbits=args.wbits)
+    g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), bc=bc, wbits=args.wbits,
+                    dims=prm.get("dims"))
     H, d, S = g.hw, g.dims, g.scales
     T = g.L + 1
     if T % bc or cap % bc or cap < T:
@@ -73,7 +70,7 @@ def main():
     em.define("BC", bc, "keys per tile")
     em.define("NT", T // bc, "key tiles")
     em.define("CAP", cap, "tokens the cache copies hold")
-    em.define("K_S", H["ks"]["s"], "D-port shift of the scores, depth 576")
+    em.define("K_S", H["ks"]["s"], f"D-port shift of the scores, depth {d.latent}")
     em.define("K_O", H["k_o"], f"D-port shift of O, depth {T}")
     em.define("A_EXP", f"0x{f32bits(H['a_exp']):08X}u", f"exp scale a' = {H['a_exp']:.6g}")
     em.define("A_N", f"0x{f32bits(H['a_n']):08X}u", "RSQRT scale 1/c, c = 2^k_o s_c / 127")
@@ -85,14 +82,14 @@ def main():
     em.blob("val", value_copy(rows[:, :d.kv_rank], cap, mesh))
     em.blob("qt16", bits16(H["qt16"]).reshape(-1))
     em.blob("qpe16", bits16(H["qpe_rot"]).reshape(-1))
-    em.blob("g_q8", to_a(H["Q8"], mesh))
-    em.blob("g_s", bits16(np.concatenate([t["S16"] for t in att["tiles"]])).reshape(-1))
-    em.blob("g_m", bits16(att["m"]))
-    em.blob("g_l", bits16(att["l"]))
-    em.blob("g_p8", p8_interleaved(att["tiles"][-1]["p8"].astype(np.int8), 2, 4, 16))
-    em.blob("g_o16", bits16(H["O16"]).reshape(-1))
-    em.blob("g_rsc", bits16(H["rsc16"]))
-    em.blob("g_lsq", bits16(H["att"]["l"]))
+    br = d.heads  # one token: one score plane, Br = its 16 heads
+    em.blob("g_q8", to_a(H["Q8"][:br], mesh))
+    em.blob("g_s", bits16(np.stack([planes(t["S16"][:, :br]) for t in att["tiles"]])))
+    em.blob("g_m", bits16(att["m"][:br]))
+    em.blob("g_l", bits16(att["l"][:br]))
+    em.blob("g_p8", p8_halves(att["tiles"][-1]["p8"][:, :br], mesh))
+    em.blob("g_o16", bits16(planes(H["O16"][:, :br])))
+    em.blob("g_rsc", bits16(H["rsc16"][:br]))
     em.blob("g_ot", bits16(H["ot16"]).reshape(-1))
     em.blob("g_auv", np.concatenate([gemv_a_rep(H["ot8"][h], mesh) for h in range(d.heads)]))
     em.write(args.header, args.blob_dir / "blobs.S")

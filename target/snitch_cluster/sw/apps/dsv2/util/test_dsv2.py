@@ -273,6 +273,27 @@ def test_a_row_writes_rebuild_the_gemv_operands():
     assert np.array_equal(a.view(np.int8), to_a(R)), "16-row layout, row 1"
 
 
+def test_p8_halves_are_the_interleaving_quantisers_output():
+    """util/layout.p8_halves (the P8 goldens, PV's B blocks) against Fp16ToInt8's INTERLEAVE4 at
+    the cfg's lanes L: each group of four key beats leaves as two beats, beat q / (L / 2) byte
+    4 (q % (L / 2)) + b holding key b's lane q; a plane's beats follow one another."""
+    from . import simd
+    from .layout import p8_halves
+    L = simd.LANES
+    rng = np.random.default_rng(14)
+    bc, br = 64, 32
+    p8 = rng.integers(-127, 128, size=(bc, br)).astype(np.int8)
+    want = p8_halves(p8)
+    for h in range(br // L):
+        out = np.zeros(bc * L, dtype=np.int8)
+        for g in range(bc // 4):
+            for b in range(4):
+                for q in range(L):
+                    beat = 2 * g + q // (L // 2)
+                    out[beat * 2 * L + 4 * (q % (L // 2)) + b] = p8[4 * g + b, L * h + q]
+        assert np.array_equal(out, want[h]), f"half {h}"
+
+
 def test_reduce_follows_the_rtls_order():
     """simd.reduce_lanes against the order SimdStreamReduce computes, written out: beat k into
     partial k mod P, the partials folded by a balanced tree, unwritten ones the identity."""

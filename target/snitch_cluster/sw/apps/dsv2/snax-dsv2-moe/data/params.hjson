@@ -2,8 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-    // The golden pack (sw/apps/dsv2/util): random weights at DeepSeek-V2-Lite's shapes, one
-    // token at position L with L tokens cached.
+    // The golden pack (sw/apps/dsv2/util): random weights, one token at position L with L
+    // tokens cached.
     seed: 1,
-    L: 511,
+    L: 63,
+    // TEST SIZE: this app is a unit test, so the model is DeepSeek-V2-Lite with a narrower
+    // hidden state and narrower experts (util/golden.py make(dims)): 1.6 MiB of weights instead
+    // of 66. The shared down projection (depth 512) is still deeper than the hidden state, so it
+    // keeps its 16-column chunks. The real sizes run on HeMAiA; drop `dims` to run them here.
+    dims: {hidden: 256, moe_inter: 256},
 }

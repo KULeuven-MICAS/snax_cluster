@@ -206,7 +206,7 @@
 // so it reduces each 512-beat plane down to one beat and writes nothing else. Each plane
 // carries a spare beat in front for exactly that reason: the epilogue is a sticky-B pass,
 // its broadcast operand has to sit immediately before the plane, and that beat is where
-// -m16 goes. A tap would have had to COPY the whole tile to put it behind a latch.
+// the rowmax writes m16. A tap would have had to COPY the whole tile to put it behind a latch.
 //
 // ONE KV TILE. Br = 32 query rows, Bc = 512 keys, d = 128, NKV = 4 tiles. Bc and d are
 // INDEPENDENT, so the two matmuls have different shapes; gemm_set_shape() switches between
@@ -236,23 +236,23 @@
 //   SIMD (hart 1), in the order the loop fires them:
 //
 //                  m16   = max(mold_h, rowmax(S16^T_h))  2 x 513 -> 2  Reduce MAX|LANEWISE
-//                  -m16  -> latch_h                     2 -> 2  StreamMap LINEAR, a = -1
+//                          written into latch_h, the beat in front of each plane
 //
 //                       [ latch_h ][ S16^T plane h  x512 ][ mold_h ]
-//                         \___ -m16, the        \______________/
+//                         \___ m16, the         \______________/
 //                              epilogue's        ONE row of the rowmax: the running
 //                              sticky operand    maximum is the row's last beat, so the
 //                                                same lanewise MAX that finds rowmax
 //                                                also folds in m16_old
 //
-//                  corr16 = exp(a*(m16_old - m16))   4 -> 2  FUSED: EW0 (ADD, pairs) -> Map (EXP)
+//                  corr16 = exp(a*(m16_old - m16))   4 -> 2  FUSED: EW0 (SUB, pairs) -> Map (EXP)
 //
-//                       the pairs [ latch_h ][ mold_h ] = [ -m16 ][ m16_old ], read at one
-//                       stride; corr16 lands in this tile's corr slot, where the l update
+//                       the pairs [ latch_h ][ mold_h ] = [ m16 ][ m16_old ], read at one
+//                       stride, and SUB is x - B = m16_old - m16; corr16 lands in this tile's corr slot, where the l update
 //                       and PV(j) -- which copies it into the C column scaler to rescale
 //                       O -- both find it
 //
-//                  P8^T_h = int8(127*exp(a*(S16^T_h - m16)))  ) FUSED: EW0 (sticky ADD)
+//                  P8^T_h = int8(127*exp(a*(S16^T_h - m16)))  ) FUSED: EW0 (sticky SUB)
 //                                         513 -> 257, per h   ) -> Map (EXP) -> Reduce TAP
 //                  sum16_h = sum of P16_h over keys           ) -> Fp16ToInt8 (interleave,
 //                                                             )    tail passthrough)
@@ -278,11 +278,13 @@
 //                  mold_h of the next tile <- m16    2 -> 2  a copy, no operator
 //
 //                     Old and new never need a "commit". m16_old lives in the planes' mold
-//                     beats and m16 in the state vector, so the rowmax writes the new value
+//                     beats and m16 in their latch beats, so the rowmax writes the new value
 //                     without touching the old one that corr still needs; l16_old is
 //                     consumed into lsc16 before the l update overwrites it in place. The
-//                     one copy carries m16 into the mold beats of the score buffer the next
-//                     tile is being written into, which is all the state tile j+1 needs.
+//                     one copy carries m16 from the latches into the mold beats of the score
+//                     buffer the next tile is being written into, which is all the state
+//                     tile j+1 needs; after the last tile it carries m16 into the state
+//                     vector m instead.
 //
 //   GEMM (hart 0)  O32^T += V8^T . P8^T    V8^T [128,512]  64 KiB  ]  2.10 M MAC
 //                                          P8^T [512, 32]  16 KiB  ]  2048 cycles
@@ -633,7 +635,7 @@
 // fault -- it returns another op's answer. So the gate names capabilities, not extensions;
 // each _HAS_ macro implies its extension exists. See the note in snax-simd-lib.h.
 // The softmax chain: a LANEWISE rowmax (MAX), the shifted exponential (EXP) fed by the
-// PRE-map elementwise (ADD, sticky), the row sum (ADD), and the tail passthrough that lets
+// PRE-map elementwise (SUB, sticky and pairs), the row sum (ADD), and the tail passthrough that lets
 // the same pass quantise the tile while the reduce appends its scalar. tailPassthrough is a
 // BUILD-time feature, not a runtime select: without it csr(1) is not there at all and the
 // SIMD_QUANT_TAIL write below lands on the next extension's CSR block.
@@ -644,11 +646,11 @@
 #if !defined(SIMD_EXT_STREAMREDUCE_HAS_MAX) ||          \
     !defined(SIMD_EXT_STREAMREDUCE_HAS_ADD) ||          \
     !defined(SIMD_EXT_STREAMMAP_HAS_EXP) ||             \
-    !defined(SIMD_EXT_STREAMELEMENTWISE_0_HAS_ADD) ||   \
+    !defined(SIMD_EXT_STREAMELEMENTWISE_0_HAS_SUB) ||   \
     !defined(SIMD_EXT_FP16TOINT8_HAS_TAILPASSTHROUGH) || \
     !defined(SIMD_EXT_FP16TOINT8_HAS_INTERLEAVE4)
 #error \
-    "This cluster's SIMD block cannot run the FlashAttention softmax: it needs StreamReduce MAX+ADD, StreamMap EXP, a PRE-map StreamElementwise ADD, and Fp16ToInt8 tailPassthrough + interleave."
+    "This cluster's SIMD block cannot run the FlashAttention softmax: it needs StreamReduce MAX+ADD, StreamMap EXP, a PRE-map StreamElementwise SUB, and Fp16ToInt8 tailPassthrough + interleave."
 #endif
 // ONE SIMD BEAT IS ONE ARRAY OUTPUT ROW: meshCol queries of one key. The score planes, the
 // per-half epilogue and the P8 layout all rest on it, so the SIMD core's lane count (its
@@ -1329,8 +1331,8 @@ int main() {
     //   [ latch_1 ][ S^T keys 0..Bc-1, queries 16..31 ][ mold_1 ]      S_PITCH
     //
     // THE TILE IS READ WHERE THE GEMM WROTE IT. The latch is the sticky-B operand of the
-    // epilogue, which must sit immediately before its data: -m_new of that half goes there,
-    // so the tile never has to be copied to sit behind one. mold is the running maximum
+    // epilogue, which must sit immediately before its data: the rowmax writes m_new of that
+    // half there, so the tile never has to be copied to sit behind one. mold is the running maximum
     // the tile starts from, put there by the previous tile's last task; the rowmax reads
     // it as each plane's last beat, so ONE lanewise MAX of 1 + Bc beats per plane is
     // max(m_old, rowmax) -- the new running maximum, with no separate combine.
@@ -1353,10 +1355,11 @@ int main() {
     // P8 does: tile j writes slot j % NP8, and tile j+3 cannot start until QK(j+3), which the
     // GEMM issues only after launching PV(j) (see THE DISPATCH ORDER).
     //
-    // m is written by the rowmax every tile and l in place by the l update, so nothing
-    // has to copy a "new" value over an "old" one: m_old lives in the planes' mold beats,
-    // and l_old is consumed into corr*l_old before l is rewritten.
-    uint8_t *m_st  = l1 + top;  top += NH * BEAT;       // m, seeded -inf by the xDMA
+    // m lives in the planes' latch beats (the rowmax writes it there every tile) and l is
+    // rewritten in place by the l update, so nothing has to copy a "new" value over an
+    // "old" one: m_old lives in the planes' mold beats, and l_old is consumed into
+    // corr*l_old before l is rewritten. m_st holds the -inf seed, then the final m.
+    uint8_t *m_st  = l1 + top;  top += NH * BEAT;       // m: seeded -inf by the xDMA, final m
     uint8_t *corrS = l1 + top;  top += NP8 * NH * BEAT; // corr, slot j % NP8
     uint8_t *l_st  = l1 + top;  top += NH * BEAT;       // l, seeded 0 by the preinit
 #define CORR_OF(j) (l1u + (uint32_t)(corrS - l1) + ((j) % NP8) * NH * SIMD_BEAT_BYTES)
@@ -1430,8 +1433,8 @@ int main() {
     // state vectors, so no warm write lands on live state:
 #define W_KEYS 4u                                   // keys per warm plane: one 4-key group
 #define WS_P   (NH * (W_KEYS + 2u))                 // beats: the warm P8 halves
-#define WS_M   (WS_P + NH * (W_KEYS / 2u + 2u))     //        the warm m, corr, l
-#define WS_C   (WS_M + NH)
+#define WS_C   (WS_P + NH * (W_KEYS / 2u + 2u))     //        the warm corr, l
+
 #define WS_L   (WS_C + NH)
     const uint32_t wscr = l1u + top;  top += (WS_L + NH) * BEAT;
 
@@ -2045,7 +2048,7 @@ int main() {
         // real iterations set to the real geometry.
         //
         // Every warm task reads and writes wscr except the last, which is real: it puts
-        // the -inf seed into tile 0's mold beats (task 7 below, for "tile -1").
+        // the -inf seed into tile 0's mold beats (task 6 below, for "tile -1").
         for (uint32_t jw = 0; jw < NKV + 1u; jw++) {
             const uint32_t warm = (jw == 0u);
             const uint32_t j    = warm ? 0u : jw - 1u;
@@ -2067,64 +2070,59 @@ int main() {
             const uint32_t ro = nb * (BEAT / 2u);                // half -> its rowsum beat
             const uint32_t sb = warm ? wscr : l1u + s_buf[j % NSCORE];   // plane 0's latch
             const uint32_t pb = warm ? wscr + WS_P * BEAT : l1u + p8_buf[j % NP8];
-            const uint32_t mq = warm ? wscr + WS_M * BEAT : m_u;
             const uint32_t cq = warm ? wscr + WS_C * BEAT : CORR_OF(j);
             const uint32_t lq = warm ? wscr + WS_L * BEAT : l_u;
 
             // ---- the online softmax, in full -------------------------------
-            // Every task below is NH beats of arithmetic except 1 and 4. That ratio is
+            // Every task below is NH beats of arithmetic except 1 and 3. That ratio is
             // the point: the STATE UPDATE is dominated by per-task start/drain, not by
             // compute -- which is why each one covers both halves of the query tile.
 
             // 1  m_new = max(m_old, rowmax(S^T)), both halves in ONE task: a lanewise MAX
             //    over two rows of 1 + Bc beats, each row a plane's key beats and then its
-            //    mold beat, the rows one plane apart. Two beats come out, contiguous: m.
+            //    mold beat, the rows one plane apart. Its two beats go into the planes'
+            //    latches, the beats in front of the key rows, where tasks 2, 3 and 6 read m.
             snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, (1u << SIMD_EXT_STREAMREDUCE));
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMREDUCE_CSR + 0, nb + 1u);
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMREDUCE_CSR + 1,
                                     SIMD_RED_MAX | SIMD_RED_LANEWISE);
-            simd_task(sb + BEAT, nb + 1u, BEAT, NH, sp, mq, NH, BEAT);
+            simd_task(sb + BEAT, nb + 1u, BEAT, NH, sp, sb, NH, sp);
 
-            // 2  -m_new into each plane's latch, the beat in front of its key rows.
-            snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR,
-                           snax_simd_f32_neg(SIMD_F32_ONE), 0, SIMD_FUNC_LINEAR);
-            simd_task(mq, NH, BEAT, 1u, 0u, sb, NH, sp);
-
-            // 3  corr = exp(a*(m_old - m_new)), FUSED into one pass over the pairs
-            //    [latch_h = -m_new][mold_h = m_old], one pair per plane.
+            // 2  corr = exp(a*(m_old - m_new)), FUSED into one pass over the pairs
+            //    [latch_h = m_new][mold_h = m_old], one pair per plane.
             //
             // The chain's fixed order [EW0, Map, Reduce, EW1, Fp16ToInt8] decides which
             // pairs of operations can share a task. This pair can, because the combine
-            // comes BEFORE the transform: EW0 in PAIRS mode adds each [B][x] pair into one
-            // beat and Map exponentiates it in flight, so the difference is never written
+            // comes BEFORE the transform: EW0 in PAIRS mode takes each [B][x] pair to x - B
+            // in one beat and Map exponentiates it in flight, so the difference is never written
             // to memory and never read back. The temperature goes HERE as well as into P:
             // corr must be the ratio of the two P scales it bridges, exp(a*m_old) /
             // exp(a*m_new). corr lands in this tile's corr slot, where the MUL of task
-            // 5 and the GEMM's PV(j) both find it.
+            // 4 and the GEMM's PV(j) both find it.
             snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR,
                                     (1u << SIMD_EXT_STREAMELEMENTWISE_0) |
                                         (1u << SIMD_EXT_STREAMMAP));
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMELEMENTWISE_0_CSR + 0, 2);
-            snax_write_simd_cfg_reg(SIMD_EXT_STREAMELEMENTWISE_0_CSR + 1, SIMD_EW_ADD);
+            snax_write_simd_cfg_reg(SIMD_EXT_STREAMELEMENTWISE_0_CSR + 1, SIMD_EW_SUB);
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMMAP_CSR + 0, SCORE_SCALE_BITS);
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMMAP_CSR + 1, 0);
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMMAP_CSR + 2, SIMD_FUNC_EXP);
             simd_task(sb, 2u, (nb + 1u) * BEAT, NH, sp, cq, NH, BEAT);
 
-            // 4  P = exp(a*(S - m_new)) AND rowsum, in ONE pass over each plane.
+            // 3  P = exp(a*(S - m_new)) AND rowsum, in ONE pass over each plane.
             //
-            //     read  [ -m_new_h ][ S^T plane h x Bc ]      the latch, then the tile
-            //       -> EW0: sticky ADD -> Map: EXP -> Reduce: ADD|LANEWISE|TAP -> Fp16ToInt8
+            //     read  [ m_new_h ][ S^T plane h x Bc ]       the latch, then the tile
+            //       -> EW0: sticky SUB -> Map: EXP -> Reduce: ADD|LANEWISE|TAP -> Fp16ToInt8
             //     write [ B blocks (k, h) x Bc/4 ][ rowsum_h ]  into half h of P8
             //
-            // ONE TASK PER HALF, because a sticky latch is one beat: it holds -m_new for the
+            // ONE TASK PER HALF, because a sticky latch is one beat: it holds m_new for the
             // meshCol queries of one plane. EW0 is upstream of Map, so the per-lane subtract
             // happens before the exponential and S - m_new is never written out; sticky-B
             // suppresses the seed beat, so EW0 emits exactly the Bc key beats. Fp16ToInt8
             // joins the SAME pass because its tail passthrough leaves the reduce's trailing
             // FP16 beat alone. Without it, narrowing would need its own task reading the
             // whole tile back out of TCDM, and an FP16 P buffer to read it from. The map
-            // keeps task 3's a' and EXP.
+            // keeps task 2's a' and EXP.
             snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR,
                                     (1u << SIMD_EXT_STREAMELEMENTWISE_0) |
                                         (1u << SIMD_EXT_STREAMMAP) |
@@ -2132,7 +2130,7 @@ int main() {
                                         (1u << SIMD_EXT_FP16TOINT8));
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMELEMENTWISE_0_CSR + 0, 1);
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMELEMENTWISE_0_CSR + 1,
-                                    SIMD_EW_ADD | SIMD_EW_STICKY_B);
+                                    SIMD_EW_SUB | SIMD_EW_STICKY_B);
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMREDUCE_CSR + 0, nb);
             snax_write_simd_cfg_reg(SIMD_EXT_STREAMREDUCE_CSR + 1,
                                     SIMD_RED_ADD | SIMD_RED_LANEWISE | SIMD_RED_TAP);
@@ -2176,14 +2174,14 @@ int main() {
 
             pub[27 + 2 * j] = snrt_mcycle() - s0;
 
-            // 5  corr * l_old, both halves: the post-map elementwise in PAIRS mode over
+            // 4  corr * l_old, both halves: the post-map elementwise in PAIRS mode over
             //    [corr_h][l_h], into each half's slot behind its rowsum.
             snax_simd_use2(SIMD_EXT_STREAMELEMENTWISE_1,
                            SIMD_EXT_STREAMELEMENTWISE_1_CSR, 2, SIMD_EW_MUL);
             simd_task(cq, 2u, lq - cq, NH, BEAT, pb + ro + BEAT, NH, pp);
 
-            // 6  l = rowsum + corr*l_old: a lanewise ADD over each half's adjacent pair
-            //    [rowsum_h][lsc_h], written over l -- whose old value task 5 has consumed.
+            // 5  l = rowsum + corr*l_old: a lanewise ADD over each half's adjacent pair
+            //    [rowsum_h][lsc_h], written over l -- whose old value task 4 has consumed.
             //
             // The two cannot share a task: corr*l_old followed by + rowsum is a
             // combine-after-combine, whose second operand would have to be fetched at EW1,
@@ -2192,18 +2190,23 @@ int main() {
                            SIMD_RED_ADD | SIMD_RED_LANEWISE);
             simd_task(pb + ro, 2u, BEAT, NH, pp, lq, NH, BEAT);
 
-            // 7  the NEXT tile's m_old: m into the mold beats of the buffer tile jw scores
+            // 6  the NEXT tile's m_old: m into the mold beats of the buffer tile jw scores
             //    into -- a plain copy, no operator armed. That buffer's previous reader
             //    (tile jw - NSCORE) is done, and QK(jw) writes only its key rows, so the
-            //    copy may land while the GEMM fills the planes around it. In the warm pass
-            //    this is tile 0's -inf seed, so it waits for the xDMA's fill.
-            if (jw < (uint32_t)NKV) {
-                if (warm) SNAX_SPIN_UNTIL(sync[7] >= 1, timeouts);
-                snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, 0u);
-                simd_task(m_u, NH, BEAT, 1u, 0u, l1u + s_buf[jw % NSCORE] + S_MOLD, NH,
-                          S_PITCH);
+            //    copy may land while the GEMM fills the planes around it. The real tiles
+            //    copy their latches; after the last one the copy lands in m_st, the final
+            //    m. In the warm pass it is tile 0's -inf seed out of m_st, so it waits for
+            //    the xDMA's fill.
+            snax_write_simd_cfg_reg(SIMD_EXT_ENABLE_PTR, 0u);
+            if (warm) {
+                SNAX_SPIN_UNTIL(sync[7] >= 1, timeouts);
+                simd_task(m_u, NH, BEAT, 1u, 0u, l1u + s_buf[0] + S_MOLD, NH, S_PITCH);
+            } else if (jw < (uint32_t)NKV) {
+                simd_task(sb, NH, sp, 1u, 0u, l1u + s_buf[jw % NSCORE] + S_MOLD, NH, S_PITCH);
+            } else {
+                simd_task(sb, NH, sp, 1u, 0u, m_u, NH, BEAT);
             }
-            // The tile's ISSUE ends here, not at the publish above: tasks 5 to 7 are fired
+            // The tile's ISSUE ends here, not at the publish above: tasks 4 to 6 are fired
             // afterwards. Bracketing to the publish would attribute their engine time to an
             // interval that does not contain them.
             pub[80 + j] = snrt_mcycle() - s0;

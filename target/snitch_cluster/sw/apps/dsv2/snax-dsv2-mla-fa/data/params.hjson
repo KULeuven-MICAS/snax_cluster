@@ -5,8 +5,13 @@
     // The golden pack (sw/apps/dsv2/util): L tokens cached, the new token at position L, so
     // L + 1 keys, which must fill whole tiles of bc.
     seed: 1,
-    L: 511,
+    L: 127,
     bc: 64,
     // Tokens the two DRAM cache copies hold.
-    capacity: 576,
+    capacity: 128,
+    // TEST SIZE: this app is a unit test, so the cache is short (two key tiles, so the running
+    // max moves and corr rescales O) and the golden pack's hidden state narrower
+    // (util/golden.py make(dims)); the attention's own dimensions are the real ones. The full
+    // length runs on HeMAiA; drop `dims` and set L: 511, capacity: 576 to run it here.
+    dims: {hidden: 256, moe_inter: 256},
 }

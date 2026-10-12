@@ -130,6 +130,9 @@
 // Rows of a GEMV's A operand for ntok tokens: the GEMM layout's 16, or the compact 4 (see above).
 #define DSV2_AROWS(ntok) ((ntok) > 1u ? 4u : 16u)
 #define DSV2_SPIN_LIMIT 4000000u
+// log2 of a power of two (a row length the RMSNorm takes), folded at compile time.
+#define DSV2_LOG2(n) ((uint32_t)__builtin_ctz(n))
+#define DSV2_POW2(n) ((n) > 0 && ((n) & ((n) - 1)) == 0)
 
 // What an app checks (sw/apps/dsv2/dsv2.mk): 0, the final results only, after the kernel; 1, every
 // intermediate stage as well.
@@ -960,34 +963,27 @@ static inline void dsv2_swiglu(void *g, void *sg, void *a16, void *a8, uint32_t 
 // The router's softmax over `beats` SIMD beats of FP16 logits (64 experts = 64 / DSV2_LANES
 // beats). The row's max and sum fold ACROSS lanes (the reduce's row mode), so each comes out
 // splatted. Buffers: x with a free latch beat below it (x - DSV2_SBEAT); e with a free latch beat
-// below it and room for the sum beat after it (e + beats DSV2_SBEAT); tmp one beat; p `beats`
-// beats. DSV2_PAD reserves each free beat. Five tasks, queued back to back:
+// below it and room for the sum beat after it (e + beats DSV2_SBEAT); p `beats` beats. DSV2_PAD
+// reserves each free beat. Four tasks, queued back to back:
 //
-//   1  Reduce MAX over x                                   -> m, splatted      (tmp)
-//   2  Map LINEAR a = -1                                   -> -m               (x's latch)
-//   3  EW0 ADD|STICKY_B [-m][x] -> Map EXP -> Reduce ADD|TAP -> [e][s]         (e)
-//   4  [s][s] at stride 0: EW0 MUL|STICKY_B -> Map RSQRT   -> 1/s = rsqrt(s*s) (e's latch)
-//   5  EW1 MUL|STICKY_B [1/s][e]                           -> p
+//   1  Reduce MAX over x                                   -> m, splatted      (x's latch)
+//   2  EW0 SUB|STICKY_B [m][x] -> Map EXP -> Reduce ADD|TAP -> [e][s]          (e)
+//   3  [s][s] at stride 0: EW0 MUL|STICKY_B -> Map RSQRT   -> 1/s = rsqrt(s*s) (e's latch)
+//   4  EW1 MUL|STICKY_B [1/s][e]                           -> p
 //
 // 1/s = rsqrt(s * s) is exact for any positive s whose square fits FP16 (s <= 64 here).
 #if !defined(SIMD_EXT_STREAMREDUCE_HAS_MAX) || !defined(SIMD_EXT_STREAMREDUCE_HAS_ADD) || \
-    !defined(SIMD_EXT_STREAMMAP_HAS_EXP) || !defined(SIMD_EXT_STREAMELEMENTWISE_0_HAS_ADD)
-#error "the softmax needs StreamReduce MAX and ADD, StreamMap EXP and a pre-map ADD"
+    !defined(SIMD_EXT_STREAMMAP_HAS_EXP) || !defined(SIMD_EXT_STREAMELEMENTWISE_0_HAS_SUB)
+#error "the softmax needs StreamReduce MAX and ADD, StreamMap EXP and a pre-map SUB"
 #endif
 
-static inline void dsv2_softmax_row(void *x, void *tmp, void *e, void *p, uint32_t beats) {
+static inline void dsv2_softmax_row(void *x, void *e, void *p, uint32_t beats) {
     uint8_t *xl = (uint8_t *)x - DSV2_SBEAT, *el = (uint8_t *)e - DSV2_SBEAT;
     uint8_t *s = (uint8_t *)e + beats * DSV2_SBEAT;
     snax_simd_shape_t in, out;
     snax_simd_shape_flat(&in, x, beats);
-    snax_simd_shape_flat(&out, tmp, 1);
-    snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, beats, SIMD_RED_MAX);
-    snax_simd_program_fast(&in, &out);
-    snax_simd_fire();
-    snax_simd_shape_flat(&in, tmp, 1);
     snax_simd_shape_flat(&out, xl, 1);
-    snax_simd_use3(SIMD_EXT_STREAMMAP, SIMD_EXT_STREAMMAP_CSR, snax_simd_f32_neg(SIMD_F32_ONE),
-                   0u, SIMD_FUNC_LINEAR);
+    snax_simd_use2(SIMD_EXT_STREAMREDUCE, SIMD_EXT_STREAMREDUCE_CSR, beats, SIMD_RED_MAX);
     snax_simd_program_fast(&in, &out);
     snax_simd_fire();
     snax_simd_shape_flat(&in, xl, 1 + beats);
@@ -996,7 +992,7 @@ static inline void dsv2_softmax_row(void *x, void *tmp, void *e, void *p, uint32
                                                      (1u << SIMD_EXT_STREAMMAP) |
                                                      (1u << SIMD_EXT_STREAMREDUCE));
     snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 0, 1u);
-    snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_ADD | SIMD_EW_STICKY_B);
+    snax_simd_set_op_csr(SIMD_EXT_STREAMELEMENTWISE_0_CSR, 1, SIMD_EW_SUB | SIMD_EW_STICKY_B);
     snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 0, SIMD_F32_ONE);
     snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 1, 0u);
     snax_simd_set_op_csr(SIMD_EXT_STREAMMAP_CSR, 2, SIMD_FUNC_EXP);

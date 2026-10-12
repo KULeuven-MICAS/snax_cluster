@@ -6,21 +6,27 @@ import org.scalatest.flatspec.AnyFlatSpec
 import chiseltest._
 import snax.DataPathExtension.DataPathExtensionHarness
 
-/** SimdStreamElementwise against an exact model: MUL = fma(x, B, +0), ADD = fma(x, 1, B), one narrow. */
+/** SimdStreamElementwise against an exact model: MUL = fma(x, B, +0), ADD = fma(x, 1, B), SUB = fma(x, 1, -B), one
+  * narrow.
+  */
 class SimdStreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
   import SimdFp._
 
-  val MUL = 0; val ADD = 1; val STICKY = 0x100
+  val MUL = 0; val ADD = 1; val SUB = 2; val STICKY = 0x100
 
   def combine(op: Int, b: Int, x: Int): Int = {
     val bf = f16ToF32(b); val xf = f16ToF32(x)
-    f32ToF16(if (op == MUL) Math.fma(xf, bf, 0.0f) else Math.fma(xf, 1.0f, bf))
+    f32ToF16(op match {
+      case MUL => Math.fma(xf, bf, 0.0f)
+      case ADD => Math.fma(xf, 1.0f, bf)
+      case SUB => Math.fma(xf, 1.0f, -bf)
+    })
   }
 
   def tasks(lanes: Int, rnd: Random): Seq[(SimdTask, Seq[BigInt])] = {
     def beats(n:     Int) = Seq.fill(n)(Seq.fill(lanes)(randF16(rnd, 60)))
     def lanewise(op: Int)(b: Seq[Int], x: Seq[Int]) = pack(b.zip(x).map { case (bi, xi) => combine(op, bi, xi) }, 16)
-    Seq(MUL, ADD).flatMap { op =>
+    Seq(MUL, ADD, SUB).flatMap { op =>
       val p = beats(24) // 12 pairs, B first
       val s = beats(33) // the B beat, then 32 x
       val t = beats(9)
@@ -31,6 +37,11 @@ class SimdStreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester
           s.tail.map(x => lanewise(op)(s.head, x)),
         SimdTask(Seq[BigInt](1, op), t.map(pack(_, 16)), 9, s"pass_op$op")             -> t.map(pack(_, 16))
       )
+    } :+ {
+      // x - x must be +0 in every lane (round to nearest: an exact zero sum is positive)
+      val e = beats(6)
+      SimdTask(Seq[BigInt](2, SUB), e.flatMap(b => Seq(b, b)).map(pack(_, 16)), 6, "sub_self") ->
+        e.map(_ => pack(Seq.fill(lanes)(0), 16))
     }
   }
 

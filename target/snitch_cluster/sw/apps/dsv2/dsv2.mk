@@ -21,6 +21,15 @@
 #
 #   make -C sw/apps/dsv2/snax-dsv2-mla-fa DSV2_CHECK_TERMS=128
 #
+# DSV2_TRACE selects whether an app prints its engines' spans ([SPAN], snax-dsv2-trace.h) after
+# the checks, for a Gantt chart:
+#   0 (default)  no: the spans are still recorded, but printing one reads its label out of main
+#                memory a character at a time, which at the apps' unit-test sizes costs more
+#                simulated cycles than the kernel
+#   1            every span
+#
+#   make -C sw/apps/dsv2/snax-dsv2-mla DSV2_TRACE=1
+#
 # DSV2_DUAL_LOAD selects how a pass loads its streamed weights: the MLA's W_DKV, W_Q and W_O
 # chunks (snax-dsv2-mla.h) and the MoE's (snax-dsv2-moe.h):
 #   1 (default)  each chunk in two parts at once: the iDMA reads the head of the chunk with AXI
@@ -60,6 +69,7 @@ DSV2_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 DSV2_STAGE_CHECKS ?= 0
 DSV2_CHECK_TERMS ?= 0
+DSV2_TRACE ?= 0
 DSV2_DUAL_LOAD ?= 1
 DSV2_GEMV ?= 1
 DSV2_WBITS ?= 8
@@ -68,6 +78,7 @@ DSV2_TCDM_PRIO ?= 0
 DSV2_TCDM_GUARD ?= 0
 RISCV_CFLAGS += -DDSV2_STAGE_CHECKS=$(DSV2_STAGE_CHECKS)
 RISCV_CFLAGS += -DDSV2_CHECK_TERMS=$(DSV2_CHECK_TERMS)
+RISCV_CFLAGS += -DDSV2_TRACE=$(DSV2_TRACE)
 RISCV_CFLAGS += -DDSV2_DUAL_LOAD=$(DSV2_DUAL_LOAD)
 RISCV_CFLAGS += -DDSV2_GEMV=$(DSV2_GEMV)
 RISCV_CFLAGS += -DDSV2_WBITS=$(DSV2_WBITS)
@@ -87,7 +98,7 @@ ifdef DSV2_TCDM_PRIO_ATTN
 RISCV_CFLAGS += -DDSV2_TCDM_PRIO_ATTN=$(DSV2_TCDM_PRIO_ATTN)
 endif
 
-DSV2_CFG_STAMP = $(BUILDDIR)/dsv2-cfg-$(DSV2_STAGE_CHECKS)-$(DSV2_CHECK_TERMS)-$(DSV2_DUAL_LOAD)-$(DSV2_GEMV)-$(DSV2_WBITS)-$(DSV2_GEMV_NTOK)-$(DSV2_TCDM_PRIO)-$(DSV2_TCDM_GUARD)-$(DSV2_TCDM_PRIO_STREAM)-$(DSV2_TCDM_PRIO_HEAD)-$(DSV2_TCDM_PRIO_ATTN)-$(DSV2_DUAL_XBYTES)
+DSV2_CFG_STAMP = $(BUILDDIR)/dsv2-cfg-$(DSV2_STAGE_CHECKS)-$(DSV2_CHECK_TERMS)-$(DSV2_TRACE)-$(DSV2_DUAL_LOAD)-$(DSV2_GEMV)-$(DSV2_WBITS)-$(DSV2_GEMV_NTOK)-$(DSV2_TCDM_PRIO)-$(DSV2_TCDM_GUARD)-$(DSV2_TCDM_PRIO_STREAM)-$(DSV2_TCDM_PRIO_HEAD)-$(DSV2_TCDM_PRIO_ATTN)-$(DSV2_DUAL_XBYTES)
 
 $(DSV2_CFG_STAMP): | $(BUILDDIR)
 	rm -f $(BUILDDIR)/stage-checks-* $(BUILDDIR)/dsv2-cfg-*

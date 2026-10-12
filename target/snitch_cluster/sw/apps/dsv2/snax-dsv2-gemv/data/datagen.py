@@ -25,6 +25,11 @@
 # and for the router, the D port's output at k = 0 ([4, 64]): the negative control, which must
 # hold +-Inf wherever |x.W| rounds past 65,504. k is the worst case for depth K, so no INT8
 # token overflows at it.
+#
+# TEST SIZE (params.hjson `chunks`): each shape runs its first `chunks` chunks of columns only --
+# every depth, D-port shift and chunk handoff, a fraction of the weight bytes. The weight, s, y
+# and yd are those columns' (the B-layout is n-major, so they are a byte prefix of the whole
+# weight); N in data.h is the columns run. Without `chunks` every column runs, as on HeMAiA.
 
 import argparse
 import os
@@ -63,7 +68,7 @@ def shape_data(g):
     return {
         "wq": (H["xq"], P.wq, ks["x"], H["q_raw"], H["q_s"], H["q16"]),
         "wdkv": (H["xq"], P.wdkv, ks["x"], H["kv_raw"], H["kv_s"], H["ckv16"]),
-        "wo": (H["o8"], P.wo, ks["x"], H["a_raw"], H["a_s"], H["attn16"]),
+        "wo": (H["o8"], P.wo, ks["o"], H["a_raw"], H["a_s"], H["attn16"]),
         "router": (H["hq"], P.wr, ks["x"], H["lg_raw"], H["lg_s"], H["logits16"]),
         "expert_gu": (H["hq"], gu0, ks["x"], s0["g_raw"], s0["g_s"], s0["g16"]),
         "expert_down": (s0["a8"], dn0, ks["ed"], s0["y_raw"], s0["y_s"], s0["y16"]),
@@ -101,6 +106,7 @@ def main():
     if chunk != GEMV_CHUNK:
         raise ValueError(f"the packer's chunk is {GEMV_CHUNK} columns")
     keys = prm.get("shapes", [k for k, _ in SHAPES])
+    chunks = prm.get("chunks")  # chunks of columns per shape, or every chunk
 
     g = golden.make(seed=int(prm["seed"]), L=int(prm["L"]), wbits=args.wbits)
     data = shape_data(g)
@@ -109,12 +115,15 @@ def main():
     em = Emitter(args.blob_dir)
     em.define("DSV2_DATA_WBITS", g.wbits, "the weights' width; the kernel's DSV2_WBITS must match")
     em.c(f"// DeepSeek-V2-Lite layer 1, golden seed {g.seed}, L = {g.L}; the expert shapes use"
-         f" expert {int(g.hw['ids'][0])},\n// the golden token's first pick.")
+         f" expert {int(g.hw['ids'][0])},\n// the golden token's first pick; "
+         + (f"the first {int(chunks)} chunks of each shape." if chunks else "every column."))
     em.define("GEMV_CHUNK", chunk, "output columns per streamed weight chunk")
     em.define("GEMV_DATA_NTOK", NTOK, "tokens per shape: x, y and yd are [NTOK, K or N]")
     em.define("GEMV_NSHAPES", len(keys))
+    cols = {k: data[k][1].N if not chunks else min(data[k][1].N, int(chunks) * chunk)
+            for k in keys}  # the columns each shape runs
     kmax = max(data[k][1].K for k in keys)
-    nmax = max(data[k][1].N for k in keys)
+    nmax = max(cols.values())
     em.define("GEMV_KMAX", kmax)
     em.define("GEMV_NMAX", nmax)
     rows = []
@@ -123,10 +132,12 @@ def main():
         x, p, k, y, s, yd = data[key]
         if p.N % chunk or p.K % 64:
             raise ValueError(f"{key}: [{p.K}, {p.N}] does not tile into {chunk}-column chunks")
+        n = cols[key]
+        q, s, y, yd = p.q[:, :n], s[:n], y[:n], yd[:n]
         xs = tokens(key, x)
         ys, yds = [], []
         for t in range(NTOK):
-            yt = d_port(xs[t].astype(np.int64) @ p.q.astype(np.int64), k)
+            yt = d_port(xs[t].astype(np.int64) @ q.astype(np.int64), k)
             ys.append(yt)
             yds.append(mul16(yt, s))
         # token 0 is the layer's: the pack's own goldens, bit for bit
@@ -136,19 +147,20 @@ def main():
             raise ValueError(f"{key}: the GEMV model disagrees with the golden pack on token 0")
         a = em.blob(f"{key}_a", xs)  # the vectors alone, [NTOK, K]
         a4 = em.blob(f"{key}_a4", to_a4(xs))
-        w = em.blob(f"{key}_w", p.blob(mesh))
+        blob = p.blob(mesh)
+        w = em.blob(f"{key}_w", blob[:blob.size * n // p.N])  # the first n columns' chunks
         sb = em.blob(f"{key}_s", bits16(s))
         yb = em.blob(f"{key}_y", bits16(np.stack(ys)))
         ydb = em.blob(f"{key}_yd", bits16(np.stack(yds)))
-        rows.append(f'    {{"{names[key]}", {a}, {a4}, {w}, {sb}, {yb}, {ydb}, {p.K}u, {p.N}u, '
+        rows.append(f'    {{"{names[key]}", {a}, {a4}, {w}, {sb}, {yb}, {ydb}, {p.K}u, {n}u, '
                     f'{k}u, {p.wbits}u}},')
         if key == "router":
             neg = i
-            y0 = d_port(xs.astype(np.int64) @ p.q.astype(np.int64), 0)  # [NTOK, N]
+            y0 = d_port(xs.astype(np.int64) @ q.astype(np.int64), 0)  # [NTOK, N]
             em.blob("router_y_k0", bits16(y0))
             ninf = np.isinf(y0.astype(np.float32))
             em.c(f"// Negative control: the router at k = 0 holds {int(ninf[0].sum())} infinities"
-                 f" out of {p.N} for token 0, {int(ninf.sum())} over the {NTOK} tokens.")
+                 f" out of {n} for token 0, {int(ninf.sum())} over the {NTOK} tokens.")
     em.define("GEMV_NEG_SHAPE", neg, "the router's index, or -1 when it is not built")
     em.c("typedef struct {\n    const char *name;\n    const int8_t *a, *a4, *w;\n"
          "    const uint16_t *s, *y, *yd;\n    uint32_t K, N, k;\n"

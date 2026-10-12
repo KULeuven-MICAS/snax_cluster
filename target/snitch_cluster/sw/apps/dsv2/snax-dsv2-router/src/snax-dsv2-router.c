@@ -6,7 +6,7 @@
 //
 //   GEMM   logits_raw = RNE(hn8 . W_r * 2^-k)            the router GEMV, one 64-column chunk
 //   SIMD   logits = logits_raw (.) s                     G3's dequantisation
-//          p = softmax(logits)                           one row of BEATS beats, five tasks
+//          p = softmax(logits)                           one row of BEATS beats, four tasks
 //   core   ids = the 6 largest p, w = p[ids]              FP16 bit patterns as integers; ties
 //                                                        to the lower index; w NOT renormalised
 //
@@ -59,7 +59,6 @@ int main() {
     uint16_t *s = (uint16_t *)TAKE(2 * N_EXP);                 // the dequant factors
     uint8_t *lgl = TAKE(DSV2_PAD + 2 * N_EXP);                 // [latch][logits]
     uint16_t *lg = (uint16_t *)(lgl + DSV2_PAD);
-    uint8_t *tmp = TAKE(DSV2_SBEAT);
     uint8_t *el = TAKE(DSV2_PAD + 2 * N_EXP + DSV2_PAD);       // [latch][e][sum]
     uint16_t *e = (uint16_t *)(el + DSV2_PAD);
     uint16_t *pr = (uint16_t *)TAKE(2 * N_EXP);
@@ -118,7 +117,7 @@ int main() {
     SPIN(G_DONE, 1u);
     uint32_t t0 = snrt_mcycle();
     snax_simd_fire();
-    dsv2_softmax_row(lg, tmp, e, pr, BEATS);
+    dsv2_softmax_row(lg, e, pr, BEATS);
     uint32_t hung = snax_simd_wait_all_checked("router", SIMD_WAIT_BUDGET);
     uint32_t t1 = snrt_mcycle();
     uint32_t ids[TOP_K];

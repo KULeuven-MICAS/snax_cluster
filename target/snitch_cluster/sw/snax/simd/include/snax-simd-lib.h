@@ -269,7 +269,7 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 #define SIMD_QUANT_ILV4 SIMD_CAP_MISSING_(FP16TOINT8_INTERLEAVE4)
 #endif
 
-// StreamElementwise: out = B op x. `operand_beats` = 2 takes B and x as
+// StreamElementwise: out = x op B. `operand_beats` = 2 takes B and x as
 // interleaved pairs; 1 passes every beat through, or with SIMD_EW_STICKY_B
 // combines every beat against the task's first. No other count is supported.
 //
@@ -284,10 +284,12 @@ uint32_t snax_simd_shape_beats(const snax_simd_shape_t* s);
 //     #error "the pre-map elementwise on this cluster cannot add"
 //     #endif
 //
-// As with StreamReduce, one fused FMA build op provides both MUL and ADD, so a
-// cfg listing only "FMA_FP16" still reports both capabilities.
+// As with StreamReduce, one fused FMA build op provides MUL, ADD and SUB, so a
+// cfg listing only "FMA_FP16" still reports all three capabilities. SUB is
+// x - B: B is the latch (sticky-B) or the FIRST beat of each pair.
 #define SIMD_EW_MUL 0u
 #define SIMD_EW_ADD 1u
+#define SIMD_EW_SUB 2u
 
 // Latch the FIRST beat of the task as operand B and combine every later beat
 // against it, instead of taking both operands from the stream.

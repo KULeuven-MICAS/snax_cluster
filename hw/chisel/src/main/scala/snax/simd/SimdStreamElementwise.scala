@@ -10,7 +10,7 @@ import snax.DataPathExtension.FpHelpers
 import snax.DataPathExtension.HasDataPathExtension
 import snax.DataPathExtension.OpSpec
 
-/** SIMD core elementwise combine, `out = B op x` on every lane, op = MUL | ADD, one beat per cycle.
+/** SIMD core elementwise combine, `out = x op B` on every lane, op = MUL | ADD | SUB, one beat per cycle.
   *
   * One beat is operand B and every other beat is an x combined against it. Which beat is B is set by the CSRs:
   *
@@ -20,14 +20,14 @@ import snax.DataPathExtension.OpSpec
   *     broadcast operand read once instead of replicated per data beat. N + 1 beats in, N out.
   *   - csr(0) = 1 without sticky-B: every beat passes through unchanged.
   *
-  * csr(1)[7:0] = op (0 MUL, 1 ADD).
+  * csr(1)[7:0] = op (0 MUL: x*B, 1 ADD: x+B, 2 SUB: x-B).
   *
   * B is latched RAW from the input stream, not from the result of a previous beat, so no beat depends on another beat's
-  * arithmetic: there is no accumulator, no recurrence and nothing to stall for. Both ops run through one fused
-  * multiply-add per lane on two transport operands (exact product) with an FP32 addend -- MUL is B*x + 0 and ADD is x*1
-  * + B -- rounded once to FP32 and then once to the transport type.
+  * arithmetic: there is no accumulator, no recurrence and nothing to stall for. All three ops run through one fused
+  * multiply-add per lane on two transport operands (exact product) with an FP32 addend -- MUL is x*B + 0, ADD is x*1 +
+  * B and SUB is x*1 + (-B), the addend's sign bit flipped -- rounded once to FP32 and then once to the transport type.
   *
-  * `op` must be ["FMA_<PRECISION>"]: the one FMA build that provides both run-time ops. `dataWidth` is the SIMD beat
+  * `op` must be ["FMA_<PRECISION>"]: the one FMA build that provides all three run-time ops. `dataWidth` is the SIMD beat
   * and is supplied by the SIMD generator.
   */
 class HasSimdStreamElementwise(
@@ -43,7 +43,7 @@ class HasSimdStreamElementwise(
       moduleName   = "StreamElementwise", // the software name: SIMD_EXT_STREAMELEMENTWISE_*
       userCsrNum   = 2,
       dataWidth    = dataWidth,
-      capabilities = OpSpec.runtimeOps(ops, Seq("MUL", "ADD"))
+      capabilities = OpSpec.runtimeOps(ops, Seq("MUL", "ADD", "SUB"))
     )
 
   def instantiate(clusterName: String): SimdStreamElementwise =
@@ -65,9 +65,11 @@ class SimdStreamElementwise(op: Seq[String], elementWidth: Int, fpPipe: Int)(imp
 
   def OP_MUL = 0.U
   def OP_ADD = 1.U
+  def OP_SUB = 2.U
 
   val operandCount = Mux(ext_csr_i(0) === 0.U, 1.U, ext_csr_i(0)(15, 0))
   val isAdd        = ext_csr_i(1)(7, 0) === OP_ADD
+  val isSub        = ext_csr_i(1)(7, 0) === OP_SUB
   val stickyB      = ext_csr_i(1)(8).asBool
   val pairs        = operandCount === 2.U && !stickyB
   val passThrough  = operandCount === 1.U && !stickyB
@@ -101,8 +103,8 @@ class SimdStreamElementwise(op: Seq[String], elementWidth: Int, fpPipe: Int)(imp
     val bD  = ShiftRegister(b, fpPipe)
     val fma = Module(new FpFma(transport, transport, FP32, fpPipe))
     fma.io.in_a := xD
-    fma.io.in_b := Mux(isAdd, ONE_T, bD)
-    fma.io.in_c := Mux(isAdd, bW, FP32_ZERO)
+    fma.io.in_b := Mux(isAdd || isSub, ONE_T, bD)
+    fma.io.in_c := Mux(isAdd, bW, Mux(isSub, fneg32(bW), FP32_ZERO))
     val xW = ShiftRegister(widen(x, transport, fpPipe), fpPipe)
     narrow(Mux(passThrough, xW, fma.io.out), transport)
   }

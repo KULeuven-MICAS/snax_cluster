@@ -20,14 +20,16 @@ its D-port shift -- are all in the dict run() returns; golden.py packages them.
 
 THE ATTENTION TILE follows snax-flashattn-decode's online softmax, transposed: scores
 S^T = K . Q^T are [key][query], so a SIMD lane is a query and the row max over keys is a
-lanewise max. The query tile has Br = 32 query rows: two tokens' 16 heads, or one token's and
-16 zero rows. A lanewise reduce is per query, so the model holds whatever the SIMD beat's lane
-count, as long as each query's keys reach its lane in key order. Per KV tile j of Bc keys:
+lanewise max. The model's query tile has Br = 32 query rows: two tokens' 16 heads, or one
+token's and 16 zero rows. The device runs a 16-lane SIMD beat per token -- one score plane of
+its 16 heads, and no zero rows for a lone token (snax-dsv2-mla.h, THE ATTENTION) -- which is the
+same arithmetic per query: a lanewise reduce is per query, and each query's keys reach its lane
+in key order. Per KV tile j of Bc keys:
 
     S16   = RNE(S * 2^-k_s)                         D port, k_s from depth 576
     m     = max(m_old, max over keys of S16)         exact
-    corr  = exp(a' * fp16(m_old - m))                EW0 ADD -> Map EXP
-    P     = exp(a' * fp16(S16 - m))                  EW0 ADD -> Map EXP, FP16
+    corr  = exp(a' * fp16(m_old - m))                EW0 SUB -> Map EXP
+    P     = exp(a' * fp16(S16 - m))                  EW0 SUB -> Map EXP, FP16
     l     = fp16(fp16(sum_keys P) + fp16(corr * l))  Reduce ADD, EW1 MUL
     P8    = sat(rne(127 * P))                        Fp16ToInt8
     O     = rne(O * corr[query]) + V^T . P8^T        Int32ColumnScale on C, then the GEMM
@@ -104,7 +106,7 @@ def dequant_scale(s_x, s_w, k):
 
 
 def softmax16(x16):
-    """One-row FP16 softmax on the SIMD (dsv2_softmax_row): the row max; EW0 ADD -m -> Map EXP ->
+    """One-row FP16 softmax on the SIMD (dsv2_softmax_row): the row max; EW0 SUB m -> Map EXP ->
     Reduce ADD (the sum); the reciprocal as RSQRT(s * s) (EW0 MUL, then the map), exact for any
     positive s whose square fits FP16; then MUL."""
     x = np.asarray(x16, dtype=F16)
@@ -213,8 +215,11 @@ def mla_attention(Q8, Kc, Vc, a_exp, k_s, bc, masked=()):
 # ---- the layer -------------------------------------------------------------------------------
 
 def shifts(d):
-    """The D-port shift of every GEMM of the layer, from its depth (decision 5)."""
-    return dict(x=d_shift_for_depth(d.hidden), uk=d_shift_for_depth(d.q_nope),
+    """The D-port shift of every GEMM of the layer, from its depth (decision 5): x for the
+    projections of the hidden state (W_DKV, W_Q, the router, the experts' gate|up), o for W_O,
+    whose input is the heads' outputs."""
+    return dict(x=d_shift_for_depth(d.hidden), o=d_shift_for_depth(d.heads * d.v_head),
+                uk=d_shift_for_depth(d.q_nope),
                 uv=d_shift_for_depth(d.kv_rank), s=d_shift_for_depth(d.latent),
                 ed=d_shift_for_depth(d.moe_inter), sd=d_shift_for_depth(d.shared_inter))
 
@@ -280,8 +285,8 @@ def mla_output(pack, scales, x16, ot16):
     oh_s = np.stack([dequant_scale(scales.ot.s, pack.wuv.s[h], ks["uv"]) for h in range(d.heads)])
     o16 = mul16(oh_raw, oh_s)                                           # [H, 128]
     o8 = quant_i8(o16.reshape(-1), scales.o.inv)
-    a_raw, _ = gemv(o8, pack.wo.q, ks["x"])
-    a_s = dequant_scale(scales.o.s, pack.wo.s, ks["x"])
+    a_raw, _ = gemv(o8, pack.wo.q, ks["o"])
+    a_s = dequant_scale(scales.o.s, pack.wo.s, ks["o"])
     attn16 = mul16(a_raw, a_s)
     return dict(ot16=ot16, ot8=ot8, oh_raw=oh_raw, oh_s=oh_s, o16=o16, o8=o8, a_raw=a_raw,
                 a_s=a_s, attn16=attn16, h16=add16(np.asarray(x16, dtype=F16), attn16))
