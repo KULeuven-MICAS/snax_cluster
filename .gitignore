@@ -29,3 +29,6 @@ test_run_dir
 target/streams/
 target/scala*
 tmp/
+# Stray sim/sweep artifacts dropped in the repo root
+ucli.key
+.hsweep_chisel.lock
