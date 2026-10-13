@@ -50,6 +50,10 @@ ifeq (${CFG_OVERRIDE}, cfg/snax_multi_alu_cluster.hjson)
 SUBDIRS += snax/snax-alu
 endif
 
+ifeq (${CFG_OVERRIDE}, cfg/snax_multi_alu_cluster_old.hjson)
+SUBDIRS += snax/snax-alu
+endif
+
 ifeq (${CFG_OVERRIDE}, cfg/snax_hypercorex_cluster.hjson)
 SUBDIRS += snax/hypercorex
 endif
