@@ -6,8 +6,6 @@ import chisel3.util._
 import fp_native._
 import fp_unit._
 
-import snax.DataPathExtension.FpHelpers
-
 /** \============================================================================================================
   * `MonoidJunction` -- the TWISTED operator on the junction socket.
   * \============================================================================================================
@@ -32,7 +30,7 @@ import snax.DataPathExtension.FpHelpers
   *
   * ---- HOW IT MEETS THE SOCKET CONTRACT ----
   * {{{
-  *   O1 declared fixed latency   latMon = MonoidCombine.latency + fpPipe, published to the chassis below
+  *   O1 declared fixed latency   MonoidCombine.latency + fpPipe (5), published to the chassis below
   *   O2 format closure           the output beat is a legal INPUT beat: lane l carries (field(l), slot(l)) on
   *                               the way out exactly as it did on the way in, and dead slots carry the field
   *                               IDENTITY rather than zero, so a downstream hop reads the same answer at ANY
@@ -48,17 +46,26 @@ import snax.DataPathExtension.FpHelpers
   * `sigma` is a configuration field, so the layout is one rule with one parameter and there is no per-operator special
   * case anywhere in the block.
   *
-  * ---- TRANSPORT FORMAT ---- (the same split `ElementwiseJunction` has on this socket)
-  * `elemWidth` (elaboration) sets the lane count `nLanes = dataWidth / elemWidth`; the ARITHMETIC is always FP32, so
-  * `fmt` (runtime) selects only how a beat is sliced on the way in and packed on the way out. FP16 here is a TRANSPORT
-  * format, not an arithmetic one: every key compare, exp lookup and FMA is bit-for-bit what it was before. `elemWidth =
-  * 32` is the default and reproduces the FP32-only module exactly, down to the published latency.
+  * ---- TRANSPORT ---- (FP32 only)
+  * A beat carries `dataWidth / 32` FP32 elements, one per lane: 16 on a 512-bit beat. There is no narrower transport.
+  * Every key compare, exp lookup and FMA is FP32, a partial's layout is `F * S` lanes, and the (m, l) statistics beat
+  * is `F = 2, S = 8`, which is exactly those 16 lanes. A 16-bit element would leave half of that beat empty, because S
+  * stops at 8 (see `MonoidCombine`), and would round the running sum at every hop. The `fmt` field of CSR(0) keeps its
+  * position and must name FP32; any other code is reported by `cfgerr`.
+  *
+  * ---- BUILD OPTIONS ---- (generated Verilog of the split cluster, `dataWidth = 512`, `fpPipe = 1`, `expLutN = 128`;
+  * flip-flops are module-local, FP units are counted recursively through the exponential units)
+  * {{{
+  *   hasScan   lanes   flops     FpFma   FpAdd   FpMul   exp units
+  *   true      16      5,670     32      32      16      8
+  *   false     16      4,517     31      32      16      8          (the split cluster)
+  * }}}
   *
   * ---- CSR(0) ---- (one user CSR, so the inter-cluster / D2D cfg serdes is untouched)
   * {{{
   *   [7:0]    nValid   live partials in the beat; slots >= nValid get their field's identity
   *   [11:8]   n        value coordinates; the partial is (m, v_1..v_n), so F = n + 1
-  *   [14:12]  fmt      TRANSPORT format: 0 = FP16, 1 = BF16, 2 = FP8, 3 = FP32   (FpHelpers.FMT_*)
+  *   [14:12]  fmt      must be 3 = FP32, the only transport; any other code is reported by `cfgerr`
   *   [21:18]  nExp     fields 1 .. nExp take the twist
   *   [25:22]  nAdd     fields nExp+1 .. nExp+nAdd are plainly summed; the rest carry the winner's payload
   *   [27:26]  sigma    beat geometry, saturated to the widest legal value for F
@@ -70,11 +77,9 @@ import snax.DataPathExtension.FpHelpers
   */
 class HasMonoidJunction(
   dataWidth:   Int     = 512,
-  // The transport element width. 32 is the FP32-only module this block shipped as; 16 slices the beat into 32
-  // lanes and lets `fmt` carry FP16/BF16 at full beat rate (and FP32 on lanes 0..15).
-  elemWidth:   Int     = 32,
   fpPipe:      Int     = 1,
   expLutN:     Int     = 128,
+  // The ordered scan (`keyMul`). A build without it ties the bit off, and a word that sets it reports `cfgerr`.
   hasScan:     Boolean = true,
   skidDepth:   Int     = 4,
   starveLimit: Int     = 4096
@@ -89,7 +94,6 @@ class HasMonoidJunction(
 
   def instantiate(clusterName: String): MonoidJunction =
     Module(new MonoidJunction(
-      elemWidth = elemWidth,
       fpPipe    = fpPipe,
       expLutN   = expLutN,
       hasScan   = hasScan,
@@ -100,7 +104,6 @@ class HasMonoidJunction(
 }
 
 class MonoidJunction(
-  elemWidth:     Int     = 32,
   fpPipe:        Int     = 1,
   expLutN:       Int     = 128,
   hasScan:       Boolean = true,
@@ -112,47 +115,29 @@ class MonoidJunction(
   import MonoidCombine._
 
   // ---- geometry --------------------------------------------------------------------------------------------
-  val accWidth = 32 // the ARITHMETIC width. It is NOT the transport width -- see `elemWidth` below.
+  val accWidth = 32 // the lane width: an operand is an FP32 number, and so is every intermediate
   require(
-    isPow2(elemWidth) && elemWidth >= 8 && elemWidth <= 32,
-    s"MonoidJunction: elemWidth ($elemWidth) must be 8, 16 or 32"
+    junctionParam.dataWidth % accWidth == 0,
+    s"MonoidJunction: dataWidth (${junctionParam.dataWidth}) must be a multiple of $accWidth"
   )
-  val nLanes   = junctionParam.dataWidth / elemWidth // FP32 lanes in one beat (32 at 512-bit, elemWidth 16)
+  val nLanes = junctionParam.dataWidth / accWidth
   // "nLanes/2 key front ends is exactly sufficient" is a THEOREM, not a coincidence of dataWidth/64: `n` is a
   // 4-bit field so F = n+1 <= nLanes, and every partial has a key so F >= 1; `sigma <= SIGMA_MAX` then forces
   // S <= nLanes/2, so a key lane can never leave the low half of the beat, for ANY n.
   //
   // It is a theorem with a CEILING, and the min below is where that matters. The derivation bounds S by
-  // `1 << SIGMA_MAX` = 8 REGARDLESS of nLanes, so only 8 front ends are ever reachable. Halving `elemWidth` must
-  // therefore double the FMAs and NOT the exponential units -- the key front end is where the exp LUT lives, and
-  // it is the most expensive arithmetic in the block.
+  // `1 << SIGMA_MAX` = 8 REGARDLESS of nLanes, so only 8 front ends are ever reachable. A wider beat must therefore
+  // add FMAs and NOT exponential units -- the key front end is where the exp LUT lives, and it is the most
+  // expensive arithmetic in the block.
   val nKey     = scala.math.min(nLanes / 2, 1 << SIGMA_MAX)
   require((1 << SIGMA_MAX) <= nKey, s"MonoidJunction: nKey ($nKey) must cover the widest legal S")
   require(isPow2(nKey), s"MonoidJunction: nKey ($nKey) must be a power of two for the slot-class fold")
-
-  // ---- transport formats -------------------------------------------------------------------------------------
-  // The same table and the same codes `ElementwiseJunction` and the SIMD extensions already use, rather than a
-  // second encoding of the same thing. INTEGER formats are deliberately absent: the twist is `exp(m_lose - m*)`,
-  // so a partial's key and its twisted coordinates are inherently floating point.
-  val supported  = ElementwiseJunction.formats.filter(_._2 >= elemWidth)
-  require(supported.nonEmpty, s"MonoidJunction: no transport format is >= elemWidth=$elemWidth")
-  val multiFmt   = supported.length > 1
-  // O1, and the one place a format change can break it. The narrow is a rounding step and costs a stage; the
-  // widen is pure bit-manipulation and costs none. `latency` is published to the chassis at ELABORATION while
-  // `fmt` is a RUNTIME field, so the stage is taken on every arm of the format mux, FP32 included. An
-  // FP32-only build has nothing to round and pays nothing -- which is what keeps `elemWidth = 32`
-  // bit-identical, latency included, to the FP32-only module.
-  //
-  // Keyed on WHICH formats are built, not on how many: a build trimmed to FP16 alone is still a real
-  // rounding narrow and still needs its stage, and `multiFmt` would say no.
-  val needsNarrow = supported.exists(_._3 != FP32)
-  val narrowPipe  = if (needsNarrow) fpPipe else 0
 
   // ---- CSR decode: the geometry IS the configuration --------------------------------------------------------
   val nValid = jct_csr_i(0)(7, 0)
   val geom   = geomOf(jct_csr_i(0), nLanes)
   val sigma  = geom.sigma
-  val fmt    = jct_csr_i(0)(14, 12)
+  val fmt    = jct_csr_i(0)(14, 12) // reserved: must name FP32
   // The key monoid is (R, x) rather than (R, max): the ordered scan. `hasScan = false` ties it off at
   // elaboration, so a build that does not want the scan pays nothing for it -- see the alignment note below.
   val keyMul = if (hasScan) geom.keyMul else false.B
@@ -166,10 +151,8 @@ class MonoidJunction(
   aQ.io.enq <> jct_a_i
   bQ.io.enq <> jct_b_i
 
-  /** O1: the latency this operator publishes to the chassis -- the exp LUT, the value lane's FMA, and (only on a
-    * multi-format build) the narrow back to the transport format.
-    */
-  val latency = MonoidCombine.latency + fpPipe + narrowPipe
+  /** O1: the latency this operator publishes to the chassis -- the exp LUT and the value lane's FMA. */
+  val latency = MonoidCombine.latency + fpPipe
   val Qdepth  = scala.math.max(2, latency + 4)
   val outQ    = Module(new Queue(UInt(junctionParam.dataWidth.W), entries = Qdepth))
   val credit  = RegInit(Qdepth.U(log2Ceil(Qdepth + 1).W))
@@ -181,19 +164,21 @@ class MonoidJunction(
   bQ.io.deq.ready := fire
 
   // ---- O5: what this operator cannot honour --------------------------------------------------------------
-  // All three are stream-constant, read from the CSR before a pair fires, and all three would otherwise be
-  // SILENT: the beat that comes out is finite, format-legal and wrong in a way no downstream hop can detect.
+  // All of them are stream-constant, read from the CSR before a pair fires, and all would otherwise be SILENT: the
+  // beat that comes out is finite, format-legal and wrong in a way no downstream hop can detect.
+  //
+  // The sigma check is against `nLanes`, the 16 FP32 elements of the beat, so a word whose `F * S` needs more than
+  // that is reported instead of folding the wrong elements.
   val cfgSigmaSaturated = jct_csr_i(0)(27, 26) > sigmaMaxOf(geom.F, nLanes) // asked for a layout that does not exist
   val cfgRolesOverflow  = (geom.nExp +& geom.nAdd) > jct_csr_i(0)(11, 8) // more value roles than value fields
   val cfgNoLiveSlot     = nValid === 0.U                                 // every slot masked to the identity
-  // A transport format this instance was never elaborated for. On a multi-format build it would fall through the
-  // repack MuxLookup and reinterpret the beat in a different number system; on a single-format build the datapath
-  // ignores `fmt` entirely, and this is what catches a CSR word WRITTEN BEFORE THE FIELD EXISTED -- whose zero
-  // bits name FP16, not the FP32 the word was computed for.
-  val cfgBadFmt         =
-    if (multiFmt) !VecInit(supported.map { case (c, _, _) => fmt === c.U }).asUInt.orR
-    else fmt =/= supported.head._1.U
-  jct_cfgerr_o := cfgSigmaSaturated || cfgRolesOverflow || cfgNoLiveSlot || cfgBadFmt
+  // A transport this operator does not build. FP16, BF16 and FP8 are not built, and the datapath ignores `fmt`, so
+  // a word that names one would be read as FP32 under a lie. This is also what catches a CSR word written before
+  // the field existed, whose zero bits name FP16.
+  val cfgBadFmt         = fmt =/= ElementwiseJunction.FMT_FP32.U
+  // The ordered scan on a build without it: the bit is tied off, so the word would fold as the max-monoid.
+  val cfgScanNotBuilt   = if (hasScan) false.B else jct_csr_i(0)(29)
+  jct_cfgerr_o := cfgSigmaSaturated || cfgRolesOverflow || cfgNoLiveSlot || cfgBadFmt || cfgScanNotBuilt
 
   // `nValid = 0` masks EVERY slot to the identity, so the fold emits an identity partial: finite, format-legal
   // and numerically empty. Legal, but indistinguishable from a stale CSR. Simulation-only, so it cannot break a
@@ -206,26 +191,11 @@ class MonoidJunction(
   // DATA OPERAND EVER CROSSES A LANE. The only cross-lane wires are the twist and the winner-swap bit, which
   // one-exp-per-key forces to exist anyway.
   //
-  // INGRESS. The beat is sliced by `fmt` and widened EXACTLY to FP32 -- every sub-FP32 format has <= 23 mantissa
-  // and <= 8 exponent bits, so the convert is a pure bit-manipulation with no rounding and no pipeline stage.
-  // Everything past this point is the FP32 operator, unchanged. A format WIDER than `elemWidth` simply lights up
-  // fewer lanes: the rest park at zero and are out of range for every legal geometry, so they retire zero and are
-  // dropped by the repack.
-  def widenedLanes(beat: UInt, w: Int, t: FpType): IndexedSeq[UInt] = {
-    val n = junctionParam.dataWidth / w
-    (0 until nLanes).map { i =>
-      if (i < n) { val slice = beat(w * i + w - 1, w * i); if (t == FP32) slice else FpHelpers.widen(slice, t) }
-      else F32_ZERO
-    }
-  }
-  def laneMux(beat: UInt): IndexedSeq[UInt] =
-    if (!multiFmt) widenedLanes(beat, supported.head._2, supported.head._3)
-    else {
-      val perFmt = supported.map { case (c, w, t) => c -> widenedLanes(beat, w, t) }
-      (0 until nLanes).map(i => MuxLookup(fmt, perFmt.head._2(i))(perFmt.map { case (c, v) => c.U -> v(i) }))
-    }
-  val aLanes = laneMux(aQ.io.deq.bits)
-  val bLanes = laneMux(bQ.io.deq.bits)
+  // INGRESS. The beat is `nLanes` FP32 elements, one per lane, and nothing is converted: everything past this point
+  // is the FP32 operator.
+  def lanesOf(beat: UInt): IndexedSeq[UInt] = (0 until nLanes).map(i => beat(accWidth * i + accWidth - 1, accWidth * i))
+  val aLanes = lanesOf(aQ.io.deq.bits)
+  val bLanes = lanesOf(bQ.io.deq.bits)
 
   // SLOT-CLASS SHARING. `S <= nKey` and `nKey` is a power of two, so `S-1` only ever masks bits that `nKey-1`
   // already masks: `l & (S-1) == (l & (nKey-1)) & (S-1)`. Lane `l` and lane `l & (nKey-1)` are therefore ALWAYS
@@ -258,44 +228,11 @@ class MonoidJunction(
   // O3 on the INPUT, per lane: a dead slot is fed its field's identity on BOTH sides, so it contributes the
   // identity and the emitted beat stays a legal input partial at any downstream nValid.
   // The scan's key identity is 1.0, not the losing extreme: a dead slot must be NEUTRAL under multiplication.
-  //
-  // O3 strengthened, AND THE TRAP A FORMAT CHANGE OPENS. The key identity does two jobs that used to coincide:
-  // it MASKS the internal operands, which are FP32 whatever `fmt` says, and it is the identity partial the
-  // chassis PUBLISHES, which has to be in the TRANSPORT format or a padded partial is read as garbage by the
-  // next hop. The two must diverge the moment the transport is not FP32 -- and not only in the published beat:
-  // the FP32 extreme -3.4e38 is NOT REPRESENTABLE in FP16, so masking with it and narrowing on the way out
-  // returns whatever the narrow does on overflow. The mask is therefore the TRANSPORT identity WIDENED, which
-  // survives the round trip exactly and still loses every comparison.
-  def keyIdOf(w: Int, t: FpType): UInt =
-    if (t == FP32) keyIdentity(geom.keyPol, keyMul)
-    else {
-      val (ew, mw) = (t.expWidth, t.sigWidth)
-      val bias     = (BigInt(1) << (ew - 1)) - 1
-      val maxFin   = (((BigInt(1) << ew) - 2) << mw) | ((BigInt(1) << mw) - 1) // largest finite, sign 0
-      // the same three values `keyIdentity` names in FP32: 1.0 for the scan, +maxFin for the min-monoid and
-      // -maxFin for the max-monoid. In FP16 that is 0x3C00 / 0x7BFF / 0xFBFF.
-      Mux(keyMul, (bias << mw).U(w.W), Mux(geom.keyPol, maxFin.U(w.W), (maxFin | (BigInt(1) << (w - 1))).U(w.W)))
-    }
-  def padKeyOf(w: Int, t: FpType): UInt =
-    if (t == FP32) keyIdOf(w, t) else FpHelpers.widen(keyIdOf(w, t), t)
-  val padKey    =
-    if (!multiFmt) padKeyOf(supported.head._2, supported.head._3)
-    else {
-      val per = supported.map { case (c, w, t) => c.U -> padKeyOf(w, t) }
-      MuxLookup(fmt, padKeyOf(supported.head._2, supported.head._3))(per)
-    }
-  val lPad      = (0 until nLanes).map(l => Mux(lIsKey(l), padKey, F32_ZERO))
-  def identityOf(w: Int, t: FpType): UInt = {
-    val n = junctionParam.dataWidth / w
-    val k = keyIdOf(w, t)
-    Cat((0 until n).map(i => Mux(lIsKey(i), k, 0.U(w.W))).reverse)
-  }
-  jct_identity_o :=
-    (if (!multiFmt) identityOf(supported.head._2, supported.head._3)
-     else {
-       val idPerFmt = supported.map { case (c, w, t) => c -> identityOf(w, t) }
-       MuxLookup(fmt, idPerFmt.head._2)(idPerFmt.map { case (c, v) => c.U -> v })
-     })
+  val padKey = keyIdentity(geom.keyPol, keyMul)
+  val lPad   = (0 until nLanes).map(l => Mux(lIsKey(l), padKey, F32_ZERO))
+  // The identity partial the chassis publishes is the same thing seen from the other side: the key identity on the
+  // key lanes and zero on the rest.
+  jct_identity_o := Cat(lPad.reverse)
 
   val amL = (0 until nLanes).map(l => Mux(lLive(l), aLanes(l), lPad(l)))
   val bmL = (0 until nLanes).map(l => Mux(lLive(l), bLanes(l), lPad(l)))
@@ -348,23 +285,11 @@ class MonoidJunction(
     )
   }
 
-  // ---- egress: narrow back to the transport format and repack the beat ---------------------------------------
-  // O2, format closure, under a format change. The beat that leaves must be a legal beat to bring back IN, so it
-  // is narrowed with exactly the rounding the next hop's widen will read. A 4-hop chain is therefore
-  // `narrow(fold(widen(.)))` three times: deterministic for a fixed route, but NOT associative in the last bit --
-  // a different chain ORDER can move the LSB. Worth knowing before re-deriving a golden.
-  def packedOf(w: Int, t: FpType): UInt = {
-    val n = junctionParam.dataWidth / w
-    Cat((0 until n).map { i =>
-      if (t == FP32) ShiftRegister(laneOut(i), narrowPipe) else FpHelpers.narrow(laneOut(i), t, narrowPipe)
-    }.reverse)
-  }
-  val outBeat =
-    if (!multiFmt) packedOf(supported.head._2, supported.head._3)
-    else {
-      val outPacked = supported.map { case (c, w, t) => c -> packedOf(w, t) }
-      MuxLookup(fmt, outPacked.head._2)(outPacked.map { case (c, p) => c.U -> p })
-    }
+  // ---- egress: the lanes are the beat ------------------------------------------------------------------------
+  // O2, format closure: the beat that leaves is a legal beat to bring back IN, because nothing was converted on the
+  // way. Lane `l` leaves exactly as lane `l` entered, so a chain of any length folds FP32 numbers hop by hop with no
+  // rounding between the hops.
+  val outBeat = Cat(laneOut.reverse)
 
   // ---- retire ------------------------------------------------------------------------------------------------
   // O1 made structural: a fixed-latency pipeline, so the retire pulse is the issue pulse delayed by exactly the

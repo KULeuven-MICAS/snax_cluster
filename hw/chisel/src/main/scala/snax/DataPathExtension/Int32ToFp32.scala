@@ -8,11 +8,11 @@ import chisel3._
 import chisel3.util._
 
 /** \============================================================================================================
-  * `Int32ToFp32` -- the INT32 accumulator's way onto a floating-point collective.
+  * `Int32ToFp32` -- the INT32 accumulator's way onto a floating-point consumer.
   * \============================================================================================================
   *
-  * A GEMM that accumulates in INT32 cannot hand its result to `MonoidJunction`: the fold's twist is
-  * `exp(m_lose - m*)`, so every operand it touches is floating point. This extension is the join, and it is the
+  * A GEMM that accumulates in INT32 cannot hand its result to a floating-point operator such as `MonoidJunction`,
+  * whose twist is `exp(m_lose - m*)` and so touches nothing but floats. This extension is the join, and it is the
   * SIMPLEST converter in the tree because of WHERE it sits in the number line rather than any cleverness:
   *
   *   - It CANNOT OVERFLOW. The largest INT32 is 2^31, whose FP32 exponent is 158 against a 255 ceiling. There is
@@ -25,10 +25,14 @@ import chisel3.util._
   *   - It is WIDTH-PRESERVING, 32 bits in and 32 out. So there is no beat repack, no packing counter and no
   *     `extra_loop` CSR -- the three things that make `Int32ToFp16Converter` a state machine rather than a map.
   *
-  * Those three properties are the argument for carrying a flash-attention numerator across the fabric in FP32
-  * rather than FP16. The narrower transport halves the payload, but it needs the partial re-embedded (a key of
+  * Those three properties are the argument for carrying a flash-attention numerator in FP32 rather than FP16 when it
+  * has to be floating point. The narrower format halves the payload, but it needs the partial re-embedded (a key of
   * `m + ln l`, normalised values, a constant field) purely to fit the range. In FP32 the partial is the one the
   * algebra already writes down: key `m`, values the raw `l` and `O`.
+  *
+  * It converts what THIS cluster's reader reads. A reader-side configuration frame carries no extension words to
+  * another cluster, so a remote shard's read is never converted. A reduce that has to cross clusters therefore folds
+  * the INT32 numerator on the integer grid of `ElementwiseJunction` instead, which is exact and needs no conversion.
   */
 class Int32ToFp32PE(pipelined: Boolean = false) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {

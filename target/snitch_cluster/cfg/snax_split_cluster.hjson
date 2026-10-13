@@ -278,15 +278,16 @@
                                         32
                                     ]
                                 }
-                                HasMonoidJunction:
+                                // The (m, l) merge of an online softmax, as a fixed-function operator. It reads
+                                // what the SIMD engine leaves in the scratchpad: a group is two beats, the keys m
+                                // and then the values l, 32 rows of FP16 each, so nothing converts or repacks
+                                // them. CSR(0)[7:0] is the number of live rows and CSR(1) the FP32 factor that
+                                // multiplies the key difference before the exponential (0 reads as 1.0); a word
+                                // outside that raises XDMA_JCT_STATUS bit 0. It folds rowsPerCycle rows a cycle.
+                                HasSoftmaxStatsJunction:
                                 {
                                     dataWidth: 512
-                                    // The TRANSPORT element width. 16 slices the beat into 32 FP32 lanes and
-                                    // lets CSR(0)[14:12] carry FP16/BF16 at full beat rate (FP32 on lanes
-                                    // 0..15); the fold itself is FP32 whatever it says. It is what lets a
-                                    // cross-cluster partial cross in the format the SIMD block already
-                                    // produces, instead of being widened and repacked by a core with no FPU.
-                                    elemWidth: 16
+                                    rowsPerCycle: 4
                                     fpPipe: 1
                                     expLutN: 128
                                 }
@@ -312,22 +313,17 @@
                             //
                             // Int32ToFp32 is the second resident, and it is here rather than on the
                             // SIMD block for one reason: it is the join between an INT32 GEMM and a
-                            // FLOATING-POINT collective, so it belongs on the engine that performs
-                            // the collective. A cross-cluster FlashAttention gather folds partials
-                            // with MonoidJunction, whose twist is exp(m_lose - m*) and which therefore
-                            // touches nothing but floats -- while `oacc32` is INT32. Converting on
-                            // THIS path lets the shard's own reader do it on the way into the data
-                            // switch, so the gather costs no extra local pass.
+                            // FLOATING-POINT consumer, so it belongs on the engine that moves the data.
+                            // It converts to FP32, not FP16: INT32 cannot overflow FP32, so there is no
+                            // saturation path, and below 2^24 -- which covers a flash-attention
+                            // numerator (sum P8.V8, ~127.l.127) -- the conversion is EXACT. FP16 would
+                            // saturate that numerator to Inf.
                             //
-                            // It converts to FP32, not FP16, and that is a measured choice rather
-                            // than a conservative one -- see FaGatherTester. Carried as FP32 the
-                            // partial needs NO re-embedding: key = m, values = the raw (l, O). In
-                            // FP16 the raw numerator (sum P8.V8, ~127.l.127) overflows and the
-                            // partial has to be re-expressed, which costs 1600x accuracy for 2x
-                            // payload. FP32 also makes this block the simplest converter in the
-                            // tree: INT32 cannot overflow FP32, so there is no saturation path, and
-                            // below 2^24 -- which covers the whole flash numerator range -- the
-                            // conversion is EXACT.
+                            // It acts on a transfer this cluster's own xDMA task reads. Reader-side
+                            // configuration frames carry no extension words to another cluster, so a
+                            // remote shard's read is never converted. The key-sharded FlashAttention
+                            // reduce therefore folds the numerator on the ElementwiseJunction's INT32
+                            // grid, which is exact and needs no conversion (see snax-flashattn-decode.c).
                             //
                             // This must stay the ONLY reader_extensions key in this block: a second
                             // one silently does nothing, because a later duplicate key wins.

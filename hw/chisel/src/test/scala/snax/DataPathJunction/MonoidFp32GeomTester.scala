@@ -7,15 +7,13 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import snax.DataPathJunction.JunctionTestUtils._
 
-/** FP32 TRANSPORT ON A 32-LANE INSTANCE, and the one thing software has to know about it.
+/** THE BEAT GEOMETRY AT FP32, the only transport the operator builds.
   *
-  * `elemWidth` fixes the lane count at elaboration, but `fmt` changes how many ELEMENTS a beat actually carries: 32
-  * at FP16, 16 at FP32. The geometry saturation and the O5 check are both computed from the ELABORATION count, so a
-  * word whose `F * S` exceeds the runtime element count is accepted and quietly means something else.
-  *
-  * This matters because FP32 transport is what lets the flash-attention triple be folded with NO re-embedding -- the
-  * raw numerator fits FP32 with room to spare, so the key stays `m` and the values stay raw. The price is one partial
-  * per beat instead of two, and it is a price only if `F * S <= 16` is respected.
+  * A 512-bit beat carries 16 FP32 elements, so a partial's layout `F * S` has 16 lanes to live in. That is what lets
+  * the flash-attention triple be folded with NO re-embedding -- the raw numerator fits FP32 with room to spare, so the
+  * key stays `m` and the values stay raw -- and it is also the limit: a layout that needs more than 16 lanes does not
+  * exist on this beat. The geometry saturation and the O5 check are both computed from those 16 lanes, so such a word
+  * is reported, and it folds as the layout it saturates to instead of reading one slot's fields as another's.
   */
 class MonoidFp32GeomTester extends AnyFlatSpec with ChiselScalatestTester {
   val flags = VerilatorFlags(Seq("--build-jobs", "1"))
@@ -33,7 +31,7 @@ class MonoidFp32GeomTester extends AnyFlatSpec with ChiselScalatestTester {
   "MonoidJunction_fp32_triple" should "fold a 16-field partial in FP32 with no re-embedding" in {
     // F = 16, sigma = 0 -> S = 1 -> exactly the 16 elements an FP32 beat carries. This is the flash-attention
     // triple's chunk geometry when the numerator crosses in FP32: no O/l, no ln, no power-of-two prescale.
-    test(new DataPathJunctionHarness(new HasMonoidJunction(elemWidth = 16)))
+    test(new DataPathJunctionHarness(new HasMonoidJunction()))
       .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
         val w = word(n = 15, nExp = 15, sigma = 0, nValid = 1)
         // equal keys => alpha = 1 on both sides => every value field is a plain sum
@@ -50,22 +48,21 @@ class MonoidFp32GeomTester extends AnyFlatSpec with ChiselScalatestTester {
       }
   }
 
-  "MonoidJunction_fp32_laneBudget" should "document that F*S > 16 at FP32 is NOT caught by O5" in {
-    // THE HAZARD. `F = 16, sigma = 1` needs 32 lanes. That is legal at FP16 and is exactly the word the FP16
-    // layout uses -- but an FP32 beat has only 16 elements, so slot 1 reads slot 0's fields. The result is
-    // finite, format-legal and wrong, and `jct_cfgerr_o` stays LOW because the check uses the elaboration lane
-    // count. Software must keep F * S <= dataWidth / 32 when fmt = FP32.
-    //
-    // If this assertion ever flips, someone has taught O5 the runtime element count -- good; update it.
-    test(new DataPathJunctionHarness(new HasMonoidJunction(elemWidth = 16)))
+  "MonoidJunction_fp32_laneBudget" should "report F*S > 16 and fold it as the layout it saturates to" in {
+    // `F = 16, sigma = 1` would need 32 lanes, and the beat has 16. The word is reported, and the fold uses the
+    // widest layout that fits (sigma = 0, one partial per beat), so the output is the legal word's output.
+    test(new DataPathJunctionHarness(new HasMonoidJunction()))
       .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
-        val bad = word(n = 15, nExp = 15, sigma = 1, nValid = 2)
-        dut.io.csr_i(0).poke(bad.U); dut.io.enable_i.poke(true); dut.clock.step(2)
-        assert(!dut.io.cfgerr_o.peekBoolean(), "O5 now catches the FP32 lane-budget overrun -- update this test")
-        val ok  = runPair(dut, word(n = 15, nExp = 15, sigma = 0, nValid = 1), partial(4.0, 1.0), partial(4.0, 2.0))
+        val legal = word(n = 15, nExp = 15, sigma = 0, nValid = 1)
+        val bad   = word(n = 15, nExp = 15, sigma = 1, nValid = 2)
+        val ok    = runPair(dut, legal, partial(4.0, 1.0), partial(4.0, 2.0))
+        dut.io.csr_i(0).poke(legal.U); dut.io.enable_i.poke(true); dut.clock.step(2)
+        assert(!dut.io.cfgerr_o.peekBoolean(), "the legal layout is not flagged")
         val out = runPair(dut, bad, partial(4.0, 1.0), partial(4.0, 2.0))
-        assert(out != ok, "the over-wide geometry should not coincidentally agree with the legal one")
-        println("[fp32] F*S = 32 at FP32 silently truncates to the low 16 elements; O5 does not flag it")
+        dut.io.csr_i(0).poke(bad.U); dut.io.enable_i.poke(true); dut.clock.step(2)
+        assert(dut.io.cfgerr_o.peekBoolean(), "the over-wide layout is flagged")
+        assert(out == ok, "the saturated word must fold as the layout it saturates to")
+        println("[fp32] F*S = 32 is reported and folds as the saturated F = 16, S = 1 layout")
       }
   }
 }

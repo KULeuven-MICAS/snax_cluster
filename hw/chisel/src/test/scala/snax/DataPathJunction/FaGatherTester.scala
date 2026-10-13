@@ -20,6 +20,11 @@ import snax.DataPathJunction.JunctionTestUtils._
   * Several encodings reach it, they differ by orders of magnitude in accuracy and by 2x in payload, and one of them
   * is wrong in a way that looks entirely plausible.
   *
+  * The monoid junction transports FP32 only, so every row below is an FP32 encoding: the one-pass triple costs 16
+  * elements a beat, 15 of them values, and the question is what to put in them. The instance the split cluster ships
+  * folds the (m, l) statistics; the key-sharded attention reduce does not fold O on the monoid at all, so this bench is
+  * the record of what the one-pass encodings cost, not a description of the shipped path.
+  *
   * Every method runs on the SAME data through the SAME RTL against the SAME float64 golden, so the columns are
   * comparable by construction.
   *
@@ -35,9 +40,9 @@ import snax.DataPathJunction.JunctionTestUtils._
   * ---- HOW ERROR IS MEASURED, WHICH IS ITSELF A RESULT ----
   * `O*` is a SUM OVER SHARDS WITH SIGNS, and it cancels: measured on this data the largest term is typically 1.0x
   * the sum but reaches 140x in the worst lanes. Scoring "relative to the answer" therefore measures the
-  * cancellation, not the encoding -- an early version of this bench did exactly that and ranked FP16 far worse
-  * than it deserves. The column that decides is `relative to max|term|`, the standard bound for a floating-point
-  * summation; `rel-to-gold` is reported alongside as a median and a p99 because it is what a user actually feels.
+  * cancellation, not the encoding. The column that decides is `relative to max|term|`, the standard bound for a
+  * floating-point summation; `rel-to-gold` is reported alongside as a median and a p99 because it is what a user
+  * actually feels.
   */
 class FaGatherTester extends AnyFlatSpec with ChiselScalatestTester {
 
@@ -63,14 +68,11 @@ class FaGatherTester extends AnyFlatSpec with ChiselScalatestTester {
   private val gold  = Array.tabulate(Br, dHead)((r, j) => gNum(r)(j) / lStar(r))
 
   // ---- codecs ----------------------------------------------------------------------------------------------
-  private def encF16(d: Double): BigInt = BigInt(snax.utils.TestFp16.enc(d) & 0xffff)
-  private def decF16(b: BigInt): Double = snax.utils.TestFp16.dec(b.toInt).toDouble
-  private def pOf(x: Double):    Int    = math.floor(math.log(x) / math.log(2.0)).toInt // = l's exponent field
+  private def pOf(x: Double): Int = math.floor(math.log(x) / math.log(2.0)).toInt // = l's exponent field
 
   private def word(n: Int, nExp: Int, sigma: Int, nValid: Int, fmt: Int): BigInt =
     (BigInt(sigma) << 26) | (BigInt(nExp) << 18) | (BigInt(fmt) << 12) | (BigInt(n) << 8) | BigInt(nValid)
   private val FP32 = ElementwiseJunction.FMT_FP32
-  private val FP16 = FpHelpers.FMT_FP16
 
   /** 129 value coordinates sliced into CH chunks of 15, the key replicated into every one */
   private def chunk(key: Double, vals: Seq[Double]): Seq[(Double, Seq[Double])] =
@@ -88,15 +90,15 @@ class FaGatherTester extends AnyFlatSpec with ChiselScalatestTester {
     } else         (m(c)(r), l(c)(r) +: (0 until dHead).map(j => O(c)(r)(j)))
   }
 
-  private case class Enc(name: String, fmt: Int, pow2: Boolean, naive: Boolean, tolScale: Double) {
-    val eW      = if (fmt == FP32) 32 else 16
-    val sigma   = if (fmt == FP32) 0 else 1   // FP32 beat = 16 elements, so F*S <= 16 forces S = 1
+  private case class Enc(name: String, pow2: Boolean, naive: Boolean, tolScale: Double) {
+    val eW      = 32
+    val sigma   = 0 // an FP32 beat is 16 elements, so F*S <= 16 forces S = 1
     val slots   = 1 << sigma
-    val csr     = word(15, 15, sigma, slots, fmt)
+    val csr     = word(15, 15, sigma, slots, FP32)
     def beats32 = 32 / slots * CH
     def bytes32 = beats32 * 64
-    def enc(d: Double): BigInt = if (fmt == FP32) f32(d) else encF16(d)
-    def dec(b: BigInt): Double = if (fmt == FP32) JunctionTestUtils.dec(b) else decF16(b)
+    def enc(d: Double): BigInt = f32(d)
+    def dec(b: BigInt): Double = JunctionTestUtils.dec(b)
 
     /** the CH beats carrying query rows [g*slots .. g*slots+slots-1] of shard c */
     def beatsOf(c: Int, g: Int): Seq[BigInt] = {
@@ -119,14 +121,13 @@ class FaGatherTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   private val methods = Seq(
-    Enc("A   FP32  raw        key=m,         vals=(l,O)",        FP32, pow2 = false, naive = false, 1e-3),
-    Enc("B   FP16  pow2       key=m+p.ln2,   vals=(l,O)/2^p",    FP16, pow2 = true,  naive = false, 5e-2),
-    Enc("B32 FP32  pow2       (isolates the EMBEDDING)",          FP32, pow2 = true,  naive = false, 1e-3),
-    Enc("C   FP16  O/l        key=m          (control: WRONG)",  FP16, pow2 = false, naive = true,  9e9)
+    Enc("A   raw        key=m,         vals=(l,O)",        pow2 = false, naive = false, 1e-3),
+    Enc("B   pow2       key=m+p.ln2,   vals=(l,O)/2^p",    pow2 = true,  naive = false, 1e-3),
+    Enc("C   O/l        key=m          (control: WRONG)",  pow2 = false, naive = true,  9e9)
   )
 
   "FaGather" should "rank the candidate encodings on one bench" in {
-    test(new DataPathJunctionHarness(new HasMonoidJunction(elemWidth = 16)))
+    test(new DataPathJunctionHarness(new HasMonoidJunction()))
       .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { implicit dut =>
         println("%-46s | %-10s | %-9s | %-9s | payload".format("encoding", "worst/term", "med/gold", "p99/gold"))
         println("-" * 104)
@@ -170,10 +171,9 @@ class FaGatherTester extends AnyFlatSpec with ChiselScalatestTester {
   * SUM. That is `ElementwiseJunction` ADD: no key, no twist, no chunking and no key replication, so the beats carry
   * only payload.
   *
-  * The question this answers is whether FP16's cost in `FaGatherTester` is the FORMAT or the TWIST PATH. If a
-  * pre-scaled FP16 ADD lands near the monoid's FP16 number, the loss is the format and there is no cheaper FP16
-  * route; if it lands much closer to FP32, the twist is what FP16 cannot carry and the two-pass shape buys accuracy
-  * back at half the payload.
+  * The question this answers is what the two-pass shape costs in accuracy at each transport, against the monoid's
+  * one-pass FP32 encodings in `FaGatherTester`: at FP32 it should land with them, and at FP16 it carries half the
+  * payload and shows what the narrower number system alone does to a sum that is already on a common basis.
   *
   * The price, which this bench cannot measure, is a SERIALISING round trip: no shard can pre-scale until `l*` comes
   * back to it.

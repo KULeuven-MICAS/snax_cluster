@@ -290,31 +290,38 @@ object XDMATopGen extends App {
 
   val toolbox = currentMirror.mkToolBox()
 
+  /** One hjson parameter as a Scala literal: Boolean, Int, Seq[Int], String or Seq[String]. */
+  private def renderParam(extensionName: String, paramName: String, paramValue: JsValue): String =
+    paramValue match {
+      case b: JsBoolean => b.value.toString
+      case _            =>
+        paramValue.validate[Int] match {
+          case JsSuccess(intValue, _) => intValue.toString
+          case JsError(_)             =>
+            paramValue.validate[Seq[Int]] match {
+              case JsSuccess(seqValue, _) => s"Seq(${seqValue.mkString(",")})"
+              case JsError(_)             =>
+                paramValue.validate[String] match {
+                  case JsSuccess(strValue, _) => "\"" + strValue + "\""
+                  case JsError(_)             =>
+                    paramValue.validate[Seq[String]] match {
+                      case JsSuccess(seqStr, _) =>
+                        s"Seq(${seqStr.map(s => "\"" + s + "\"").mkString(",")})"
+                      case JsError(_)           =>
+                        throw new IllegalArgumentException(
+                          s"Invalid XDMA datapath extension parameter $extensionName.$paramName: expected Boolean, Int, Seq[Int], String, or Seq[String]"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
   def renderDatapathExtensionArgs(extensionName: String, args: JsValue): String =
     args match {
       case obj: JsObject =>
         obj.fields.map { case (paramName, paramValue) =>
-          val renderedParam = paramValue.validate[Int] match {
-            case JsSuccess(intValue, _) => intValue.toString
-            case JsError(_)             =>
-              paramValue.validate[Seq[Int]] match {
-                case JsSuccess(seqValue, _) => s"Seq(${seqValue.mkString(",")})"
-                case JsError(_)             =>
-                  paramValue.validate[String] match {
-                    case JsSuccess(strValue, _) => "\"" + strValue + "\""
-                    case JsError(_)             =>
-                      paramValue.validate[Seq[String]] match {
-                        case JsSuccess(seqStr, _) =>
-                          s"Seq(${seqStr.map(s => "\"" + s + "\"").mkString(",")})"
-                        case JsError(_)           =>
-                          throw new IllegalArgumentException(
-                            s"Invalid XDMA datapath extension parameter $extensionName.$paramName: expected Int, Seq[Int], String, or Seq[String]"
-                          )
-                      }
-                  }
-              }
-          }
-          s"$paramName = $renderedParam"
+          s"$paramName = ${renderParam(extensionName, paramName, paramValue)}"
         }
           .mkString(", ")
       case _ =>

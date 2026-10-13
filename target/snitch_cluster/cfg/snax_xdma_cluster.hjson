@@ -243,13 +243,14 @@ this cfg's junction bank exists to do on HeMAiA.
             //   ElementwiseJunction -- the LINEAR baseline: a 2-input per-element FP reduction (ADD/MUL/MAX/MIN),
             //     i.e. exactly the operator a collective-capable NoC puts inside the router. Runtime FP16/BF16/FP32,
             //     plus a native-width integer grid (INT8/16/32).
-            //   MonoidJunction     -- the NONLINEAR family the per-element form cannot express at all: the online-
-            //     softmax (m, l) merge, the flash-attention (m, l, O) triple, exp-weighted moments, argmax. One
-            //     netlist, selected by the geometry fields of its CSR word. Same transport split as the linear
-            //     operator: `elemWidth` sets the lane count, `fmt` picks FP16/BF16/FP32 at runtime, and the
-            //     arithmetic stays FP32 either way.
+            //   MonoidJunction     -- the NONLINEAR merge the per-element form cannot express at all: the online-
+            //     softmax (m, l) statistics. The geometry fields of its CSR word also name wider partials
+            //     (exp-weighted moments, argmax with an index, an attention head of F * S <= 16 lanes). Its
+            //     transport is FP32 only: a beat is 16 FP32 elements, which is exactly the (m, l) beat of
+            //     F * S = 16 lanes. A word that needs more lanes, names another transport, or sets keyMul (the
+            //     ordered scan is not built: `hasScan: false`) raises XDMA_JCT_STATUS bit 0.
             // Both are stateless in the operand pair, so the fold is fully pipelined (no accBusy read-modify-write)
-            // and the join is cut-through: first-output latency does not grow with payload (measured 9 CC / 7 CC,
+            // and the join is cut-through: first-output latency does not grow with payload (measured 10 CC / 7 CC,
             // util 1.000), which is what keeps a reduce-along-the-route chain latency-competitive with a star.
             //
             // OPERATORS ON ONE SOCKET. The host takes a LIST, allocates each entry its own user CSRs and arms
@@ -258,7 +259,7 @@ this cfg's junction bank exists to do on HeMAiA.
             writer_junctions:
             {
                 HasElementwiseJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1}
-                HasMonoidJunction: {dataWidth: 512, elemWidth: 16, fpPipe: 1, expLutN: 128}
+                HasMonoidJunction: {dataWidth: 512, fpPipe: 1, expLutN: 128, hasScan: false}
                 // TopKJunction: an operator from OUTSIDE the classified monoid family -- its own beat layout,
                 // no key front end, no exponential and no FMA -- on the same socket, satisfying the same four
                 // obligations. It is the evidence that the CONTRACT composes, not the monoid cell.

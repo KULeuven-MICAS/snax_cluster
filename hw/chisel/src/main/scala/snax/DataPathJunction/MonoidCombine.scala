@@ -94,9 +94,9 @@ object MonoidCombine {
     * legal: an over-large sigma degrades to fewer partials per beat, which is benign, instead of interleaving two
     * partials into each other's lanes, which is silent corruption.
     *
-    * `nLanes` is a PARAMETER and not the 16 this block shipped with, because the bound is a property of the BEAT, not
-    * of the algebra: on a 32-lane beat `F = 16, S = 2` fits exactly, and hard-coding 16 would saturate it to `S = 1`
-    * and silently halve the partials per beat -- which is the geometry the chunked flash-attention layout runs at.
+    * `nLanes` is the number of lanes the INSTANCE computes on, because the bound is a property of the beat it is built
+    * for and not of the algebra: on a 16-lane beat `F = 16` fits only at `S = 1`, and a word that asks for `S = 2`
+    * saturates to it. The caller passes the lane count of its own netlist.
     */
   def sigmaMaxOf(F: UInt, nLanes: Int = 16): UInt =
     MuxCase(0.U(2.W), (SIGMA_MAX to 1 by -1).map(s => (F <= (nLanes >> s).U) -> s.U(2.W)))
@@ -142,8 +142,8 @@ object MonoidCombine {
     */
   def slotOf(l: Int, sigma: UInt): UInt =
     MuxLookup(sigma, 0.U(4.W))((0 to SIGMA_MAX).map(s => s.U -> (l & ((1 << s) - 1)).U(4.W)))
-  // The literal width follows the lane index rather than being pinned at 5, so a beat sliced into more than 32
-  // lanes (`elemWidth = 8`) still elaborates. At 16 or 32 lanes it is 5 bits, exactly as before.
+  // The literal width follows the lane index rather than being pinned at 5, so a beat of more than 32 lanes still
+  // elaborates. At 16 or 32 lanes it is 5 bits.
   def fieldOf(l: Int, sigma: UInt): UInt = {
     val w = scala.math.max(5, log2Ceil(l + 1))
     MuxLookup(sigma, l.U(w.W))((0 to SIGMA_MAX).map(s => s.U -> (l >> s).U(w.W)))
