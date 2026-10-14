@@ -1,5 +1,7 @@
 # Folders
 /logs/
+# Saved simulation logs (e.g. logs-<N>/ kept per run for checking)
+/logs-*/
 /generated/
 /bin/
 /cfg/default.hjson
