@@ -33,6 +33,11 @@ int main() {
         snrt_dma_start_1d(local_a, A, vector_size);
         snrt_dma_start_1d(local_b, B, vector_size);
 
+        // Wait until A and B are in L1: the barrier below only syncs
+        // the cores, so without this the streamers may start reading
+        // before the DMA has written the data
+        snrt_dma_wait_all();
+
         // Measure the end of the transfer process
         uint32_t end_dma_load = snrt_mcycle();
     }
