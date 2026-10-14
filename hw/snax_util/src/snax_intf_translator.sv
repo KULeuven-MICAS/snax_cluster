@@ -67,49 +67,138 @@ module snax_intf_translator #(
   //-------------------------------
   // Request handler
   //-------------------------------
+  // Each request is one of (Zicsr):
+  //   a) csrrw/csrrwi, rd == x0          -> one write of data_arga
+  //   b) csrrw/csrrwi, rd != x0          -> a read, then a write of data_arga
+  //   c) csrrs/c/si/ci, rs1/uimm == 0    -> one read
+  //   d) csrrs/c/si/ci, rs1/uimm != 0    -> a read, then a write of
+  //                                         old | mask (set) or old & ~mask (clear)
+  // In b) and d) the core gets the read's data (the old value).
   logic  write_csr;
+  logic  req_set_clear, req_clear;
+  logic  req_rmw;
 
   // Combinational logic to detect CSR
-  // Write operations
+  // set/clear operations
   always_comb begin
+    req_set_clear = 1'b0;
+    req_clear     = 1'b0;
     if (snax_qvalid_i) begin
       unique casez (snax_req_i.data_op)
-          CSRRS, CSRRSI, CSRRC, CSRRCI: begin
-              write_csr = 1'b0;
+          CSRRS, CSRRSI: begin
+              req_set_clear = 1'b1;
           end
-          default: begin
-              write_csr = 1'b1;
+          CSRRC, CSRRCI: begin
+              req_set_clear = 1'b1;
+              req_clear     = 1'b1;
           end
+          default: ;
         endcase
-    end else begin
-      write_csr = 1'b0;
     end
   end
+
+  // b) and d): read, then write
+  assign req_rmw   = snax_qvalid_i && (req_set_clear ? (snax_req_i.data_op[19:15] != '0) :
+                                                       (snax_req_i.data_op[11:7]  != '0));
+  // a): the only request that goes to the target as a write right away
+  assign write_csr = snax_qvalid_i && !req_set_clear && !req_rmw;
+
+  // Read-then-write sequencer for b) and d)
+  typedef enum logic [1:0] {
+    RmwIdle,    // a) and c) pass through; a b) or d) is accepted here as its read
+    RmwWaitRsp, // the b) or d) read is outstanding; wait for its response
+    RmwWrite    // issue the write from the latched values until the target takes it
+  } rmw_state_e;
+  rmw_state_e rmw_state_d, rmw_state_q;
+
+  logic        rmw_idle, rmw_write, rmw_accept, rmw_capture;
+  csr_req_t    rmw_req_q;           // addr and mask (data) of the accepted b) or d)
+  logic        rmw_sel_q;           // top/acc select of the accepted b) or d)
+  logic        rmw_set_clear_q, rmw_clear_q;
+  logic [31:0] rmw_old_q;           // the read's data
+  logic [31:0] rmw_wdata;
+
+  assign rmw_idle  = (rmw_state_q == RmwIdle);
+  assign rmw_write = (rmw_state_q == RmwWrite);
 
   // We need a demux to split the requests
   logic snax_csr_req_sel;
   logic snax_csr_req_ready;
   logic snax_csr_req_can_accept;
   logic rsp_fifo_full, rsp_fifo_empty;
+  logic rsp_fire;
+  csr_rsp_t snax_csr_rsp;
   assign snax_csr_req_sel = (snax_req_i.data_argb[11:0]==CSR_SNAX_READ_TASK_READY_QUEUE) ||
                             (snax_req_i.data_argb[11:0]==CSR_SNAX_WRITE_TASK_DONE_QUEUE);
   // Writes do not consume a response ID entry. Reads must only reach a CSR
   // target when there is room to remember their accelerator request ID.
-  assign snax_csr_req_can_accept = write_csr || !rsp_fifo_full;
+  // A b) or d) waits until no older read is outstanding.
+  assign snax_csr_req_can_accept = req_rmw ? rsp_fifo_empty : (write_csr || !rsp_fifo_full);
   stream_demux #(
     .N_OUP(2)
   ) i_snax_csr_req_demux (
-    .inp_valid_i ( snax_qvalid_i && snax_csr_req_can_accept ),
+    .inp_valid_i ( rmw_write || (rmw_idle && snax_qvalid_i && snax_csr_req_can_accept) ),
     .inp_ready_o ( snax_csr_req_ready   ),
-    .oup_sel_i   ( snax_csr_req_sel     ),
+    .oup_sel_i   ( rmw_write ? rmw_sel_q : snax_csr_req_sel ),
     .oup_valid_o ( {snax_csr_req_top_valid_o, snax_csr_req_acc_valid_o}  ),
     .oup_ready_i ( {snax_csr_req_top_ready_i, snax_csr_req_acc_ready_i}  )
   );
-  assign snax_qready_o = snax_csr_req_ready && snax_csr_req_can_accept;
+  assign snax_qready_o = rmw_idle && snax_csr_req_ready && snax_csr_req_can_accept;
 
-  assign snax_csr_req_o.data  = snax_req_i.data_arga[31:0];
-  assign snax_csr_req_o.addr  = snax_req_i.data_argb - CsrAddrOffset;
-  assign snax_csr_req_o.write = write_csr;
+  csr_req_t snax_csr_req_in;
+  assign snax_csr_req_in.data  = snax_req_i.data_arga[31:0];
+  assign snax_csr_req_in.addr  = snax_req_i.data_argb - CsrAddrOffset;
+  assign snax_csr_req_in.write = write_csr;
+
+  always_comb begin
+    if (!rmw_set_clear_q) rmw_wdata = rmw_req_q.data;              // b)
+    else if (rmw_clear_q) rmw_wdata = rmw_old_q & ~rmw_req_q.data; // d) clear
+    else                  rmw_wdata = rmw_old_q |  rmw_req_q.data; // d) set
+  end
+
+  always_comb begin
+    snax_csr_req_o = snax_csr_req_in;
+    if (rmw_write) begin
+      snax_csr_req_o       = rmw_req_q;
+      snax_csr_req_o.data  = rmw_wdata;
+      snax_csr_req_o.write = 1'b1;
+    end
+  end
+
+  // The b) or d) read is accepted in RmwIdle. Its response is the only one
+  // outstanding, so the next rsp_fire (possibly in the same cycle) is its own.
+  assign rmw_accept  = snax_qvalid_i && snax_qready_o && req_rmw;
+  assign rmw_capture = rsp_fire && (rmw_accept || (rmw_state_q == RmwWaitRsp));
+
+  always_comb begin
+    rmw_state_d = rmw_state_q;
+    unique case (rmw_state_q)
+      RmwIdle:    if (rmw_accept)         rmw_state_d = rsp_fire ? RmwWrite : RmwWaitRsp;
+      RmwWaitRsp: if (rsp_fire)           rmw_state_d = RmwWrite;
+      RmwWrite:   if (snax_csr_req_ready) rmw_state_d = RmwIdle;
+      default:                            rmw_state_d = RmwIdle;
+    endcase
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rmw_state_q     <= RmwIdle;
+      rmw_req_q       <= '0;
+      rmw_sel_q       <= 1'b0;
+      rmw_set_clear_q <= 1'b0;
+      rmw_clear_q     <= 1'b0;
+      rmw_old_q       <= '0;
+    end else begin
+      rmw_state_q <= rmw_state_d;
+      if (rmw_accept) begin
+        rmw_req_q       <= snax_csr_req_in;
+        rmw_sel_q       <= snax_csr_req_sel;
+        rmw_set_clear_q <= req_set_clear;
+        rmw_clear_q     <= req_clear;
+      end
+      if (rmw_capture) rmw_old_q <= snax_csr_rsp.data;
+    end
+  end
 
 
   //-------------------------------
@@ -123,7 +212,7 @@ module snax_intf_translator #(
 
   acc_req_t rsp_fifo_out;
   logic rsp_fifo_push, rsp_fifo_pop;
-  logic read_req_fire, rsp_fire, rsp_bypass;
+  logic read_req_fire, rsp_bypass;
 
   // Combinational logic
 
@@ -163,7 +252,6 @@ module snax_intf_translator #(
   logic snax_csr_rsp_sel;
   assign snax_csr_rsp_sel = (rsp_req.data_argb[11:0]==CSR_SNAX_READ_TASK_READY_QUEUE) ||
                             (rsp_req.data_argb[11:0]==CSR_SNAX_WRITE_TASK_DONE_QUEUE);
-  csr_rsp_t snax_csr_rsp;
   logic snax_csr_rsp_valid, snax_csr_rsp_ready;
   logic rsp_context_valid;
   assign rsp_context_valid = !rsp_fifo_empty || read_req_fire;
