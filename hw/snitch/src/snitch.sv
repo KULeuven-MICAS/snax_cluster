@@ -813,6 +813,12 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
           opa_select      = Reg;
           opb_select      = CSRAddrImmediate;
           acc_qreq_o.addr = SNAX_CSR;
+          // rd != x0: the old value comes back as the accelerator response
+          if (rd != 0) begin
+            write_rd        = 1'b0;
+            uses_rd         = 1'b1;
+            acc_register_rd = 1'b1;
+          end
         end else begin
           opa_select      = Reg;
           opb_select      = None;
@@ -829,6 +835,12 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
           opa_select      = CSRImmmediate;
           opb_select      = CSRAddrImmediate;
           acc_qreq_o.addr = SNAX_CSR;
+          // rd != x0: the old value comes back as the accelerator response
+          if (rd != 0) begin
+            write_rd        = 1'b0;
+            uses_rd         = 1'b1;
+            acc_register_rd = 1'b1;
+          end
         end else begin
           opa_select      = CSRImmmediate;
           opb_select      = None;
@@ -844,8 +856,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
           write_rd        = 1'b0;
           uses_rd         = 1'b1;
           acc_qvalid_o    = valid_instr;
-          opa_select      = None;
-          opb_select      = CSRAddrImmediate; // Just reading so nothing to write
+          opa_select      = Reg; // rs1 is the mask; x0 or 0 only reads
+          opb_select      = CSRAddrImmediate;
           acc_register_rd = 1'b1;
           acc_qreq_o.addr = SNAX_CSR;
         end else begin
@@ -864,8 +876,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
           write_rd        = 1'b0;
           uses_rd         = 1'b1;
           acc_qvalid_o    = valid_instr;
-          opa_select      = None;
-          opb_select      = CSRAddrImmediate; // Just reading so nothing to write
+          opa_select      = CSRImmmediate; // zimm is the mask; x0 or 0 only reads
+          opb_select      = CSRAddrImmediate;
           acc_register_rd = 1'b1;
           acc_qreq_o.addr = SNAX_CSR;
         end else if (inst_data_i[31:20] != CSR_SSR) begin // offload CSR enable to FP SS
@@ -887,8 +899,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
           write_rd        = 1'b0;
           uses_rd         = 1'b1;
           acc_qvalid_o    = valid_instr;
-          opa_select      = None;
-          opb_select      = CSRAddrImmediate; // Just reading so nothing to write
+          opa_select      = Reg; // rs1 is the mask; x0 or 0 only reads
+          opb_select      = CSRAddrImmediate;
           acc_register_rd = 1'b1;
           acc_qreq_o.addr = SNAX_CSR;
         end else begin
@@ -907,8 +919,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
           write_rd        = 1'b0;
           uses_rd         = 1'b1;
           acc_qvalid_o    = valid_instr;
-          opa_select      = None;
-          opb_select      = CSRAddrImmediate; // Just reading so nothing to write
+          opa_select      = CSRImmmediate; // zimm is the mask; x0 or 0 only reads
+          opb_select      = CSRAddrImmediate;
           acc_register_rd = 1'b1;
           acc_qreq_o.addr = SNAX_CSR;
         end else if (inst_data_i[31:20] != CSR_SSR) begin

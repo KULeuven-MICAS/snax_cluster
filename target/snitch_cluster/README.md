@@ -25,6 +25,8 @@ cd ./target/snitch_cluster/.
 make CFG_OVERRIDE=cfg/snax-mac.hjson bin/snitch_cluster.vlt -j 16
 ```
 
+For Questa instead of Verilator, the build is split between the container and the host; see [Building and running with Questa (vsim)](#building-and-running-with-questa-vsim).
+
 3. Build the software. This produces `.elf` files (binary) which we feed into the built RTL builds.
 
 ```shell
@@ -35,6 +37,9 @@ make DEBUG=ON sw
 
 ```shell
 bin/snitch_cluster.vlt sw/apps/snax-mac/build/snax-mac.elf
+
+# or, with a Questa build (on the host)
+bin/snitch_cluster.vsim sw/apps/snax-mac/build/snax-mac.elf
 ```
 
 5. Make traces. See [Debugging and Benchmarking](#debugging-and-benchmarking) section. This produces a `.txt` dump which are the traces you can inspect.
@@ -70,6 +75,70 @@ vcs-2020.12 make bin/snitch_cluster.vcs
     You can find more details of the configuration file in the Cluster Configuration below.
 
 These commands compile the RTL sources respectively in `work-vlt`, `work-vsim` and `work-vcs`. Additionally, common C++ testbench sources (e.g. the [frontend server (fesvr)](https://github.com/riscv-software-src/riscv-isa-sim)) are compiled under `work`. Each command will also generate a script or an executable (e.g. `bin/snitch_cluster.vsim`) which you can invoke to simulate the hardware. We will see how to do this in a later section.
+
+### Building and running with Questa (vsim)
+
+The Verilator build (`bin/snitch_cluster.vlt`) runs entirely inside the SNAX container. Questa is usually installed on the host instead, while the RTL generation and the `bender` file lists need the container. The vsim build is therefore split: generate everything in the container, then compile and simulate with Questa on the host.
+
+Run the commands below from the repository root. The example uses `cfg/snax_alu_cluster.hjson`; replace it with your configuration. The container commands are non-interactive, so they need no `-it`. Mounting the folder at the same path (`"$PWD":"$PWD"`) matters: the generated compile script and simulation wrapper contain absolute paths, which must be the same in the container and on the host.
+
+```shell
+# 1. In the container: generate the RTL for the configuration
+podman run --rm -v "$PWD":"$PWD" -w "$PWD" ghcr.io/kuleuven-micas/snax:main \
+    sh -c 'make -C target/snitch_cluster rtl-gen CFG_OVERRIDE=cfg/snax_alu_cluster.hjson'
+
+# 2. In the container: generate the boot data, build the fesvr library (work/)
+#    and write the Questa compile script with bender (work-vsim/compile.vsim.tcl)
+podman run --rm -v "$PWD":"$PWD" -w "$PWD" ghcr.io/kuleuven-micas/snax:main \
+    sh -c 'make -C target/snitch_cluster vsim_preparation CFG_OVERRIDE=cfg/snax_alu_cluster.hjson'
+
+# 3. On the host: compile and optimize with Questa into work-vsim/,
+#    which also writes bin/snitch_cluster.vsim and bin/snitch_cluster.vsim.gui
+make -C target/snitch_cluster bin/snitch_cluster.vsim CFG_OVERRIDE=cfg/snax_alu_cluster.hjson
+```
+
+Docker works the same way (`docker run` with the same arguments). The software is built in the container as usual (`make sw`, see [Building the software](#building-the-software)).
+
+To simulate, run the wrapper on the host from `target/snitch_cluster`:
+
+```shell
+cd target/snitch_cluster
+bin/snitch_cluster.vsim sw/apps/snax-alu/build/snax-alu.elf
+
+# or in the QuestaSim GUI
+bin/snitch_cluster.vsim.gui sw/apps/snax-alu/build/snax-alu.elf
+```
+
+What to expect from a run:
+
+* Questa prefixes every line of the program's output with `# `.
+* The end of the run reports the program's exit code: `[SUCCESS] Program finished successfully` for exit code 0, or `[FAILURE] Finished with exit code N`. The `vsim` process itself exits with 0 in both cases, so scripts should check this line rather than the exit status.
+* The wrapper creates `logs/` (the per-core `.dasm` traces, see [Debugging and benchmarking](#debugging-and-benchmarking)); `transcript` and `vsim.wlf` are written in `target/snitch_cluster` as well. A new run writes into the same `logs/`, so move it away (e.g. to `logs-<name>/`, which git ignores) to keep the traces of a run.
+
+Rebuilding after a change:
+
+* **An edited RTL source (`.sv`):** the host has no `bender`, so the Makefile's list of RTL sources is empty there and `make bin/snitch_cluster.vsim` does not notice the edit. Force the rebuild with `-W`, which treats the compile script as changed without deleting anything:
+
+  ```shell
+  make -C target/snitch_cluster bin/snitch_cluster.vsim CFG_OVERRIDE=cfg/snax_alu_cluster.hjson -W work-vsim/compile.vsim.tcl
+  ```
+
+  `vlog` compiles incrementally (`-incr`), so only the modules whose source changed are recompiled; `vopt` then optimizes the whole design again.
+* **A changed template or Chisel source, same configuration:** run step 1 again, then step 3 with `-W` as above.
+* **Added or removed source files, changed `Bender.yml`, or a build from scratch:** step 2 does not rewrite an existing `work-vsim/compile.vsim.tcl`. Remove the Questa build first, then run steps 2 and 3 (and step 1 if the RTL is not generated yet):
+
+  ```shell
+  make -C target/snitch_cluster clean-vsim
+  ```
+
+  `clean-vsim` removes `bin/snitch_cluster.vsim*`, `work-vsim/`, `vsim.wlf` and `work/` (the fesvr library, which step 2 rebuilds).
+* **Switching to another configuration:** the bender targets of the compile script come from the configuration, through `generated/bender_targets.tmp`, which is only written when it does not exist yet. Remove both the Questa build and the generated files, then run steps 1 to 3:
+
+  ```shell
+  make -C target/snitch_cluster clean-vsim clean-generated
+  ```
+
+The full `make clean` also removes the generated RTL, the software builds, `Bender.lock` and `.bender/`. `Bender.lock` is not tracked in git, and several dependencies in `Bender.yml` follow a branch, so after a full clean `bender` may check out newer revisions than before; keep a copy of `Bender.lock` if you need the same ones.
 
 ### Building the Banshee simulator
 Instead of running an RTL simulation, you can use our instruction-accurate simulator called `banshee`. To install the simulator, please follow the instructions of the Banshee repository: [https://github.com/pulp-platform/banshee](https://github.com/pulp-platform/banshee).
