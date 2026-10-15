@@ -1,0 +1,14 @@
+// Copyright 2026 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    // Random operands: A INT8, the weights INT4 values.
+    seed: 1,
+    // The D port's RNE(acc * 2^-k): HeMAiA's MoE prefill GEMMs run k = 9 (depth 2048).
+    k: 9,
+    // Runs of each case: the last is the measurement; the first also pays the instruction fetch.
+    reps: 2,
+    // B's bytes past a 256-byte boundary (A sits on one) in the chunk set, per layout. HeMAiA's
+    // parity chunk starts one word into its slab, so B is an odd number of words after A.
+    chunk_boffs: {b: 0, paired: 0, parity: 8},
+}

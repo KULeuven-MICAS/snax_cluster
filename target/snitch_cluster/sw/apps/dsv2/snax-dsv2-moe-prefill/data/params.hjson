@@ -1,0 +1,21 @@
+// Copyright 2026 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    seed: 1,
+    // HeMAiA's MoE prefill (DeepSeek-V2-Lite layer 1, 128 tokens): the hidden depth K, three
+    // 16-column gate blocks (and as many up blocks) a weight chunk, the D port's RNE(acc * 2^-k).
+    K: 2048,
+    blocks_per_chunk: 3,
+    k: 9,
+    // B's bytes into its slab, per layout: HeMAiA's parity chunk starts one word in, so B is an
+    // odd number of words after A (which starts a slab-aligned row).
+    boff: {b: 0, paired: 0, parity: 8},
+    sets: {
+        // THE UNIT TEST: two slots (16 and 8 rows) of eight blocks, three chunks each.
+        unit: {rows: [16, 8], blocks: 8, pool: 3},
+        // A cluster's share of the real layer: its half of an expert's 88 blocks, four experts
+        // whose padded rows come from the 128-token router trace (about 62 a chip).
+        full: {rows: [24, 16, 16, 8], blocks: 44, pool: 3},
+    },
+}

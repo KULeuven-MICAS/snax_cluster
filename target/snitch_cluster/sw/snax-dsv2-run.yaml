@@ -21,3 +21,5 @@ runs:
   - elf: apps/dsv2/snax-dsv2-layer/build/snax-dsv2-layer.elf
   - elf: apps/dsv2/snax-dsv2-spec/build/snax-dsv2-spec.elf
   - elf: apps/dsv2/snax-dsv2-gemm-bench/build/snax-dsv2-gemm-bench.elf
+  - elf: apps/dsv2/snax-dsv2-gemm3-bench/build/snax-dsv2-gemm3-bench.elf
+  - elf: apps/dsv2/snax-dsv2-moe-prefill/build/snax-dsv2-moe-prefill.elf

@@ -104,6 +104,11 @@ SUBDIRS += dsv2/snax-dsv2-layer
 SUBDIRS += dsv2/snax-dsv2-spec
 # GEMM shapes in isolation (HeMAiA's FFN prefill GEMM bench), checked against a golden.
 SUBDIRS += dsv2/snax-dsv2-gemm-bench
+# HeMAiA's MoE prefill GEMMs on array shape 3, (8, 8, 16): the INT4 weights' layout against a
+# row-major A and the cost of launching a GEMM, in isolation; then one cluster's share of the
+# experts' gate|up phase (ring load, GEMM, dequantisation, SwiGLU, quantiser), checked bit for bit.
+SUBDIRS += dsv2/snax-dsv2-gemm3-bench
+SUBDIRS += dsv2/snax-dsv2-moe-prefill
 endif
 # The FP16 SIMD apps below need the StreamMap / StreamReduce / StreamElementwise /
 # Fp16ToInt8 reader extensions, which only cfg/snax_xdma_cluster.hjson builds --
