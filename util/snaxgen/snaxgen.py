@@ -839,6 +839,13 @@ def main():
         cfg["cluster"]["sparse_interconnect_cfg"]["sparse_config"] = json.dumps(
             sparse_config
         )
+        # Width of the cluster's tcdm_user_t (snitch_cluster.sv): core_id of
+        # cf_math_pkg::idx_width(NrCores) bits, NrCores over all hives as
+        # clustergen counts them, then is_core and tcdm_priority (1 bit each).
+        # The wrapper checks it against $bits of the user field.
+        nr_cores = sum(len(hive["cores"]) for hive in cfg["cluster"]["hives"])
+        core_id_width = max(1, (nr_cores - 1).bit_length())
+        cfg["cluster"]["sparse_interconnect_cfg"]["UserWidth"] = core_id_width + 2
 
         tpl_rtl_wrapper_file = args.tpl_path + "sparse_interconnect_wrapper.sv.tpl"
 
@@ -885,6 +892,8 @@ def main():
             + str(int(cfg["cluster"]["data_width"] / 8))
             + " --priorityWidth "
             + str(1)
+            + " --userWidth "
+            + str(cfg["cluster"]["sparse_interconnect_cfg"]["UserWidth"])
             + " --sparseConfig "
             + f"\"{cfg['cluster']['sparse_interconnect_cfg']['sparse_config']}\""
             + " --hw-target-dir "
