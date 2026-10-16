@@ -38,6 +38,20 @@ module sparse_interconnect_wrapper #(
 
 import reqrsp_pkg::*;
 
+// The user field (core_id, is_core, tcdm_priority) goes through the Chisel
+// module as a flat vector of UserWidth bits, the winner's to the bank, so the
+// AMO shim behind each bank sees who sent the request.
+localparam int unsigned UserWidth = ${cfg["sparse_interconnect_cfg"]["UserWidth"]};
+
+if ($bits(req_i[0].q.user) != UserWidth) begin : gen_req_user_width_check
+  $fatal(1, "sparse_interconnect_wrapper: $bits(tcdm_req_t.q.user) %0d != Chisel userWidth %0d",
+         $bits(req_i[0].q.user), UserWidth);
+end
+if ($bits(mem_req_o[0].q.user) != UserWidth) begin : gen_mem_user_width_check
+  $fatal(1, "sparse_interconnect_wrapper: $bits(mem_req_t.q.user) %0d != Chisel userWidth %0d",
+         $bits(mem_req_o[0].q.user), UserWidth);
+end
+
 logic [${cfg["sparse_interconnect_cfg"]["NumOut"]}-1:0][3:0] mem_req_o_amo;
 
 % for idx in range(cfg["sparse_interconnect_cfg"]["NumOut"]):
@@ -65,6 +79,7 @@ SparseInterconnect sparse_interconnect_i (
         .io_tcdmReqs_${idx}_bits_data  ( req_i[${idx}].q.data  ),
         .io_tcdmReqs_${idx}_bits_strb  ( req_i[${idx}].q.strb  ),
         .io_tcdmReqs_${idx}_bits_priority  ( req_i[${idx}].q.user.tcdm_priority   ),
+        .io_tcdmReqs_${idx}_bits_user  ( req_i[${idx}].q.user  ),
     % endfor
 
     // Tcdm Responses, the ready signal is set to 1, it is ignored by the tcdm
@@ -84,9 +99,8 @@ SparseInterconnect sparse_interconnect_i (
         .io_memReqs_${idx}_bits_data  ( mem_req_o[${idx}].q.data  ),
         .io_memReqs_${idx}_bits_strb  ( mem_req_o[${idx}].q.strb  ),
         .io_memReqs_${idx}_bits_priority  ( ),
+        .io_memReqs_${idx}_bits_user  ( mem_req_o[${idx}].q.user  ),
     % endfor
-    // user signal not used
-    // .io_memReqs_${idx}_bits_user  ( mem_req_o[${idx}].q.user  ),
 
     // Mem Responses
     // the valid signal is set to 1, it should be ignored by the mem interface)
