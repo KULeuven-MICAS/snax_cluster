@@ -23,7 +23,8 @@ class TcdmReq(
   addrWidth:     Int,
   dataWidth:     Int,
   strbWidth:     Int,
-  priorityWidth: Int
+  priorityWidth: Int,
+  userWidth:     Int
 ) extends Bundle {
   val addr     = UInt(addrWidth.W)
   val write    = Bool()
@@ -31,6 +32,7 @@ class TcdmReq(
   val data     = UInt(dataWidth.W)
   val strb     = UInt(strbWidth.W)
   val priority = UInt(priorityWidth.W)
+  val user     = UInt(userWidth.W)
 }
 
 /** TCDM Response Type */

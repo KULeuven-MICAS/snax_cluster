@@ -9,18 +9,19 @@ class ArbitrationTree(
   addrWidth:     Int,
   dataWidth:     Int,
   strbWidth:     Int,
-  priorityWidth: Int
+  priorityWidth: Int,
+  userWidth:     Int
 ) extends Module {
   val io = IO(new Bundle {
     val tcdmReqs = Vec(
       NumInp,
       Flipped(
-        Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, priorityWidth))
+        Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, priorityWidth, userWidth))
       )
     )
     val tcdmRsp  = Decoupled(new TcdmRsp(dataWidth))
     val memReq   =
-      Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, priorityWidth))
+      Decoupled(new TcdmReq(addrWidth, dataWidth, strbWidth, priorityWidth, userWidth))
     val memRsp   = Flipped(Decoupled(new TcdmRsp(dataWidth)))
   })
 
