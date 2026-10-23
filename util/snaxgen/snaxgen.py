@@ -19,16 +19,27 @@ import argparse
 import copy
 import os
 import math
+from pathlib import Path
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 
-# Extract json file
+# Loader of a $ref to another file: hjson, read as the cluster file is
+def hjson_loader(uri: str, **kwargs):
+    with open(url2pathname(urlparse(uri).path), "r") as f:
+        return hjson.loads(f.read(), use_decimal=True)
+
+
+# Extract json file; a $ref to another file is relative to the file's real folder
+# (cfg/lru.hjson is a symlink). clustergen.py reads its config through here too.
 def get_config(cfg_path: str):
-    with open(cfg_path, "r") as jsonf:
+    cfg_file = Path(cfg_path).resolve()
+    with open(cfg_file, "r") as jsonf:
         srcfull = jsonf.read()
 
     # Format hjson file
     cfg = hjson.loads(srcfull, use_decimal=True)
-    cfg = JsonRef.replace_refs(cfg)
+    cfg = JsonRef.replace_refs(cfg, base_uri=cfg_file.as_uri(), loader=hjson_loader)
     return cfg
 
 
