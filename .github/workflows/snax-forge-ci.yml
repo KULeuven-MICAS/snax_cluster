@@ -27,7 +27,7 @@ jobs:
           - design: vecadd
             counter: 'forge counter add_acc: 19'
           - design: vsum
-            counter: 'forge counter sum_acc: <filled in after the vsum gate>'
+            counter: 'forge counter sum_acc: 67'
     defaults:
       run:
         shell: bash
