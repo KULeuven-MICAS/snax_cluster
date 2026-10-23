@@ -181,7 +181,7 @@ define VERILATE
 	mkdir -p $(dir $@)
 	$(BENDER) script verilator ${VLT_BENDER} > $(dir $@)files
 	+$(VLT) \
-		--Mdir $(dir $@) -f $(dir $@)files $(VLT_FLAGS) \
+		--Mdir $(dir $@) -f $(dir $@)files $(if $(SNAX_FORGE_RTL),-f $(SNAX_FORGE_F)) $(VLT_FLAGS) \
 		-j $(shell nproc) --cc --build --top-module $(1)
 	touch $@
 endef
@@ -223,6 +223,7 @@ endef
 #######
 # VCS #
 #######
+# snax_forge.f (a snax-forge bundle's RTL) is not read by VCS
 $(VCS_BUILDDIR)/compile.sh:
 	mkdir -p $(VCS_BUILDDIR)
 	${BENDER} script vcs ${VCS_BENDER} --vlog-arg="${VLOGAN_FLAGS}" --vcom-arg="${VHDLAN_FLAGS}" > $@

@@ -54,6 +54,36 @@ def read_schema(path):
     return schema
 
 
+# Write <gen_path>/snax_forge.f, the RTL of the accelerators a snax-forge bundle brings:
+# for each accelerator entry with snax_forge_rtl, in core order, the files that list names
+# (relative to the cfg file's real folder, each line to the list's own folder), then snaxgen's
+# own files for it (no CSR manager: snax_disable_csr_manager). Absolute paths; empty when no
+# entry has snax_forge_rtl. The vsim and Verilator builds read it.
+def write_snax_forge_f(cfg_cores, cfg_path: str, gen_path: str) -> None:
+    cfg_dir = Path(cfg_path).resolve().parent
+    files = []
+    for core in cfg_cores:
+        for acc in core.get("snax_acc_cfg", []):
+            if "snax_forge_rtl" not in acc:
+                continue
+            listing = (cfg_dir / acc["snax_forge_rtl"]).resolve()
+            if not listing.is_file():
+                exit(f"snax_forge_rtl: no file list {listing}")
+            for line in listing.read_text().splitlines():
+                if not line.strip():
+                    continue
+                files.append((listing.parent / line.strip()).resolve())
+            tag = acc["snax_acc_name"]
+            acc_dir = Path(gen_path).resolve() / tag
+            files += [acc_dir / f"{tag}_Streamer.sv", acc_dir / f"{tag}_streamer_wrapper.sv",
+                      acc_dir / f"{tag}_wrapper.sv"]
+    missing = [str(f) for f in files if not f.is_file()]
+    if missing:
+        exit(f"snax_forge.f: files that are not there: {missing}")
+    with open(os.path.join(gen_path, "snax_forge.f"), "w") as f:
+        f.write("".join(f"{file}\n" for file in files))
+
+
 # Read template
 def get_template(tpl_path: str) -> Template:
     dir_name = os.path.dirname(tpl_path)
@@ -744,6 +774,9 @@ def main():
         generate_xdma(cfg, cfg_cores, num_cores, args)
         print("Skipping accelerator / sparse-interconnect generation (sw_only)")
         return
+
+    # The RTL a snax-forge bundle brings, after its accelerator's own files above
+    write_snax_forge_f(cfg_cores, args.cfg_path, args.gen_path)
 
     print("------------------------------------------------")
     print("    Generate SNAX Chisel Accelerators")
