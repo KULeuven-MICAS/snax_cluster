@@ -5,7 +5,8 @@
 # Build the cluster of a snax-forge bundle (the checked-in fixture
 # cfg/snax_forge/vecadd/) with Verilator: its accelerator's RTL comes from
 # generated/snax_forge.f, which snaxgen writes from the cfg's snax_forge_rtl.
-# No software and no run.
+# Then build the fixture's own program (sw/apps/snax-forge) and run it on
+# that build (snax_forge.mk): the job passes on the program's exit code 0.
 name: snax-forge-ci
 on:
   push:
@@ -54,3 +55,13 @@ jobs:
           if grep -n "%Warning-MODDUP" vlt-build.log; then
             echo "duplicate module names (see above)"; exit 1
           fi
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw CFG_OVERRIDE=$CFG
+      - name: Run the fixture's program
+        run: |
+          make -C target/snitch_cluster snax-forge-run SIM=vlt CFG_OVERRIDE=$CFG
+      - name: Print the forge lines
+        if: always()
+        run: |
+          grep '^forge' target/snitch_cluster/logs/snax-forge-vlt.txt
