@@ -25,3 +25,5 @@
 /sw/snax/xdma/include/snax-xdma-addr.h
 
 **/data.h
+# A snax-forge fixture's data.h is its checked-in program data, not datagen's
+!/cfg/snax_forge/*/data.h

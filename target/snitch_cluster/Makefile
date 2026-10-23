@@ -430,6 +430,13 @@ gen-mem-cfg:
 clean-syn: clean-work
 	rm -rf $(SYN_BUILDDIR)
 
+##############
+# snax-forge #
+##############
+
+# A snax-forge bundle's program on the RTL: snax-forge-sim, snax-forge-sw, snax-forge-run
+include $(MKFILE_DIR)snax_forge.mk
+
 ########
 # Util #
 ########

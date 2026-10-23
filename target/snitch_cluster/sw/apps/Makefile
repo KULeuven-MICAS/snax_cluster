@@ -107,6 +107,10 @@ ifeq ($(CFG_OVERRIDE), cfg/snax_versacore_dse_cluster.hjson)
 SUBDIRS += snax-versacore-dse-matmul-profile
 endif
 SUBDIRS += snax-multi-cluster-playground
+# A snax-forge fixture carries its program (main.c, data.h, include/)
+ifneq ($(filter cfg/snax_forge/%,$(CFG_OVERRIDE)),)
+SUBDIRS += snax-forge
+endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_hypercorex_cluster.hjson)
 SUBDIRS += snax-hypercorex/test-csr
 SUBDIRS += snax-hypercorex/char-recog

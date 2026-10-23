@@ -2,10 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Build the cluster of a snax-forge bundle (the checked-in fixture
-# cfg/snax_forge/vecadd/) with Verilator: its accelerator's RTL comes from
-# generated/snax_forge.f, which snaxgen writes from the cfg's snax_forge_rtl.
-# No software and no run.
+# Build the cluster of each snax-forge bundle kept as a fixture
+# (cfg/snax_forge/<design>/: vecadd, vsum) with Verilator: its accelerator's
+# RTL comes from generated/snax_forge.f, which snaxgen writes from the cfg's
+# snax_forge_rtl. Then build the fixture's own program (sw/apps/snax-forge)
+# and run it on that build (snax_forge.mk): the job passes on the program's
+# exit code 0 and the fixture README's expected counter line.
 name: snax-forge-ci
 on:
   push:
@@ -15,13 +17,23 @@ on:
 
 jobs:
   snax-forge-cluster-vlt:
-    name: Build the snax-forge vecadd bundle w/ Verilator
+    name: Build and run the snax-forge ${{ matrix.design }} bundle w/ Verilator
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # Each fixture and the counter line its README expects
+        include:
+          - design: vecadd
+            counter: 'forge counter add_acc: 19'
+          - design: vsum
+            counter: 'forge counter sum_acc: 67'
     defaults:
       run:
         shell: bash
     env:
-      CFG: cfg/snax_forge/vecadd/snax_forge.hjson
+      CFG: cfg/snax_forge/${{ matrix.design }}/snax_forge.hjson
+      COUNTER: ${{ matrix.counter }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -54,3 +66,17 @@ jobs:
           if grep -n "%Warning-MODDUP" vlt-build.log; then
             echo "duplicate module names (see above)"; exit 1
           fi
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw CFG_OVERRIDE=$CFG
+      - name: Run the fixture's program
+        run: |
+          make -C target/snitch_cluster snax-forge-run SIM=vlt CFG_OVERRIDE=$CFG
+      - name: Print the forge lines
+        if: always()
+        run: |
+          grep '^forge' target/snitch_cluster/logs/snax-forge-vlt.txt
+      # The fixture README's expected counter, which SNAX-GVSoC also gives
+      - name: Check the forge counter
+        run: |
+          grep -x "$COUNTER" target/snitch_cluster/logs/snax-forge-vlt.txt
