@@ -410,6 +410,10 @@ sources:
   - target: snax_hypercorex_cluster
     files:
       - target/snitch_cluster/generated/snax_hypercorex_cluster_wrapper.sv
+  # A snax-forge bundle's cluster; its accelerator's RTL comes from snax_forge.f
+  - target: snax_forge_cluster
+    files:
+      - target/snitch_cluster/generated/snax_forge_cluster_wrapper.sv
   - target: snax_dimc_cluster
     files:
       - target/snitch_cluster/generated/snax_dimc_cluster_wrapper.sv

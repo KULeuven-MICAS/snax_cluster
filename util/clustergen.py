@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import hjson
 import pathlib
 import sys
 import re
 
-from jsonref import JsonRef
 from clustergen.cluster import SnitchClusterTB
 from mako.template import Template
+# clustergen.cluster puts util/snaxgen on the path
+from snaxgen import get_config
 
 
 def write_template(tpl_path, outdir, fname=None, **kwargs):
@@ -77,9 +77,7 @@ def main():
     # Read HJSON description
     with args.clustercfg as file:
         try:
-            srcfull = file.read()
-            obj = hjson.loads(srcfull, use_decimal=True)
-            obj = JsonRef.replace_refs(obj)
+            obj = get_config(file.name)
         except ValueError:
             raise SystemExit(sys.exc_info()[1])
 

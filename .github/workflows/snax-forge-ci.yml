@@ -1,0 +1,56 @@
+# Copyright 2026 KU Leuven.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Build the cluster of a snax-forge bundle (the checked-in fixture
+# cfg/snax_forge/vecadd/) with Verilator: its accelerator's RTL comes from
+# generated/snax_forge.f, which snaxgen writes from the cfg's snax_forge_rtl.
+# No software and no run.
+name: snax-forge-ci
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  snax-forge-cluster-vlt:
+    name: Build the snax-forge vecadd bundle w/ Verilator
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
+    env:
+      CFG: cfg/snax_forge/vecadd/snax_forge.hjson
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
+          activate-environment: true
+      - name: Generate RTL
+        run: |
+          make -C target/snitch_cluster rtl-gen CFG_OVERRIDE=$CFG
+      - name: Check snax_forge.f
+        working-directory: target/snitch_cluster
+        run: |
+          f=generated/snax_forge.f
+          test -s "$f" || { echo "$f is missing or empty"; exit 1; }
+          while read -r p; do
+            test -f "$p" || { echo "$f lists a missing file: $p"; exit 1; }
+          done < "$f"
+          cat "$f"
+      - name: Build Hardware
+        run: |
+          make CFG_OVERRIDE=$CFG -C target/snitch_cluster \
+          bin/snitch_cluster.vlt -j$(nproc) 2>&1 | tee vlt-build.log
+      # Verilator runs with -Wno-fatal: a duplicate module name would pass
+      - name: Check for duplicate module names
+        run: |
+          if grep -n "%Warning-MODDUP" vlt-build.log; then
+            echo "duplicate module names (see above)"; exit 1
+          fi

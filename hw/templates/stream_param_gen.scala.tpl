@@ -178,5 +178,5 @@ ${'   ), ' if not loop.last else '    )'}
 % endif
 
   def tagName = "${cfg["tag_name"]}_"
-  def headerFilepath = "../../target/snitch_cluster/sw/snax/${cfg["snax_streamer_cfg"]["snax_library_name"]}/include"
+  def headerFilepath = "../../target/snitch_cluster/sw/snax/${cfg["snax_streamer_cfg"].get("snax_library_name", cfg["tag_name"])}/include"
 }

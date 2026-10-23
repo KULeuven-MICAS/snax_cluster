@@ -55,6 +55,9 @@ WRAPPER_GEN     ?= $(ROOT)/util/snaxgen/snaxgen.py
 SW_DIR             = sw
 TARGET_C_HDRS_DIR ?= $(SW_DIR)/runtime/common
 GENERATED_DIR     ?= $(MKFILE_DIR)generated
+# The RTL of a snax-forge bundle's accelerator (snaxgen, snax_forge_rtl); empty for other configs
+SNAX_FORGE_F       = $(GENERATED_DIR)/snax_forge.f
+SNAX_FORGE_RTL     = $(shell test -s $(SNAX_FORGE_F) && echo yes)
 
 ####################
 #  Default Values  #
@@ -379,6 +382,7 @@ clean-vsim: clean-work
 ${VSIM_BUILDDIR}/compile.vsim.tcl:
 	mkdir $(dir $@)
 	${BENDER} script vsim ${VSIM_BENDER} --vlog-arg="${VLOG_FLAGS} -work $(dir $@) " > $@
+	$(if $(SNAX_FORGE_RTL),echo '${VLOG} -sv ${VLOG_FLAGS} -work $(dir $@) -f $(SNAX_FORGE_F)' >> $@)
 	echo '${VLOG} -work $(dir $@) ${TB_CC_SOURCES} ${TB_ASM_SOURCES} -vv -ccflags "$(TB_CC_FLAGS)"' >> $@
 	echo 'return 0' >> $@
 
@@ -413,6 +417,7 @@ bin/snitch_cluster.vcs: ${VCS_SOURCES} ${TB_SRCS} $(TB_CC_SOURCES) $(TB_ASM_SOUR
 
 .PHONY: gen-syn clean-syn gen-mem-cfg
 
+# snax_forge.f (a snax-forge bundle's RTL) is not read by synthesis
 gen-syn:
 	mkdir -p $(SYN_BUILDDIR)
 	${BENDER} script synopsys ${SYN_BENDER} > $(SYN_BUILDDIR)/$(SYN_FLIST)
