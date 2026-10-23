@@ -4,3 +4,6 @@
 
 # Ignore vendored third-party code
 ./sw/math/*
+
+# snax-forge fixtures: its generated program, checked in untouched
+./target/snitch_cluster/cfg/snax_forge/*
