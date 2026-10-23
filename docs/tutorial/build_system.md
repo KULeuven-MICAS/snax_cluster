@@ -132,7 +132,8 @@ Inside the template directory we have:
 - `snax_streamer_wrapper.sv.tpl` - is for the streamer wrapper. This is (3) from the figure above.
 - `snax_acc_wrapper.sv.tpl` - is for the accelerator wrapper. This is (4) from the figure above.
 - `csrman_param_gen.scala.tpl` - this is a parameter file that Chisel uses for generating the CSR manager.
-- `stream_param_gen.scala.tpl` - this is a parameter file that Chisel uses for generating the streamer.
+
+The streamer has no parameter template: `snaxgen` passes the accelerator's `snax_streamer_cfg` as JSON to Chisel's `StreamerGen` (`--streamercfg`), together with the TCDM size and data width, the tag name, and the folder for its CSR header (`--tcdm-size`, `--tcdm-data-width`, `--tag-name`, `--header-dir`).
 
 We have shown previously how to use the `snaxgen` script. If you are working in Codespaces:
 
