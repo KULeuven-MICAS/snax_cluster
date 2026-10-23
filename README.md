@@ -165,3 +165,77 @@ The top-level is structured as follows:
 # Acknowledgement
 
 SNAX is an extension of the original [Snitch Cluster](https://github.com/pulp-platform/snitch_cluster) framework. SNAX got its name as "SNitch Acceleration eXtension".
+
+# Running snax-forge bundles
+
+[snax-forge](https://github.com/KULeuven-MICAS/snax-forge) generates an
+accelerator for a design point and hands it over as a bundle, one generated
+accelerator and everything this repository builds it from:
+
+- `snax_forge.hjson`: the cluster `snax_forge_cluster`, whose accelerator
+  names its RTL's file list (`snax_forge_rtl: "rtl/files.f"`);
+- `snax_forge_streamer.hjson`, `snax_forge_acc.hjson`: the streamer and the
+  datapath block that the cluster file's `$ref`s name;
+- `rtl/`: `files.f` and the SystemVerilog it lists;
+- the program: `main.c`, `data.h` and `include/` (the streamer's and the
+  accelerator's CSR headers);
+- `bundle.json`: the design point, the tag and the snax-forge commit.
+
+Two bundles are kept as fixtures, `target/snitch_cluster/cfg/snax_forge/vecadd/`
+and `vsum/`; each README says how to refresh it. `target/snitch_cluster/snax_forge.mk`
+builds and runs them with this repository's own targets:
+
+| | |
+|---|---|
+| `CFG_OVERRIDE` | the bundle's cluster file: a fixture, or an absolute path to a bundle elsewhere |
+| `FORGE` | the program's folder; default the folder of `CFG_OVERRIDE` |
+| `ELF` | an ELF to run, such as the one snax-forge built from the bundle; unset, the program built from `FORGE` |
+| `SIM` | `vlt` (default) or `vsim` |
+| `snax-forge-sim` | builds `bin/snitch_cluster.$(SIM)`; for `vsim` after `vsim_preparation` |
+| `snax-forge-sw` | builds `sw/apps/snax-forge` from `FORGE`, after checking its `include/streamer_csr_addr_map.h` against snaxgen's (the `#define` lines) |
+| `snax-forge-run` | runs the ELF, writes its output to `logs/snax-forge-$(SIM).txt` beside the traces, and fails on the program's nonzero exit code |
+
+Verilator on the vecadd fixture, in this repository's pixi environment (as
+CI):
+
+```bash
+pixi run make -C target/snitch_cluster rtl-gen CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
+pixi run make -C target/snitch_cluster sw CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
+pixi run make -C target/snitch_cluster snax-forge-sim SIM=vlt CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
+pixi run make -C target/snitch_cluster snax-forge-run SIM=vlt CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
+```
+
+```
+forge cycles: 239
+forge data: 0 errors (64 words)
+forge counter add_acc: 19
+forge errors: 0
+```
+
+Questa: `rtl-gen` and `vsim_preparation` in the development image (on
+MICAS's barnard3 `c5db84ad7bce`), started from the folder that holds this
+checkout, then the build and the run outside it, with `bender` and Questa
+on `PATH`; they print the same lines. Questa exits 0 whatever the program
+returns, so `snax-forge-run` reads the exit code from the testbench's
+`[SUCCESS] Program finished successfully` line.
+
+```bash
+# in the image, from the folder that holds snax_cluster
+podman run --rm -it -v "$PWD":"$PWD" -w "$PWD" c5db84ad7bce
+cd snax_cluster
+make -C target/snitch_cluster rtl-gen CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
+make -C target/snitch_cluster vsim_preparation CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
+exit
+# outside it, bender and Questa on PATH
+cd snax_cluster
+make -C target/snitch_cluster snax-forge-sim SIM=vsim CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
+make -C target/snitch_cluster snax-forge-run SIM=vsim CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
+```
+
+`.github/workflows/snax-forge-ci.yml` runs each fixture on every PR: it
+generates the RTL, checks `generated/snax_forge.f` (not empty, every file
+it lists there), builds Verilator with no duplicate module names, builds
+the software, runs the fixture's program with `snax-forge-run SIM=vlt` (exit
+code 0), prints the `forge` lines and checks the counter line the fixture's
+README expects. To make a bundle, see snax-forge's README,
+[Getting started](https://github.com/KULeuven-MICAS/snax-forge#getting-started).
