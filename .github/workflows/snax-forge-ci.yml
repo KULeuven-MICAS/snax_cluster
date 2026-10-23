@@ -65,3 +65,8 @@ jobs:
         if: always()
         run: |
           grep '^forge' target/snitch_cluster/logs/snax-forge-vlt.txt
+      # The fixture README's expected counter, which SNAX-GVSoC also gives
+      - name: Check the forge counter
+        run: |
+          grep -x 'forge counter add_acc: 19' \
+            target/snitch_cluster/logs/snax-forge-vlt.txt

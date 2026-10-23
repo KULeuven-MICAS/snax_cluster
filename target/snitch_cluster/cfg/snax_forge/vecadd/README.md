@@ -55,10 +55,11 @@ traces, and fails on the program's nonzero exit code. `ELF=<path>` (absolute, or
 relative to `target/snitch_cluster`) runs another ELF instead, such as the
 one snax-forge built from the bundle.
 
-Expected:
+Expected (Verilator and Questa alike, and SNAX-GVSoC's counter; CI checks
+the counter line):
 
     forge data: 0 errors (64 words)
-    forge counter add_acc: <filled in after the Verilator and Questa runs>
+    forge counter add_acc: 19
     forge errors: 0
 
 ## Refreshing it
