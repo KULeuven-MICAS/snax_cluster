@@ -829,11 +829,32 @@ object StreamerEmitter extends App {
 
 object StreamerGen {
 
+  // The keys of a data_reader_params / data_writer_params / data_reader_writer_params group
+  val groupKeys = Set(
+    "spatial_bounds",
+    "temporal_dim",
+    "num_channel",
+    "fifo_depth",
+    "tcdm_logic_word_size",
+    "configurable_channel",
+    "dynamicPriority",
+    "higherStaticPriority",
+    "datapath_extensions"
+  )
+
   // Parse CLI args + streamer JSON config into a fully-populated StreamerParam,
   // also returning the requested SystemVerilog output directory. Shared between
   // the RTL entry point (StreamerGen.main) and the SW-only entry point
   // (StreamerSwHeaderGen.main); keep them in lockstep on this code path so the
   // CSR map seen by SW always matches the RTL.
+  //
+  // --streamercfg     the accelerator's snax_streamer_cfg as JSON, inside a one-key object
+  //                   ({"<tag>_streamer": {...}} from snaxgen, {"snax_streamer_cfg": {...}} in tests)
+  // --tcdm-size       TCDM size in KiB
+  // --tcdm-data-width TCDM data width in bits
+  // --tag-name        the accelerator's tag; the generated names start with "<tag>_"
+  // --header-dir      where streamer_csr_addr_map.h goes
+  // --hw-target-dir   where the SystemVerilog goes (default "generated")
   def buildParam(args: Array[String]): (StreamerParam, String) = {
 
     val parsedArgs = snax.utils.ArgParser.parse(args)
@@ -843,117 +864,50 @@ object StreamerGen {
       "generated"
     )
 
-    // The streamercfg region is passed to chisel generator as a JSON string
-    val streamercfg       = parsedArgs.find(_._1 == "streamercfg")
-    if (streamercfg.isEmpty) {
-      println("streamercfg is not provided, generation failed. ")
-      sys.exit(-1)
-    }
-    val parsedstreamercfg = streamercfg.get._2
-
-    // Function to remove the cfg prefix and format the string
-    def processInput(input: String): String = {
-      val jsonStart     = input.indexOf(":") + 1
-      val jsonString    = input.substring(jsonStart).trim
-      val withoutBraces = jsonString.stripSuffix("}")
-      withoutBraces
-    }
-
-    // Process the input
-    var result = processInput(parsedstreamercfg)
-
-    // Parse the JSON string
-    // Function to find a specific string and return the string in between the first leftStr and the corresponding rightStr
-    def findAndExtract(
-      input:        String,
-      searchString: String,
-      leftStr:      Char,
-      rightStr:     Char
-    ): String = {
-      // Find the index of the search string
-      val searchIndex = input.indexOf(searchString)
-      if (searchIndex != -1) {
-        // Find the index of the first leftStr after the search string
-        val startIndex = input.indexOf(leftStr, searchIndex)
-        // Initialize a counter for nested braces
-        var braceCount = 1
-        // Initialize the end index
-        var endIndex   = startIndex + 1
-
-        // Iterate through the string to find the corresponding closing brace
-        while (braceCount > 0 && endIndex < input.length) {
-          if (input.charAt(endIndex) == leftStr) {
-            braceCount += 1
-          } else if (input.charAt(endIndex) == rightStr) {
-            braceCount -= 1
-          }
-          endIndex += 1
-        }
-
-        // Extract and return the substring between the indices
-        input.substring(startIndex, endIndex)
-      } else {
-        // If the search string is not found, return an empty string
-        ""
-      }
-    }
-
-    var searchString           = "data_reader_params"
-    val data_reader_params     = findAndExtract(result, searchString, '{', '}')
-    val data_reader_extentions =
-      findAndExtract(data_reader_params, "datapath_extensions", '[', ']')
-
-    searchString = "data_writer_params"
-    val data_writer_params     = findAndExtract(result, searchString, '{', '}')
-    val data_writer_extentions =
-      findAndExtract(data_writer_params, "datapath_extensions", '[', ']')
-
-    searchString = "data_reader_writer_params"
-    val data_reader_writer_params     =
-      findAndExtract(result, searchString, '{', '}')
-    val data_reader_writer_extentions =
-      findAndExtract(data_reader_writer_params, "datapath_extensions", '[', ']')
-
-    // build the data path extension parameters
-    var readerDatapathExtention:       Seq[Seq[HasDataPathExtension]] = Seq.fill(
-      StreamerParametersGen.readerParams.length
-    )(Seq.empty[HasDataPathExtension])
-    var writerDatapathExtention:       Seq[Seq[HasDataPathExtension]] = Seq.fill(
-      StreamerParametersGen.writerParams.length
-    )(Seq.empty[HasDataPathExtension])
-    var readerWriterDatapathExtention: Seq[Seq[HasDataPathExtension]] =
-      Seq.fill(StreamerParametersGen.readerWriterParams.length)(
-        Seq.empty[HasDataPathExtension]
+    def fail(message: String): Nothing =
+      throw new IllegalArgumentException(
+        s"Streamer generation failed: $message"
       )
 
-    // Function to split the string by one-level brackets
-    def splitByOneLevelBrackets(input: String): Seq[String] = {
-      val strippedInput = input.stripPrefix("[").stripSuffix("]")
-      var result        = Seq.empty[String]
-      var depth         = 0
-      var start         = 0
+    def arg(name: String): String =
+      parsedArgs.get(name).filter(_ != "NoArg").getOrElse(fail(s"--$name is not provided"))
 
-      for (i <- strippedInput.indices) {
-        strippedInput(i) match {
-          case '{'               => depth += 1
-          case '}'               => depth -= 1
-          case ',' if depth == 0 =>
-            result = result :+ strippedInput.substring(start, i).trim
-            start  = i + 1
-          case _                 =>
+    def intArg(name: String): Int = arg(name).toIntOption.getOrElse(fail(s"--$name is not an integer"))
+
+    val tcdmSize      = intArg("tcdm-size")
+    val tcdmDataWidth = intArg("tcdm-data-width")
+
+    // The streamercfg region is passed to chisel generator as a JSON string
+    val streamercfg = Json.parse(arg("streamercfg")) match {
+      case JsObject(wrapper) if wrapper.size == 1 =>
+        wrapper.head._2 match {
+          case cfg: JsObject => cfg
+          case _ => fail(s"--streamercfg: ${wrapper.head._1} is not an object")
         }
-      }
-
-      result = result :+ strippedInput.substring(start).trim
-      result
+      case _                                      => fail("--streamercfg is not a one-key object {\"<name>\": {...}}")
     }
 
+    // The streamer reads the three groups and has_crossClockDomain; the other top-level keys
+    // (snax_library_name, has_transpose, ...) belong to snaxgen and the other templates
+
+    // A flag is true or false, or a number as in Python (nonzero is true)
+    def flag(value: JsValue, where: String): Boolean =
+      value match {
+        case JsBoolean(b) => b
+        case JsNumber(n)  => n != 0
+        case _            => fail(s"$where is not a boolean: $value")
+      }
+
+    // constrain: all the reader and writer needs to have same config of crossClockDomain
+    val hasCrossClockDomain =
+      (streamercfg \ "has_crossClockDomain").toOption.exists(flag(_, "has_crossClockDomain"))
+
     def genDatapathExtensionPerStreamer(
-      input: String
+      input: JsValue
     ): Seq[HasDataPathExtension] = {
 
       val readerDatapathExtentionStr =
-        Json.parse(input) match {
+        input match {
           case obj: JsObject =>
             obj.fields.filter { case (k, _) => k.startsWith("Has") }.toSeq.map { case (k, v) =>
               // Attempt to parse the value as a Map[String, Either[Int, Seq[Int]]]
@@ -1013,65 +967,74 @@ object StreamerGen {
       readerDatapathExtentionPerStreamer
     }
 
-    // reader datapath extension
-    if (data_reader_extentions != "") {
-      val readerDatapathExtentionList =
-        splitByOneLevelBrackets(data_reader_extentions)
+    // One group: a ReaderWriterParam and the datapath extensions per entry of spatial_bounds;
+    // the other keys hold one value per entry too
+    def parseGroup(group: String): (Seq[ReaderWriterParam], Seq[Seq[HasDataPathExtension]]) =
+      (streamercfg \ group).toOption match {
+        case None                   => (Seq.empty, Seq.empty)
+        case Some(params: JsObject) =>
+          params.keys.diff(groupKeys).foreach(key => fail(s"unknown key $key in $group"))
 
-      // geenrate the datapath extension parameters for each reader gradually
-      readerDatapathExtentionList.zipWithIndex.foreach { case (datapath_extension, i) =>
-        readerDatapathExtention = readerDatapathExtention.updated(
-          i,
-          genDatapathExtensionPerStreamer(
-            datapath_extension
+          def list(key: String):                       Option[Seq[JsValue]] =
+            (params \ key).toOption.map(
+              _.asOpt[Seq[JsValue]].getOrElse(fail(s"$group.$key is not a list"))
+            )
+          def entry(key: String, i: Int):              Option[JsValue]      =
+            list(key).map(
+              _.lift(i).getOrElse(fail(s"$group.$key has no entry $i"))
+            )
+          def required[T: Reads](key: String, i: Int): T                    =
+            entry(key, i)
+              .getOrElse(fail(s"$group has no $key"))
+              .asOpt[T]
+              .getOrElse(fail(s"$group.$key has a wrong entry $i"))
+
+          val num = list("spatial_bounds").getOrElse(fail(s"$group has no spatial_bounds")).length
+
+          val readerWriterParams = (0 until num).map { i =>
+            val fifoDepth = required[Int]("fifo_depth", i)
+            new ReaderWriterParam(
+              spatialBounds        = required[List[Int]]("spatial_bounds", i),
+              temporalDimension    = required[Int]("temporal_dim", i),
+              tcdmDataWidth        = tcdmDataWidth,
+              tcdmSize             = tcdmSize,
+              tcdmLogicWordSize    = entry("tcdm_logic_word_size", i)
+                .map(_.asOpt[Seq[Int]].getOrElse(fail(s"$group.tcdm_logic_word_size has a wrong entry $i")))
+                .getOrElse(Seq(256)),
+              numChannel           = required[Int]("num_channel", i),
+              addressBufferDepth   = fifoDepth,
+              dataBufferDepth      = fifoDepth,
+              configurableChannel  = entry("configurable_channel", i).exists(flag(_, s"$group.configurable_channel")),
+              dynamicPriority      = entry("dynamicPriority", i).forall(flag(_, s"$group.dynamicPriority")),
+              higherStaticPriority = entry("higherStaticPriority", i).exists(flag(_, s"$group.higherStaticPriority")),
+              crossClockDomain     = hasCrossClockDomain
+            )
+          }
+
+          val extensions = list("datapath_extensions").getOrElse(Seq.empty)
+          if (extensions.length > num) fail(s"$group.datapath_extensions has more entries than spatial_bounds")
+          (
+            readerWriterParams,
+            (0 until num).map(i => extensions.lift(i).map(genDatapathExtensionPerStreamer).getOrElse(Seq.empty))
           )
-        )
-      }
-    }
-
-    // writer datapath extension
-    if (data_writer_extentions != "") {
-      val writerDatapathExtentionList =
-        splitByOneLevelBrackets(data_writer_extentions)
-
-      // geenrate the datapath extension parameters for each writer gradually
-      writerDatapathExtentionList.zipWithIndex.foreach { case (datapath_extension, i) =>
-        writerDatapathExtention = writerDatapathExtention.updated(
-          i,
-          genDatapathExtensionPerStreamer(
-            datapath_extension
-          )
-        )
-      }
-    }
-
-    // reader_writer datapath extension
-    if (data_reader_writer_extentions != "") {
-      val readerWriterDatapathExtentionList =
-        splitByOneLevelBrackets(data_reader_writer_extentions)
-
-      readerWriterDatapathExtentionList.zipWithIndex.foreach { case (datapath_extension, i) =>
-        readerWriterDatapathExtention = readerWriterDatapathExtention.updated(
-          i,
-          genDatapathExtensionPerStreamer(
-            datapath_extension
-          )
-        )
+        case Some(_)                => fail(s"$group is not an object")
       }
 
-    }
+    val (readerParams, readerDatapathExtention)             = parseGroup("data_reader_params")
+    val (writerParams, writerDatapathExtention)             = parseGroup("data_writer_params")
+    val (readerWriterParams, readerWriterDatapathExtention) = parseGroup("data_reader_writer_params")
 
     val param = StreamerParam(
-      readerParams                  = StreamerParametersGen.readerParams,
-      writerParams                  = StreamerParametersGen.writerParams,
-      readerWriterParams            = StreamerParametersGen.readerWriterParams,
+      readerParams                  = readerParams,
+      writerParams                  = writerParams,
+      readerWriterParams            = readerWriterParams,
       readerDatapathExtention       = readerDatapathExtention,
       writerDatapathExtention       = writerDatapathExtention,
       readerWriterDatapathExtention = readerWriterDatapathExtention,
-      hasCrossClockDomain           = StreamerParametersGen.hasCrossClockDomain,
+      hasCrossClockDomain           = hasCrossClockDomain,
       csrAddrWidth                  = 32,
-      tagName                       = StreamerParametersGen.tagName,
-      headerFilepath                = StreamerParametersGen.headerFilepath
+      tagName                       = arg("tag-name") + "_",
+      headerFilepath                = arg("header-dir")
     )
 
     (param, outPath)

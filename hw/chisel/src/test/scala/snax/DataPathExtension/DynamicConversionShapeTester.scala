@@ -101,11 +101,26 @@ class DynamicConversionShapeTester extends AnyFlatSpec with ChiselScalatestTeste
   }
 
   it should "accept named extension parameters in any JSON order with omitted defaults" in {
-    val config     = """{"snax_streamer_cfg": {"data_reader_params": {"datapath_extensions": [{
+    val config     = """{"snax_streamer_cfg": {"data_reader_params": {
+      "spatial_bounds": [[8]], "temporal_dim": [2], "num_channel": [8], "fifo_depth": [2],
+      "datapath_extensions": [{
       "HasRescaleDownEfficientDynamic": {"extra_loops_choice": [1, 4, 2], "dataWidth": 256},
       "HasInt32ToFp16Converter": {"extra_loops_choice": [1, 4, 2], "dataWidth": 256}
     }]}}}"""
-    val (param, _) = StreamerGen.buildParam(Array("--streamercfg", config))
+    val (param, _) = StreamerGen.buildParam(
+      Array(
+        "--streamercfg",
+        config,
+        "--tcdm-size",
+        "128",
+        "--tcdm-data-width",
+        "64",
+        "--tag-name",
+        "shape_test",
+        "--header-dir",
+        "generated"
+      )
+    )
     val extensions = param.readerDatapathExtention.head
     assert(extensions.length == 2)
     assert(extensions.map(_.extensionParam.userCsrNum) == Seq(5, 1))
