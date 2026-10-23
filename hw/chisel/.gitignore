@@ -7,4 +7,3 @@ out
 
 # Files
 src/main/scala/snax/reqRspManager/ReqRspManagerParamGen.scala
-src/main/scala/snax/streamer/StreamParamGen.scala

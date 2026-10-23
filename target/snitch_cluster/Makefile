@@ -66,7 +66,6 @@ BYPASS_ACCGEN ?= false
 DISABLE_HEADER_GEN ?= false
 SNAX_CHISEL_ACC_GEN ?= false
 CSRMAN_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/csr_manager/CsrManParamGen.scala
-STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamParamGen.scala
 
 ####################
 # SNAX Generations #
@@ -447,7 +446,7 @@ clean-logs:
 	rm -rf $(LOGS_DIR)
 
 clean-generated:
-	rm -rf $(GENERATED_DIR) $(SNAX_TEST_PATH)testharness.sv $(CSRMAN_PARAM_SCALA_PATH) $(STREAM_PARAM_SCALA_PATH) $(CHISEL_GENERATED_DIR)
+	rm -rf $(GENERATED_DIR) $(SNAX_TEST_PATH)testharness.sv $(CSRMAN_PARAM_SCALA_PATH) $(CHISEL_GENERATED_DIR)
 
 # Help command
 Blue=\033[1;34m

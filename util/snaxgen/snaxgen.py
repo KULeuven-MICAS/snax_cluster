@@ -651,18 +651,6 @@ def main():
         # Generate template out of given configurations
         for i in range(len(acc_cfgs)):
             # First part is for chisel generation
-            # Generate the parameter files for chisel streamer generation
-            chisel_target_path = args.chisel_path + "src/main/scala/snax/streamer/"
-            file_name = "StreamParamGen.scala"
-            tpl_scala_param_file = args.tpl_path + "stream_param_gen.scala.tpl"
-            tpl_scala_param = get_template(tpl_scala_param_file)
-            gen_file(
-                cfg=acc_cfgs[i],
-                tpl=tpl_scala_param,
-                target_path=chisel_target_path,
-                file_name=file_name,
-            )
-
             # CSR manager scala parameter generation
             if not acc_cfgs[i].get("snax_disable_csr_manager", False):
                 chisel_target_path = (
@@ -743,6 +731,19 @@ def main():
                 if sw_only
                 else "snax.streamer.StreamerGen"
             )
+            # The TCDM size (KiB) and the header folder (relative to the chisel
+            # folder) the streamer is built for
+            tcdm_size = int(
+                acc_cfgs[i]["tcdm_num_banks"]
+                * acc_cfgs[i]["tcdm_depth"]
+                * (acc_cfgs[i]["tcdm_data_width"] / 8)
+                / 1024
+            )
+            header_dir = "../../target/snitch_cluster/sw/snax/{}/include".format(
+                acc_cfgs[i]["snax_streamer_cfg"].get(
+                    "snax_library_name", acc_cfgs[i]["tag_name"]
+                )
+            )
             # Generate chisel component using chisel generation script
             gen_chisel_file(
                 chisel_path=args.chisel_path,
@@ -751,7 +752,14 @@ def main():
                 + hjson.dumpsJSON(obj=streamer_cfg, separators=(",", ":")).replace(
                     " ", ""
                 )
-                + " "
+                + " --tcdm-size "
+                + str(tcdm_size)
+                + " --tcdm-data-width "
+                + str(acc_cfgs[i]["tcdm_data_width"])
+                + " --tag-name "
+                + acc_cfgs[i]["tag_name"]
+                + " --header-dir "
+                + header_dir
                 + " --hw-target-dir "
                 + rtl_target_path,
             )
