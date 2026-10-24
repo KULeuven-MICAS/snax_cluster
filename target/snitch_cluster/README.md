@@ -11,7 +11,7 @@ preloaded using RISC-V's Front-End Server (`fesvr`).
 
 ## Quick Start
 
-These quick start steps demonstrate how you quickly run a simple MAC-engine accelerator in SNAX shell. This assumes you either have the necessary dependencies already or have the docker started (see [getting started](ug/getting_started.md)). Use this if you want to try out a simple test quickly. More details for each step are in the [Detailed Tutorial](#detailed-tutorial) section.
+These quick start steps demonstrate how you quickly run a simple MAC-engine accelerator in SNAX shell. This assumes you either have the necessary dependencies already or have the docker started (see [getting started](../../docs/ug/getting_started.md))). Use this if you want to try out a simple test quickly. More details for each step are in the [Detailed Tutorial](#detailed-tutorial) section.
 
 1. Move into `./target/snitch_cluster/.`
 
