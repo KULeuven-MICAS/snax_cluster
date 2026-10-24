@@ -12,7 +12,7 @@ that drives it, checked in so that `.github/workflows/snax-forge-ci.yml`
 builds and runs it on every PR without a snax-forge checkout. The files are
 snax-forge's output, untouched: vecadd (`elementwise_add`, 4 lanes of 64 bit,
 N = 64) on snax-forge's `snax_forge` platform, made by snax-forge
-`1b3560c8f5911c29e40ce1ec22f81780577818da` (`bundle.json`).
+`35662d5ef6388a927adb19d0ec4b33b905228f8a` (`bundle.json`).
 
 - `snax_forge.hjson`: the cluster `snax_forge_cluster`. Its accelerator
   `snax_forge` brings its own CSR manager (`snax_disable_csr_manager`) and
@@ -36,7 +36,6 @@ N = 64) on snax-forge's `snax_forge` platform, made by snax-forge
 Verilator, from the repository root (as `snax-forge-ci.yml` does):
 
     make -C target/snitch_cluster rtl-gen CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
-    make -C target/snitch_cluster sw CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
     make -C target/snitch_cluster snax-forge-sim SIM=vlt CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
     make -C target/snitch_cluster snax-forge-run SIM=vlt CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
 

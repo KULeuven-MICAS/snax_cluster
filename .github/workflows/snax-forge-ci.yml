@@ -66,9 +66,6 @@ jobs:
           if grep -n "%Warning-MODDUP" vlt-build.log; then
             echo "duplicate module names (see above)"; exit 1
           fi
-      - name: Build Software
-        run: |
-          make -C target/snitch_cluster sw CFG_OVERRIDE=$CFG
       - name: Run the fixture's program
         run: |
           make -C target/snitch_cluster snax-forge-run SIM=vlt CFG_OVERRIDE=$CFG
