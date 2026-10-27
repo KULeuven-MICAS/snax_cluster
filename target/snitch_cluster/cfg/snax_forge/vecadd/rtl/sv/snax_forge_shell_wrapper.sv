@@ -33,7 +33,7 @@ module snax_forge_shell_wrapper(
   wire [63:0] _m_io_out_bits_1;
   wire [63:0] _m_io_out_bits_2;
   wire [63:0] _m_io_out_bits_3;
-  ElementwiseTiledSpatial_w64_n4_t32_add m (
+  ElementwiseTiledSpatial_i64xi64_i64_i64_n4_t32_add m (
     .clock         (clk_i),
     .reset         (~rst_ni),
     .io_loopCount  (_adapter_io_config_loopCount),

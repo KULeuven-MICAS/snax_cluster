@@ -28,7 +28,7 @@ module snax_forge_shell_wrapper(
   wire [31:0] _manager_io_ctrl_bits_len;
   wire [31:0] _manager_io_ctrl_bits_loopCount;
   wire        _m_io_busy;
-  Accumulator_w64_a64_n1 m (
+  Accumulator_i64_i64_n1 m (
     .clock        (clk_i),
     .reset        (~rst_ni),
     .io_loopCount (_adapter_io_config_loopCount),

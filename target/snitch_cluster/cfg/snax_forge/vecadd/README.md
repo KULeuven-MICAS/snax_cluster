@@ -12,7 +12,7 @@ that drives it, checked in so that `.github/workflows/snax-forge-ci.yml`
 builds and runs it on every PR without a snax-forge checkout. The files are
 snax-forge's output, untouched: vecadd (`elementwise_add`, 4 lanes of 64 bit,
 N = 64) on snax-forge's `snax_forge` platform, made by snax-forge
-`35662d5ef6388a927adb19d0ec4b33b905228f8a` (`bundle.json`).
+`0f9fb5fc341ea2c676de33fa3b85da00bf61bf8b` (`bundle.json`).
 
 - `snax_forge.hjson`: the cluster `snax_forge_cluster`. Its accelerator
   `snax_forge` brings its own CSR manager (`snax_disable_csr_manager`) and

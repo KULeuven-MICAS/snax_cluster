@@ -55,13 +55,13 @@
   "hives": [
    {
     "icache": {"size": 8, "sets": 2, "cacheline": 256},
-    "cores": [{"$ref": "#/snax_alu_core_template"}, {"$ref": "#/dma_core_template"}]
+    "cores": [{"$ref": "#/snax_forge_core_template"}, {"$ref": "#/dma_core_template"}]
    }
   ]
  },
  "dram": {"address": 2147483648, "length": 2147483648},
  "peripherals": {"clint": {"address": 4294901760, "length": 4096}},
- "snax_alu_core_template": {
+ "snax_forge_core_template": {
   "isa": "rv32ima",
   "xssr": false,
   "xfrep": false,
