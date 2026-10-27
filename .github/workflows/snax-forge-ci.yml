@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Build the cluster of each snax-forge bundle kept as a fixture
-# (cfg/snax_forge/<design>/: vecadd, vsum) with Verilator: its accelerator's
-# RTL comes from generated/snax_forge.f, which snaxgen writes from the cfg's
+# (cfg/snax_forge/<design>/: vecadd, vsum, vecadd_i32, vsum_tree_i8,
+# vecmul_i32_i64) with Verilator: its accelerator's RTL comes from
+# generated/snax_forge.f, which snaxgen writes from the cfg's
 # snax_forge_rtl. Then build the fixture's own program (sw/apps/snax-forge)
 # and run it on that build (snax_forge.mk): the job passes on the program's
 # exit code 0 and the fixture README's expected counter line.
@@ -28,6 +29,12 @@ jobs:
             counter: 'forge counter add_acc: 19'
           - design: vsum
             counter: 'forge counter sum_acc: 67'
+          - design: vecadd_i32
+            counter: 'forge counter add_acc: 19'
+          - design: vsum_tree_i8
+            counter: 'forge counter sum_acc: 11'
+          - design: vecmul_i32_i64
+            counter: 'forge counter mult_acc: 19'
     defaults:
       run:
         shell: bash
