@@ -1,5 +1,5 @@
 sv/ElementwiseAlu_w64_add.sv
-sv/ElementwiseTiledSpatial_w64_n4_t32_add.sv
+sv/ElementwiseTiledSpatial_i64xi64_i64_i64_n4_t32_add.sv
 sv/snax_forge_csr_manager.sv
 sv/snax_forge_ctrl_adapter.sv
 sv/snax_forge_shell_wrapper.sv

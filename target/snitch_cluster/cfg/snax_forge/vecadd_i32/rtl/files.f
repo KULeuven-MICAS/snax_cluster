@@ -1,0 +1,5 @@
+sv/ElementwiseAlu_w32_add.sv
+sv/ElementwiseTiledSpatial_i32xi32_i32_i32_n4_t32_add.sv
+sv/snax_forge_csr_manager.sv
+sv/snax_forge_ctrl_adapter.sv
+sv/snax_forge_shell_wrapper.sv

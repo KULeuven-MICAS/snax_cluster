@@ -1,4 +1,4 @@
-sv/Accumulator_w64_a64_n1.sv
+sv/Accumulator_i64_i64_n1.sv
 sv/snax_forge_csr_manager.sv
 sv/snax_forge_ctrl_adapter.sv
 sv/snax_forge_shell_wrapper.sv
