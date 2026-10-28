@@ -4,11 +4,12 @@
 
 # Build the cluster of each snax-forge bundle kept as a fixture
 # (cfg/snax_forge/<design>/: vecadd, vsum, vecadd_i32, vsum_tree_i8,
-# vecmul_i32_i64) with Verilator: its accelerator's RTL comes from
+# vecmul_i32_i64, dot_1) with Verilator: its accelerator's RTL comes from
 # generated/snax_forge.f, which snaxgen writes from the cfg's
 # snax_forge_rtl. Then build the fixture's own program (sw/apps/snax-forge)
 # and run it on that build (snax_forge.mk): the job passes on the program's
-# exit code 0 and the fixture README's expected counter line.
+# exit code 0 and every counter line the fixture's README expects (dot_1's
+# two groups print two).
 name: snax-forge-ci
 on:
   push:
@@ -23,24 +24,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Each fixture and the counter line its README expects
-        include:
-          - design: vecadd
-            counter: 'forge counter add_acc: 19'
-          - design: vsum
-            counter: 'forge counter sum_acc: 67'
-          - design: vecadd_i32
-            counter: 'forge counter add_acc: 19'
-          - design: vsum_tree_i8
-            counter: 'forge counter sum_acc: 11'
-          - design: vecmul_i32_i64
-            counter: 'forge counter mult_acc: 19'
+        # Each fixture; its README lists the counter lines it expects
+        design: [vecadd, vsum, vecadd_i32, vsum_tree_i8, vecmul_i32_i64, dot_1]
     defaults:
       run:
         shell: bash
     env:
       CFG: cfg/snax_forge/${{ matrix.design }}/snax_forge.hjson
-      COUNTER: ${{ matrix.counter }}
+      README: target/snitch_cluster/cfg/snax_forge/${{ matrix.design }}/README.md
     steps:
       - uses: actions/checkout@v2
         with:
@@ -80,7 +71,14 @@ jobs:
         if: always()
         run: |
           grep '^forge' target/snitch_cluster/logs/snax-forge-vlt.txt
-      # The fixture README's expected counter, which SNAX-GVSoC also gives
-      - name: Check the forge counter
+      # Every counter line the fixture's README expects, which SNAX-GVSoC
+      # also gives (one per accelerator task)
+      - name: Check the forge counters
         run: |
-          grep -x "$COUNTER" target/snitch_cluster/logs/snax-forge-vlt.txt
+          log=target/snitch_cluster/logs/snax-forge-vlt.txt
+          want=$(sed -n 's/^    \(forge counter .*\)$/\1/p' "$README")
+          test -n "$want" || { echo "$README lists no forge counter line"; exit 1; }
+          while read -r line; do
+            grep -qx "$line" "$log" || { echo "expected, not printed: $line"; exit 1; }
+            echo "as expected: $line"
+          done <<< "$want"
