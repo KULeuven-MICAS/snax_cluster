@@ -31,7 +31,8 @@ jobs:
         shell: bash
     env:
       CFG: cfg/snax_forge/${{ matrix.design }}/snax_forge.hjson
-      README: target/snitch_cluster/cfg/snax_forge/${{ matrix.design }}/README.md
+      README: >-
+        target/snitch_cluster/cfg/snax_forge/${{ matrix.design }}/README.md
     steps:
       - uses: actions/checkout@v2
         with:
@@ -77,8 +78,12 @@ jobs:
         run: |
           log=target/snitch_cluster/logs/snax-forge-vlt.txt
           want=$(sed -n 's/^    \(forge counter .*\)$/\1/p' "$README")
-          test -n "$want" || { echo "$README lists no forge counter line"; exit 1; }
+          if [ -z "$want" ]; then
+            echo "$README lists no forge counter line"; exit 1
+          fi
           while read -r line; do
-            grep -qx "$line" "$log" || { echo "expected, not printed: $line"; exit 1; }
+            if ! grep -qx "$line" "$log"; then
+              echo "expected, not printed: $line"; exit 1
+            fi
             echo "as expected: $line"
           done <<< "$want"
