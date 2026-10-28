@@ -2,7 +2,9 @@
 module snax_forge_shell_wrapper(
   input         clk_i,
                 rst_ni,
-                acc2stream_0_ready_i,
+  output        acc_done_o,
+                acc_busy_o,
+  input         acc2stream_0_ready_i,
   output        acc2stream_0_valid_o,
   output [63:0] acc2stream_0_data_o,
   output        stream2acc_0_ready_o,
@@ -18,68 +20,64 @@ module snax_forge_shell_wrapper(
                 csr_req_addr_i
 );
 
-  wire        _adapter_io_ctrl_ready;
-  wire        _adapter_io_start;
-  wire [31:0] _adapter_io_config_len;
-  wire [31:0] _adapter_io_config_loopCount;
-  wire [31:0] _adapter_io_ro_0;
-  wire [31:0] _adapter_io_ro_1;
-  wire        _manager_io_ctrl_valid;
-  wire [31:0] _manager_io_ctrl_bits_len;
-  wire [31:0] _manager_io_ctrl_bits_loopCount;
-  wire        _m_io_busy;
-  Accumulator_i8_i64_n8 m (
-    .clock        (clk_i),
-    .reset        (~rst_ni),
-    .io_loopCount (_adapter_io_config_loopCount),
-    .io_len       (_adapter_io_config_len),
-    .io_start     (_adapter_io_start),
-    .io_busy      (_m_io_busy),
-    .io_in_ready  (stream2acc_0_ready_o),
-    .io_in_valid  (stream2acc_0_valid_i),
-    .io_in_bits_0 (stream2acc_0_data_i[7:0]),
-    .io_in_bits_1 (stream2acc_0_data_i[15:8]),
-    .io_in_bits_2 (stream2acc_0_data_i[23:16]),
-    .io_in_bits_3 (stream2acc_0_data_i[31:24]),
-    .io_in_bits_4 (stream2acc_0_data_i[39:32]),
-    .io_in_bits_5 (stream2acc_0_data_i[47:40]),
-    .io_in_bits_6 (stream2acc_0_data_i[55:48]),
-    .io_in_bits_7 (stream2acc_0_data_i[63:56]),
-    .io_out_ready (acc2stream_0_ready_i),
-    .io_out_valid (acc2stream_0_valid_o),
-    .io_out_bits  (acc2stream_0_data_o)
+  wire        _ctrl_io_groups_0_start_ready;
+  wire [31:0] _ctrl_io_groups_0_status;
+  wire [31:0] _ctrl_io_groups_0_counter;
+  wire        _ctrl_io_units_0_fire;
+  wire        _ctrl_io_units_0_first;
+  wire        _csr_io_starts_0_valid;
+  wire [31:0] _csr_io_starts_0_bits_jobs;
+  wire [31:0] _csr_io_starts_0_bits_jobBeats;
+  snax_forge_csr csr (
+    .clock                     (clk_i),
+    .reset                     (~rst_ni),
+    .io_req_ready              (csr_req_ready_o),
+    .io_req_valid              (csr_req_valid_i),
+    .io_req_bits_addr          (csr_req_addr_i),
+    .io_req_bits_data          (csr_req_data_i),
+    .io_req_bits_write         (csr_req_write_i),
+    .io_rsp_ready              (csr_rsp_ready_i),
+    .io_rsp_valid              (csr_rsp_valid_o),
+    .io_rsp_bits_data          (csr_rsp_data_o),
+    .io_starts_0_ready         (_ctrl_io_groups_0_start_ready),
+    .io_starts_0_valid         (_csr_io_starts_0_valid),
+    .io_starts_0_bits_jobs     (_csr_io_starts_0_bits_jobs),
+    .io_starts_0_bits_jobBeats (_csr_io_starts_0_bits_jobBeats),
+    .io_status_0               (_ctrl_io_groups_0_status),
+    .io_count_0                (_ctrl_io_groups_0_counter)
   );
-  snax_forge_csr_manager manager (
-    .clock                  (clk_i),
-    .reset                  (~rst_ni),
-    .io_req_ready           (csr_req_ready_o),
-    .io_req_valid           (csr_req_valid_i),
-    .io_req_bits_addr       (csr_req_addr_i),
-    .io_req_bits_data       (csr_req_data_i),
-    .io_req_bits_write      (csr_req_write_i),
-    .io_rsp_ready           (csr_rsp_ready_i),
-    .io_rsp_valid           (csr_rsp_valid_o),
-    .io_rsp_bits_data       (csr_rsp_data_o),
-    .io_ctrl_ready          (_adapter_io_ctrl_ready),
-    .io_ctrl_valid          (_manager_io_ctrl_valid),
-    .io_ctrl_bits_len       (_manager_io_ctrl_bits_len),
-    .io_ctrl_bits_loopCount (_manager_io_ctrl_bits_loopCount),
-    .io_ro_0                (_adapter_io_ro_0),
-    .io_ro_1                (_adapter_io_ro_1)
+  snax_forge_ctrl ctrl (
+    .clock                           (clk_i),
+    .reset                           (~rst_ni),
+    .io_groups_0_start_ready         (_ctrl_io_groups_0_start_ready),
+    .io_groups_0_start_valid         (_csr_io_starts_0_valid),
+    .io_groups_0_start_bits_jobs     (_csr_io_starts_0_bits_jobs),
+    .io_groups_0_start_bits_jobBeats (_csr_io_starts_0_bits_jobBeats),
+    .io_groups_0_status              (_ctrl_io_groups_0_status),
+    .io_groups_0_counter             (_ctrl_io_groups_0_counter),
+    .io_groups_0_busy                (acc_busy_o),
+    .io_groups_0_done                (acc_done_o),
+    .io_units_0_in_0_valid           (stream2acc_0_valid_i),
+    .io_units_0_in_0_ready           (stream2acc_0_ready_o),
+    .io_units_0_out_valid            (acc2stream_0_valid_o),
+    .io_units_0_out_ready            (acc2stream_0_ready_i),
+    .io_units_0_fire                 (_ctrl_io_units_0_fire),
+    .io_units_0_first                (_ctrl_io_units_0_first)
   );
-  snax_forge_ctrl_adapter adapter (
-    .clock                  (clk_i),
-    .reset                  (~rst_ni),
-    .io_ctrl_ready          (_adapter_io_ctrl_ready),
-    .io_ctrl_valid          (_manager_io_ctrl_valid),
-    .io_ctrl_bits_len       (_manager_io_ctrl_bits_len),
-    .io_ctrl_bits_loopCount (_manager_io_ctrl_bits_loopCount),
-    .io_start               (_adapter_io_start),
-    .io_config_len          (_adapter_io_config_len),
-    .io_config_loopCount    (_adapter_io_config_loopCount),
-    .io_busy                (_m_io_busy),
-    .io_ro_0                (_adapter_io_ro_0),
-    .io_ro_1                (_adapter_io_ro_1)
+  snax_forge_datapath dp (
+    .clock            (clk_i),
+    .reset            (~rst_ni),
+    .io_units_0_first (_ctrl_io_units_0_first),
+    .io_units_0_fire  (_ctrl_io_units_0_fire),
+    .io_units_0_out   (acc2stream_0_data_o),
+    .io_units_0_a_0   (stream2acc_0_data_i[7:0]),
+    .io_units_0_a_1   (stream2acc_0_data_i[15:8]),
+    .io_units_0_a_2   (stream2acc_0_data_i[23:16]),
+    .io_units_0_a_3   (stream2acc_0_data_i[31:24]),
+    .io_units_0_a_4   (stream2acc_0_data_i[39:32]),
+    .io_units_0_a_5   (stream2acc_0_data_i[47:40]),
+    .io_units_0_a_6   (stream2acc_0_data_i[55:48]),
+    .io_units_0_a_7   (stream2acc_0_data_i[63:56])
   );
 endmodule
 

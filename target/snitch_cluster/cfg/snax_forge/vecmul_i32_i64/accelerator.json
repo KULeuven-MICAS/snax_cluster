@@ -1,0 +1,35 @@
+{
+ "name": "acc",
+ "design_point": "out/design/vecmul_i32_i64/design_point.json",
+ "tag": "snax_forge",
+ "inputs": ["acc.a", "acc.b"],
+ "outputs": ["acc.out"],
+ "groups": [
+  {
+   "name": "acc",
+   "csrs": [
+    {"name": "START", "access": "rw", "offset": 0, "width": 32},
+    {"name": "JOBS", "access": "rw", "offset": 1, "width": 32},
+    {"name": "STATUS", "access": "ro", "offset": 2},
+    {"name": "COUNTER", "access": "ro", "offset": 3}
+   ],
+   "units": [
+    {
+     "name": "acc",
+     "brm": "elementwise_mul",
+     "datapath": "ElementwiseLanes",
+     "ports": {
+      "a": {"port": "a", "dtype": "int32", "lanes": 4},
+      "b": {"port": "b", "dtype": "int32", "lanes": 4},
+      "out": {"port": "out", "dtype": "int64", "lanes": 4}
+     },
+     "opType": "int32",
+     "params": {"op": "mul"},
+     "timing": {"latency": 0, "ii": 1},
+     "csrs": []
+    }
+   ],
+   "links": []
+  }
+ ]
+}

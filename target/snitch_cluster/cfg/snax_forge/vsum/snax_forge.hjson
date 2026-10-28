@@ -3,8 +3,9 @@
 // out/design/vsum/design_point.json` again.
 // The cluster snax_forge_cluster: platforms/snax_forge_cluster.hjson with
 // platform snax_forge's values and the slot snax_forge set for instance acc,
-// BRM accumulate, implementation chisel_accumulator, block Accumulator; its
-// streamer in snax_forge_streamer.hjson, its datapath in snax_forge_acc.hjson.
+// BRM accumulate, implementation chisel_accumulator, datapath TreeAccumulate;
+// its streamer in snax_forge_streamer.hjson, its accelerator in
+// accelerator.json.
 {
  "nr_s1_quadrant": 1,
  "s1_quadrant": {"nr_clusters": 1},
@@ -82,7 +83,7 @@
     "snax_disable_csr_manager": true,
     "snax_forge_rtl": "rtl/files.f",
     "snax_streamer_cfg": {"$ref": "snax_forge_streamer.hjson"},
-    "snax_datapath_cfg": {"$ref": "snax_forge_acc.hjson"}
+    "snax_datapath_cfg": {"$ref": "accelerator.json"}
    }
   ],
   "snax_use_custom_ports": false,

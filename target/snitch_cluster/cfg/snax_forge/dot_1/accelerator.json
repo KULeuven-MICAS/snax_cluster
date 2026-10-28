@@ -1,0 +1,59 @@
+{
+ "name": "dot",
+ "design_point": "out/design/dot_1/design_point.json",
+ "tag": "snax_forge",
+ "inputs": ["mul.a", "mul.b", "sum.a"],
+ "outputs": ["mul.out", "sum.out"],
+ "groups": [
+  {
+   "name": "mul",
+   "csrs": [
+    {"name": "START", "access": "rw", "offset": 0, "width": 32},
+    {"name": "JOBS", "access": "rw", "offset": 1, "width": 32},
+    {"name": "STATUS", "access": "ro", "offset": 2},
+    {"name": "COUNTER", "access": "ro", "offset": 3}
+   ],
+   "units": [
+    {
+     "name": "mul",
+     "brm": "elementwise_mul",
+     "datapath": "ElementwiseLanes",
+     "ports": {
+      "a": {"port": "a", "dtype": "int64", "lanes": 4},
+      "b": {"port": "b", "dtype": "int64", "lanes": 4},
+      "out": {"port": "out", "dtype": "int64", "lanes": 4}
+     },
+     "opType": "int64",
+     "params": {"op": "mul"},
+     "timing": {"latency": 0, "ii": 1},
+     "csrs": []
+    }
+   ],
+   "links": []
+  },
+  {
+   "name": "sum",
+   "csrs": [
+    {"name": "START", "access": "rw", "offset": 4, "width": 32},
+    {"name": "JOBS", "access": "rw", "offset": 5, "width": 32},
+    {"name": "STATUS", "access": "ro", "offset": 7},
+    {"name": "COUNTER", "access": "ro", "offset": 8}
+   ],
+   "units": [
+    {
+     "name": "sum",
+     "brm": "accumulate",
+     "datapath": "TreeAccumulate",
+     "ports": {
+      "a": {"port": "in", "dtype": "int64", "lanes": 4},
+      "out": {"port": "out", "dtype": "int64", "lanes": 1}
+     },
+     "params": {"op": "add"},
+     "timing": {"latency": 1, "ii": 1},
+     "csrs": [{"name": "JOB_BEATS", "access": "rw", "offset": 6, "width": 32}]
+    }
+   ],
+   "links": []
+  }
+ ]
+}
