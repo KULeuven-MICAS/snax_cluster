@@ -174,15 +174,19 @@ accelerator and everything this repository builds it from:
 
 - `snax_forge.hjson`: the cluster `snax_forge_cluster`, whose accelerator
   names its RTL's file list (`snax_forge_rtl: "rtl/files.f"`);
-- `snax_forge_streamer.hjson`, `snax_forge_acc.hjson`: the streamer and the
-  datapath block that the cluster file's `$ref`s name;
-- `rtl/`: `files.f` and the SystemVerilog it lists;
+- `snax_forge_streamer.hjson`, `accelerator.json`: the streamer and the
+  accelerator's description that the cluster file's `$ref`s name;
+- `rtl/`: `files.f` and the SystemVerilog it lists (`snax_forge_shell_wrapper`
+  with its CSRs, a controller per group and the datapaths; the per-group
+  busy and done pins are left unconnected);
 - the program: `main.c`, `data.h` and `include/` (the streamer's and the
   accelerator's CSR headers);
 - `bundle.json`: the design point, the tag and the snax-forge commit.
 
-Two bundles are kept as fixtures, `target/snitch_cluster/cfg/snax_forge/vecadd/`
-and `vsum/`; each README says how to refresh it. `target/snitch_cluster/snax_forge.mk`
+Six bundles are kept as fixtures under `target/snitch_cluster/cfg/snax_forge/`:
+`vecadd`, `vsum`, `vecadd_i32`, `vsum_tree_i8`, `vecmul_i32_i64` and `dot_1`
+(one accelerator of two groups, a task each); each README says how to
+refresh it and lists the counter lines it expects. `target/snitch_cluster/snax_forge.mk`
 builds and runs them with this repository's own targets:
 
 | | |
