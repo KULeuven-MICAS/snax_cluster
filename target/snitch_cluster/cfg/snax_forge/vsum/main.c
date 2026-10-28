@@ -27,16 +27,16 @@ static __attribute__((noinline)) int forge_core_0(void) {
     csrw_ss(S_STRIDE_WRITER_0_0, 8);
     csrw_ss(T_BOUND_WRITER_0_0, 1);
     csrw_ss(T_STRIDE_WRITER_0_0, 0);
-    csrw_ss(ACC_RW_LOOP_COUNT, 64);
-    csrw_ss(ACC_RW_LEN, 64);
+    csrw_ss(ACC_RW_JOBS, 1);
+    csrw_ss(ACC_RW_JOB_BEATS, 64);
     snrt_cluster_hw_barrier();
     csrw_ss(STREAMER_START_CSR, 1);
     csrw_ss(ACC_RW_START, 1);
-    while (csrr_ss(ACC_RO_BUSY)) {
+    while (csrr_ss(ACC_RO_STATUS) & 1) {
     }
     while (csrr_ss(STREAMER_BUSY_CSR)) {
     }
-    forge_counter[0] = csrr_ss(ACC_RO_PERF_COUNT);
+    forge_counter[0] = csrr_ss(ACC_RO_COUNTER);
     snrt_cluster_hw_barrier();
     snrt_cluster_hw_barrier();
     return 0;

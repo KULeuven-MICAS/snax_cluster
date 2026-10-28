@@ -12,17 +12,20 @@ that drives it, checked in so that `.github/workflows/snax-forge-ci.yml`
 builds and runs it on every PR without a snax-forge checkout. The files are
 snax-forge's output, untouched: vecadd (`elementwise_add`, 4 lanes of 64 bit,
 N = 64) on snax-forge's `snax_forge` platform, made by snax-forge
-`0f9fb5fc341ea2c676de33fa3b85da00bf61bf8b` (`bundle.json`).
+`162f8a5ee760bfec33b8aa60f96e99c78ecc6354` (`bundle.json`).
 
 - `snax_forge.hjson`: the cluster `snax_forge_cluster`. Its accelerator
   `snax_forge` brings its own CSR manager (`snax_disable_csr_manager`) and
   names its RTL's file list (`snax_forge_rtl: "rtl/files.f"`), which snaxgen
   turns into `generated/snax_forge.f`.
-- `snax_forge_streamer.hjson`, `snax_forge_acc.hjson`: the two files the
-  cluster's `$ref`s name (the streamer; the datapath block, read by
-  SNAX-GVSoC only).
+- `snax_forge_streamer.hjson`, `accelerator.json`: the two files the
+  cluster's `$ref`s name (the streamer; the accelerator's one description,
+  snax-forge C§17, read by SNAX-GVSoC only).
 - `rtl/files.f` and the files it lists (`rtl/sv/`): the accelerator's RTL,
-  `snax_forge_shell_wrapper` and its modules.
+  `snax_forge_shell_wrapper` and its modules: `snax_forge_csr` (its CSRs),
+  `snax_forge_ctrl` (a controller per group) and `snax_forge_datapath`. The
+  wrapper's per-group `<group>_busy_o` and `<group>_done_o` pins are left
+  unconnected (snax-forge open item 92).
 - `main.c`, `data.h`, `include/`: the program. `main.c` runs the task list
   (core 1 the DMA, core 0 the accelerator) and prints the `forge` lines;
   `data.h` holds the inputs and their goldens (seed 0); `include/` the
@@ -54,8 +57,8 @@ traces, and fails on the program's nonzero exit code. `ELF=<path>` (absolute, or
 relative to `target/snitch_cluster`) runs another ELF instead, such as the
 one snax-forge built from the bundle.
 
-Expected (Verilator and Questa alike, and SNAX-GVSoC's counter; CI checks
-the counter line):
+Expected (Verilator and Questa alike, and SNAX-GVSoC's counters; CI checks
+every counter line):
 
     forge data: 0 errors (64 words)
     forge counter add_acc: 19
@@ -71,7 +74,9 @@ In snax-forge (its `docs/RUN.md`, "Bundle for snax_cluster"):
 
 then replace this folder's files (all but this README) with these from
 `out/bundle/vecadd/`: `snax_forge.hjson`, `snax_forge_streamer.hjson`,
-`snax_forge_acc.hjson`, `bundle.json`, `main.c`, `data.h`, `include/`,
+`accelerator.json`, `bundle.json`, `main.c`, `data.h`,
+`include/streamer_csr_addr_map.h` and `include/<name>_csr.h` (not the
+runtime's cluster headers, which snaxgen writes),
 `rtl/files.f` and exactly the files `rtl/files.f` lists (not
 `manifest.json`, which only SNAX-GVSoC reads). Update the commit above from
 the new `bundle.json`.
