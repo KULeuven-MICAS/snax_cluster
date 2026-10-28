@@ -537,7 +537,7 @@
                                             "snax_datapath_cfg": {
                                                 "type": "object",
                                                 "title": "SNAX datapath configuration",
-                                                "description": "The accelerator's datapath block, as SNAX-GVSoC reads it (a snax-forge bundle's <tag>_acc.hjson); not read by the RTL generators."
+                                                "description": "the accelerator's description, as SNAX-GVSoC reads it (a snax-forge bundle's accelerator.json); not read by the RTL generators"
                                             },
                                             "snax_forge_rtl": {
                                                 "type": "string",
