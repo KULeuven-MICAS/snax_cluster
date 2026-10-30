@@ -12,6 +12,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number ||
     github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+env:
+  # Caches are saved only by pushes to main; PR runs only read them.
+  # TEMPORARY: the head_ref part lets the ry/ci-speed-2 PR save caches too, so
+  # its own re-run shows hits. Remove it before merge.
+  CACHE_WRITE: ${{ (github.event_name == 'push' && github.ref_name == 'main') ||
+    github.head_ref == 'ry/ci-speed-2' }}
 jobs:
   ########
   # Docs #
@@ -76,6 +82,16 @@ jobs:
     name: Simulate SW on SNAX ALU Cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
+    env:
+      # Verilator's generated makefile runs its compiles through $(OBJCACHE).
+      OBJCACHE: ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_COMPRESS: 1
+      # Hash the compiler binary instead of its mtime: a fresh pixi install
+      # gives the same compiler a new mtime.
+      CCACHE_COMPILERCHECK: content
+      CCACHE_MAXSIZE: 100M
     steps:
       - uses: actions/checkout@v2
         with:
@@ -86,18 +102,79 @@ jobs:
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
           activate-environment: true
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-rtlgen-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
+            'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-rtlgen-${{ runner.os }}-
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax_alu_cluster.hjson
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \
           CFG_OVERRIDE=cfg/snax_alu_cluster.hjson
+      # libfesvr only changes with FESVR_VERSION; the restored mtimes keep
+      # make from downloading, configuring or rebuilding it.
+      - name: Read FESVR_VERSION
+        run: |
+          echo "FESVR_VERSION=$(sed -n 's/^FESVR_VERSION *?= *//p' \
+          target/common/common.mk)" >> "$GITHUB_ENV"
+      - name: Restore libfesvr cache
+        id: fesvr-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: fesvr-${{ runner.os }}-${{ env.FESVR_VERSION }}
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: ccache-snax_alu_cluster-${{ github.sha }}
+          restore-keys: ccache-snax_alu_cluster-
       - name: Build Hardware
         run: |
+          ccache -z
           make CFG_OVERRIDE=cfg/snax_alu_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+          ccache -s
+      - name: Save ccache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.ccache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: ${{ steps.ccache.outputs.cache-primary-key }}
+      - name: Save libfesvr cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.fesvr-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: ${{ steps.fesvr-cache.outputs.cache-primary-key }}
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
@@ -109,6 +186,16 @@ jobs:
     name: Simulate SW on SNAX Multi ALU Cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
+    env:
+      # Verilator's generated makefile runs its compiles through $(OBJCACHE).
+      OBJCACHE: ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_COMPRESS: 1
+      # Hash the compiler binary instead of its mtime: a fresh pixi install
+      # gives the same compiler a new mtime.
+      CCACHE_COMPILERCHECK: content
+      CCACHE_MAXSIZE: 100M
     steps:
       - uses: actions/checkout@v2
         with:
@@ -119,18 +206,79 @@ jobs:
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
           activate-environment: true
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-rtlgen-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
+            'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-rtlgen-${{ runner.os }}-
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax_multi_alu_cluster.hjson
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \
           CFG_OVERRIDE=cfg/snax_multi_alu_cluster.hjson
+      # libfesvr only changes with FESVR_VERSION; the restored mtimes keep
+      # make from downloading, configuring or rebuilding it.
+      - name: Read FESVR_VERSION
+        run: |
+          echo "FESVR_VERSION=$(sed -n 's/^FESVR_VERSION *?= *//p' \
+          target/common/common.mk)" >> "$GITHUB_ENV"
+      - name: Restore libfesvr cache
+        id: fesvr-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: fesvr-${{ runner.os }}-${{ env.FESVR_VERSION }}
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: ccache-snax_multi_alu_cluster-${{ github.sha }}
+          restore-keys: ccache-snax_multi_alu_cluster-
       - name: Build Hardware
         run: |
+          ccache -z
           make CFG_OVERRIDE=cfg/snax_multi_alu_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+          ccache -s
+      - name: Save ccache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.ccache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: ${{ steps.ccache.outputs.cache-primary-key }}
+      - name: Save libfesvr cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.fesvr-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: ${{ steps.fesvr-cache.outputs.cache-primary-key }}
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
@@ -143,6 +291,16 @@ jobs:
     name: SNAX Hypercorex w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
+    env:
+      # Verilator's generated makefile runs its compiles through $(OBJCACHE).
+      OBJCACHE: ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_COMPRESS: 1
+      # Hash the compiler binary instead of its mtime: a fresh pixi install
+      # gives the same compiler a new mtime.
+      CCACHE_COMPILERCHECK: content
+      CCACHE_MAXSIZE: 100M
     steps:
       - uses: actions/checkout@v2
         with:
@@ -154,6 +312,18 @@ jobs:
             github.ref_name == 'main' }}
           activate-environment: true
       # Need this for the hypercorex packages
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-rtlgen-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
+            'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-rtlgen-${{ runner.os }}-
       - name: Install prerequisites
         run: |
           pip install tqdm matplotlib requests
@@ -161,14 +331,63 @@ jobs:
         run: |
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax_hypercorex_cluster.hjson
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \
           CFG_OVERRIDE=cfg/snax_hypercorex_cluster.hjson
+      # libfesvr only changes with FESVR_VERSION; the restored mtimes keep
+      # make from downloading, configuring or rebuilding it.
+      - name: Read FESVR_VERSION
+        run: |
+          echo "FESVR_VERSION=$(sed -n 's/^FESVR_VERSION *?= *//p' \
+          target/common/common.mk)" >> "$GITHUB_ENV"
+      - name: Restore libfesvr cache
+        id: fesvr-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: fesvr-${{ runner.os }}-${{ env.FESVR_VERSION }}
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: ccache-snax_hypercorex_cluster-${{ github.sha }}
+          restore-keys: ccache-snax_hypercorex_cluster-
       - name: Build Hardware
         run: |
+          ccache -z
           make CFG_OVERRIDE=cfg/snax_hypercorex_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+          ccache -s
+      - name: Save ccache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.ccache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: ${{ steps.ccache.outputs.cache-primary-key }}
+      - name: Save libfesvr cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.fesvr-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: ${{ steps.fesvr-cache.outputs.cache-primary-key }}
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
@@ -180,6 +399,16 @@ jobs:
     name: Simulate SW on KUL cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
+    env:
+      # Verilator's generated makefile runs its compiles through $(OBJCACHE).
+      OBJCACHE: ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_COMPRESS: 1
+      # Hash the compiler binary instead of its mtime: a fresh pixi install
+      # gives the same compiler a new mtime.
+      CCACHE_COMPILERCHECK: content
+      CCACHE_MAXSIZE: 100M
     steps:
       - uses: actions/checkout@v2
         with:
@@ -190,14 +419,75 @@ jobs:
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
           activate-environment: true
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-rtlgen-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
+            'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-rtlgen-${{ runner.os }}-
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax_KUL_cluster.hjson
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
+      # libfesvr only changes with FESVR_VERSION; the restored mtimes keep
+      # make from downloading, configuring or rebuilding it.
+      - name: Read FESVR_VERSION
+        run: |
+          echo "FESVR_VERSION=$(sed -n 's/^FESVR_VERSION *?= *//p' \
+          target/common/common.mk)" >> "$GITHUB_ENV"
+      - name: Restore libfesvr cache
+        id: fesvr-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: fesvr-${{ runner.os }}-${{ env.FESVR_VERSION }}
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: ccache-snax_KUL_cluster-${{ github.sha }}
+          restore-keys: ccache-snax_KUL_cluster-
       - name: Build Hardware
         run: |
+          ccache -z
           make CFG_OVERRIDE=cfg/snax_KUL_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+          ccache -s
+      - name: Save ccache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.ccache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: ${{ steps.ccache.outputs.cache-primary-key }}
+      - name: Save libfesvr cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.fesvr-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: ${{ steps.fesvr-cache.outputs.cache-primary-key }}
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \
@@ -217,6 +507,16 @@ jobs:
     name: Simulate SW on XDMA cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
+    env:
+      # Verilator's generated makefile runs its compiles through $(OBJCACHE).
+      OBJCACHE: ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_COMPRESS: 1
+      # Hash the compiler binary instead of its mtime: a fresh pixi install
+      # gives the same compiler a new mtime.
+      CCACHE_COMPILERCHECK: content
+      CCACHE_MAXSIZE: 100M
     steps:
       - uses: actions/checkout@v2
         with:
@@ -227,14 +527,75 @@ jobs:
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
           activate-environment: true
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-rtlgen-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
+            'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-rtlgen-${{ runner.os }}-
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax_xdma_cluster.hjson
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
+      # libfesvr only changes with FESVR_VERSION; the restored mtimes keep
+      # make from downloading, configuring or rebuilding it.
+      - name: Read FESVR_VERSION
+        run: |
+          echo "FESVR_VERSION=$(sed -n 's/^FESVR_VERSION *?= *//p' \
+          target/common/common.mk)" >> "$GITHUB_ENV"
+      - name: Restore libfesvr cache
+        id: fesvr-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: fesvr-${{ runner.os }}-${{ env.FESVR_VERSION }}
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: ccache-snax_xdma_cluster-${{ github.sha }}
+          restore-keys: ccache-snax_xdma_cluster-
       - name: Build Hardware
         run: |
+          ccache -z
           make CFG_OVERRIDE=cfg/snax_xdma_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+          ccache -s
+      - name: Save ccache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.ccache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: ${{ steps.ccache.outputs.cache-primary-key }}
+      - name: Save libfesvr cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.fesvr-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: ${{ steps.fesvr-cache.outputs.cache-primary-key }}
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \
@@ -251,6 +612,16 @@ jobs:
     name: Simulate SW on Compiler Test Cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
+    env:
+      # Verilator's generated makefile runs its compiles through $(OBJCACHE).
+      OBJCACHE: ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_COMPRESS: 1
+      # Hash the compiler binary instead of its mtime: a fresh pixi install
+      # gives the same compiler a new mtime.
+      CCACHE_COMPILERCHECK: content
+      CCACHE_MAXSIZE: 100M
     steps:
       - uses: actions/checkout@v2
         with:
@@ -261,14 +632,75 @@ jobs:
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
           activate-environment: true
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-rtlgen-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
+            'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-rtlgen-${{ runner.os }}-
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax_compiler_test_cluster.hjson
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
+      # libfesvr only changes with FESVR_VERSION; the restored mtimes keep
+      # make from downloading, configuring or rebuilding it.
+      - name: Read FESVR_VERSION
+        run: |
+          echo "FESVR_VERSION=$(sed -n 's/^FESVR_VERSION *?= *//p' \
+          target/common/common.mk)" >> "$GITHUB_ENV"
+      - name: Restore libfesvr cache
+        id: fesvr-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: fesvr-${{ runner.os }}-${{ env.FESVR_VERSION }}
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: ccache-snax_compiler_test_cluster-${{ github.sha }}
+          restore-keys: ccache-snax_compiler_test_cluster-
       - name: Build Hardware
         run: |
+          ccache -z
           make CFG_OVERRIDE=cfg/snax_compiler_test_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+          ccache -s
+      - name: Save ccache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.ccache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: ${{ steps.ccache.outputs.cache-primary-key }}
+      - name: Save libfesvr cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.fesvr-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: ${{ steps.fesvr-cache.outputs.cache-primary-key }}
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \
@@ -294,16 +726,48 @@ jobs:
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
           activate-environment: true
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-rtlgen-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
+            'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-rtlgen-${{ runner.os }}-
       - name: Generate RTL
         run: |
           export JAVA_OPTS="-Xmx8G -Xms4G"
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snax_versacore_to_cluster.hjson
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
 
   sw-versacore-dse-cluster-vlt-generic:
     name: Run versacore dse configuration w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
+    env:
+      # Verilator's generated makefile runs its compiles through $(OBJCACHE).
+      OBJCACHE: ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_COMPRESS: 1
+      # Hash the compiler binary instead of its mtime: a fresh pixi install
+      # gives the same compiler a new mtime.
+      CCACHE_COMPILERCHECK: content
+      CCACHE_MAXSIZE: 150M
     steps:
       - uses: actions/checkout@v2
         with:
@@ -314,15 +778,76 @@ jobs:
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
           activate-environment: true
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-rtlgen-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
+            'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-rtlgen-${{ runner.os }}-
       - name: RTL GEN
         run: |
           export JAVA_OPTS="-Xmx8G -Xms4G"
           make CFG_OVERRIDE=cfg/snax_versacore_dse_cluster.hjson \
           -C target/snitch_cluster rtl-gen
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
+      # libfesvr only changes with FESVR_VERSION; the restored mtimes keep
+      # make from downloading, configuring or rebuilding it.
+      - name: Read FESVR_VERSION
+        run: |
+          echo "FESVR_VERSION=$(sed -n 's/^FESVR_VERSION *?= *//p' \
+          target/common/common.mk)" >> "$GITHUB_ENV"
+      - name: Restore libfesvr cache
+        id: fesvr-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: fesvr-${{ runner.os }}-${{ env.FESVR_VERSION }}
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: ccache-snax_versacore_dse_cluster-${{ github.sha }}
+          restore-keys: ccache-snax_versacore_dse_cluster-
       - name: Build Hardware
         run: |
+          ccache -z
           make CFG_OVERRIDE=cfg/snax_versacore_dse_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+          ccache -s
+      - name: Save ccache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.ccache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: ${{ steps.ccache.outputs.cache-primary-key }}
+      - name: Save libfesvr cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.fesvr-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: ${{ steps.fesvr-cache.outputs.cache-primary-key }}
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \

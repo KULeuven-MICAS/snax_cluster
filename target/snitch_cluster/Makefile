@@ -225,6 +225,15 @@ ifeq ($(VLT_TRACE), 1)
 	VLT_CFLAGS += -DVM_TRACE=1
 endif
 
+# With OBJCACHE=ccache, Verilator's generated makefile runs each compile
+# through ccache. ccache can never reuse a GCC precompiled header here: it
+# needs the headers in the PCH to keep their mtime, but Verilator rewrites them
+# on every run, and the .gch bytes differ between builds, so every compile that
+# includes it misses. Building without the PCH makes all of them cacheable.
+ifeq ($(OBJCACHE), ccache)
+	VLT_FLAGS += -MAKEFLAGS VK_PCH_I_FAST= -MAKEFLAGS VK_PCH_I_SLOW=
+endif
+
 ###############
 # C testbench #
 ###############

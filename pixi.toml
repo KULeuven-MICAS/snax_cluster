@@ -44,6 +44,7 @@ hjson-py = ">=3.1.0,<4"
 clang-format = ">=21.1.1"
 wget = ">=1.21.4,<2"
 pip = ">=25.0.1,<26"
+ccache = ">=4.14.1,<5"
 
 [activation.env]
 VLT_ROOT = "${CONDA_PREFIX}/share/verilator"
