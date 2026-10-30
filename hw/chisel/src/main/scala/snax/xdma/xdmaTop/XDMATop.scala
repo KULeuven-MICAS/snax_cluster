@@ -433,8 +433,9 @@ return new $extensionName($extensionArgs)
 #define XDMA_DST_ENABLED_CHAN_PTR XDMA_DST_TEMP_STRIDE_PTR + XDMA_DST_TEMP_DIM
 #define XDMA_DST_ENABLED_BYTE_PTR XDMA_DST_ENABLED_CHAN_PTR + ${if (writerParam.configurableChannel) 1
       else 0}
-#define XDMA_DST_ENABLE_PTR XDMA_DST_ENABLED_BYTE_PTR + ${if (writerParam.configurableByteMask) 1
-      else 0}
+// Consecutive mask words are ordered from the least significant word upwards.
+#define XDMA_DST_ENABLED_BYTE_CSR_NUM ${writerParam.byteMaskCSRNum}
+#define XDMA_DST_ENABLE_PTR XDMA_DST_ENABLED_BYTE_PTR + XDMA_DST_ENABLED_BYTE_CSR_NUM
 #define XDMA_DST_EXT_NUM ${writerExtensionParam.length}
 #define XDMA_DST_EXT_CSR_PTR XDMA_DST_ENABLE_PTR + ${if (writerExtensionParam.length > 0) 1
       else 0}

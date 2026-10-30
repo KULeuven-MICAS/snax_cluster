@@ -35,6 +35,7 @@ SUBDIRS += snax-alu
 SUBDIRS += snax-multi-alu
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_KUL_cluster.hjson)
+SUBDIRS += snax-xdma-byte-mask
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-transpose
@@ -44,6 +45,7 @@ endif
 # Fp16ToInt8 reader extensions, which only cfg/snax_xdma_cluster.hjson builds --
 # they do not compile against the plain KUL cluster above.
 ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_cluster.hjson)
+SUBDIRS += snax-xdma-byte-mask
 SUBDIRS += snax-xdma-memset
 SUBDIRS += snax-xdma-reshape-comparison
 SUBDIRS += snax-xdma-transpose

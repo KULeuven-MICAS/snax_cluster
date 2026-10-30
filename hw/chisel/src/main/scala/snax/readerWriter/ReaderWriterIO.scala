@@ -28,8 +28,10 @@ class ReaderWriterCfgIO(val param: ReaderWriterParam) extends Bundle {
       enabledChannel := Fill(param.tcdmParam.numChannel, 1.U)
     }
     if (param.configurableByteMask) {
-      enabledByte := remaincsrList.head
-      remaincsrList = remaincsrList.tail
+      // The lowest CSR address holds mask bits 31:0, like the base-pointer words.
+      // Concatenate every mask word; assignment drops unused high bits of the last word.
+      enabledByte := Cat(remaincsrList.take(param.byteMaskCSRNum).reverse)
+      remaincsrList = remaincsrList.drop(param.byteMaskCSRNum)
     } else {
       enabledByte := Fill(param.tcdmParam.dataWidth / 8, 1.U)
     }

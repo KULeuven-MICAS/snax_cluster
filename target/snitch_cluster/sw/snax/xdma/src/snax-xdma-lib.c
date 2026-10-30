@@ -17,6 +17,21 @@
 
 #define XDMA_LANE_BYTES (XDMA_WIDTH / XDMA_SPATIAL_CHAN)
 
+void snax_xdma_set_dst_byte_mask_words(const uint32_t* mask_words) {
+    // Match the hardware packing: word zero enables bytes 0 through 31.
+    for (uint32_t i = 0; i < XDMA_DST_ENABLED_BYTE_CSR_NUM; i++) {
+        snax_write_xdma_cfg_reg(XDMA_DST_ENABLED_BYTE_PTR + i, mask_words[i]);
+    }
+}
+
+static void snax_xdma_set_dst_byte_mask(uint32_t mask_word) {
+    // Keep existing scalar calls; repeating all ones enables the entire bank.
+    // Program every word on each configuration to avoid stale upper mask bits.
+    for (uint32_t i = 0; i < XDMA_DST_ENABLED_BYTE_CSR_NUM; i++) {
+        snax_write_xdma_cfg_reg(XDMA_DST_ENABLED_BYTE_PTR + i, mask_word);
+    }
+}
+
 #if defined(READER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16)
 #define XDMA_ROW_MAJOR_TRANSPOSE_EXT_ID READER_EXT_TRANSPOSERROW8_8COL8_8BIT8_16
 #elif defined(READER_EXT_TRANSPOSERROW8_8_8COL8_8_8BIT8_16_32)
@@ -240,7 +255,7 @@ int32_t snax_xdma_memcpy_nd_full_addr(
     // Enabled channel at dst
     snax_write_xdma_cfg_reg(XDMA_DST_ENABLED_CHAN_PTR, enabled_chan_dst);
     // Enabled byte at dst
-    snax_write_xdma_cfg_reg(XDMA_DST_ENABLED_BYTE_PTR, enabled_byte_dst);
+    snax_xdma_set_dst_byte_mask(enabled_byte_dst);
     return 0;
 }
 
@@ -305,7 +320,7 @@ int32_t snax_xdma_memcpy_nd_full_addr_fast(
     }
     snax_write_xdma_cfg_reg(XDMA_SRC_ENABLED_CHAN_PTR, enabled_chan_src);
     snax_write_xdma_cfg_reg(XDMA_DST_ENABLED_CHAN_PTR, enabled_chan_dst);
-    snax_write_xdma_cfg_reg(XDMA_DST_ENABLED_BYTE_PTR, enabled_byte_dst);
+    snax_xdma_set_dst_byte_mask(enabled_byte_dst);
     return 0;
 }
 
@@ -460,7 +475,7 @@ int32_t snax_xdma_multicast_nd_full_address(
     // Enabled channel at dst
     snax_write_xdma_cfg_reg(XDMA_DST_ENABLED_CHAN_PTR, enabled_chan_dst);
     // Enabled byte at dst
-    snax_write_xdma_cfg_reg(XDMA_DST_ENABLED_BYTE_PTR, enabled_byte_dst);
+    snax_xdma_set_dst_byte_mask(enabled_byte_dst);
     return 0;
 }
 

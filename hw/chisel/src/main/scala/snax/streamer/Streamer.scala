@@ -655,7 +655,9 @@ object Streamer {
     // byte mask enable
     if (param.configurableByteMask) {
       csrMap    = csrMap + "#define " + "ENABLED_BYTE_" + tag + " " + csrOffset + "\n"
-      csrOffset = csrOffset + 1
+      // Expose the word count so software can program masks wider than 32 bytes.
+      csrMap    = csrMap + "#define ENABLED_BYTE_" + tag + "_CSR_NUM " + param.byteMaskCSRNum + "\n"
+      csrOffset = csrOffset + param.byteMaskCSRNum
     }
 
     csrMap

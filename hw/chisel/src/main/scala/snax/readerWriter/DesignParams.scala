@@ -138,13 +138,15 @@ class ReaderWriterParam(
   // Data buffer's depth
   val bufferDepth = dataBufferDepth
 
+  // One mask bit controls one byte; each 32-bit CSR therefore covers 256 data bits.
+  // Share this count with the CSR wiring and generated software address maps.
+  val byteMaskCSRNum = if (configurableByteMask) ((tcdmParam.dataWidth / 8 + 31) / 32) else 0
+
   val csrNum =
     2 + spatialBounds.length + 2 * temporalDimension + (if (configurableChannel)
                                                           ((tcdmParam.numChannel + 31) / 32)
                                                         else
-                                                          0) + (if (configurableByteMask) 1
-                                                                else
-                                                                  0) + (if (tcdmLogicWordSize.length > 1) 1
-                                                                        else
-                                                                          0)
+                                                          0) + byteMaskCSRNum + (if (tcdmLogicWordSize.length > 1) 1
+                                                                                 else
+                                                                                   0)
 }
