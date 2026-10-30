@@ -6,14 +6,14 @@
 # (no podman: rtl-gen, and for vsim vsim_preparation, run first where snax-forge's docs/RUN.md
 # says). Included by the Makefile.
 #
-#   CFG_OVERRIDE  the bundle's cluster file (a fixture under cfg/snax_forge/ or an absolute path)
+#   CFG_OVERRIDE  the bundle's cluster file, by its absolute path
 #   FORGE         the program's folder (main.c, data.h, include/), by default CFG_OVERRIDE's
 #   ELF           an ELF to run; unset, snax-forge-run runs the app built from FORGE
 #   SIM           vlt (default) or vsim
 #
 #   snax-forge-sim  bin/snitch_cluster.$(SIM); for vsim, vsim_preparation must have run
-#   snax-forge-sw   sw/apps/snax-forge for FORGE, once the #define lines of FORGE's
-#                   streamer_csr_addr_map.h equal those of the one snaxgen wrote
+#   snax-forge-sw   sw/apps/snax-forge's ELF for FORGE (the ELF only: no dump), once the #define
+#                   lines of FORGE's streamer_csr_addr_map.h equal those of the one snaxgen wrote
 #   snax-forge-run  the ELF on bin/snitch_cluster.$(SIM), its output in logs/snax-forge-$(SIM).txt
 #                   beside the run's traces; fails on the program's nonzero exit code
 
@@ -55,7 +55,7 @@ snax-forge-sw: $(TARGET_C_HDRS)
 	@diff $(SNAX_FORGE_BUILD)/bundle.defines $(SNAX_FORGE_BUILD)/snaxgen.defines || \
 		{ echo "snax-forge-sw: $(FORGE)/include/streamer_csr_addr_map.h and $(SNAX_FORGE_HEADER) differ"; exit 1; }
 	$(MAKE) -C $(SW_DIR) math runtime/$(or $(strip $(SELECT_RUNTIME)),rtl-generic)
-	$(MAKE) -C $(SNAX_FORGE_APP) FORGE=$(FORGE)
+	$(MAKE) -C $(SNAX_FORGE_APP) FORGE=$(FORGE) $(SNAX_FORGE_ELF)
 
 # Questa exits 0 whatever the program returns, so its exit code is read from the tb's last line
 snax-forge-run: $(if $(ELF),,snax-forge-sw)
