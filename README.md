@@ -168,78 +168,51 @@ SNAX is an extension of the original [Snitch Cluster](https://github.com/pulp-pl
 
 # Running snax-forge bundles
 
-[snax-forge](https://github.com/KULeuven-MICAS/snax-forge) generates an
-accelerator for a design point and hands it over as a bundle, one generated
-accelerator and everything this repository builds it from:
+[snax-forge](https://github.com/KULeuven-MICAS/snax-forge) generates an accelerator for a design point and hands it over as a bundle, one generated accelerator and everything this repository builds it from:
 
-- `snax_forge.hjson`: the cluster `snax_forge_cluster`, whose accelerator
-  names its RTL's file list (`snax_forge_rtl: "rtl/files.f"`);
-- `snax_forge_streamer.hjson`, `accelerator.json`: the streamer and the
-  accelerator's description that the cluster file's `$ref`s name;
-- `rtl/`: `files.f` and the SystemVerilog it lists (`snax_forge_shell_wrapper`
-  with its CSRs, a controller per group and the datapaths; the per-group
-  busy and done pins are left unconnected);
-- the program: `main.c`, `data.h` and `include/` (the streamer's and the
-  accelerator's CSR headers);
-- `bundle.json`: the design point, the tag and the snax-forge commit.
+- `snax_forge.hjson`: the cluster `snax_forge_cluster`, whose accelerator names its RTL's file list (`snax_forge_rtl: "rtl/files.f"`);
+- `snax_forge_streamer.hjson`, `accelerator.json`: the streamer and the accelerator's description that the cluster file's `$ref`s name;
+- `rtl/`: `files.f` and the SystemVerilog it lists (`snax_forge_shell_wrapper` with its CSRs, a controller per group and the datapaths; the per-group busy and done pins are left unconnected);
+- the program: `main.c`, `data.h` and `include/` (the streamer's and the accelerator's CSR headers);
+- `bundle.json`: the design point, the tag and the snax-forge commit;
+- `forge_expected.txt`, in a bundle made by snax-forge's `pixi run forge`: the `forge counter` lines and the `forge data: 0 errors` line of the bundle's own SNAX-GVSoC run, which a run on this repository's RTL must print too.
 
-Six bundles are kept as fixtures under `target/snitch_cluster/cfg/snax_forge/`:
-`vecadd`, `vsum`, `vecadd_i32`, `vsum_tree_i8`, `vecmul_i32_i64` and `dot_1`
-(one accelerator of two groups, a task each); each README says how to
-refresh it and lists the counter lines it expects. `target/snitch_cluster/snax_forge.mk`
-builds and runs them with this repository's own targets:
+snax-forge's bundles are no longer kept or checked in this repository's CI: they are checked locally, on vsim, before a snax-forge change to the emitted RTL or the program merges. `target/snitch_cluster/snax_forge.mk` runs them with this repository's own targets:
 
 | | |
 |---|---|
-| `CFG_OVERRIDE` | the bundle's cluster file: a fixture, or an absolute path to a bundle elsewhere |
+| `CFG_OVERRIDE` | the bundle's cluster file, by its absolute path |
 | `FORGE` | the program's folder; default the folder of `CFG_OVERRIDE` |
 | `ELF` | an ELF to run, such as the one snax-forge built from the bundle; unset, the program built from `FORGE` |
 | `SIM` | `vlt` (default) or `vsim` |
 | `snax-forge-sim` | builds `bin/snitch_cluster.$(SIM)`; for `vsim` after `vsim_preparation` |
-| `snax-forge-sw` | builds `sw/apps/snax-forge` from `FORGE`, after checking its `include/streamer_csr_addr_map.h` against snaxgen's (the `#define` lines) |
+| `snax-forge-sw` | builds `sw/apps/snax-forge`'s ELF from `FORGE` (the ELF only), after checking its `include/streamer_csr_addr_map.h` against snaxgen's (the `#define` lines) |
 | `snax-forge-run` | runs the ELF, writes its output to `logs/snax-forge-$(SIM).txt` beside the traces, and fails on the program's nonzero exit code |
+| `snax-forge-check` | runs each bundle of `BUNDLES` (absolute folders) in order with `SIM` and the development image `SNAX_CLUSTER_IMAGE`, and compares its `forge counter` and `forge data` lines with the bundle's `forge_expected.txt`: `PASS` or `FAIL` per bundle in `logs/snax-forge-check.txt` (with each run's `forge cycles` line), each bundle's output in `logs/snax-forge-<name>-$(SIM).txt`; it fails when a bundle failed |
 
-Verilator on the vecadd fixture, in this repository's pixi environment (as
-CI):
-
-```bash
-pixi run make -C target/snitch_cluster rtl-gen CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
-pixi run make -C target/snitch_cluster sw CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
-pixi run make -C target/snitch_cluster snax-forge-sim SIM=vlt CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
-pixi run make -C target/snitch_cluster snax-forge-run SIM=vlt CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
-```
-
-```
-forge cycles: 239
-forge data: 0 errors (64 words)
-forge counter add_acc: 19
-forge errors: 0
-```
-
-Questa: `rtl-gen` and `vsim_preparation` in the development image (on
-MICAS's barnard3 `c5db84ad7bce`), started from the folder that holds this
-checkout, then the build and the run outside it, with `bender` and Questa
-on `PATH`; they print the same lines. Questa exits 0 whatever the program
-returns, so `snax-forge-run` reads the exit code from the testbench's
-`[SUCCESS] Program finished successfully` line.
+The local check: in snax-forge, `pixi run forge-set quick` (or `full`) makes a set's bundles and prints one line; here, from `target/snitch_cluster`, run that line with the image:
 
 ```bash
-# in the image, from the folder that holds snax_cluster
-podman run --rm -it -v "$PWD":"$PWD" -w "$PWD" c5db84ad7bce
-cd snax_cluster
-make -C target/snitch_cluster rtl-gen CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
-make -C target/snitch_cluster vsim_preparation CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
-exit
+make snax-forge-check BUNDLES="/abs/snax-forge/out/bundle/vecadd_i32 /abs/snax-forge/out/bundle/dot_4" SIM=vsim SNAX_CLUSTER_IMAGE=c5db84ad7bce
+```
+
+```
+PASS vecadd_i32
+PASS dot_4
+```
+
+With `SIM=vsim`, `rtl-gen` and `vsim_preparation` run in the development image (`c5db84ad7bce` on MICAS's servers), under podman with this checkout and the bundle mounted at their own paths, and the build and the run outside it, with `bender` (this repository's pixi environment's, when not on `PATH`) and Questa on `PATH`; with `SIM=vlt` every step runs in the image. Questa exits 0 whatever the program returns, so `snax-forge-run` reads the exit code from the testbench's `[SUCCESS] Program finished successfully` line.
+
+One bundle by hand, as snax-forge's `pixi run forge` prints its commands (`B` the bundle's cluster file, `E` the ELF snax-forge built from it):
+
+```bash
+# in the image, from snax_cluster
+make -C target/snitch_cluster clean-generated clean-vlt clean-vsim
+make -C target/snitch_cluster rtl-gen CFG_OVERRIDE=$B
+make -C target/snitch_cluster vsim_preparation CFG_OVERRIDE=$B
 # outside it, bender and Questa on PATH
-cd snax_cluster
-make -C target/snitch_cluster snax-forge-sim SIM=vsim CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
-make -C target/snitch_cluster snax-forge-run SIM=vsim CFG_OVERRIDE=cfg/snax_forge/vecadd/snax_forge.hjson
+make -C target/snitch_cluster snax-forge-sim SIM=vsim CFG_OVERRIDE=$B
+make -C target/snitch_cluster snax-forge-run SIM=vsim CFG_OVERRIDE=$B ELF=$E
 ```
 
-`.github/workflows/snax-forge-ci.yml` runs each fixture on every PR: it
-generates the RTL, checks `generated/snax_forge.f` (not empty, every file
-it lists there), builds Verilator with no duplicate module names, builds
-the software, runs the fixture's program with `snax-forge-run SIM=vlt` (exit
-code 0), prints the `forge` lines and checks the counter line the fixture's
-README expects. To make a bundle, see snax-forge's README,
-[Getting started](https://github.com/KULeuven-MICAS/snax-forge#getting-started).
+To make a bundle, see snax-forge's README, [Getting started](https://github.com/KULeuven-MICAS/snax-forge#getting-started).
