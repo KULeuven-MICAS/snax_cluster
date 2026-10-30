@@ -18,24 +18,24 @@ import chisel3.util._
   * @param priority_empty:
   *   Set to true if this streamer should request priority when it is nearly empty (= reading from tcdm) Set to false if
   *   this streamer should request priority when it is nearly full (= writing to tcdm)
+  * @param moduleNamePrefix:
+  *   the prefix of the inner queue module names. Give each ComplexQueue a prefix that is unique in the cluster, because
+  *   modules generated in separate sbt runs are compiled together.
   */
 
 class ComplexQueueConcat(
-  inputWidth:     Int,
-  outputWidth:    Int,
-  depth:          Int,
-  pipe:           Boolean = false,
-  priority_empty: Boolean = true
+  inputWidth:       Int,
+  outputWidth:      Int,
+  depth:            Int,
+  pipe:             Boolean = false,
+  priority_empty:   Boolean = true,
+  moduleNamePrefix: String  = "unnamed_cluster"
 ) extends Module
     with RequireAsyncReset {
   val bigWidth   = Seq(inputWidth, outputWidth).max
   val smallWidth = Seq(inputWidth, outputWidth).min
 
-  val queueModuleName =
-    "Queue_W" + smallWidth.toString + "_D" + depth.toString + "_H" + BigInt(
-      numbits = 30,
-      scala.util.Random
-    ).toString(radix = 32)
+  val queueModuleName = s"${moduleNamePrefix}_Queue_W${smallWidth}_D${depth}"
 
   require(
     bigWidth % smallWidth == 0,
@@ -135,19 +135,19 @@ class ComplexQueueConcat(
   *   the depth of the FIFO If inputWidth is smaller than outputWidth, then it will be the first option If inputWidth is
   *   larger than outputWidth, then it will be the second option No matter which case, the big width one should equal to
   *   integer times of the small width one
+  * @param moduleNamePrefix:
+  *   the prefix of the inner queue module names, unique in the cluster
   */
-class ComplexQueueNtoOne[T <: Data](dataType: T, N: Int, depth: Int) extends Module with RequireAsyncReset {
+class ComplexQueueNtoOne[T <: Data](dataType: T, N: Int, depth: Int, moduleNamePrefix: String = "unnamed_cluster")
+    extends Module
+    with RequireAsyncReset {
   require(
     N > 1,
     message = "N should be greater than 1"
   )
   require(depth > 0)
 
-  val queueModuleName =
-    "Queue_W" + dataType.getWidth.toString + "_D" + depth.toString + "_H" + BigInt(
-      numbits = 30,
-      scala.util.Random
-    ).toString(radix = 32)
+  val queueModuleName = s"${moduleNamePrefix}_Queue_W${dataType.getWidth}_D${depth}"
 
   val io = IO(new Bundle {
     val in       = Flipped(Vec(N, Decoupled(dataType)))
@@ -184,20 +184,20 @@ class ComplexQueueNtoOne[T <: Data](dataType: T, N: Int, depth: Int) extends Mod
   *   the depth of the FIFO If inputWidth is smaller than outputWidth, then it will be the first option If inputWidth is
   *   larger than outputWidth, then it will be the second option No matter which case, the big width one should equal to
   *   integer times of the small width one
+  * @param moduleNamePrefix:
+  *   the prefix of the inner queue module names, unique in the cluster
   */
 
-class ComplexQueueOnetoN[T <: Data](dataType: T, N: Int, depth: Int) extends Module with RequireAsyncReset {
+class ComplexQueueOnetoN[T <: Data](dataType: T, N: Int, depth: Int, moduleNamePrefix: String = "unnamed_cluster")
+    extends Module
+    with RequireAsyncReset {
   require(
     N > 1,
     message = "N should be greater than 1"
   )
   require(depth > 0)
 
-  val queueModuleName =
-    "Queue_W" + dataType.getWidth.toString + "_D" + depth.toString + "_H" + BigInt(
-      numbits = 30,
-      scala.util.Random
-    ).toString(radix = 32)
+  val queueModuleName = s"${moduleNamePrefix}_Queue_W${dataType.getWidth}_D${depth}"
 
   val io = IO(new Bundle {
     val in       = Flipped(Decoupled(Vec(N, dataType)))

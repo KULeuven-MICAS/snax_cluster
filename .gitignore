@@ -6,6 +6,8 @@ Bender.lock
 .bloop
 .bsp
 .scala-build
+# ccache directory of the CI Verilator builds
+.ccache/
 __pycache__
 env
 logs

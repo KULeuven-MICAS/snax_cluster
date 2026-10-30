@@ -16,6 +16,13 @@ concurrency:
     github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # Caches are saved only by pushes to main; PR runs only read them.
+  # TEMPORARY: the head_ref part lets the ry/ci-speed-2 PR save caches too, so
+  # its own re-run shows hits. Remove it before merge.
+  CACHE_WRITE: ${{ (github.event_name == 'push' && github.ref_name == 'main') ||
+    github.head_ref == 'ry/ci-speed-2' }}
+
 jobs:
   run:
     name: Build and Test
@@ -36,6 +43,18 @@ jobs:
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
           activate-environment: true
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-test-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
+            'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-test-${{ runner.os }}-
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
@@ -61,3 +80,13 @@ jobs:
           MAKEFLAGS: "VK_PCH_I_FAST= VK_PCH_I_SLOW="
         run: |
           sbt test
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}

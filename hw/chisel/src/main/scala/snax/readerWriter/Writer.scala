@@ -39,11 +39,12 @@ class Writer(
 
   val dataBuffer = Module(
     new ComplexQueueConcat(
-      inputWidth     = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
-      outputWidth    = param.tcdmParam.dataWidth,
-      depth          = param.bufferDepth,
-      pipe           = false,
-      priority_empty = false
+      inputWidth       = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
+      outputWidth      = param.tcdmParam.dataWidth,
+      depth            = param.bufferDepth,
+      pipe             = false,
+      priority_empty   = false,
+      moduleNamePrefix = s"${moduleNamePrefix}_Writer_DataBuffer"
     ) {
       override val desiredName = s"${moduleNamePrefix}_Writer_DataBuffer"
     }

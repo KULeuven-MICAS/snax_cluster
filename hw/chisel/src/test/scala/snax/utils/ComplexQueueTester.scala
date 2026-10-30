@@ -8,7 +8,7 @@ import snax.utils.ComplexQueueConcat
 
 class ComplexQueueConcatTester extends AnyFlatSpec with ChiselScalatestTester {
   "The test of complexQueue (64->512)" should " pass" in {
-    test(new ComplexQueueConcat(64, 512, 16))
+    test(new ComplexQueueConcat(64, 512, 16, moduleNamePrefix = "ComplexQueueConcatTester"))
       .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
         // Can store 128 data
         // Writing data
@@ -47,7 +47,7 @@ class ComplexQueueConcatTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   "The test of complexQueue (512->64)" should " pass" in {
-    test(new ComplexQueueConcat(512, 64, 16))
+    test(new ComplexQueueConcat(512, 64, 16, moduleNamePrefix = "ComplexQueueConcatTester"))
       .withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
         // Can store 16 512-bit data
         // Writing data
