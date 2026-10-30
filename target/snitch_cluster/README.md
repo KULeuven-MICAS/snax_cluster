@@ -223,8 +223,7 @@ questa-2022.3 bin/snitch_cluster.vsim.gui sw/apps/blas/axpy/build/axpy.elf
 You can also produce a `vcd` file which you can display on [gtkwave](https://gtkwave.sourceforge.net/). This needs a Verilator binary built with `VLT_TRACE=1`, which is off by default because tracing slows the build down:
 
 ```shell
-# Rebuild with VCD tracing (clean-vlt first if a non-tracing build exists)
-make clean-vlt
+# Rebuild with VCD tracing
 make VLT_TRACE=1 bin/snitch_cluster.vlt
 
 # Add the --vcd at the end to generate vcd files. This produces sim.vcd

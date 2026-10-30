@@ -45,8 +45,7 @@ Sim::Sim(int argc, char **argv) : htif_t(argc, argv), ipc(argc, argv) {
 #else
         fprintf(stderr,
                 "Error: --vcd needs a binary built with VCD tracing. Rebuild "
-                "with `make clean-vlt` and then `make VLT_TRACE=1 "
-                "bin/snitch_cluster.vlt`.\n");
+                "with `make VLT_TRACE=1 bin/snitch_cluster.vlt`.\n");
         exit(1);
 #endif
     }

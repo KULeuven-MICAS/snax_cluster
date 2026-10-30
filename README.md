@@ -62,7 +62,7 @@ make -C target/snitch_cluster CFG_OVERRIDE=cfg/snax_alu_cluster.hjson rtl-gen
 make -C target/snitch_cluster CFG_OVERRIDE=cfg/snax_alu_cluster.hjson bin/snitch_cluster.vlt -j
 ```
 
-VCD tracing is not compiled in by default because it slows the build down. To dump waveforms with `--vcd` (step 7), build with `VLT_TRACE=1` instead. When switching an existing build, run `make -C target/snitch_cluster clean-vlt` first:
+VCD tracing is not compiled in by default because it slows the build down. To dump waveforms with `--vcd` (step 7), build with `VLT_TRACE=1` instead:
 
 ```bash
 make -C target/snitch_cluster CFG_OVERRIDE=cfg/snax_alu_cluster.hjson VLT_TRACE=1 bin/snitch_cluster.vlt -j

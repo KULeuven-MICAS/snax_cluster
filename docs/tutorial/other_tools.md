@@ -4,7 +4,7 @@ There are two useful tools for debugging and verifying your work. (1) Dumping wa
 
 # Dumping Waveforms with VCD Files
 
-VCD tracing is not compiled into the Verilator binary by default because it slows the build down. First build the binary with `VLT_TRACE=1` (run `make clean-vlt` first if you already built it without tracing):
+VCD tracing is not compiled into the Verilator binary by default because it slows the build down. First build the binary with `VLT_TRACE=1`:
 
 ```bash
 make CFG_OVERRIDE=cfg/snax_alu_cluster.hjson VLT_TRACE=1 bin/snitch_cluster.vlt -j
