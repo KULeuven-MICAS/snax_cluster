@@ -56,10 +56,11 @@ class Reader(
   // Output FIFOs to combine the data from the output of responsers
   val dataBuffer = Module(
     new ComplexQueueConcat(
-      inputWidth  = param.tcdmParam.dataWidth,
-      outputWidth = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
-      depth       = param.bufferDepth,
-      pipe        = true
+      inputWidth       = param.tcdmParam.dataWidth,
+      outputWidth      = param.tcdmParam.dataWidth * param.tcdmParam.numChannel,
+      depth            = param.bufferDepth,
+      pipe             = true,
+      moduleNamePrefix = s"${moduleNamePrefix}_Reader_DataBuffer"
     ) {
       override val desiredName = s"${moduleNamePrefix}_Reader_DataBuffer"
     }

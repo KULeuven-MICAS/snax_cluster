@@ -117,10 +117,11 @@ class AddressGenUnit(param: AddressGenUnitParam, moduleNamePrefix: String = "unn
   // Create the outputBuffer to store the generated address
   val outputBuffer = Module(
     new ComplexQueueConcat(
-      inputWidth  = io.addr.head.bits.getWidth * param.numChannel,
-      outputWidth = io.addr.head.bits.getWidth,
-      depth       = param.outputBufferDepth,
-      pipe        = true
+      inputWidth       = io.addr.head.bits.getWidth * param.numChannel,
+      outputWidth      = io.addr.head.bits.getWidth,
+      depth            = param.outputBufferDepth,
+      pipe             = true,
+      moduleNamePrefix = s"${moduleNamePrefix}_AddressBufferFIFO"
     ) {
       override val desiredName = s"${moduleNamePrefix}_AddressBufferFIFO"
     }
