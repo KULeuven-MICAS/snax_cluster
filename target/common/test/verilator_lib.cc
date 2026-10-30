@@ -11,7 +11,9 @@
 #include "sim.hh"
 #include "tb_lib.hh"
 #include "verilated.h"
+#if VM_TRACE
 #include "verilated_vcd_c.h"
+#endif
 
 // Declare these as globally declared (and parsed) in tb_bin.cc
 extern bool WRAPPER_disable_tracing;
@@ -37,8 +39,15 @@ Sim::Sim(int argc, char **argv) : htif_t(argc, argv), ipc(argc, argv) {
     // constructed (so it never reaches htif/Verilated, which would reject it);
     // it reaches us via the WRAPPER_vcd global.
     if (WRAPPER_vcd) {
+#if VM_TRACE
         printf("VCD wave generation enabled\n");
         vlt_vcd = true;
+#else
+        fprintf(stderr,
+                "Error: --vcd needs a binary built with VCD tracing. Rebuild "
+                "with `make VLT_TRACE=1 bin/snitch_cluster.vlt`.\n");
+        exit(1);
+#endif
     }
     Verilated::commandArgs(argc, argv);
 }
@@ -53,20 +62,26 @@ int Sim::run() {
 }
 
 void Sim::main() {
+#if VM_TRACE
     // Initialize verilator environment.
     Verilated::traceEverOn(true);
+#endif
     // Allocate the simulation state and VCD trace.
     auto top = std::make_unique<Vtestharness>();
+#if VM_TRACE
     auto vcd = std::make_unique<VerilatedVcdC>();
+#endif
 
     bool clk_i = 0, rst_ni = 0;
 
+#if VM_TRACE
     // Trace 8 levels of hierarchy.
     if (vlt_vcd) {
         top->trace(vcd.get(), 8);
         vcd->open("sim.vcd");
         vcd->dump(TIME);
     }
+#endif
     TIME += 2;
 
     while (!Verilated::gotFinish()) {
@@ -76,7 +91,9 @@ void Sim::main() {
         top->rst_ni = rst_ni;
         // Evaluate the DUT.
         top->eval();
+#if VM_TRACE
         if (vlt_vcd) vcd->dump(TIME);
+#endif
         // Increase global time.
         TIME++;
         // Switch to the HTIF interface in regular intervals.
@@ -85,8 +102,10 @@ void Sim::main() {
         }
     }
 
+#if VM_TRACE
     // Clean up.
     if (vlt_vcd) vcd->close();
+#endif
 }
 }  // namespace sim
 

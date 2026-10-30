@@ -149,7 +149,6 @@ make -C target/snitch_cluster CFG_OVERRIDE=cfg/snax_alu_cluster.hjson sw -j
 You should see a log:
 
 ```bash
-VCD wave generation enabled
 [fesvr] Wrote 36 bytes of bootrom to 0x1000
 [fesvr] Wrote entry point 0x80000000 to bootloader slot 0x1020
 [fesvr] Wrote 72 bytes of bootdata to 0x1024

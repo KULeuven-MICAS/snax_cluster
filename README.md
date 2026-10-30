@@ -62,13 +62,19 @@ make -C target/snitch_cluster CFG_OVERRIDE=cfg/snax_alu_cluster.hjson rtl-gen
 make -C target/snitch_cluster CFG_OVERRIDE=cfg/snax_alu_cluster.hjson bin/snitch_cluster.vlt -j
 ```
 
+VCD tracing is not compiled in by default because it slows the build down. To dump waveforms with `--vcd` (step 7), build with `VLT_TRACE=1` instead:
+
+```bash
+make -C target/snitch_cluster CFG_OVERRIDE=cfg/snax_alu_cluster.hjson VLT_TRACE=1 bin/snitch_cluster.vlt -j
+```
+
 6 ) Build the SW. The `-j` option parallelizes the build.
 
 ```bash
 make -C target/snitch_cluster CFG_OVERRIDE=cfg/snax_alu_cluster.hjson sw -j
 ```
 
-7 ) Run the built SW of the accelerator on the built Verilator binary. The `--vcd` is optional to dump a vcd file to be viewed with `gtkwave`. A `sim.vcd` file gets dump from where you ran the command.
+7 ) Run the built SW of the accelerator on the built Verilator binary. The `--vcd` flag is optional and dumps a vcd file to be viewed with `gtkwave`. It needs a binary built with `VLT_TRACE=1` (step 5). A `sim.vcd` file gets dumped where you ran the command.
 
 ```bash
 ./target/snitch_cluster/bin/snitch_cluster.vlt ./target/snitch_cluster/sw/apps/snax-alu/build/snax-alu.elf --vcd

@@ -214,7 +214,16 @@ ifeq ($(MEM_TYPE), exclude_tcsram)
 	VLOG_FLAGS += +define+TSMC_CM_UNIT_DELAY
 endif 
 
-VLT_FLAGS  += --trace
+# Verilator VCD tracing is off by default: compiling the trace code makes the
+# build noticeably slower. Build with VLT_TRACE=1 to use the --vcd runtime flag.
+VLT_TRACE ?= 0
+# Holds the VLT_TRACE value of the last build, so switching it rebuilds the
+# Verilator model and the testbench objects.
+VLT_TRACE_STAMP = $(VLT_BUILDDIR)/vlt_trace.stamp
+ifeq ($(VLT_TRACE), 1)
+	VLT_FLAGS  += --trace
+	VLT_CFLAGS += -DVM_TRACE=1
+endif
 
 ###############
 # C testbench #
@@ -242,7 +251,9 @@ VLT_COBJ += $(VLT_BUILDDIR)/tb/tb_bin.o
 # Sources from verilator root
 VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated.o
 VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated_dpi.o
-VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated_vcd_c.o
+ifeq ($(VLT_TRACE), 1)
+	VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated_vcd_c.o
+endif
 ifeq ($(VERILATOR_VERSION), 5)
 	VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated_timing.o
 	VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated_threads.o
@@ -347,18 +358,27 @@ $(GENERATED_DIR)/bootdata.cc: ${CFG} |  ${CLUSTER_GEN_PREREQ} $(GENERATED_DIR)
 clean-vlt: clean-work
 	rm -rf bin $(VLT_BUILDDIR)
 
-$(VLT_AR): ${VLT_SOURCES} ${TB_SRCS} | $(GENERATED_DIR)/bender_targets.tmp
+# This target is always evaluated, like $(CFG) above, but only rewrites the
+# stamp when VLT_TRACE differs from the value it holds.
+$(VLT_TRACE_STAMP): FORCE
+	@mkdir -p $(dir $@)
+	@if [ "$$(cat $@ 2>/dev/null)" != "$(VLT_TRACE)" ] ; then \
+		echo "VLT_TRACE changed to $(VLT_TRACE), rebuilding the Verilator model."; \
+		echo "$(VLT_TRACE)" > $@; \
+	fi
+
+$(VLT_AR): ${VLT_SOURCES} ${TB_SRCS} $(VLT_TRACE_STAMP) | $(GENERATED_DIR)/bender_targets.tmp
 	+$(call VERILATE,testharness)
 verilate: $(VLT_AR)
 
 # Build targets for verilator TB
-$(VLT_BUILDDIR)/tb/%.o: $(TB_DIR)/%.cc $(VLT_AR) ${VLT_BUILDDIR}/lib/libfesvr.a
+$(VLT_BUILDDIR)/tb/%.o: $(TB_DIR)/%.cc $(VLT_AR) ${VLT_BUILDDIR}/lib/libfesvr.a $(VLT_TRACE_STAMP)
 	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(VLT_CFLAGS) -c $< -o $@
-$(VLT_BUILDDIR)/vlt/%.o: $(VLT_ROOT)/include/%.cpp
+$(VLT_BUILDDIR)/vlt/%.o: $(VLT_ROOT)/include/%.cpp $(VLT_TRACE_STAMP)
 	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(VLT_CFLAGS) -c $< -o $@
-$(VLT_BUILDDIR)/generated/%.o: $(GENERATED_DIR)/%.cc ${VLT_BUILDDIR}/lib/libfesvr.a
+$(VLT_BUILDDIR)/generated/%.o: $(GENERATED_DIR)/%.cc ${VLT_BUILDDIR}/lib/libfesvr.a $(VLT_TRACE_STAMP)
 	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(VLT_CFLAGS) -c $< -o $@
 
