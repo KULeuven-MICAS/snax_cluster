@@ -44,10 +44,25 @@ jobs:
     timeout-minutes: 90
     container:
       image: ghcr.io/pulp-platform/snitch_cluster@sha256:03c6b13b3c540d9f36722b183f694793293ca46558c13b8d55551ea7b01912bb
+    env:
+      # Verilator's generated makefile runs its compiles through $(OBJCACHE).
+      # CCACHE_DIR and CCACHE_BASEDIR are set in a step: in a container job,
+      # github.workspace is the host path, not the one mounted in the container.
+      OBJCACHE: ccache
+      CCACHE_COMPRESS: 1
+      CCACHE_COMPILERCHECK: content
+      CCACHE_MAXSIZE: 100M
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
+      # The image has no ccache; Ubuntu 22.04 packages 4.5.1.
+      - name: Install ccache
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends ccache
+          echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
+          echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
       - name: Install DNN Python Modules
         run: |
           pip3 install -r sw/dnn/requirements.txt
@@ -62,10 +77,49 @@ jobs:
         run: |
           make -C target/snitch_cluster rtl-gen \
           CFG_OVERRIDE=cfg/snitch_cluster.hjson
+      # This libfesvr is built with the image's GCC, not pixi's, so it has its
+      # own key.
+      - name: Read FESVR_VERSION
+        run: |
+          echo "FESVR_VERSION=$(sed -n 's/^FESVR_VERSION *?= *//p' \
+          target/common/common.mk)" >> "$GITHUB_ENV"
+      - name: Restore libfesvr cache
+        id: fesvr-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: fesvr-${{ runner.os }}-pulp-${{ env.FESVR_VERSION }}
+      - name: Restore ccache
+        id: ccache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: ccache-snitch_cluster-${{ github.sha }}
+          restore-keys: ccache-snitch_cluster-
       - name: Build Hardware
         run: |
+          ccache -z
           make -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc) \
           CFG_OVERRIDE=cfg/snitch_cluster.hjson
+          ccache -s
+      - name: Save ccache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.ccache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: ${{ steps.ccache.outputs.cache-primary-key }}
+      - name: Save libfesvr cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.fesvr-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            target/snitch_cluster/work-vlt/riscv-isa-sim
+            target/snitch_cluster/work-vlt/lib/libfesvr.a
+          key: ${{ steps.fesvr-cache.outputs.cache-primary-key }}
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |
