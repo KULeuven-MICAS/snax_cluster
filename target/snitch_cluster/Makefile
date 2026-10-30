@@ -214,7 +214,14 @@ ifeq ($(MEM_TYPE), exclude_tcsram)
 	VLOG_FLAGS += +define+TSMC_CM_UNIT_DELAY
 endif 
 
-VLT_FLAGS  += --trace
+# Verilator VCD tracing is off by default: compiling the trace code makes the
+# build noticeably slower. Build with VLT_TRACE=1 to use the --vcd runtime flag
+# (run `make clean-vlt` first when switching, the model is not rebuilt).
+VLT_TRACE ?= 0
+ifeq ($(VLT_TRACE), 1)
+	VLT_FLAGS  += --trace
+	VLT_CFLAGS += -DVM_TRACE=1
+endif
 
 ###############
 # C testbench #
@@ -242,7 +249,9 @@ VLT_COBJ += $(VLT_BUILDDIR)/tb/tb_bin.o
 # Sources from verilator root
 VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated.o
 VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated_dpi.o
-VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated_vcd_c.o
+ifeq ($(VLT_TRACE), 1)
+	VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated_vcd_c.o
+endif
 ifeq ($(VERILATOR_VERSION), 5)
 	VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated_timing.o
 	VLT_COBJ += $(VLT_BUILDDIR)/vlt/verilated_threads.o

@@ -4,7 +4,13 @@ There are two useful tools for debugging and verifying your work. (1) Dumping wa
 
 # Dumping Waveforms with VCD Files
 
-To dump VCD files through simulation we only need to add the `--vcd` when running simulations.
+VCD tracing is not compiled into the Verilator binary by default because it slows the build down. First build the binary with `VLT_TRACE=1` (run `make clean-vlt` first if you already built it without tracing):
+
+```bash
+make CFG_OVERRIDE=cfg/snax_alu_cluster.hjson VLT_TRACE=1 bin/snitch_cluster.vlt -j
+```
+
+Then add `--vcd` when running simulations. A binary built without `VLT_TRACE=1` stops with an error if you pass `--vcd`.
 
 ```bash
 bin/snitch_cluster.vlt sw/apps/snax-alu/build/snax-alu.elf --vcd
