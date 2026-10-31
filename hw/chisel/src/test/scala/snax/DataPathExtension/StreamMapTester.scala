@@ -6,7 +6,6 @@ import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import snax.utils.SnaxVcd
-import snax.utils.SnaxVlt
 
 /** Tier-1 test for StreamMap act(a*x+b). Uses a narrow datapath (8 FP16 lanes) so the EXP/SILU path's
   * per-lane FpActivation stays cheap to build. Compares HW FP16 output (widened to f32) against an FP32 golden.
@@ -52,7 +51,7 @@ class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
     var outs = Seq[Seq[Float]]()
     test(new DataPathExtensionHarness(
       new HasStreamMap(dataWidth = testWidth, elementWidth = 16, computeLanes = computeLanes, func = func)))
-      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation, SnaxVlt.buildJobsFlags)) {
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) {
         dut =>
           dut.io.csr_i(0).poke(f32bits(a).U)
           dut.io.csr_i(1).poke(f32bits(b).U)
@@ -134,7 +133,7 @@ class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
     var outs = Seq[Seq[Float]]()
     test(new DataPathExtensionHarness(
       new HasStreamMap(dataWidth = testWidth, elementWidth = 16, computeLanes = computeLanes, func = func)))
-      .withAnnotations(Seq(VerilatorBackendAnnotation, SnaxVlt.buildJobsFlags)) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.csr_i(0).poke(f32bits(a).U); dut.io.csr_i(1).poke(f32bits(b).U); dut.io.csr_i(2).poke(act.U)
         dut.io.enable_i.poke(true)
         dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
@@ -185,7 +184,7 @@ class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
     var cyc = 0L; var got = 0
     test(new DataPathExtensionHarness(
       new HasStreamMap(dataWidth = testWidth, elementWidth = 16, computeLanes = computeLanes, func = func)))
-      .withAnnotations(Seq(VerilatorBackendAnnotation, SnaxVlt.buildJobsFlags)) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.csr_i(0).poke(f32bits(2.0f).U); dut.io.csr_i(1).poke(f32bits(-1.5f).U); dut.io.csr_i(2).poke(act.U)
         dut.io.enable_i.poke(true)
         dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
@@ -227,7 +226,7 @@ class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
     test(new DataPathExtensionHarness(
       new HasStreamMap(dataWidth = testWidth, elementWidth = 16, computeLanes = 8,
                        func = Seq("LINEAR_FP16", "EXP_FP16", "SILU_FP16"))))
-      .withAnnotations(Seq(VerilatorBackendAnnotation, SnaxVlt.buildJobsFlags)) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.enable_i.poke(true)
         val rng = new Random(0xB05)
         def runTask(a: Float, b: Float, act: Int, nBeats: Int): Unit = {

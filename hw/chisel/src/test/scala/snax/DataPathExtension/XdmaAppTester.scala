@@ -6,7 +6,6 @@ import chisel3._
 import chiseltest._
 import firrtl2.options.TargetDirAnnotation
 import org.scalatest.flatspec.AnyFlatSpec
-import snax.utils.SnaxVlt
 
 /** App-level Tier-1 tests: replicate each xDMA app's ACTUAL pass sequence (the same extensions, op-sets,
   * computeLanes and per-pass CSRs as the deployed cfg) purely in the chisel/Verilator env — no vsim, no elf.
@@ -73,7 +72,7 @@ class XdmaAppTester extends AnyFlatSpec with ChiselScalatestTester {
     passId += 1
     var outs = Seq[BigInt]()
     test(new DataPathExtensionHarness(mk))
-      .withAnnotations(Seq(VerilatorBackendAnnotation, SnaxVlt.buildJobsFlags,
+      .withAnnotations(Seq(VerilatorBackendAnnotation,
         TargetDirAnnotation(s"test_run_dir/xapp_${tag}_$passId"))) { dut =>
         csr.zipWithIndex.foreach { case (v, i) => dut.io.csr_i(i).poke(v.U) }
         dut.io.enable_i.poke(true)

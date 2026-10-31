@@ -31,16 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - shard: stream-reduce
-            vlt-build-jobs: 4
-          - shard: xdma-app
-            vlt-build-jobs: 4
-          - shard: stream-map
-            vlt-build-jobs: 4
-          # rest runs many suites at once, so each Verilator build keeps 1 job.
-          - shard: rest
-            vlt-build-jobs: 1
+        shard: [stream-reduce, xdma-app, stream-map, rest]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -78,13 +69,26 @@ jobs:
       # FP DataPathExtension harnesses. Blanking the two make variables
       # drops the bad -include and builds without PCH.
       - name: Run the unit tests
+        id: tests
         working-directory: hw/chisel
         env:
           MAKEFLAGS: "VK_PCH_I_FAST= VK_PCH_I_SLOW="
           SNAX_TEST_SHARD: ${{ matrix.shard }}
-          SNAX_VLT_BUILD_JOBS: ${{ matrix.vlt-build-jobs }}
         run: |
           sbt test
+      # A named shard whose suites were renamed would run nothing and pass.
+      - name: Check that the shard ran its suites
+        if: steps.tests.outcome == 'success'
+        working-directory: hw/chisel
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          reports=$(find target/test-reports -name '*.xml' 2>/dev/null || true)
+          if [ -z "$reports" ]; then
+            echo "::error::Shard $SHARD ran no test suites. Its suites may" \
+              "have been renamed: check testShards in hw/chisel/build.sbt."
+            exit 1
+          fi
       # sbt's JUnit XML reports hold each suite's run time.
       - name: Upload test reports
         if: always()
