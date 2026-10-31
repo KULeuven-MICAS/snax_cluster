@@ -18,10 +18,7 @@ concurrency:
 
 env:
   # Caches are saved only by pushes to main; PR runs only read them.
-  # TEMPORARY: the head_ref part lets the ry/ci-speed-2 PR save caches too, so
-  # its own re-run shows hits. Remove it before merge.
-  CACHE_WRITE: ${{ (github.event_name == 'push' && github.ref_name == 'main') ||
-    github.head_ref == 'ry/ci-speed-2' }}
+  CACHE_WRITE: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
 jobs:
   run:
