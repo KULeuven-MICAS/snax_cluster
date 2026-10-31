@@ -6,6 +6,7 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import snax.reqRspManager.ReqRspManager
+import snax.utils.SnaxVcd
 
 trait HasReqRspManagerTest extends HasRegRspManagerTestUtils {
   def baseReqRspManagerTest[T <: ReqRspManager](dut: T) = {
@@ -256,7 +257,7 @@ class IO32R32ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester wi
         IO32R32ReqRspManagerTestParameters.numReadOnlyReg,
         IO32R32ReqRspManagerTestParameters.addrWidth
       )
-    ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    ).withAnnotations(SnaxVcd.annotations) { dut =>
       baseReqRspManagerTest(dut)
     }
   }

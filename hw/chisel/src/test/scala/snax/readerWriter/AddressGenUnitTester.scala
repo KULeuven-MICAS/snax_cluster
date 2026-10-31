@@ -4,6 +4,7 @@ import chisel3._
 
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
+import snax.utils.SnaxVcd
 
 class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
 
@@ -22,7 +23,7 @@ class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
       )
     )
   )
-    .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+    .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
       dut.io.cfg.ptr.poke(0x1000.U)
       dut.io.cfg.spatialStrides(0).poke(8)
       dut.io.cfg.temporalStrides(0).poke(64)
@@ -55,7 +56,7 @@ class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
       )
     )
   )
-    .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+    .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
       dut.io.cfg.ptr.poke(0x1000.U)
       dut.io.cfg.spatialStrides(0).poke(8)
       dut.io.cfg.temporalStrides(0).poke(64)
@@ -89,7 +90,7 @@ class AddressGenUnitTester extends AnyFlatSpec with ChiselScalatestTester {
       )
     )
   )
-    .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+    .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
       dut.clock.setTimeout(0)
       dut.io.cfg.ptr.poke(0x0.U)
       dut.io.cfg.spatialStrides(0).poke(8)

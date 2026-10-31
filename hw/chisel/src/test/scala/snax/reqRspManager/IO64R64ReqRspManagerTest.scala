@@ -5,6 +5,7 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import snax.reqRspManager.ReqRspManager
+import snax.utils.SnaxVcd
 
 class IO64R64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester with Matchers with HasReqRspManagerTest {
 
@@ -18,7 +19,7 @@ class IO64R64ReqRspManagerTest extends AnyFlatSpec with ChiselScalatestTester wi
         regDataWidth    = 64,
         moduleTagName   = "Test"
       )
-    ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    ).withAnnotations(SnaxVcd.annotations) { dut =>
       // Strobe Moves step by step
       writeReg(dut, 0, BigInt("FFFFFFFFFFFFFFFF", 16), BigInt("00000001", 2))
       dut.io.readWriteRegIO.bits(0).expect(BigInt("00000000000000FF", 16))

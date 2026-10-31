@@ -21,8 +21,8 @@ env:
   CACHE_WRITE: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
 jobs:
-  run:
-    name: Build and Test
+  chisel:
+    name: Test hw/chisel
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
@@ -48,14 +48,10 @@ jobs:
             ~/.cache/coursier
             ~/.cache/llvm-firtool
             ~/.sbt
-          key: sbt-test-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
-            'hw/**/project/build.properties',
+          key: sbt-test-chisel-${{ runner.os }}-${{ hashFiles(
+            'hw/**/build.sbt', 'hw/**/project/build.properties',
             'hw/**/project/plugins.sbt') }}
-          restore-keys: sbt-test-${{ runner.os }}-
-      - name: Generate RTL
-        run: |
-          make -C target/snitch_cluster rtl-gen \
-          CFG_OVERRIDE=cfg/snax_alu_cluster.hjson
+          restore-keys: sbt-test-chisel-${{ runner.os }}-
       # Verilator 5.034 (the version pixi.lock resolves) compiles the
       # precompiled header to <top>__pch.h.{fast,slow}.gch but tells the
       # compiler `-include <top>__pch.h.{fast,slow}` -- a file it never
@@ -71,12 +67,69 @@ jobs:
           MAKEFLAGS: "VK_PCH_I_FAST= VK_PCH_I_SLOW="
         run: |
           sbt test
-      - name: Run the acc unit tests
+      # sbt's JUnit XML reports hold each suite's run time.
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-chisel
+          path: hw/chisel/target/test-reports/
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
+
+  chisel-acc:
+    name: Test hw/chisel_acc
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Initialize and update submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
+          activate-environment: true
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-test-acc-${{ runner.os }}-${{ hashFiles(
+            'hw/**/build.sbt', 'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-test-acc-${{ runner.os }}-
+      # The MAKEFLAGS PCH workaround is explained in the chisel job.
+      - name: Run the unit tests
         working-directory: hw/chisel_acc
         env:
           MAKEFLAGS: "VK_PCH_I_FAST= VK_PCH_I_SLOW="
         run: |
           sbt test
+      # sbt's JUnit XML reports hold each suite's run time.
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-chisel-acc
+          path: hw/chisel_acc/target/test-reports/
       - name: Save sbt cache
         if: env.CACHE_WRITE == 'true' &&
           steps.sbt-cache.outputs.cache-hit != 'true'

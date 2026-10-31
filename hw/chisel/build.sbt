@@ -33,3 +33,6 @@ lazy val root = (project in file("."))
     )
   )
   .dependsOn(fpUnits, fpUnits % "compile->test", fpNative)
+
+// -oD prints each test's duration in the sbt log.
+Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oD")

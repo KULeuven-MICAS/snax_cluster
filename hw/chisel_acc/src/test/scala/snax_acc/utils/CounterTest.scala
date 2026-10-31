@@ -10,7 +10,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 class NestCounterTest extends AnyFlatSpec with ChiselScalatestTester {
 
   def testNestCounter(width: Int, loopNum: Int, ceilValues: Array[Int]): Unit = {
-    test(new NestCounter(width, loopNum)).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
+    test(new NestCounter(width, loopNum)).withAnnotations(SnaxVcd.annotations) { c =>
       // Print generated ceil values
       println(s"Testing with loopNum=$loopNum, ceilValues: ${ceilValues.mkString(", ")}")
 

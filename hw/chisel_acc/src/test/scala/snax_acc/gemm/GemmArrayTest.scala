@@ -5,13 +5,14 @@ import chisel3._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import snax_acc.utils.MatrixLibBase._
+import snax_acc.utils.SnaxVcd
 
 class GemmArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
   // Random Integer 8 data test and check with the results of Gemm with golden model
   // TODO Add C is not tested
   "GemmArray" should "correctly compute INT8 GeMM" in {
-    test(new GemmArray(TestParameters.testConfig)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    test(new GemmArray(TestParameters.testConfig)).withAnnotations(SnaxVcd.annotations) { dut =>
 
       val meshRow  = dut.params.meshRow
       val tileSize = dut.params.tileSize

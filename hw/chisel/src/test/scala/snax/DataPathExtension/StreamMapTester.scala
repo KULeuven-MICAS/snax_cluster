@@ -6,6 +6,7 @@ import chisel3._
 import chiseltest._
 import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
+import snax.utils.SnaxVcd
 
 /** Tier-1 test for StreamMap act(a*x+b). Uses a narrow datapath (8 FP16 lanes) so the EXP/SILU path's
   * per-lane FpActivation stays cheap to build. Compares HW FP16 output (widened to f32) against an FP32 golden.
@@ -51,7 +52,7 @@ class StreamMapTester extends AnyFlatSpec with ChiselScalatestTester {
     var outs = Seq[Seq[Float]]()
     test(new DataPathExtensionHarness(
       new HasStreamMap(dataWidth = testWidth, elementWidth = 16, computeLanes = computeLanes, func = func)))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
         dut =>
           dut.io.csr_i(0).poke(f32bits(a).U)
           dut.io.csr_i(1).poke(f32bits(b).U)

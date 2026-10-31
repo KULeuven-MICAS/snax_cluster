@@ -10,6 +10,7 @@ import chisel3._
 import chiseltest._
 import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
+import snax.utils.SnaxVcd
 
 /** Tier-1 test for Fp16ToInt8: symmetric per-tensor quantize q = sat[-127,127](round_rne(x*inv_scale)).
   * Verilator (fpnew blackboxes) with --build-jobs 1 (UNOPTFLAT parallel-build race). Two levels:
@@ -96,7 +97,7 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
   def runHarness(invScaleBits: BigInt, inputBeats: Seq[BigInt], computeLanes: Int = 0): Seq[BigInt] = {
     var outs = Seq[BigInt]()
     test(new DataPathExtensionHarness(new HasFp16ToInt8(16, 8, 512, computeLanes)))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, flags)) { dut =>
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation, flags)) { dut =>
         dut.io.csr_i(0).poke(invScaleBits.U)
         dut.io.enable_i.poke(true)
         dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)

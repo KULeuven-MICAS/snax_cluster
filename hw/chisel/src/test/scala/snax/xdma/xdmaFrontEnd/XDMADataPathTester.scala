@@ -9,6 +9,7 @@ import chisel3._
 import chiseltest._
 import org.scalatest.freespec.AnyFreeSpec
 import snax.readerWriter.ReaderWriterParam
+import snax.utils.SnaxVcd
 import snax.xdma.DesignParams.{XDMAAXIParam, XDMAConfigParam, XDMACrossClusterParam, XDMAParam}
 import snax.xdma.xdmaFrontend.XDMADataPath
 
@@ -45,7 +46,7 @@ class DMADataPathTester extends AnyFreeSpec with ChiselScalatestTester {
         )
       )
     )
-  ).withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+  ).withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
     // ************************ Prepare the simulation data ************************//
 
     // Prepare the data in the tcdm

@@ -17,6 +17,7 @@ import snax_acc.utils.CommonTestUtils.WaitOrTimeout
 import snax_acc.utils.CommonTestUtils.toSInt
 import snax_acc.utils.DecoupledCut._
 import snax_acc.utils.MatrixLibBlock.temporalToSpatialIndicesAB
+import snax_acc.utils.SnaxVcd
 
 class VersaCoreHarness(params: SpatialArrayParam) extends Module with RequireAsyncReset {
   val dut = Module(new VersaCore(params))
@@ -35,7 +36,7 @@ class VersaCoreHarness(params: SpatialArrayParam) extends Module with RequireAsy
 trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
   // Define the function to test a single configuration
   def testSingleConfig(params: SpatialArrayParam, dataTypeIdx: Int, arrayShapeIdx: Int): Unit = {
-    test(new VersaCoreHarness(params)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    test(new VersaCoreHarness(params)).withAnnotations(SnaxVcd.annotations) { dut =>
       println(s"Testing dataTypeIdx${dataTypeIdx + 1} arrayShapeIdx_cfg${arrayShapeIdx + 1}...")
 
       // Get the current configuration parameters
