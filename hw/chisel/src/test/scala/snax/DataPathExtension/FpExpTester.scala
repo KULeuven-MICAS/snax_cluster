@@ -2,9 +2,9 @@ package snax.DataPathExtension
 
 import chisel3._
 import chiseltest._
-import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
 import snax.utils.SnaxVcd
+import snax.utils.SnaxVlt
 
 /** Tier-1 accuracy test for FpExp vs the host Cephes exp. Gating milestone: the FP16-narrowed result
   * must match within <=1 FP16 ULP across [-88, 8] (design-doc §5.1). Reports the worst-case ULP.
@@ -68,7 +68,7 @@ class FpExpTester extends AnyFlatSpec with ChiselScalatestTester {
 
   "FpExp" should "match host exp within <=1 FP16 ULP after narrowing" in {
     test(new FpExp)
-      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation, SnaxVlt.buildJobsFlags)) {
         dut => sweep(dut, latency = 0, maxUlpAllowed = 1, tag = "comb256")
       }
   }
@@ -76,7 +76,7 @@ class FpExpTester extends AnyFlatSpec with ChiselScalatestTester {
   // Area config used by StreamMap: pipelined + 128-entry ROM must stay within the relaxed <=2 FP16 ULP.
   "FpExp_pipelined_lut128" should "match host exp within <=2 FP16 ULP (pipelined, 128-entry ROM)" in {
     test(new FpExp(pipelined = true, lutN = 128))
-      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation, SnaxVlt.buildJobsFlags)) {
         dut => sweep(dut, latency = FpExp.PipeLatency, maxUlpAllowed = 2, tag = "pipe128")
       }
   }

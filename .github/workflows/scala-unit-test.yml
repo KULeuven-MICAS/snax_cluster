@@ -21,10 +21,26 @@ env:
   CACHE_WRITE: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
 jobs:
-  chisel:
-    name: Test hw/chisel
+  # hw/chisel runs in shards (SNAX_TEST_SHARD in hw/chisel/build.sbt), one
+  # runner each. The named shards each hold one or two long Verilator suites;
+  # rest runs every other suite.
+  chisel-shard:
+    name: Test hw/chisel (${{ matrix.shard }})
     runs-on: ubuntu-22.04
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: stream-reduce
+            vlt-build-jobs: 4
+          - shard: xdma-app
+            vlt-build-jobs: 4
+          - shard: stream-map
+            vlt-build-jobs: 4
+          # rest runs many suites at once, so each Verilator build keeps 1 job.
+          - shard: rest
+            vlt-build-jobs: 1
     steps:
       - uses: actions/checkout@v4
         with:
@@ -65,6 +81,8 @@ jobs:
         working-directory: hw/chisel
         env:
           MAKEFLAGS: "VK_PCH_I_FAST= VK_PCH_I_SLOW="
+          SNAX_TEST_SHARD: ${{ matrix.shard }}
+          SNAX_VLT_BUILD_JOBS: ${{ matrix.vlt-build-jobs }}
         run: |
           sbt test
       # sbt's JUnit XML reports hold each suite's run time.
@@ -72,10 +90,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports-chisel
+          name: test-reports-chisel-${{ matrix.shard }}
           path: hw/chisel/target/test-reports/
+      # All shards share one sbt cache; only rest saves it.
       - name: Save sbt cache
-        if: env.CACHE_WRITE == 'true' &&
+        if: env.CACHE_WRITE == 'true' && matrix.shard == 'rest' &&
           steps.sbt-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
@@ -84,6 +103,21 @@ jobs:
             ~/.cache/llvm-firtool
             ~/.sbt
           key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
+
+  # The status check for hw/chisel: passes only if every shard passed.
+  chisel:
+    name: Test hw/chisel
+    needs: chisel-shard
+    if: always()
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - name: Check the shard results
+        env:
+          RESULT: ${{ needs.chisel-shard.result }}
+        run: |
+          echo "hw/chisel shards: $RESULT"
+          test "$RESULT" = success
 
   chisel-acc:
     name: Test hw/chisel_acc

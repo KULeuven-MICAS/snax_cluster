@@ -8,9 +8,9 @@ import scala.util.Random
 
 import chisel3._
 import chiseltest._
-import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
 import snax.utils.SnaxVcd
+import snax.utils.SnaxVlt
 
 /** Tier-1 test for Fp16ToInt8: symmetric per-tensor quantize q = sat[-127,127](round_rne(x*inv_scale)).
   * Verilator (fpnew blackboxes) with --build-jobs 1 (UNOPTFLAT parallel-build race). Two levels:
@@ -58,7 +58,7 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
     math.max(-127, math.min(127, r))                  // symmetric saturate
   }
 
-  val flags = VerilatorFlags(Seq("--build-jobs", "1"))
+  val flags = SnaxVlt.buildJobsFlags
 
   // FP16 bit patterns drawn from a bounded range (avoid NaN/Inf), plus exact edges.
   def sampleFp16(rng: Random): Int =

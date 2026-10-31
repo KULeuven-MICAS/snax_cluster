@@ -2,9 +2,9 @@ package snax.DataPathExtension
 
 import chisel3._
 import chiseltest._
-import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
 import snax.utils.SnaxVcd
+import snax.utils.SnaxVlt
 
 /** Differential Tier-1 test for the merged FpActivation: it must reproduce the standalone FpExp / FpSilu
   * (the proven golden references) BIT-FOR-BIT in every build mode (exp-only, silu-only, and both-built with
@@ -32,7 +32,7 @@ class FpActivationTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   private val annotations =
-    SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))
+    SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation, SnaxVlt.buildJobsFlags)
 
   private def bits(f: Float): BigInt = BigInt(java.lang.Float.floatToIntBits(f).toLong & 0xffffffffL)
 
