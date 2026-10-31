@@ -2,6 +2,7 @@ package snax_acc.utils
 
 import scala.math.BigInt
 import scala.math.abs
+import scala.util.Random
 
 import chisel3._
 
@@ -9,9 +10,8 @@ import chisel3._
 object MatrixLibBase {
 
   /** Generate a random data matrix of 8-bit ints (Byte in Scala) */
-  def GenRandomMatrix(nRow: Int, nCol: Int, negative: Boolean = true) = {
+  def GenRandomMatrix(nRow: Int, nCol: Int, rand: Random, negative: Boolean = true) = {
     val random_matrix = Array.ofDim[Byte](nRow * nCol)
-    val rand          = new scala.util.Random
     val minVal        = if (negative) -128 else 0
     val maxVal        = 127
 
@@ -23,8 +23,7 @@ object MatrixLibBase {
     random_matrix
   }
 
-  def GenRandomSubtractionValue() = {
-    val rand = new scala.util.Random
+  def GenRandomSubtractionValue(rand: Random) = {
     (rand.between(0, 127).toByte, rand.between(0, 127).toByte)
   }
 

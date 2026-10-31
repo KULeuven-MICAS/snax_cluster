@@ -6,6 +6,7 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import snax_acc.utils.MatrixLibBase._
 import snax_acc.utils.SnaxVcd
+import snax_acc.utils.TestSeed
 
 class GemmArrayTest extends AnyFlatSpec with ChiselScalatestTester {
 
@@ -17,12 +18,13 @@ class GemmArrayTest extends AnyFlatSpec with ChiselScalatestTester {
       val meshRow  = dut.params.meshRow
       val tileSize = dut.params.tileSize
       val meshCol  = dut.params.meshCol
+      val rand     = TestSeed.rng("GemmArray")
 
       /** Generate Random Integer 8 data (from -128 to 127) */
       def RandomTest() = {
-        val random_matrix_A                = GenRandomMatrix(meshRow, tileSize)
-        val random_matrix_B                = GenRandomMatrix(tileSize, meshCol)
-        val (subtraction_a, subtraction_b) = GenRandomSubtractionValue()
+        val random_matrix_A                = GenRandomMatrix(meshRow, tileSize, rand)
+        val random_matrix_B                = GenRandomMatrix(tileSize, meshCol, rand)
+        val (subtraction_a, subtraction_b) = GenRandomSubtractionValue(rand)
 
         // Generate golden result data for verification
         val goldenMatrix   =

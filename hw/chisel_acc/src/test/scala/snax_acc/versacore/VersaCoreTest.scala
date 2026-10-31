@@ -6,8 +6,6 @@
 
 package snax_acc.versacore
 
-import scala.util.Random
-
 import chisel3._
 
 import chiseltest._
@@ -18,6 +16,7 @@ import snax_acc.utils.CommonTestUtils.toSInt
 import snax_acc.utils.DecoupledCut._
 import snax_acc.utils.MatrixLibBlock.temporalToSpatialIndicesAB
 import snax_acc.utils.SnaxVcd
+import snax_acc.utils.TestSeed
 
 class VersaCoreHarness(params: SpatialArrayParam) extends Module with RequireAsyncReset {
   val dut = Module(new VersaCore(params))
@@ -50,7 +49,7 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
       val Nu = params.arrayDim(dataTypeIdx)(arrayShapeIdx)(2)
 
       val sizeRange = 5
-      val rand      = new Random()
+      val rand      = TestSeed.rng(s"VersaCore dataTypeIdx${dataTypeIdx + 1} arrayShapeIdx_cfg${arrayShapeIdx + 1}")
       // val M         = rand.nextInt(sizeRange) + 1
       // val N         = rand.nextInt(sizeRange) + 1
       val M         = 1
@@ -166,7 +165,7 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
             .map { case (v, i) => BigInt(v) << (i * inputTypeA.width) }
             .sum
 
-          dut.clock.step(Random.between(1, 5))
+          dut.clock.step(rand.between(1, 5))
           dut.io.versacore_data.in_a.bits.poke(aValues_cur.U)
           dut.io.versacore_data.in_a.valid.poke(true.B)
           WaitOrTimeout(dut.io.versacore_data.in_a.ready, dut.clock)
@@ -187,7 +186,7 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
             .map { case (v, i) => BigInt(v) << (i * inputTypeB.width) }
             .sum
 
-          dut.clock.step(Random.between(1, 5))
+          dut.clock.step(rand.between(1, 5))
           dut.io.versacore_data.in_b.bits.poke(bValues_cur.U)
           dut.io.versacore_data.in_b.valid.poke(true.B)
           WaitOrTimeout(dut.io.versacore_data.in_b.ready, dut.clock)
@@ -207,7 +206,7 @@ trait VersaCoreTestHelper extends AnyFlatSpec with ChiselScalatestTester {
             .map { case (v, i) => BigInt(v) << (i * inputTypeC.width) }
             .sum
 
-          dut.clock.step(Random.between(1, 5))
+          dut.clock.step(rand.between(1, 5))
           dut.io.versacore_data.in_c.bits.poke(cValues_cur.U)
           dut.io.versacore_data.in_c.valid.poke(true.B)
           WaitOrTimeout(dut.io.versacore_data.in_c.ready, dut.clock)

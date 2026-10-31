@@ -1,7 +1,5 @@
 package snax_acc.utils
 
-import scala.util.Random
-
 import chisel3._
 
 import chiseltest._
@@ -57,7 +55,7 @@ class NestCounterTest extends AnyFlatSpec with ChiselScalatestTester {
   "NestCounter" should "correctly compute counter values with hierarchical dependencies" in {
     val width      = 4                                        // Set the width of the counter
     var loopNum    = 3                                        // Set the number of loops (counters)
-    val rand       = new Random()
+    val rand       = TestSeed.rng("NestCounter")
     var ceilValues = Array.fill(loopNum)(rand.nextInt(8) + 1) // Random ceil between 1 and 8 for each counter
 
     testNestCounter(width, loopNum, ceilValues)
