@@ -4,7 +4,6 @@ import scala.util.Random
 
 import chisel3._
 import chiseltest._
-import chiseltest.simulator.VerilatorFlags
 import firrtl2.options.TargetDirAnnotation
 import org.scalatest.flatspec.AnyFlatSpec
 
@@ -73,7 +72,7 @@ class XdmaAppTester extends AnyFlatSpec with ChiselScalatestTester {
     passId += 1
     var outs = Seq[BigInt]()
     test(new DataPathExtensionHarness(mk))
-      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")),
+      .withAnnotations(Seq(VerilatorBackendAnnotation,
         TargetDirAnnotation(s"test_run_dir/xapp_${tag}_$passId"))) { dut =>
         csr.zipWithIndex.foreach { case (v, i) => dut.io.csr_i(i).poke(v.U) }
         dut.io.enable_i.poke(true)

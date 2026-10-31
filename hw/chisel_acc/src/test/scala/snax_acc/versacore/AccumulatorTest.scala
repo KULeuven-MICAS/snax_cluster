@@ -11,12 +11,13 @@ import chisel3._
 import chiseltest._
 import fp_unit._
 import org.scalatest.funsuite.AnyFunSuite
+import snax_acc.utils.SnaxVcd
 
 class AccumulatorTest extends AnyFunSuite with ChiselScalatestTester {
   test("Accumulator should correctly add or accumulate values") {
     val numElements = 4
 
-    test(new Accumulator(Int8, Int16, numElements)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    test(new Accumulator(Int8, Int16, numElements)).withAnnotations(SnaxVcd.annotations) { dut =>
       // Helper function to run tests with different configurations
       def testConfig(
         in1Values:      Seq[Int],

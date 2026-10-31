@@ -4,8 +4,8 @@ import scala.util.Random
 
 import chisel3._
 import chiseltest._
-import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
+import snax.utils.SnaxVcd
 
 /** Tier-1 test for StreamElementwise: per-lane FP binary combine of operandCount=2 interleaved beats
   * (out(i) = A(i) op B(i), op in {MUL, ADD}). FP16 transport, FP32-internal. Drives the harness with the
@@ -54,7 +54,7 @@ class StreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
     var outs = Seq[Seq[Float]]()
     test(new DataPathExtensionHarness(
       new HasStreamElementwise(dataWidth = testWidth, elementWidth = 16, computeLanes = computeLanes, op = opList)))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) {
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) {
         dut =>
           dut.io.csr_i(0).poke(2.U) // operandCount = 2 (binary)
           if (dut.io.csr_i.length > 1) dut.io.csr_i(1).poke(op.U)
@@ -125,7 +125,7 @@ class StreamElementwiseTester extends AnyFlatSpec with ChiselScalatestTester {
   "StreamElementwise_multitask_busy" should "return busy_o low after each back-to-back task" in {
     test(new DataPathExtensionHarness(
       new HasStreamElementwise(dataWidth = testWidth, elementWidth = 16, computeLanes = 8, op = Seq("FMA_FP16"))))
-      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.enable_i.poke(true)
         val rng = new Random(0xE1E)
         def runTask(op: Int, nRows: Int): Unit = {

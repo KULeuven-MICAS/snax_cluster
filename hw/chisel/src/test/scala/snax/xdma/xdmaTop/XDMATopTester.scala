@@ -12,6 +12,7 @@ import snax.DataPathExtension.HasMaxPool
 import snax.DataPathExtension.HasTransposer
 import snax.DataPathExtension.HasVerilogMemset
 import snax.readerWriter.ReaderWriterParam
+import snax.utils.SnaxVcd
 import snax.xdma.DesignParams._
 
 class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
@@ -61,7 +62,7 @@ class XDMATopTester extends AnyFreeSpec with ChiselScalatestTester {
         )
       )
     )
-  ).withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation)) { dut =>
+  ).withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
     // ************************ Start Simulation **********************************//
     // The thread list for the concurrent elements in a tester
     var concurrent_threads = new chiseltest.internal.TesterThreadList(Seq())

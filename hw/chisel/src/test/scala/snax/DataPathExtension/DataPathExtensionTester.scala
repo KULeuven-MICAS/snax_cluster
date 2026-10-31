@@ -8,6 +8,7 @@ import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 import snax.DataPathExtension.HasDataPathExtension
 import snax.utils.DecoupledCut._
+import snax.utils.SnaxVcd
 
 /** The parent (abstract) Class for the DMA Extension Testbench It includes two things: 1) A Testharness to wrap the
   * extension 2) A Testbench to emulate DMACtrl, the prior extension and posterior extension
@@ -45,7 +46,7 @@ abstract class DataPathExtensionTester(
 
   suiteTestName should "pass" in {
     test(new DataPathExtensionHarness(hasExtension))
-      .withAnnotations(Seq(WriteVcdAnnotation, simBackEnd)) { dut =>
+      .withAnnotations(SnaxVcd.annotations ++ Seq(simBackEnd)) { dut =>
         dut.io.csr_i.zip(csr_vec).foreach { case (csrPort, csrData) =>
           csrPort.poke(csrData)
         }

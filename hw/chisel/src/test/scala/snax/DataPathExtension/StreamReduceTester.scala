@@ -4,8 +4,8 @@ import scala.util.Random
 
 import chisel3._
 import chiseltest._
-import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
+import snax.utils.SnaxVcd
 
 /** Tolerance-aware Tier-1 test for StreamReduce (the base DataPathExtensionTester does exact BigInt
   * compare, which doesn't fit FP tree-order + FP16-narrowing). Drives the same harness, then compares
@@ -65,8 +65,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
                 fpPipe: Int = 1, treePipe: Int = 1): Float = {
     var result: Float = 0.0f
     test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16, fpPipe = fpPipe, treePipe = treePipe)))
-      // Serial build: fpnew blackboxes (lzc.sv UNOPTFLAT) trip a Verilator PCH parallel-build race.
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.csr_i(0).poke(beats.length.U)
         dut.io.csr_i(1).poke(op.U)
         dut.io.enable_i.poke(true)
@@ -105,7 +104,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
                     ops: Seq[String] = Seq("FMA_FP16", "MAX_FP16")): Float = {
     var result: Float = 0.0f
     test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.csr_i(0).poke(beats.length.U)
         dut.io.csr_i(1).poke((op | 0x200).U) // fp32out bit[9]
         dut.io.enable_i.poke(true)
@@ -147,7 +146,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     val allBeats    = rows.flatten // rows*beatsPerRow input beats
     val results     = scala.collection.mutable.ArrayBuffer[Float]()
     test(new DataPathExtensionHarness(new HasStreamReduce(computeLanes = computeLanes, op = ops, elementWidth = 16)))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.csr_i(0).poke(beatsPerRow.U)
         dut.io.csr_i(1).poke(op.U)
         dut.io.enable_i.poke(true)
@@ -290,7 +289,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
     val outs = scala.collection.mutable.ArrayBuffer[BigInt]()
     test(new DataPathExtensionHarness(
       new HasStreamReduce(computeLanes = computeLanes, op = Seq("FMA_FP16", "MAX_FP16"), elementWidth = 16)))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.csr_i(0).poke(beats.length.U)
         dut.io.csr_i(1).poke((op | 0x100).U) // tap bit[8]
         dut.io.enable_i.poke(true)
@@ -354,7 +353,7 @@ class StreamReduceTester extends AnyFlatSpec with ChiselScalatestTester {
   def runTasksCheckBusy(computeLanes: Int, tasks: Seq[(Int, Boolean, Int)]): Unit = {
     test(new DataPathExtensionHarness(
       new HasStreamReduce(computeLanes = computeLanes, op = Seq("FMA_FP16", "MAX_FP16"), elementWidth = 16)))
-      .withAnnotations(Seq(VerilatorBackendAnnotation, VerilatorFlags(Seq("--build-jobs", "1")))) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.enable_i.poke(true)
         val rng = new Random(0x1EAF)
         for (((op, tap, nBeats), ti) <- tasks.zipWithIndex) {

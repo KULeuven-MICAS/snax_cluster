@@ -18,14 +18,113 @@ concurrency:
 
 env:
   # Caches are saved only by pushes to main; PR runs only read them.
-  # TEMPORARY: the head_ref part lets the ry/ci-speed-2 PR save caches too, so
-  # its own re-run shows hits. Remove it before merge.
-  CACHE_WRITE: ${{ (github.event_name == 'push' && github.ref_name == 'main') ||
-    github.head_ref == 'ry/ci-speed-2' }}
+  CACHE_WRITE: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
 jobs:
-  run:
-    name: Build and Test
+  # hw/chisel runs in shards (SNAX_TEST_SHARD in hw/chisel/build.sbt), one
+  # runner each. The named shards each hold one or two long Verilator suites;
+  # rest runs every other suite.
+  chisel-shard:
+    name: Test hw/chisel (${{ matrix.shard }})
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [stream-reduce, xdma-app, stream-map, rest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Initialize and update submodules
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' &&
+            github.ref_name == 'main' }}
+          activate-environment: true
+      - name: Restore sbt cache
+        id: sbt-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: sbt-test-chisel-${{ runner.os }}-${{ hashFiles(
+            'hw/**/build.sbt', 'hw/**/project/build.properties',
+            'hw/**/project/plugins.sbt') }}
+          restore-keys: sbt-test-chisel-${{ runner.os }}-
+      # Verilator 5.034 (the version pixi.lock resolves) compiles the
+      # precompiled header to <top>__pch.h.{fast,slow}.gch but tells the
+      # compiler `-include <top>__pch.h.{fast,slow}` -- a file it never
+      # creates. GCC only tolerates that while the .gch stays valid, and
+      # chiseltest's extra -CFLAGS invalidate it, so the fallback to the
+      # missing header aborts the build. This only bites designs Verilator
+      # splits across several .cpp files (VM_PARALLEL_BUILDS=1), i.e. the
+      # FP DataPathExtension harnesses. Blanking the two make variables
+      # drops the bad -include and builds without PCH.
+      - name: Run the unit tests
+        id: tests
+        working-directory: hw/chisel
+        env:
+          MAKEFLAGS: "VK_PCH_I_FAST= VK_PCH_I_SLOW="
+          SNAX_TEST_SHARD: ${{ matrix.shard }}
+        run: |
+          sbt test
+      # A named shard whose suites were renamed would run nothing and pass.
+      - name: Check that the shard ran its suites
+        if: steps.tests.outcome == 'success'
+        working-directory: hw/chisel
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          reports=$(find target/test-reports -name '*.xml' 2>/dev/null || true)
+          if [ -z "$reports" ]; then
+            echo "::error::Shard $SHARD ran no test suites. Its suites may" \
+              "have been renamed: check testShards in hw/chisel/build.sbt."
+            exit 1
+          fi
+      # sbt's JUnit XML reports hold each suite's run time.
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-chisel-${{ matrix.shard }}
+          path: hw/chisel/target/test-reports/
+      # All shards share one sbt cache; only rest saves it.
+      - name: Save sbt cache
+        if: env.CACHE_WRITE == 'true' && matrix.shard == 'rest' &&
+          steps.sbt-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/llvm-firtool
+            ~/.sbt
+          key: ${{ steps.sbt-cache.outputs.cache-primary-key }}
+
+  # The status check for hw/chisel: passes only if every shard passed.
+  chisel:
+    name: Test hw/chisel
+    needs: chisel-shard
+    if: always()
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - name: Check the shard results
+        env:
+          RESULT: ${{ needs.chisel-shard.result }}
+        run: |
+          echo "hw/chisel shards: $RESULT"
+          test "$RESULT" = success
+
+  chisel-acc:
+    name: Test hw/chisel_acc
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
@@ -51,35 +150,24 @@ jobs:
             ~/.cache/coursier
             ~/.cache/llvm-firtool
             ~/.sbt
-          key: sbt-test-${{ runner.os }}-${{ hashFiles('hw/**/build.sbt',
-            'hw/**/project/build.properties',
+          key: sbt-test-acc-${{ runner.os }}-${{ hashFiles(
+            'hw/**/build.sbt', 'hw/**/project/build.properties',
             'hw/**/project/plugins.sbt') }}
-          restore-keys: sbt-test-${{ runner.os }}-
-      - name: Generate RTL
-        run: |
-          make -C target/snitch_cluster rtl-gen \
-          CFG_OVERRIDE=cfg/snax_alu_cluster.hjson
-      # Verilator 5.034 (the version pixi.lock resolves) compiles the
-      # precompiled header to <top>__pch.h.{fast,slow}.gch but tells the
-      # compiler `-include <top>__pch.h.{fast,slow}` -- a file it never
-      # creates. GCC only tolerates that while the .gch stays valid, and
-      # chiseltest's extra -CFLAGS invalidate it, so the fallback to the
-      # missing header aborts the build. This only bites designs Verilator
-      # splits across several .cpp files (VM_PARALLEL_BUILDS=1), i.e. the
-      # FP DataPathExtension harnesses. Blanking the two make variables
-      # drops the bad -include and builds without PCH.
+          restore-keys: sbt-test-acc-${{ runner.os }}-
+      # The MAKEFLAGS PCH workaround is explained in the chisel job.
       - name: Run the unit tests
-        working-directory: hw/chisel
-        env:
-          MAKEFLAGS: "VK_PCH_I_FAST= VK_PCH_I_SLOW="
-        run: |
-          sbt test
-      - name: Run the acc unit tests
         working-directory: hw/chisel_acc
         env:
           MAKEFLAGS: "VK_PCH_I_FAST= VK_PCH_I_SLOW="
         run: |
           sbt test
+      # sbt's JUnit XML reports hold each suite's run time.
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-chisel-acc
+          path: hw/chisel_acc/target/test-reports/
       - name: Save sbt cache
         if: env.CACHE_WRITE == 'true' &&
           steps.sbt-cache.outputs.cache-hit != 'true'

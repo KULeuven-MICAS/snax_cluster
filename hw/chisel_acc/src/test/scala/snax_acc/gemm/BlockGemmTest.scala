@@ -1,5 +1,7 @@
 package snax_acc.gemm
 
+import scala.util.Random
+
 import chisel3._
 
 import chiseltest._
@@ -8,16 +10,18 @@ import org.scalatest.flatspec.AnyFlatSpec
 import snax_acc.utils.CommonTestUtils.WaitOrTimeout
 import snax_acc.utils.MatrixLibBase.CheckResults
 import snax_acc.utils.MatrixLibBlock._
+import snax_acc.utils.SnaxVcd
+import snax_acc.utils.TestSeed
 
 /** A trait with basic gemm test function to be used in different test */
 trait AbstractBlockGemmTest {
 
   /** Block gemm test generation function */
-  def BlockGemmRandomTest[T <: BlockGemmDelayedWrapper](dut: T, size_M: Int, size_K: Int, size_N: Int) = {
+  def BlockGemmRandomTest[T <: BlockGemmDelayedWrapper](dut: T, size_M: Int, size_K: Int, size_N: Int, rand: Random) = {
     val params = dut.params
 
     // Randomly generation of input matrices
-    val (matrix_A, matrix_B, matrix_C) = GenBlockMatrices(size_M, size_K, size_N, dut.params)
+    val (matrix_A, matrix_B, matrix_C) = GenBlockMatrices(size_M, size_K, size_N, dut.params, rand)
 
     // Convert the sub-matrices to a big bus
     val (split_matrix_A, split_matrix_B, split_matrix_C) =
@@ -107,26 +111,26 @@ trait AbstractBlockGemmTest {
 /** Random size of input matrices and Integer 8 data test and check with the results of Block Gemm with golden model */
 class BlockGemmTest extends AnyFlatSpec with ChiselScalatestTester with AbstractBlockGemmTest {
   "BlockGemm" should "work in corner case configurations" in {
-    val annotations = if (sys.env.getOrElse("WRITE_VCD", "false") == "true") Seq(WriteVcdAnnotation) else Seq()
     test(new BlockGemmDelayedWrapper(TestParameters.testConfig))
-      .withAnnotations(annotations) { dut =>
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
+        val rand = TestSeed.rng("BlockGemm corner cases")
         dut.clock.step(5)
-        BlockGemmRandomTest(dut, 1, 1, 1)
-        BlockGemmRandomTest(dut, 1, 2, 1)
-        BlockGemmRandomTest(dut, 1, 1, 4)
-        BlockGemmRandomTest(dut, 4, 1, 1)
-        BlockGemmRandomTest(dut, 2, 2, 2)
+        BlockGemmRandomTest(dut, 1, 1, 1, rand)
+        BlockGemmRandomTest(dut, 1, 2, 1, rand)
+        BlockGemmRandomTest(dut, 1, 1, 4, rand)
+        BlockGemmRandomTest(dut, 4, 1, 1, rand)
+        BlockGemmRandomTest(dut, 2, 2, 2, rand)
       }
   }
 
   "BlockGemm" should "correctly compute randomly sized matrices" in {
-    val annotations = if (sys.env.getOrElse("WRITE_VCD", "false") == "true") Seq(WriteVcdAnnotation) else Seq()
-    test(new BlockGemmDelayedWrapper(DefaultConfig.gemmConfig)).withAnnotations(annotations) { dut =>
+    test(new BlockGemmDelayedWrapper(DefaultConfig.gemmConfig)).withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
+      val rand    = TestSeed.rng("BlockGemm random sizes")
       val nbTests = 10
       for (_ <- 0 until nbTests) {
         // Randomly generate the size of the input matrices
-        val (size_M, size_K, size_N) = GenRandSizeTest()
-        BlockGemmRandomTest(dut, size_M, size_K, size_N)
+        val (size_M, size_K, size_N) = GenRandSizeTest(rand)
+        BlockGemmRandomTest(dut, size_M, size_K, size_N, rand)
       }
 
     }

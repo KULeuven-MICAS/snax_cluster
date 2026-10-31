@@ -11,13 +11,14 @@ import chisel3._
 import chiseltest._
 import fp_unit._
 import org.scalatest.funsuite.AnyFunSuite
+import snax_acc.utils.SnaxVcd
 
 class AdderTreeTest extends AnyFunSuite with ChiselScalatestTester {
   test("AdderTree should correctly sum groups of inputs") {
     val numElements = 8
     val groupSizes  = Seq(1, 2, 4) // Possible grouping sizes
 
-    test(new AdderTree(Int8, Int8, numElements, groupSizes)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    test(new AdderTree(Int8, Int8, numElements, groupSizes)).withAnnotations(SnaxVcd.annotations) { dut =>
       // Helper function to run tests for different group sizes
       def testConfig(cfg: Int, inputValues: Seq[Int], expectedOutput: Seq[Int]): Unit = {
         // Set input values

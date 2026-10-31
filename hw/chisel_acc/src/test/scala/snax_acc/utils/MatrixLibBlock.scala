@@ -1,6 +1,7 @@
 package snax_acc.utils
 
 import scala.math.BigInt
+import scala.util.Random
 
 import snax_acc.gemm.GemmParams
 import snax_acc.gemm.TestParameters
@@ -15,11 +16,11 @@ object MatrixLibBlock {
     * tileSize, N * meshCol)
     */
   def GenRandSizeTest(
+    rand: Random,
     maxM: Int = TestParameters.MatrixLibBlock_random_M_range,
     maxK: Int = TestParameters.MatrixLibBlock_random_K_range,
     maxN: Int = TestParameters.MatrixLibBlock_random_N_range
   ) = {
-    val rand = new scala.util.Random
     val M    = rand.between(1, maxM + 1)
     val K    = rand.between(1, maxK + 1)
     val N    = rand.between(1, maxN + 1)
@@ -31,11 +32,11 @@ object MatrixLibBlock {
     *   - B: (K * tileSize, N * meshCol)
     *   - C: (M * meshRow, N * meshCol)
     */
-  def GenBlockMatrices(M: Int, K: Int, N: Int, params: GemmParams) = {
-    val matrix_A = snax_acc.utils.MatrixLibBase.GenRandomMatrix(params.meshRow * M, params.tileSize * K)
-    val matrix_B = snax_acc.utils.MatrixLibBase.GenRandomMatrix(params.tileSize * K, params.meshCol * N)
+  def GenBlockMatrices(M: Int, K: Int, N: Int, params: GemmParams, rand: Random) = {
+    val matrix_A = snax_acc.utils.MatrixLibBase.GenRandomMatrix(params.meshRow * M, params.tileSize * K, rand)
+    val matrix_B = snax_acc.utils.MatrixLibBase.GenRandomMatrix(params.tileSize * K, params.meshCol * N, rand)
     val matrix_C =
-      snax_acc.utils.MatrixLibBase.GenRandomMatrix(params.meshRow * M, params.meshCol * N, negative = false)
+      snax_acc.utils.MatrixLibBase.GenRandomMatrix(params.meshRow * M, params.meshCol * N, rand, negative = false)
 
     (matrix_A, matrix_B, matrix_C)
   }

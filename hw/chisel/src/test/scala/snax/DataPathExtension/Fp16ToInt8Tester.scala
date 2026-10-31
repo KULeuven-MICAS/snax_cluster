@@ -8,11 +8,11 @@ import scala.util.Random
 
 import chisel3._
 import chiseltest._
-import chiseltest.simulator.VerilatorFlags
 import org.scalatest.flatspec.AnyFlatSpec
+import snax.utils.SnaxVcd
 
 /** Tier-1 test for Fp16ToInt8: symmetric per-tensor quantize q = sat[-127,127](round_rne(x*inv_scale)).
-  * Verilator (fpnew blackboxes) with --build-jobs 1 (UNOPTFLAT parallel-build race). Two levels:
+  * Verilator (fpnew blackboxes). Two levels:
   *   1) PE-level: exact integer compare against a Scala golden (RNE + clamp-then-round + symmetric sat).
   *   2) Full harness: the 2:1 packing FSM (2 input beats of 32 FP16 -> 1 output beat of 64 INT8).
   */
@@ -57,8 +57,6 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
     math.max(-127, math.min(127, r))                  // symmetric saturate
   }
 
-  val flags = VerilatorFlags(Seq("--build-jobs", "1"))
-
   // FP16 bit patterns drawn from a bounded range (avoid NaN/Inf), plus exact edges.
   def sampleFp16(rng: Random): Int =
     f32ToF16bits((rng.between(-4.0, 4.0) + rng.nextInt(8) * 0.125).toFloat)
@@ -73,7 +71,7 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "Fp16ToInt8"
 
   it should "quantize a single FP16 lane (RNE + symmetric saturate) bit-exactly" in {
-    test(new Fp16ToInt8PE).withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+    test(new Fp16ToInt8PE).withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
       val rng     = new Random(0xF16)
       // edge inputs: +0, -0, +1.0, -1.0, +0.5, -0.5, a large value (saturates), smallest normal
       val edges   = Seq(0x0000, 0x8000, 0x3c00, 0xbc00, 0x3800, 0xb800, 0x6000, 0xe000, 0x0400)
@@ -96,7 +94,7 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
   def runHarness(invScaleBits: BigInt, inputBeats: Seq[BigInt], computeLanes: Int = 0): Seq[BigInt] = {
     var outs = Seq[BigInt]()
     test(new DataPathExtensionHarness(new HasFp16ToInt8(16, 8, 512, computeLanes)))
-      .withAnnotations(Seq(WriteVcdAnnotation, VerilatorBackendAnnotation, flags)) { dut =>
+      .withAnnotations(SnaxVcd.annotations ++ Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.csr_i(0).poke(invScaleBits.U)
         dut.io.enable_i.poke(true)
         dut.io.start_i.poke(true); dut.clock.step(1); dut.io.start_i.poke(false)
@@ -169,7 +167,7 @@ class Fp16ToInt8Tester extends AnyFlatSpec with ChiselScalatestTester {
   // fall after each drain (the completion signal the controller waits on; the value tests never check it).
   def runTasksCheckBusy(computeLanes: Int, taskBeats: Seq[Int]): Unit = {
     test(new DataPathExtensionHarness(new HasFp16ToInt8(16, 8, 512, computeLanes)))
-      .withAnnotations(Seq(VerilatorBackendAnnotation, flags)) { dut =>
+      .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
         dut.io.enable_i.poke(true)
         val rng = new Random(0xF16)
         for ((nBeats, ti) <- taskBeats.zipWithIndex) {

@@ -112,7 +112,7 @@ class ParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester {
 
       io.outRef <> ref.io.out
       io.outDut <> dut.io.out
-    }).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
+    }).withAnnotations(SnaxVcd.annotations) { c =>
       c.io.counter_value_reset.poke(true.B)
       c.clock.step()
       c.io.counter_value_reset.poke(false.B)
@@ -210,7 +210,7 @@ class ParallelToSerialTest extends AnyFlatSpec with ChiselScalatestTester {
       // Wire outputs
       io.outRef <> ref.io.out
       io.outDut <> dut.io.out
-    }).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
+    }).withAnnotations(SnaxVcd.annotations) { c =>
       c.io.counter_value_reset.poke(true.B)
       c.clock.step()
       c.io.counter_value_reset.poke(false.B)
