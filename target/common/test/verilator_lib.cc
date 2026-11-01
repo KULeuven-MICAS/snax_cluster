@@ -82,6 +82,10 @@ void Sim::main() {
         vcd->dump(TIME);
     }
 #endif
+    // Evaluate once at time 0, before time moves forward. With hierarchical
+    // Verilation (VLT_HIER_CFG), each hier block creates its sub-model in an
+    // initial block, and Verilator only allows that at time 0.
+    top->eval();
     TIME += 2;
 
     while (!Verilated::gotFinish()) {

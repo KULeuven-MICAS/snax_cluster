@@ -25,6 +25,8 @@ cd ./target/snitch_cluster/.
 make CFG_OVERRIDE=cfg/snax-mac.hjson bin/snitch_cluster.vlt -j 16
 ```
 
+For clusters with many copies of the same block, `VLT_HIER_CFG` turns on hierarchical Verilation: it names a Verilator configuration file whose `hier_block` modules are translated and compiled once instead of once per instance. For VersaCore clusters, `make CFG_OVERRIDE=cfg/snax_versacore_dse_cluster.hjson VLT_HIER_CFG=vlt/versacore_hier.vlt bin/snitch_cluster.vlt -j 16` builds the model several times faster; changing `VLT_HIER_CFG` rebuilds it.
+
 For Questa instead of Verilator, the build is split between the container and the host; see [Building and running with Questa (vsim)](#building-and-running-with-questa-vsim).
 
 3. Build the software. This produces `.elf` files (binary) which we feed into the built RTL builds.
