@@ -177,12 +177,25 @@ $(VLT_BUILDDIR)/lib/libfesvr.a: $(VLT_FESVR)/${FESVR_VERSION}_unzip
 # Verilator #
 #############
 # Takes the top module name as an argument.
+# With VLT_HIER_CFG (hierarchical Verilation, see target/snitch_cluster/Makefile):
+# - Verilator 5.034 passes the hier-block runs the source files from -f, but not
+#   its +incdir+/+define+ lines, so these also go on the command line, read from
+#   the bender file list once it is written (Verilator treats them as global).
+# - Verilator runs without --build: its generated $(1)_hier.mk then only does
+#   hier_verilation, which runs each hier block once. With --build, hier_build
+#   names a block's wrapper .sv and .mk as two targets of one recipe, not a
+#   grouped target, so make -j ran that block's Verilator twice at once in the
+#   same folder. hier_build runs after, here, with all Verilator output up to
+#   date, and only builds the C++.
 define VERILATE
 	mkdir -p $(dir $@)
 	$(BENDER) script verilator ${VLT_BENDER} > $(dir $@)files
 	+$(VLT) \
 		--Mdir $(dir $@) -f $(dir $@)files $(if $(SNAX_FORGE_RTL),-f $(SNAX_FORGE_F)) $(VLT_FLAGS) \
-		-j $(shell nproc) --cc --build --top-module $(1)
+		$(if $(VLT_HIER_CFG),$$(grep -E '^\+(incdir|define)\+' $(dir $@)files | awk '!seen[$$0]++')) \
+		-j $(shell nproc) --cc $(if $(VLT_HIER_CFG),,--build) --top-module $(1)
+	+$(if $(VLT_HIER_CFG),$(MAKE) -C $(dir $@) -f V$(1)_hier.mk hier_build \
+		$(if $(findstring jobserver,$(MAKEFLAGS)),,-j $(shell nproc)) $(VLT_MAKE_VARS))
 	touch $@
 endef
 

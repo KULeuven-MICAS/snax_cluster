@@ -877,10 +877,13 @@ jobs:
           path: .ccache
           key: ccache-snax_versacore_dse_cluster-${{ github.sha }}
           restore-keys: ccache-snax_versacore_dse_cluster-
+      # Hierarchical Verilation: Verilator translates VersaCore's Multiplier
+      # and Adder once each instead of once per instance.
       - name: Build Hardware
         run: |
           ccache -z
           make CFG_OVERRIDE=cfg/snax_versacore_dse_cluster.hjson \
+          VLT_HIER_CFG=vlt/versacore_hier.vlt \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
           ccache -s
       - name: Save ccache

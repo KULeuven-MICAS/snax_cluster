@@ -217,22 +217,35 @@ endif
 # Verilator VCD tracing is off by default: compiling the trace code makes the
 # build noticeably slower. Build with VLT_TRACE=1 to use the --vcd runtime flag.
 VLT_TRACE ?= 0
-# Holds the VLT_TRACE value of the last build, so switching it rebuilds the
-# Verilator model and the testbench objects.
-VLT_TRACE_STAMP = $(VLT_BUILDDIR)/vlt_trace.stamp
 ifeq ($(VLT_TRACE), 1)
 	VLT_FLAGS  += --trace
 	VLT_CFLAGS += -DVM_TRACE=1
 endif
+
+# Hierarchical Verilation is off by default. VLT_HIER_CFG names a Verilator
+# configuration file with hier_block lines (e.g. vlt/versacore_hier.vlt):
+# Verilator then translates and compiles each hier block once instead of once
+# per instance. See VERILATE in ../common/common.mk for how it is run.
+VLT_HIER_CFG ?=
+ifneq ($(VLT_HIER_CFG),)
+	VLT_FLAGS += --hierarchical $(VLT_HIER_CFG)
+endif
+
+# Holds the VLT_TRACE and VLT_HIER_CFG values of the last build, so switching
+# either rebuilds the Verilator model and the testbench objects.
+VLT_OPTS = VLT_TRACE=$(VLT_TRACE) VLT_HIER_CFG=$(VLT_HIER_CFG)
+VLT_OPTS_STAMP = $(VLT_BUILDDIR)/vlt_opts.stamp
 
 # With OBJCACHE=ccache, Verilator's generated makefile runs each compile
 # through ccache. ccache can never reuse a GCC precompiled header here: it
 # needs the headers in the PCH to keep their mtime, but Verilator rewrites them
 # on every run, and the .gch bytes differ between builds, so every compile that
 # includes it misses. Building without the PCH makes all of them cacheable.
+# VLT_MAKE_VARS go to the make that builds Verilator's C++.
 ifeq ($(OBJCACHE), ccache)
-	VLT_FLAGS += -MAKEFLAGS VK_PCH_I_FAST= -MAKEFLAGS VK_PCH_I_SLOW=
+	VLT_MAKE_VARS += VK_PCH_I_FAST= VK_PCH_I_SLOW=
 endif
+VLT_FLAGS += $(foreach v,$(VLT_MAKE_VARS),-MAKEFLAGS $(v))
 
 ###############
 # C testbench #
@@ -368,26 +381,26 @@ clean-vlt: clean-work
 	rm -rf bin $(VLT_BUILDDIR)
 
 # This target is always evaluated, like $(CFG) above, but only rewrites the
-# stamp when VLT_TRACE differs from the value it holds.
-$(VLT_TRACE_STAMP): FORCE
+# stamp when VLT_OPTS differs from the value it holds.
+$(VLT_OPTS_STAMP): FORCE
 	@mkdir -p $(dir $@)
-	@if [ "$$(cat $@ 2>/dev/null)" != "$(VLT_TRACE)" ] ; then \
-		echo "VLT_TRACE changed to $(VLT_TRACE), rebuilding the Verilator model."; \
-		echo "$(VLT_TRACE)" > $@; \
+	@if [ "$$(cat $@ 2>/dev/null)" != "$(VLT_OPTS)" ] ; then \
+		echo "Verilator options changed to $(VLT_OPTS), rebuilding the Verilator model."; \
+		echo "$(VLT_OPTS)" > $@; \
 	fi
 
-$(VLT_AR): ${VLT_SOURCES} ${TB_SRCS} $(VLT_TRACE_STAMP) | $(GENERATED_DIR)/bender_targets.tmp
+$(VLT_AR): ${VLT_SOURCES} ${TB_SRCS} $(VLT_HIER_CFG) $(VLT_OPTS_STAMP) | $(GENERATED_DIR)/bender_targets.tmp
 	+$(call VERILATE,testharness)
 verilate: $(VLT_AR)
 
 # Build targets for verilator TB
-$(VLT_BUILDDIR)/tb/%.o: $(TB_DIR)/%.cc $(VLT_AR) ${VLT_BUILDDIR}/lib/libfesvr.a $(VLT_TRACE_STAMP)
+$(VLT_BUILDDIR)/tb/%.o: $(TB_DIR)/%.cc $(VLT_AR) ${VLT_BUILDDIR}/lib/libfesvr.a $(VLT_OPTS_STAMP)
 	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(VLT_CFLAGS) -c $< -o $@
-$(VLT_BUILDDIR)/vlt/%.o: $(VLT_ROOT)/include/%.cpp $(VLT_TRACE_STAMP)
+$(VLT_BUILDDIR)/vlt/%.o: $(VLT_ROOT)/include/%.cpp $(VLT_OPTS_STAMP)
 	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(VLT_CFLAGS) -c $< -o $@
-$(VLT_BUILDDIR)/generated/%.o: $(GENERATED_DIR)/%.cc ${VLT_BUILDDIR}/lib/libfesvr.a $(VLT_TRACE_STAMP)
+$(VLT_BUILDDIR)/generated/%.o: $(GENERATED_DIR)/%.cc ${VLT_BUILDDIR}/lib/libfesvr.a $(VLT_OPTS_STAMP)
 	mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(VLT_CFLAGS) -c $< -o $@
 

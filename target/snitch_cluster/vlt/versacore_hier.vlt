@@ -1,0 +1,8 @@
+`verilator_config
+// Hierarchical Verilation for VersaCore clusters, used with
+// VLT_HIER_CFG=vlt/versacore_hier.vlt. Each hier_block module is translated
+// and compiled once as its own library instead of once per instance:
+// Multiplier (FP8 x FP8 -> FP32) has 1024 copies in the DSE cluster, Adder
+// (FP32) 3584. Verilator ignores names the design lacks.
+hier_block -module "Multiplier"
+hier_block -module "Adder"
