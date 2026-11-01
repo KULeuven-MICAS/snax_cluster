@@ -856,7 +856,7 @@ def emit_matmul_data(**kwargs):
         ]
 
     if kwargs["transposed_A"] == 1:
-        A = A.reshape(M, K, meshRow, tileSize)
+        A = A.reshape(M, K, tileSize, meshRow)
         A = A.transpose(0, 1, 3, 2).reshape(-1)
     if kwargs["transposed_B"] == 1:
         B = B.reshape(K, N, tileSize, meshCol)
