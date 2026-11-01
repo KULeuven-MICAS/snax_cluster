@@ -1,3 +1,7 @@
+// Copyright 2026 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
 `verilator_config
 // Hierarchical Verilation for VersaCore clusters, used with
 // VLT_HIER_CFG=vlt/versacore_hier.vlt. Each hier_block module is translated
