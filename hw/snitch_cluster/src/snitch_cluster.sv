@@ -103,6 +103,8 @@ module snitch_cluster
     parameter int unsigned SnaxNarrowTcdmPorts[NrCores] = '{default: 0},
     /// SNAX Acc initial narrow TCDM ports
     parameter int unsigned TotalSnaxNarrowTcdmPorts = 0,
+    /// Optional native wide SNAX ports; zero preserves the default DMA path.
+    parameter int unsigned SnaxWideTcdmPorts = 0,
     /// Total Number of SNAX TCDM ports
     parameter int unsigned TotalSnaxTcdmPorts = TotalSnaxNarrowTcdmPorts,
     /// SNAX Use Custom Instruction Ports
@@ -198,6 +200,8 @@ module snitch_cluster
     parameter type csr_rsp_t = logic,
     parameter type tcdm_req_t = logic,
     parameter type tcdm_rsp_t = logic,
+    parameter type tcdm_wide_req_t = logic,
+    parameter type tcdm_wide_rsp_t = logic,
     // Memory latency parameter. Most of the memories have a read latency of 1. In
     // case you have memory macros which are pipelined you want to adjust this
     // value here. This only applies to the TCDM. The instruction cache macros will break!
@@ -276,6 +280,11 @@ module snitch_cluster
     /// SNAX TCDM ports
     input tcdm_req_t [TotalSnaxTcdmPorts-1:0] snax_tcdm_req_i,
     output tcdm_rsp_t [TotalSnaxTcdmPorts-1:0] snax_tcdm_rsp_o,
+    /// Keep one inactive element when disabled to avoid zero-width arrays.
+    input tcdm_wide_req_t [(SnaxWideTcdmPorts > 0 ? SnaxWideTcdmPorts : 1)-1:0]
+        snax_wide_tcdm_req_i,
+    output tcdm_wide_rsp_t [(SnaxWideTcdmPorts > 0 ? SnaxWideTcdmPorts : 1)-1:0]
+        snax_wide_tcdm_rsp_o,
     /// AXI Core cluster in-port.
     input narrow_in_req_t narrow_in_req_i,
     output narrow_in_resp_t narrow_in_resp_o,
@@ -731,8 +740,27 @@ DmaXbarCfg.NoMstPorts
   assign ext_dma_req.q.amo  = reqrsp_pkg::AMONone;
   assign ext_dma_req.q.user = '0;
 
+    // Input 0 retains the AXI/iDMA route. Native XDMA inputs reuse per-group
+    // arbitration and the fixed-latency response ownership tracking.
+    tcdm_dma_req_t [SnaxWideTcdmPorts:0] wide_tcdm_req;
+    tcdm_dma_rsp_t [SnaxWideTcdmPorts:0] wide_tcdm_rsp;
+    assign wide_tcdm_req[0] = ext_dma_req;
+    assign ext_dma_rsp = wide_tcdm_rsp[0];
+    if (SnaxWideTcdmPorts > 0) begin : gen_snax_wide_tcdm
+      for (genvar p = 0; p < SnaxWideTcdmPorts; p++) begin : gen_port
+        assign wide_tcdm_req[p+1] = snax_wide_tcdm_req_i[p];
+        assign snax_wide_tcdm_rsp_o[p] = wide_tcdm_rsp[p+1];
+        // The existing mux slices a whole wide word; it does not rotate bytes
+        // for unaligned requests. Catch unsupported accesses at the boundary.
+        `ASSERT(AlignedSnaxWideTcdm, snax_wide_tcdm_req_i[p].q_valid |->
+          (snax_wide_tcdm_req_i[p].q.addr[$clog2(WideDataWidth/8)-1:0] == '0))
+      end
+    end else begin : gen_no_snax_wide_tcdm
+      assign snax_wide_tcdm_rsp_o = '0;
+    end
+
     snitch_tcdm_interconnect #(
-        .NumInp(1),
+        .NumInp(1 + SnaxWideTcdmPorts),
         .NumOut(NrSuperBanks),
         .tcdm_req_t(tcdm_dma_req_t),
         .tcdm_rsp_t(tcdm_dma_rsp_t),
@@ -745,8 +773,8 @@ DmaXbarCfg.NoMstPorts
     ) i_dma_interconnect (
         .clk_i,
         .rst_ni,
-        .req_i(ext_dma_req),
-        .rsp_o(ext_dma_rsp),
+        .req_i(wide_tcdm_req),
+        .rsp_o(wide_tcdm_rsp),
         .mem_req_o(sb_dma_req),
         .mem_rsp_i(sb_dma_rsp)
     );

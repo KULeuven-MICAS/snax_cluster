@@ -7,9 +7,9 @@
 #include "snrt.h"
 
 // XDMA_WIDTH is the complete beat in bytes. The same byte mask applies to
-// each spatial channel, so mask positions repeat once per TCDM bank word.
+// each spatial channel; a wide channel spans several physical bank words.
 enum {
-    BANK_BYTES = XDMA_WIDTH / XDMA_SPATIAL_CHAN,
+    CHANNEL_BYTES = XDMA_WIDTH / XDMA_SPATIAL_CHAN,
     COPY_BYTES = 4 * XDMA_WIDTH,
     SENTINEL = 0xa5,
     GUARD = 0xd3
@@ -43,7 +43,7 @@ static int transfer(const char* name, uint8_t* src, uint8_t* dst,
     asm volatile("fence iorw, iorw" ::: "memory");
 
     for (uint32_t i = 0; i < COPY_BYTES; i++) {
-        uint32_t bank_byte = i % BANK_BYTES;
+        uint32_t bank_byte = i % CHANNEL_BYTES;
         uint32_t enabled =
             !mask_words ||
             ((mask_words[bank_byte / 32] >> (bank_byte % 32)) & 1);
@@ -86,23 +86,35 @@ int main() {
     for (uint32_t i = 0; i < XDMA_DST_EXT_NUM; i++)
         snax_xdma_disable_dst_ext(i);
 
-    printf("[ByteMask] bank bytes=%u, mask CSRs=%u, copy bytes=%u\n",
-           BANK_BYTES, XDMA_DST_ENABLED_BYTE_CSR_NUM, COPY_BYTES);
+    printf("[ByteMask] channel bytes=%u, mask CSRs=%u, copy bytes=%u\n",
+           CHANNEL_BYTES, XDMA_DST_ENABLED_BYTE_CSR_NUM, COPY_BYTES);
     if (transfer("scalar-full", src, dst, NULL)) return 1;
 
     for (uint32_t i = 0; i < XDMA_DST_ENABLED_BYTE_CSR_NUM; i++)
         mask_words[i] = UINT32_MAX;
     if (transfer("word-full", src, dst, mask_words)) return 1;
 
-    // Distinct adjacent words expose word ordering when a bank needs more
-    // than one CSR. Narrow banks exercise the low bits of the first word.
+    // Keep every channel enabled: these cases must use the second mask CSR,
+    // rather than selecting bytes by disabling entire narrow channels.
+    if (XDMA_DST_ENABLED_BYTE_CSR_NUM > 1) {
+        for (uint32_t i = 0; i < XDMA_DST_ENABLED_BYTE_CSR_NUM; i++)
+            mask_words[i] = i == 0 ? 0 : UINT32_MAX;
+        if (transfer("upper-words-only", src, dst, mask_words)) return 1;
+
+        for (uint32_t i = 0; i < XDMA_DST_ENABLED_BYTE_CSR_NUM; i++)
+            mask_words[i] = i == 0 ? UINT32_MAX : 0;
+        if (transfer("lower-word-only", src, dst, mask_words)) return 1;
+    }
+
+    // Distinct adjacent words expose word ordering when a channel needs more
+    // than one CSR. Narrow channels exercise the low bits of the first word.
     for (uint32_t i = 0; i < XDMA_DST_ENABLED_BYTE_CSR_NUM; i++)
         mask_words[i] = (i & 1) ? 0x5a5a5a5a : 0xa5a5a5a5;
     if (transfer("mixed-words", src, dst, mask_words)) return 1;
 
     for (uint32_t i = 0; i < XDMA_DST_ENABLED_BYTE_CSR_NUM; i++)
         mask_words[i] = 0;
-    mask_words[(BANK_BYTES - 1) / 32] = 1u << ((BANK_BYTES - 1) % 32);
+    mask_words[(CHANNEL_BYTES - 1) / 32] = 1u << ((CHANNEL_BYTES - 1) % 32);
     if (transfer("highest-byte", src, dst, mask_words)) return 1;
 
     for (uint32_t i = 0; i < XDMA_DST_ENABLED_BYTE_CSR_NUM; i++)
@@ -111,6 +123,7 @@ int main() {
 
     // The scalar API must restore every mask word after a cleared mask.
     if (transfer("scalar-full-after-clear", src, dst, NULL)) return 1;
-    printf("[ByteMask] PASS all six transfers\n");
+    printf("[ByteMask] PASS all %u transfers\n",
+           XDMA_DST_ENABLED_BYTE_CSR_NUM > 1 ? 8 : 6);
     return 0;
 }

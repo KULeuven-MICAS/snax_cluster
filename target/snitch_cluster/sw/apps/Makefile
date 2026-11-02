@@ -5,6 +5,9 @@
 # Luca Colagrande <colluca@iis.ee.ethz.ch>
 
 SUBDIRS  = lto
+ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_wide_cluster.hjson)
+SUBDIRS += snax-xdma-byte-mask snax-xdma-wide-contention
+endif
 SUBDIRS += nop
 # Tests below don't work with the generic runtime
 ifneq ($(filter $(SELECT_RUNTIME),rtl banshee),)

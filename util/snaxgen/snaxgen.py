@@ -84,6 +84,20 @@ def write_snax_forge_f(cfg_cores, cfg_path: str, gen_path: str) -> None:
         f.write("".join(f"{file}\n" for file in files))
 
 
+def get_xdma_tcdm_data_width(cluster):
+    """Select the XDMA port width without widening CPU ports or SRAM banks."""
+    narrow = cluster["data_width"]
+    if not cluster.get("xdma_use_wide_tcdm", False):
+        return narrow
+    wide = cluster["dma_data_width"]
+    banks_per_word = wide // narrow
+    if wide < narrow or wide % narrow or banks_per_word & (banks_per_word - 1):
+        raise ValueError("Wide XDMA requires a power-of-two multiple of data_width")
+    if cluster["tcdm"]["banks"] % banks_per_word:
+        raise ValueError("Wide XDMA words must span complete groups of TCDM banks")
+    return wide
+
+
 # Read template
 def get_template(tpl_path: str) -> Template:
     dir_name = os.path.dirname(tpl_path)
@@ -461,8 +475,12 @@ def generate_xdma(cfg, cfg_cores, num_cores, args):
     for i in range(num_cores):
         if "snax_xdma_cfg" in cfg_cores[i]:
             snax_xdma_cfg = cfg_cores[i]["snax_xdma_cfg"]
+    if cfg["cluster"].get("xdma_use_wide_tcdm", False):
+        if sum("snax_xdma_cfg" in core for core in cfg_cores) != 1:
+            raise ValueError("Wide TCDM mode requires exactly one XDMA instance")
     if snax_xdma_cfg is None:
         return
+    xdma_tcdm_data_width = get_xdma_tcdm_data_width(cfg["cluster"])
 
     print("------------------------------------------------")
     print("    Generate XDMA" + (" (SW header only)" if sw_only else ""))
@@ -486,7 +504,7 @@ def generate_xdma(cfg, cfg_cores, num_cores, args):
         gen_path=" --clusterName "
         + str(cfg["cluster"]["name"])
         + " --tcdmDataWidth "
-        + str(cfg["cluster"]["data_width"])
+        + str(xdma_tcdm_data_width)
         + " --axiDataWidth "
         + str(cfg["cluster"]["dma_data_width"])
         + " --axiAddrWidth "
@@ -874,8 +892,10 @@ def main():
                     else:
                         sparse_config.append((int(acc["snax_tcdm_ports"]), 1))
             if "snax_xdma_cfg" in cfg_cores[i]:
-                narrow_ports += 16
-                sparse_config.append((16, 1))
+                # Keep the same legacy slot allocation in both routing modes.
+                xdma_ports = 2 * cfg["cluster"]["dma_data_width"] // cfg["cluster"]["data_width"]
+                narrow_ports += xdma_ports
+                sparse_config.append((xdma_ports, 1))
         # then come the cores
         for i in range(num_cores):
             narrow_ports += 1  # core connection (no ssr assumed)

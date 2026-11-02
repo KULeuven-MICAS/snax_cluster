@@ -138,6 +138,8 @@ package ${cfg['name']}_pkg;
   } tcdm_user_t;
 
   `TCDM_TYPEDEF_ALL(tcdm, tcdm_addr_t, data_t, strb_t, tcdm_user_t)
+  // Native wide ports match the existing DMA user-field layout.
+  `TCDM_TYPEDEF_ALL(tcdm_wide, tcdm_addr_t, data_dma_t, strb_dma_t, logic)
 
   // Accelerator definitions for SNAX and other Snitch L0 accelerators
   // (e.g., of L0 accelerators - DMA, FPSS, and so on)
@@ -358,6 +360,8 @@ total_snax_tcdm_ports = 0
 snax_core_acc = {}
 total_snax_narrow_ports = 0
 snax_narrow_tcdm_ports_list = []
+xdma_wide_tcdm = cfg.get('xdma_use_wide_tcdm', False)
+snax_wide_tcdm_ports = 2 if xdma_wide_tcdm else 0
 
 # Cycle through each core
 # and check if an accelerator setting exists
@@ -513,6 +517,11 @@ total_snax_tcdm_ports = total_snax_narrow_ports
   //-----------------------------
   ${cfg['pkg_name']}::tcdm_req_t [${total_snax_tcdm_ports-1}:0] snax_tcdm_req;
   ${cfg['pkg_name']}::tcdm_rsp_t [${total_snax_tcdm_ports-1}:0] snax_tcdm_rsp;
+  ${cfg['pkg_name']}::tcdm_wide_req_t [${max(1, snax_wide_tcdm_ports)-1}:0] snax_wide_tcdm_req;
+  ${cfg['pkg_name']}::tcdm_wide_rsp_t [${max(1, snax_wide_tcdm_ports)-1}:0] snax_wide_tcdm_rsp;
+% if not xdma_wide_tcdm:
+  assign snax_wide_tcdm_req = '0;
+% endif
 
   //-----------------------------
   // SNAX Multiaccelerator MUX
@@ -592,6 +601,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     .Xfrep (${core_cfg_flat('xfrep')}),
     .SnaxNarrowTcdmPorts (SnaxNarrowTcdmPorts),
     .TotalSnaxNarrowTcdmPorts(${total_snax_narrow_ports}),
+    .SnaxWideTcdmPorts(${snax_wide_tcdm_ports}),
     .SnaxUseCustomPorts (${core_cfg_flat('snax_use_custom_ports')}),
     .FPUImplementation (${cfg['pkg_name']}::FPUImplementation),
     .SnitchPMACfg (${cfg['pkg_name']}::SnitchPMACfg),
@@ -641,7 +651,9 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     .csr_req_t (${cfg['pkg_name']}::csr_req_t),
     .csr_rsp_t (${cfg['pkg_name']}::csr_rsp_t),
     .tcdm_req_t (${cfg['pkg_name']}::tcdm_req_t),
-    .tcdm_rsp_t (${cfg['pkg_name']}::tcdm_rsp_t)
+    .tcdm_rsp_t (${cfg['pkg_name']}::tcdm_rsp_t),
+    .tcdm_wide_req_t (${cfg['pkg_name']}::tcdm_wide_req_t),
+    .tcdm_wide_rsp_t (${cfg['pkg_name']}::tcdm_wide_rsp_t)
   ) i_cluster (
     //-----------------------------
     // Clock and reset
@@ -715,6 +727,8 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     //-----------------------------
     .snax_tcdm_req_i ( snax_tcdm_req),
     .snax_tcdm_rsp_o ( snax_tcdm_rsp),
+    .snax_wide_tcdm_req_i ( snax_wide_tcdm_req),
+    .snax_wide_tcdm_rsp_o ( snax_wide_tcdm_rsp),
     //-----------------------------
     // SNAX Barrier Wire
     //-----------------------------
@@ -968,9 +982,18 @@ total_snax_tcdm_ports = total_snax_narrow_ports
   % elif snax_core_acc[idx_key]['snax_xdma_flag']:
     % for jdx, jdx_key in enumerate(snax_core_acc[idx_key]['snax_acc_dict']):
   // Instantiation of xdma wrapper
+% if xdma_wide_tcdm:
+  // Retain idle narrow slots so other accelerators keep their port indices.
+  assign snax_tcdm_req[${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_stop']}:${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_start']}] = '0;
+% endif
   ${cfg['name']}_xdma_wrapper # (
+% if xdma_wide_tcdm:
+    .tcdm_req_t         ( ${cfg['pkg_name']}::tcdm_wide_req_t   ),
+    .tcdm_rsp_t         ( ${cfg['pkg_name']}::tcdm_wide_rsp_t   ),
+% else:
     .tcdm_req_t         ( ${cfg['pkg_name']}::tcdm_req_t        ),
     .tcdm_rsp_t         ( ${cfg['pkg_name']}::tcdm_rsp_t        ),
+% endif
     .wide_slv_id_t      ( ${cfg['pkg_name']}::wide_out_id_t     ),
     .wide_out_req_t     ( ${cfg['pkg_name']}::wide_in_req_t     ),
     .wide_out_resp_t    ( ${cfg['pkg_name']}::wide_in_resp_t    ),
@@ -1029,8 +1052,13 @@ total_snax_tcdm_ports = total_snax_narrow_ports
     //-----------------------------
     // TCDM ports
     //-----------------------------
+% if xdma_wide_tcdm:
+    .tcdm_req_o  ( snax_wide_tcdm_req ),
+    .tcdm_rsp_i  ( snax_wide_tcdm_rsp )
+% else:
     .tcdm_req_o  ( snax_tcdm_req[${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_stop']}:${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_start']}] ),
     .tcdm_rsp_i  ( snax_tcdm_rsp[${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_stop']}:${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_start']}] )
+% endif
   );
 
   // Tie unused custom instruction ports to 0

@@ -88,8 +88,13 @@
         },
         "data_width": {
             "type": "number",
-            "description": "Data bus size of the integer core (everything except the DMA), must be 32 or 64. A double precision FPU requires 64 bit data length. This value is also taken as the TCDM wordline width (per-bank data bus width) — the codegen uses `cluster.data_width` to drive `TCDMDataWidth`.",
+            "description": "Data bus size of the integer core, must be 32 or 64. A double precision FPU requires 64 bits. This is also the physical TCDM bank width. XDMA normally uses this width; xdma_use_wide_tcdm selects dma_data_width for its logical local ports.",
             "default": 64
+        },
+        "xdma_use_wide_tcdm": {
+            "type": "boolean",
+            "description": "Connect XDMA local ports to the existing wide TCDM path. The logical word uses dma_data_width; banks and CPU ports retain data_width. Wide accesses must be aligned to a complete logical word.",
+            "default": false
         },
         "dma_data_width": {
             "type": "number",

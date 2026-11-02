@@ -81,7 +81,9 @@ $(BUILDDIR):
 $(DEP): $(SRCS) | $(BUILDDIR)
 	$(RISCV_CC) $(RISCV_CFLAGS) -MM -MT '$(ELF)' $< > $@
 
-$(ELF): $(SRCS) $(DEP) $(LIBS) | $(BUILDDIR)
+# SNAX driver objects are linked through RISCV_LDFLAGS; rebuild the ELF when
+# those objects change after regenerating a configuration-specific CSR header.
+$(ELF): $(SRCS) $(DEP) $(LIBS) $(filter %.o %.a,$(RISCV_LDFLAGS)) | $(BUILDDIR)
 	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(SRCS) -o $@
 
 $(DUMP): $(ELF) | $(BUILDDIR)

@@ -4,9 +4,10 @@ This RISC-V application uses the production XDMA C driver and cluster runtime.
 The DM core initializes separate source and destination buffers in TCDM,
 configures XDMA, starts each transfer, waits for completion, and checks memory.
 
-The six cases check the scalar full-mask copy, a full mask set through the word
-array API, distinct adjacent mask words, only the highest byte of each bank word,
-a cleared mask, and a scalar full-mask copy after clearing. Every transfer checks
+The six baseline cases check the scalar full-mask copy, a full mask set through the word
+array API, distinct adjacent mask words, only the highest byte of each logical channel word,
+a cleared mask, and a scalar full-mask copy after clearing. Wide configurations
+add upper-word-only and lower-word-only cases. Every transfer checks
 each destination byte, unchanged source data, and guards around the destination.
 The generated `XDMA_WIDTH`, `XDMA_SPATIAL_CHAN`, and
 `XDMA_DST_ENABLED_BYTE_CSR_NUM` definitions determine the buffer and mask sizes.
@@ -29,7 +30,14 @@ cd target/snitch_cluster
 ./bin/snitch_cluster.vlt sw/apps/snax-xdma-byte-mask/build/snax-xdma-byte-mask.elf
 ```
 
-A successful run prints `[ByteMask] PASS all six transfers` and exits with status
+The opt-in cfg/snax_xdma_wide_cluster.hjson routes one 512-bit channel per side
+through the existing wide mux into unchanged 64-bit banks. This application then
+exercises two mask CSRs. See docs/rm/snax_xdma_wide_tcdm.md for its build and
+contention-test instructions.
+
+A successful default run prints `[ByteMask] PASS all 6 transfers` and exits with status
 zero. Any data or guard mismatch prints the failing case and returns an error.
 The app is built for `cfg/snax_KUL_cluster.hjson` as well. Use a simulator and
 generated software definitions built for the same cluster configuration.
+
+The wide configuration prints [ByteMask] PASS all 8 transfers.

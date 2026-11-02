@@ -74,5 +74,6 @@ clean:
 $(BUILDDIR):
 	mkdir -p $@
 
-$(BUILDDIR)/%.o: $(SRC_DIR)/%.c | $(BUILDDIR)
+# A new cluster configuration changes CSR offsets without changing the C source.
+$(BUILDDIR)/%.o: $(SRC_DIR)/%.c $(wildcard $(abspath include)/*.h) | $(BUILDDIR)
 	$(RISCV_CC) $(RISCV_CFLAGS) -c $< -o $@

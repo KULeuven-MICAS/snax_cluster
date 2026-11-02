@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: SHL-0.51
 
 <%
-  num_tcdm_ports = round(cfg["dma_data_width"] / cfg["data_width"] * 2)
+  xdma_tcdm_data_width = cfg["dma_data_width"] if cfg.get("xdma_use_wide_tcdm", False) else cfg["data_width"]
+  num_tcdm_ports = cfg["dma_data_width"] // xdma_tcdm_data_width * 2
   ## Half of them are used for the reader, and half of them are used for writer
 
   tcdm_addr_width = cfg["tcdm"]["size"].bit_length() - 1 + 10
@@ -14,10 +15,9 @@
     xdma_cfg_io_width = 32
 
   max_mem_size_kiB = cfg["max_mem_size_kiB"]
-  # The TCDM wordline width (per-bank data bus width) is sourced from
-  # cluster.data_width. The schema documents data_width as carrying the
-  # TCDM wordline width as well, so there is no separate cfg knob.
-  wordline_width   = cfg["data_width"]
+  # Match the Chisel logical XDMA word, including serialized lengths/strides.
+  # In wide mode one logical word spans unchanged physical SRAM banks.
+  wordline_width = xdma_tcdm_data_width
 %>
 //-----------------------------
 // xdma wrapper
@@ -43,7 +43,7 @@ module ${cfg["name"]}_xdma_wrapper
   parameter type         narrow_in_req_t     = logic,
   parameter type         narrow_in_resp_t    = logic,
   // Parameters related to TCDM
-  parameter int unsigned TCDMDataWidth     = ${cfg["data_width"]},
+  parameter int unsigned TCDMDataWidth     = ${xdma_tcdm_data_width},
   parameter int unsigned TCDMNumPorts      = ${num_tcdm_ports},
   parameter int unsigned TCDMAddrWidth     = ${tcdm_addr_width},
   // Cluster Addr
@@ -183,9 +183,10 @@ module ${cfg["name"]}_xdma_wrapper
       tcdm_req_o[i].q.amo          = reqrsp_pkg::AMONone;
       tcdm_req_o[i].q.data         = tcdm_req_data   [i];
       tcdm_req_o[i].q.strb         = tcdm_req_strb   [i];
-      tcdm_req_o[i].q.user.core_id = '0;
-      tcdm_req_o[i].q.user.is_core = '0;
+      tcdm_req_o[i].q.user         = '0;
+% if not cfg.get("xdma_use_wide_tcdm", False):
       tcdm_req_o[i].q.user.tcdm_priority = tcdm_req_priority [i];
+% endif
       tcdm_req_o[i].q_valid        = tcdm_req_q_valid[i];
 
       tcdm_rsp_q_ready[i] = tcdm_rsp_i[i].q_ready;
