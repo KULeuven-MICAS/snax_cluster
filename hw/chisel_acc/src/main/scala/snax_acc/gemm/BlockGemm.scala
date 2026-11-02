@@ -84,7 +84,7 @@ class BlockGemm(val params: GemmParams) extends Module with RequireAsyncReset wi
   val computation_finish = WireInit(0.B)
 
   val zeroLoopBoundCase = WireInit(0.B)
-  zeroLoopBoundCase := io.ctrl.bits.M_i === 0.U || io.ctrl.bits.K_i === 0.U || io.ctrl.bits.K_i === 0.U
+  zeroLoopBoundCase := io.ctrl.bits.M_i === 0.U || io.ctrl.bits.K_i === 0.U || io.ctrl.bits.N_i === 0.U
 
   // Changing states
   cstate := nstate
