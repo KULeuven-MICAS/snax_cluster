@@ -36,6 +36,6 @@ accordingly. The peripheral region will always be the same size as the `TCDM`.
     assign match = (addr_base & addr_mask) == (addr_to_check & addr_mask);
     ```
 
-    As a consequence the `cluster_base_addr_i` has to be aligned to the the
+    As a consequence the `cluster_base_addr_i` has to be aligned to the
     `TCDM` size, otherwise this check can't distinguish between routing to the
     `TCDM` or `SoC`/`Periph`. A static assertion checks that this holds true.
