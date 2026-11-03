@@ -236,11 +236,3 @@ The hardware interface connects similarly to streamer interfaces on the SNAX pla
 ### Software Interface
 
 The runtime software is located at ***target/snitch_cluster/sw/snax/xdma***; example software can be found at ***target/snitch_cluster/sw/apps/snax-xdma-memset***. This example demonstrates how XDMA with the Memset Extension performs various memory operations and is recommended for getting started with software integration.
-
-
-## Optional native wide local TCDM ports
-
-The cluster can route a native wide XDMA reader/writer through the existing
-wide interconnect while retaining narrow physical banks and CPU interfaces.
-See the [wide TCDM integration and regression guide](../../../docs/rm/snax_xdma_wide_tcdm.md)
-for configuration, supported alignment and reproduction commands.

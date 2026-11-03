@@ -588,8 +588,6 @@ jobs:
           cache-write: ${{ github.event_name == 'push' &&
             github.ref_name == 'main' }}
           activate-environment: true
-      - name: Check XDMA port configuration
-        run: python -m unittest discover -s util/snaxgen/tests -v
       - name: Restore sbt cache
         id: sbt-cache
         uses: actions/cache/restore@v4
