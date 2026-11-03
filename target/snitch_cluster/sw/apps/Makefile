@@ -5,7 +5,7 @@
 # Luca Colagrande <colluca@iis.ee.ethz.ch>
 
 SUBDIRS  = lto
-ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_wide_cluster.hjson)
+ifneq ($(filter $(CFG_OVERRIDE),cfg/snax_xdma_wide_cluster.hjson cfg/snax_xdma_wide_cluster_old.hjson),)
 SUBDIRS += snax-xdma-byte-mask snax-xdma-wide-contention
 endif
 SUBDIRS += nop

@@ -5,6 +5,7 @@
 """Check default compatibility, invalid bank groups and the real XDMA wrapper."""
 import importlib.util
 from pathlib import Path
+import sys
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -12,6 +13,8 @@ spec = importlib.util.spec_from_file_location(
     "snaxgen", ROOT / "util/snaxgen/snaxgen.py")
 snaxgen = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(snaxgen)
+sys.path.insert(0, str(ROOT / "util"))
+from clustergen.cluster import SnitchClusterTB  # noqa: E402
 
 
 class WideTcdmConfigTest(unittest.TestCase):
@@ -45,6 +48,27 @@ class WideTcdmConfigTest(unittest.TestCase):
             with self.subTest(width=width, banks=banks):
                 with self.assertRaises(ValueError):
                     snaxgen.get_xdma_tcdm_data_width(cfg)
+
+    def test_wide_cluster_wrappers_select_both_narrow_fabrics(self):
+        # Render the real configs through schema validation and clustergen.
+        # Both must retain native wide ports while selecting different CPU fabrics.
+        for suffix, sparse, topology in (
+                ("", True, "SparseInterconnect"),
+                ("_old", False, "LogarithmicInterconnect")):
+            with self.subTest(topology=topology):
+                path = ROOT / ("target/snitch_cluster/cfg/"
+                               "snax_xdma_wide_cluster" + suffix + ".hjson")
+                cfg = snaxgen.get_config(str(path))
+                cluster = cfg["cluster"]
+                self.assertEqual(snaxgen.get_xdma_tcdm_data_width(cluster), 512)
+                self.assertEqual(cluster["data_width"], 64)
+                self.assertEqual(cluster["tcdm"]["banks"], 32)
+                self.assertEqual(
+                    "sparse_interconnect" in cluster["bender_target"], sparse)
+                rtl = SnitchClusterTB(cfg).render_wrapper()
+                self.assertRegex(rtl, r"\.Topology\s*\(snitch_pkg::" + topology + r"\)")
+                self.assertRegex(rtl, r"\.SnaxWideTcdmPorts\s*\(2\)")
+                self.assertRegex(rtl, r"\.tcdm_req_o\s*\(\s*snax_wide_tcdm_req\s*\)")
 
     def test_wrapper_matches_local_and_metadata_widths(self):
         template = snaxgen.get_template(

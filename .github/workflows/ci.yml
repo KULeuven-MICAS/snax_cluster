@@ -564,6 +564,8 @@ jobs:
             tests: sw/snax-xdma-run.yaml sw/snax-xdma-simd-run.yaml
           - cluster: snax_xdma_wide_cluster
             tests: sw/snax-xdma-wide-run.yaml
+          - cluster: snax_xdma_wide_cluster_old
+            tests: sw/snax-xdma-wide-run.yaml
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     env:

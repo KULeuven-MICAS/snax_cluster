@@ -21,6 +21,19 @@ The 16 legacy narrow XDMA slots remain allocated and inactive in wide mode.
 Other accelerator port indices and the sparse topology therefore remain
 stable. Existing configurations keep their original routing.
 
+The supplied configurations exercise both narrow fabrics:
+
+* **snax_xdma_wide_cluster.hjson** selects the sparse interconnect.
+* **snax_xdma_wide_cluster_old.hjson** selects the old logarithmic interconnect,
+  following the switch used by snax_alu_cluster_old.hjson.
+
+In both cases, CPU traffic uses the selected narrow fabric. Native XDMA and
+iDMA use the shared 512-bit interconnect and meet CPU traffic at the existing
+wide/narrow bank muxes. The sparse fabric does not split these native XDMA
+requests into independently arbitrated 64-bit channels. The mux slices each
+512-bit access into eight 64-bit bank accesses with their byte enables.
+Neither configuration changes physical bank width or the CPU/LSU interface.
+
 Wide mode is selected at RTL generation time. Each request must be aligned
 to the complete wide word (64 bytes for the supplied configuration); an RTL
 assertion checks this. It is not a runtime mode switch or a general adapter
@@ -47,7 +60,13 @@ on the linked driver object, so a changed register layout rebuilds both.
     cd target/snitch_cluster
     ./run.py --simulator verilator sw/runtime.yaml sw/snax-xdma-wide-run.yaml -j4
 
-The existing ci.yml XDMA job builds both normal and wide configurations.
+From the repository root, repeat with CFG_OVERRIDE=cfg/snax_xdma_wide_cluster_old.hjson
+to test the logarithmic narrow fabric. These alternative configurations reuse
+the generated module names and must be built and run separately.
+
+The existing ci.yml XDMA job builds the normal configuration and both wide
+configurations. Each wide job runs the same runtime, byte-mask and contention
+tests, so both narrow fabrics are exercised alongside the native wide path.
 No standalone generated-RTL test lives in the software-library directory.
 
 ## What the cluster tests check
@@ -70,3 +89,5 @@ come from byte enables rather than disabling whole channels.
 The unchanged default configuration must also pass its existing runtime,
 XDMA and SIMD regressions. Build simulator and software for the same
 configuration: generated header layouts differ between modes.
+The two wide configurations intentionally share the same geometry and CSR map;
+only the narrow topology and corresponding Bender target selection differ.

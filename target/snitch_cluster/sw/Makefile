@@ -17,7 +17,7 @@ endif
 
 SUBDIRS += math $(RUNTIME) snax/mac apps tests
 
-ifeq ($(CFG_OVERRIDE), cfg/snax_xdma_wide_cluster.hjson)
+ifneq ($(filter $(CFG_OVERRIDE),cfg/snax_xdma_wide_cluster.hjson cfg/snax_xdma_wide_cluster_old.hjson),)
 SUBDIRS += snax/xdma
 endif
 
