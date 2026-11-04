@@ -828,22 +828,17 @@ def main():
                         file_name=file_name,
                     )
 
-                # This generates the top wrapper
-                if "snax_streamer_sets" in acc_cfgs[i]:
-                    print(
-                        f"    {acc_cfgs[i]['snax_acc_name']}: skipping the accelerator "
-                        "wrapper; the multi-set wrapper comes in S3"
-                    )
-                else:
-                    file_name = acc_cfgs[i]["snax_acc_name"] + "_wrapper.sv"
-                    tpl_rtl_wrapper_file = args.tpl_path + "snax_acc_wrapper.sv.tpl"
-                    tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
-                    gen_file(
-                        cfg=acc_cfgs[i],
-                        tpl=tpl_rtl_wrapper,
-                        target_path=rtl_target_path,
-                        file_name=file_name,
-                    )
+                # This generates the top wrapper (with streamer sets: their streamers
+                # and the shell behind snax_csr_range_demux)
+                file_name = acc_cfgs[i]["snax_acc_name"] + "_wrapper.sv"
+                tpl_rtl_wrapper_file = args.tpl_path + "snax_acc_wrapper.sv.tpl"
+                tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
+                gen_file(
+                    cfg=acc_cfgs[i],
+                    tpl=tpl_rtl_wrapper,
+                    target_path=rtl_target_path,
+                    file_name=file_name,
+                )
 
                 # Generate chisel component using chisel generation script
                 if not acc_cfgs[i].get("snax_disable_csr_manager", False):
