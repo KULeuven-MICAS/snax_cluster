@@ -244,6 +244,9 @@ sources:
       - hw/snax_util/src/snax_csr_range_demux.sv
       - hw/snax_util/src/snax_acc_mux_demux.sv
       - hw/snax_util/src/snax_intf_translator.sv
+  - target: test
+    files:
+      - hw/snax_util/test/snax_csr_range_demux_tb.sv
 
   - target: sparse_interconnect
     files:
