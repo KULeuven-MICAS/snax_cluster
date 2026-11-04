@@ -29,7 +29,12 @@ class StreamerParam(
   // csr manager params
   val csrAddrWidth:   Int,
   val tagName:        String = "Test",
-  val headerFilepath: String = "./generated/"
+  val headerFilepath: String = "./generated/",
+
+  // CSR header params: the first CSR number, a prefix for every #define name and the file name
+  val csrBase:     Int    = 960,
+  val macroPrefix: String = "",
+  val headerName:  String = "streamer_csr_addr_map.h"
 ) {
 
   // reader, writer, reader-writer number inferred paramters
@@ -106,7 +111,10 @@ object StreamerParam {
     hasCrossClockDomain:           Boolean,
     csrAddrWidth:                  Int,
     tagName:                       String,
-    headerFilepath:                String
+    headerFilepath:                String,
+    csrBase:                       Int    = 960,
+    macroPrefix:                   String = "",
+    headerName:                    String = "streamer_csr_addr_map.h"
   ) =
     new StreamerParam(
       readerParams                  = readerParams,
@@ -118,6 +126,9 @@ object StreamerParam {
       hasCrossClockDomain           = hasCrossClockDomain,
       csrAddrWidth                  = csrAddrWidth,
       tagName                       = tagName,
-      headerFilepath                = headerFilepath
+      headerFilepath                = headerFilepath,
+      csrBase                       = csrBase,
+      macroPrefix                   = macroPrefix,
+      headerName                    = headerName
     )
 }

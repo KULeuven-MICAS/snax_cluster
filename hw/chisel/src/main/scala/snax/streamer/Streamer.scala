@@ -688,7 +688,7 @@ object Streamer {
     var csrMap    = ""
 
     // reader csr configuration
-    csrBase = 960
+    csrBase = param.csrBase
     for (i <- 0 until param.readerNum) {
       csrBase_i = csrBase + param.readerParams
         .take(i)
@@ -800,7 +800,13 @@ object Streamer {
     // streamer performance counter csr
     csrMap = csrMap + "#define STREAMER_PERFORMANCE_COUNTER_CSR " + csrBase + "\n"
 
-    val macro_dir      = param.headerFilepath + "/streamer_csr_addr_map.h"
+    // Every #define name gets the macro prefix (none by default)
+    csrMap = csrMap.linesWithSeparators.map { line =>
+      if (line.startsWith("#define ")) "#define " + param.macroPrefix + line.stripPrefix("#define ")
+      else line
+    }.mkString
+
+    val macro_dir      = param.headerFilepath + "/" + param.headerName
     val macro_template =
       s"""// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -855,7 +861,10 @@ object StreamerGen {
   // --tcdm-size       TCDM size in KiB
   // --tcdm-data-width TCDM data width in bits
   // --tag-name        the accelerator's tag; the generated names start with "<tag>_"
-  // --header-dir      where streamer_csr_addr_map.h goes
+  // --header-dir      where the CSR header goes
+  // --header-name     the header's file name (default "streamer_csr_addr_map.h")
+  // --csr-base        the CSR number of the streamer's first CSR (default 960)
+  // --macro-prefix    a prefix for every #define name in the header (default none)
   // --hw-target-dir   where the SystemVerilog goes (default "generated")
   def buildParam(args: Array[String]): (StreamerParam, String) = {
 
@@ -875,6 +884,8 @@ object StreamerGen {
       parsedArgs.get(name).filter(_ != "NoArg").getOrElse(fail(s"--$name is not provided"))
 
     def intArg(name: String): Int = arg(name).toIntOption.getOrElse(fail(s"--$name is not an integer"))
+
+    def optArg(name: String, default: String): String = if (parsedArgs.contains(name)) arg(name) else default
 
     val tcdmSize      = intArg("tcdm-size")
     val tcdmDataWidth = intArg("tcdm-data-width")
@@ -1036,7 +1047,10 @@ object StreamerGen {
       hasCrossClockDomain           = hasCrossClockDomain,
       csrAddrWidth                  = 32,
       tagName                       = arg("tag-name") + "_",
-      headerFilepath                = arg("header-dir")
+      headerFilepath                = arg("header-dir"),
+      csrBase                       = if (parsedArgs.contains("csr-base")) intArg("csr-base") else 960,
+      macroPrefix                   = optArg("macro-prefix", ""),
+      headerName                    = optArg("header-name", "streamer_csr_addr_map.h")
     )
 
     (param, outPath)
@@ -1060,7 +1074,7 @@ object StreamerSwHeaderGen {
     val (param, _) = StreamerGen.buildParam(args)
     Streamer.writeCsrAddrMap(param)
     println(
-      s"[StreamerSwHeaderGen] wrote ${param.headerFilepath}/streamer_csr_addr_map.h"
+      s"[StreamerSwHeaderGen] wrote ${param.headerFilepath}/${param.headerName}"
     )
   }
 }
