@@ -543,7 +543,48 @@
                                                 "type": "string",
                                                 "title": "snax-forge RTL file list",
                                                 "description": "A file list of the accelerator's RTL, relative to the configuration file (a snax-forge bundle's rtl/files.f); snaxgen writes it into generated/snax_forge.f."
+                                            },
+                                            "snax_streamer_sets": {
+                                                "type": "array",
+                                                "title": "SNAX streamer sets",
+                                                "description": "Several accelerators in one entry, each with its own streamer, START and CSRs, in place of snax_streamer_cfg. Per set, its streamer's CSRs come first, then its own CSRs, packed from CSR 960. Needs snax_disable_csr_manager.",
+                                                "minItems": 1,
+                                                "items": {
+                                                    "type": "object",
+                                                    "title": "SNAX streamer set",
+                                                    "description": "One accelerator of the entry: its streamer and its own CSR counts.",
+                                                    "required": ["name", "snax_streamer_cfg", "snax_num_rw_csr", "snax_num_ro_csr"],
+                                                    "additionalProperties": false,
+                                                    "properties": {
+                                                        "name": {
+                                                            "type": "string",
+                                                            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+                                                            "title": "Set name",
+                                                            "description": "Names the set's modules and files (<tag>_<name>) and prefixes its header macros (<NAME>_)."
+                                                        },
+                                                        "snax_streamer_cfg": {
+                                                            "type": "object",
+                                                            "title": "Streamer configuration",
+                                                            "description": "The set's streamer, as in an entry's snax_streamer_cfg."
+                                                        },
+                                                        "snax_num_rw_csr": {
+                                                            "type": "integer",
+                                                            "minimum": 0,
+                                                            "title": "Number of CSR Read-Write Registers",
+                                                            "description": "Number of the set's own RW CSRs, after its streamer's."
+                                                        },
+                                                        "snax_num_ro_csr": {
+                                                            "type": "integer",
+                                                            "minimum": 0,
+                                                            "title": "Number of CSR Read-Only Registers",
+                                                            "description": "Number of the set's own RO CSRs, after its RW CSRs."
+                                                        }
+                                                    }
+                                                }
                                             }
+                                        },
+                                        "not": {
+                                            "required": ["snax_streamer_cfg", "snax_streamer_sets"]
                                         }
                                     }
                                     
