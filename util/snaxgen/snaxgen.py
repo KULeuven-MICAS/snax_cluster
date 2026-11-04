@@ -438,6 +438,18 @@ def csr_range_table(acc_cfg):
     return table
 
 
+# The CSR header of each streamer of an accelerator entry, one per streamer set, in order:
+# (its file name, its folder under sw/snax/). A single-set entry (snax_streamer_cfg):
+# streamer_csr_addr_map.h in its snax_library_name's folder, or its tag's; an entry with
+# snax_streamer_sets: streamer_<set>_csr_addr_map.h per set, in the tag's folder.
+def streamer_headers(acc_cfg):
+    tag = acc_cfg["snax_acc_name"]
+    if "snax_streamer_sets" not in acc_cfg:
+        library = acc_cfg["snax_streamer_cfg"].get("snax_library_name", tag)
+        return [("streamer_csr_addr_map.h", library)]
+    return [(f"streamer_{s['name']}_csr_addr_map.h", tag) for s in streamer_sets(acc_cfg)]
+
+
 # The streamers of an accelerator entry, one per streamer set: the cfg its streamer wrapper
 # is rendered with and StreamerGen runs on, the extra StreamerGen arguments, and its header
 # folder (relative to the chisel folder). A single-set entry (snax_streamer_cfg) is the
@@ -447,13 +459,13 @@ def csr_range_table(acc_cfg):
 # entry's header folder.
 def streamer_units(acc_cfg):
     header_root = "../../target/snitch_cluster/sw/snax/{}/include"
+    headers = streamer_headers(acc_cfg)
     if "snax_streamer_sets" not in acc_cfg:
-        header_dir = header_root.format(
-            acc_cfg["snax_streamer_cfg"].get("snax_library_name", acc_cfg["tag_name"])
-        )
-        return [(acc_cfg, "", header_dir)]
+        return [(acc_cfg, "", header_root.format(headers[0][1]))]
     units = []
-    for streamer_set, row in zip(streamer_sets(acc_cfg), acc_cfg["csr_range_table"]):
+    for streamer_set, row, (header_name, header_folder) in zip(
+        streamer_sets(acc_cfg), acc_cfg["csr_range_table"], headers
+    ):
         unit_cfg = dict(acc_cfg)
         unit_cfg["tag_name"] = f"{acc_cfg['tag_name']}_{streamer_set['name']}"
         unit_cfg["snax_streamer_cfg"] = streamer_set["snax_streamer_cfg"]
@@ -461,11 +473,11 @@ def streamer_units(acc_cfg):
         extra_args = (
             f" --csr-base {row['streamer_base']}"
             f" --macro-prefix {streamer_set['name'].upper()}_"
-            f" --header-name streamer_{streamer_set['name']}_csr_addr_map.h"
+            f" --header-name {header_name}"
             # firtool names every module of the set's streamer <tag>_<set>_*
             f" --module-prefix {unit_cfg['tag_name']}_"
         )
-        units.append((unit_cfg, extra_args, header_root.format(acc_cfg["tag_name"])))
+        units.append((unit_cfg, extra_args, header_root.format(header_folder)))
     return units
 
 
@@ -676,6 +688,13 @@ def main():
         help="Get the bender targets for the whole system",
     )
     parser.add_argument(
+        "--get_forge_headers",
+        action="store_true",
+        help="Print, for each accelerator entry with snax_forge_rtl, one line per streamer "
+        "(set): its header's name in the bundle's include/ and snaxgen's header, relative "
+        "to target/snitch_cluster (snax_forge.mk compares them)",
+    )
+    parser.add_argument(
         "--disable_header_gen",
         type=str,
         default="false",
@@ -708,6 +727,16 @@ def main():
     # Then dump them into a dictionary set
     num_core_w_acc = 0
     acc_cfgs = []
+
+    # The streamer headers of a snax-forge bundle's entries: the bundle's and snaxgen's
+    if args.get_forge_headers:
+        for core in cfg_cores:
+            for acc in core.get("snax_acc_cfg", []):
+                if "snax_forge_rtl" not in acc:
+                    continue
+                for header_name, header_folder in streamer_headers(acc):
+                    print(f"{header_name} sw/snax/{header_folder}/include/{header_name}")
+        return
 
     # For generating all bender targets
     if args.get_bender_targets:
