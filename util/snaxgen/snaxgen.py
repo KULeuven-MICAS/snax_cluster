@@ -442,8 +442,9 @@ def csr_range_table(acc_cfg):
 # is rendered with and StreamerGen runs on, the extra StreamerGen arguments, and its header
 # folder (relative to the chisel folder). A single-set entry (snax_streamer_cfg) is the
 # entry itself, as before; set k of an entry with snax_streamer_sets is named
-# <tag>_<set>, starts at its range table row and writes streamer_<set>_csr_addr_map.h with
-# macros prefixed <SET>_ into the entry's header folder.
+# <tag>_<set> (every module of its streamer prefixed <tag>_<set>_), starts at its range
+# table row and writes streamer_<set>_csr_addr_map.h with macros prefixed <SET>_ into the
+# entry's header folder.
 def streamer_units(acc_cfg):
     header_root = "../../target/snitch_cluster/sw/snax/{}/include"
     if "snax_streamer_sets" not in acc_cfg:
@@ -461,6 +462,8 @@ def streamer_units(acc_cfg):
             f" --csr-base {row['streamer_base']}"
             f" --macro-prefix {streamer_set['name'].upper()}_"
             f" --header-name streamer_{streamer_set['name']}_csr_addr_map.h"
+            # firtool names every module of the set's streamer <tag>_<set>_*
+            f" --module-prefix {unit_cfg['tag_name']}_"
         )
         units.append((unit_cfg, extra_args, header_root.format(acc_cfg["tag_name"])))
     return units

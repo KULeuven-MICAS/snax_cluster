@@ -34,7 +34,10 @@ class StreamerParam(
   // CSR header params: the first CSR number, a prefix for every #define name and the file name
   val csrBase:     Int    = 960,
   val macroPrefix: String = "",
-  val headerName:  String = "streamer_csr_addr_map.h"
+  val headerName:  String = "streamer_csr_addr_map.h",
+
+  // A prefix firtool gives every module (none by default)
+  val modulePrefix: String = ""
 ) {
 
   // reader, writer, reader-writer number inferred paramters
@@ -114,7 +117,8 @@ object StreamerParam {
     headerFilepath:                String,
     csrBase:                       Int    = 960,
     macroPrefix:                   String = "",
-    headerName:                    String = "streamer_csr_addr_map.h"
+    headerName:                    String = "streamer_csr_addr_map.h",
+    modulePrefix:                  String = ""
   ) =
     new StreamerParam(
       readerParams                  = readerParams,
@@ -129,6 +133,7 @@ object StreamerParam {
       headerFilepath                = headerFilepath,
       csrBase                       = csrBase,
       macroPrefix                   = macroPrefix,
-      headerName                    = headerName
+      headerName                    = headerName,
+      modulePrefix                  = modulePrefix
     )
 }

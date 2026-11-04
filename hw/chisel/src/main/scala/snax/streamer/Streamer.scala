@@ -865,6 +865,8 @@ object StreamerGen {
   // --header-name     the header's file name (default "streamer_csr_addr_map.h")
   // --csr-base        the CSR number of the streamer's first CSR (default 960)
   // --macro-prefix    a prefix for every #define name in the header (default none)
+  // --module-prefix   a prefix firtool gives every module, the top and memories included; the
+  //                   names then carry no tag-name (default none: names start with "<tag>_")
   // --hw-target-dir   where the SystemVerilog goes (default "generated")
   def buildParam(args: Array[String]): (StreamerParam, String) = {
 
@@ -1046,22 +1048,44 @@ object StreamerGen {
       readerWriterDatapathExtention = readerWriterDatapathExtention,
       hasCrossClockDomain           = hasCrossClockDomain,
       csrAddrWidth                  = 32,
-      tagName                       = arg("tag-name") + "_",
+      tagName                       = if (parsedArgs.contains("module-prefix")) "" else arg("tag-name") + "_",
       headerFilepath                = arg("header-dir"),
       csrBase                       = if (parsedArgs.contains("csr-base")) intArg("csr-base") else 960,
       macroPrefix                   = optArg("macro-prefix", ""),
-      headerName                    = optArg("header-name", "streamer_csr_addr_map.h")
+      headerName                    = optArg("header-name", "streamer_csr_addr_map.h"),
+      modulePrefix                  = optArg("module-prefix", "")
     )
 
     (param, outPath)
   }
 
   def main(args: Array[String]): Unit = {
-    val (param, outPath) = buildParam(args)
+    val (param, outPath)  = buildParam(args)
     // The CSR header is written as a side effect of `new Streamer(param)` (via
     // Streamer.writeCsrAddrMap in the class body) — keeps `make rtl` self-
     // contained.
-    emitVerilog(new Streamer(param), Array("--target-dir", outPath))
+    // A streamer set's streamer: firtool prefixes every module, extracted memories too. Given
+    // here, not in the module, so the emitted source locators stay as they are
+    val prefixAnnotations =
+      if (param.modulePrefix.isEmpty) Seq()
+      else
+        Seq(
+          sifive.enterprise.firrtl.NestedPrefixModulesAnnotation(
+            firrtl.annotations.ModuleTarget("Streamer", "Streamer"),
+            param.modulePrefix,
+            true
+          )
+        )
+    emitVerilog(new Streamer(param), Array("--target-dir", outPath), prefixAnnotations)
+    // With a module prefix the file is named after the unprefixed circuit (Streamer.sv);
+    // name it after its top module, <prefix>Streamer.sv
+    if (param.modulePrefix.nonEmpty) {
+      java.nio.file.Files.move(
+        java.nio.file.Paths.get(outPath, "Streamer.sv"),
+        java.nio.file.Paths.get(outPath, param.modulePrefix + "Streamer.sv"),
+        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+      )
+    }
   }
 }
 

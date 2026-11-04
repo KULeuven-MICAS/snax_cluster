@@ -93,9 +93,11 @@ def test_set_units(entry):
     assert [u[0]["tag_name"] for u in units] == [f"{TAG}_vmul", f"{TAG}_vsum"]
     assert units[0][1] == (
         " --csr-base 960 --macro-prefix VMUL_ --header-name streamer_vmul_csr_addr_map.h"
+        f" --module-prefix {TAG}_vmul_"
     )
     assert units[1][1] == (
         " --csr-base 982 --macro-prefix VSUM_ --header-name streamer_vsum_csr_addr_map.h"
+        f" --module-prefix {TAG}_vsum_"
     )
     assert {u[2] for u in units} == {f"../../target/snitch_cluster/sw/snax/{TAG}/include"}
     assert [u[0]["streamer_csr_num"] for u in units] == [18, 13]
