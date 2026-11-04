@@ -241,6 +241,7 @@ sources:
   #---------------------------
   - files:
       - hw/snax_util/src/snax_csr_mux_demux.sv
+      - hw/snax_util/src/snax_csr_range_demux.sv
       - hw/snax_util/src/snax_acc_mux_demux.sv
       - hw/snax_util/src/snax_intf_translator.sv
 
