@@ -18,7 +18,7 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../snaxgen"))
-from snaxgen import streamer_csr_num  # noqa: E402
+from snaxgen import streamer_csr_num, streamer_sets  # noqa: E402
 
 
 # Fill in default values for config values which
@@ -398,16 +398,12 @@ class SnitchCluster(Generator):
             # Check if the configuration list is empty or not
             streamer_csr_acc_num_list = []
             if self.cfg["cores"][core_id]["snax_acc_cfg"][0]:
-                # Cycle through the accelerators list
+                # Cycle through the accelerators list, one count per streamer set
                 for acc_id in range(len(self.cfg["cores"][core_id]["snax_acc_cfg"])):
-                    if (
-                        "snax_streamer_cfg"
-                        in self.cfg["cores"][core_id]["snax_acc_cfg"][acc_id]
+                    for streamer_set in streamer_sets(
+                        self.cfg["cores"][core_id]["snax_acc_cfg"][acc_id]
                     ):
-                        streamer_csr_test = streamer_csr_num(
-                            self.cfg["cores"][core_id]["snax_acc_cfg"][acc_id]
-                        )
-                        streamer_csr_acc_num_list.append(streamer_csr_test)
+                        streamer_csr_acc_num_list.append(streamer_csr_num(streamer_set))
             # Append the set into the global list
             streamer_csr_num_list.append(streamer_csr_acc_num_list)
         # Set as config file for tpl to process

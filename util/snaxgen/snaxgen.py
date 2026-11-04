@@ -19,6 +19,7 @@ import argparse
 import copy
 import os
 import math
+import sys
 from pathlib import Path
 from urllib.parse import urlparse
 from urllib.request import url2pathname
@@ -75,8 +76,12 @@ def write_snax_forge_f(cfg_cores, cfg_path: str, gen_path: str) -> None:
                 files.append((listing.parent / line.strip()).resolve())
             tag = acc["snax_acc_name"]
             acc_dir = Path(gen_path).resolve() / tag
-            files += [acc_dir / f"{tag}_Streamer.sv", acc_dir / f"{tag}_streamer_wrapper.sv",
-                      acc_dir / f"{tag}_wrapper.sv"]
+            # One streamer per set: <tag>_<set>_* for an entry with snax_streamer_sets
+            units = [f"{tag}_{s['name']}" for s in streamer_sets(acc)] \
+                if "snax_streamer_sets" in acc else [tag]
+            for unit in units:
+                files += [acc_dir / f"{unit}_Streamer.sv", acc_dir / f"{unit}_streamer_wrapper.sv"]
+            files += [acc_dir / f"{tag}_wrapper.sv"]
     missing = [str(f) for f in files if not f.is_file()]
     if missing:
         exit(f"snax_forge.f: files that are not there: {missing}")
@@ -343,6 +348,122 @@ def streamer_csr_num(acc_cfgs):
             streamer_csr_num += 1
 
     return streamer_csr_num
+
+
+# An accelerator entry's CSRs start at 960 (0x3C0) and end at 1533 (0x5FD) at most:
+# 0x5FE and 0x5FF are the task queues
+SNAX_CSR_BASE = 960
+SNAX_CSR_LAST = 1533
+
+
+# Stop with a message that names the accelerator entry
+def refuse_acc(acc_cfg, reason):
+    sys.exit(f"snaxgen: accelerator entry '{acc_cfg.get('snax_acc_name', '?')}': {reason}")
+
+
+# An accelerator entry's streamer sets, in order: [{name, snax_streamer_cfg, snax_num_rw_csr,
+# snax_num_ro_csr}]. An entry with snax_streamer_cfg is one set, named after the entry, with
+# the entry's own CSR counts; an entry with snax_streamer_sets lists them; an entry with
+# neither has none. Refuses an entry the sets path cannot generate.
+def streamer_sets(acc_cfg):
+    if "snax_streamer_sets" not in acc_cfg:
+        if "snax_streamer_cfg" not in acc_cfg:
+            return []
+        return [
+            {
+                "name": acc_cfg["snax_acc_name"],
+                "snax_streamer_cfg": acc_cfg["snax_streamer_cfg"],
+                "snax_num_rw_csr": acc_cfg.get("snax_num_rw_csr", 0),
+                "snax_num_ro_csr": acc_cfg.get("snax_num_ro_csr", 0),
+            }
+        ]
+    if "snax_streamer_cfg" in acc_cfg:
+        refuse_acc(acc_cfg, "has both snax_streamer_cfg and snax_streamer_sets; give one")
+    if not acc_cfg.get("snax_disable_csr_manager", False):
+        refuse_acc(
+            acc_cfg,
+            "streamer sets need the shell's own CSRs (snax_disable_csr_manager: true)",
+        )
+    sets = acc_cfg["snax_streamer_sets"]
+    if not sets:
+        refuse_acc(acc_cfg, "snax_streamer_sets is empty")
+    names = [s["name"] for s in sets]
+    duplicates = sorted({n for n in names if names.count(n) > 1})
+    if duplicates:
+        refuse_acc(acc_cfg, f"duplicate streamer set names {duplicates}")
+    return [
+        {
+            "name": s["name"],
+            "snax_streamer_cfg": s["snax_streamer_cfg"],
+            "snax_num_rw_csr": s["snax_num_rw_csr"],
+            "snax_num_ro_csr": s["snax_num_ro_csr"],
+        }
+        for s in sets
+    ]
+
+
+# An accelerator entry's CSR range table, one row per streamer set in order. Set k's
+# streamer has [streamer_base, streamer_base + streamer_csr_num), its own CSRs (R/W, then
+# R/O) [csr_base, csr_base + csr_num); set 0's streamer starts at 960. The shell sees the
+# sets' own CSRs as one block: set k's CSR i is at shell_offset + i. Refuses a layout
+# past 1533.
+def csr_range_table(acc_cfg):
+    table = []
+    base = SNAX_CSR_BASE
+    shell_offset = 0
+    for streamer_set in streamer_sets(acc_cfg):
+        num_streamer = streamer_csr_num(streamer_set)
+        num_rw = streamer_set["snax_num_rw_csr"]
+        num_ro = streamer_set["snax_num_ro_csr"]
+        table.append(
+            {
+                "name": streamer_set["name"],
+                "streamer_base": base,
+                "streamer_csr_num": num_streamer,
+                "csr_base": base + num_streamer,
+                "csr_num": num_rw + num_ro,
+                "num_rw_csr": num_rw,
+                "num_ro_csr": num_ro,
+                "shell_offset": shell_offset,
+            }
+        )
+        base += num_streamer + num_rw + num_ro
+        shell_offset += num_rw + num_ro
+    if base - 1 > SNAX_CSR_LAST:
+        refuse_acc(
+            acc_cfg,
+            f"its CSRs end at {base - 1}, past {SNAX_CSR_LAST} (0x5FD; "
+            "0x5FE and 0x5FF are the task queues)",
+        )
+    return table
+
+
+# The streamers of an accelerator entry, one per streamer set: the cfg its streamer wrapper
+# is rendered with and StreamerGen runs on, the extra StreamerGen arguments, and its header
+# folder (relative to the chisel folder). A single-set entry (snax_streamer_cfg) is the
+# entry itself, as before; set k of an entry with snax_streamer_sets is named
+# <tag>_<set>, starts at its range table row and writes streamer_<set>_csr_addr_map.h with
+# macros prefixed <SET>_ into the entry's header folder.
+def streamer_units(acc_cfg):
+    header_root = "../../target/snitch_cluster/sw/snax/{}/include"
+    if "snax_streamer_sets" not in acc_cfg:
+        header_dir = header_root.format(
+            acc_cfg["snax_streamer_cfg"].get("snax_library_name", acc_cfg["tag_name"])
+        )
+        return [(acc_cfg, "", header_dir)]
+    units = []
+    for streamer_set, row in zip(streamer_sets(acc_cfg), acc_cfg["csr_range_table"]):
+        unit_cfg = dict(acc_cfg)
+        unit_cfg["tag_name"] = f"{acc_cfg['tag_name']}_{streamer_set['name']}"
+        unit_cfg["snax_streamer_cfg"] = streamer_set["snax_streamer_cfg"]
+        unit_cfg["streamer_csr_num"] = row["streamer_csr_num"]
+        extra_args = (
+            f" --csr-base {row['streamer_base']}"
+            f" --macro-prefix {streamer_set['name'].upper()}_"
+            f" --header-name streamer_{streamer_set['name']}_csr_addr_map.h"
+        )
+        units.append((unit_cfg, extra_args, header_root.format(acc_cfg["tag_name"])))
+    return units
 
 
 def find_keys_with_keyword(data, keyword, parent_key=""):
@@ -645,8 +766,11 @@ def main():
             acc_cfgs[i]["tcdm_addr_width"] = tcdm_addr_width
             # Chisel parameter tag names
             acc_cfgs[i]["tag_name"] = acc_cfgs[i]["snax_acc_name"]
-            # Calculating number of registers for streamer
-            acc_cfgs[i]["streamer_csr_num"] = streamer_csr_num(acc_cfgs[i])
+            # The CSR range table, one row per streamer set (checks the entry's sets first)
+            acc_cfgs[i]["csr_range_table"] = csr_range_table(acc_cfgs[i])
+            # Calculating number of registers for streamer (per set for snax_streamer_sets)
+            if "snax_streamer_sets" not in acc_cfgs[i]:
+                acc_cfgs[i]["streamer_csr_num"] = streamer_csr_num(acc_cfgs[i])
 
         # Generate template out of given configurations
         for i in range(len(acc_cfgs)):
@@ -687,29 +811,36 @@ def main():
                         file_name=file_name,
                     )
 
-                # This first one generates the streamer wrapper
-                file_name = acc_cfgs[i]["snax_acc_name"] + "_streamer_wrapper.sv"
+                # This first one generates the streamer wrapper, one per streamer set
                 tpl_streamer_wrapper_file = (
                     args.tpl_path + "snax_streamer_wrapper.sv.tpl"
                 )  # noqa: E501
                 tpl_streamer_wrapper = get_template(tpl_streamer_wrapper_file)
-                gen_file(
-                    cfg=acc_cfgs[i],
-                    tpl=tpl_streamer_wrapper,
-                    target_path=rtl_target_path,
-                    file_name=file_name,
-                )
+                for unit_cfg, _, _ in streamer_units(acc_cfgs[i]):
+                    file_name = unit_cfg["tag_name"] + "_streamer_wrapper.sv"
+                    gen_file(
+                        cfg=unit_cfg,
+                        tpl=tpl_streamer_wrapper,
+                        target_path=rtl_target_path,
+                        file_name=file_name,
+                    )
 
                 # This generates the top wrapper
-                file_name = acc_cfgs[i]["snax_acc_name"] + "_wrapper.sv"
-                tpl_rtl_wrapper_file = args.tpl_path + "snax_acc_wrapper.sv.tpl"
-                tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
-                gen_file(
-                    cfg=acc_cfgs[i],
-                    tpl=tpl_rtl_wrapper,
-                    target_path=rtl_target_path,
-                    file_name=file_name,
-                )
+                if "snax_streamer_sets" in acc_cfgs[i]:
+                    print(
+                        f"    {acc_cfgs[i]['snax_acc_name']}: skipping the accelerator "
+                        "wrapper; the multi-set wrapper comes in S3"
+                    )
+                else:
+                    file_name = acc_cfgs[i]["snax_acc_name"] + "_wrapper.sv"
+                    tpl_rtl_wrapper_file = args.tpl_path + "snax_acc_wrapper.sv.tpl"
+                    tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
+                    gen_file(
+                        cfg=acc_cfgs[i],
+                        tpl=tpl_rtl_wrapper,
+                        target_path=rtl_target_path,
+                        file_name=file_name,
+                    )
 
                 # Generate chisel component using chisel generation script
                 if not acc_cfgs[i].get("snax_disable_csr_manager", False):
@@ -721,9 +852,6 @@ def main():
 
             # Pass the prepared per-accelerator config, including inferred
             # extension parameters, to both RTL and SW-header generation.
-            streamer_cfg = {
-                f"{acc_cfgs[i]['tag_name']}_streamer": acc_cfgs[i]["snax_streamer_cfg"]
-            }
             # In sw_only mode use the lightweight entry point that skips
             # CIRCT and emits only streamer_csr_addr_map.h.
             chisel_streamer_target = (
@@ -731,38 +859,39 @@ def main():
                 if sw_only
                 else "snax.streamer.StreamerGen"
             )
-            # The TCDM size (KiB) and the header folder (relative to the chisel
-            # folder) the streamer is built for
+            # The TCDM size (KiB) the streamer is built for
             tcdm_size = int(
                 acc_cfgs[i]["tcdm_num_banks"]
                 * acc_cfgs[i]["tcdm_depth"]
                 * (acc_cfgs[i]["tcdm_data_width"] / 8)
                 / 1024
             )
-            header_dir = "../../target/snitch_cluster/sw/snax/{}/include".format(
-                acc_cfgs[i]["snax_streamer_cfg"].get(
-                    "snax_library_name", acc_cfgs[i]["tag_name"]
+            # One streamer per streamer set, with its header folder (relative to the
+            # chisel folder)
+            for unit_cfg, extra_args, header_dir in streamer_units(acc_cfgs[i]):
+                streamer_cfg = {
+                    f"{unit_cfg['tag_name']}_streamer": unit_cfg["snax_streamer_cfg"]
+                }
+                # Generate chisel component using chisel generation script
+                gen_chisel_file(
+                    chisel_path=args.chisel_path,
+                    chisel_param=chisel_streamer_target,
+                    gen_path=" --streamercfg "
+                    + hjson.dumpsJSON(obj=streamer_cfg, separators=(",", ":")).replace(
+                        " ", ""
+                    )
+                    + " --tcdm-size "
+                    + str(tcdm_size)
+                    + " --tcdm-data-width "
+                    + str(unit_cfg["tcdm_data_width"])
+                    + " --tag-name "
+                    + unit_cfg["tag_name"]
+                    + " --header-dir "
+                    + header_dir
+                    + extra_args
+                    + " --hw-target-dir "
+                    + rtl_target_path,
                 )
-            )
-            # Generate chisel component using chisel generation script
-            gen_chisel_file(
-                chisel_path=args.chisel_path,
-                chisel_param=chisel_streamer_target,
-                gen_path=" --streamercfg "
-                + hjson.dumpsJSON(obj=streamer_cfg, separators=(",", ":")).replace(
-                    " ", ""
-                )
-                + " --tcdm-size "
-                + str(tcdm_size)
-                + " --tcdm-data-width "
-                + str(acc_cfgs[i]["tcdm_data_width"])
-                + " --tag-name "
-                + acc_cfgs[i]["tag_name"]
-                + " --header-dir "
-                + header_dir
-                + " --hw-target-dir "
-                + rtl_target_path,
-            )
 
         print("Generation of accelerator specific wrappers done!")
     else:
