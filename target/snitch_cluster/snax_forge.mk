@@ -17,13 +17,20 @@
 #                 required: vsim's rtl-gen and vsim_preparation, and every vlt step, run in it
 #
 #   snax-forge-sim  bin/snitch_cluster.$(SIM); for vsim, vsim_preparation must have run
-#   snax-forge-sw   sw/apps/snax-forge's ELF for FORGE (the ELF only: no dump), once the #define
-#                   lines of FORGE's streamer_csr_addr_map.h equal those of the one snaxgen wrote
+#   snax-forge-headers  for each streamer of the bundle's entry, the #define lines of FORGE's
+#                   include/<header> against those of the header snaxgen wrote: one
+#                   streamer_csr_addr_map.h for an entry with snax_streamer_cfg, a
+#                   streamer_<set>_csr_addr_map.h per set for one with snax_streamer_sets, in
+#                   sw/snax/<folder>/include/; names and folders from the cluster file (snaxgen
+#                   --get_forge_headers: the entry's snax_acc_name and its sets)
+#   snax-forge-sw   sw/apps/snax-forge's ELF for FORGE (the ELF only: no dump), once
+#                   snax-forge-headers passes
 #   snax-forge-run  the ELF on bin/snitch_cluster.$(SIM), its output in logs/snax-forge-$(SIM).txt
 #                   beside the run's traces; fails on the program's nonzero exit code
 #   snax-forge-check  each bundle of BUNDLES in order (snax_forge_check.sh): the commands
-#                   snax-forge's forge prints for it, then its `forge counter` and `forge data:`
-#                   lines against the bundle's forge_expected.txt; PASS or FAIL per bundle into
+#                   snax-forge's forge prints for it, then its `forge data:` line against the
+#                   bundle's forge_expected.txt and each `forge counter` within its `forge fill`
+#                   (the group's streamer fill, snax-forge's D123); PASS or FAIL per bundle into
 #                   logs/snax-forge-check.txt (with each run's `forge cycles:`), each bundle's
 #                   output in logs/snax-forge-<name>-$(SIM).txt; fails when a bundle failed
 
@@ -32,7 +39,6 @@ FORGE ?= $(dir $(abspath $(CFG_OVERRIDE)))
 override FORGE := $(abspath $(FORGE))
 
 SNAX_FORGE_APP    = $(SW_DIR)/apps/snax-forge
-SNAX_FORGE_HEADER = $(SW_DIR)/snax/snax_forge/include/streamer_csr_addr_map.h
 SNAX_FORGE_LOG    = $(LOGS_DIR)/snax-forge-$(SIM).txt
 include $(MKFILE_DIR)$(SNAX_FORGE_APP)/build-dir.mk
 SNAX_FORGE_RUN_ELF = $(if $(ELF),$(abspath $(ELF)),$(SNAX_FORGE_ELF))
@@ -46,7 +52,7 @@ $(error CFG_OVERRIDE is not set: give the bundle's cluster file)
 endif
 endif
 
-.PHONY: snax-forge-sim snax-forge-sw snax-forge-run snax-forge-check
+.PHONY: snax-forge-sim snax-forge-headers snax-forge-sw snax-forge-run snax-forge-check
 
 snax-forge-sim:
 ifeq ($(SIM),vsim)
@@ -55,15 +61,25 @@ ifeq ($(SIM),vsim)
 endif
 	$(MAKE) bin/snitch_cluster.$(SIM)
 
-# The bundle's header is the one the ELF uses; snaxgen's is the RTL's (comments differ)
-snax-forge-sw: $(TARGET_C_HDRS)
-	@test -f $(SNAX_FORGE_HEADER) || \
-		{ echo "snax-forge-sw: no $(SNAX_FORGE_HEADER): run rtl-gen or sw-snax-gen first"; exit 1; }
+# The bundle's headers are the ones the ELF uses; snaxgen's are the RTL's (comments differ)
+snax-forge-headers:
 	mkdir -p $(SNAX_FORGE_BUILD)
-	grep '^[[:space:]]*#define' $(FORGE)/include/streamer_csr_addr_map.h > $(SNAX_FORGE_BUILD)/bundle.defines
-	grep '^[[:space:]]*#define' $(SNAX_FORGE_HEADER) > $(SNAX_FORGE_BUILD)/snaxgen.defines
-	@diff $(SNAX_FORGE_BUILD)/bundle.defines $(SNAX_FORGE_BUILD)/snaxgen.defines || \
-		{ echo "snax-forge-sw: $(FORGE)/include/streamer_csr_addr_map.h and $(SNAX_FORGE_HEADER) differ"; exit 1; }
+	$(WRAPPER_GEN) --cfg_path="$(CFG_FILE)" --get_forge_headers > $(SNAX_FORGE_BUILD)/headers.txt
+	@test -s $(SNAX_FORGE_BUILD)/headers.txt || \
+		{ echo "snax-forge-headers: no accelerator entry with snax_forge_rtl in $(CFG_FILE)"; exit 1; }
+	@while read -r bundle snaxgen; do \
+		test -f $(FORGE)/include/$$bundle || \
+			{ echo "snax-forge-headers: no $(FORGE)/include/$$bundle"; exit 1; }; \
+		test -f $$snaxgen || \
+			{ echo "snax-forge-headers: no $$snaxgen: run rtl-gen or sw-snax-gen first"; exit 1; }; \
+		grep '^[[:space:]]*#define' $(FORGE)/include/$$bundle > $(SNAX_FORGE_BUILD)/bundle.defines; \
+		grep '^[[:space:]]*#define' $$snaxgen > $(SNAX_FORGE_BUILD)/snaxgen.defines; \
+		diff $(SNAX_FORGE_BUILD)/bundle.defines $(SNAX_FORGE_BUILD)/snaxgen.defines || \
+			{ echo "snax-forge-headers: $(FORGE)/include/$$bundle and $$snaxgen differ"; exit 1; }; \
+		echo "snax-forge-headers: $$bundle and $$snaxgen: same #define lines"; \
+	done < $(SNAX_FORGE_BUILD)/headers.txt
+
+snax-forge-sw: $(TARGET_C_HDRS) snax-forge-headers
 	$(MAKE) -C $(SW_DIR) math runtime/$(or $(strip $(SELECT_RUNTIME)),rtl-generic)
 	$(MAKE) -C $(SNAX_FORGE_APP) FORGE=$(FORGE) $(SNAX_FORGE_ELF)
 
