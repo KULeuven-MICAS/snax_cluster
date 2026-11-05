@@ -575,21 +575,27 @@ def emit_matmul_data(**kwargs):
     # -------------------------base address----------------------
     # -----------------------------------------------------------
 
+    # Channel i of a sparse interconnect port only reaches the banks with
+    # index i mod granularity, so each base address must be a multiple of
+    # granularity * bankWidth / 8 bytes (at least the usual 64 bytes).
+    b_alignment = max(64, granularity_b * bankWidth // 8)
+    c_d_alignment = max(64, granularity_c_d * bankWidth // 8)
+
     delta_local_a = 0
     delta_local_b = K * M * (meshRow * tileSize * a_len / 8)
-    delta_local_b = align_wide_addr(delta_local_b)
+    delta_local_b = align_wide_addr(delta_local_b, b_alignment)
     delta_local_c = delta_local_b + K * N * (meshCol * tileSize * b_len / 8)
-    delta_local_c = align_wide_addr(delta_local_c)
+    delta_local_c = align_wide_addr(delta_local_c, c_d_alignment)
 
     if stationary == output_stationary:
         # for the two fold test
         delta_local_d = delta_local_c + M * N * (meshRow * meshCol * c_len / 8)
-        delta_local_d = align_wide_addr(delta_local_d)
+        delta_local_d = align_wide_addr(delta_local_d, c_d_alignment)
     elif stationary == weight_stationary:
         delta_local_d = delta_local_c
     elif stationary == input_stationary:
         delta_local_d = delta_local_c
-        delta_local_d = align_wide_addr(delta_local_d)
+        delta_local_d = align_wide_addr(delta_local_d, c_d_alignment)
 
     data_str += [format_scalar_definition("int32_t", "delta_local_a", delta_local_a)]
     data_str += [format_scalar_definition("int32_t", "delta_local_b", delta_local_b)]
