@@ -5,18 +5,20 @@ import org.scalatest.flatspec.AnyFlatSpec
 import snax.streamer.{Streamer, StreamerParam}
 
 class ByteMaskCSRMapTest extends AnyFlatSpec {
-  for ((bankWidth, maskWords) <- Seq((64, 1), (256, 1), (512, 2), (1024, 4))) {
-    "Streamer CSR map" should s"reserve $maskWords mask words for a $bankWidth-bit bank" in {
+  for (
+    (bankWidth, channels, maskWords) <- Seq((64, 1, 1), (256, 1, 1), (512, 1, 2), (1024, 1, 4), (64, 8, 2), (128, 3, 2))
+  ) {
+    "Streamer CSR map" should s"reserve $maskWords mask words for $channels channels of $bankWidth bits" in {
       val directory            = Files.createTempDirectory("byte-mask-csr-map-")
       val header               = directory.resolve("streamer_csr_addr_map.h")
       def mover(mask: Boolean) =
         new ReaderWriterParam(
-          spatialBounds        = List(1),
+          spatialBounds        = List(channels),
           temporalDimension    = 1,
           tcdmDataWidth        = bankWidth,
           tcdmPhysWordSize     = bankWidth,
           tcdmLogicWordSize    = Seq(bankWidth),
-          numChannel           = 1,
+          numChannel           = channels,
           configurableByteMask = mask
         )
       try {

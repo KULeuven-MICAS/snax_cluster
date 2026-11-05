@@ -29,7 +29,7 @@ object XDMATesterInfrastructure {
     port.req.bits.write.poke(true.B)
     port.req.bits.strb.poke("b1111".U)
 
-    port.req.bits.data.poke(data.U)
+    port.req.bits.data.poke((BigInt(data) & BigInt("ffffffff", 16)).U)
     port.req.bits.addr.poke(addr.U)
     port.req.valid.poke(1.B)
 
@@ -78,7 +78,9 @@ object XDMATesterInfrastructure {
     writerRWParam:  RWParamTest,
     writerExtParam: ExtParam,
     dut:            Module,
-    port:           SnaxReqRspIO
+    port:           SnaxReqRspIO,
+    channelBytes:   Int = 8,
+    channels:       Int = 8
   ): Int = {
     var currentAddress = 0
 
@@ -239,13 +241,21 @@ object XDMATesterInfrastructure {
       data = writerRWParam.enabledChannel
     )
     currentAddress += 1
-    write_csr(
-      dut  = dut,
-      port = port,
-      addr = currentAddress,
-      data = writerRWParam.enabledByte
-    )
-    currentAddress += 1
+    // Existing scenarios specify a shared scalar pattern, like the C APIs.
+    val maskBits = channelBytes * channels
+    val fullMask = (0 until maskBits).foldLeft(BigInt(0)) { (mask, bit) =>
+      val enabled = (writerRWParam.enabledByte >>> ((bit % channelBytes) % 32)) & 1
+      mask | (BigInt(enabled) << bit)
+    }
+    for (word <- 0 until (maskBits + 31) / 32) {
+      write_csr(
+        dut  = dut,
+        port = port,
+        addr = currentAddress,
+        data = ((fullMask >> (word * 32)) & BigInt("ffffffff", 16)).toInt
+      )
+      currentAddress += 1
+    }
 
     // Data Extension Region
     // Bypass signals

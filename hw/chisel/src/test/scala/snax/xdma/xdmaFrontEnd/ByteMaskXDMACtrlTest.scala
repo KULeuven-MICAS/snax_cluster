@@ -8,22 +8,22 @@ import snax.xdma.DesignParams._
 import snax.xdma.xdmaFrontend.XDMACtrl
 
 class ByteMaskXDMACtrlTest extends AnyFlatSpec with ChiselScalatestTester {
-  for (bankWidth <- Seq(512, 1024)) {
-    "XDMACtrl" should s"deliver every mask CSR to a $bankWidth-bit writer" in {
+  for ((bankWidth, channels) <- Seq((512, 1), (1024, 1), (64, 8), (128, 3))) {
+    "XDMACtrl" should s"deliver every mask CSR to $channels writer channels of $bankWidth bits" in {
       val cfg               = new XDMAConfigParam(addrWidth = 32, dataWidth = 32)
-      val axi               = new XDMAAXIParam(dataWidth = bankWidth, addrWidth = 48)
+      val axi               = new XDMAAXIParam(dataWidth = bankWidth * channels, addrWidth = 48)
       val cross             = new XDMACrossClusterParam(
         maxMulticastDest     = 1,
         maxTemporalDimension = 1,
-        AxiDataWidth         = bankWidth,
+        AxiDataWidth         = bankWidth * channels,
         wordlineWidth        = bankWidth
       )
       def rw(mask: Boolean) =
         new ReaderWriterParam(
-          spatialBounds        = List(1),
+          spatialBounds        = List(channels),
           temporalDimension    = 1,
           tcdmDataWidth        = bankWidth,
-          numChannel           = 1,
+          numChannel           = channels,
           configurableChannel  = true,
           configurableByteMask = mask
         )
@@ -61,9 +61,22 @@ class ByteMaskXDMACtrlTest extends AnyFlatSpec with ChiselScalatestTester {
 
         val words  = Seq("89abcdef", "01234567", "76543210", "fedcba98")
           .map(BigInt(_, 16))
-          .take(bankWidth / 256)
+          .take((channels * bankWidth / 8 + 31) / 32)
         // Pointers, reader strides/bound/channel, writer strides/bound/channel, mask.
-        val config = Seq(0x1000, 0, 0x2000, 0, bankWidth / 8, 1, bankWidth / 8, 1, bankWidth / 8, 1, bankWidth / 8, 1)
+        val config = Seq(
+          0x1000,
+          0,
+          0x2000,
+          0,
+          bankWidth / 8,
+          1,
+          bankWidth / 8,
+          (1 << channels) - 1,
+          bankWidth / 8,
+          1,
+          bankWidth / 8,
+          (1 << channels) - 1
+        )
           .map(BigInt(_)) ++ words
         config.zipWithIndex.foreach { case (value, i) => write(i, value) }
         // The start register follows every mask word, not just the first one.
@@ -74,7 +87,8 @@ class ByteMaskXDMACtrlTest extends AnyFlatSpec with ChiselScalatestTester {
           cycles += 1
         }
         assert(cycles < 50, "XDMA writer configuration was not delivered")
-        val expected = words.zipWithIndex.map { case (word, i) => word << (32 * i) }.reduce(_ | _)
+        val expected = words.zipWithIndex.map { case (word, i) => word << (32 * i) }.reduce(_ | _) &
+          ((BigInt(1) << (channels * bankWidth / 8)) - 1)
         dut.io.localXDMACfg.writerCfg.readerwriterCfg.enabledByte.expect(expected.U)
         dut.io.localXDMACfg.writerCfg.aguCfg.temporalBounds(0).expect(1.U)
         dut.io.localXDMACfg.writerCfg.aguCfg.ptr.expect(0x2000.U)

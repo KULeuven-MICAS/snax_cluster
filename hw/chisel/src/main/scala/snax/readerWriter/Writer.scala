@@ -69,9 +69,16 @@ class Writer(
     }
   else requestors.io.foreach(_.enable := true.B)
 
-  if (param.configurableByteMask)
-    requestors.io.foreach(_.in.strb := io.readerwriterCfg.enabledByte)
-  else
+  if (param.configurableByteMask) {
+    val bytesPerChannel = param.tcdmParam.dataWidth / 8
+    // Each sparse request carries the mask for its own channel.
+    requestors.io.zipWithIndex.foreach { case (requestor, channel) =>
+      requestor.in.strb := io.readerwriterCfg.enabledByte(
+        (channel + 1) * bytesPerChannel - 1,
+        channel * bytesPerChannel
+      )
+    }
+  } else
     requestors.io.zipWithIndex.foreach {
       case (requestor, _) => {
         requestor.in.strb := Fill(requestor.in.strb.getWidth, 1.U)

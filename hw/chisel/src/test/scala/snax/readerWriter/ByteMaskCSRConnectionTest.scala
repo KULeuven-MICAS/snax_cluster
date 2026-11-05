@@ -5,14 +5,15 @@ import chisel3.util._
 import chiseltest._
 import org.scalatest.flatspec.AnyFlatSpec
 
-private class ByteMaskCfgHarness(bankWidth: Int, maskWords: Int, enableMask: Boolean = true) extends Module {
+private class ByteMaskCfgHarness(bankWidth: Int, maskWords: Int, enableMask: Boolean = true, channels: Int = 1)
+    extends Module {
   private val param = new ReaderWriterParam(
-    spatialBounds        = List(1),
+    spatialBounds        = List(channels),
     temporalDimension    = 1,
     tcdmDataWidth        = bankWidth,
     tcdmPhysWordSize     = bankWidth,
     tcdmLogicWordSize    = Seq(bankWidth),
-    numChannel           = 1,
+    numChannel           = channels,
     configurableChannel  = false,
     configurableByteMask = enableMask
   )
@@ -20,7 +21,7 @@ private class ByteMaskCfgHarness(bankWidth: Int, maskWords: Int, enableMask: Boo
   val io = IO(new Bundle {
     // A following CSR detects accidental consumption of the next configuration field.
     val csr            = Input(Vec(maskWords + 1, UInt(32.W)))
-    val mask           = Output(UInt((bankWidth / 8).W))
+    val mask           = Output(UInt((channels * bankWidth / 8).W))
     val remainingWords = Output(UInt(32.W))
     val nextWord       = Output(UInt(32.W))
   })
@@ -33,16 +34,28 @@ private class ByteMaskCfgHarness(bankWidth: Int, maskWords: Int, enableMask: Boo
 }
 
 class ByteMaskCSRConnectionTest extends AnyFlatSpec with ChiselScalatestTester {
-  private val cases    = Seq((64, 1), (128, 1), (256, 1), (384, 2), (512, 2), (1024, 4))
-  private val patterns = Seq("89abcdef", "01234567", "76543210", "fedcba98").map(BigInt(_, 16))
+  private val cases    = Seq(
+    (64, 1, 1),
+    (128, 1, 1),
+    (256, 1, 1),
+    (384, 1, 2),
+    (512, 1, 2),
+    (1024, 1, 4),
+    (64, 3, 1),
+    (64, 5, 2),
+    (64, 8, 2),
+    (128, 3, 2),
+    (384, 3, 5)
+  )
+  private val patterns = Seq("89abcdef", "01234567", "76543210", "fedcba98", "a55aa55a").map(BigInt(_, 16))
   private val sentinel = BigInt("13579bdf", 16)
 
-  for ((bankWidth, maskWords) <- cases) {
-    "ReaderWriterCfgIO" should s"enable every byte of a $bankWidth-bit bank from $maskWords CSR words" in {
-      test(new ByteMaskCfgHarness(bankWidth, maskWords))
+  for ((bankWidth, channels, maskWords) <- cases) {
+    "ReaderWriterCfgIO" should s"enable every byte of $channels channels of $bankWidth bits from $maskWords CSR words" in {
+      test(new ByteMaskCfgHarness(bankWidth, maskWords, channels = channels))
         .withAnnotations(Seq(VerilatorBackendAnnotation)) { dut =>
           dut.io.csr.last.poke(sentinel.U)
-          val validBits = (BigInt(1) << (bankWidth / 8)) - 1
+          val validBits = (BigInt(1) << (channels * bankWidth / 8)) - 1
           dut.io.csr.take(maskWords).foreach(_.poke(BigInt("ffffffff", 16).U))
           dut.io.mask.expect(validBits.U)
           dut.io.remainingWords.expect(1.U)
