@@ -117,7 +117,11 @@ class BlockGemmRescaleSIMD(params: BlockGemmRescaleSIMDParams) extends Module wi
   gemm.io.data.b_i <> io.data.gemm_data.b_i
   gemm.io.data.c_i <> C32_s2p.io.out
 
-  // simd signal connection
+  // bypassSIMD of the running job, stored when the job is accepted. The CSR
+  // may already hold the setting of the next job while this one runs.
+  val bypassSIMD = RegEnable(io.ctrl.bypassSIMD, false.B, io.ctrl.gemm_ctrl.fire)
+
+  // simd signal connection (the configuration handshake uses the setting of the job being started)
   when(io.ctrl.bypassSIMD) {
     simd.io.ctrl.valid      := false.B
     io.ctrl.simd_ctrl.ready := false.B
@@ -129,7 +133,7 @@ class BlockGemmRescaleSIMD(params: BlockGemmRescaleSIMDParams) extends Module wi
 
   // simd data input
   // gemm output
-  when(io.ctrl.bypassSIMD) {
+  when(bypassSIMD) {
     // input driver
     simd.io.data.input_i.valid := false.B
 
@@ -152,7 +156,7 @@ class BlockGemmRescaleSIMD(params: BlockGemmRescaleSIMDParams) extends Module wi
   D32_p2s.io.in.bits        := gemm.io.data.d_o.bits
 
   // simd output
-  when(io.ctrl.bypassSIMD) {
+  when(bypassSIMD) {
     // output driver
     D8_p2s.io.in.valid <> false.B
     // fake ready signal
@@ -164,7 +168,7 @@ class BlockGemmRescaleSIMD(params: BlockGemmRescaleSIMDParams) extends Module wi
   D8_p2s.io.in.bits := simd.io.data.output_o.bits
 
   io.ctrl.busy_o := gemm.io.busy_o || simd.io.busy_o || D8_p2s.io.out.valid || D32_p2s.io.out.valid
-  when(io.ctrl.bypassSIMD) {
+  when(bypassSIMD) {
     io.ctrl.performance_counter := gemm.io.performance_counter
   }.otherwise {
     io.ctrl.performance_counter := simd.io.performance_counter
