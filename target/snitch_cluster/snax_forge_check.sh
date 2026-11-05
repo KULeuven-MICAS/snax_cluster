@@ -20,11 +20,15 @@
 #   vlt   all four in the image
 #
 # podman runs non-interactively, snax_cluster, B and the ELF's folder mounted at their own
-# paths. Then the run's `forge counter` lines, in order, and its `forge data:` line must equal
-# B/forge_expected.txt: `PASS <name>` or `FAIL <name>: <want> / <got>`. Each design's whole
-# output is kept in logs/snax-forge-<name>-<sim>.txt, the PASS and FAIL lines and each run's
-# `forge cycles:` line in logs/snax-forge-check.txt. Exit 1 when a design failed, 2 on bad
-# arguments.
+# paths. Then against B/forge_expected.txt (snax-forge's D123): the run's `forge data:` line
+# must equal the expected one, and its `forge counter <task>: <c>` lines, in order, name the
+# expected tasks with each count within that task's `forge fill <task>: <n>` of the expected
+# one (the group's streamer fill: the COUNTER counts the streamer's head start before START,
+# which the core's timing sets and SNAX-GVSoC does not model); a file without fill lines asks
+# for equal counts. `PASS <name>`, with a line per counter that differs within its fill, or
+# `FAIL <name>: <want> / <got>`. Each design's whole output is kept in
+# logs/snax-forge-<name>-<sim>.txt, the PASS and FAIL lines and each run's `forge cycles:` line
+# in logs/snax-forge-check.txt. Exit 1 when a design failed, 2 on bad arguments.
 
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)   # target/snitch_cluster
@@ -56,6 +60,31 @@ here() { (cd "$HERE" && bash -c "$1") < /dev/null; }
 report() {  # report LINE: to the terminal and to the check file
     echo "$1"
     echo "$1" >> "$CHECK"
+}
+
+# compare WANT GOT: exit 0 when GOT's data line equals WANT's and its counters, in order, name
+# WANT's tasks each within its fill (0 without a fill line); a line per counter that differs
+# within its fill on stdout. WANT is forge_expected.txt, GOT the run's forge lines.
+compare() {
+    awk '
+        function split_line(x, n,   i) { i = index(x, ": "); name = substr(x, n, i - n); value = substr(x, i + 2) + 0 }
+        FNR == NR && /^forge counter / { split_line($0, 15); wn[++nw] = name; wv[nw] = value; next }
+        FNR == NR && /^forge fill / { split_line($0, 12); fill[name] = value; next }
+        FNR == NR && /^forge data: / { wd = $0; next }
+        FNR == NR { next }
+        /^forge counter / { split_line($0, 15); gn[++ng] = name; gv[ng] = value; next }
+        /^forge data: / { gd = $0 }
+        END {
+            bad = (gd != wd || ng != nw)
+            for (j = 1; j <= nw && j <= ng; j++) {
+                if (gn[j] != wn[j]) { bad = 1; continue }
+                d = gv[j] - wv[j]; if (d < 0) d = -d
+                f = (wn[j] in fill) ? fill[wn[j]] : 0
+                if (d > f) bad = 1
+                else if (d > 0) printf "  %s: counter %d against %d, within its fill %d\n", wn[j], gv[j], wv[j], f
+            }
+            exit bad
+        }' "$1" "$2"
 }
 
 for B in $BUNDLES; do
@@ -92,8 +121,9 @@ for B in $BUNDLES; do
     if [ $rc -ne 0 ]; then
         report "FAIL $name: a step failed (exit $rc), see $log"
         failed=1
-    elif [ "$want" = "$got" ]; then
+    elif notes=$(compare "$B/forge_expected.txt" <(echo "$got")); then
         report "PASS $name"
+        [ -z "$notes" ] || report "$notes"
     else
         report "FAIL $name: ${want//$'\n'/; } / ${got//$'\n'/; }"
         failed=1
