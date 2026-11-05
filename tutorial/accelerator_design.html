@@ -1,0 +1,981 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.2.11">
+    
+    
+      
+        <title>1. Accelerator Design - SNAX Cluster</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8c5ef100.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.9647289d.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#accelerator-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="SNAX Cluster" class="md-header__button md-logo" aria-label="SNAX Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SNAX Cluster
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              1. Accelerator Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/KULeuven-MICAS/snitch_cluster/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KULeuven-MICAS/snitch_cluster
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="SNAX Cluster" class="md-nav__button md-logo" aria-label="SNAX Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    SNAX Cluster
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/KULeuven-MICAS/snitch_cluster/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KULeuven-MICAS/snitch_cluster
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/getting_started.html" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/directory_structure.html" class="md-nav__link">
+        Repository Structure
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/documentation.html" class="md-nav__link">
+        Documentation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Reference Manual
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference Manual" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Reference Manual
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Hardware
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Hardware" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Hardware
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snitch.html" class="md-nav__link">
+        Snitch
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_2" type="checkbox" id="__nav_3_1_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_2">
+          Snitch Cluster
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Snitch Cluster" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          Snitch Cluster
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snitch_cluster.html" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/peripherals.html" class="md-nav__link">
+        Peripherals
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schema-doc/snitch_cluster.html" class="md-nav__link">
+        Schema
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snax_cluster.html" class="md-nav__link">
+        SNAX Cluster
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/reqrsp_interface.html" class="md-nav__link">
+        Reqrsp Interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/custom_instructions.html" class="md-nav__link">
+        Custom Instructions
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          SNAX Tutorial
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="SNAX Tutorial" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          SNAX Tutorial
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="introduction.html" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architectural_overview.html" class="md-nav__link">
+        Architectural Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="accelerator_design.html" class="md-nav__link md-nav__link--active">
+        1. Accelerator Design
+      </a>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="csrman_design.html" class="md-nav__link">
+        2. CSR Manager Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="streamer_design.html" class="md-nav__link">
+        3. Streamer Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build_system.html" class="md-nav__link">
+        4. Building the System
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="programming.html" class="md-nav__link">
+        5. Programming the System
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="other_tools.html" class="md-nav__link">
+        Other Tools
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="summary_and_exercise.html" class="md-nav__link">
+        Summary and Exercise
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../publications.html" class="md-nav__link">
+        Publications
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/KULeuven-MICAS/snitch_cluster/edit/master/docs/tutorial/accelerator_design.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<h1 id="accelerator-design">Accelerator Design</h1>
+<p>Let's first dive into the SNAX accelerator wrapper which is the yellow box from the main figure in <a href="architectural_overview.html">Architectural Overview</a>. The figure below is the same shell but with more signal details:</p>
+<p><img alt="image" src="https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/ea948d6f-44e9-4602-831c-f4ee0d70e851" /></p>
+<p>We labeled a few important details about the shell:</p>
+<p>(1) - The entire SNAX accelerator wrapper encapsulates the streamers, the CSR manager, and the accelerator data path.</p>
+<p>(2) - The CSR manager handles the CSR read and write transactions between the Snitch core and the accelerator data path. Towards the Snitch core side, CSR transactions are handled with decoupled interfaces (<code>csr_req_*</code> and <code>csr_rsp_*</code>) of requests and responses. Towards the accelerator side, the read-write registers (<code>register_rw_set</code>) use a decoupled interface (<code>register_rw_valid</code> and <code>register_rw_ready</code>) while the read-only registers (<code>register_ro_set</code>) use a direct mapping. There are more details in <a href="csrman_design.html">CSR Manager Design</a>.</p>
+<p>(3) - The streamer provides flexible data access from the L1 TCDM to the accelerator. It serves as an intermediate interface between the TCDM interconnect and the accelerator. On the interconnect side the streamer controls the TCDM request and response (<code>tcdm_req</code> and <code>tcdm_rsp</code>) interfaces towards the memory. On the accelerator side, the streamer has its own data decoupled interfaces (<code>acc2stream_*</code> and <code>stream2acc_*</code>). The direction from the accelerator to the streamer is write-only ports while the direction from the streamer to the accelerator is read-only ports. More details are in <a href="streamer_design.html">Streamer Design</a>.</p>
+<p>(4) - The accelerator data path is the focus of this section. In our example, we will use a very simple ALU datapath with basic operations only. The SNAX ALU is already built for you. You can find it under the <code>./hw/snax_alu/</code> directory. Take time to check the simple design.</p>
+<h1 id="snax-alu-datapath">SNAX ALU Datapath</h1>
+<p>The figure below shows the SNAX ALU datapath in more detail:</p>
+<p><img alt="image" src="https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/53d9f0e7-656a-4754-80ac-674d7af9b2f3" /></p>
+<p>You can find all accelerator files under <code>./hw/snax_alu/src/.</code> directory. The main files are:</p>
+<ul>
+<li><code>snax_alu_pe.sv</code> as the SNAX ALU Processing Element (PE)</li>
+<li><code>snax_alu_csr.sv</code> as the main control-status-register (CSR) component</li>
+<li><code>snax_alu_shell_wrapper.sv</code> as the top-level shell wrapper encapsulating the SNAX PEs, SNAX CSRs, and glue logic to interface between the CSR manager and the SNAX streamer.</li>
+</ul>
+<p>Again, we label points of interest with numbers. We facilitate the discussion in a bottom-up approach to see how the accelerator is built:</p>
+<h2 id="1-snax-alu-processing-elements-pe">(1) SNAX ALU Processing Elements (PE)</h2>
+<p>The <code>snax_alu_pe</code> is the computing unit of the accelerator. The PE can do addition (+), subtraction (-), multiplication (X), and a bit-wise XOR (^). Each processing element takes in two data inputs, <code>a</code> and <code>b</code>. Each input with a parameter data width size <code>DataWidth</code>. By default <code>DataWidth=64</code>. The output is <code>c</code> of data width size <code>2*DataWidth</code> to accommodate the multiplication. The other operations leave the upper bits to 0.</p>
+<p>(2) The inputs and outputs of the PE have a simple decoupled interface (valid-ready protocol). The ports only consist of a single <code>data</code> channel. The valid signal of the inputs comes from the streamers when the data is valid. The ready signal depends on the busy status register. When the valid signals of inputs <code>a</code> and <code>b</code> are high, then it combinationally sets the valid signal of output <code>c</code>. The ready signal of <code>c</code> comes from the streamer when it's ready to load data into the TCDM memory. The entire PE is fully combinational.</p>
+<h2 id="3-snax-alu-csr-register-set">(3) SNAX ALU CSR Register Set</h2>
+<p>The <code>snax_alu_csr</code> is a control and status register set with signals to modify the operation of the ALU PEs. It also contains a busy status signal and a simple performance counter. The table below shows the register set with addresses, type of register (<code>RW</code> for read-write and <code>RO</code> for read-only), and functional descriptions.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">register name</th>
+<th style="text-align: center;">register addr</th>
+<th style="text-align: center;">type</th>
+<th style="text-align: center;">description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">mode</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">RW</td>
+<td style="text-align: center;">Operating modes: 0 - add, 1 - sub, 2 - mul, 3 - XOR</td>
+</tr>
+<tr>
+<td style="text-align: center;">length</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">RW</td>
+<td style="text-align: center;">Number of elements to process</td>
+</tr>
+<tr>
+<td style="text-align: center;">start</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">RW</td>
+<td style="text-align: center;">Set 1 to LSB only to start the accelerator</td>
+</tr>
+<tr>
+<td style="text-align: center;">busy</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">RO</td>
+<td style="text-align: center;">Busy status. 1 - busy, 0 - idle</td>
+</tr>
+<tr>
+<td style="text-align: center;">perf. counter</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">RO</td>
+<td style="text-align: center;">Performance counter indicating number of cycles</td>
+</tr>
+</tbody>
+</table>
+<p>RW registers can read or write from the snitch core’s perspective. The values of these registers are input signals from the accelerator’s perspective, which can used for configurations and start signals that get to the main data path.</p>
+<p>RO registers are read-only from the snitch core’s perspective .The values of these registers are output signals from the accelerator’s perspective. These are mostly used for monitoring purposes like status or performance counters. </p>
+<p>The mode signal is broadcast to all PEs to configure the kernel that each PE processes. The busy signal acts like an active state also broadcasted to all PEs. If it's high then the PEs set their input ready signals high to allow data to stream continuously. </p>
+<p>From the outside, a CSR manager (in this case our SNAX CSR manager) handles the read-and-write transactions from and to the accelerator's CSR register set. The <code>snax_alu_csr</code> also uses a decoupled interface but with all RW channels linked to the accelerator. The RO channels are wired directly without any decoupled interface. It is up to the accelerator designer to handle these operations.</p>
+<h2 id="4-snax-alu-shell-wrapper">(4) SNAX ALU Shell Wrapper</h2>
+<p>The <code>snax_alu_shell_wrapper</code> is the main wrapper for encapsulating the processing elements, the CSR manager, and the glue logic to connect to the streamers. The top-level shell has configurable parameters tabulated below:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">parameter</th>
+<th style="text-align: center;">description</th>
+<th style="text-align: center;">default values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">RegRWCount</td>
+<td style="text-align: center;">Number of RW registers</td>
+<td style="text-align: center;">3</td>
+</tr>
+<tr>
+<td style="text-align: center;">RegROCount</td>
+<td style="text-align: center;">Number of RO registers</td>
+<td style="text-align: center;">2</td>
+</tr>
+<tr>
+<td style="text-align: center;">NumPE</td>
+<td style="text-align: center;">Number of parallel PEs</td>
+<td style="text-align: center;">4</td>
+</tr>
+<tr>
+<td style="text-align: center;">DataWidth</td>
+<td style="text-align: center;">INput data width of each PE</td>
+<td style="text-align: center;">64</td>
+</tr>
+<tr>
+<td style="text-align: center;">OutDataWidth</td>
+<td style="text-align: center;">Output data width of each PE</td>
+<td style="text-align: center;">DataWidth*2</td>
+</tr>
+<tr>
+<td style="text-align: center;">RegDataWidth</td>
+<td style="text-align: center;">Data width of each register</td>
+<td style="text-align: center;">32</td>
+</tr>
+<tr>
+<td style="text-align: center;">RegAddrwidth</td>
+<td style="text-align: center;">Address width for selecting a register</td>
+<td style="text-align: center;">32</td>
+</tr>
+</tbody>
+</table>
+<p>For the CSR side, we have the RW and RO ports directly connecting the <code>snax_alu_csr</code> to the CSR manager. The RW ports have a decoupled interface to properly handle the register writes. The RO ports are directly wired to the CSR manager. The shell module's ports for the CSR are:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">//-------------------------------</span>
+<span class="c1">// CSR manager ports</span>
+<span class="c1">//-------------------------------</span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="n">RegRWCount</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">][</span><span class="n">RegDataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">csr_reg_set_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w">                                    </span><span class="n">csr_reg_set_valid_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w">                                    </span><span class="n">csr_reg_set_ready_o</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w"> </span><span class="p">[</span><span class="n">RegROCount</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">][</span><span class="n">RegDataWidth</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">csr_reg_ro_set_o</span><span class="w"></span>
+</code></pre></div>
+<p>To visualize this better, take note that the CSR register ports are packed signals. Referring to the SNAX ALU's RW register table above then we can "unpack" them to see:</p>
+<p><div class="highlight"><pre><span></span><code><span class="n">csr_reg_set_i</span><span class="w"> </span><span class="p">[</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mode</span><span class="p">;</span><span class="w"></span>
+<span class="n">csr_reg_set_i</span><span class="w"> </span><span class="p">[</span><span class="mh">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"></span>
+<span class="n">csr_reg_set_i</span><span class="w"> </span><span class="p">[</span><span class="mh">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">start</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+The same concept goes for the RO register ports:</p>
+<div class="highlight"><pre><span></span><code><span class="n">busy</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="n">csr_reg_ro_set</span><span class="p">[</span><span class="mh">0</span><span class="p">];</span><span class="w"></span>
+<span class="n">perf_counter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">csr_reg_ro_set</span><span class="p">[</span><span class="mh">1</span><span class="p">];</span><span class="w"></span>
+</code></pre></div>
+<p>The PEs that connect to an external data streamer have data signals (both input and output) concatenated together. (5) For the PEs that connect to an external data streamer, the PE data signals (both input and output) data channels decoupled interfaces. The module ports are:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">//-------------------------------</span>
+<span class="c1">// Accelerator ports</span>
+<span class="c1">//-------------------------------</span>
+<span class="c1">// Note, we maintained the form of these signals</span>
+<span class="c1">// just to comply with the top-level wrapper</span>
+
+<span class="c1">// Ports from accelerator to streamer</span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w"> </span><span class="p">[(</span><span class="n">NumPE</span><span class="o">*</span><span class="n">OutDataWidth</span><span class="p">)</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">acc2stream_0_data_o</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w"> </span><span class="n">acc2stream_0_valid_o</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="n">acc2stream_0_ready_i</span><span class="p">,</span><span class="w"></span>
+
+<span class="c1">// Ports from streamer to accelerator</span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="p">[(</span><span class="n">NumPE</span><span class="o">*</span><span class="n">DataWidth</span><span class="p">)</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">stream2acc_0_data_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="n">stream2acc_0_valid_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w"> </span><span class="n">stream2acc_0_ready_o</span><span class="p">,</span><span class="w"></span>
+
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="p">[(</span><span class="n">NumPE</span><span class="o">*</span><span class="n">DataWidth</span><span class="p">)</span><span class="o">-</span><span class="mh">1</span><span class="o">:</span><span class="mh">0</span><span class="p">]</span><span class="w"> </span><span class="n">stream2acc_1_data_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">input</span><span class="w">  </span><span class="kt">logic</span><span class="w"> </span><span class="n">stream2acc_1_valid_i</span><span class="p">,</span><span class="w"></span>
+<span class="k">output</span><span class="w"> </span><span class="kt">logic</span><span class="w"> </span><span class="n">stream2acc_1_ready_o</span><span class="p">,</span><span class="w"></span>
+</code></pre></div>
+<p>Where <code>stream2acc</code> and <code>acc2stream</code> indicate the input and output ports respectively. You could also treat <code>stream2acc</code> as read ports of the streamer and <code>acc2stream</code> as write ports to the streamer.</p>
+<p>These ports are concatenated signals of the PEs. For example, consider the example where we have <code>NumPE=4</code> PEs and each PE can process <code>DataWidth</code> size per port (<code>2*DataWidth</code> for the output). Then SNAX streamer uses a data width of <code>4*DataWidth</code> for both inputs <code>A</code> (<code>stream2acc_0</code>) and <code>B</code> (<code>stream2acc_1</code>) . Then we split <code>A</code> and <code>B</code> contigiously into ports <code>a</code> and <code>b</code>, respectively. These are annotated with (2) and (5) in the figure. The output <code>C</code> is a concatenation of each <code>c</code> port. </p>
+<p>Any user attaching their accelerator to the SNAX platform must <strong>create their own shell wrapper</strong> with the correct CSR manager and streamer interfaces. This shell should serve as an example on how to attach the interfaces.</p>
+<h1 id="what-is-a-decoupled-interface-anyway">What is a Decoupled Interface Anyway?</h1>
+<p>The decoupled interface uses two signals: <code>valid</code> and <code>ready</code> with the following rules.</p>
+<ul>
+<li>The initiator asserts <code>valid</code>. The assertion of <code>valid</code> <strong>must not depend on</strong>
+  <code>ready</code>. However, <code>ready</code> may depend on <code>valid</code>.</li>
+<li>Once <code>valid</code> has been asserted all data must remain stable.</li>
+<li>The receiver asserts <code>ready</code> whenever it is ready to receive the transaction.</li>
+<li>When both <code>valid</code> and <code>ready</code> are high the transaction is successful.</li>
+</ul>
+<p>This is an interface that is common in AXI protocol. You can find more details <a href="https://vhdlwhiz.com/how-the-axi-style-ready-valid-handshake-works/">here</a>.</p>
+<h1 id="some-exercises">Some Exercises!!</h1>
+<details>
+  <summary> For the CSR interface connecting to the CSR manager, what are the important ports? </summary>
+  We have the RW request and response ports: `csr_reg_set_i`, `csr_reg_set_valid_i`, and `csr_reg_set_ready_o`. Then, we have the RO port: `csr_reg_ro_set_o`. They also use valid-ready responses except for the RO port.
+</details>
+
+<details>
+  <summary> What are the important ports of the accelerator <-> streamer interfaces? </summary>
+  We have reader ports tagged with `stream2acc` names and writer ports tagged with `acc2stream` names. They also use valid-ready responses.
+</details>
+
+<details>
+  <summary> What is the decoupled interface? </summary>
+  The decoupled interface us a valid-ready protocol. A transaction is only successful when both valid and ready are high. 
+</details>
+
+<h1 id="adding-your-accelerator-to-the-configuration-file">Adding Your Accelerator to the Configuration File</h1>
+<p>You can add your accelerator configurations in a configuration file. The SNAX ALU configuration <code>snax-alu.hjson</code> has core templates which configure the Snitch core and how it connects to an accelerator. The <code>snax-alu</code> core template is:</p>
+<p><div class="highlight"><pre><span></span><code>// SNAX Accelerator Core Templates
+snax_alu_core_template: {
+    isa: &quot;rv32imafd&quot;,
+    xssr: true,
+    xfrep: true,
+    xdma: false,
+    xf16: true,
+    xf16alt: true,
+    xf8: true,
+    xf8alt: true,
+    xfdotp: true,
+    xfvec: true,
+    snax_acc_cfg: {
+        snax_acc_name: &quot;snax_alu&quot;,
+        bender_target: [&quot;snax_alu&quot;],
+        snax_tcdm_ports: 16,
+        snax_num_rw_csr: 3,
+        snax_num_ro_csr: 2,
+        snax_streamer_cfg: {$ref: &quot;#/snax_alu_csr_streamer_template&quot; }
+    },
+    num_int_outstanding_loads: 1,
+    num_int_outstanding_mem: 4,
+    num_fp_outstanding_loads: 4,
+    num_fp_outstanding_mem: 4,
+    num_sequencer_instructions: 16,
+    num_dtlb_entries: 1,
+    num_itlb_entries: 1,
+    // Enable division/square root unit
+    // Xdiv_sqrt: true,
+},
+</code></pre></div>
+The first operations before the <code>snax_acc_cfg</code> pertain to the Snitch core configurations. Particularly what ISA to use and which additional features it includes. You would usually keep this by default.</p>
+<p>The <code>snax_acc_cfg</code>  contains the configurations for the accelerator. The configuration definitions are:</p>
+<ul>
+<li><code>snax_acc_name</code>: Is the name appended to the different wrappers discussed in <a href="build_system.html">Building the System</a> section.</li>
+<li><code>bender_target</code>: This is for the bender target name that you will use later in <a href="build_system.html">Building the System</a> section.</li>
+<li><code>snax_tcdm_ports</code>: Is the number of tightly coupled data memory (TCDM) that your accelerator needs.</li>
+<li><code>snax_num_rw_csr</code>: Is the number of read-write (RW) registers your accelerators has. This affects the connection ports of the CSR manager. More details in <a href="csrman_design.html">SNAX CSR Manager</a>.</li>
+<li><code>snax_num_ro_csr</code>: Is the number of read-only (RO) registers your accelerator has. This affects the connection ports CSR manager. More details in <a href="csrman_design.html">SNAX CSR Manager</a>.</li>
+<li><code>snax_streamer_cfg</code>: Contains the settings for your streamer. More details are in <a href="streamer_design.html">SNAX Streamer</a></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>At the top of the configuration file, you will also see the cluster bender target name. <code>bender_target: ["snax_alu_cluster"],</code> You need to put this at the top too so that your cluster would have its own unique name and the bender targets generated will also match.</p>
+</div>
+<p>You can find more details in the <a href="https://github.com/KULeuven-MICAS/snax_cluster/blob/main/docs/schema/snitch_cluster.schema.json">Hardware Schema</a> file. </p>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="architectural_overview.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Architectural Overview" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Architectural Overview
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="csrman_design.html" class="md-footer__link md-footer__link--next" aria-label="Next: 2. CSR Manager Design" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              2. CSR Manager Design
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.748e2769.min.js"></script>
+      
+    
+  </body>
+</html>

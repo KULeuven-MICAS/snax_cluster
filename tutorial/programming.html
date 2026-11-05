@@ -1,0 +1,1062 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.2.11">
+    
+    
+      
+        <title>5. Programming the System - SNAX Cluster</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8c5ef100.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.9647289d.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#programming-your-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="SNAX Cluster" class="md-header__button md-logo" aria-label="SNAX Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SNAX Cluster
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              5. Programming the System
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/KULeuven-MICAS/snitch_cluster/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KULeuven-MICAS/snitch_cluster
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="SNAX Cluster" class="md-nav__button md-logo" aria-label="SNAX Cluster" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    SNAX Cluster
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/KULeuven-MICAS/snitch_cluster/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    KULeuven-MICAS/snitch_cluster
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          User Guide
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guide" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          User Guide
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/getting_started.html" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/directory_structure.html" class="md-nav__link">
+        Repository Structure
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ug/documentation.html" class="md-nav__link">
+        Documentation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Reference Manual
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Reference Manual" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Reference Manual
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1" type="checkbox" id="__nav_3_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1">
+          Hardware
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Hardware" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Hardware
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snitch.html" class="md-nav__link">
+        Snitch
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3_1_2" type="checkbox" id="__nav_3_1_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_2">
+          Snitch Cluster
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Snitch Cluster" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_1_2">
+          <span class="md-nav__icon md-icon"></span>
+          Snitch Cluster
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snitch_cluster.html" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/peripherals.html" class="md-nav__link">
+        Peripherals
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../schema-doc/snitch_cluster.html" class="md-nav__link">
+        Schema
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/snax_cluster.html" class="md-nav__link">
+        SNAX Cluster
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/reqrsp_interface.html" class="md-nav__link">
+        Reqrsp Interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rm/custom_instructions.html" class="md-nav__link">
+        Custom Instructions
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          SNAX Tutorial
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="SNAX Tutorial" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          SNAX Tutorial
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="introduction.html" class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architectural_overview.html" class="md-nav__link">
+        Architectural Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="accelerator_design.html" class="md-nav__link">
+        1. Accelerator Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="csrman_design.html" class="md-nav__link">
+        2. CSR Manager Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="streamer_design.html" class="md-nav__link">
+        3. Streamer Design
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="build_system.html" class="md-nav__link">
+        4. Building the System
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="programming.html" class="md-nav__link md-nav__link--active">
+        5. Programming the System
+      </a>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="other_tools.html" class="md-nav__link">
+        Other Tools
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="summary_and_exercise.html" class="md-nav__link">
+        Summary and Exercise
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../publications.html" class="md-nav__link">
+        Publications
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/KULeuven-MICAS/snitch_cluster/edit/master/docs/tutorial/programming.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<h1 id="programming-your-design">Programming Your Design</h1>
+<p>Once the build is finished we are now ready to program our accelerator! The only thing we need to keep track of is the set registers that our accelerators are using. The major tasks in this section are to:</p>
+<ol>
+<li>Make a program in C.</li>
+<li>Generate a data header file using a data generation script.</li>
+<li>Modify <code>Makefiles</code> for the build.</li>
+<li>Building the program.</li>
+<li>Run the program.</li>
+</ol>
+<p>We will make a simple program that does the following:</p>
+<ol>
+<li>Load data from the external memory to the TCDM memory.</li>
+<li>Configure the streamer registers and start the streamer.</li>
+<li>Configure the SNAX ALU and start the accelerator.</li>
+<li>Check if the data is correct.</li>
+<li>Print results.</li>
+</ol>
+<h1 id="make-the-c-code-for-snax-alu">Make the C-Code for SNAX ALU</h1>
+<p>You can find all application programs in <code>./target/snitch_cluster/sw/apps/.</code>. Currently, there are several existing programs, but we'll look into the <code>snax-alu</code> directory. You should see the tree:</p>
+<div class="highlight"><pre><span></span><code>├── target/snitch_cluster/sw/apps
+│   ├── snax-alu
+│   |   ├── data
+|   |   |   ├── datagen.py
+|   |   |   └── Makefile
+|   |   ├── src
+|   |   |   └── snax-alu.c
+│   |   └── Makefile
+</code></pre></div>
+<p>Let's study the C program under the <code>./target/snitch_cluster/sw/apps/snax-alu/src/snax-alu.c</code>. Take time to check out the file before proceeding. First let's look at the included header files:</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;snrt.h&quot;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;data.h&quot;</span><span class="cp"></span>
+</code></pre></div>
+<p>The <code>snrt.h</code> is a Snitch run-time header file for all pre-built functions made by the Snitch platform. You can find details in <code>./target/snitch_cluster/sw/runtime/rtl/src/snrt.h</code>. However, several definitions inside <code>snrt.h</code> are located in <code>./sw/snRuntime/src/.</code>. </p>
+<p>The <code>data.h</code> will contain the data that we need later. This will be automatically generated by the <code>datagen.py</code> script, which is invoked by the <code>Makefile</code>.</p>
+<h2 id="allocating-memory-and-performing-memory-transfers">Allocating Memory and Performing Memory Transfers</h2>
+<p>Inside the <code>main()</code> function we begin with declaring the pointers for the data addresses. Consider the code snippet below: </p>
+<p><div class="highlight"><pre><span></span><code><span class="c1">// Allocates space in TCDM</span>
+<span class="kt">uint64_t</span><span class="w"> </span><span class="o">*</span><span class="n">local_a</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">local_b</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">local_o</span><span class="p">;</span><span class="w"></span>
+
+<span class="n">local_a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">snrt_l1_next</span><span class="p">();</span><span class="w"></span>
+<span class="n">local_b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">local_a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">DATA_LEN</span><span class="p">;</span><span class="w"></span>
+<span class="n">local_o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">local_b</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">DATA_LEN</span><span class="p">;</span><span class="w"></span>
+</code></pre></div>
+We will use <code>a</code> and <code>b</code> for inputs and <code>o</code> for the output. In the code snippet below the <code>snrt_l1_next()</code> is a built-in Snitch run-time function that assigns the start of the base address of the TCDM. You can find the function definition in <code>./sw/snRuntime/src/alloc.h</code>. </p>
+<p>The <code>DATA_LEN</code> is a <code>uint64_t</code> data indicating the total number of elements we need to process in our program. You can find this in the generated <code>data.h</code> later.</p>
+<p>The first section is to run the Snitch with a DMA core to transfer data from an external memory (L3) to the local TCDM (L1) memory. See the code snippet below:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">snrt_is_dm_core</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// This measures the start of cycle count</span>
+<span class="w">    </span><span class="c1">// for preloading the data to the L1 memory</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">start_dma_load</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">snrt_mcycle</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">// The DATA_LEN is found in data.h</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">vector_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DATA_LEN</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">snrt_dma_start_1d</span><span class="p">(</span><span class="n">local_a</span><span class="p">,</span><span class="w"> </span><span class="n">A</span><span class="p">,</span><span class="w"> </span><span class="n">vector_size</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">snrt_dma_start_1d</span><span class="p">(</span><span class="n">local_b</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">vector_size</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">// Measure the end of the transfer process</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">end_dma_load</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">snrt_mcycle</span><span class="p">();</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<p>The <code>snrt_is_dm_core()</code> function indicates that the assigned tasks within the condition are for the DMA core only. If it's not a DMA core then it won't run the tasks inside it.</p>
+<p>The <code>snrt_mcycle()</code> is used to measure the current cycle count of the system. We use this later for tracking the number of cycles it needs to run a certain piece of code. We'll discuss more about tracing in the <a href="other_tools.html">Other Tools</a> section later.</p>
+<p>Observe that the <code>snrt_mcycle()</code> is located at the start and end of the DMA tasks. We want to measure the number of cycles it needs for the DMA to transfer the data from L2 to L1.</p>
+<p>Next, we transfer the data through the <code>snrt_dma_start_1d()</code> function where the arguments are the destination, source, and the number of bytes to transfer. You can find the function definition in <code>./sw/snRuntime/src/dma.h</code>.</p>
+<p><code>local_a</code> and <code>local_b</code> are the destinations inside the TCDM L1 memory. Data arrays <code>A</code> and <code>B</code> are declared inside the <code>data.h</code> and it is stored in the L2. <code>vectore_size</code> is of course the amount of data to transfer.</p>
+<h2 id="synchronizing-cores">Synchronizing Cores</h2>
+<p>After the DMA tasks, we need to run a hardware barrier:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Synchronize cores by setting up a</span>
+<span class="c1">// fence barrier for the DMA and accelerator core</span>
+<span class="n">snrt_cluster_hw_barrier</span><span class="p">();</span><span class="w"></span>
+</code></pre></div>
+<p>Since we are doing parallel programming, hardware barriers are program fences to synchronize the timing of the cores. When we run the program from the start of the main, both the Snitch core with the SNAX ALU accelerator and DMA core are running in parallel.</p>
+<p>However, since the assignment of the DMA tasks is for the DMA core only, the Snitch core attached to the SNAX ALU skips the task assignment and runs the <code>snrt_cluster_hw_barrier();</code> immediately. You can find the function definition in <code>./sw/snRuntime/src/sync.h</code>.</p>
+<p>When the function is called, the Snitch core enters a stall state waiting for all Snitch cores to run the same function. When all Snitch cores reach the function, then the cores proceed to do the next tasks. The figure below visualizes this sequence:</p>
+<p><img alt="image" src="https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/9b797246-3040-465c-85bb-fe107c621861" /></p>
+<p>When the DMA core finishes the transfer, the next task assignment is for the compute core to which the SNAX ALU is connected. We use the <code>snrt_is_compute_core()</code> function to indicate if the core is a computing core. You can find the function definition in <code>./sw/snRuntime/src/team.h</code>. Since we only have 1 compute core, then this condition is enough. </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If there is more than 1 core, we need to use the <code>snrt_cluster_core_idx()</code> which returns the core number. You can find the source code in <code>./sw/snRuntime/src/team.h</code>. The core number depends on how you arrange the cores in the configuration file. The last core is always the DMA core. </p>
+</div>
+<h2 id="programming-the-accelerator">Programming the Accelerator</h2>
+<p>The first task is configuring the CSR registers for the streamers and the accelerator. In our system, we first configure the streamer CSRs and then the accelerator CSRs.</p>
+<p>The register addressing then always starts with the streamer configurations, and then the accelerator configurations. The table below shows the relative and actual CSR addressing:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">register name</th>
+<th style="text-align: center;">relative register addr</th>
+<th style="text-align: center;">CSR address</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">temporal loop bound</td>
+<td style="text-align: center;">0</td>
+<td style="text-align: center;">x3c0</td>
+</tr>
+<tr>
+<td style="text-align: center;">temporal stride 0</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">x3c1</td>
+</tr>
+<tr>
+<td style="text-align: center;">temporal stride 1</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">x3c2</td>
+</tr>
+<tr>
+<td style="text-align: center;">temporal stride 2</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">x3c3</td>
+</tr>
+<tr>
+<td style="text-align: center;">spatial stride 0</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">x3c4</td>
+</tr>
+<tr>
+<td style="text-align: center;">spatial stride 1</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">x3c5</td>
+</tr>
+<tr>
+<td style="text-align: center;">spatial stride 2</td>
+<td style="text-align: center;">6</td>
+<td style="text-align: center;">x3c6</td>
+</tr>
+<tr>
+<td style="text-align: center;">base addr 0</td>
+<td style="text-align: center;">7</td>
+<td style="text-align: center;">x3c7</td>
+</tr>
+<tr>
+<td style="text-align: center;">base addr 1</td>
+<td style="text-align: center;">8</td>
+<td style="text-align: center;">x3c8</td>
+</tr>
+<tr>
+<td style="text-align: center;">base addr 2</td>
+<td style="text-align: center;">9</td>
+<td style="text-align: center;">x3c9</td>
+</tr>
+<tr>
+<td style="text-align: center;">streamer start</td>
+<td style="text-align: center;">10</td>
+<td style="text-align: center;">x3ca</td>
+</tr>
+<tr>
+<td style="text-align: center;">streamer perf. counter</td>
+<td style="text-align: center;">11</td>
+<td style="text-align: center;">x3cb</td>
+</tr>
+<tr>
+<td style="text-align: center;">mode</td>
+<td style="text-align: center;">12</td>
+<td style="text-align: center;">x3cc</td>
+</tr>
+<tr>
+<td style="text-align: center;">length</td>
+<td style="text-align: center;">13</td>
+<td style="text-align: center;">x3cd</td>
+</tr>
+<tr>
+<td style="text-align: center;">ALU acceleartor start</td>
+<td style="text-align: center;">14</td>
+<td style="text-align: center;">x3ce</td>
+</tr>
+<tr>
+<td style="text-align: center;">busy</td>
+<td style="text-align: center;">15</td>
+<td style="text-align: center;">x3cf</td>
+</tr>
+<tr>
+<td style="text-align: center;">alu perf. counter</td>
+<td style="text-align: center;">16</td>
+<td style="text-align: center;">x3d0</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In our SNAX system, we reserved the CSR address spaces from 0x3c0 up to 0x5ff. We always begin with 0x3c0.</p>
+</div>
+<p>In the <code>snax-alu.c</code> file you can see that we can write the CSR registers directly. The <code>write_csr</code> and <code>read_csr</code> functions call inline assembly calls for <code>csrw</code> and <code>csrr</code> RISCV CSR instructions, respectively:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">//------------------------------</span>
+<span class="c1">// 1st set the streamer CSRs</span>
+<span class="c1">// The list of CSRs are:</span>
+<span class="c1">// 0x3c0 - loop bound for all components (RW)</span>
+<span class="c1">// 0x3c1 - temporal stride for input A (RW)</span>
+<span class="c1">// 0x3c2 - temporal stride for input B (RW)</span>
+<span class="c1">// 0x3c3 - temporal stride for output O (RW)</span>
+<span class="c1">// 0x3c4 - spatial stride for input A (RW)</span>
+<span class="c1">// 0x3c5 - spatial stride for input B (RW)</span>
+<span class="c1">// 0x3c6 - spatial stride for input O (RW)</span>
+<span class="c1">// 0x3c7 - base pointer for input A (RW)</span>
+<span class="c1">// 0x3c8 - base pointer for input B (RW)</span>
+<span class="c1">// 0x3c9 - base pointer for input O (RW)</span>
+<span class="c1">// 0x3ca - send configurations to streamer (RW)</span>
+<span class="c1">// 0x3cb - performance counter of streamer (RO)</span>
+<span class="c1">//------------------------------</span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c0</span><span class="p">,</span><span class="w"> </span><span class="n">LOOP_ITER</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c1</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c2</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c3</span><span class="p">,</span><span class="w"> </span><span class="mi">64</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c4</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c5</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c6</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c7</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">local_a</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c8</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">local_b</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3c9</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">local_o</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3ca</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+</code></pre></div>
+<p>The sequence above first configures the streamers and then starts the streamers. Recall that our streamer supports the following loop for accessing data:</p>
+<p><div class="highlight"><pre><span></span><code>for(i = 0; i &lt; N; i++):
+  # Parfor equivalent
+  parfor(j = 0; j &lt; 4; j++):
+    target_address[j] = base_address + temporal_stride*i + spatial_stride*j;
+</code></pre></div>
+Where <code>N</code> is the configured temporal loop-bound register. The <code>base_address</code> for each port <code>A</code>, <code>B</code>, and <code>OUT</code> are configured with <code>(uint64_t)local_a</code>, <code>(uint64_t)local_b</code>, and <code>(uint64_t)local_o</code>, respectively.</p>
+<p>The temporal strides for each input are 32 bytes, but the output is 64 bytes. These addresses are in bytes. We need 32 for the inputs because that's 8 bytes (64 bits) per PE and we have 4 PEs and therefore, 32 bytes of temporal stride. The output is 64 because we need 16 bytes (128 bits) per PE and we have 4 PEs and therefore, 64 bytes of temporal stride.</p>
+<p>All spatial strides are 8 because, for each TCDM port connected to the streamer, it will automatically increment or point to the next bank which is 8 in byte addresses (each bank is 64bit or 8 bytes).</p>
+<p>Finally, the start signal for the streamer is configured by writing 1 to the LSB of the start register.</p>
+<p>The accelerator registers are configured next. Take note of the starting address. The code snippet below shows the CSR setup for the accelerator. </p>
+<p><div class="highlight"><pre><span></span><code><span class="c1">//------------------------------</span>
+<span class="c1">// 2nd set the CSRs of the accelerator</span>
+<span class="c1">// 0x3cc - mode of the ALU (RW)</span>
+<span class="c1">//       - 0 for add, 1 for sub, 2 for mul, 3 for XOR</span>
+<span class="c1">// 0x3cd - length of data (RW)</span>
+<span class="c1">// 0x3ce - send configurations to accelerator (RW)</span>
+<span class="c1">// 0x3cf - busy status (RO)</span>
+<span class="c1">// 0x3d0 - performance counter (RO)</span>
+<span class="c1">//------------------------------</span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3cc</span><span class="p">,</span><span class="w"> </span><span class="n">MODE</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3cd</span><span class="p">,</span><span class="w"> </span><span class="n">LOOP_ITER</span><span class="p">);</span><span class="w"></span>
+<span class="n">write_csr</span><span class="p">(</span><span class="mh">0x3ce</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+</code></pre></div>
+The <code>MODE</code> and <code>LOOP_ITER</code> are in the <code>data.h</code> file. The <code>LOOP_ITER</code> is the effective number of loops while considering the spatial parallelism. For example, if we have 100 elements (each is 64-bit wide), then with a spatial parallelism of 4 PEs, we only need to process 25 cycles so the <code>LOOP_ITER</code> is 25. </p>
+<p>The last register written on address <code>0x3ce</code> is the start signal of the accelerator. Once started, the accelerator and streamer work together to process the data.</p>
+<p>We can monitor and poll the busy status of the accelerator by reading on register address <code>0x3cf</code>. The busy signal is high when the accelerator is still processing data.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Do this to poll the accelerator</span>
+<span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">read_csr</span><span class="p">(</span><span class="mh">0x3cf</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+</code></pre></div>
+<h2 id="verifying-results">Verifying Results</h2>
+<p>Once complete, we can check and compare the results in the TCDM and the golden answer stored in L2 memory. The golden output <code>OUT</code> is declared in <code>data.h</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Compare results and check if the</span>
+<span class="c1">// accelerator returns correct answers</span>
+<span class="c1">// For every incorrect answer, increment err</span>
+<span class="kt">uint64_t</span><span class="w"> </span><span class="n">check_val</span><span class="p">;</span><span class="w"></span>
+
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">DATA_LEN</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// Need to combine upper 64bit bank</span>
+<span class="w">    </span><span class="c1">// with the lower 64 bit bank</span>
+<span class="w">    </span><span class="n">check_val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">local_o</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">local_o</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">check_val</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">OUT</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">err</span><span class="o">++</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</code></pre></div>
+<p>Finally, we can print some performance counters at the end:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Read performance counter</span>
+<span class="kt">uint32_t</span><span class="w"> </span><span class="n">perf_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read_csr</span><span class="p">(</span><span class="mh">0x3d0</span><span class="p">);</span><span class="w"></span>
+
+<span class="n">printf</span><span class="p">(</span><span class="s">&quot;Accelerator Done! </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="n">printf</span><span class="p">(</span><span class="s">&quot;Accelerator Cycles: %d </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">perf_count</span><span class="p">);</span><span class="w"></span>
+<span class="n">printf</span><span class="p">(</span><span class="s">&quot;Number of errors: %d </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="p">);</span><span class="w"></span>
+</code></pre></div>
+<p>In summary, you only need to first preload the data into the local TCDM, configure the CSR registers, wait for the accelerator to finish, and then finally profile the performance!</p>
+<h2 id="generating-data">Generating Data</h2>
+<p>You can have your own custom data generation script within the data section. Here, we provide one for the SNAX ALU example.</p>
+<p>The data processed is defined in the <code>data.h</code> included file. Inside the <code>./target/snitch_cluster/sw/apps/snax-alu/data/data.h</code>. This file is only generated when you run the <code>./target/snitch_cluster/sw/apps/snax-alu/data/datagen.py</code> Python script. To generate data you can run:</p>
+<div class="highlight"><pre><span></span><code>./datagen.py --mode<span class="o">=</span><span class="m">0</span> --length<span class="o">=</span><span class="m">20</span> &gt; data.h
+</code></pre></div>
+<p>The <code>datagen.py</code> runs and prints the data into the terminal IO and therefore we need to dump it into the <code>data.h</code> file. The <code>--mode</code> pertains to what kind of kernel to use in the accelerator. 0 is for add, 1 is for sub, 2 is for mul, and 3 is for XOR. The <code>--length</code> pertains to the data lengths.</p>
+<p>After generating the script you can investigate the contents of the <code>data.h</code>. You should see:</p>
+<ul>
+<li><code>MODE</code> - is the mode that the accelerator will use.</li>
+<li><code>DATA_LEN</code> - is the length of data to be processed.</li>
+<li><code>LOOP_ITER</code> - is the data length divided by the amount of parallelism.</li>
+<li><code>A</code> and <code>B</code> - are the input data.</li>
+<li><code>OUT</code> - is the golden output to which the outputs are compared.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Generating the <code>data.h</code> is already automatic by the <code>Makefile</code> we have. Therefore you don't need to run the <code>datagen.py</code> manually before building the program.</p>
+</div>
+<h1 id="modifying-makefiles">Modifying Makefiles</h1>
+<p>With the source code and data generation script in place, we set up <code>Makefiles</code> to ensure the build is automatic.</p>
+<p>1 - You can find the data generation <code>Makefile</code> in <code>./target/snitch_cluster/sw/apps/snax-alu/data/Makefile</code>. Make sure to encode the parameters you need.</p>
+<p>2 - Next is the program <code>./target/snitch_cluster/sw/apps/snax-alu/Makefile</code>. Make sure that the <code>APP</code> name and <code>SRCS</code> name are consistent with the <code>snax-alu</code> and <code>snax-alu.c</code>, respectively.</p>
+<p>3 - Then, modify the <code>./target/snitch_cluster/sw/apps/Makefile</code> and add the source name <code>snax-alu</code> as part of the subdirectories: <code>SUBDIRS += snax-alu</code>.</p>
+<h1 id="building-and-running-your-program">Building and Running Your Program</h1>
+<p>Building and running your program is easy. First, navigate to <code>./target/snitch_cluster</code> then invoke:</p>
+<div class="highlight"><pre><span></span><code>make CFG_OVERRIDE=cfg/snax-alu.hjson SELECT_RUNTIME=rtl-generic SELECT_TOOLCHAIN=llvm-generic sw
+</code></pre></div>
+<p>Run your program with:</p>
+<div class="highlight"><pre><span></span><code>bin/snitch_cluster.vlt sw/apps/snax-alu/build/snax-alu.elf
+</code></pre></div>
+<h1 id="some-exercises">Some Exercises</h1>
+<p>Let's try some exercises to see if you understand where to find details.</p>
+<details>
+<summary> What is the default mode and how much data is processed in the default setting? </summary>
+    The default mode is 0 for addition and we will process 320 elements.
+</details>
+
+<details>
+<summary> Where can I find the definition of the functions `snrt_is_compute_core()` and `snrt_is_dm_core()`  </summary>
+    You can find them at `./sw/snRuntime/src/team.h`.
+</details>
+
+<details>
+<summary> If there is an incorrect answer in the C code, what will the simulation return? </summary>
+    The return value of the `main()` function returns the `err` value. If the main returns a value that isn't 0, an error is thrown.
+</details>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="build_system.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: 4. Building the System" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              4. Building the System
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="other_tools.html" class="md-footer__link md-footer__link--next" aria-label="Next: Other Tools" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Other Tools
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.748e2769.min.js"></script>
+      
+    
+  </body>
+</html>
