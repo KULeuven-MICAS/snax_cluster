@@ -348,15 +348,15 @@ Naming convention:
                     {
                         row:
                         [
-                            32
-                            1
-                            16
-                        ]
-                        col:
-                        [
                             2
                             16
                             8
+                        ]
+                        col:
+                        [
+                            32
+                            1
+                            16
                         ]
                         elementWidth:
                         [
