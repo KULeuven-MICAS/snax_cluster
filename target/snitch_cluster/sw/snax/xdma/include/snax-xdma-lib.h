@@ -29,9 +29,10 @@ __attribute__((always_inline)) static inline void snax_write_xdma_cfg_reg(
 }
 
 // Write XDMA_DST_ENABLED_BYTE_CSR_NUM mask words, least significant word first.
-// Call after configuring a copy and before snax_xdma_start() for a custom wide
-// mask. The copy APIs below repeat their 32-bit enabled_byte_dst pattern across
-// all mask words, so 0xffffffff continues to enable every byte of a wide bank.
+// Mask bits cover successive bytes of channel 0, then channel 1, and so on.
+// Call after configuring a copy and before snax_xdma_start() for independent
+// channel masks. Scalar copy APIs repeat enabled_byte_dst within each channel;
+// a 64-bit channel uses its low eight bits, preserving existing copy behavior.
 void snax_xdma_set_dst_byte_mask_words(const uint32_t* mask_words);
 
 // Data Copy Task

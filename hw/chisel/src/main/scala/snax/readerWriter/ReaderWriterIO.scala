@@ -8,7 +8,7 @@ import snax.utils._
 class ReaderWriterCfgIO(val param: ReaderWriterParam) extends Bundle {
   val enabledByte    =
     if (param.configurableByteMask)
-      UInt((param.tcdmParam.dataWidth / 8).W)
+      UInt(param.byteMaskWidth.W)
     else UInt(0.W)
   val enabledChannel =
     if (param.configurableChannel)

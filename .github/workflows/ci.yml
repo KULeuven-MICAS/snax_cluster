@@ -555,17 +555,7 @@ jobs:
   # separate cfg, so it gets its own job: the KUL cluster above does not build
   # those extensions and cannot run the SIMD apps.
   snax-xdma-cluster-vlt-generic:
-    name: Simulate ${{ matrix.cluster }} w/ Verilator
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - cluster: snax_xdma_cluster
-            tests: sw/snax-xdma-run.yaml sw/snax-xdma-simd-run.yaml
-          - cluster: snax_xdma_wide_cluster
-            tests: sw/snax-xdma-wide-run.yaml
-          - cluster: snax_xdma_wide_cluster_old
-            tests: sw/snax-xdma-wide-run.yaml
+    name: Simulate SW on XDMA cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     env:
@@ -603,7 +593,7 @@ jobs:
       - name: Generate RTL
         run: |
           make -C target/snitch_cluster rtl-gen \
-          CFG_OVERRIDE=cfg/${{ matrix.cluster }}.hjson
+          CFG_OVERRIDE=cfg/snax_xdma_cluster.hjson
       - name: Save sbt cache
         if: env.CACHE_WRITE == 'true' &&
           steps.sbt-cache.outputs.cache-hit != 'true'
@@ -633,12 +623,12 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .ccache
-          key: ccache-${{ matrix.cluster }}-${{ github.sha }}
-          restore-keys: ccache-${{ matrix.cluster }}-
+          key: ccache-snax_xdma_cluster-${{ github.sha }}
+          restore-keys: ccache-snax_xdma_cluster-
       - name: Build Hardware
         run: |
           ccache -z
-          make CFG_OVERRIDE=cfg/${{ matrix.cluster }}.hjson \
+          make CFG_OVERRIDE=cfg/snax_xdma_cluster.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
           ccache -s
       - name: Save ccache
@@ -660,13 +650,14 @@ jobs:
       - name: Build Software
         run: |
           make -C target/snitch_cluster sw \
-          CFG_OVERRIDE=cfg/${{ matrix.cluster }}.hjson
+          CFG_OVERRIDE=cfg/snax_xdma_cluster.hjson
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
           ./run.py --simulator verilator \
           sw/runtime.yaml \
-          ${{ matrix.tests }} -j
+          sw/snax-xdma-run.yaml \
+          sw/snax-xdma-simd-run.yaml -j
 
   snax-compiler-test-cluster-vlt-generic:
     name: Simulate SW on Compiler Test Cluster w/ Verilator (Generic LLVM)

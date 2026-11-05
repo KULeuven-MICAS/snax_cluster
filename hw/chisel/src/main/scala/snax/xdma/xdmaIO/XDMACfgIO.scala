@@ -174,7 +174,8 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
     UInt(readerParam.crossClusterParam.tcdmAddressWidth.W)
   )
   val enabledChannel  = UInt(readerParam.crossClusterParam.channelNum.W)
-  val enabledByte     = UInt((readerParam.crossClusterParam.wordlineWidth / 8).W)
+  // Preserve all channel masks when configuration crosses a cluster boundary.
+  val enabledByte     = UInt(readerParam.rwParam.byteMaskWidth.W)
 
   def convertFromXDMACfgIO(
     writerSide: Boolean,
@@ -259,7 +260,7 @@ class XDMAInterClusterCfgIO(readerParam: XDMAParam, writerParam: XDMAParam) exte
 //  temporalBounds: 16b * Dim
 //  temporalStrides: 16b * Dim
 //  enabledChannel: 8b
-//  enabledByte: 8b
+//  enabledByte: one bit per byte across the complete datapath
 
 class XDMAInterClusterCfgIOSerializer(readerwriterParam: XDMAParam) extends Module {
   val io = IO(new Bundle {
@@ -466,12 +467,12 @@ class XDMAInterClusterCfgIODeserializer(readerwriterParam: XDMAParam) extends Mo
   )
   // Assign enabledByte
   io.cfgOut.bits.enabledByte := cfgSerialized(
-    readerwriterParam.crossClusterParam.wordlineWidth / 8 - 1,
+    io.cfgOut.bits.enabledByte.getWidth - 1,
     0
   )
   cfgSerialized = cfgSerialized(
     cfgSerialized.getWidth - 1,
-    readerwriterParam.crossClusterParam.wordlineWidth / 8
+    io.cfgOut.bits.enabledByte.getWidth
   )
 }
 

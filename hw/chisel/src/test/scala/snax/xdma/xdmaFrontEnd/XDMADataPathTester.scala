@@ -110,7 +110,9 @@ class DMADataPathTester extends AnyFreeSpec with ChiselScalatestTester {
     // Poke the write agu
     dut.io.writerCfg.aguCfg.ptr.poke(writerTestingParams.address)
     dut.io.writerCfg.readerwriterCfg.enabledChannel.poke(0xff.U)
-    dut.io.writerCfg.readerwriterCfg.enabledByte.poke(0xff.U)
+    dut.io.writerCfg.readerwriterCfg.enabledByte.poke(
+      ((BigInt(1) << dut.io.writerCfg.readerwriterCfg.enabledByte.getWidth) - 1).U
+    )
     dut.io.writerCfg.aguCfg
       .temporalBounds(0)
       .poke(writerTestingParams.temporal_bound(0))

@@ -372,11 +372,6 @@ sources:
       # Level 1
       - target/snitch_cluster/generated/snax_versacore_dse_cluster_xdma/snax_versacore_dse_cluster_xdma_wrapper.sv
 
-  - target: snax_xdma_wide_cluster_xdma
-    files:
-      - target/snitch_cluster/generated/snax_xdma_wide_cluster_xdma/snax_xdma_wide_cluster_xdma.sv
-      - target/snitch_cluster/generated/snax_xdma_wide_cluster_xdma/snax_xdma_wide_cluster_xdma_wrapper.sv
-
   - target: snax_xdma_cluster_xdma
     files:
       # Level 0
@@ -439,10 +434,6 @@ sources:
   - target: snax_versacore_dse_cluster
     files:
       - target/snitch_cluster/generated/snax_versacore_dse_cluster_wrapper.sv
-
-  - target: snax_xdma_wide_cluster
-    files:
-      - target/snitch_cluster/generated/snax_xdma_wide_cluster_wrapper.sv
 
   - target: snax_xdma_cluster
     files:

@@ -1,8 +1,0 @@
-# Copyright 2026 KU Leuven.
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
-
-# Use cfg/snax_xdma_wide_cluster.hjson: this build must expose two mask CSRs.
-runs:
-  - elf: apps/snax-xdma-byte-mask/build/snax-xdma-byte-mask.elf
-  - elf: apps/snax-xdma-wide-contention/build/snax-xdma-wide-contention.elf

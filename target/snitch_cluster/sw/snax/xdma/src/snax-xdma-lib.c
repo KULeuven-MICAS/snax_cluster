@@ -25,10 +25,16 @@ void snax_xdma_set_dst_byte_mask_words(const uint32_t* mask_words) {
 }
 
 static void snax_xdma_set_dst_byte_mask(uint32_t mask_word) {
-    // Keep existing scalar calls; repeating all ones enables the entire bank.
-    // Program every word on each configuration to avoid stale upper mask bits.
-    for (uint32_t i = 0; i < XDMA_DST_ENABLED_BYTE_CSR_NUM; i++) {
-        snax_write_xdma_cfg_reg(XDMA_DST_ENABLED_BYTE_PTR + i, mask_word);
+    // Legacy scalar APIs apply the same pattern to every channel. Restart it at
+    // each channel boundary, including channels that cross a 32-bit CSR word.
+    for (uint32_t word = 0; word < XDMA_DST_ENABLED_BYTE_CSR_NUM; word++) {
+        uint32_t packed = 0;
+        for (uint32_t bit = 0; bit < 32 && word * 32 + bit < XDMA_WIDTH;
+             bit++) {
+            uint32_t channel_bit = (word * 32 + bit) % XDMA_LANE_BYTES;
+            packed |= ((mask_word >> (channel_bit % 32)) & 1u) << bit;
+        }
+        snax_write_xdma_cfg_reg(XDMA_DST_ENABLED_BYTE_PTR + word, packed);
     }
 }
 

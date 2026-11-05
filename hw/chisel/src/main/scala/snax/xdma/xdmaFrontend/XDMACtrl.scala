@@ -235,7 +235,7 @@ class XDMACtrl(readerparam: XDMAParam, writerparam: XDMAParam, clusterName: Stri
         {
           if (writerparam.rwParam.configurableChannel) 1 else 0
         } +                                                      // Enabled Channel for writer
-        // Wide banks need multiple byte-mask CSRs, matching ReaderWriterCfgIO.
+        // Reserve every channel mask word, matching ReaderWriterCfgIO.
         writerparam.rwParam.byteMaskCSRNum +                     // Enabled Byte for writer
         {
           if (writerparam.extParam.length == 0) 0

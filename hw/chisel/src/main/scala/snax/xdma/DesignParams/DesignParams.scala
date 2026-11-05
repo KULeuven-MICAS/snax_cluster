@@ -21,8 +21,8 @@ class XDMACrossClusterParam(
   val tcdmSize:             Int = 4096,
   val AxiAddressWidth:      Int = 48,
   val AxiDataWidth:         Int = 512,
-  // Logical XDMA TCDM port width, which may span several physical banks.
-  // The SV adapter mirrors this as WordlineWidth.
+  // wordlineWidth is the per-bank TCDM data bus width in bits.
+  // Sourced from cluster.data_width on the cfg side; SV mirror: WordlineWidth.
   val wordlineWidth:        Int = 64
 ) {
   // tcdmAddressWidth drives the *length / dma_length / temporal bound /
