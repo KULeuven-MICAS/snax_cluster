@@ -1,6 +1,5 @@
 package snax_acc.simd
 
-import chisel3.VecInit
 import chisel3._
 import chisel3.util._
 
@@ -42,9 +41,7 @@ class RescaleSIMD(params: RescaleSIMDParams) extends Module with RequireAsyncRes
   def ctrl_csr_set_num = params.laneLen / params.sharedScaleFactorPerGroupSize
 
   // Create a Vec of ctrl_csr_set_num instances of RescalePECtrl(params)
-  val ctrl_csr = VecInit(Seq.fill(ctrl_csr_set_num) {
-    Reg(new RescalePECtrl(params))
-  })
+  val ctrl_csr = Reg(Vec(ctrl_csr_set_num, new RescalePECtrl(params)))
 
   // result from different RescalePEs
   val result = Wire(
@@ -110,36 +107,38 @@ class RescaleSIMD(params: RescaleSIMDParams) extends Module with RequireAsyncRes
 
   // when config valid, store the configuration for later computation
   def packed_shift_num = 32 / params.constantType
-  for (i <- 0 until ctrl_csr_set_num) {
-    // common control input ports
-    ctrl_csr(i).input_zp_i  := io.ctrl.bits(0)(7, 0).asSInt
-    ctrl_csr(i).output_zp_i := io.ctrl.bits(0)(15, 8).asSInt
-    ctrl_csr(i).max_int_i   := io.ctrl.bits(0)(23, 16).asSInt
-    ctrl_csr(i).min_int_i   := io.ctrl.bits(0)(31, 24).asSInt
+  when(config_valid) {
+    for (i <- 0 until ctrl_csr_set_num) {
+      // common control input ports
+      ctrl_csr(i).input_zp_i  := io.ctrl.bits(0)(7, 0).asSInt
+      ctrl_csr(i).output_zp_i := io.ctrl.bits(0)(15, 8).asSInt
+      ctrl_csr(i).max_int_i   := io.ctrl.bits(0)(23, 16).asSInt
+      ctrl_csr(i).min_int_i   := io.ctrl.bits(0)(31, 24).asSInt
 
-    // this control input port is only 1 bit
-    ctrl_csr(i).double_round_i := io.ctrl.bits(1)(0).asBool
+      // this control input port is only 1 bit
+      ctrl_csr(i).double_round_i := io.ctrl.bits(1)(0).asBool
 
-    // ---------------------
-    // sharedScaleFactorPerGroup
-    ctrl_csr(i).shift_i := io.ctrl
-      .bits(2 + i / packed_shift_num)(
-        i % packed_shift_num * params.constantType + params.constantType - 1,
-        i % packed_shift_num * params.constantType
-      )
-      .asSInt
+      // ---------------------
+      // sharedScaleFactorPerGroup
+      ctrl_csr(i).shift_i := io.ctrl
+        .bits(2 + i / packed_shift_num)(
+          i % packed_shift_num * params.constantType + params.constantType - 1,
+          i % packed_shift_num * params.constantType
+        )
+        .asSInt
 
-    // this control input port is 32 bits, so it needs 1 csr
-    ctrl_csr(i).multiplier_i := io.ctrl
-      .bits(2 + ctrl_csr_set_num / packed_shift_num + i)
-      .asSInt
-    // ---------------------
+      // this control input port is 32 bits, so it needs 1 csr
+      ctrl_csr(i).multiplier_i := io.ctrl
+        .bits(2 + ctrl_csr_set_num / packed_shift_num + i)
+        .asSInt
+      // ---------------------
 
-    // length of the data
-    ctrl_csr(i).len := io.ctrl
-      .bits(2 + ctrl_csr_set_num / packed_shift_num + ctrl_csr_set_num)
-      .asUInt
+      // length of the data
+      ctrl_csr(i).len := io.ctrl
+        .bits(2 + ctrl_csr_set_num / packed_shift_num + ctrl_csr_set_num)
+        .asUInt
 
+    }
   }
 
   simd_input_fire := io.data.input_i.fire
