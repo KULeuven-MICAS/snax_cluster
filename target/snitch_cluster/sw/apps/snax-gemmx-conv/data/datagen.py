@@ -64,6 +64,10 @@ def emit_conv_data(**kwargs):
     snax_gemmx_serial_d8_width = kwargs["snax_streamer_gemmX_core_template"][
         "snax_acc_cfg"
     ][0]["snax_gemmx_serial_d8_width"]
+    # spatial bounds of the C (index 0) and D32 (index 1) ports
+    c32_d32_spatial_bounds = kwargs["snax_streamer_gemmX_streamer_template"][
+        "data_reader_writer_params"
+    ]["spatial_bounds"]
 
     # size extraction
     Cin = kwargs["Cin"]
@@ -396,6 +400,7 @@ def emit_conv_data(**kwargs):
     # C is int32_t so the stride is 4 times of the int8_t
     # NHWC
     Cslstride0 = bankWidth / 8
+    Cslstride1 = Cslstride0 * c32_d32_spatial_bounds[0][0]
 
     # serial input
     c32_spatial_bound_0 = snax_gemmx_serial_c32_d32_width // bankWidth
@@ -406,13 +411,13 @@ def emit_conv_data(**kwargs):
     Ctlbound1 = Cout // meshCol
     Ctlstride1 = out_height * out_width * meshCol * (output_data_width // 8)
 
-    # M dim
+    # M dim, out_width and out_height in one loop
     # K is merged because of the block gemm output stationarity
-    Ctlbound2 = out_width // meshRow
+    Ctlbound2 = out_height * out_width // meshRow
     Ctlstride2 = meshRow * meshCol * (output_data_width // 8)
 
-    Ctlbound3 = out_height
-    Ctlstride3 = out_width * meshCol * (output_data_width // 8)
+    Ctlbound3 = 1
+    Ctlstride3 = 0
 
     assert (
         Ctlstride0 % (bankWidth / 8) == 0
@@ -423,6 +428,7 @@ def emit_conv_data(**kwargs):
 
     data_str += [
         format_scalar_definition("int32_t", "Cslstride0", Cslstride0),
+        format_scalar_definition("int32_t", "Cslstride1", Cslstride1),
         format_scalar_definition("int32_t", "Ctlbound0", Ctlbound0),
         format_scalar_definition("int32_t", "Ctlstride0", Ctlstride0),
         format_scalar_definition("int32_t", "Ctlbound1", Ctlbound1),
@@ -437,6 +443,7 @@ def emit_conv_data(**kwargs):
     # streamer setting for data mover D32
     # -----------------------------------------------------------
     D32slstride0 = bankWidth / 8
+    D32slstride1 = D32slstride0 * c32_d32_spatial_bounds[1][0]
 
     # serial output
     d32_spatial_bound_0 = snax_gemmx_serial_c32_d32_width // bankWidth
@@ -449,13 +456,13 @@ def emit_conv_data(**kwargs):
     D32tlbound1 = Cout // meshCol
     D32tlstride1 = out_height * out_width * meshCol * (output_data_width // 8)
 
-    # M dim
+    # M dim, out_width and out_height in one loop
     # K is merged because of the block gemm output stationarity
-    D32tlbound2 = out_width // meshRow
+    D32tlbound2 = out_height * out_width // meshRow
     D32tlstride2 = meshRow * meshCol * (output_data_width // 8)
 
-    D32tlbound3 = out_height
-    D32tlstride3 = out_width * meshCol * (output_data_width // 8)
+    D32tlbound3 = 1
+    D32tlstride3 = 0
 
     assert (
         D32tlstride0 % (bankWidth / 8) == 0
@@ -466,6 +473,7 @@ def emit_conv_data(**kwargs):
 
     data_str += [
         format_scalar_definition("int32_t", "D32slstride0", D32slstride0),
+        format_scalar_definition("int32_t", "D32slstride1", D32slstride1),
         format_scalar_definition("int32_t", "D32tlbound0", D32tlbound0),
         format_scalar_definition("int32_t", "D32tlstride0", D32tlstride0),
         format_scalar_definition("int32_t", "D32tlbound1", D32tlbound1),
@@ -493,13 +501,13 @@ def emit_conv_data(**kwargs):
     D8tlbound1 = Cout // meshCol
     D8tlstride1 = out_height * out_width * meshCol * (quantized_output_data_width // 8)
 
-    # M dim
+    # M dim, out_width and out_height in one loop
     # K is merged because of the block gemm output stationarity
-    D8tlbound2 = out_width // meshRow
+    D8tlbound2 = out_height * out_width // meshRow
     D8tlstride2 = meshRow * meshCol * (quantized_output_data_width // 8)
 
-    D8tlbound3 = out_height
-    D8tlstride3 = out_width * meshCol * (quantized_output_data_width // 8)
+    D8tlbound3 = 1
+    D8tlstride3 = 0
 
     assert (
         D8tlstride0 % (bankWidth / 8) == 0
