@@ -70,7 +70,9 @@ jobs:
   #################
   license-lint:
     name: Check License headers
-    runs-on: ubuntu-latest
+    # lint-license pins Python 3.9, which has no build for ubuntu-26.04
+    # (the current ubuntu-latest); keep this job on 24.04.
+    runs-on: ubuntu-24.04
     steps:
       - name: Check License
         uses: pulp-platform/pulp-actions/lint-license@v2.1.0
