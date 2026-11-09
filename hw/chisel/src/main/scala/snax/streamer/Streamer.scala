@@ -79,7 +79,7 @@ class StreamerIO(param: StreamerParam) extends Bundle {
 // streamer generator module
 class Streamer(param: StreamerParam) extends Module with RequireAsyncReset {
 
-  override val desiredName = param.tagName + "Streamer"
+  override val desiredName = (if (param.modulePrefix.nonEmpty) param.modulePrefix else param.tagName) + "Streamer"
 
   val io = IO(
     new StreamerIO(
@@ -1064,28 +1064,24 @@ object StreamerGen {
     // The CSR header is written as a side effect of `new Streamer(param)` (via
     // Streamer.writeCsrAddrMap in the class body) — keeps `make rtl` self-
     // contained.
-    // A streamer set's streamer: firtool prefixes every module, extracted memories too. Given
-    // here, not in the module, so the emitted source locators stay as they are
+    // A streamer set's streamer: firtool prefixes every module below the top, extracted
+    // memories too. Given here, not in the module, so the emitted source locators stay as they
+    // are. The top, the circuit's main module, names itself <prefix>Streamer (so the file is
+    // <prefix>Streamer.sv) and the prefix is not inclusive: firtool 1.62's PrefixModules
+    // renaming the main module loses the hierpaths through it that Dedup made for identical
+    // DataPathExtensionHosts (NLATable::renameModule), and firtool fails (snax-forge open item 120)
+    val top               = param.modulePrefix + "Streamer"
     val prefixAnnotations =
       if (param.modulePrefix.isEmpty) Seq()
       else
         Seq(
           sifive.enterprise.firrtl.NestedPrefixModulesAnnotation(
-            firrtl.annotations.ModuleTarget("Streamer", "Streamer"),
+            firrtl.annotations.ModuleTarget(top, top),
             param.modulePrefix,
-            true
+            false
           )
         )
     emitVerilog(new Streamer(param), Array("--target-dir", outPath), prefixAnnotations)
-    // With a module prefix the file is named after the unprefixed circuit (Streamer.sv);
-    // name it after its top module, <prefix>Streamer.sv
-    if (param.modulePrefix.nonEmpty) {
-      java.nio.file.Files.move(
-        java.nio.file.Paths.get(outPath, "Streamer.sv"),
-        java.nio.file.Paths.get(outPath, param.modulePrefix + "Streamer.sv"),
-        java.nio.file.StandardCopyOption.REPLACE_EXISTING
-      )
-    }
   }
 }
 
