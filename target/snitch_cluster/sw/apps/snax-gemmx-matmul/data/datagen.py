@@ -61,6 +61,10 @@ def emit_matmul_data(**kwargs):
     snax_gemmx_serial_d8_width = kwargs["snax_streamer_gemmX_core_template"][
         "snax_acc_cfg"
     ][0]["snax_gemmx_serial_d8_width"]
+    # spatial bounds of the C (index 0) and D32 (index 1) ports
+    c32_d32_spatial_bounds = kwargs["snax_streamer_gemmX_streamer_template"][
+        "data_reader_writer_params"
+    ]["spatial_bounds"]
 
     # matmul settings
     data_str = []
@@ -117,6 +121,11 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
     # spatial settings
     data_str += [format_scalar_definition("int32_t", "Cslstride0", bankWidth / 8)]
+    data_str += [
+        format_scalar_definition(
+            "int32_t", "Cslstride1", bankWidth / 8 * c32_d32_spatial_bounds[0][0]
+        )
+    ]
     c32_spatial_bound_0 = 8
     # temporal settings
     # serial input for C
@@ -154,6 +163,11 @@ def emit_matmul_data(**kwargs):
     # -----------------------------------------------------------
     # spatial settings
     data_str += [format_scalar_definition("int32_t", "D32slstride0", bankWidth / 8)]
+    data_str += [
+        format_scalar_definition(
+            "int32_t", "D32slstride1", bankWidth / 8 * c32_d32_spatial_bounds[1][0]
+        )
+    ]
     d32_spatial_bound_0 = 8
     # temporal settings
     data_str += [
