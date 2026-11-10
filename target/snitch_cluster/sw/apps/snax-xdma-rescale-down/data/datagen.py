@@ -21,6 +21,7 @@ from data_utils import format_scalar_definition, format_vector_definition  # noq
 from snax_utils import postprocessing_simd_golden_model_V3  # noqa E402
 
 np.random.seed(320)
+random.seed(320)
 
 
 # Add stdint.h header
@@ -45,7 +46,6 @@ def emit_elementwise_add_data(**kwargs):
     # Make random parameters for the TOSA.Rescale operation
     shift_i = random.randint(24, 48)
     multiplier = 1140768826 * 2 // (2 ** (48 - shift_i))
-    max_in_range = 8388608
     input_zp_i = random.randint(-10000000, 10000000) // (2 ** (48 - shift_i))
     output_zp_i = random.randint(-3, 3)
 
@@ -75,8 +75,8 @@ def emit_elementwise_add_data(**kwargs):
                 input_zp_i,
                 output_zp_i,
                 shift_i,
-                max_in_range,
-                -max_in_range,
+                kwargs["max_int_i"],
+                kwargs["min_int_i"],
                 True,
                 multiplier,
             )
