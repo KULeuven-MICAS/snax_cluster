@@ -53,19 +53,37 @@ VCS_BUILDDIR := work-vcs
 # For synthesis with DC compiler
 SYN_FLIST ?= syn_flist.tcl
 SYN_BENDER += -t synthesis
-ifeq ($(MEM_TYPE), exclude_tcsram)
-	VSIM_BENDER += -t tech_cells_generic_exclude_tc_sram
-	VSIM_BENDER += -t tc_sram_cluster_only
-	SYN_BENDER  += -t tech_cells_generic_exclude_tc_sram
-	SYN_BENDER  += -t tc_sram_cluster_only
+
+# The cluster's memories (SRAM_IMPL, SRAM_MODELS, MEM_TYPE: target/snitch_cluster/Makefile's
+# header). With SRAM_IMPL, vsim and synthesis leave out tech_cells_generic's tc_sram.sv and
+# tc_sram_impl.sv; the Makefile reads SRAM_IMPL's file instead.
+SRAM_IMPL_16NM = /users/micas/shares/project_snax/tapeout_modules/snax_cluster/tc_sram_impl.sv
+ifeq ($(strip $(MEM_TYPE)),exclude_tcsram)
+  ifneq ($(strip $(SRAM_IMPL)),)
+    $(error MEM_TYPE=exclude_tcsram is SRAM_IMPL=$(SRAM_IMPL_16NM): give one of MEM_TYPE and SRAM_IMPL, not both)
+  endif
+  override SRAM_IMPL := $(SRAM_IMPL_16NM)
+else ifneq ($(strip $(MEM_TYPE)),)
+  $(error MEM_TYPE=$(MEM_TYPE) is not supported: give the cluster's tc_sram_impl as SRAM_IMPL=<file> (MEM_TYPE=exclude_tcsram is SRAM_IMPL=$(SRAM_IMPL_16NM)))
 endif
-ifeq ($(MEM_TYPE), prep_syn_mem)
-        VSIM_BENDER += -t tech_cells_generic_exclude_tc_sram
-		VSIM_BENDER += -t tc_sram_cluster_only
-        SYN_BENDER  += -t tech_cells_generic_exclude_tc_sram
-		SYN_BENDER  += -t tc_sram_cluster_only
-        SYN_BENDER  += -t prep_syn_mem
+ifneq ($(strip $(SRAM_IMPL)),)
+  override SRAM_IMPL := $(abspath $(strip $(SRAM_IMPL)))
+  ifeq ($(wildcard $(SRAM_IMPL)),)
+    $(error SRAM_IMPL=$(SRAM_IMPL): no such file)
+  endif
+  VSIM_BENDER += -t tech_cells_generic_exclude_tc_sram
+  SYN_BENDER  += -t tech_cells_generic_exclude_tc_sram
 endif
+ifneq ($(strip $(SRAM_MODELS)),)
+  ifeq ($(strip $(SRAM_IMPL)),)
+    $(error SRAM_MODELS=$(SRAM_MODELS) needs SRAM_IMPL: the models are of the macros SRAM_IMPL's tc_sram_impl instantiates)
+  endif
+  override SRAM_MODELS := $(abspath $(strip $(SRAM_MODELS)))
+  ifeq ($(wildcard $(SRAM_MODELS)),)
+    $(error SRAM_MODELS=$(SRAM_MODELS): no such file)
+  endif
+endif
+
 ifeq ($(SIM_TYPE), gate_level_sim)
         VSIM_BENDER += -t gate_level_sim
 endif

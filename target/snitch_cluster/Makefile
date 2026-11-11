@@ -16,6 +16,19 @@ SELECT_TOOLCHAIN ?=      # Select Toolchain: "llvm-generic" = llvm17 generic (de
  					     # Note that the default toolchain only works with some applications 
 						 # since it requires the rtl-generic runtime
 
+# The cluster's memories all go through tc_sram_impl (the TCDM, the I-cache's data and tags);
+# by default tech_cells_generic's tc_sram and tc_sram_impl.
+#   SRAM_IMPL=<file>    a file with its own tc_sram_impl, read instead of tech_cells_generic's
+#                       tc_sram.sv and tc_sram_impl.sv by vsim (compile.vsim.tcl) and by
+#                       synthesis (gen-syn's syn_flist.tcl); Verilator and VCS keep the default
+#   SRAM_MODELS=<.f>    vsim only, with SRAM_IMPL: a file list of the memory macros' Verilog
+#                       models, compiled after SRAM_IMPL's file; never in syn_flist.tcl
+#   MEM_TYPE=exclude_tcsram  SRAM_IMPL=$(SRAM_IMPL_16NM) (../common/common.mk) with its three
+#                       TSMC_* vlog defines; no other MEM_TYPE
+# compile.vsim.tcl is written with these, so give vsim_preparation (in the image) and the build
+# outside it (bin/snitch_cluster.vsim, snax-forge-sim) the same values: otherwise the vsim
+# stamp (VSIM_STAMP) differs and the build outside the image rewrites the list.
+
 .DEFAULT_GOAL := help
 .PHONY: all clean
 all: sw
@@ -58,6 +71,16 @@ GENERATED_DIR     ?= $(MKFILE_DIR)generated
 # The RTL of a snax-forge bundle's accelerator (snaxgen, snax_forge_rtl); empty for other configs
 SNAX_FORGE_F       = $(GENERATED_DIR)/snax_forge.f
 SNAX_FORGE_RTL     = $(shell test -s $(SNAX_FORGE_F) && echo yes)
+# The cluster file rtl-gen last generated from: its real path and md5 (bender_targets.tmp's
+# prerequisite)
+CFG_STAMP          = $(GENERATED_DIR)/cfg.stamp
+# What compile.vsim.tcl was written with: CFG_STAMP's text and VSIM_OPTS
+VSIM_STAMP         = $(GENERATED_DIR)/vsim.stamp
+VSIM_OPTS          = SRAM_IMPL=$(SRAM_IMPL) SRAM_MODELS=$(SRAM_MODELS) MEM_TYPE=$(MEM_TYPE) \
+                     SIM_TYPE=$(SIM_TYPE) GLS_NETLIST=$(GLS_NETLIST) GLS_CELLS=$(GLS_CELLS) \
+                     GLS_MACROS=$(GLS_MACROS)
+# The files SRAM_MODELS lists (no options, no comment lines)
+SRAM_MODELS_FILES  = $(if $(SRAM_MODELS),$(shell awk '!/^[[:space:]]*(\/\/|[-+]|$$)/ {print $$1}' $(SRAM_MODELS)))
 
 ####################
 #  Default Values  #
@@ -139,7 +162,32 @@ rtl-cluster-gen: | $(GENERATED_DIR)
 
 	$(CLUSTER_GEN) -c ${CFG_OVERRIDE} -o $(GENERATED_DIR) --wrapper
 
-$(GENERATED_DIR)/bender_targets.tmp: | $(GENERATED_DIR)
+# This call's file lists (VSIM_BENDER and the others above) were read from bender_targets.tmp
+# when make parsed the Makefile, so only a call with rtl-gen may rewrite it, or the stamp.
+# Always evaluated, like $(VLT_OPTS_STAMP), but only rewritten when the cluster file's path or
+# md5 differs from the text it holds; outside rtl-gen that stops the call and keeps the stamp.
+# Without CFG_OVERRIDE it is left as it is.
+$(CFG_STAMP): FORCE
+	@mkdir -p $(dir $@)
+	@if [ -n "$(CFG_FILE)" ] ; then \
+		new="$(CFG_FILE) $$(md5sum < $(CFG_FILE) | cut -d' ' -f1)"; \
+		old="$$(cat $@ 2>/dev/null || echo none)"; \
+		if [ "$$old" != "$$new" ] ; then \
+			if [ -z "$(filter rtl-gen,$(MAKECMDGOALS))" ] ; then \
+				echo "The cluster file is $$new, rtl-gen last ran on $$old, and this call's file lists were read from that run: run make rtl-gen CFG_OVERRIDE=<cluster file> first."; \
+				exit 1; \
+			fi; \
+			echo "Cluster file changed to $$new (was: $$old)."; \
+			echo "$$new" > $@; \
+		fi; \
+	elif [ ! -e $@ ] ; then \
+		touch $@; \
+	fi
+
+$(GENERATED_DIR)/bender_targets.tmp: $(CFG_STAMP) | $(GENERATED_DIR)
+ifeq ($(filter rtl-gen,$(MAKECMDGOALS)),)
+	@echo "$@ is missing or older than $(CFG_STAMP), and this call's file lists were read from it: run make rtl-gen CFG_OVERRIDE=<cluster file> first."; exit 1
+endif
 	${WRAPPER_GEN} --cfg_path="$(CFG_FILE)" --get_bender_targets > $(GENERATED_DIR)/bender_targets.tmp
 
 # The iDMA dependency ships its backend/frontend as templates that must be
@@ -418,20 +466,37 @@ bin/snitch_cluster.vlt: $(VLT_AR) $(VLT_COBJ) ${VLT_BUILDDIR}/lib/libfesvr.a
 
 # Clean all build directories and temporary files for Questasim simulation
 clean-vsim: clean-work
-	rm -rf bin/snitch_cluster.vsim bin/snitch_cluster.vsim.gui $(VSIM_BUILDDIR) vsim.wlf
+	rm -rf bin/snitch_cluster.vsim bin/snitch_cluster.vsim.gui $(VSIM_BUILDDIR) vsim.wlf $(VSIM_STAMP)
 
-${VSIM_BUILDDIR}/compile.vsim.tcl:
-	mkdir $(dir $@)
+# Always evaluated, like $(VLT_OPTS_STAMP), but only rewritten when its text (one line per
+# field: the cluster stamp's text, then VSIM_OPTS) differs; the changed fields are printed.
+$(VSIM_STAMP): $(CFG_STAMP) FORCE
+	@mkdir -p $(dir $@)
+	@{ echo "cfg=$$(cat $(CFG_STAMP))"; printf '%s\n' $(VSIM_OPTS); } > $@.new
+	@if cmp -s $@.new $@ ; then \
+		rm $@.new; \
+	else \
+		echo "vsim list options changed ($$( (grep -vxF -f $@ $@.new 2>/dev/null || cat $@.new) | paste -sd ' ')), rebuilding $(VSIM_BUILDDIR)/."; \
+		mv $@.new $@; \
+	fi
+
+# Written again, into a new $(VSIM_BUILDDIR)/, whenever $(VSIM_STAMP) changes
+${VSIM_BUILDDIR}/compile.vsim.tcl: $(GENERATED_DIR)/bender_targets.tmp $(VSIM_STAMP)
+	rm -rf $(VSIM_BUILDDIR)
+	mkdir -p $(dir $@)
 	${BENDER} script vsim ${VSIM_BENDER} --vlog-arg="${VLOG_FLAGS} -work $(dir $@) " > $@
+	$(if $(SRAM_IMPL),echo '${VLOG} -sv ${VLOG_FLAGS} -work $(dir $@) $(SRAM_IMPL)' >> $@)
+	$(if $(SRAM_MODELS),echo '${VLOG} ${VLOG_FLAGS} -work $(dir $@) -f $(SRAM_MODELS)' >> $@)
 	$(if $(SNAX_FORGE_RTL),echo '${VLOG} -sv ${VLOG_FLAGS} -work $(dir $@) -f $(SNAX_FORGE_F)' >> $@)
 	echo '${VLOG} -work $(dir $@) ${TB_CC_SOURCES} ${TB_ASM_SOURCES} -vv -ccflags "$(TB_CC_FLAGS)"' >> $@
 	echo 'return 0' >> $@
 
-vsim_preparation: $(GENERATED_DIR)/bootdata.cc work/lib/libfesvr.a ${VSIM_BUILDDIR}/compile.vsim.tcl
+# compile.vsim.tcl first: its cluster file check stops a stale call before cfg/lru.hjson moves
+vsim_preparation: ${VSIM_BUILDDIR}/compile.vsim.tcl $(GENERATED_DIR)/bootdata.cc work/lib/libfesvr.a
 	@echo "VSIM preparation done"
 
 # Build compilation script and compile all sources for Questasim simulation
-bin/snitch_cluster.vsim: ${VSIM_BUILDDIR}/compile.vsim.tcl $(VSIM_SOURCES) ${TB_SRCS} ${TB_CC_SOURCES} ${TB_ASM_SOURCES} work/lib/libfesvr.a | $(GENERATED_DIR)/bender_targets.tmp
+bin/snitch_cluster.vsim: ${VSIM_BUILDDIR}/compile.vsim.tcl $(VSIM_SOURCES) ${TB_SRCS} ${TB_CC_SOURCES} ${TB_ASM_SOURCES} $(SRAM_IMPL) $(SRAM_MODELS) $(SRAM_MODELS_FILES) work/lib/libfesvr.a | $(GENERATED_DIR)/bender_targets.tmp
 	$(VLIB) $(VSIM_BUILDDIR)
 	$(call QUESTASIM,tb_bin)
 
@@ -458,11 +523,23 @@ bin/snitch_cluster.vcs: ${VCS_SOURCES} ${TB_SRCS} $(TB_CC_SOURCES) $(TB_ASM_SOUR
 
 .PHONY: gen-syn clean-syn gen-mem-cfg
 
-# snax_forge.f (a snax-forge bundle's RTL) is not read by synthesis
-gen-syn:
+# $(call SYN_GROUP,<files>): appends to syn_flist.tcl one analyze group of <files> (absolute
+# paths) in the form bender writes, with the defines of the last group bender wrote
+SYN_GROUP = { printf 'if {0 == [analyze -format sv \\\n'; cat $(SYN_BUILDDIR)/syn_defines.tcl; \
+	printf '    [list \\\n'; printf '        "%s" \\\n' $(1); \
+	printf '    ]\n]} {return 1}\n\nset search_path $$search_path_initial\n\n'; } >> $(SYN_BUILDDIR)/$(SYN_FLIST)
+
+# syn_flist.tcl: bender's groups, then a snax-forge bundle's RTL (snax_forge.f: the bundle's
+# files, snaxgen's streamer and wrapper), then SRAM_IMPL's file, each in a group of its own
+gen-syn: $(GENERATED_DIR)/bender_targets.tmp
 	mkdir -p $(SYN_BUILDDIR)
 	${BENDER} script synopsys ${SYN_BENDER} > $(SYN_BUILDDIR)/$(SYN_FLIST)
 	sed -i '2c\set ROOT "$(SYN_ROOT)"' $(SYN_BUILDDIR)/$(SYN_FLIST)
+	awk '/^    -define \{ \\$$/ {d = ""; f = 1} f {d = d $$0 "\n"} /^    \} \\$$/ {f = 0} END {printf "%s", d}' \
+		$(SYN_BUILDDIR)/$(SYN_FLIST) > $(SYN_BUILDDIR)/syn_defines.tcl
+	$(if $(SNAX_FORGE_RTL),$(call SYN_GROUP,$(shell cat $(SNAX_FORGE_F))))
+	$(if $(SRAM_IMPL),$(call SYN_GROUP,$(SRAM_IMPL)))
+	rm $(SYN_BUILDDIR)/syn_defines.tcl
 	chmod +x $(SYN_BUILDDIR)/$(SYN_FLIST)
 
 gen-mem-cfg:
