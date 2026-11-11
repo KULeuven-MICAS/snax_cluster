@@ -28,11 +28,12 @@
 #   snax-forge-run  the ELF on bin/snitch_cluster.$(SIM), its output in logs/snax-forge-$(SIM).txt
 #                   beside the run's traces; fails on the program's nonzero exit code
 #   snax-forge-check  each bundle of BUNDLES in order (snax_forge_check.sh): the commands
-#                   snax-forge's forge prints for it, then its `forge data:` line against the
-#                   bundle's forge_expected.txt and each `forge counter` within its `forge fill`
-#                   (the group's streamer fill, snax-forge's D123); PASS or FAIL per bundle into
-#                   logs/snax-forge-check.txt (with each run's `forge cycles:`), each bundle's
-#                   output in logs/snax-forge-<name>-$(SIM).txt; fails when a bundle failed
+#                   snax-forge's forge prints for it, then its `forge data:` line and each
+#                   `forge counter` against the bundle's forge_expected.txt, a counter's gap
+#                   beyond its `forge fill` (the group's streamer fill, snax-forge's D123) as a
+#                   share of its count: PERFECT, NEAR (10 %), WARNING (15 %) or FAIL per bundle
+#                   into logs/snax-forge-check.txt (with each run's `forge cycles:`), each
+#                   bundle's output in logs/snax-forge-<name>-$(SIM).txt; fails when one FAILs
 
 SIM   ?= vlt
 FORGE ?= $(dir $(abspath $(CFG_OVERRIDE)))
