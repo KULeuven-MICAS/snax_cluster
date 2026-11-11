@@ -162,25 +162,31 @@ rtl-cluster-gen: | $(GENERATED_DIR)
 
 	$(CLUSTER_GEN) -c ${CFG_OVERRIDE} -o $(GENERATED_DIR) --wrapper
 
+# This call's file lists (VSIM_BENDER and the others above) were read from bender_targets.tmp
+# when make parsed the Makefile, so only a call with rtl-gen may rewrite it, or the stamp.
 # Always evaluated, like $(VLT_OPTS_STAMP), but only rewritten when the cluster file's path or
-# md5 differs from the text it holds. Without CFG_OVERRIDE it is left as it is.
+# md5 differs from the text it holds; outside rtl-gen that stops the call and keeps the stamp.
+# Without CFG_OVERRIDE it is left as it is.
 $(CFG_STAMP): FORCE
 	@mkdir -p $(dir $@)
 	@if [ -n "$(CFG_FILE)" ] ; then \
 		new="$(CFG_FILE) $$(md5sum < $(CFG_FILE) | cut -d' ' -f1)"; \
-		if [ "$$(cat $@ 2>/dev/null)" != "$$new" ] ; then \
-			echo "Cluster file changed to $$new (was: $$(cat $@ 2>/dev/null || echo none))."; \
+		old="$$(cat $@ 2>/dev/null || echo none)"; \
+		if [ "$$old" != "$$new" ] ; then \
+			if [ -z "$(filter rtl-gen,$(MAKECMDGOALS))" ] ; then \
+				echo "The cluster file is $$new, rtl-gen last ran on $$old, and this call's file lists were read from that run: run make rtl-gen CFG_OVERRIDE=<cluster file> first."; \
+				exit 1; \
+			fi; \
+			echo "Cluster file changed to $$new (was: $$old)."; \
 			echo "$$new" > $@; \
 		fi; \
 	elif [ ! -e $@ ] ; then \
 		touch $@; \
 	fi
 
-# This call's file lists (VSIM_BENDER and the others above) were read from the old
-# bender_targets.tmp when make parsed the Makefile, so only rtl-gen may rewrite it.
 $(GENERATED_DIR)/bender_targets.tmp: $(CFG_STAMP) | $(GENERATED_DIR)
 ifeq ($(filter rtl-gen,$(MAKECMDGOALS)),)
-	@echo "$@ is missing or older than the cluster file $(CFG_FILE), and this call's file lists were read from it: run make rtl-gen CFG_OVERRIDE=<cluster file> first."; exit 1
+	@echo "$@ is missing or older than $(CFG_STAMP), and this call's file lists were read from it: run make rtl-gen CFG_OVERRIDE=<cluster file> first."; exit 1
 endif
 	${WRAPPER_GEN} --cfg_path="$(CFG_FILE)" --get_bender_targets > $(GENERATED_DIR)/bender_targets.tmp
 
@@ -485,7 +491,8 @@ ${VSIM_BUILDDIR}/compile.vsim.tcl: $(GENERATED_DIR)/bender_targets.tmp $(VSIM_ST
 	echo '${VLOG} -work $(dir $@) ${TB_CC_SOURCES} ${TB_ASM_SOURCES} -vv -ccflags "$(TB_CC_FLAGS)"' >> $@
 	echo 'return 0' >> $@
 
-vsim_preparation: $(GENERATED_DIR)/bootdata.cc work/lib/libfesvr.a ${VSIM_BUILDDIR}/compile.vsim.tcl
+# compile.vsim.tcl first: its cluster file check stops a stale call before cfg/lru.hjson moves
+vsim_preparation: ${VSIM_BUILDDIR}/compile.vsim.tcl $(GENERATED_DIR)/bootdata.cc work/lib/libfesvr.a
 	@echo "VSIM preparation done"
 
 # Build compilation script and compile all sources for Questasim simulation
