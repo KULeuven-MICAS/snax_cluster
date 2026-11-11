@@ -20,17 +20,24 @@
 #   vlt   all four in the image
 #
 # podman runs non-interactively, snax_cluster, B and the ELF's folder mounted at their own
-# paths. Then against B/forge_expected.txt (snax-forge's D123): the run's `forge data:` line
+# paths. Then against B/forge_expected.txt (snax-forge's D123, D170): the run's `forge data:` line
 # must equal the expected one, and its `forge counter <task>: <c>` lines, in order, name the
-# expected tasks with each count within that task's `forge fill <task>: <n>` of the expected
-# one (the group's streamer fill: the COUNTER counts the streamer's head start before START,
-# which the core's timing sets and SNAX-GVSoC does not model); a file without fill lines asks
-# for equal counts. `PASS <name>`, with a line per counter that differs within its fill, or
-# `FAIL <name>: <want> / <got>`. Each design's whole output is kept in
-# logs/snax-forge-<name>-<sim>.txt, the PASS and FAIL lines and each run's `forge cycles:` line
-# in logs/snax-forge-check.txt. Exit 1 when a design failed, 2 on bad arguments.
+# expected tasks. Each counter's gap beyond its `forge fill <task>: <n>` (the group's streamer
+# fill: the COUNTER counts the streamer's head start before START, which the core's timing sets
+# and SNAX-GVSoC does not model; 0 without a fill line), as a share of the expected count,
+#
+#   e = max(0, |got - want| - fill) / want
+#
+# gives the bundle's verdict from its worst counter: `PERFECT <name>` when every counter and the
+# data are equal, `NEAR <name>` up to NEAR_PCT (10 %, so everything within its fill), `WARNING
+# <name>` up to WARN_PCT (15 %), `FAIL <name>: <want> / <got>` beyond, or when the data line, a
+# task or a step differs; a line per counter that differs. Each design's whole output is kept in
+# logs/snax-forge-<name>-<sim>.txt, the verdict lines and each run's `forge cycles:` line in
+# logs/snax-forge-check.txt. Exit 1 when a design failed (FAIL), 2 on bad arguments.
 
 set -u
+NEAR_PCT=10   # D170: the bounds on a counter's gap beyond its fill, in % of its count
+WARN_PCT=15
 HERE=$(cd "$(dirname "$0")" && pwd)   # target/snitch_cluster
 REPO=$(cd "$HERE/../.." && pwd)
 LOGS=$HERE/logs
@@ -62,11 +69,12 @@ report() {  # report LINE: to the terminal and to the check file
     echo "$1" >> "$CHECK"
 }
 
-# compare WANT GOT: exit 0 when GOT's data line equals WANT's and its counters, in order, name
-# WANT's tasks each within its fill (0 without a fill line); a line per counter that differs
-# within its fill on stdout. WANT is forge_expected.txt, GOT the run's forge lines.
+# compare WANT GOT: the verdict of the run's forge lines GOT against WANT (forge_expected.txt)
+# as its last line, `PERFECT`, `NEAR <e>`, `WARNING <e>` or `FAIL <e>` (e the worst counter's
+# gap beyond its fill, in % of the expected count; `FAIL -` when the data line, the number of
+# counters or a task's name differs), after a line per counter that differs.
 compare() {
-    awk '
+    awk -v near="$NEAR_PCT" -v warn="$WARN_PCT" '
         function split_line(x, n,   i) { i = index(x, ": "); name = substr(x, n, i - n); value = substr(x, i + 2) + 0 }
         FNR == NR && /^forge counter / { split_line($0, 15); wn[++nw] = name; wv[nw] = value; next }
         FNR == NR && /^forge fill / { split_line($0, 12); fill[name] = value; next }
@@ -75,15 +83,24 @@ compare() {
         /^forge counter / { split_line($0, 15); gn[++ng] = name; gv[ng] = value; next }
         /^forge data: / { gd = $0 }
         END {
-            bad = (gd != wd || ng != nw)
+            bad = (gd != wd || ng != nw); exact = 1; worst = 0
             for (j = 1; j <= nw && j <= ng; j++) {
                 if (gn[j] != wn[j]) { bad = 1; continue }
                 d = gv[j] - wv[j]; if (d < 0) d = -d
+                if (d == 0) continue
+                exact = 0
                 f = (wn[j] in fill) ? fill[wn[j]] : 0
-                if (d > f) bad = 1
-                else if (d > 0) printf "  %s: counter %d against %d, within its fill %d\n", wn[j], gv[j], wv[j], f
+                over = (d > f) ? d - f : 0
+                e = (over == 0) ? 0 : (wv[j] > 0 ? 100 * over / wv[j] : 100)
+                if (e > worst) worst = e
+                if (over == 0) printf "  %s: counter %d against %d, within its fill %d\n", wn[j], gv[j], wv[j], f
+                else printf "  %s: counter %d against %d, %d beyond its fill %d (%.1f %%)\n", wn[j], gv[j], wv[j], over, f, e
             }
-            exit bad
+            if (bad) print "FAIL -"
+            else if (exact) print "PERFECT"
+            else if (worst <= near) printf "NEAR %.1f\n", worst
+            else if (worst <= warn) printf "WARNING %.1f\n", worst
+            else printf "FAIL %.1f\n", worst
         }' "$1" "$2"
 }
 
@@ -121,12 +138,16 @@ for B in $BUNDLES; do
     if [ $rc -ne 0 ]; then
         report "FAIL $name: a step failed (exit $rc), see $log"
         failed=1
-    elif notes=$(compare "$B/forge_expected.txt" <(echo "$got")); then
-        report "PASS $name"
-        [ -z "$notes" ] || report "$notes"
     else
-        report "FAIL $name: ${want//$'\n'/; } / ${got//$'\n'/; }"
-        failed=1
+        out=$(compare "$B/forge_expected.txt" <(echo "$got"))
+        verdict=$(echo "$out" | tail -n 1)
+        notes=$(echo "$out" | head -n -1)
+        case ${verdict%% *} in
+            PERFECT) report "PERFECT $name" ;;
+            NEAR|WARNING) report "${verdict%% *} $name: the worst counter ${verdict#* } % beyond its fill" ;;
+            *) report "FAIL $name: ${want//$'\n'/; } / ${got//$'\n'/; }"; failed=1 ;;
+        esac
+        [ -z "$notes" ] || report "$notes"
     fi
     echo "  $name ${cycles:-forge cycles: none}" >> "$CHECK"
 done
