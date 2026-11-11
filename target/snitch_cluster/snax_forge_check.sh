@@ -20,7 +20,7 @@
 #   vlt   all four in the image
 #
 # podman runs non-interactively, snax_cluster, B and the ELF's folder mounted at their own
-# paths. Then against B/forge_expected.txt (snax-forge's D123, D170): the run's `forge data:` line
+# paths. Then against B/forge_expected.txt (snax-forge's D123): the run's `forge data:` line
 # must equal the expected one, and its `forge counter <task>: <c>` lines, in order, name the
 # expected tasks. Each counter's gap beyond its `forge fill <task>: <n>` (the group's streamer
 # fill: the COUNTER counts the streamer's head start before START, which the core's timing sets
@@ -36,7 +36,7 @@
 # logs/snax-forge-check.txt. Exit 1 when a design failed (FAIL), 2 on bad arguments.
 
 set -u
-NEAR_PCT=10   # D170: the bounds on a counter's gap beyond its fill, in % of its count
+NEAR_PCT=10   # D123: the bounds on a counter's gap beyond its fill, in % of its count
 WARN_PCT=15
 HERE=$(cd "$(dirname "$0")" && pwd)   # target/snitch_cluster
 REPO=$(cd "$HERE/../.." && pwd)

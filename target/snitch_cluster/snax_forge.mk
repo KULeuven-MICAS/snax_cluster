@@ -32,7 +32,7 @@
 #                   `forge counter` against the bundle's forge_expected.txt, a counter's gap
 #                   beyond its `forge fill` (the group's streamer fill, snax-forge's D123) as a
 #                   share of its count: PERFECT, NEAR (10 %), WARNING (15 %) or FAIL per bundle
-#                   (D170) into logs/snax-forge-check.txt (with each run's `forge cycles:`), each
+#                   into logs/snax-forge-check.txt (with each run's `forge cycles:`), each
 #                   bundle's output in logs/snax-forge-<name>-$(SIM).txt; fails when one FAILs
 
 SIM   ?= vlt
