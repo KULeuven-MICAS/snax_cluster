@@ -52,7 +52,8 @@ VCS_BUILDDIR := work-vcs
 
 # For synthesis with DC compiler
 SYN_FLIST ?= syn_flist.tcl
-SYN_BENDER += -t synthesis
+# rtl, as vsim and vcs: iDMA's sources (idma_inst64_top, its midends and backends) are under bender target rtl
+SYN_BENDER += -t synthesis -t rtl
 
 # The cluster's memories (SRAM_IMPL, SRAM_MODELS, MEM_TYPE: target/snitch_cluster/Makefile's
 # header). With SRAM_IMPL, vsim and synthesis leave out tech_cells_generic's tc_sram.sv and
