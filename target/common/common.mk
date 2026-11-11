@@ -85,8 +85,27 @@ ifneq ($(strip $(SRAM_MODELS)),)
   endif
 endif
 
-ifeq ($(SIM_TYPE), gate_level_sim)
-        VSIM_BENDER += -t gate_level_sim
+# SIM_TYPE=gate_level_sim: vsim of the cluster's netlist (target/snitch_cluster/Makefile's header).
+# The files are read only by vlog, outside the image, so they are not checked here.
+GLS =
+ifeq ($(strip $(SIM_TYPE)),gate_level_sim)
+  ifeq ($(strip $(GLS_NETLIST)),)
+    $(error SIM_TYPE=gate_level_sim needs GLS_NETLIST=<the netlist .v>)
+  endif
+  ifeq ($(strip $(GLS_CELLS)),)
+    $(error SIM_TYPE=gate_level_sim needs GLS_CELLS=<the cell library's Verilog models>)
+  endif
+  ifeq ($(strip $(SRAM_MODELS)),)
+    $(error SIM_TYPE=gate_level_sim needs SRAM_IMPL and SRAM_MODELS: the netlist instantiates the memory macros)
+  endif
+  GLS = yes
+  override GLS_NETLIST := $(abspath $(strip $(GLS_NETLIST)))
+  override GLS_CELLS   := $(abspath $(strip $(GLS_CELLS)))
+  # the netlist's library first, so snax_forge_cluster_wrapper and all below it are the netlist's;
+  # registers and memories start at 0 (the netlist has no initial blocks)
+  VOPT_FLAGS = +acc=n +initreg+0 -Lf $(VSIM_BUILDDIR)/gls
+else ifneq ($(strip $(GLS_NETLIST)$(GLS_CELLS)),)
+  $(error GLS_NETLIST and GLS_CELLS need SIM_TYPE=gate_level_sim)
 endif
 SYN_SOURCES = $(shell ${BENDER} script synopsys ${SYN_BENDER})
 SYN_BUILDDIR := work-syn

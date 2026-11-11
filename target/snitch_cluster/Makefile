@@ -25,6 +25,15 @@ SELECT_TOOLCHAIN ?=      # Select Toolchain: "llvm-generic" = llvm17 generic (de
 #                       models, compiled after SRAM_IMPL's file; never in syn_flist.tcl
 #   MEM_TYPE=exclude_tcsram  SRAM_IMPL=$(SRAM_IMPL_16NM) (../common/common.mk) with its three
 #                       TSMC_* vlog defines; no other MEM_TYPE
+# The cluster's netlist in vsim (zero delay, functional):
+#   SIM_TYPE=gate_level_sim  with GLS_NETLIST, GLS_CELLS, SRAM_IMPL and SRAM_MODELS (the RTL list
+#                       stays as in an SRAM_IMPL run: the testharness and its packages)
+#   GLS_NETLIST=<.v>    the netlist, its top snax_forge_cluster_wrapper
+#   GLS_CELLS=<.v>      the cell library's Verilog models
+# compile.vsim.tcl compiles GLS_CELLS, SRAM_MODELS (-sv) and GLS_NETLIST into $(VSIM_BUILDDIR)/gls;
+# vopt takes -Lf $(VSIM_BUILDDIR)/gls (the wrapper and everything below it from the netlist),
+# +initreg+0 and +acc=n, and vsim +nospecify +notimingchecks. The files are read outside the
+# image only (bin/snitch_cluster.vsim's prerequisites).
 # compile.vsim.tcl is written with these, so give vsim_preparation (in the image) and the build
 # outside it (bin/snitch_cluster.vsim, snax-forge-sim) the same values: otherwise the vsim
 # stamp (VSIM_STAMP) differs and the build outside the image rewrites the list.
@@ -77,8 +86,7 @@ CFG_STAMP          = $(GENERATED_DIR)/cfg.stamp
 # What compile.vsim.tcl was written with: CFG_STAMP's text and VSIM_OPTS
 VSIM_STAMP         = $(GENERATED_DIR)/vsim.stamp
 VSIM_OPTS          = SRAM_IMPL=$(SRAM_IMPL) SRAM_MODELS=$(SRAM_MODELS) MEM_TYPE=$(MEM_TYPE) \
-                     SIM_TYPE=$(SIM_TYPE) GLS_NETLIST=$(GLS_NETLIST) GLS_CELLS=$(GLS_CELLS) \
-                     GLS_MACROS=$(GLS_MACROS)
+                     SIM_TYPE=$(SIM_TYPE) GLS_NETLIST=$(GLS_NETLIST) GLS_CELLS=$(GLS_CELLS)
 # The files SRAM_MODELS lists (no options, no comment lines)
 SRAM_MODELS_FILES  = $(if $(SRAM_MODELS),$(shell awk '!/^[[:space:]]*(\/\/|[-+]|$$)/ {print $$1}' $(SRAM_MODELS)))
 
@@ -247,6 +255,9 @@ ifdef SDF_ANNOTATE_PATH
   else
     $(error "Error! Missing SDF_TOP")
   endif
+endif
+ifeq ($(GLS),yes)
+  VSIM_FLAGS += +nospecify +notimingchecks
 endif
 VSIM_FLAGS += -do "log -r /*; run -a"
 
@@ -489,6 +500,10 @@ ${VSIM_BUILDDIR}/compile.vsim.tcl: $(GENERATED_DIR)/bender_targets.tmp $(VSIM_ST
 	$(if $(SRAM_MODELS),echo '${VLOG} ${VLOG_FLAGS} -work $(dir $@) -f $(SRAM_MODELS)' >> $@)
 	$(if $(SNAX_FORGE_RTL),echo '${VLOG} -sv ${VLOG_FLAGS} -work $(dir $@) -f $(SNAX_FORGE_F)' >> $@)
 	echo '${VLOG} -work $(dir $@) ${TB_CC_SOURCES} ${TB_ASM_SOURCES} -vv -ccflags "$(TB_CC_FLAGS)"' >> $@
+	$(if $(GLS),echo '${VLIB} $(dir $@)gls' >> $@)
+	$(if $(GLS),echo '${VLOG} ${VLOG_FLAGS} -work $(dir $@)gls $(GLS_CELLS)' >> $@)
+	$(if $(GLS),echo '${VLOG} -sv ${VLOG_FLAGS} -work $(dir $@)gls -f $(SRAM_MODELS)' >> $@)
+	$(if $(GLS),echo '${VLOG} ${VLOG_FLAGS} -work $(dir $@)gls $(GLS_NETLIST)' >> $@)
 	echo 'return 0' >> $@
 
 # compile.vsim.tcl first: its cluster file check stops a stale call before cfg/lru.hjson moves
@@ -496,9 +511,15 @@ vsim_preparation: ${VSIM_BUILDDIR}/compile.vsim.tcl $(GENERATED_DIR)/bootdata.cc
 	@echo "VSIM preparation done"
 
 # Build compilation script and compile all sources for Questasim simulation
-bin/snitch_cluster.vsim: ${VSIM_BUILDDIR}/compile.vsim.tcl $(VSIM_SOURCES) ${TB_SRCS} ${TB_CC_SOURCES} ${TB_ASM_SOURCES} $(SRAM_IMPL) $(SRAM_MODELS) $(SRAM_MODELS_FILES) work/lib/libfesvr.a | $(GENERATED_DIR)/bender_targets.tmp
+bin/snitch_cluster.vsim: ${VSIM_BUILDDIR}/compile.vsim.tcl $(VSIM_SOURCES) ${TB_SRCS} ${TB_CC_SOURCES} ${TB_ASM_SOURCES} $(SRAM_IMPL) $(SRAM_MODELS) $(SRAM_MODELS_FILES) $(if $(GLS),$(GLS_NETLIST) $(GLS_CELLS)) work/lib/libfesvr.a | $(GENERATED_DIR)/bender_targets.tmp
 	$(VLIB) $(VSIM_BUILDDIR)
 	$(call QUESTASIM,tb_bin)
+
+# A gate-level file that does not exist (checked here, outside the image, not in common.mk)
+ifeq ($(GLS),yes)
+$(GLS_NETLIST) $(GLS_CELLS):
+	@echo "SIM_TYPE=gate_level_sim: $@ (GLS_NETLIST or GLS_CELLS): no such file" >&2; exit 1
+endif
 
 #######
 # VCS #
