@@ -109,6 +109,13 @@ SUBDIRS += snax-multi-cluster-playground
 ifneq ($(filter cfg/snax_forge/%,$(CFG_OVERRIDE)),)
 SUBDIRS += snax-forge
 endif
+# The Snitch-only programs: forge's kernels in plain C on the cores, no accelerator
+ifneq ($(filter cfg/snax_snitch_cluster_1.hjson cfg/snax_snitch_cluster_5.hjson cfg/snax_snitch_cluster_9.hjson,$(CFG_OVERRIDE)),)
+SUBDIRS += snitch-forge/vecadd
+SUBDIRS += snitch-forge/vecmul
+SUBDIRS += snitch-forge/vsum
+SUBDIRS += snitch-forge/dot
+endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_hypercorex_cluster.hjson)
 SUBDIRS += snax-hypercorex/test-csr
 SUBDIRS += snax-hypercorex/char-recog

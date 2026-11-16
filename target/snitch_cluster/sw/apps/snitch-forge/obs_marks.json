@@ -1,0 +1,22 @@
+[
+ {
+  "mark": 1,
+  "kind": "dma_in",
+  "label": "dma in"
+ },
+ {
+  "mark": 2,
+  "kind": "run",
+  "label": "run"
+ },
+ {
+  "mark": 3,
+  "kind": "dma_out",
+  "label": "dma out"
+ },
+ {
+  "mark": 4,
+  "kind": "check",
+  "label": "check"
+ }
+]
