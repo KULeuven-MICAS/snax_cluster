@@ -418,6 +418,10 @@ sources:
   - target: snax_forge_cluster
     files:
       - target/snitch_cluster/generated/snax_forge_cluster_wrapper.sv
+  # The Snitch-only clusters (cfg/snax_snitch_cluster_{1,5,9}.hjson), no accelerator
+  - target: snax_snitch_cluster
+    files:
+      - target/snitch_cluster/generated/snax_snitch_cluster_wrapper.sv
   - target: snax_dimc_cluster
     files:
       - target/snitch_cluster/generated/snax_dimc_cluster_wrapper.sv
