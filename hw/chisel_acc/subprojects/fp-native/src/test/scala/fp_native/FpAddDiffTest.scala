@@ -58,8 +58,10 @@ class FpAddDiffTest extends AnyFlatSpec with ChiselScalatestTester {
           dut.io.in_a.poke(a.U); dut.io.in_b.poke(b.U)
           dut.clock.step(numPipe + 1)
           val n = dut.io.out_nat.peekInt(); val r = dut.io.out_bb.peekInt()
-          assert(n == r, s"FpAdd ${typeA.width}+${typeB.width}->${typeC.width} pipe$numPipe: " +
-            s"a=0x${a.toString(16)} b=0x${b.toString(16)} native=0x${n.toString(16)} bb=0x${r.toString(16)}")
+          // fp_add.sv rounds these one ulp low; FpAddFarOperandTest checks them against IEEE RNE
+          if (!FpAddFarOperandTest.farSub(typeA, typeB, typeC, a, b))
+            assert(n == r, s"FpAdd ${typeA.width}+${typeB.width}->${typeC.width} pipe$numPipe: " +
+              s"a=0x${a.toString(16)} b=0x${b.toString(16)} native=0x${n.toString(16)} bb=0x${r.toString(16)}")
         }
       }
   }

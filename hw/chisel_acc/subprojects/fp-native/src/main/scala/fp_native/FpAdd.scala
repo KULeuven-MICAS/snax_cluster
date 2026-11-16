@@ -4,7 +4,8 @@
 
 // Native-Chisel FP add: a 1:1 port of fp_add.sv (a+b -> out, mixed in/out formats), with `numPipe`
 // (0..2) feed-forward register stages at the adder / normalize boundaries. Replaces the FpAddFp /
-// FpAddFpPipe SystemVerilog blackboxes. Bit-exact to fp_add.sv (proven by FpAddDiffTest).
+// FpAddFpPipe SystemVerilog blackboxes. Bit-exact to fp_add.sv (proven by FpAddDiffTest), except for an
+// operand more than PREC_C + 1 binades below the other, which only sets the sticky bit here (see below).
 
 package fp_native
 
@@ -102,8 +103,17 @@ class FpAdd(val typeA: FpType, val typeB: FpType, val typeC: FpType, val numPipe
   val LEFT_B  = if (SHIFT_B > 0) SHIFT_B else 0
   val RIGHT_B = if (SHIFT_B < 0) -SHIFT_B else 0
 
-  val addend_a = truncU(((mantissa_a << LEFT_A) >> (shamt_a +& RIGHT_A.U)), SUM_W)
-  val addend_b = truncU(((mantissa_b << LEFT_B) >> (shamt_b +& RIGHT_B.U)), SUM_W)
+  // An operand more than PREC_C + 1 binades below the other lies below the round bit and only sets the
+  // sticky bit. The capped shift above keeps it 2^(|d| - PREC_C - 1) times too large, which makes a
+  // subtraction from a power of two round one ulp low (-2^15 + 1.5 * 2^-15 would give 0xc6ffffff instead of
+  // 0xc7000000). A single LSB in its place rounds like the real value. Zero operands never get here (d is 0
+  // for them). Only done when the inputs are not wider than the output: the narrowing combinations drop
+  // input bits anyway and are used with in_b = 0 (FpHelpers.narrow).
+  val farOk    = PREC_IN <= PREC_C
+  val farA     = farOk.B && exponent_difference < (-(PREC_C + 1)).S
+  val farB     = farOk.B && exponent_difference > (PREC_C + 1).S
+  val addend_a = Mux(farA, 1.U(SUM_W.W), truncU(((mantissa_a << LEFT_A) >> (shamt_a +& RIGHT_A.U)), SUM_W))
+  val addend_b = Mux(farB, 1.U(SUM_W.W), truncU(((mantissa_b << LEFT_B) >> (shamt_b +& RIGHT_B.U)), SUM_W))
   val shifted_b = Mux(effSub, ~addend_b, addend_b)
   val sum_raw   = truncU(addend_a +& shifted_b +& effSub.asUInt, SUM_W)
   val resultNeg = effSub && sum_raw(SUM_W - 1)
