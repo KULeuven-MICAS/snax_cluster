@@ -115,6 +115,11 @@ SUBDIRS += snitch-forge/vecadd
 SUBDIRS += snitch-forge/vecmul
 SUBDIRS += snitch-forge/vsum
 SUBDIRS += snitch-forge/dot
+SUBDIRS += snitch-forge/relu
+SUBDIRS += snitch-forge/axpy
+SUBDIRS += snitch-forge/rowsum
+SUBDIRS += snitch-forge/matvec
+SUBDIRS += snitch-forge/matadd
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_hypercorex_cluster.hjson)
 SUBDIRS += snax-hypercorex/test-csr

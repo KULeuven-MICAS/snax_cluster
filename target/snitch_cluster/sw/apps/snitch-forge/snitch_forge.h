@@ -13,7 +13,10 @@
 // The workers are the compute cores, or the one core of a one-core cluster,
 // which then moves the data too. Of P workers, worker c takes the elements in
 // the 64-bit words c, c + P, c + 2P, ... of the inputs (SF_PER_WORD each), and
-// the outputs at the same indices, so the workers start in different banks.
+// the outputs at the same indices, so the workers start in different banks;
+// a row kernel gives worker c the rows c, c + P, ..., each started at
+// sf_stagger's column.
+//
 // Only core 0 drives obs_o, so the QUIET build has core 0 write each
 // section's mark to CSR 0x7c5 (obs_marks.json) right after the barrier that
 // opens it, also for the DMA sections it does not run, and prints nothing.
@@ -66,6 +69,14 @@ static inline sf_t sf_init(void) {
     sf.stamp = (uint32_t *)sf_l1(&sf, SF_CHECK * sizeof(uint32_t));
     sf.cycles = (uint32_t *)sf_l1(&sf, sf.workers * sizeof(uint32_t));
     return sf;
+}
+
+// The element of a row of n at which this worker starts, before it wraps to
+// the row's start: 4 words further per worker. Rows a whole number of bank
+// rows long all start in one bank; staggered, workers walking their rows in
+// step stay 4 banks apart, on the matrix and on a vector they all read.
+static inline uint32_t sf_stagger(const sf_t *sf, uint32_t n) {
+    return (sf->core * 4 * SF_PER_WORD) % n;
 }
 
 static inline int sf_is_worker(const sf_t *sf) {
