@@ -16,6 +16,9 @@
 
 SF_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
+# common.mk's all, though FORCE below comes first
+.DEFAULT_GOAL := all
+
 ifeq ($(QUIET),1)
 APP = $(KERNEL)_quiet
 RISCV_CFLAGS += -DQUIET
