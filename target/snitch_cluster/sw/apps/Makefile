@@ -120,6 +120,7 @@ SUBDIRS += snitch-forge/axpy
 SUBDIRS += snitch-forge/rowsum
 SUBDIRS += snitch-forge/matvec
 SUBDIRS += snitch-forge/matadd
+SUBDIRS += snitch-forge/mvt
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_hypercorex_cluster.hjson)
 SUBDIRS += snax-hypercorex/test-csr
