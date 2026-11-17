@@ -5,7 +5,7 @@
 # What every snitch-forge program shares, included by <kernel>/Makefile after its data/Makefile
 # (which sets DATAGEN_PY, DATA_H and DATA_ARGS from its defaults) and before ../../common.mk.
 #
-#   make -C <kernel> CFG_OVERRIDE=cfg/snax_snitch_cluster_<1|5|9>.hjson [N=...] [TYPE=...] [SEED=...]
+#   make -C <kernel> CFG_OVERRIDE=cfg/snax_snitch_cluster_<1|5|9>.hjson [N=...] [TYPE=...] [SEED=...] [RANGE=...]
 #
 # builds build/<kernel>.elf, which prints and checks; QUIET=1 builds build/<kernel>_quiet.elf
 # with -DQUIET, which writes the section marks to CSR 0x7c5 (obs_marks.json) and prints nothing.
@@ -15,6 +15,10 @@
 # last CFG_OVERRIDE's.
 
 SF_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+
+# The inputs: forge's range per kernel, or full (uniform over the whole type; snitch_forge_data.py)
+RANGE ?= forge
+DATA_ARGS += --range $(RANGE)
 
 # common.mk's all, though FORCE below comes first
 .DEFAULT_GOAL := all
