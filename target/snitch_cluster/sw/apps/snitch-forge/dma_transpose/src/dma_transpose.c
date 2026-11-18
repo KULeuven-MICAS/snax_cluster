@@ -16,7 +16,8 @@
 
 #include "snitch_forge.h"
 
-_Static_assert(sizeof(in_t) == sizeof(acc_t), "a copy moves in_t: TYPE int8 or int64");
+_Static_assert(sizeof(in_t) == sizeof(acc_t),
+               "a copy moves in_t: TYPE int8 or int64");
 
 int main() {
     sf_t sf = sf_init();
@@ -34,8 +35,8 @@ int main() {
         uint32_t t0 = sf_tic();
         const uint32_t b = sizeof(in_t);
         for (uint32_t k = 0; k < SF_N; k++)  // column k of A -> row k of A_T
-            snrt_dma_start_2d((uint8_t *)at + SF_M * b * k, (uint8_t *)a + b * k, b, b,
-                              SF_N * b, SF_M);
+            snrt_dma_start_2d((uint8_t *)at + SF_M * b * k,
+                              (uint8_t *)a + b * k, b, b, SF_N * b, SF_M);
         snrt_dma_wait_all();
         if (sf_is_worker(&sf)) sf_toc(&sf, t0);
     }
