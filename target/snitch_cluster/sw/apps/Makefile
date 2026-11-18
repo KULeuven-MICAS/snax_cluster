@@ -124,6 +124,7 @@ SUBDIRS += snitch-forge/mvt
 SUBDIRS += snitch-forge/atax
 SUBDIRS += snitch-forge/bicg
 SUBDIRS += snitch-forge/gesummv
+SUBDIRS += snitch-forge/dma_transpose
 endif
 ifeq ($(CFG_OVERRIDE), cfg/snax_hypercorex_cluster.hjson)
 SUBDIRS += snax-hypercorex/test-csr

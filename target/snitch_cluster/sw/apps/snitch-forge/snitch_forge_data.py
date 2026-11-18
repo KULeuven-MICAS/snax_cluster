@@ -26,13 +26,15 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../util/sim
 from data_utils import format_vector_declaration, format_vector_definition  # noqa: E402
 
 # TYPE: (in_t, acc_t). int64 and the presets i32, i16 and i8 are forge's
-# (snax-forge kernels/README.md); int32 is the cores' native width.
+# (snax-forge kernels/README.md); int32 is the cores' native width; int8 is a
+# copy's (dma_transpose: in and out one type).
 TYPES = {
     "int64": (np.int64, np.int64),
     "i32": (np.int32, np.int64),
     "i16": (np.int16, np.int32),
     "i8": (np.int8, np.int32),
     "int32": (np.int32, np.int32),
+    "int8": (np.int8, np.int8),
 }
 
 C_TYPES = {np.int64: "int64_t", np.int32: "int32_t", np.int16: "int16_t", np.int8: "int8_t"}
