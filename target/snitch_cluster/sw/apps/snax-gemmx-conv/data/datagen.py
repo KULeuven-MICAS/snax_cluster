@@ -299,8 +299,15 @@ def emit_conv_data(**kwargs):
     # streamer setting for data mover A
     # -----------------------------------------------------------
     # NC8HW8
-    # Aslstride0 = tileSize * stride_w
-    Aslstride0 = 8
+    # Each channel of the A reader reads bankWidth / 8 bytes. If one channel
+    # holds one row of the A tile (the tileSize input channels of one pixel),
+    # the next row is the pixel stride_w further. Otherwise the rows are read
+    # contiguously, which only works for stride_w = 1 or a single row.
+    if tileSize * input_data_width == bankWidth:
+        Aslstride0 = tileSize * stride_w
+    else:
+        assert stride_w == 1 or meshRow == 1, "stride_w > 1 is not supported"
+        Aslstride0 = bankWidth // 8
 
     # K dim
     Atlbound0 = Kw
