@@ -5,7 +5,8 @@
 // Native-Chisel FP add: a 1:1 port of fp_add.sv (a+b -> out, mixed in/out formats), with `numPipe`
 // (0..2) feed-forward register stages at the adder / normalize boundaries. Replaces the FpAddFp /
 // FpAddFpPipe SystemVerilog blackboxes. Bit-exact to fp_add.sv (proven by FpAddDiffTest), except for an
-// operand more than PREC_C + 1 binades below the other, which only sets the sticky bit here (see below).
+// operand more than PREC_C + 1 binades below the other, which only sets the sticky bit here, and for a
+// subnormal operand, whose exponent fp_add.sv takes one too low (see below).
 
 package fp_native
 
@@ -76,8 +77,9 @@ class FpAdd(val typeA: FpType, val typeB: FpType, val typeC: FpType, val numPipe
   val ediffCalc =
     (exp_a.zext +& (BIAS_C - BIAS_A).S +& ia.isSubnormal.asUInt.zext) -& (exp_b.zext +& (BIAS_C - BIAS_B).S +& ib.isSubnormal.asUInt.zext)
   val exponent_difference = Mux(ia.isZero || ib.isZero, 0.S((EXP_MAX + 1).W), truncS(ediffCalc, EXP_MAX + 1))
-  val tentExpA = truncS(exp_a.zext +& (BIAS_C - BIAS_A).S, EXP_MAX + 1)
-  val tentExpB = truncS(exp_b.zext +& (BIAS_C - BIAS_B).S, EXP_MAX + 1)
+  // a subnormal operand has the exponent of the smallest normal number (the + 1, as in ediffCalc)
+  val tentExpA = truncS(exp_a.zext +& (BIAS_C - BIAS_A).S +& ia.isSubnormal.asUInt.zext, EXP_MAX + 1)
+  val tentExpB = truncS(exp_b.zext +& (BIAS_C - BIAS_B).S +& ib.isSubnormal.asUInt.zext, EXP_MAX + 1)
   val tentative_exponent = Mux(exponent_difference < 0.S || ia.isZero, tentExpB, tentExpA)
 
   // alignment shifts
@@ -143,10 +145,10 @@ class FpAdd(val typeA: FpType, val typeB: FpType, val typeC: FpType, val numPipe
   when((tentExp_q -& lzcSgn + 1.S) > 0.S && !lzcZeroes) {
     final_exponent := truncS(tentExp_q -& lzcSgn + 1.S, EXP_C + 1)
     norm_shamt := truncU(lzCount, LZC_W)
-  }.elsewhen(tentExp_q === 0.S) {
-    final_exponent := 0.S
-    norm_shamt := 1.U
   }.otherwise {
+    // Subnormal result: the shift by tentExp puts the exponent-1 position at the MSB. (fp_add.sv shifts by 1
+    // for tentExp = 0, which made up for its subnormal exponent but drops the leading bit of a narrowing sum
+    // in the binade just below the output's normal range.)
     final_exponent := 0.S
     norm_shamt := truncU(tentExp_q.asUInt, LZC_W)
   }
