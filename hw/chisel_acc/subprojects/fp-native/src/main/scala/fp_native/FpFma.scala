@@ -40,7 +40,9 @@ class FpFma(val typeA: FpType, val typeB: FpType, val typeC: FpType, val numPipe
   val EXP_B = typeB.expWidth; val MAN_B = typeB.sigWidth; val BIAS_B = bias(typeB); val PREC_B = MAN_B + 1
   val EXP_C = typeC.expWidth; val MAN_C = typeC.sigWidth; val BIAS_C = bias(typeC); val PREC_C = MAN_C + 1
 
-  val MUL_WIDTH          = math.max(PREC_A + PREC_B, PREC_C)
+  // +2 guard bits: when PREC_C > PREC_A + PREC_B the round and sticky positions of the result reach below the
+  // product LSB, so the window extends 2 bits further down (as fp_fma.sv does since chisel-float a3af4e1)
+  val MUL_WIDTH          = math.max(PREC_A + PREC_B, PREC_C) + 2
   val PRODUCT_SHIFT      = MUL_WIDTH - (PREC_A + PREC_B)
   val LOWER_SUM_WIDTH    = MUL_WIDTH + 3
   val LZC_RESULT_WIDTH   = log2Ceil(LOWER_SUM_WIDTH)
@@ -81,12 +83,20 @@ class FpFma(val typeA: FpType, val typeB: FpType, val typeC: FpType, val numPipe
     }
   }
 
+  // normalize subnormal a and b, so the product has at most one leading zero
+  val mantissa_a_raw = Cat(ia.isNormal, man_a) // PREC_A
+  val mantissa_b_raw = Cat(ib.isNormal, man_b) // PREC_B
+  val (lzc_a, _)     = lzc(mantissa_a_raw, PREC_A)
+  val (lzc_b, _)     = lzc(mantissa_b_raw, PREC_B)
+
   // exponent datapath (exponents enter as unsigned value)
   val exponent_addend = truncS(exp_c.zext +& (!ic.isNormal).asUInt.zext, EXP_WIDTH)
   val expProdCalc =
-    exp_a.zext +& ia.isSubnormal.asUInt.zext +& exp_b.zext +& ib.isSubnormal.asUInt.zext +& (BIAS_C - BIAS_A - BIAS_B).S
+    exp_a.zext +& ia.isSubnormal.asUInt.zext -& lzc_a.zext +& exp_b.zext +& ib.isSubnormal.asUInt.zext -&
+      lzc_b.zext +& (BIAS_C - BIAS_A - BIAS_B).S
+  // zero product: an exponent below any addend exponent, so the addend is kept whole
   val exponent_product =
-    Mux(ia.isZero || ib.isZero, (2 - BIAS_A - BIAS_B + BIAS_C).S(EXP_WIDTH.W), truncS(expProdCalc, EXP_WIDTH))
+    Mux(ia.isZero || ib.isZero, (-(PREC_C + 2)).S(EXP_WIDTH.W), truncS(expProdCalc, EXP_WIDTH))
   val exponent_difference = truncS(exponent_addend -& exponent_product, EXP_WIDTH)
   val tentative_exponent  = Mux(exponent_difference > 0.S, exponent_addend, exponent_product)
 
@@ -100,8 +110,8 @@ class FpFma(val typeA: FpType, val typeB: FpType, val typeC: FpType, val numPipe
     addend_shamt := 0.U
   }
 
-  val mantissa_a = Cat(ia.isNormal, man_a) // PREC_A
-  val mantissa_b = Cat(ib.isNormal, man_b) // PREC_B
+  val mantissa_a = truncU(mantissa_a_raw << lzc_a, PREC_A)
+  val mantissa_b = truncU(mantissa_b_raw << lzc_b, PREC_B)
   val mantissa_c = Cat(ic.isNormal, man_c) // PREC_C
   val product    = truncU(mantissa_a * mantissa_b, MUL_WIDTH)
   val product_shifted = truncU(product << (PRODUCT_SHIFT + 2), INTERMEDIATE_WIDTH + 1) // [INTERMEDIATE_WIDTH:0]
