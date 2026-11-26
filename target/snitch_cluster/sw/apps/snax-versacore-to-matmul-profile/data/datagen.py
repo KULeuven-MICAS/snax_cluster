@@ -223,6 +223,9 @@ def emit_matmul_data(**kwargs):
     M = kwargs["M"]
     K = kwargs["K"]
     N = kwargs["N"]
+    # ACCUM_BOUND = 0 is invalid and OUTPUT_BOUND = 0 means accumulation without
+    # output, so a zero M, K or N would make the VersaCore wait forever
+    assert M > 0 and K > 0 and N > 0, "M, K and N must be at least 1"
 
     data_str += [format_scalar_definition("uint32_t", "M", M)]
     data_str += [format_scalar_definition("uint32_t", "K", K)]
