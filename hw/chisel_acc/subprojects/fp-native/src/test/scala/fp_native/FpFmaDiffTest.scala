@@ -62,7 +62,10 @@ class FpFmaDiffTest extends AnyFlatSpec with ChiselScalatestTester {
           dut.io.in_a.poke(a.U); dut.io.in_b.poke(b.U); dut.io.in_c.poke(c.U)
           dut.clock.step(numPipe + 1)
           val n = dut.io.out_nat.peekInt(); val r = dut.io.out_bb.peekInt()
-          assert(n == r, s"FpFma ${typeA.width}*${typeB.width}+${typeC.width} pipe$numPipe: " +
+          // fp_fma.sv rounds some FP16*FP16+FP32 cases wrong; FpFmaRoundingTest checks them against IEEE RNE
+          val ieee = Seq((typeA, a), (typeB, b), (typeC, c)).forall { case (t, x) => FpFmaRoundingTest.finite(t, x) } &&
+            n == FpFmaRoundingTest.rne(typeA, typeB, typeC, a, b, c)
+          assert(n == r || ieee, s"FpFma ${typeA.width}*${typeB.width}+${typeC.width} pipe$numPipe: " +
             s"a=0x${a.toString(16)} b=0x${b.toString(16)} c=0x${c.toString(16)} native=0x${n.toString(16)} bb=0x${r.toString(16)}")
         }
       }
